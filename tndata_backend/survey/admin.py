@@ -1,9 +1,6 @@
 from django.contrib import admin
 from . import models
 
-# TODO: Make a QusetionAdmin base class with
-# list_display = ('text', 'order', 'available')
-
 
 class MultipleChoiceResponseOptionInline(admin.TabularInline):
     model = models.MultipleChoiceResponseOption
