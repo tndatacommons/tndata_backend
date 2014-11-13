@@ -9,37 +9,37 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('survey', '0001_initial'),
+        ('survey', '0002_likertresponse_goal'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='LikertQuestion',
+            name='OpenEndedQuestion',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
-                ('text', models.TextField(unique=True, help_text='The text of the question')),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('text', models.TextField(help_text='The text of the question', unique=True)),
                 ('order', models.IntegerField(default=0, help_text='Ordering of questions')),
                 ('available', models.BooleanField(default=True, help_text='Available to Users')),
             ],
             options={
-                'verbose_name': 'Likert Question',
+                'verbose_name': 'Open-Ended Question',
+                'verbose_name_plural': 'Open-Ended Questions',
                 'ordering': ['order'],
-                'verbose_name_plural': 'Likert Questions',
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='LikertResponse',
+            name='OpenEndedResponse',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
-                ('selected_option', models.PositiveIntegerField(choices=[('Strongly Disagree', 1), ('Disagree', 2), ('Neither Agree nor Disagree', 3), ('Agree', 4), ('Strongly Agree', 5)])),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('response', models.TextField()),
                 ('submitted_on', models.DateTimeField(auto_now_add=True)),
-                ('question', models.ForeignKey(to='survey.LikertQuestion')),
+                ('question', models.ForeignKey(to='survey.OpenEndedQuestion')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name': 'Multiple Choice Response',
-                'verbose_name_plural': 'Multiple Choice Responses',
+                'verbose_name': 'Open-Ended Response',
+                'verbose_name_plural': 'Open-Ended Responses',
             },
             bases=(models.Model,),
         ),

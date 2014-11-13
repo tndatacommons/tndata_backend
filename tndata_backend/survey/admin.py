@@ -1,6 +1,9 @@
 from django.contrib import admin
 from . import models
 
+# TODO: Make a QusetionAdmin base class with
+# list_display = ('text', 'order', 'available')
+
 
 class MultipleChoiceResponseOptionInline(admin.TabularInline):
     model = models.MultipleChoiceResponseOption
@@ -17,6 +20,16 @@ admin.site.register(models.MultipleChoiceQuestion, MultipleChoiceQuestionAdmin)
 class MultipleChoiceResponseAdmin(admin.ModelAdmin):
     list_display = ('question', 'selected_option', 'submitted_on')
 admin.site.register(models.MultipleChoiceResponse, MultipleChoiceResponseAdmin)
+
+
+class OpenEndedQuestionAdmin(admin.ModelAdmin):
+    list_display = ('text', 'order', 'available')
+admin.site.register(models.OpenEndedQuestion, OpenEndedQuestionAdmin)
+
+
+class OpenEndedResponseAdmin(admin.ModelAdmin):
+    list_display = ('question', 'response', 'submitted_on')
+admin.site.register(models.OpenEndedResponse, OpenEndedResponseAdmin)
 
 
 class GoalAdmin(admin.ModelAdmin):

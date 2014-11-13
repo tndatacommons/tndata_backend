@@ -52,6 +52,37 @@ class MultipleChoiceResponse(models.Model):
         verbose_name_plural = "Multiple Choice Responses"
 
 
+class OpenEndedQuestion(models.Model):
+    """An Open-Ended Question Allows for a plain-text response."""
+
+    text = models.TextField(unique=True, help_text="The text of the question")
+    order = models.IntegerField(default=0, help_text="Ordering of questions")
+    available = models.BooleanField(default=True, help_text="Available to Users")
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        ordering = ["order"]
+        verbose_name = "Open-Ended Question"
+        verbose_name_plural = "Open-Ended Questions"
+
+
+class OpenEndedResponse(models.Model):
+    """A User's response to an `OpenEndedQuestion`."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    question = models.ForeignKey(OpenEndedQuestion)
+    response = models.TextField()
+    submitted_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{}".format(self.response)
+
+    class Meta:
+        verbose_name = "Open-Ended Response"
+        verbose_name_plural = "Open-Ended Responses"
+
+
 class Goal(models.Model):
     CATEGORIES = (
         ('lifegoal', 'Life Goal'),
@@ -75,7 +106,11 @@ class LikertQuestion(models.Model):
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
     """
-    goal = models.ForeignKey(Goal, null=True)  # TODO: Make a M2M so we can re-use certain questions for different goals.
+    goal = models.ManyToManyField(
+        Goal,
+        null=True,
+        help_text="Attach this question to one or more Goals"
+    )
     text = models.TextField(unique=True, help_text="The text of the question")
     order = models.IntegerField(default=0, help_text="Ordering of questions")
     available = models.BooleanField(default=True, help_text="Available to Users")
@@ -109,6 +144,7 @@ class LikertResponse(models.Model):
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    goal = models.ForeignKey(Goal)
     question = models.ForeignKey(LikertQuestion)
     selected_option = models.PositiveIntegerField(choices=LIKERT_CHOICES)
     submitted_on = models.DateTimeField(auto_now_add=True)
