@@ -2,11 +2,8 @@ from django.conf import settings
 from django.db import models
 
 
-# TODO: Make an abstract base Question model.
-
-class MultipleChoiceQuestion(models.Model):
-    """A Question that contains multiple choices for a response."""
-
+class BaseQuestion(models.Model):
+    """A Base class for a Question."""
     text = models.TextField(unique=True, help_text="The text of the question")
     order = models.IntegerField(default=0, help_text="Ordering of questions")
     available = models.BooleanField(default=True, help_text="Available to Users")
@@ -15,7 +12,14 @@ class MultipleChoiceQuestion(models.Model):
         return self.text
 
     class Meta:
-        ordering = ["order"]
+        abstract = True
+        ordering = ['order']
+
+
+class MultipleChoiceQuestion(BaseQuestion):
+    """A Question that contains multiple choices for a response."""
+
+    class Meta:
         verbose_name = "Multiple Choice Question"
         verbose_name_plural = "Multiple Choice Questions"
 
@@ -52,18 +56,10 @@ class MultipleChoiceResponse(models.Model):
         verbose_name_plural = "Multiple Choice Responses"
 
 
-class OpenEndedQuestion(models.Model):
+class OpenEndedQuestion(BaseQuestion):
     """An Open-Ended Question Allows for a plain-text response."""
 
-    text = models.TextField(unique=True, help_text="The text of the question")
-    order = models.IntegerField(default=0, help_text="Ordering of questions")
-    available = models.BooleanField(default=True, help_text="Available to Users")
-
-    def __str__(self):
-        return self.text
-
     class Meta:
-        ordering = ["order"]
         verbose_name = "Open-Ended Question"
         verbose_name_plural = "Open-Ended Questions"
 
@@ -101,7 +97,7 @@ class Goal(models.Model):
         verbose_name_plural = "Goals"
 
 
-class LikertQuestion(models.Model):
+class LikertQuestion(BaseQuestion):
     """A five-level likert item/question
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
@@ -111,15 +107,8 @@ class LikertQuestion(models.Model):
         null=True,
         help_text="Attach this question to one or more Goals"
     )
-    text = models.TextField(unique=True, help_text="The text of the question")
-    order = models.IntegerField(default=0, help_text="Ordering of questions")
-    available = models.BooleanField(default=True, help_text="Available to Users")
-
-    def __str__(self):
-        return self.text
 
     class Meta:
-        ordering = ["order"]
         verbose_name = "Likert Question"
         verbose_name_plural = "Likert Questions"
 
