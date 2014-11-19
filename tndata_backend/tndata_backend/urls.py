@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from django.views.generic import TemplateView
 
 from rest_framework import routers
 from diary.api import FeelingViewSet
@@ -21,4 +22,5 @@ urlpatterns = patterns('',
         namespace='rest_framework')
     ),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^$', TemplateView.as_view(template_name="index.html")),
 )
