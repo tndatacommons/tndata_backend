@@ -2,6 +2,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
 from rest_framework import routers
+from diary.api import FeelingViewSet
 from userprofile.api import UserViewSet, UserProfileViewSet
 
 
@@ -9,6 +10,7 @@ from userprofile.api import UserViewSet, UserProfileViewSet
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
+router.register(r'diary/feelings', FeelingViewSet)
 
 
 urlpatterns = patterns('',
