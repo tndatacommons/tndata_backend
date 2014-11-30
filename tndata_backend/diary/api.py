@@ -3,12 +3,12 @@ from . import models
 
 
 # Serializers define API representation
-class FeelingSerializer(serializers.HyperlinkedModelSerializer):
+class EntrySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = models.Feeling
+        model = models.Entry
         fields = ('user', 'rank', 'notes', 'submitted_on')
 
 
-class FeelingViewSet(viewsets.ModelViewSet):
-    queryset = models.Feeling.objects.all()
-    serializer_class = FeelingSerializer
+class EntryViewSet(viewsets.ModelViewSet):
+    queryset = models.Entry.objects.all()
+    serializer_class = EntrySerializer

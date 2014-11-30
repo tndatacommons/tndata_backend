@@ -2,8 +2,8 @@ from django.conf import settings
 from django.db import models
 
 
-class Feeling(models.Model):
-    """A Feeling at a point in time."""
+class Entry(models.Model):
+    """An Entry in the Diary"""
 
     GREAT = 5
     WELL = 4
@@ -32,5 +32,5 @@ class Feeling(models.Model):
 
     class Meta:
         ordering = ['submitted_on']
-        verbose_name = "Feeling"
-        verbose_name_plural = "Feelings"
+        verbose_name = "Entry"
+        verbose_name_plural = "Entries"

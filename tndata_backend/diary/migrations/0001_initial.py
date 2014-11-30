@@ -13,18 +13,18 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Feeling',
+            name='Entry',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True, serialize=False)),
-                ('rank', models.PositiveIntegerField(db_index=True, choices=[(5, 'Great'), (4, 'Well'), (3, 'Just Fine'), (2, 'Bad'), (1, 'Awful')])),
+                ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
+                ('rank', models.PositiveIntegerField(choices=[(5, 'Great'), (4, 'Well'), (3, 'Just Fine'), (2, 'Bad'), (1, 'Awful')], db_index=True)),
                 ('notes', models.TextField(help_text='Notes on why you are feeling this way.', blank=True)),
-                ('submitted_on', models.DateTimeField(db_index=True, auto_now_add=True)),
+                ('submitted_on', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name_plural': 'Feelings',
-                'verbose_name': 'Feeling',
+                'verbose_name_plural': 'Entries',
                 'ordering': ['submitted_on'],
+                'verbose_name': 'Entry',
             },
             bases=(models.Model,),
         ),
