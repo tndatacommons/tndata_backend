@@ -1,0 +1,37 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="greeting-tag">
+
+  <!-- outermost template defines the Shadow DOM -->
+  <template>
+    <ul>
+      <!-- this inner template defines a dom fragment, expanded by the expression -->
+      <template repeat="{{s in salutations}}">
+        <li>
+          {{s.what}}: <input type="text" value="{{s.who}}"><br/>
+          <code>{ what: {{ s.what }}: who: {{s.who}} }</code>
+        </li>
+      </template>
+    </ul>
+    <button on-click="{{updateModel}}">Update Model</button>
+  </template>
+  <script>
+  Polymer('greeting-tag', {
+    ready: function() {
+      // just define some data (could come from an api)
+      this.salutations = [
+        {what: 'Hello', who: 'World'},
+        {what: 'Goodbye', who: 'DOM APIs'},
+        {what: 'Hello', who: 'Declarative'},
+        {what: 'Goodbye', who: 'Imperative'}
+      ];
+      this.alternates = ['Hello', 'Hola', 'Howdy'];
+      this.current = 0;
+    },
+    updateModel: function() {
+      this.current = (this.current + 1) % this.alternates.length;
+      this.salutations[0].what = this.alternates[this.current];
+    }
+  });
+  </script>
+</polymer-element>
