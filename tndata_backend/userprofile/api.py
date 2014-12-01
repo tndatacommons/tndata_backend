@@ -3,6 +3,9 @@ from rest_framework import permissions, serializers, viewsets
 
 from . import models
 
+# TODO: Need an endpoint that allows signup and generates/returns a token.
+# TODO: Need a login endpoint? (e.g. check username/password or a token?)
+
 
 class IsSelf(permissions.BasePermission):
     """This permission checks for a User/UserProfile's owner."""
