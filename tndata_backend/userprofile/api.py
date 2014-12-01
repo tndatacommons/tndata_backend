@@ -23,7 +23,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated, IsSelf]
+    permission_classes = [IsSelf]  # NOTE: default perms require authentication
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
@@ -40,7 +40,7 @@ class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = models.UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated, IsSelf]
+    permission_classes = [IsSelf]  # NOTE: default perms require authentication
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
