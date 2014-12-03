@@ -34,3 +34,7 @@ class Entry(models.Model):
         ordering = ['submitted_on']
         verbose_name = "Entry"
         verbose_name_plural = "Entries"
+
+    @property
+    def rank_display(self):
+        return self.get_rank_display()

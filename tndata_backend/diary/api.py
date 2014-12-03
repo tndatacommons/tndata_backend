@@ -11,9 +11,10 @@ class IsEntryOwner(permissions.BasePermission):
 
 class EntrySerializer(serializers.HyperlinkedModelSerializer):
     """A Serializer for `diary.models.Entry`."""
+    rank_display = serializers.CharField(source='rank_display', read_only=True)
     class Meta:
         model = models.Entry
-        fields = ('id', 'user', 'rank', 'notes', 'submitted_on')
+        fields = ('id', 'user', 'rank', 'rank_display', 'notes', 'submitted_on')
 
 
 class EntryViewSet(viewsets.ModelViewSet):
