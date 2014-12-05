@@ -19,7 +19,7 @@ class IsSelf(permissions.BasePermission):
             return obj == request.user
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('id', 'username', 'email', 'is_staff')
@@ -34,7 +34,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(id=self.request.user.id)
 
 
-class UserProfileSerializer(serializers.HyperlinkedModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.UserProfile
         fields = (

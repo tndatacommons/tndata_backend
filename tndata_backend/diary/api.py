@@ -9,7 +9,7 @@ class IsEntryOwner(permissions.BasePermission):
         return obj.user == request.user
 
 
-class EntrySerializer(serializers.HyperlinkedModelSerializer):
+class EntrySerializer(serializers.ModelSerializer):
     """A Serializer for `diary.models.Entry`."""
     rank_display = serializers.CharField(source='rank_display', read_only=True)
     class Meta:
