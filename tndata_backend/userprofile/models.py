@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from rest_framework.authtoken.models import Token
+
 
 class UserProfile(models.Model):
     """A *profile* for a single user.
@@ -45,7 +47,14 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='create_userprofile')
 def create_userprofile(sender, **kwargs):
     """Create a UserProfile whenever a User is created."""
-    if kwargs.get('created', False):
+    if kwargs.get('created', False) and 'instance' in kwargs:
+        user = kwargs['instance']
+
+        # Create the user profile.
         UserProfile.objects.using(kwargs.get("using", "default")).create(
-            user=kwargs.get('instance')
+            user=user
         )
+
+        # Perhaps this doesn't belong here, but let's go ahead and create a
+        # Token as well. Accessible as `user.auth_token.key`
+        Token.objects.create(user=user)
