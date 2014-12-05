@@ -23,7 +23,7 @@ class EntryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsEntryOwner]  # NOTE: default perms require authentication
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return self.queryset.filter(user=self.request.user).order_by("-submitted_on")
 
     def pre_save(self, obj):
         # TODO: Figure out a better way to assign default ownership when
