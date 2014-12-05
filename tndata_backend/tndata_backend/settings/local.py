@@ -15,3 +15,7 @@ DATABASES = {
 MIDDLEWARE_CLASSES += (
     'tndata_backend.middleware.PolymerDevMiddleware',
 )
+
+# django-core-headers
+# https://github.com/ottoyiu/django-cors-headers/
+CORS_ORIGIN_ALLOW_ALL = True

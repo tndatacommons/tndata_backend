@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 
 from rest_framework import routers
+from rest_framework.authtoken import views as rf_auth_views
+
 from diary.api import EntryViewSet
 from userprofile.api import UserViewSet, UserProfileViewSet
 
@@ -15,6 +17,8 @@ router.register(r'diary/entries', EntryViewSet)
 
 
 urlpatterns = patterns('',
+    # TODO: override the ObtainAuthToken view class to customize what's returned, here?
+    url(r'^api/token-auth/', rf_auth_views.obtain_auth_token),
     url(r'^api/', include(router.urls)),
     url(
         r'^api-auth/',
