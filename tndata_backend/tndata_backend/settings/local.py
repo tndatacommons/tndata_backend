@@ -16,6 +16,10 @@ MIDDLEWARE_CLASSES += (
     'tndata_backend.middleware.PolymerDevMiddleware',
 )
 
+INSTALLED_APPS = INSTALLED_APPS + (
+    'debug_toolbar',
+)
+
 # django-core-headers
 # https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = True
