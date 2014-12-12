@@ -20,8 +20,11 @@ urlpatterns = patterns('',
     url(r'^api/', include(router.urls)),
     url(
         r'^api-auth/',
-        include('rest_framework.urls',
-        namespace='rest_framework')
+        include('rest_framework.urls', namespace='rest_framework')
+    ),
+    url(
+        r'^diary/',
+        include('diary.urls', namespace='diary')
     ),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', TemplateView.as_view(template_name="index.html")),
