@@ -15,3 +15,7 @@ class RulesDataView(View):
 
     def get(self, request):
         return JsonResponse(entry_rule_data())
+
+
+# TODO: Probably need a RulesView with .get .post methods to save rules that
+# are created (and will probably need a RulesForm... depends on how we store these)
