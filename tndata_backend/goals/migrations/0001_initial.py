@@ -15,14 +15,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Behavior',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
-                ('name', models.CharField(db_index=True, max_length=128)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=128, db_index=True)),
                 ('summary', models.TextField()),
                 ('description', models.TextField()),
             ],
             options={
-                'verbose_name': 'Behavior',
                 'ordering': ['goal', 'name'],
+                'verbose_name': 'Behavior',
                 'verbose_name_plural': 'Behaviors',
             },
             bases=(models.Model,),
@@ -30,18 +30,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BehaviorStep',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
-                ('name', models.CharField(db_index=True, max_length=128)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=128, db_index=True)),
                 ('description', models.TextField()),
-                ('reminder_type', models.CharField(choices=[('temporal', 'Temporal'), ('geolocation', 'Geolocation')], max_length=32)),
-                ('default_time', models.DateTimeField(blank=True)),
-                ('default_repeat', models.CharField(choices=[('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], max_length=32, blank=True)),
+                ('reminder_type', models.CharField(max_length=32, choices=[('temporal', 'Temporal'), ('geolocation', 'Geolocation')], blank=True)),
+                ('default_time', models.TimeField(null=True, blank=True)),
+                ('default_repeat', models.CharField(max_length=32, choices=[('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True)),
                 ('default_location', models.CharField(max_length=32, blank=True)),
                 ('behavior', models.ForeignKey(to='goals.Behavior')),
             ],
             options={
-                'verbose_name': 'Behavior Step',
                 'ordering': ['name'],
+                'verbose_name': 'Behavior Step',
                 'verbose_name_plural': 'Behavior Steps',
             },
             bases=(models.Model,),
@@ -49,13 +49,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ChosenBehavior',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
                 ('date_selected', models.DateTimeField(db_index=True, auto_now_add=True)),
                 ('behavior', models.ForeignKey(to='goals.Behavior')),
             ],
             options={
-                'verbose_name': 'Chosen Behavior',
                 'ordering': ['date_selected'],
+                'verbose_name': 'Chosen Behavior',
                 'verbose_name_plural': 'Chosen Behaviors',
             },
             bases=(models.Model,),
@@ -63,14 +63,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CompletedBehaviorStep',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
                 ('date_completed', models.DateTimeField(db_index=True, auto_now_add=True)),
                 ('behavior', models.ForeignKey(to='goals.Behavior')),
                 ('behavior_step', models.ForeignKey(to='goals.BehaviorStep')),
             ],
             options={
-                'verbose_name': 'Chosen Behavior Step',
                 'ordering': ['date_completed'],
+                'verbose_name': 'Chosen Behavior Step',
                 'verbose_name_plural': 'Chosen Behavior Steps',
             },
             bases=(models.Model,),
@@ -78,17 +78,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CustomReminder',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
-                ('reminder_type', models.CharField(choices=[('temporal', 'Temporal'), ('geolocation', 'Geolocation')], max_length=32)),
-                ('time', models.DateTimeField(blank=True)),
-                ('repeat', models.CharField(choices=[('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], max_length=32, blank=True)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
+                ('reminder_type', models.CharField(max_length=32, choices=[('temporal', 'Temporal'), ('geolocation', 'Geolocation')], blank=True)),
+                ('time', models.TimeField(null=True, blank=True)),
+                ('repeat', models.CharField(max_length=32, choices=[('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True)),
                 ('location', models.CharField(max_length=32, blank=True)),
                 ('behavior_step', models.ForeignKey(to='goals.BehaviorStep')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'verbose_name': 'Custom Reminder',
                 'ordering': ['behavior_step'],
+                'verbose_name': 'Custom Reminder',
                 'verbose_name_plural': 'Custom Reminders',
             },
             bases=(models.Model,),
@@ -96,16 +96,16 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Goal',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(primary_key=True, auto_created=True, serialize=False, verbose_name='ID')),
                 ('rank', models.PositiveIntegerField(unique=True)),
-                ('name', models.CharField(db_index=True, max_length=128)),
+                ('name', models.CharField(max_length=128, db_index=True)),
                 ('explanation', models.TextField()),
                 ('max_neef_tags', models.TextField()),
                 ('sdt_major', models.CharField(max_length=128)),
             ],
             options={
-                'verbose_name': 'Goal',
                 'ordering': ['rank', 'name'],
+                'verbose_name': 'Goal',
                 'verbose_name_plural': 'Goals',
             },
             bases=(models.Model,),
