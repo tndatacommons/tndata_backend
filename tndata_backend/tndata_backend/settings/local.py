@@ -4,13 +4,16 @@ from .base import *
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-DATABASES = {
+DATABASES = {  # NOTE: Currently requires Postgresql.app to be running.
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'tndata',
+        'USER': 'brad',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 MIDDLEWARE_CLASSES += (
     'tndata_backend.middleware.PolymerDevMiddleware',
