@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from djorm_pgarray import fields as pg_fields
 
 
 class Goal(models.Model):
@@ -7,7 +8,7 @@ class Goal(models.Model):
     rank = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=128, db_index=True)
     explanation = models.TextField()
-    max_neef_tags = models.TextField()  # TODO: PG array field?
+    max_neef_tags = pg_fields.TextArrayField()
     sdt_major = models.CharField(max_length=128)
 
     def __str__(self):
