@@ -2,10 +2,6 @@ from django.conf import settings
 from django.db import models
 
 
-# TODO: NEed a model to store rules (or a single rule?)
-# TODO: Need a way to query/run all existing rules (see rules.run_rules)
-
-
 class Entry(models.Model):
     """An Entry in the Diary"""
 

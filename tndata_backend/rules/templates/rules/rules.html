@@ -1,12 +1,14 @@
 {% load static from staticfiles %}
 <!DOCTYPE html>
+
+{# TODO: Build a base template and use bootstrap or foundation #}
+
 <html>
 <head>
-  {#<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>#}
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
   <script src="{% static "business-rules-ui/lib/business-rules/conditions-builder.js" %}"></script>
   <script src="{% static "business-rules-ui/lib/business-rules/actions-builder.js" %}"></script>
-  <script src="{% static "diary/js/rules.js" %}" type="text/javascript"></script>
+  <script src="{% static "rules/js/rules.js" %}" type="text/javascript"></script>
   <style type="text/css">
     body {margin:0; padding:2em;font-size:14pt;color:#333;font-family:Helvetica;}
     #conditions,#actions {margin:1em auto; padding: 1em; border: 1px solid #ccc;}
@@ -32,7 +34,7 @@
 </head>
 <body>
   <h1>Diary App Business Rules</h1>
-  <a href="{% url 'diary:rules-data' %}">See the rules data</a>
+  <a href="{% url 'rules:rules-data' %}">See the rules data</a>
 
   <h2>When these conditions are met...</h2>
   <div id="conditions"></div>

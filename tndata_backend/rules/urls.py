@@ -11,7 +11,7 @@ urlpatterns = patterns('',
     ),
     url(
         r'^rules/$',
-        TemplateView.as_view(template_name="diary/rules.html"),
+        TemplateView.as_view(template_name="rules/rules.html"),
         name='rules'
     ),
 )

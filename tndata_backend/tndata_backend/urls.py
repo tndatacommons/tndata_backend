@@ -33,8 +33,8 @@ urlpatterns = patterns('',
         include('rest_framework.urls', namespace='rest_framework')
     ),
     url(
-        r'^diary/',
-        include('diary.urls', namespace='diary')
+        r'^rules/',
+        include('rules.urls', namespace='rules')
     ),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', TemplateView.as_view(template_name="index.html")),
