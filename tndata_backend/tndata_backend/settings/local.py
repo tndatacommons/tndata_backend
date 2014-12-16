@@ -10,7 +10,7 @@ DATABASES = {  # NOTE: Currently requires Postgresql.app to be running.
         'NAME': 'tndata',
         'USER': 'brad',
         'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
