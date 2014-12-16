@@ -17,7 +17,7 @@ class TestGoal(TestCase):
             rank=1,
             name='Test Goal',
             explanation='Some explanation!',
-            max_neef_tags=['subsistence, protection, affection'],
+            max_neef_tags=['subsistence', 'protection', 'affection'],
             sdt_major='Autonomy'
         )
 
@@ -38,7 +38,7 @@ class TestBehavior(TestCase):
             rank=1,
             name='Test Goal',
             explanation='Some explanation!',
-            max_neef_tags=['subsistence, protection, affection'],
+            max_neef_tags=['subsistence', 'protection', 'affection'],
             sdt_major='Autonomy'
         )
         self.behavior = Behavior.objects.create(
@@ -66,7 +66,7 @@ class TestBehaviorStep(TestCase):
             rank=1,
             name='Test Goal',
             explanation='Some explanation!',
-            max_neef_tags=['subsistence, protection, affection'],
+            max_neef_tags=['subsistence', 'protection', 'affection'],
             sdt_major='Autonomy'
         )
         self.behavior = Behavior.objects.create(
@@ -120,7 +120,7 @@ class TestCustomReminder(TestCase):
             rank=1,
             name='Test Goal',
             explanation='Some explanation!',
-            max_neef_tags=['subsistence, protection, affection'],
+            max_neef_tags=['subsistence', 'protection', 'affection'],
             sdt_major='Autonomy'
         )
         self.behavior = Behavior.objects.create(
@@ -162,7 +162,7 @@ class TestCustomReminder(TestCase):
 
     def test__str__(self):
         expected = "Custom Reminder for Test Behavior Step"
-        actual = "{}".format(self.reminder)
+        actual = "{0}".format(self.reminder)
         self.assertEqual(expected, actual)
 
 
@@ -174,7 +174,7 @@ class TestChosenBehavior(TestCase):
             rank=1,
             name='Test Goal',
             explanation='Some explanation!',
-            max_neef_tags=['subsistence, protection, affection'],
+            max_neef_tags=['subsistence', 'protection', 'affection'],
             sdt_major='Autonomy'
         )
         self.behavior = Behavior.objects.create(
@@ -215,7 +215,7 @@ class TestCompletedBehaviorStep(TestCase):
             rank=1,
             name='Test Goal',
             explanation='Some explanation!',
-            max_neef_tags=['subsistence, protection, affection'],
+            max_neef_tags=['subsistence', 'protection', 'affection'],
             sdt_major='Autonomy'
         )
         self.behavior = Behavior.objects.create(
