@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'diary',
     'goals',
+    'rules',
     'survey',
     'userprofile',
 )
