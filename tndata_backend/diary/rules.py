@@ -10,6 +10,9 @@ from business_rules.variables import (
     string_rule_variable
 )
 
+from rules.rulesets import ModelRuleset, ruleset
+from . models import Entry
+
 
 class EntryVariables(BaseVariables):
 
@@ -43,6 +46,14 @@ class EntryActions(BaseActions):
     def send_notification(self):
         args = (self.entry.id, self.entry)
         print("Have a great Weekend, Entry {0}) {1}".format(*args))
+
+
+class EntryRuleset(ModelRuleset):
+    model = Entry  # OR, queryset = Entry.objects.filter(...)
+    variables = EntryVariables
+    actions = EntryActions
+    stop_on_first_trigger = False
+ruleset.register('diary', EntryRuleset)
 
 
 def entry_rule_data():
