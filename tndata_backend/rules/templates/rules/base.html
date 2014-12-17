@@ -1,0 +1,42 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <script src="{% static "business-rules-ui/lib/business-rules/conditions-builder.js" %}"></script>
+  <script src="{% static "business-rules-ui/lib/business-rules/actions-builder.js" %}"></script>
+  <style type="text/css">
+    body {margin:0; padding:2em;font-size:14pt;color:#333;font-family:Helvetica;}
+    #conditions,#actions {margin:1em auto; padding: 1em; border: 1px solid #ccc;}
+    .add, .add-rule, .add-condition, .remove {
+      text-decoration: none;
+      display: inline-block;
+      color: white;
+      background-color: #888;
+      border: 1px solid #333;
+      margin:.5em 1em .5em 0;
+      padding: .25em;
+      font-size: 10pt;
+    }
+    .add {background-color: #5f5;}
+    .remove {background-color: #f55;}
+    .rule select, .rule input {margin-right: .5em;}
+    .all-any-wrapper select, .all-any-wrapper h4 {display:inline;margin-right:.5em;}
+    #results {display:none;}
+    #rules-container {margin:0;padding:0;position:relative;}
+    .rules-section{padding:.5em;background-color:#eee; border: 1px solid #ccc;}
+    pre.code {
+      padding:1em; margin:1em 0; background-color: #eee;border: 1px solid #ccc;
+      overflow:auto;font-size:12pt;
+    }
+    .nav {padding:1em; margin:.5em auto; border-bottom: 1px solid #ccc;}
+  </style>
+  {% block extrahead %}{% endblock %}
+</head>
+<body>
+  <h1>Business Rules</h1>
+  <div class="nav">(<a href="{% url 'rules:rules-data' %}">See the rules data</a>)</div>
+  {% block content %}
+  {% endblock %}
+</body>
+</html>
