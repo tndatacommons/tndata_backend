@@ -1,0 +1,14 @@
+{% extends 'rules/base.html' %}
+{% load static from staticfiles %}
+
+
+{% block content %}
+  <p><a href="{% url 'rules:add-rule' %}">Add Rule</a></p>
+  <ul>
+  {% for rule in rules %}
+    <li>{{ rule }} ({{ rule.created }}) <a href="#">delete</a>
+      <pre><code>{{ rule.build_rules|pprint }}</code></pre>
+    </li>
+  {% endfor %}
+  </ul>
+{% endblock %}

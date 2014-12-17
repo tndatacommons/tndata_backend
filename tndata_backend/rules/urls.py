@@ -10,8 +10,13 @@ urlpatterns = patterns('',
         name='rules-data'
     ),
     url(
-        r'^$',
+        r'^add/$',
         TemplateView.as_view(template_name="rules/rules.html"),
+        name='add-rule'
+    ),
+    url(
+        r'$',
+        views.RulesView.as_view(),
         name='rules'
     ),
 )
