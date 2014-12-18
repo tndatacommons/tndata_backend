@@ -1,3 +1,5 @@
+import json
+
 from django.db import models
 from jsonfield import JSONField
 
@@ -20,12 +22,22 @@ class Rule(models.Model):
         verbose_name = "Rule"
         verbose_name_plural = "Rules"
 
+    @property
+    def _conditions(self):
+        """Return json-decoded versions of the conditions."""
+        return json.loads(self.conditions)
+
+    @property
+    def _actions(self):
+        """Return json-decoded versions of the actions."""
+        return json.loads(self.actions)
+
     @models.permalink
     def get_absolute_url(self):
         return ('rules:detail', [str(self.id)])
 
     def build_rules(self):
-        return [{'conditions': self.conditions, 'actions': self.actions}]
+        return [{'conditions': self._conditions, 'actions': self._actions}]
 
 
 # TODO: Helper function to query all Rules for a given app, model?
