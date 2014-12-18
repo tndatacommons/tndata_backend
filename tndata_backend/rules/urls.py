@@ -15,6 +15,11 @@ urlpatterns = patterns('',
         name='add-rule'
     ),
     url(
+        r'(?P<pk>\d+)/$',
+        views.RuleDetailView.as_view(),
+        name='detail'
+    ),
+    url(
         r'$',
         views.RulesView.as_view(),
         name='rules'

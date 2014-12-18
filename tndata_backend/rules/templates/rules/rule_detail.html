@@ -1,0 +1,39 @@
+{% extends 'rules/base.html' %}
+{% load static from staticfiles %}
+
+{% block extrahead %}
+<script>
+$(document).ready(function() {
+  var delete_url = "{{ object.get_absolute_url }}";
+  var redirect_url = "{% url 'rules:rules' %}";
+  var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+
+  $("#delete").click(function(e) {
+    e.preventDefault();
+    $.ajax({
+      type: "POST", // Still too hard to DELETE with django :(
+      url: delete_url,
+      //data: {csrftoken: csrftoken, redirect: redirect_url},
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+      }
+    })
+    .done(function(response) {
+      console.log(response);
+      window.location = redirect_url;
+    });
+  });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+  <h2>
+    {{ object.app_name }}
+    {% if object.rule_name %}/ {{ object.rule_name }}{% endif %}
+  </h2>
+  <p>Created on {{ object.created }}. Updated on {{ object.modified }}.</p>
+  <pre><code>{{ rule.build_rules|pprint }}</code></pre>
+  <p><button id="delete" data-pk="{{ object.pk }}">Delete</button></p>
+  {% csrf_token %}
+{% endblock %}

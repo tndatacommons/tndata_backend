@@ -44,7 +44,7 @@ $(document).ready(function() {
         var section = $('<form></form>').addClass("rules-section");
         section.append(
             $('<h2></h2>').text(key),
-            $('<label></label>').prop('for', key + '-name').text('Name'),
+            $('<label></label>').prop('for', key + '-name').text('Name: '),
             $('<input>').prop('type', 'name').prop('id', key + '-name'),
             $('<div></div>')
                 .addClass(key + '-conditions')

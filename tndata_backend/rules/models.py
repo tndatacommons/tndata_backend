@@ -20,6 +20,10 @@ class Rule(models.Model):
         verbose_name = "Rule"
         verbose_name_plural = "Rules"
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('rules:detail', [str(self.id)])
+
     def build_rules(self):
         return [{'conditions': self.conditions, 'actions': self.actions}]
 

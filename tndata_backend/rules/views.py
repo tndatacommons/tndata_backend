@@ -2,9 +2,11 @@
 These views are for internal organizational use.
 
 """
-from django.http import JsonResponse
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import View
+from django.views.generic.detail import DetailView
 
 from . models import Rule
 from . import rulesets
@@ -26,7 +28,7 @@ class RulesView(View):
         }
         return render(request, 'rules/index.html', context)
 
-    # TODO:
+    # TODO: /rules/ --- POST: create new rule.
     #def post(self, request, *args, **kwargs):
         #form = self.form_class(request.POST)
         #if request.is_ajax() and form.is_valid():
@@ -34,9 +36,12 @@ class RulesView(View):
         #return render(request, self.template_name, {'form': form})
 
 
-# TODO: Probably need a RulesView with .get .post methods to save rules that
-# are created (and will probably need a RulesForm... depends on how we store these)
-#
-# /rules/       --- GET: list existing rules with links to delete.
-#               --- POST: create new rule.
-# /rules/<id>   --- GET: view, DELETE: remove
+class RuleDetailView(DetailView):
+    model = Rule
+
+    def post(self, request, *args, **kwargs):
+        """DELETE a rule. It's still do hard to build a `delete` method :( """
+        obj = self.get_object()
+        messages.success(request, "Deleted: {0}".format(obj))
+        obj.delete()
+        return JsonResponse({})
