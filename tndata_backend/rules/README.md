@@ -19,7 +19,7 @@ Creating Rules
 For an app to expose variables and actions, there must be a class to do that in
 a `rules` module.
 
-*TODO*: Need some way to hook those up here. (a setting? magic?)
+*TODO*: Write up description for the ModelRuleSet model (see its __doc__)
 
 
 License
