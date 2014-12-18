@@ -3,20 +3,16 @@ var submit, allData;
 $(document).ready(function() {
 
     function initializeConditions(key, data) {
-        console.log("initializeConditions", data);
         var selector = '.' + key + '-conditions';
         $(selector).conditionsBuilder(data)
     }
 
     function initializeActions(key, data) {
-        console.log("initializeActions");
         var selector = '.' + key + '-actions';
         $(selector).actionsBuilder(data);
     }
 
-    // Just Captures the submit event and displays data instead.
     function initializeForm() {
-        console.log("initializeForm");
         $("button[type=submit]").click(function(e) {
             e.preventDefault();
             var key = $(this).data('key');
@@ -31,12 +27,26 @@ $(document).ready(function() {
                 $(actions).actionsBuilder("data")
             );
 
-            $("#conditions-code").text(conditions_code);
-            $("#actions-code").text(actions_code);
-            $("#results").show();
-            console.log("CONDITIONS", conditions_code);
-            console.log("ACTIONS", actions_code);
-            console.log("NAME: ", name);
+            var post_data = {
+                app_name: key,
+                rule_name: name,
+                conditions: conditions_code,
+                actions: actions_code,
+            }
+            var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
+
+            // DO the AJAX request to create the Rule.
+            $.ajax({
+              type: "POST",
+              url: '/rules/',
+              data: post_data,
+              beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+              }
+            })
+            .done(function(response) {
+              window.location = '/rules/';
+            });
         });
     }
 
@@ -82,7 +92,6 @@ $(document).ready(function() {
     // Fire off Ajax Request to get Variable/Action data.
     $.get("/rules/data/", function(data) {
         allData = data;
-        console.log("received rules data", data);
         init();
     });
 

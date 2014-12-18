@@ -8,22 +8,19 @@
 
 
 {% block content %}
+  {% csrf_token %} {# NOTE: Needed to POST via AJAX #}
   {% comment %}
 
-    The JS will build the structure of this page.
-
+    The included JS lib will build the structure of this page.
+    ----------------------------------
     div#rules-container
       div.rules-section
         h2. (app name)
+        label, input
         div.conditions
         div.actions
+        button
     ----------------------------------
-
-  <h2>When these conditions are met...</h2>
-  <div id="conditions"></div>
-
-  <h2>Do these actions...</h2>
-  <div id="actions"></div>
 
   {% endcomment %}
   <div id="rules-container"></div>
