@@ -1,5 +1,6 @@
 {% extends 'rules/base.html' %}
 {% load static from staticfiles %}
+{% load rules_tags %}
 
 {% block extrahead %}
 <script>
@@ -13,13 +14,11 @@ $(document).ready(function() {
     $.ajax({
       type: "POST", // Still too hard to DELETE with django :(
       url: delete_url,
-      //data: {csrftoken: csrftoken, redirect: redirect_url},
       beforeSend: function(xhr) {
         xhr.setRequestHeader("X-CSRFToken", csrftoken);
       }
     })
     .done(function(response) {
-      console.log(response);
       window.location = redirect_url;
     });
   });
@@ -32,8 +31,14 @@ $(document).ready(function() {
     {{ object.app_name }}
     {% if object.rule_name %}/ {{ object.rule_name }}{% endif %}
   </h2>
-  <p>Created on {{ object.created }}. Updated on {{ object.modified }}.</p>
-  <pre><code>{{ rule.build_rules|pprint }}</code></pre>
+  <p>Created on {{ object.created }}<br/>Updated on {{ object.modified }}</p>
+
+  <h3>Conditions</h3>
+  <pre><code>{{ rule|format_rule:"conditions"}}</code></pre>
+
+  <h3>Actions</h3>
+  <pre><code>{{ rule|format_rule:"actions"}}</code></pre>
+
   <p><button id="delete" data-pk="{{ object.pk }}">Delete</button></p>
   {% csrf_token %}
 {% endblock %}
