@@ -29,13 +29,38 @@
       padding:1em; margin:1em 0; background-color: #eee;border: 1px solid #ccc;
       overflow:auto;font-size:12pt;
     }
-    .nav {padding:1em; margin:.5em auto; border-bottom: 1px solid #ccc;}
+    .nav {padding:0; margin:0 auto; border-bottom: 1px solid #333;}
+    .nav a {
+      display: inline-block; margin:0; padding: .25em .5em; background-color: #333;
+      text-decoration: none; color: white;
+    }
+    #messages {border: 1px solid #aaa; margin:0 auto; padding:0;}
+    #messages li {margin:0;padding:.5em;}
+    #messages li.debug {border-color: #000; background-color: #eee; color: #888;}
+    #messages li.info {border-color: #00f; background-color: #eef; color: #008;}
+    #messages li.success {border-color: #0f0; background-color: #efe; color: #080;}
+    #messages li.warning{border-color: #fa0; background-color: #ffe; color: #850;}
+    #messages li.error {border-color: #00f; background-color: #eef; color: #008;}
   </style>
   {% block extrahead %}{% endblock %}
 </head>
 <body>
+  <div class="nav">
+    <a href="{% url 'rules:rules' %}">Rules</a>
+    <a href="{% url 'rules:add-rule' %}">+ Add Rule</a>
+    <a href="{% url 'rules:rules-data' %}">Rules Data</a>
+  </div>
+  {% if messages %}
+    <ul id="messages">
+      {% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+        {{ message }}
+       </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
   <h1>Business Rules</h1>
-  <div class="nav">(<a href="{% url 'rules:rules-data' %}">See the rules data</a>)</div>
   {% block content %}
   {% endblock %}
 </body>
