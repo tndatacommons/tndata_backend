@@ -43,6 +43,7 @@ class BehaviorStep(models.Model):
         ('geolocation', 'Geolocation')
     )
     REPEAT_CHOICES = (
+        ('never', 'Never'),
         ('daily', 'Every Day'),
         ('weekly', 'Every Week'),
         ('monthly', 'Every Month'),
