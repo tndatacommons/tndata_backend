@@ -1,10 +1,26 @@
+{% load static from staticfiles %}
 <!DOCTYPE html>
-<html>
-<head>
-  <title>{% block title %}TNData Demo{% endblock %}</title>
-  {% block head %}{% endblock %}
-</head>
-<body>
-  {% block body %}{% endblock %}
-</body>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}TNData Demo{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'foundation/css/normalize.css' %}" />
+    <link rel="stylesheet" href="{% static 'foundation/css/foundation.min.css' %}" />
+    <script src="{% static 'foundation/js/vendor/modernizr.js' %}"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div class="row">
+      <div class="large-12 columns">
+      {% block body %}{% endblock %}
+      </div>
+    </div>
+
+    <script src="{% static 'foundation/js/vendor/jquery.js' %}"></script>
+    <script src="{% static 'foundation/js/foundation.min.js' %}"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
 </html>

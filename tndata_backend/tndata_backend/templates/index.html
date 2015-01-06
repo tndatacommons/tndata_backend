@@ -1,13 +1,25 @@
-{% load static from staticfiles %}
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Demo</title>
-</head>
-  <body>
-    <h1>Demo</h1>
-    <ul>
-      <li><a href="/admin/">See the admin</a></li>
-      <li><a href="/api/">Browse the API</a></li>
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Demo{% endblock %}
+{% block body %}
+
+  <h1>hi.</h1>
+  <div class="panel">
+
+    <p>Hi, there. This is a placeholder page. See below for more links.</p>
+    <div class="row">
+      <div class="large-6 medium-6 columns">
+        <p>Right now these links are all that are currently available. You
+        need to be logged in to see these, too.</p>
+      </div>
+
+      <div class="large-6 medium-6 columns">
+        <ul>
+          <li><a href="/admin/">See the admin</a></li>
+          <li><a href="/api/">Browse the API</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div> {# end .panel #}
+{% endblock %}
