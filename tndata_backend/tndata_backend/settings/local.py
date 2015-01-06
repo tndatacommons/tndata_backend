@@ -15,9 +15,6 @@ DATABASES = {  # NOTE: Currently requires Postgresql.app to be running.
     }
 }
 
-MIDDLEWARE_CLASSES += (
-    'tndata_backend.middleware.PolymerDevMiddleware',
-)
 
 INSTALLED_APPS = INSTALLED_APPS + (
     'debug_toolbar',
