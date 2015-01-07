@@ -23,3 +23,6 @@ INSTALLED_APPS = INSTALLED_APPS + (
 # django-core-headers
 # https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = True
+
+# Rainbow-tests
+TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
