@@ -55,6 +55,7 @@ class InterestSerializer(serializers.ModelSerializer):
             'id', 'order', 'name', 'description', 'categories',
             'max_neef_tags', 'sdt_major'
         )
+        depth = 1
 
 
 class InterestViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,6 +65,7 @@ class InterestViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ActionSerializer(serializers.ModelSerializer):
     """A Serializer for `Action`."""
+    interests = InterestSerializer()
 
     class Meta:
         model = models.Action
@@ -71,6 +73,7 @@ class ActionSerializer(serializers.ModelSerializer):
             'id', 'interests', 'order', 'name', 'summary', 'description',
             'default_reminder_time', 'default_reminder_frequency',
         )
+        depth = 2
 
 
 class ActionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -84,6 +87,7 @@ class CustomReminderSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomReminder
         fields = ('id', 'user', 'action', 'time', 'frequency')
+        depth = 1
 
 
 class CustomReminderViewSet(viewsets.ModelViewSet):
@@ -98,6 +102,7 @@ class SelectedActionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.SelectedAction
         fields = ('id', 'user', 'action', 'date_selected')
+        depth = 1
 
 
 class SelectedActionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -112,6 +117,7 @@ class ActionTakenSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ActionTaken
         fields = ('id', 'user', 'selected_action', 'date_completed')
+        depth = 2
 
 
 class ActionTakenViewSet(viewsets.ModelViewSet):
