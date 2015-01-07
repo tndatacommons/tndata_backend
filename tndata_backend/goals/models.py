@@ -38,8 +38,13 @@ class Interest(models.Model):
     name = models.CharField(max_length=128, db_index=True)
     description = models.TextField()
     categories = models.ManyToManyField(Category)
-    max_neef_tags = pg_fields.TextArrayField(blank=True, default=[], db_index=True)
-    sdt_major = models.CharField(max_length=128, blank=True, db_index=True)
+    max_neef_tags = pg_fields.TextArrayField(
+        blank=True, db_index=True, help_text="A Comma-separated list"
+    )
+    sdt_major = models.CharField(
+        max_length=128, blank=True, db_index=True,
+        help_text="The Major SDT identifier"
+    )
 
     def __str__(self):
         return self.name
