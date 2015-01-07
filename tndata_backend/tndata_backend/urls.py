@@ -6,19 +6,23 @@ from rest_framework import routers
 
 from diary.api import EntryViewSet
 from goals.api import (
-    BehaviorViewSet, BehaviorStepViewSet, ChosenBehaviorViewSet,
-    CompletedBehaviorStepViewSet, CustomReminderViewSet, GoalViewSet,
+    ActionViewSet,
+    ActionTakenViewSet,
+    CategoryViewSet,
+    InterestViewSet,
+    CustomReminderViewSet,
+    SelectedActionViewSet,
 )
 from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
 
 
 # Routers provide an eaasy way of automatically determining the URL conf
 router = routers.DefaultRouter()
-router.register(r'goals', GoalViewSet)
-router.register(r'behaviors', BehaviorViewSet)
-router.register(r'behaviorsteps', BehaviorStepViewSet)
-router.register(r'chosen_behaviors', ChosenBehaviorViewSet)
-router.register(r'completed_behaviorsteps', CompletedBehaviorStepViewSet)
+router.register(r'actions', ActionViewSet)
+router.register(r'actions_taken', ActionTakenViewSet)
+router.register(r'categories', CategoryViewSet)
+router.register(r'interests', InterestViewSet)
+router.register(r'selected_actions', SelectedActionViewSet)
 router.register(r'reminders', CustomReminderViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)

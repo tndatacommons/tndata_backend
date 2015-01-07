@@ -32,47 +32,50 @@ class TextArrayField(fields.ModelField):
         return getattr(obj, field_name, None)
 
 
-class GoalSerializer(serializers.ModelSerializer):
-    """A Serializer for `goals.models.Goal`."""
-    max_neef_tags = TextArrayField(model_field=models.Goal.max_neef_tags)
+class CategorySerializer(serializers.ModelSerializer):
+    """A Serializer for `Category`."""
 
     class Meta:
-        model = models.Goal
-        fields = ('id', 'rank', 'name', 'explanation', 'max_neef_tags', 'sdt_major')
+        model = models.Category
+        fields = ('id', 'order', 'name', 'description')
 
 
-class GoalViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.Goal.objects.all()
-    serializer_class = GoalSerializer
+class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Category.objects.all()
+    serializer_class = CategorySerializer
 
 
-class BehaviorSerializer(serializers.ModelSerializer):
-    """A Serializer for `goals.models.Behavior`."""
-
-    class Meta:
-        model = models.Behavior
-        fields = ('id', 'goal', 'name', 'summary', 'description')
-
-
-class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.Behavior.objects.all()
-    serializer_class = BehaviorSerializer
-
-
-class BehaviorStepSerializer(serializers.ModelSerializer):
-    """A Serializer for `goals.models.BehaviorStep`."""
+class InterestSerializer(serializers.ModelSerializer):
+    """A Serializer for `Interest`."""
+    max_neef_tags = TextArrayField(model_field=models.Interest.max_neef_tags)
 
     class Meta:
-        model = models.BehaviorStep
+        model = models.Interest
         fields = (
-            'id', 'goal', 'behavior', 'name', 'description', 'reminder_type',
-            'default_time', 'default_repeat', 'default_location',
+            'id', 'order', 'name', 'description', 'categories',
+            'max_neef_tags', 'sdt_major'
         )
 
 
-class BehaviorStepViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.BehaviorStep.objects.all()
-    serializer_class = BehaviorStepSerializer
+class InterestViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Interest.objects.all()
+    serializer_class = InterestSerializer
+
+
+class ActionSerializer(serializers.ModelSerializer):
+    """A Serializer for `Action`."""
+
+    class Meta:
+        model = models.Action
+        fields = (
+            'id', 'interests', 'order', 'name', 'summary', 'description',
+            'default_reminder_time', 'default_reminder_frequency',
+        )
+
+
+class ActionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.Action.objects.all()
+    serializer_class = ActionSerializer
 
 
 class CustomReminderSerializer(serializers.ModelSerializer):
@@ -80,10 +83,7 @@ class CustomReminderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.CustomReminder
-        fields = (
-            'id', 'user', 'behavior_step', 'reminder_type',
-            'time', 'repeat', 'location',
-        )
+        fields = ('id', 'user', 'action', 'time', 'frequency')
 
 
 class CustomReminderViewSet(viewsets.ModelViewSet):
@@ -92,29 +92,29 @@ class CustomReminderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsOwner]  # NOTE: default perms require authentication
 
 
-class ChosenBehaviorSerializer(serializers.ModelSerializer):
-    """A Serializer for `goals.models.ChosenBehavior`."""
+class SelectedActionSerializer(serializers.ModelSerializer):
+    """A Serializer for `SelectedAction`."""
 
     class Meta:
-        model = models.ChosenBehavior
-        fields = ('id', 'user', 'goal', 'behavior', 'date_selected')
+        model = models.SelectedAction
+        fields = ('id', 'user', 'action', 'date_selected')
 
 
-class ChosenBehaviorViewSet(viewsets.ModelViewSet):
-    queryset = models.ChosenBehavior.objects.all()
-    serializer_class = ChosenBehaviorSerializer
+class SelectedActionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = models.SelectedAction.objects.all()
+    serializer_class = SelectedActionSerializer
     permission_classes = [IsOwner]  # NOTE: default perms require authentication
 
 
-class CompletedBehaviorStepSerializer(serializers.ModelSerializer):
-    """A Serializer for `goals.models.CompletedBehaviorStep`."""
+class ActionTakenSerializer(serializers.ModelSerializer):
+    """A Serializer for `ActionTaken`."""
 
     class Meta:
-        model = models.CompletedBehaviorStep
-        fields = ('id', 'user', 'goal', 'behavior', 'behavior_step', 'date_completed')
+        model = models.ActionTaken
+        fields = ('id', 'user', 'selected_action', 'date_completed')
 
 
-class CompletedBehaviorStepViewSet(viewsets.ModelViewSet):
-    queryset = models.CompletedBehaviorStep.objects.all()
-    serializer_class = CompletedBehaviorStepSerializer
+class ActionTakenViewSet(viewsets.ModelViewSet):
+    queryset = models.ActionTaken.objects.all()
+    serializer_class = ActionTakenSerializer
     permission_classes = [IsOwner]  # NOTE: default perms require authentication

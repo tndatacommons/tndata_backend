@@ -2,31 +2,31 @@ from django.contrib import admin
 from . import models
 
 
-class GoalAdmin(admin.ModelAdmin):
-    list_display = ('rank', 'name')
-admin.site.register(models.Goal, GoalAdmin)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name')
+admin.site.register(models.Category, CategoryAdmin)
 
 
-class BehaviorAdmin(admin.ModelAdmin):
-    list_display = ('goal', 'name')
-admin.site.register(models.Behavior, BehaviorAdmin)
+class InterestAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name',)
+admin.site.register(models.Interest, InterestAdmin)
 
 
-class BehaviorStepAdmin(admin.ModelAdmin):
-    list_display = ('goal', 'behavior', 'name', 'reminder_type')
-admin.site.register(models.BehaviorStep, BehaviorStepAdmin)
+class ActionAdmin(admin.ModelAdmin):
+    list_display = ('order', 'name')
+admin.site.register(models.Action, ActionAdmin)
 
 
 class CustomReminderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'behavior_step', 'time', 'repeat', 'location', 'reminder_type')
+    list_display = ('user', 'action', 'time', 'frequency')
 admin.site.register(models.CustomReminder, CustomReminderAdmin)
 
 
-class ChosenBehaviorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'goal', 'behavior', 'date_selected')
-admin.site.register(models.ChosenBehavior, ChosenBehaviorAdmin)
+class SelectedActionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'action', 'date_selected')
+admin.site.register(models.SelectedAction, SelectedActionAdmin)
 
 
-class CompletedBehaviorStepAdmin(admin.ModelAdmin):
-    list_display = ('user', 'goal', 'behavior', 'behavior_step', 'date_completed')
-admin.site.register(models.CompletedBehaviorStep, CompletedBehaviorStepAdmin)
+class ActionTakenAdmin(admin.ModelAdmin):
+    list_display = ('user', 'selected_action', 'date_completed')
+admin.site.register(models.ActionTaken, ActionTakenAdmin)

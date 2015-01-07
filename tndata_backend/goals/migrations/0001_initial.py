@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import djorm_pgarray.fields
 from django.conf import settings
+import djorm_pgarray.fields
 
 
 class Migration(migrations.Migration):
@@ -14,141 +14,120 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Behavior',
+            name='Action',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('name', models.CharField(db_index=True, max_length=128)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('order', models.PositiveIntegerField(unique=True)),
+                ('name', models.CharField(max_length=128, db_index=True)),
                 ('summary', models.TextField()),
                 ('description', models.TextField()),
+                ('default_reminder_time', models.TimeField(blank=True, null=True)),
+                ('default_reminder_frequencey', models.CharField(max_length=10, choices=[('never', 'Never'), ('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True)),
             ],
             options={
-                'ordering': ['goal', 'name'],
-                'verbose_name': 'Behavior',
-                'verbose_name_plural': 'Behaviors',
+                'verbose_name': 'Action',
+                'verbose_name_plural': 'Action',
+                'ordering': ['order', 'name'],
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='BehaviorStep',
+            name='ActionTaken',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('name', models.CharField(db_index=True, max_length=128)),
-                ('description', models.TextField()),
-                ('reminder_type', models.CharField(choices=[('temporal', 'Temporal'), ('geolocation', 'Geolocation')], blank=True, max_length=32)),
-                ('default_time', models.TimeField(blank=True, null=True)),
-                ('default_repeat', models.CharField(choices=[('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True, max_length=32)),
-                ('default_location', models.CharField(blank=True, max_length=32)),
-                ('behavior', models.ForeignKey(to='goals.Behavior')),
-            ],
-            options={
-                'ordering': ['name'],
-                'verbose_name': 'Behavior Step',
-                'verbose_name_plural': 'Behavior Steps',
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='ChosenBehavior',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('date_selected', models.DateTimeField(db_index=True, auto_now_add=True)),
-                ('behavior', models.ForeignKey(to='goals.Behavior')),
-            ],
-            options={
-                'ordering': ['date_selected'],
-                'verbose_name': 'Chosen Behavior',
-                'verbose_name_plural': 'Chosen Behaviors',
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='CompletedBehaviorStep',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('date_completed', models.DateTimeField(db_index=True, auto_now_add=True)),
-                ('behavior', models.ForeignKey(to='goals.Behavior')),
-                ('behavior_step', models.ForeignKey(to='goals.BehaviorStep')),
             ],
             options={
-                'ordering': ['date_completed'],
-                'verbose_name': 'Chosen Behavior Step',
-                'verbose_name_plural': 'Chosen Behavior Steps',
+                'verbose_name': 'Action Taken',
+                'verbose_name_plural': 'Actions Taken',
+                'ordering': ['date_completed', 'selected_action', 'user'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Category',
+            fields=[
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('order', models.PositiveIntegerField(unique=True)),
+                ('name', models.CharField(max_length=128, db_index=True)),
+                ('description', models.TextField()),
+            ],
+            options={
+                'verbose_name': 'Category',
+                'verbose_name_plural': 'Category',
+                'ordering': ['order', 'name'],
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='CustomReminder',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('reminder_type', models.CharField(choices=[('temporal', 'Temporal'), ('geolocation', 'Geolocation')], blank=True, max_length=32)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('time', models.TimeField(blank=True, null=True)),
-                ('repeat', models.CharField(choices=[('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True, max_length=32)),
-                ('location', models.CharField(blank=True, max_length=32)),
-                ('behavior_step', models.ForeignKey(to='goals.BehaviorStep')),
+                ('frequency', models.CharField(max_length=10, choices=[('never', 'Never'), ('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True)),
+                ('action', models.ForeignKey(to='goals.Action')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'ordering': ['behavior_step'],
                 'verbose_name': 'Custom Reminder',
                 'verbose_name_plural': 'Custom Reminders',
+                'ordering': ['action', 'user', 'time'],
             },
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='Goal',
+            name='Interest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('rank', models.PositiveIntegerField(unique=True)),
-                ('name', models.CharField(db_index=True, max_length=128)),
-                ('explanation', models.TextField()),
-                ('max_neef_tags', djorm_pgarray.fields.TextArrayField(dbtype='text')),
-                ('sdt_major', models.CharField(max_length=128)),
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('order', models.PositiveIntegerField(unique=True)),
+                ('name', models.CharField(max_length=128, db_index=True)),
+                ('description', models.TextField()),
+                ('max_neef_tags', djorm_pgarray.fields.TextArrayField(db_index=True, dbtype='text', default=[])),
+                ('sdt_major', models.CharField(max_length=128, blank=True, db_index=True)),
+                ('categories', models.ManyToManyField(to='goals.Category')),
             ],
             options={
-                'ordering': ['rank', 'name'],
-                'verbose_name': 'Goal',
-                'verbose_name_plural': 'Goals',
+                'verbose_name': 'Interest',
+                'verbose_name_plural': 'Interest',
+                'ordering': ['order', 'name'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='SelectedAction',
+            fields=[
+                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('date_selected', models.DateTimeField(db_index=True, auto_now_add=True)),
+                ('action', models.ForeignKey(to='goals.Action')),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Selected Action',
+                'verbose_name_plural': 'Selected Actions',
+                'ordering': ['date_selected'],
             },
             bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
             name='customreminder',
-            unique_together=set([('user', 'behavior_step')]),
+            unique_together=set([('user', 'action')]),
         ),
         migrations.AddField(
-            model_name='completedbehaviorstep',
-            name='goal',
-            field=models.ForeignKey(to='goals.Goal'),
+            model_name='actiontaken',
+            name='selected_action',
+            field=models.ForeignKey(to='goals.SelectedAction'),
             preserve_default=True,
         ),
         migrations.AddField(
-            model_name='completedbehaviorstep',
+            model_name='actiontaken',
             name='user',
             field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
             preserve_default=True,
         ),
         migrations.AddField(
-            model_name='chosenbehavior',
-            name='goal',
-            field=models.ForeignKey(to='goals.Goal'),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='chosenbehavior',
-            name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='behaviorstep',
-            name='goal',
-            field=models.ForeignKey(to='goals.Goal'),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='behavior',
-            name='goal',
-            field=models.ForeignKey(to='goals.Goal'),
+            model_name='action',
+            name='interests',
+            field=models.ManyToManyField(to='goals.Interest'),
             preserve_default=True,
         ),
     ]

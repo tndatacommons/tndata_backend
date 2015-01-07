@@ -1,150 +1,160 @@
+"""
+Models for the Goals app.
+
+This is our collection of Goals. They're organized by category & interest;
+
+    [Category] <-> [Interest] -> [Action]
+
+A User chooses an Action as something they want to do or achieve (this is their
+goal). Continued performance of that action constitutes a behavior or habit.
+
+Actions are the things we want to help people to do.
+
+"""
 from django.conf import settings
 from django.db import models
 from djorm_pgarray import fields as pg_fields
 
 
-class Goal(models.Model):
-    """Essentially a *category* for user behavior actions."""
-    rank = models.PositiveIntegerField(unique=True)
+class Category(models.Model):
+    """A Broad grouping of possible Goals from which users can choose."""
+    order = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=128, db_index=True)
-    explanation = models.TextField()
-    max_neef_tags = pg_fields.TextArrayField()
-    sdt_major = models.CharField(max_length=128)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['rank', 'name']
-        verbose_name = "Goal"
-        verbose_name_plural = "Goals"
-
-
-class Behavior(models.Model):
-    """Users see 'I want to...' and these populate the options. Also a Grouping
-    of behavior steps/recipes."""
-    goal = models.ForeignKey(Goal)
-    name = models.CharField(max_length=128, db_index=True)
-    summary = models.TextField()
     description = models.TextField()
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ['goal', 'name']
-        verbose_name = 'Behavior'
-        verbose_name_plural = 'Behaviors'
+        ordering = ['order', 'name']
+        verbose_name = "Category"
+        verbose_name_plural = "Category"
 
 
-class BehaviorStep(models.Model):
-    REMINDER_TYPE_CHOICES = (
-        ('temporal', 'Temporal'),
-        ('geolocation', 'Geolocation')
-    )
-    REPEAT_CHOICES = (
+class Interest(models.Model):
+    """Essentially a subcategory. These can be grouped into one or more
+    Categories."""
+    order = models.PositiveIntegerField(unique=True)
+    name = models.CharField(max_length=128, db_index=True)
+    description = models.TextField()
+    categories = models.ManyToManyField(Category)
+    max_neef_tags = pg_fields.TextArrayField(blank=True, default=[], db_index=True)
+    sdt_major = models.CharField(max_length=128, blank=True, db_index=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = "Interest"
+        verbose_name_plural = "Interest"
+
+
+class Action(models.Model):
+    """Actions population the choices of 'I want to...' that users see."""
+    FREQUENCY_CHOICES = (
         ('never', 'Never'),
         ('daily', 'Every Day'),
         ('weekly', 'Every Week'),
         ('monthly', 'Every Month'),
         ('yearly', 'Every Year'),
     )
-    goal = models.ForeignKey(Goal)
-    behavior = models.ForeignKey(Behavior)
+    interests = models.ManyToManyField(Interest)
+    order = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=128, db_index=True)
+    summary = models.TextField()
     description = models.TextField()
-    reminder_type = models.CharField(max_length=32, choices=REMINDER_TYPE_CHOICES, blank=True)
-    default_time = models.TimeField(blank=True, null=True)
-    default_repeat = models.CharField(max_length=32, blank=True, choices=REPEAT_CHOICES)
-    default_location = models.CharField(max_length=32, blank=True)  # TODO: GIS?
+    default_reminder_time = models.TimeField(blank=True, null=True)
+    default_reminder_frequency = models.CharField(
+        max_length=10,
+        blank=True,
+        choices=FREQUENCY_CHOICES
+    )
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ['name']
-        verbose_name = 'Behavior Step'
-        verbose_name_plural = 'Behavior Steps'
+        ordering = ['order', 'name']
+        verbose_name = 'Action'
+        verbose_name_plural = 'Action'
 
     def reminder(self, user):
         """Get reminder info for a given user. Returns a tuple of:
 
-            (type, time, repeat, location)
+            (time, frequency)
 
         """
         reminder_data = self.get_custom_reminder(user)
         if reminder_data is None:
             reminder_data = (
-                self.reminder_type,
-                self.default_time,
-                self.default_repeat,
-                self.default_location
+                self.default_reminder_time,
+                self.default_reminder_frequency,
             )
         return reminder_data
 
     def get_custom_reminder(self, user):
         try:
-            cr = CustomReminder.objects.get(user=user, behavior_step=self)
-            return (cr.reminder_type, cr.time, cr.repeat, cr.location)
+            cr = CustomReminder.objects.get(user=user, action=self)
+            return (cr.time, cr.frequency)
         except CustomReminder.DoesNotExist:
             return None
 
 
 class CustomReminder(models.Model):
-    """A User's custom reminder for a `BehaviorStep`."""
+    """A User's custom reminder for an `Action`."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    behavior_step = models.ForeignKey(BehaviorStep)
-    reminder_type = models.CharField(
-        max_length=32,
-        blank=True,
-        choices=BehaviorStep.REMINDER_TYPE_CHOICES
-    )
+    action = models.ForeignKey(Action)
     time = models.TimeField(blank=True, null=True)
-    repeat = models.CharField(
-        max_length=32,
+    frequency = models.CharField(
+        max_length=10,
         blank=True,
-        choices=BehaviorStep.REPEAT_CHOICES
+        choices=Action.FREQUENCY_CHOICES
     )
-    location = models.CharField(max_length=32, blank=True)  # TODO: GIS?
 
     def __str__(self):
-        return 'Custom Reminder for {0}'.format(self.behavior_step)
+        return 'Custom Reminder for {0}'.format(self.action)
 
     class Meta:
-        ordering = ['behavior_step']
-        unique_together = ('user', 'behavior_step')
+        ordering = ['action', 'user', 'time']
+        unique_together = ('user', 'action')
         verbose_name = 'Custom Reminder'
         verbose_name_plural = 'Custom Reminders'
 
 
-class ChosenBehavior(models.Model):
-    """Records an User's Goal/Behavior Choices."""
+class SelectedAction(models.Model):
+    """An `Action` which a user has selected to attempt to take."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    goal = models.ForeignKey(Goal)
-    behavior = models.ForeignKey(Behavior)
+    action = models.ForeignKey(Action)
     date_selected = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
-        return "{0} selected on {1}".format(self.behavior, self.date_selected)
+        return "{0} selected on {1}".format(self.action, self.date_selected)
 
     class Meta:
         ordering = ['date_selected']
-        verbose_name = 'Chosen Behavior'
-        verbose_name_plural = 'Chosen Behaviors'
+        verbose_name = 'Selected Action'
+        verbose_name_plural = 'Selected Actions'
+
+    @property
+    def name(self):
+        return self.action.name
 
 
-class CompletedBehaviorStep(models.Model):
-    """When a user _completes_ some behavior step."""
+class ActionTaken(models.Model):
+    """When a user _takes_ an `Action`. This is essentially a timestamp that
+    records the user's frequency/progress for actions."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    goal = models.ForeignKey(Goal)
-    behavior = models.ForeignKey(Behavior)
-    behavior_step = models.ForeignKey(BehaviorStep)
+    selected_action = models.ForeignKey(SelectedAction)
     date_completed = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
-        return "{0} completed on {1}".format(self.behavior_step, self.date_completed)
+        return "{0} completed on {1}".format(
+            self.selected_action.name,
+            self.date_completed
+        )
 
     class Meta:
-        ordering = ['date_completed']
-        verbose_name = 'Chosen Behavior Step'
-        verbose_name_plural = 'Chosen Behavior Steps'
+        ordering = ['date_completed', 'selected_action', 'user']
+        verbose_name = 'Action Taken'
+        verbose_name_plural = 'Actions Taken'
