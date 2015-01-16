@@ -8,4 +8,9 @@ urlpatterns = patterns('',
         views.CategoryList.as_view(),
         name='index'
     ),
+    url(
+        r'(?P<name_slug>.+)/$',
+        views.CategoryDetailView.as_view(),
+        name='category-detail'
+    ),
 )
