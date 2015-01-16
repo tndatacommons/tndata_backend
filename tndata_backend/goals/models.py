@@ -12,8 +12,10 @@ Actions are the things we want to help people to do.
 
 """
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.text import slugify
+
 from djorm_pgarray import fields as pg_fields
 
 
@@ -36,6 +38,9 @@ class Category(models.Model):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         super(Category, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('goals:category-detail', args=[self.name_slug])
 
 
 class Interest(models.Model):
