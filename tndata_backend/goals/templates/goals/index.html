@@ -3,26 +3,27 @@
 {% block content %}
 
   {% for category in categories %}
-    <h2><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></h2>
-    {{ category.description|linebreaks}}
-
     <div class="row">
-    {% for interest in category.interest_set.all %}
-      <div class="small-2 large-4 columns">
-        <h3>{{ interest.name }}</h3>
-        {{ interest.description|linebreaks}}
-
-        <h4>Actions</h4>
+      <div class="large-4 small-6 columns">
+        <h2><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></h2>
+        <div class="panel">{{ category.description|linebreaks}}</div>
+      </div>
+      <div class="large-8 small-6 columns">
         <ul>
-        {% for act in interest.action_set.all %}
-          <li>{{ act.name }}: {{ act.summary }}</li>
+        {% for interest in category.interest_set.all %}
+          <li>
+            <strong>{{ interest.name }}</strong>:
+            {% for act in interest.action_set.all %}
+              {{ act.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              <em>No Actions Listed</em>
+            {% endfor %}
+          </li>
         {% endfor %}
         </ul>
-      </div> {# end .columns #}
-    {% endfor %}
+      </div>
     </div> {# end .row #}
     <hr/>
   {% endfor %}
-
 {% endblock %}
 
