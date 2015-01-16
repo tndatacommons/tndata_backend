@@ -13,13 +13,15 @@ Actions are the things we want to help people to do.
 """
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 from djorm_pgarray import fields as pg_fields
 
 
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
     order = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=128, db_index=True)
+    name = models.CharField(max_length=128, db_index=True, unique=True)
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
 
     def __str__(self):
@@ -29,6 +31,11 @@ class Category(models.Model):
         ordering = ['order', 'name']
         verbose_name = "Category"
         verbose_name_plural = "Category"
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(Category, self).save(*args, **kwargs)
 
 
 class Interest(models.Model):
