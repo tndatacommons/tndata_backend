@@ -40,6 +40,7 @@ urlpatterns = patterns('',
         r'^rules/',
         include('rules.urls', namespace='rules')
     ),
+    url(r'^goals/', include('goals.urls', namespace='goals')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', TemplateView.as_view(template_name="index.html")),
 )
