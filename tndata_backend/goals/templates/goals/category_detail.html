@@ -1,28 +1,54 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
+  {# subnav for interests #}
+  <dl class="sub-nav">
+    <dt>Interests:</dt>
+    {% for interest in category.interest_set.all %}
+    <dd><a href="#int-{{interest.id}}">{{ interest.name }}</a></dd>
+    {% endfor %}
+  </dl>
 
-  <h1><a href="#">{{ category.name }}</a></h1>
-  {{ category.description|linebreaks}}
+  <h1>{{ category.name }} <span class="label secondary">Category</span></h1>
+  {{ category.description|linebreaks }}
 
   {% for interest in category.interest_set.all %}
-    <h2>{{ interest.name }}</h2>
-    {{ interest.description|linebreaks}}
+    <h2 id="int-{{interest.id}}" data-magellan-destination="int-{{interest.id}}">
+      {{ interest.name }} <span class="label secondary">Interest</span>
+    </h2>
 
-    {% if interest.action_set.exists %}
-    <h3>Actions</h3>
     <div class="row">
-    {% for act in interest.action_set.all %}
-      <div class="small-2 large-4 columns">
-        <h4>{{ act.name }}</h4>
-        {{ act.summary|linebreaks }}
-        {{ act.description|linebreaks }}
+      <div class="large-4 small-12 columns">
+        <div class="panel">{{ interest.description|linebreaks}}</div>
+      </div>
+
+      <div class="large-8 small-12 columns">
+      {% if interest.action_set.exists %}
+        <ul class="tabs vertical" data-tab>
+          {% for action in interest.action_set.all %}
+          <li class="tab-title{% if forloop.first %} active{% endif %}">
+            <a href="#interest-{{interest.id}}-action-{{action.id}}">
+              {{ action.name }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="tabs-content vertical">
+        {% for action in interest.action_set.all %}
+          <div class="content{% if forloop.first %} active{% endif %}"
+               id="interest-{{interest.id}}-action-{{action.id}}">
+            <h3 class="subheader">
+              {{ action.name }}
+              <span class="label secondary">Action</span>
+            </h3>
+            {{ action.summary|linebreaks }}
+            {{ action.description|linebreaks }}
+          </div>
+        {% endfor %}
+        </div> {# end .tabs-content #}
+      {% endif %}
       </div> {# end .columns #}
-    {% endfor %}
     </div> {# end .row #}
-    {% endif %}
     <hr/>
   {% endfor %}
-
 {% endblock %}
-
