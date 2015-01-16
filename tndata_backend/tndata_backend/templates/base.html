@@ -11,11 +11,7 @@
     {% block head %}{% endblock %}
   </head>
   <body>
-    <div class="row">
-      <div class="large-12 columns">
-      {% block body %}{% endblock %}
-      </div>
-    </div>
+    {% block body %}{% endblock %}
 
     <script src="{% static 'foundation/js/vendor/jquery.js' %}"></script>
     <script src="{% static 'foundation/js/foundation.min.js' %}"></script>
