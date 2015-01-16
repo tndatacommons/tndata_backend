@@ -2,6 +2,7 @@
 
 {% block content %}
 
+  <hr/>
   {% for category in categories %}
     <div class="row">
       <div class="large-4 small-6 columns">
@@ -9,6 +10,10 @@
         <div class="panel">{{ category.description|linebreaks}}</div>
       </div>
       <div class="large-8 small-6 columns">
+        <ul class="button-group">
+          <li><a href="{{ category.get_update_url }}" class="button small">Update</a></li>
+          <li><a href="{{ category.get_delete_url }}" class="button small alert">Delete</a></li>
+        </ul>
         <ul>
         {% for interest in category.interest_set.all %}
           <li>

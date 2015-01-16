@@ -33,7 +33,7 @@ The body block is wrapped with:
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
-          <li><a href="#">Category</a></li>
+          <li><a href="{% url 'goals:category-create' %}">Category</a></li>
           <li><a href="#">Interest</a></li>
           <li><a href="#">Action</a></li>
         </ul>
@@ -46,7 +46,7 @@ The body block is wrapped with:
   </div>
 
   <div class="row">
-    <div class="large-12 columns">
+    <div class="large-12 small-12 columns">
     {% block content %}{% endblock %}
     </div>
   </div>

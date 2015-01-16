@@ -1,0 +1,12 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+<h1>{% if object %}Update Category: {{object.name}}{% else %}Create Category{% endif %}</h1>
+
+<form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}" method="post">{% csrf_token %}
+{{ form }}
+<hr/>
+<button type="submit">Create Category</button>
+</form>
+
+{% endblock %}

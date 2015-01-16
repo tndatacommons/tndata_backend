@@ -42,6 +42,12 @@ class Category(models.Model):
     def get_absolute_url(self):
         return reverse('goals:category-detail', args=[self.name_slug])
 
+    def get_update_url(self):
+        return reverse('goals:category-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:category-delete', args=[self.name_slug])
+
 
 class Interest(models.Model):
     """Essentially a subcategory. These can be grouped into one or more
