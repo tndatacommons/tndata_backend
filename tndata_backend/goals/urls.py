@@ -5,7 +5,7 @@ from . import views
 urlpatterns = patterns('',
     url(
         r'^$',
-        views.index,
+        views.CategoryList.as_view(),
         name='index'
     ),
 )

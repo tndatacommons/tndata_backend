@@ -1,6 +1,28 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
-  <p>content of index</p>
+
+  {% for category in categories %}
+    <h2><a href="#">{{ category.name }}</a></h2>
+    {{ category.description|linebreaks}}
+
+    <div class="row">
+    {% for interest in category.interest_set.all %}
+      <div class="small-2 large-4 columns">
+        <h3>{{ interest.name }}</h3>
+        {{ interest.description|linebreaks}}
+
+        <h4>Actions</h4>
+        <ul>
+        {% for act in interest.action_set.all %}
+          <li>{{ act.name }}: {{ act.summary }}</li>
+        {% endfor %}
+        </ul>
+      </div> {# end .columns #}
+    {% endfor %}
+    </div> {# end .row #}
+    <hr/>
+  {% endfor %}
+
 {% endblock %}
 
