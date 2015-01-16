@@ -23,22 +23,21 @@ The body block is wrapped with:
 
   <section class="top-bar-section">
     {# Right Nav Section #}
-    {% comment %}
     <ul class="right">
-      <li class="active"><a href="#">Right Button Active</a></li>
-      <li class="has-dropdown">
-        <a href="#">Right Button Dropdown</a>
-        <ul class="dropdown">
-          <li><a href="#">First link in dropdown</a></li>
-          <li class="active"><a href="#">Active link in dropdown</a></li>
-        </ul>
-      </li>
+      <li><a href="/admin/">Admin</a></li>
+      <li><a href="#">Logout</a></li>
     </ul>
-    {% endcomment %}
 
     {# Left Nav Section #}
     <ul class="left">
-      <li><a href="#">New</a></li>
+      <li class="has-dropdown">
+        <a href="#">New</a>
+        <ul class="dropdown">
+          <li><a href="#">Category</a></li>
+          <li><a href="#">Interest</a></li>
+          <li><a href="#">Action</a></li>
+        </ul>
+      </li>
       <li><a href="#">Foo</a></li>
       <li><a href="#">Bar</a></li>
     </ul>
