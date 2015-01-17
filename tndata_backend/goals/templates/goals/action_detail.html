@@ -17,31 +17,31 @@
           Frequency: {{ action.default_reminder_frequency }}
         </p>
       </div>
-    </div>
-  </div> {# end .row #}
 
-  <div class="row">
-    <div class="large-6 small-12 columns">
-      <h2>Categories</h2>
-      <p><em>{{action.name}}</em> is associated with the following categories:</p>
-      <ul>
-      {% for category in action.categories %}
-        <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
-      {% empty %}
-        <li><em>This Action is not associated with a Category.</em></li>
-      {% endfor %}
-      </ul>
-    </div>
-    <div class="large-6 small-12 columns">
-      <h2>Interests</h2>
-      <p><em>{{action.name}}</em> is listed under the following interests:</p>
-      <ul>
-      {% for interest in action.interests.all %}
-        <li><a href="{{ interest.get_absolute_url }}">{{ interest }}</a></li>
-      {% empty %}
-        <li><em>This action is not listed under any Interests.</em></li>
-      {% endfor %}
-      </ul>
+      <div class="panel">
+        <h2>Categories</h2>
+        <p><em>{{action.name}}</em> is associated with the following categories:</p>
+        <ul>
+        {% for category in action.categories %}
+          <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
+        {% empty %}
+          <li><em>This Action is not associated with a Category.</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>Interests</h2>
+        <p><em>{{action.name}}</em> is listed under the following interests:</p>
+        <ul>
+        {% for interest in action.interests.all %}
+          <li><a href="{{ interest.get_absolute_url }}">{{ interest }}</a></li>
+        {% empty %}
+          <li><em>This action is not listed under any Interests.</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
     </div>
   </div> {# end .row #}
 {% endblock %}

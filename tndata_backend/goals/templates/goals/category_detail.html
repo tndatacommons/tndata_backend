@@ -3,12 +3,14 @@
 
 {% block content %}
   {# subnav for interests #}
+  <hr/>
   <dl class="sub-nav">
     <dt>Interests:</dt>
     {% for interest in category.interest_set.all %}
     <dd><a href="#int-{{interest.id}}">{{ interest.name }}</a></dd>
     {% endfor %}
   </dl>
+  <hr/>
 
   <h1>{{ category.name }} {% object_controls category %}</h1>
   {{ category.description|linebreaks }}

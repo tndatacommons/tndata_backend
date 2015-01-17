@@ -14,31 +14,30 @@
         {{ interest.max_neef_tags|default:"none" }}</p>
         <p><strong>SDT Major:</strong> {{ interest.sdt_major|default:"none" }}</p>
       </div>
-    </div>
-  </div> {# end .row #}
 
-  <div class="row">
-    <div class="large-6 small-12 columns">
-      <h2>Categories</h2>
-      <p><em>{{interest.name}}</em> is listed in the following categories:</p>
-      <ul>
-      {% for category in interest.categories.all %}
-        <li>{{ category }}</li>
-      {% empty %}
-        <li><em>This Interest is not listed in any Categories.</em></li>
-      {% endfor %}
-      </ul>
-    </div>
-    <div class="large-6 small-12 columns">
-      <h2>Actions</h2>
-      <p><em>{{interest.name}}</em> contains the following actions:</p>
-      <ul>
-      {% for action in interest.action_set.all %}
-        <li>{{ action }}</li>
-      {% empty %}
-        <li><em>There are no actions for this Interest.</em></li>
-      {% endfor %}
-      </ul>
+      <div class="panel">
+        <h2>Categories</h2>
+        <p><em>{{interest.name}}</em> is listed in the following categories:</p>
+        <ul>
+        {% for category in interest.categories.all %}
+          <li><a href="{{category.get_absolute_url}}">{{ category }}</a></li>
+        {% empty %}
+          <li><em>This Interest is not listed in any Categories.</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h2>Actions</h2>
+        <p><em>{{interest.name}}</em> contains the following actions:</p>
+        <ul>
+        {% for action in interest.action_set.all %}
+          <li><a href="{{ action.get_absolute_url }}">{{ action }}</a></li>
+        {% empty %}
+          <li><em>There are no actions for this Interest.</em></li>
+        {% endfor %}
+        </ul>
+      </div>
     </div>
   </div> {# end .row #}
 {% endblock %}
