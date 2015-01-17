@@ -53,7 +53,8 @@ class Interest(models.Model):
     """Essentially a subcategory. These can be grouped into one or more
     Categories."""
     order = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=128, db_index=True)
+    name = models.CharField(max_length=128, db_index=True, unique=True)
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
     categories = models.ManyToManyField(Category)
     max_neef_tags = pg_fields.TextArrayField(
@@ -72,6 +73,20 @@ class Interest(models.Model):
         verbose_name = "Interest"
         verbose_name_plural = "Interest"
 
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(Interest, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('goals:interest-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:interest-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:interest-delete', args=[self.name_slug])
+
 
 class Action(models.Model):
     """Actions population the choices of 'I want to...' that users see."""
@@ -84,7 +99,8 @@ class Action(models.Model):
     )
     interests = models.ManyToManyField(Interest)
     order = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=128, db_index=True)
+    name = models.CharField(max_length=128, db_index=True, unique=True)
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     summary = models.TextField()
     description = models.TextField()
     default_reminder_time = models.TimeField(blank=True, null=True)
@@ -101,6 +117,11 @@ class Action(models.Model):
         ordering = ['order', 'name']
         verbose_name = 'Action'
         verbose_name_plural = 'Action'
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(Action, self).save(*args, **kwargs)
 
     def reminder(self, user):
         """Get reminder info for a given user. Returns a tuple of:

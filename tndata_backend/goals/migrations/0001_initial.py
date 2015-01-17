@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-from django.conf import settings
 import djorm_pgarray.fields
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -16,13 +16,14 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Action',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('order', models.PositiveIntegerField(unique=True)),
-                ('name', models.CharField(max_length=128, db_index=True)),
+                ('name', models.CharField(db_index=True, unique=True, max_length=128)),
+                ('name_slug', models.SlugField(unique=True, max_length=128)),
                 ('summary', models.TextField()),
                 ('description', models.TextField()),
                 ('default_reminder_time', models.TimeField(blank=True, null=True)),
-                ('default_reminder_frequencey', models.CharField(max_length=10, choices=[('never', 'Never'), ('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True)),
+                ('default_reminder_frequency', models.CharField(choices=[('never', 'Never'), ('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True, max_length=10)),
             ],
             options={
                 'verbose_name': 'Action',
@@ -34,7 +35,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ActionTaken',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('date_completed', models.DateTimeField(db_index=True, auto_now_add=True)),
             ],
             options={
@@ -47,9 +48,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('order', models.PositiveIntegerField(unique=True)),
-                ('name', models.CharField(max_length=128, db_index=True)),
+                ('name', models.CharField(db_index=True, unique=True, max_length=128)),
+                ('name_slug', models.SlugField(unique=True, max_length=128)),
                 ('description', models.TextField()),
             ],
             options={
@@ -62,9 +64,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CustomReminder',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('time', models.TimeField(blank=True, null=True)),
-                ('frequency', models.CharField(max_length=10, choices=[('never', 'Never'), ('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True)),
+                ('frequency', models.CharField(choices=[('never', 'Never'), ('daily', 'Every Day'), ('weekly', 'Every Week'), ('monthly', 'Every Month'), ('yearly', 'Every Year')], blank=True, max_length=10)),
                 ('action', models.ForeignKey(to='goals.Action')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
             ],
@@ -78,12 +80,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Interest',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('order', models.PositiveIntegerField(unique=True)),
-                ('name', models.CharField(max_length=128, db_index=True)),
+                ('name', models.CharField(db_index=True, unique=True, max_length=128)),
+                ('name_slug', models.SlugField(unique=True, max_length=128)),
                 ('description', models.TextField()),
-                ('max_neef_tags', djorm_pgarray.fields.TextArrayField(db_index=True, dbtype='text', default=[])),
-                ('sdt_major', models.CharField(max_length=128, blank=True, db_index=True)),
+                ('max_neef_tags', djorm_pgarray.fields.TextArrayField(db_index=True, dbtype='text', help_text='A Comma-separated list')),
+                ('sdt_major', models.CharField(db_index=True, help_text='The Major SDT identifier', blank=True, max_length=128)),
                 ('categories', models.ManyToManyField(to='goals.Category')),
             ],
             options={
@@ -96,7 +99,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SelectedAction',
             fields=[
-                ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
+                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('date_selected', models.DateTimeField(db_index=True, auto_now_add=True)),
                 ('action', models.ForeignKey(to='goals.Action')),
                 ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
