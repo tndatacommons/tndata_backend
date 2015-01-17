@@ -5,7 +5,7 @@ from . import views
 urlpatterns = patterns('',
     url(
         r'^$',
-        views.CategoryList.as_view(),
+        views.CategoryListView.as_view(),
         name='index'
     ),
 
@@ -42,6 +42,11 @@ urlpatterns = patterns('',
         views.ActionDetailView.as_view(),
         name='action-detail'
     ),
+    url(
+        r'actions/$',
+        views.ActionListView.as_view(),
+        name='action-list'
+    ),
 
     # Interests
     url(
@@ -58,6 +63,11 @@ urlpatterns = patterns('',
         r'interest/(?P<name_slug>.+)/$',
         views.InterestDetailView.as_view(),
         name='interest-detail'
+    ),
+    url(
+        r'interests/$',
+        views.InterestListView.as_view(),
+        name='interest-list'
     ),
 
     # Categories

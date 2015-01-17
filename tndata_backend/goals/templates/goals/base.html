@@ -23,6 +23,8 @@
 
     {# Left Nav Section #}
     <ul class="left">
+      <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
+      <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
@@ -31,8 +33,6 @@
           <li><a href="{% url 'goals:action-create' %}">Action</a></li>
         </ul>
       </li>
-      <li><a href="#">Foo</a></li>
-      <li><a href="#">Bar</a></li>
     </ul>
   </section>
   </nav>

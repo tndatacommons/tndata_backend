@@ -1,0 +1,39 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+
+  <hr/>
+  {% for action in actions %}
+    <div class="row">
+      <div class="large-6 small-6 columns">
+        <h2><a href="{{ action.get_absolute_url }}">{{ action }}</a></h2>
+        {{ action.summary|truncatewords:10}}
+      </div>
+
+      <div class="large-3 small-3 columns">
+        <h3 class="subheader">Interests</h3>
+        <ul>
+        {% for int in action.interests.all %}
+          <li><a href="{{ int.get_absolute_url }}">{{ int }}</a></li>
+        {% empty %}
+          <li><em>Not listed in an Interest</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="large-3 small-3 columns">
+        <h3 class="subheader">Categories</h3>
+        <ul>
+        {% for cat in action.categories %}
+          <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+        {% empty %}
+          <li><em>Not listed in a Category</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
+    </div> {# end .row #}
+    <hr/>
+  {% endfor %}
+{% endblock %}
+

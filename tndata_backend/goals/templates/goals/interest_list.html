@@ -1,0 +1,45 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+
+  <hr/>
+  {% for interest in interests %}
+    <div class="row">
+      <div class="large-6 small-6 columns">
+        <h2><a href="{{ interest.get_absolute_url }}">{{ interest }}</a></h2>
+        {{ interest.description|truncatewords:10}}
+        {% for t in interest.max_neef_tags %}
+          <span class="secondary label">{{t}}</span>
+        {% endfor %}
+        {% if interest.sdt_major %}
+          <span class="secondary label">{{ interest.sdt_major }}</span>
+        {% endif %}
+      </div>
+
+      <div class="large-3 small-3 columns">
+        <h3 class="subheader">Actions</h3>
+        <ul>
+        {% for action in interest.action_set.all %}
+          <li><a href="{{ action.get_absolute_url }}">{{ action }}</a></li>
+        {% empty %}
+          <li><em>Contains no Actions</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="large-3 small-3 columns">
+        <h3 class="subheader">Categories</h3>
+        <ul>
+        {% for cat in interest.categories.all %}
+          <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+        {% empty %}
+          <li><em>Not listed in a Category</em></li>
+        {% endfor %}
+        </ul>
+      </div>
+
+    </div> {# end .row #}
+    <hr/>
+  {% endfor %}
+{% endblock %}
+

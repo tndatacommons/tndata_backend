@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse_lazy
 from . models import Action, Category, Interest
 
 
-class CategoryList(ListView):
+class CategoryListView(ListView):
     model = Category
     context_object_name = 'categories'
     template_name = "goals/index.html"
@@ -44,6 +44,11 @@ class CategoryDeleteView(DeleteView):
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
+
+
+class InterestListView(ListView):
+    model = Interest
+    context_object_name = 'interests'
 
 
 class InterestDetailView(DetailView):
@@ -85,6 +90,11 @@ class InterestDeleteView(DeleteView):
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
+
+
+class ActionListView(ListView):
+    model = Action
+    context_object_name = 'actions'
 
 
 class ActionDetailView(DetailView):
