@@ -1,4 +1,5 @@
 {% extends "goals/base.html" %}
+{% load goal_tags %}
 
 {% block content %}
   {# subnav for interests #}
@@ -9,12 +10,13 @@
     {% endfor %}
   </dl>
 
-  <h1>{{ category.name }} <span class="label secondary">Category</span></h1>
+  <h1>{{ category.name }} {% object_controls category %}</h1>
   {{ category.description|linebreaks }}
 
   {% for interest in category.interest_set.all %}
     <h2 id="int-{{interest.id}}" data-magellan-destination="int-{{interest.id}}">
-      {{ interest.name }} <span class="label secondary">Interest</span>
+      {{ interest.name }}
+      {% object_controls interest %}
     </h2>
 
     <div class="row">
@@ -39,7 +41,7 @@
                id="interest-{{interest.id}}-action-{{action.id}}">
             <h3 class="subheader">
               {{ action.name }}
-              <span class="label secondary">Action</span>
+              {% object_controls action %}
             </h3>
             {{ action.summary|linebreaks }}
             {{ action.description|linebreaks }}
