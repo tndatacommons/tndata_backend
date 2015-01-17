@@ -7,7 +7,11 @@
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}" method="post">{% csrf_token %}
 {{ form }}
     <hr/>
-    <button type="submit">Create Category</button>
+    {% if object %}
+      <button type="submit">Update Category</button>
+    {% else %}
+      <button type="submit">Create Category</button>
+    {% endif %}
     </form>
   </div>
   <div class="large-6 small-12 columns">
@@ -20,7 +24,7 @@
       {% for cat in categories %}
         <tr>
           <td>{{ cat.order }}</td>
-          <td>{{ cat.name }}</td>
+          <td><a href="{{ cat.get_absolute_url }}">{{ cat.name }}</a></td>
         </tr>
       {% endfor %}
       </tbody>

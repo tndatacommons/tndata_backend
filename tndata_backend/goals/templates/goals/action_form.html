@@ -8,7 +8,11 @@
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}" method="post">{% csrf_token %}
     {{ form }}
     <hr/>
-    <button type="submit">Create Action</button>
+    {% if object %}
+      <button type="submit">Update Action</button>
+    {% else %}
+      <button type="submit">Create Action</button>
+    {% endif %}
     </form>
   </div>
   <div class="large-6 small-12 columns">

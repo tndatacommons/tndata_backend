@@ -8,7 +8,11 @@
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:interest-create' %}{% endif %}" method="post">{% csrf_token %}
     {{ form }}
     <hr/>
-    <button type="submit">Create Interest</button>
+    {% if object %}
+      <button type="submit">Update Interest</button>
+    {% else %}
+      <button type="submit">Create Interest</button>
+    {% endif %}
     </form>
   </div>
   <div class="large-6 small-12 columns">
@@ -21,10 +25,11 @@
       {% for int in interests %}
         <tr>
           <td>{{ int.order }}</td>
-          <td>{{ int.name }}</td>
+          <td><a href="{{ int.get_absolute_url }}">{{ int.name }}</a></td>
           <td>
             {% for c in int.categories.all %}
-              {{c}}{% if not forloop.last %}<br/>{% endif %}
+              <a href="{{c.get_absolute_url}}">{{c}}</a>
+              {% if not forloop.last %}<br/>{% endif %}
             {% empty %}
               <em>None</em>
             {% endfor %}
