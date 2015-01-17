@@ -1,16 +1,9 @@
 {% extends "base.html" %}
 
+
 {% block title %}Goals{% endblock %}
 
 
-{% comment %}
-
-The body block is wrapped with:
-
-    <div class="row">
-      <div class="large-12 columns">
-
-{% endcomment %}
 {% block body %}
   <div class="sticky">
   <nav class="top-bar" data-topbar role="navigation">
@@ -35,7 +28,7 @@ The body block is wrapped with:
         <ul class="dropdown">
           <li><a href="{% url 'goals:category-create' %}">Category</a></li>
           <li><a href="{% url 'goals:interest-create' %}">Interest</a></li>
-          <li><a href="#">Action</a></li>
+          <li><a href="{% url 'goals:action-create' %}">Action</a></li>
         </ul>
       </li>
       <li><a href="#">Foo</a></li>

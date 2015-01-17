@@ -9,6 +9,7 @@ urlpatterns = patterns('',
         name='index'
     ),
 
+    # Create views
     url(
         r'new/category/$',
         views.CategoryCreateView.as_view(),
@@ -19,10 +20,30 @@ urlpatterns = patterns('',
         views.InterestCreateView.as_view(),
         name='interest-create'
     ),
+    url(
+        r'new/action/$',
+        views.ActionCreateView.as_view(),
+        name='action-create'
+    ),
 
-    # TODO: Crud for Actions
+    # Actions
+    url(
+        r'action/(?P<name_slug>.+)/update/$',
+        views.ActionUpdateView.as_view(),
+        name='action-update'
+    ),
+    url(
+        r'action/(?P<name_slug>.+)/delete/$',
+        views.ActionDeleteView.as_view(),
+        name='action-delete'
+    ),
+    url(
+        r'action/(?P<name_slug>.+)/$',
+        views.ActionDetailView.as_view(),
+        name='action-detail'
+    ),
 
-    # Crud for Interests
+    # Interests
     url(
         r'interest/(?P<name_slug>.+)/update/$',
         views.InterestUpdateView.as_view(),
@@ -39,7 +60,7 @@ urlpatterns = patterns('',
         name='interest-detail'
     ),
 
-    # crud for Category
+    # Categories
     url(
         r'(?P<name_slug>.+)/update/$',
         views.CategoryUpdateView.as_view(),

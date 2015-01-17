@@ -2,7 +2,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
 
-from . models import Category, Interest
+from . models import Action, Category, Interest
 
 
 class CategoryList(ListView):
@@ -82,6 +82,47 @@ class InterestUpdateView(UpdateView):
 
 class InterestDeleteView(DeleteView):
     model = Interest
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:index')
+
+
+class ActionDetailView(DetailView):
+    queryset = Action.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+
+class ActionCreateView(CreateView):
+    model = Action
+    fields = [
+        'order', 'name', 'summary', 'description', 'interests',
+        'default_reminder_time', 'default_reminder_frequency',
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(ActionCreateView, self).get_context_data(**kwargs)
+        context['actions'] = Action.objects.all()
+        return context
+
+
+class ActionUpdateView(UpdateView):
+    model = Action
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    fields = [
+        'order', 'name', 'summary', 'description', 'interests',
+        'default_reminder_time', 'default_reminder_frequency',
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(ActionUpdateView, self).get_context_data(**kwargs)
+        context['actions'] = Action.objects.all()
+        return context
+
+
+class ActionDeleteView(DeleteView):
+    model = Action
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')

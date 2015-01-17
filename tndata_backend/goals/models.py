@@ -123,6 +123,22 @@ class Action(models.Model):
         self.name_slug = slugify(self.name)
         super(Action, self).save(*args, **kwargs)
 
+    @property
+    def categories(self):
+        """A Queryset of categories in which this action is listed."""
+        return Category.objects.filter(
+            id__in=self.interests.values_list("categories")
+        )
+
+    def get_absolute_url(self):
+        return reverse('goals:action-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:action-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:action-delete', args=[self.name_slug])
+
     def reminder(self, user):
         """Get reminder info for a given user. Returns a tuple of:
 

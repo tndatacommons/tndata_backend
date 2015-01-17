@@ -1,0 +1,39 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+<h1>{% if object %}Action: {{object.name}}{% else %}Create Action{% endif %}</h1>
+
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}" method="post">{% csrf_token %}
+    {{ form }}
+    <hr/>
+    <button type="submit">Create Action</button>
+    </form>
+  </div>
+  <div class="large-6 small-12 columns">
+    <table>
+      <caption>Existing Actions</caption>
+      <thead>
+        <tr><th>Order</th><th>Name</th><th>Summary</th><th>Interests</th></tr>
+      </thead>
+      <tbody>
+      {% for action in actions %}
+        <tr>
+          <td>{{ action.order }}</td>
+          <td><a href="{{action.get_absolute_url }}">{{ action.name }}</a></td>
+          <td>{{ action.summary|truncatewords:10 }}</td>
+          <td>
+            {% for action in action.actionerests.all %}
+              {{action}}{% if not forloop.last %}<br/>{% endif %}
+            {% empty %}
+              <em>None</em>
+            {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
