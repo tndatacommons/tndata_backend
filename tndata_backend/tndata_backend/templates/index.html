@@ -17,8 +17,11 @@
 
       <div class="large-6 medium-6 columns">
         <ul>
+          <li><a href="{% url 'goals:index' %}">Manage Goals</a></li>
+          {% if user.is_staff %}
           <li><a href="/admin/">See the admin</a></li>
           <li><a href="/api/">Browse the API</a></li>
+          {% endif %}
         </ul>
       </div>
     </div>
