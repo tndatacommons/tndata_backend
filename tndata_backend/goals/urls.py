@@ -25,6 +25,11 @@ urlpatterns = patterns('',
         views.ActionCreateView.as_view(),
         name='action-create'
     ),
+    url(
+        r'new/upload/$',
+        views.upload_csv,
+        name='upload-csv'
+    ),
 
     # Actions
     url(

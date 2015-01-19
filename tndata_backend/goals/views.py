@@ -1,8 +1,30 @@
+from django.contrib import messages
+from django.core.urlresolvers import reverse_lazy
+from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.core.urlresolvers import reverse_lazy
 
+from . forms import CSVUploadForm
 from . models import Action, Category, Interest
+
+
+def upload_csv(request):
+    """Allow a user to upload a CSV file to populate our data backend."""
+    if request.method == "POST":
+        form = CSVUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            # TODO ... process the csv, and save its data.
+            data = form.get_data()
+            print(data)
+            messages.success(request, 'CSV File uploaded, successfully.')
+            return redirect("goals:index")
+        else:
+            messages.warning(request, "This form didn't validate. Please try again.")
+    else:
+        form = CSVUploadForm()
+
+    context = {'form': form}
+    return render(request, 'goals/upload_csv.html', context)
 
 
 class CategoryListView(ListView):

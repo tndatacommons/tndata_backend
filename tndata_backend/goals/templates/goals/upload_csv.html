@@ -1,0 +1,17 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+
+<p>TODO: Describe the CSV format, here</p>
+
+{% if form %}
+<form enctype="multipart/form-data"
+      action="{% url 'goals:upload-csv' %}"
+      method="post">{% csrf_token %}
+  {{ form }}
+  <hr/>
+  <button type="submit" class="button">Upload CSV</button>
+</form>
+{% endif %}
+
+{% endblock %}
