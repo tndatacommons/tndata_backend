@@ -8,6 +8,9 @@
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:interest-create' %}{% endif %}" method="post">{% csrf_token %}
     {{ form }}
     <hr/>
+    {{ formset }}
+    {{ formset.management_form }}
+    <hr/>
     {% if object %}
       <button type="submit">Update Interest</button>
     {% else %}

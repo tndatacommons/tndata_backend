@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
+from django.forms.models import modelformset_factory
 from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import CSVUploadForm
-from . models import Action, Category, Interest
+from . models import Action, Category, Interest, InterestGroup
 from . utils import get_max_order
 
 
@@ -90,7 +91,7 @@ class InterestDetailView(DetailView):
 
 class InterestCreateView(CreateView):
     model = Interest
-    fields = ['order', 'name', 'description', 'categories']
+    fields = ['order', 'name', 'description']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -100,10 +101,49 @@ class InterestCreateView(CreateView):
             initial['order'] = get_max_order(Interest)
         return initial
 
+    def get_interest_group_formset(self, post_data=None):
+        InterestGroupFormset = modelformset_factory(
+            InterestGroup,
+            fields=('category', 'name'),
+            extra=3
+        )
+        if post_data:
+            formset = InterestGroupFormset(post_data, prefix="group")
+        else:
+            formset = InterestGroupFormset(
+                queryset=InterestGroup.objects.none(),
+                prefix="group"
+            )
+        return formset
+
     def get_context_data(self, **kwargs):
         context = super(InterestCreateView, self).get_context_data(**kwargs)
         context['interests'] = Interest.objects.all()
+        if 'formset' not in kwargs:
+            context['formset'] = self.get_interest_group_formset()
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        formset = self.get_interest_group_formset(request.POST)
+        if form.is_valid() and formset.is_valid():
+            return self.form_valid(form, formset)
+        else:
+            return self.form_invalid(form, formset)
+
+    def form_invalid(self, form, formset=None):
+        context = self.get_context_data(form=form, formset=formset)
+        return self.render_to_response(context)
+
+    def form_valid(self, form, formset):
+        self.object = form.save()
+        for instance in formset.save(commit=False):
+            instance.interest = self.object
+            instance.save()
+        formset.save_m2m()
+        return super(InterestCreateView, self).form_valid(form)
 
 
 class InterestUpdateView(UpdateView):
