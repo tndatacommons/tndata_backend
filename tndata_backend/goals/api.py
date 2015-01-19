@@ -1,5 +1,4 @@
-import re
-from rest_framework import fields, permissions, serializers, viewsets
+from rest_framework import permissions, serializers, viewsets
 from . import models
 
 
@@ -8,28 +7,6 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
-
-
-class TextArrayField(fields.ModelField):
-    """A Simple serializer field for a djorm_pgarray.fields.TextArrayField.
-
-    Usage: Include on a Serializer subclass, and specify the `model_field`. This
-    will be used to convert input back to a python object.
-
-    """
-    def from_native(self, value):
-        # Input values may be a string that looks anything like:
-        #
-        #   '["one", "two", "three"]'
-        #   '[one, two, three]'
-        #   'one, two, three'
-        #
-        values = re.sub(r'[\[|\]|"|\']', '', value).split(',')
-        values = [v.strip() for v in values]
-        return self.model_field.field.to_python(values)
-
-    def field_to_native(self, obj, field_name):
-        return getattr(obj, field_name, None)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -47,14 +24,10 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 class InterestSerializer(serializers.ModelSerializer):
     """A Serializer for `Interest`."""
-    max_neef_tags = TextArrayField(model_field=models.Interest.max_neef_tags)
 
     class Meta:
         model = models.Interest
-        fields = (
-            'id', 'order', 'name', 'description', 'categories',
-            'max_neef_tags', 'sdt_major'
-        )
+        fields = ('id', 'order', 'name', 'description', 'categories')
         depth = 1
 
 

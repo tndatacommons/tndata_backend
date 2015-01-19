@@ -8,12 +8,6 @@
       <div class="large-6 small-6 columns">
         <h2><a href="{{ interest.get_absolute_url }}">{{ interest }}</a></h2>
         {{ interest.description|truncatewords:10}}
-        {% for t in interest.max_neef_tags %}
-          <span class="secondary label">{{t}}</span>
-        {% endfor %}
-        {% if interest.sdt_major %}
-          <span class="secondary label">{{ interest.sdt_major }}</span>
-        {% endif %}
       </div>
 
       <div class="large-3 small-3 columns">

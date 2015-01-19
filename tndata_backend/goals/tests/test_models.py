@@ -45,7 +45,6 @@ class TestInterest(TestCase):
             order=1,
             name='Test Interest',
             description='Heres a description',
-            max_neef_tags=['subsistence', 'protection', 'affection'],
         )
         self.interest.categories.add(self.category)
 
@@ -72,7 +71,6 @@ class TestAction(TestCase):
             order=1,
             name='Test Interest',
             description='Heres a description',
-            max_neef_tags=['subsistence', 'protection', 'affection'],
         )
         self.interest.categories.add(self.category)
 
@@ -125,7 +123,6 @@ class TestCustomReminder(TestCase):
             order=1,
             name='Test Interest',
             description='Heres a description',
-            max_neef_tags=['subsistence', 'protection', 'affection'],
         )
         self.interest.categories.add(self.category)
 
@@ -178,7 +175,6 @@ class TestSelectedAction(TestCase):
             order=1,
             name='Test Interest',
             description='Heres a description',
-            max_neef_tags=['subsistence', 'protection', 'affection'],
         )
         self.interest.categories.add(self.category)
 
@@ -234,7 +230,6 @@ class TestActionTaken(TestCase):
             order=1,
             name='Test Interest',
             description='Heres a description',
-            max_neef_tags=['subsistence', 'protection', 'affection'],
         )
         self.interest.categories.add(self.category)
 

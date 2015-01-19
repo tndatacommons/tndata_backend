@@ -81,10 +81,7 @@ class InterestDetailView(DetailView):
 
 class InterestCreateView(CreateView):
     model = Interest
-    fields = [
-        'order', 'name', 'description', 'categories',
-        'max_neef_tags', 'sdt_major'
-    ]
+    fields = ['order', 'name', 'description', 'categories']
 
     def get_context_data(self, **kwargs):
         context = super(InterestCreateView, self).get_context_data(**kwargs)
@@ -96,10 +93,7 @@ class InterestUpdateView(UpdateView):
     model = Interest
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-    fields = [
-        'order', 'name', 'description', 'categories',
-        'max_neef_tags', 'sdt_major'
-    ]
+    fields = ['order', 'name', 'description', 'categories']
 
     def get_context_data(self, **kwargs):
         context = super(InterestUpdateView, self).get_context_data(**kwargs)
