@@ -6,6 +6,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import CSVUploadForm
 from . models import Action, Category, Interest
+from . utils import get_max_order
 
 
 def upload_csv(request):
@@ -42,6 +43,14 @@ class CategoryDetailView(DetailView):
 class CategoryCreateView(CreateView):
     model = Category
     fields = ['order', 'name', 'description']
+
+    def get_initial(self, *args, **kwargs):
+        """Pre-populate the value for the initial order. This can't be done
+        at the class level because we want to query the value each time."""
+        initial = super(CategoryCreateView, self).get_initial(*args, **kwargs)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(Category)
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super(CategoryCreateView, self).get_context_data(**kwargs)
@@ -82,6 +91,14 @@ class InterestDetailView(DetailView):
 class InterestCreateView(CreateView):
     model = Interest
     fields = ['order', 'name', 'description', 'categories']
+
+    def get_initial(self, *args, **kwargs):
+        """Pre-populate the value for the initial order. This can't be done
+        at the class level because we want to query the value each time."""
+        initial = super(InterestCreateView, self).get_initial(*args, **kwargs)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(Interest)
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super(InterestCreateView, self).get_context_data(**kwargs)
@@ -125,6 +142,14 @@ class ActionCreateView(CreateView):
         'order', 'name', 'summary', 'description', 'interests',
         'default_reminder_time', 'default_reminder_frequency',
     ]
+
+    def get_initial(self, *args, **kwargs):
+        """Pre-populate the value for the initial order. This can't be done
+        at the class level because we want to query the value each time."""
+        initial = super(ActionCreateView, self).get_initial(*args, **kwargs)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(Action)
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
