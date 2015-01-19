@@ -16,8 +16,6 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.text import slugify
 
-from djorm_pgarray import fields as pg_fields
-
 
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
@@ -56,7 +54,7 @@ class Interest(models.Model):
     name = models.CharField(max_length=128, db_index=True, unique=True)
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, through="InterestGroup")
 
     def __str__(self):
         return self.name
@@ -79,6 +77,27 @@ class Interest(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:interest-delete', args=[self.name_slug])
+
+
+class InterestGroup(models.Model):
+    """This is a `through` model that associates Interests with Categories.
+    It allows additional information, such as:
+
+    * a name for the relationships
+    * whether or not the relationship is public/published
+
+    """
+    interest = models.ForeignKey(Interest)
+    category = models.ForeignKey(Category)
+    name = models.CharField(max_length=128)
+    public = models.BooleanField(default=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Interest Group"
+        verbose_name_plural = "Interest Groups"
 
 
 class Action(models.Model):

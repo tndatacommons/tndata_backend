@@ -8,13 +8,20 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(models.Category, CategoryAdmin)
 
 
+class InterestGroupInline(admin.TabularInline):
+    model = models.InterestGroup
+
+
 class InterestAdmin(admin.ModelAdmin):
     list_display = ('order', 'name',)
+    prepopulated_fields = {"name_slug": ("name", )}
+    inlines = [InterestGroupInline]
 admin.site.register(models.Interest, InterestAdmin)
 
 
 class ActionAdmin(admin.ModelAdmin):
     list_display = ('order', 'name')
+    prepopulated_fields = {"name_slug": ("name", )}
 admin.site.register(models.Action, ActionAdmin)
 
 
