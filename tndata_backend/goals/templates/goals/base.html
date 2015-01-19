@@ -17,14 +17,21 @@
   <section class="top-bar-section">
     {# Right Nav Section #}
     <ul class="right">
+      <li class="divider"></li>
+      <li class="active"><a href="{% url 'goals:upload-csv' %}">Upload CSV</a></li>
+      <li class="divider"></li>
       <li><a href="/admin/">Admin</a></li>
+      <li class="divider"></li>
       <li><a href="#">Logout</a></li>
     </ul>
 
     {# Left Nav Section #}
     <ul class="left">
+      <li class="divider"></li>
       <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
+      <li class="divider"></li>
       <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+      <li class="divider"></li>
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
@@ -33,6 +40,7 @@
           <li><a href="{% url 'goals:action-create' %}">Action</a></li>
         </ul>
       </li>
+      <li class="divider"></li>
     </ul>
   </section>
   </nav>
@@ -40,6 +48,16 @@
 
   <div class="row">
     <div class="large-12 small-12 columns">
+
+    {# django.contrib.messages #}
+    {% if messages %}
+      {% for message in messages %}
+        <div data-alert class="alert-box {{message.tags}}">
+          {{ message }} <a href="#" class="close">&times;</a>
+        </div>
+      {% endfor %}
+    {% endif %}
+
     {% block content %}{% endblock %}
     </div>
   </div>
