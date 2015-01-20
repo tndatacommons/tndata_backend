@@ -1,39 +1,43 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
-
-  <hr/>
-  {% for interest in interests %}
-    <div class="row">
-      <div class="large-6 small-6 columns">
-        <h2><a href="{{ interest.get_absolute_url }}">{{ interest }}</a></h2>
-        {{ interest.description|truncatewords:10}}
-      </div>
-
-      <div class="large-3 small-3 columns">
-        <h3 class="subheader">Actions</h3>
-        <ul>
-        {% for action in interest.action_set.all %}
-          <li><a href="{{ action.get_absolute_url }}">{{ action }}</a></li>
-        {% empty %}
-          <li><em>Contains no Actions</em></li>
-        {% endfor %}
-        </ul>
-      </div>
-
-      <div class="large-3 small-3 columns">
-        <h3 class="subheader">Categories</h3>
-        <ul>
-        {% for cat in interest.categories.all %}
-          <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
-        {% empty %}
-          <li><em>Not listed in a Category</em></li>
-        {% endfor %}
-        </ul>
-      </div>
-
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Interests</h1>
+      <table>
+      <thead>
+      <tr>
+        <th>Interest</th>
+        <th>Actions</th>
+        <th>Category/Group</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for interest in interests %}
+        <tr>
+        <td>
+          <strong>
+            <a href="{{ interest.get_absolute_url }}">{{ interest }}</a>
+          </strong><br/>
+          {{ interest.description|truncatewords:10}}
+        </td>
+        <td>
+          {% for action in interest.action_set.all %}
+            <a href="{{ action.get_absolute_url }}">{{ action }}</a><br/>
+          {% empty %}
+            <em>None</em>
+          {% endfor %}
+        </td>
+        <td>
+          {% for group in interest.groups %}
+            {{ group }}<br/>{% empty %}<em>None</em>
+          {% endfor %}
+        </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
     </div> {# end .row #}
-    <hr/>
-  {% endfor %}
+  </div> {# end .row #}
 {% endblock %}
 

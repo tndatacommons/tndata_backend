@@ -1,39 +1,45 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
-
-  <hr/>
-  {% for action in actions %}
-    <div class="row">
-      <div class="large-6 small-6 columns">
-        <h2><a href="{{ action.get_absolute_url }}">{{ action }}</a></h2>
-        {{ action.summary|truncatewords:10}}
-      </div>
-
-      <div class="large-3 small-3 columns">
-        <h3 class="subheader">Interests</h3>
-        <ul>
-        {% for int in action.interests.all %}
-          <li><a href="{{ int.get_absolute_url }}">{{ int }}</a></li>
-        {% empty %}
-          <li><em>Not listed in an Interest</em></li>
-        {% endfor %}
-        </ul>
-      </div>
-
-      <div class="large-3 small-3 columns">
-        <h3 class="subheader">Categories</h3>
-        <ul>
-        {% for cat in action.categories %}
-          <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
-        {% empty %}
-          <li><em>Not listed in a Category</em></li>
-        {% endfor %}
-        </ul>
-      </div>
-
-    </div> {# end .row #}
-    <hr/>
-  {% endfor %}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <h1>Actions</h1>
+    <table>
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Interests</th>
+        <th>Categories/Groups</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for action in actions %}
+      <tr>
+        <td>
+          <strong>
+            <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+          </strong><br/>
+          {{ action.summary|truncatewords:10}}
+        </td>
+        <td>
+          {% for int in action.interests.all %}
+            <a href="{{ int.get_absolute_url }}">{{ int }}</a>
+          {% empty %}
+            <em>None</em>
+          {% endfor %}
+        </td>
+        <td>
+          {% for cat in action.categories %}
+            <a href="{{ cat.get_absolute_url }}">{{ cat }}</a>
+          {% empty %}
+            <em>None</em>
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div> {# end .row #}
+</div> {# end .row #}
 {% endblock %}
 
