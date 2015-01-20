@@ -1,0 +1,33 @@
+{% extends "goals/base.html" %}
+{% load goal_tags %}
+
+{% block content %}
+
+  <h1>{{ interestgroup.name }} {% object_controls interestgroup %}</h1>
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <p>This Interest Group contains the following Interests and Actions:</p>
+      <ul>
+      {% for int in interestgroup.interests.all %}
+        <li><a href="{{ int.get_absolute_url }}">{{ int }}</a></li>
+      {% empty %}
+        <li><em>There are no interests within this group</em></li>
+      {% endfor %}
+      </ul>
+    </div>
+    <div class="large-6 small-12 columns">
+      <div class="panel">
+        <h2>Categories</h2>
+        <p><em>{{ interestgroup.name }}</em> belongs to the
+           <em>{{ interestgroup.category }}</em> Category, along with:</p>
+        <ul>
+        {% for group in interestgroup.category.groups %}
+          {% if group != interestgroup %}
+          <li><a href="{{group.get_absolute_url}}">{{ group.name }}</a></li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div> {# end .row #}
+{% endblock %}

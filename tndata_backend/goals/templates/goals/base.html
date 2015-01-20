@@ -34,6 +34,8 @@ select[multiple] {min-height: 100px;}
     {# Left Nav Section #}
     <ul class="left">
       <li class="divider"></li>
+      <li><a href="{% url 'goals:group-list' %}">Interest Groups</a></li>
+      <li class="divider"></li>
       <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
@@ -42,6 +44,7 @@ select[multiple] {min-height: 100px;}
         <a href="#">New</a>
         <ul class="dropdown">
           <li><a href="{% url 'goals:category-create' %}">Category</a></li>
+          <li><a href="{% url 'goals:group-create' %}">Interest Group</a></li>
           <li><a href="{% url 'goals:interest-create' %}">Interest</a></li>
           <li><a href="{% url 'goals:action-create' %}">Action</a></li>
         </ul>

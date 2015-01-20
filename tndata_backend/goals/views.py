@@ -260,6 +260,46 @@ class InterestDeleteView(DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
+class InterestGroupListView(ListView):
+    model = InterestGroup
+    context_object_name = 'interestgroups'
+
+
+class InterestGroupDetailView(DetailView):
+    queryset = InterestGroup.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+
+class InterestGroupCreateView(CreateView):
+    model = InterestGroup
+    fields = ['category', 'interests', 'name']
+
+    def get_context_data(self, **kwargs):
+        context = super(InterestGroupCreateView, self).get_context_data(**kwargs)
+        context['interestgroups'] = InterestGroup.objects.all()
+        return context
+
+
+class InterestGroupUpdateView(UpdateView):
+    model = InterestGroup
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    fields = ['category', 'interests', 'name']
+
+    def get_context_data(self, **kwargs):
+        context = super(InterestGroupUpdateView, self).get_context_data(**kwargs)
+        context['interestgroups'] = InterestGroup.objects.all()
+        return context
+
+
+class InterestGroupDeleteView(DeleteView):
+    model = InterestGroup
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:index')
+
+
 class ActionListView(ListView):
     model = Action
     context_object_name = 'actions'

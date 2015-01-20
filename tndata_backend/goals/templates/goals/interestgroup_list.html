@@ -1,0 +1,38 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Interest Groups</h1>
+      <table>
+      <thead>
+      <tr>
+        <th>Group</th>
+        <th>Interests</th>
+        <th>Category</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for ig in interestgroups %}
+        <tr>
+        <td>
+          <strong><a href="{{ ig.get_absolute_url }}">{{ ig.name }}</a></strong>
+        </td>
+        <td>
+          {% for interest in ig.interests.all %}
+            <a href="{{ interest.get_absolute_url }}">{{ interest }}</a><br/>
+          {% empty %}
+            <em>None</em>
+          {% endfor %}
+        </td>
+        <td>
+          <a href="{{ ig.category.get_absolute_url }}">{{ ig.category }}</a>
+        </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div> {# end .row #}
+  </div> {# end .row #}
+{% endblock %}
+
