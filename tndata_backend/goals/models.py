@@ -64,6 +64,11 @@ class Interest(models.Model):
         verbose_name = "Interest"
         verbose_name_plural = "Interest"
 
+    @property
+    def named_categories(self):
+        """Return a QuerySet of `InterestGroup`s related to this Interest."""
+        return self.interestgroup_set.all()
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
@@ -77,7 +82,6 @@ class Interest(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:interest-delete', args=[self.name_slug])
-
 
 class InterestGroup(models.Model):
     """This is a `through` model that associates Interests with Categories.
