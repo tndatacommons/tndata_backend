@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from . forms import CSVUploadForm
+from . forms import CSVUploadForm, InterestGroupSelectionForm
 from . models import Action, Category, Interest, InterestGroup
 from . utils import get_max_order
 
@@ -140,48 +140,38 @@ class InterestCreateView(CreateView):
             initial['order'] = get_max_order(Interest)
         return initial
 
-    def get_interestgroup_formset(self, post_data=None):
-        InterestGroupFormset = modelformset_factory(
-            InterestGroup,
-            fields=('category', 'interests', 'name'),
-            extra=3
-        )
+    def get_interestgroup_form(self, post_data=None):
         if post_data:
-            formset = InterestGroupFormset(post_data, prefix="group")
+            form = InterestGroupSelectionForm(post_data, prefix="ig")
         else:
-            formset = InterestGroupFormset(
-                queryset=InterestGroup.objects.none(),
-                prefix="group"
-            )
-        return formset
+            form = InterestGroupSelectionForm(prefix="ig")
+        return form
 
     def get_context_data(self, **kwargs):
         context = super(InterestCreateView, self).get_context_data(**kwargs)
         context['interests'] = Interest.objects.all()
-        if 'formset' not in kwargs:
-            context['formset'] = self.get_interestgroup_formset()
+        if 'ig_form' not in kwargs:
+            context['ig_form'] = self.get_interestgroup_form()
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = None
         form_class = self.get_form_class()
         form = self.get_form(form_class)
-        formset = self.get_interestgroup_formset(request.POST)
-        if form.is_valid() and formset.is_valid():
-            return self.form_valid(form, formset)
+        ig_form = self.get_interestgroup_form(request.POST)
+        if form.is_valid() and ig_form.is_valid():
+            return self.form_valid(form, ig_form)
         else:
-            return self.form_invalid(form, formset)
+            return self.form_invalid(form, ig_form)
 
-    def form_invalid(self, form, formset=None):
-        context = self.get_context_data(form=form, formset=formset)
+    def form_invalid(self, form, ig_form=None):
+        context = self.get_context_data(form=form, ig_form=ig_form)
         return self.render_to_response(context)
 
-    def form_valid(self, form, formset):
+    def form_valid(self, form, ig_form):
         self.object = form.save()
-        for instance in formset.save(commit=False):
-            instance.interest = self.object
-            instance.save()
-        formset.save_m2m()
+        for ig in ig_form.cleaned_data['add_to_groups']:
+            ig.interests.add(self.object)
         return super(InterestCreateView, self).form_valid(form)
 
 

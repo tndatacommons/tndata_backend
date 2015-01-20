@@ -1,5 +1,17 @@
 import csv
 from django import forms
+from . models import InterestGroup
+
+
+class InterestGroupSelectionForm(forms.Form):
+    """This form allows a user to select multiple `InterestGroup`s.
+
+    It is currently used to allow a user to assign a new/existing Interest
+    to InterestGroups / Categories.
+    """
+    add_to_groups = forms.ModelMultipleChoiceField(
+        queryset=InterestGroup.objects.all()
+    )
 
 
 class CSVUploadForm(forms.Form):
