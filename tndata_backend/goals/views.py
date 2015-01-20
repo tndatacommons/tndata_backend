@@ -56,7 +56,46 @@ class CategoryCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super(CategoryCreateView, self).get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
+        if 'formset' not in kwargs:
+            context['formset'] = self.get_interestgroup_formset()
         return context
+
+    def get_interestgroup_formset(self, post_data=None):
+        InterestGroupFormset = modelformset_factory(
+            InterestGroup,
+            fields=('name', ),
+            extra=6
+        )
+        if post_data:
+            formset = InterestGroupFormset(post_data, prefix="ig")
+        else:
+            formset = InterestGroupFormset(
+                queryset=InterestGroup.objects.none(),
+                prefix="ig"
+            )
+        return formset
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        formset = self.get_interestgroup_formset(request.POST)
+        if form.is_valid() and formset.is_valid():
+            return self.form_valid(form, formset)
+        else:
+            return self.form_invalid(form, formset)
+
+    def form_invalid(self, form, formset=None):
+        context = self.get_context_data(form=form, formset=formset)
+        return self.render_to_response(context)
+
+    def form_valid(self, form, formset):
+        self.object = form.save()
+        for instance in formset.save(commit=False):
+            instance.category = self.object
+            instance.save()
+        formset.save_m2m()
+        return super(CategoryCreateView, self).form_valid(form)
 
 
 class CategoryUpdateView(UpdateView):
@@ -101,10 +140,10 @@ class InterestCreateView(CreateView):
             initial['order'] = get_max_order(Interest)
         return initial
 
-    def get_interest_group_formset(self, post_data=None):
+    def get_interestgroup_formset(self, post_data=None):
         InterestGroupFormset = modelformset_factory(
             InterestGroup,
-            fields=('category', 'name'),
+            fields=('category', 'interests', 'name'),
             extra=3
         )
         if post_data:
@@ -120,14 +159,14 @@ class InterestCreateView(CreateView):
         context = super(InterestCreateView, self).get_context_data(**kwargs)
         context['interests'] = Interest.objects.all()
         if 'formset' not in kwargs:
-            context['formset'] = self.get_interest_group_formset()
+            context['formset'] = self.get_interestgroup_formset()
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = None
         form_class = self.get_form_class()
         form = self.get_form(form_class)
-        formset = self.get_interest_group_formset(request.POST)
+        formset = self.get_interestgroup_formset(request.POST)
         if form.is_valid() and formset.is_valid():
             return self.form_valid(form, formset)
         else:

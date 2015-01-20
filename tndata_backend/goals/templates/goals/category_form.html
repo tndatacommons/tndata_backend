@@ -5,7 +5,14 @@
 <div class="row">
   <div class="large-6 small-12 columns">
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}" method="post">{% csrf_token %}
-{{ form }}
+    <p>To create a category, add information to the following fields:</p>
+    {{ form }}
+    <hr/>
+    <h2 class="subheader">Interest Groups</h2>
+    <p>You may also create groups in which Interests can be later added. All
+    of these are optional.</p>
+    {{ formset }}
+    {{ formset.management_form }}
     <hr/>
     {% if object %}
       <button type="submit">Update Category</button>
