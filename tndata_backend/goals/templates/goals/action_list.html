@@ -29,8 +29,8 @@
           {% endfor %}
         </td>
         <td>
-          {% for cat in action.categories %}
-            <a href="{{ cat.get_absolute_url }}">{{ cat }}</a>
+          {% for group in action.groups %}
+            <a href="{{ group.category.get_absolute_url }}">{{ group }}</a>
           {% empty %}
             <em>None</em>
           {% endfor %}
