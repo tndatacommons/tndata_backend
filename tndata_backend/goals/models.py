@@ -93,6 +93,15 @@ class Interest(models.Model):
     def get_delete_url(self):
         return reverse('goals:interest-delete', args=[self.name_slug])
 
+    def remove_from_interestgroups(self):
+        """Remove this Interest from the InterestGroups with which it is
+        associated. This is called when updateing an Interest, but de-selecting
+        InterestGroups.
+
+        """
+        for ig in self.groups:
+            ig.interests.remove(self)
+
 
 class InterestGroup(models.Model):
     """This is a model that associates Interests with Categories."""
