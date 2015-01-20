@@ -121,7 +121,7 @@ class InterestGroup(models.Model):
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
-        super(Interest, self).save(*args, **kwargs)
+        super(InterestGroup, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('goals:group-detail', args=[self.name_slug])
