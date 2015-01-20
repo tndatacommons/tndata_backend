@@ -150,7 +150,12 @@ class InterestUpdateView(UpdateView):
     model = Interest
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-    fields = ['order', 'name', 'description', 'categories']
+    fields = ['order', 'name', 'description']
+
+    # -------------------------------------------------------------------------
+    # TODO: Include a formset to edit the named relationships to categories
+    # (see the InterestCreateView)
+    # -------------------------------------------------------------------------
 
     def get_context_data(self, **kwargs):
         context = super(InterestUpdateView, self).get_context_data(**kwargs)
