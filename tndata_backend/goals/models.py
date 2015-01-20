@@ -38,7 +38,7 @@ class Category(models.Model):
 
     @property
     def interests(self):
-        ids = self.groups.values_list('interest', flat=True)
+        ids = self.groups.values_list('interests', flat=True)
         return Interest.objects.filter(id__in=ids).distinct()
 
     def save(self, *args, **kwargs):
@@ -97,7 +97,7 @@ class Interest(models.Model):
 class InterestGroup(models.Model):
     """This is a model that associates Interests with Categories."""
     category = models.ForeignKey(Category)
-    interest = models.ManyToManyField(Interest, blank=True, null=True)
+    interests = models.ManyToManyField(Interest, blank=True, null=True)
     name = models.CharField(max_length=128)
     public = models.BooleanField(default=True, blank=True)
 

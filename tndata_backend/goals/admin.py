@@ -4,7 +4,7 @@ from . import models
 
 class InterestGroupInline(admin.TabularInline):
     model = models.InterestGroup
-    fields = ('category', 'interest', 'name', 'public')
+    fields = ('category', 'interests', 'name', 'public')
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -16,7 +16,7 @@ admin.site.register(models.Category, CategoryAdmin)
 
 class InterestGroupInlineForInterestAdmin(admin.TabularInline):
     """This inline allows selection of InterestGroups while editing an Interest."""
-    model = models.InterestGroup.interest.through
+    model = models.InterestGroup.interests.through
 
 
 class InterestAdmin(admin.ModelAdmin):
