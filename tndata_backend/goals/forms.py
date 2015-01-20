@@ -13,6 +13,14 @@ class InterestGroupSelectionForm(forms.Form):
         queryset=InterestGroup.objects.all()
     )
 
+    def __init__(self, *args, **kwargs):
+        # Grab some form-provided values for the `add_to_groups` field.
+        qs = kwargs.pop('queryset', InterestGroup.objects.all())
+        initial = kwargs.pop('initial', None)
+        super(InterestGroupSelectionForm, self).__init__(*args, **kwargs)
+        self.fields['add_to_groups'].queryset = qs
+        self.fields['add_to_groups'].initial = initial
+
 
 class CSVUploadForm(forms.Form):
     csv_file = forms.FileField(
