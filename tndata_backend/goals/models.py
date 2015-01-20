@@ -107,7 +107,8 @@ class InterestGroup(models.Model):
     """This is a model that associates Interests with Categories."""
     category = models.ForeignKey(Category)
     interests = models.ManyToManyField(Interest, blank=True, null=True)
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, db_index=True, unique=True)
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     public = models.BooleanField(default=True, blank=True)
 
     def __str__(self):
@@ -116,6 +117,20 @@ class InterestGroup(models.Model):
     class Meta:
         verbose_name = "Interest Group"
         verbose_name_plural = "Interest Groups"
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(Interest, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('goals:group-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:group-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:group-delete', args=[self.name_slug])
 
 
 class Action(models.Model):
