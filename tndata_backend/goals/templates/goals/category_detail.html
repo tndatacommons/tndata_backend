@@ -6,7 +6,7 @@
   <hr/>
   <dl class="sub-nav">
     <dt>Interests:</dt>
-    {% for interest in category.interest_set.all %}
+    {% for interest in category.interests %}
     <dd><a href="#int-{{interest.id}}">{{ interest.name }}</a></dd>
     {% endfor %}
   </dl>
@@ -15,15 +15,19 @@
   <h1>{{ category.name }} {% object_controls category %}</h1>
   {{ category.description|linebreaks }}
 
-  {% for interest in category.interest_set.all %}
-    <h2 id="int-{{interest.id}}" data-magellan-destination="int-{{interest.id}}">
-      {{ interest.name }}
-      {% object_controls interest %}
-    </h2>
-
+  {% for interest in category.interests %}
     <div class="row">
       <div class="large-4 small-12 columns">
-        <div class="panel">{{ interest.description|linebreaks}}</div>
+        <h2 id="int-{{interest.id}}" data-magellan-destination="int-{{interest.id}}">
+          {{ interest.name }}
+          {% object_controls interest %}
+        </h2>
+        {% for group in interest.groups %}
+          <span class="secondary label">{{ group.name }}</span>
+        {% endfor %}
+        <div class="panel">
+          {{ interest.description|linebreaks}}
+        </div>
       </div>
 
       <div class="large-8 small-12 columns">

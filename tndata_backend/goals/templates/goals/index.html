@@ -11,19 +11,23 @@
       </div>
       <div class="large-8 small-6 columns">
         <ul class="button-group">
-          <li><a href="{{ category.get_update_url }}" class="button small">Update</a></li>
-          <li><a href="{{ category.get_delete_url }}" class="button small alert">Delete</a></li>
+          <li><a href="{{ category.get_update_url }}"
+                 class="button small">Update</a></li>
+          <li><a href="{{ category.get_delete_url }}"
+                 class="button small alert">Delete</a></li>
         </ul>
+        <h2 class="subheader">Interests</h2>
         <ul>
-        {% for interest in category.interest_set.all %}
-          <li>
-            <strong>{{ interest.name }}</strong>:
-            {% for act in interest.action_set.all %}
-              {{ act.name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-              <em>No Actions Listed</em>
+        {% for group in category.groups %}
+          <li><strong>{{ group.name }}</strong>
+            <ul>
+            {% for interest in group.interests.all %}
+              <li>{{ interest.name }}</li>
             {% endfor %}
+            </ul>
           </li>
+        {% empty %}
+          <li><em>No Interests for this Category</em></li>
         {% endfor %}
         </ul>
       </div>
