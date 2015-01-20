@@ -8,4 +8,5 @@ def get_max_order(model):
 
     """
     result = model.objects.aggregate(Max('order'))
-    return result['order__max'] + 1
+    current_num = result['order__max'] or 0
+    return current_num + 1
