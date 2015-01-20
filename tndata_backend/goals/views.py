@@ -217,15 +217,40 @@ class InterestUpdateView(UpdateView):
     slug_url_kwarg = "name_slug"
     fields = ['order', 'name', 'description']
 
-    # -------------------------------------------------------------------------
-    # TODO: Include a formset to edit the named relationships to categories
-    # (see the InterestCreateView)
-    # -------------------------------------------------------------------------
+    def get_interestgroup_form(self, post_data=None):
+        if post_data:
+            form = InterestGroupSelectionForm(post_data, prefix="ig")
+        else:
+            form = InterestGroupSelectionForm(initial=self.object.groups, prefix="ig")
+        return form
 
     def get_context_data(self, **kwargs):
         context = super(InterestUpdateView, self).get_context_data(**kwargs)
         context['interests'] = Interest.objects.all()
+        if 'ig_form' not in kwargs:
+            context['ig_form'] = self.get_interestgroup_form()
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        ig_form = self.get_interestgroup_form(request.POST)
+        if form.is_valid() and ig_form.is_valid():
+            return self.form_valid(form, ig_form)
+        else:
+            return self.form_invalid(form, ig_form)
+
+    def form_invalid(self, form, ig_form=None):
+        context = self.get_context_data(form=form, ig_form=ig_form)
+        return self.render_to_response(context)
+
+    def form_valid(self, form, ig_form):
+        self.object = form.save()
+        self.object.remove_from_interestgroups()  # Remove all existing groups.
+        for ig in ig_form.cleaned_data['add_to_groups']:
+            ig.interests.add(self.object)
+        return super(InterestUpdateView, self).form_valid(form)
 
 
 class InterestDeleteView(DeleteView):
