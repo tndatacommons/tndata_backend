@@ -154,11 +154,9 @@ class Action(models.Model):
         super(Action, self).save(*args, **kwargs)
 
     @property
-    def categories(self):
-        """A Queryset of categories in which this action is listed."""
-        return Category.objects.filter(
-            id__in=self.interests.values_list("categories")
-        )
+    def groups(self):
+        """A Queryset of InterestGroups in which this action is listed."""
+        return InterestGroup.objects.filter(interests=self.interests)
 
     def get_absolute_url(self):
         return reverse('goals:action-detail', args=[self.name_slug])
