@@ -8,9 +8,12 @@ class InterestGroupInline(admin.TabularInline):
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('order', 'name', 'name_slug')
+    list_display = ('order', 'name', 'name_slug', 'contains_groups')
     prepopulated_fields = {"name_slug": ("name", )}
     inlines = [InterestGroupInline]
+
+    def contains_groups(self, obj):
+        return ", ".join([g.name for g in obj.groups])
 admin.site.register(models.Category, CategoryAdmin)
 
 
