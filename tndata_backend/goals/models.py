@@ -156,7 +156,7 @@ class Action(models.Model):
     @property
     def groups(self):
         """A Queryset of InterestGroups in which this action is listed."""
-        return InterestGroup.objects.filter(interests=self.interests)
+        return InterestGroup.objects.filter(interests=self.interests.all())
 
     def get_absolute_url(self):
         return reverse('goals:action-detail', args=[self.name_slug])
