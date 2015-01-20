@@ -32,6 +32,15 @@ class Category(models.Model):
         verbose_name = "Category"
         verbose_name_plural = "Category"
 
+    @property
+    def groups(self):
+        return self.interestgroup_set.all()
+
+    @property
+    def interests(self):
+        ids = self.groups.values_list('interest', flat=True)
+        return Interest.objects.filter(id__in=ids).distinct()
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
@@ -48,13 +57,10 @@ class Category(models.Model):
 
 
 class Interest(models.Model):
-    """Essentially a subcategory. These can be grouped into one or more
-    Categories."""
     order = models.PositiveIntegerField(unique=True)
     name = models.CharField(max_length=128, db_index=True, unique=True)
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
-    categories = models.ManyToManyField(Category, through="InterestGroup")
 
     def __str__(self):
         return self.name
@@ -65,9 +71,13 @@ class Interest(models.Model):
         verbose_name_plural = "Interest"
 
     @property
-    def named_categories(self):
-        """Return a QuerySet of `InterestGroup`s related to this Interest."""
+    def groups(self):
         return self.interestgroup_set.all()
+
+    @property
+    def categories(self):
+        ids = self.interestgroup_set.values_list('category', flat=True)
+        return Category.objects.filter(id__in=ids).distinct()
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
@@ -83,21 +93,16 @@ class Interest(models.Model):
     def get_delete_url(self):
         return reverse('goals:interest-delete', args=[self.name_slug])
 
+
 class InterestGroup(models.Model):
-    """This is a `through` model that associates Interests with Categories.
-    It allows additional information, such as:
-
-    * a name for the relationships
-    * whether or not the relationship is public/published
-
-    """
-    interest = models.ForeignKey(Interest)
+    """This is a model that associates Interests with Categories."""
     category = models.ForeignKey(Category)
+    interest = models.ManyToManyField(Interest, blank=True, null=True)
     name = models.CharField(max_length=128)
     public = models.BooleanField(default=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return "{0} / {1}".format(self.category, self.name)
 
     class Meta:
         verbose_name = "Interest Group"
