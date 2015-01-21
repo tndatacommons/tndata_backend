@@ -16,6 +16,11 @@
           Time: {{ action.default_reminder_time }}<br/>
           Frequency: {{ action.default_reminder_frequency }}
         </p>
+        {% if action.has_notes %}
+          <p>
+          {% with obj=action %}{% include 'goals/_cite.html' %}{% endwith %}
+          </p>
+        {% endif %}
       </div>
 
       <div class="panel">

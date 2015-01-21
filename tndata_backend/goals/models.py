@@ -23,6 +23,11 @@ class Category(models.Model):
     name = models.CharField(max_length=128, db_index=True, unique=True)
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes regarding this Category"
+    )
 
     def __str__(self):
         return self.name
@@ -61,6 +66,23 @@ class Interest(models.Model):
     name = models.CharField(max_length=128, db_index=True, unique=True)
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes regarding this Category"
+    )
+    source_name = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        help_text="The name of the source from which this information was adapted."
+    )
+    source_link = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="A link to the source."
+    )
 
     def __str__(self):
         return self.name
@@ -101,6 +123,9 @@ class Interest(models.Model):
         """
         for ig in self.groups:
             ig.interests.remove(self)
+
+    def has_notes(self):
+        return any([self.notes, self.source_name, self.source_link])
 
 
 class InterestGroup(models.Model):
@@ -154,6 +179,23 @@ class Action(models.Model):
         blank=True,
         choices=FREQUENCY_CHOICES
     )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes regarding this Category"
+    )
+    source_name = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        help_text="The name of the source from which this information was adapted."
+    )
+    source_link = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="A link to the source."
+    )
 
     def __str__(self):
         return self.name
@@ -202,6 +244,9 @@ class Action(models.Model):
             return (cr.time, cr.frequency)
         except CustomReminder.DoesNotExist:
             return None
+
+    def has_notes(self):
+        return any([self.notes, self.source_name, self.source_link])
 
 
 class CustomReminder(models.Model):

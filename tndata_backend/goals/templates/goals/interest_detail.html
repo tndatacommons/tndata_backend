@@ -9,6 +9,11 @@
       {{ interest.description|linebreaks }}
     </div>
     <div class="large-6 small-12 columns">
+      {% if interest.has_notes %}
+        <div class="panel">
+        {% with obj=interest %}{% include 'goals/_cite.html' %}{% endwith %}
+        </div>
+      {% endif %}
       <div class="panel">
         <h2>Categories/Groups</h2>
         <p><em>{{interest.name}}</em> is listed in the following Categories/Groups:</p>
