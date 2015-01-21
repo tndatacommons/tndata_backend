@@ -20,6 +20,11 @@ INSTALLED_APPS = INSTALLED_APPS + (
     'debug_toolbar',
 )
 
+# Media Uploads for Development
+# NOTE. during dev, cd into uploads and run `serve 8888`
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+MEDIA_URL = "http://localhost:8888/"
+
 # django-core-headers
 # https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = True
