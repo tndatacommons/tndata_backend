@@ -1,5 +1,11 @@
 {% extends "goals/base.html" %}
 
+{% block head %}
+{{ block.super }}
+{# Give table cells a bit more visibility on this page #}
+<style type="text/css">td {border: 1px solid #ccc;}</style>
+{% endblock %}
+
 {% block content %}
 
 
@@ -13,67 +19,89 @@ and Actions by uploading a spreadsheet. The format of the spreadsheet is
 <code>Interest Group</code>, <code>Interest</code>, or <code>Action</code>),
 followed by data to be stored in the specified fields.</p>
 
-<table>
-<caption>Categories</caption>
-<thead>
-  <tr><th>Data type</th><th>Name</th><th>Description</th></tr>
-</thead>
-<tbody>
-  <tr><td>Category</td><td>[name]</td><td>[description]</td></tr>
-</tbody>
-</table>
+<p>Any empty rows will be ignored, and any data that already exists in the
+database will be updated using the values in the uploaded spreadsheet.</p>
 
 <table>
-<caption>Interests</caption>
-<thead>
-  <tr><th>Data type</th><th>Name</th><th>Description</th></tr>
-</thead>
-<tbody>
-  <tr><td>Interest</td><td>[name]</td><td>[description]</td></tr>
-</tbody>
-</table>
-
-<table>
-<caption>Interest Groups</caption>
-<thead>
-  <tr>
-    <th>Data type</th><th>Category</th><th>Group Name</th>
-    <th colspan="3">Interests...</th>
-  </tr>
-</thead>
+<caption>Spreadsheet Format/Explanation</caption>
 <tbody>
   <tr>
-    <td>Interest Group</td><td>[category name]</td><td>[name]</td>
-    <td>[interest 1 name]</td><td>[interest 2 name]</td><td>[interest 3 name]</td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include this ver-batem to indicate the rest of the data belongs to a category">Category</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name of your Category in this cell">(name)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the description for your Category in this cell">(description)</span></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include this ver-batem to indicate the rest of the data belongs to an Interest">Interest</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name of your Interest in this cell">(name)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the description for your Interest in this cell">(description)</span></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include this ver-batem to indicate the rest of the data belongs to an Interest Group">Interest Group</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name of your Interest Group in this cell">(name)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name of the group's category in this cell">(category name)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name for any additional Interests in the remaining cells">(first interest name)</span></td>
+    <td>(second interest name)</td>
+    <td>(third interest name)</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include this ver-batem to indicate the rest of the data belongs to an Action">Action</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name of your Action in this cell">(action name)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the summary for your Action in this cell">(summary)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the description for your Action in this cell">(description)</span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include a Reminder time for this Action in this cell. Time must be in 24-hour format: EG 1:30pm would be listed as 13:30">(reminder time)<sup>*</sup></span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include a frequencey for the reminder this cell. This must be one of: never, daily, weekly">(reminder frequency)<sup>**</sup></span></td>
+    <td><span data-tooltip aria-haspopup="true" class="has-tip"
+      title="Include the name of an Interest in order to store this Action within that Interest">(first interest name)</span></td>
+    <td>(second interest name)</td>
   </tr>
 </tbody>
 </table>
-
-<table>
-<caption>Actions</caption>
-<thead>
-  <tr>
-    <th>Data type</th><th>Name</th><th>Summary</th><th>Description</th>
-    <th>Reminder Time</th><th>Frequency<sup>*</sup>
-    <th colspan="2">Interests...</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>Action</td><td>[action name]</td><td>[summary]</td><td>[description]</td>
-    <td>[reminder time (24hr format)</td><td>[frequencey]</td>
-    <td>[interest 1 name]</td><td>[interest 2 name]</td>
-  </tr>
-</tbody>
-</table>
-<p><sup>*</sup> Frequency must be one of the following: <code>never</code>,
-  <code>daily</code>, <code>weekly</code>.</p>
+<p>
+  <sup>*</sup> Reminder time must be in 24-hour format. E.G.: 1:30pm would be
+   included as <code>13:30</code><br/>
+  <sup>**</sup> Frequency must be one of the following: <code>never</code>,
+  <code>daily</code>, <code>weekly</code>.
+</p>
 
 <h2 class="subheader">Instructions</h2>
-<p>First, export your data as a <abbr title="Comma Separated Values">CSV</abbr>
-file. Then, uploading it using the form below.</p>
+
+<p><a href="https://docs.google.com/spreadsheets/d/1KPEmdcyRhu1nCiyTNo0966eDWRw15WXaQ4yyXPSSlwQ/edit?usp=sharing" class="button tiny info">Download Template</a><br/>
+This Google Sheet contains a sample template that you can edit. Select <em>File &gt; Download as &gt; Comma Separated Values</em>.</p>
+
+<p>Add your content to the spreadsheet template, and ensure that you save it as a
+<abbr title="Comma Separated Values">CSV</abbr> file. Then, upload it using
+the form below.</p>
 
 {% if form %}
+<div class="panel">
 <form enctype="multipart/form-data"
       action="{% url 'goals:upload-csv' %}"
       method="post">{% csrf_token %}
@@ -81,6 +109,7 @@ file. Then, uploading it using the form below.</p>
   <hr/>
   <button type="submit" class="button">Upload CSV</button>
 </form>
+</div>
 {% endif %}
 
 {% endblock %}
