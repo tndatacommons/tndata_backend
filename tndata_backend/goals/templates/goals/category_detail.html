@@ -16,6 +16,9 @@
   <div class="row">
     {% if category.notes %}
       <div class="large-6 small-12 columns">
+        {% if category.icon %}
+          <img src="{{ category.icon.url }}" style="float:left;">
+        {% endif %}
         {{ category.description|linebreaks }}
       </div>
       <div class="large-6 small-12 columns">
@@ -25,6 +28,9 @@
       </div>
     {% else %}
       <div class="large-12 small-12 columns">
+        {% if category.icon %}
+          <img src="{{ category.icon.url }}" style="float:left;">
+        {% endif %}
         {{ category.description|linebreaks }}
       </div>
     {% endif %}

@@ -50,7 +50,7 @@ class CategoryDetailView(DetailView):
 
 class CategoryCreateView(CreateView):
     model = Category
-    fields = ['order', 'name', 'description', 'notes']
+    fields = ['order', 'name', 'description', 'icon', 'notes']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -109,7 +109,7 @@ class CategoryUpdateView(UpdateView):
     model = Category
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-    fields = ['order', 'name', 'description', 'notes']
+    fields = ['order', 'name', 'description', 'icon', 'notes']
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
@@ -327,7 +327,7 @@ class ActionCreateView(CreateView):
     fields = [
         'order', 'name', 'summary', 'description', 'interests',
         'default_reminder_time', 'default_reminder_frequency',
-        'notes', 'source_name', 'source_link',
+        'icon', 'notes', 'source_name', 'source_link',
     ]
 
     def get_initial(self, *args, **kwargs):
@@ -351,7 +351,7 @@ class ActionUpdateView(UpdateView):
     fields = [
         'order', 'name', 'summary', 'description', 'interests',
         'default_reminder_time', 'default_reminder_frequency',
-        'notes', 'source_name', 'source_link',
+        'icon', 'notes', 'source_name', 'source_link',
     ]
 
     def get_context_data(self, **kwargs):

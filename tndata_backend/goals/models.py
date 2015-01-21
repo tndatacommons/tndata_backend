@@ -16,6 +16,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.text import slugify
 
+# TODO: how to delete icons when the object is delete or when they're removed.
 
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
@@ -23,6 +24,7 @@ class Category(models.Model):
     name = models.CharField(max_length=128, db_index=True, unique=True)
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField()
+    icon = models.ImageField(upload_to="goals/category", null=True, blank=True)
     notes = models.TextField(
         blank=True,
         null=True,
@@ -179,6 +181,7 @@ class Action(models.Model):
         blank=True,
         choices=FREQUENCY_CHOICES
     )
+    icon = models.ImageField(upload_to="goals/action", null=True, blank=True)
     notes = models.TextField(
         blank=True,
         null=True,

@@ -4,7 +4,7 @@
 <h1>{% if object %}Update Category: {{object.name}}{% else %}Create Category{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
-    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}" method="post">{% csrf_token %}
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
     <p>To create a category, add information to the following fields:</p>
     {{ form }}
     <hr/>
