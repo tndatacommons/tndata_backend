@@ -15,13 +15,20 @@ def upload_csv(request):
     if request.method == "POST":
         form = CSVUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            # TODO ... process the csv, and save its data.
-            data = form.get_data()
-            print(data)
-            messages.success(request, 'CSV File uploaded, successfully.')
-            return redirect("goals:index")
+            try:
+                form.save()
+                messages.success(request, 'CSV File uploaded, successfully.')
+                return redirect("goals:index")
+            except CSVUploadForm.InvalidFormat as e:
+                messages.error(
+                    request, "The uploaded file could not be "
+                    "processed. Please check the format and try again: "
+                    " {0}".format(e)
+                )
         else:
-            messages.warning(request, "This form didn't validate. Please try again.")
+            messages.warning(
+                request, "This form didn't validate. Please try again."
+            )
     else:
         form = CSVUploadForm()
 
