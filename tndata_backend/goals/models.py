@@ -14,9 +14,10 @@ Actions are the things we want to help people to do.
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.text import slugify
 
-# TODO: how to delete icons when the object is delete or when they're removed.
 
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
@@ -61,6 +62,14 @@ class Category(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:category-delete', args=[self.name_slug])
+
+
+@receiver(post_delete, sender=Category)
+def delete_category_icon(sender, instance, using, **kwargs):
+    """Once a Category has been deleted, this will remove its icon from the
+    filesystem."""
+    if instance.icon:
+        instance.icon.delete()
 
 
 class Interest(models.Model):
@@ -250,6 +259,14 @@ class Action(models.Model):
 
     def has_notes(self):
         return any([self.notes, self.source_name, self.source_link])
+
+
+@receiver(post_delete, sender=Action)
+def delete_action_icon(sender, instance, using, **kwargs):
+    """Once an Action has been deleted, this will remove its icon from the
+    filesystem."""
+    if instance.icon:
+        instance.icon.delete()
 
 
 class CustomReminder(models.Model):
