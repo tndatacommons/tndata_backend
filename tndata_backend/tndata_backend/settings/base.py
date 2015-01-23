@@ -74,6 +74,10 @@ DATABASES = {
     }
 }
 
+# django.contrib.auth settings.
+LOGIN_URL = 'auth:login'  # Named url patter for the built-in auth
+LOGOUT_URL = 'auth:logout'
+LOGIN_REDIRECT_URL = '/'
 
 
 # Internationalization
@@ -83,6 +87,7 @@ TIME_ZONE = 'America/Chicago'  # default was UTC
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
 
 # Media Uploads for Production
 # TODO: configure this site in nginx and point to the correct location

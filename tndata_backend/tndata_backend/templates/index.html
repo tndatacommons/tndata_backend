@@ -3,30 +3,33 @@
 {% block title %}Demo{% endblock %}
 {% block body %}
 <div class="row">
-  <div class="large-12 columns">
+  <div class="large-12 medium-12 small-12 columns">
+    <h1>TN Data Commons Admin</h1>
+    {% if user.is_authenticated %}
+      <div class="panel">
+        <div class="row">
+          <div class="large-6 medium-6 columns">
+            <p>This is the administration portal for the data library and api.
+            Please choose an option from the right.</p>
+          </div>
 
-  <h1>hi.</h1>
-  <div class="panel">
-
-    <p>Hi, there. This is a placeholder page. See below for more links.</p>
-    <div class="row">
-      <div class="large-6 medium-6 columns">
-        <p>Right now these links are all that are currently available. You
-        need to be logged in to see these, too.</p>
+          <div class="large-6 medium-6 columns">
+            <ul>
+              <li><a href="{% url 'goals:index' %}">Manage Goals/Actions</a></li>
+              <li><a href="/api/">Browse the API</a></li>
+              <li><a href="{% url 'logout' %}">Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </div> {# end .panel #}
+    {% else %}
+      <div class="large-4 large-offset-4 medium-6 medium-offset-3 small-12 columns end">
+        <form action="{% url 'login' %}" method="post">{% csrf_token %}
+        {{ login_form }}<hr>
+        <button class="button" type="submit">Sign In</button>
+        </form>
       </div>
-
-      <div class="large-6 medium-6 columns">
-        <ul>
-          <li><a href="{% url 'goals:index' %}">Manage Goals</a></li>
-          {% if user.is_staff %}
-          <li><a href="/admin/">See the admin</a></li>
-          <li><a href="/api/">Browse the API</a></li>
-          {% endif %}
-        </ul>
-      </div>
-    </div>
-
-  </div> {# end .panel #}
+    {% endif %} {# user.is_authenticated #}
   </div>
-</div>
+</div> {# end .row #}
 {% endblock %}
