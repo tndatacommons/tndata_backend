@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
@@ -27,7 +28,8 @@ class SuperuserRequiredMixin(object):
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
-        return user_passes_test(superuser_required, login_url='/')(view)
+        dec = user_passes_test(superuser_required, login_url=settings.LOGIN_URL)
+        return dec(view)
 
 
 @user_passes_test(superuser_required, login_url='/')

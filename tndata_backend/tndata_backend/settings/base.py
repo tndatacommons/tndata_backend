@@ -75,8 +75,8 @@ DATABASES = {
 }
 
 # django.contrib.auth settings.
-LOGIN_URL = 'auth:login'  # Named url patter for the built-in auth
-LOGOUT_URL = 'auth:logout'
+LOGIN_URL = 'login'  # Named url patter for the built-in auth
+LOGOUT_URL = 'logout'
 LOGIN_REDIRECT_URL = '/'
 
 
