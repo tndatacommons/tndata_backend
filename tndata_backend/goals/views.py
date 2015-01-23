@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
 from django.forms.models import modelformset_factory
 from django.shortcuts import redirect, render
@@ -10,6 +11,26 @@ from . models import Action, Category, Interest, InterestGroup
 from . utils import get_max_order
 
 
+def superuser_required(user):
+    """Verifies that a user is authenticated and a super user."""
+    return user.is_authenticated() and user.is_superuser
+
+
+class SuperuserRequiredMixin(object):
+    """A Mixin that requires the user to be a superuser in order to access
+    the view.
+
+    NOTE: Eventually we'll want to have more granular permissions, here. We
+    probably need a group or object-level permissions and check for those
+    instead (namely, once we have more than just our group editing content)
+    """
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
+        return user_passes_test(superuser_required, login_url='/')(view)
+
+
+@user_passes_test(superuser_required, login_url='/')
 def upload_csv(request):
     """Allow a user to upload a CSV file to populate our data backend."""
     if request.method == "POST":
@@ -36,19 +57,19 @@ def upload_csv(request):
     return render(request, 'goals/upload_csv.html', context)
 
 
-class CategoryListView(ListView):
+class CategoryListView(SuperuserRequiredMixin, ListView):
     model = Category
     context_object_name = 'categories'
     template_name = "goals/index.html"
 
 
-class CategoryDetailView(DetailView):
+class CategoryDetailView(SuperuserRequiredMixin, DetailView):
     queryset = Category.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
 
 
-class CategoryCreateView(CreateView):
+class CategoryCreateView(SuperuserRequiredMixin, CreateView):
     model = Category
     fields = ['order', 'name', 'description', 'icon', 'notes']
 
@@ -105,7 +126,7 @@ class CategoryCreateView(CreateView):
         return super(CategoryCreateView, self).form_valid(form)
 
 
-class CategoryUpdateView(UpdateView):
+class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Category
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -153,25 +174,25 @@ class CategoryUpdateView(UpdateView):
         return super(CategoryUpdateView, self).form_valid(form)
 
 
-class CategoryDeleteView(DeleteView):
+class CategoryDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Category
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class InterestListView(ListView):
+class InterestListView(SuperuserRequiredMixin, ListView):
     model = Interest
     context_object_name = 'interests'
 
 
-class InterestDetailView(DetailView):
+class InterestDetailView(SuperuserRequiredMixin, DetailView):
     queryset = Interest.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
 
 
-class InterestCreateView(CreateView):
+class InterestCreateView(SuperuserRequiredMixin, CreateView):
     model = Interest
     fields = [
         'order', 'name', 'description', 'notes', 'source_name', 'source_link'
@@ -220,7 +241,7 @@ class InterestCreateView(CreateView):
         return super(InterestCreateView, self).form_valid(form)
 
 
-class InterestUpdateView(UpdateView):
+class InterestUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Interest
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -264,25 +285,25 @@ class InterestUpdateView(UpdateView):
         return super(InterestUpdateView, self).form_valid(form)
 
 
-class InterestDeleteView(DeleteView):
+class InterestDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Interest
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class InterestGroupListView(ListView):
+class InterestGroupListView(SuperuserRequiredMixin, ListView):
     model = InterestGroup
     context_object_name = 'interestgroups'
 
 
-class InterestGroupDetailView(DetailView):
+class InterestGroupDetailView(SuperuserRequiredMixin, DetailView):
     queryset = InterestGroup.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
 
 
-class InterestGroupCreateView(CreateView):
+class InterestGroupCreateView(SuperuserRequiredMixin, CreateView):
     model = InterestGroup
     fields = ['category', 'interests', 'name']
 
@@ -292,7 +313,7 @@ class InterestGroupCreateView(CreateView):
         return context
 
 
-class InterestGroupUpdateView(UpdateView):
+class InterestGroupUpdateView(SuperuserRequiredMixin, UpdateView):
     model = InterestGroup
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -304,25 +325,25 @@ class InterestGroupUpdateView(UpdateView):
         return context
 
 
-class InterestGroupDeleteView(DeleteView):
+class InterestGroupDeleteView(SuperuserRequiredMixin, DeleteView):
     model = InterestGroup
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class ActionListView(ListView):
+class ActionListView(SuperuserRequiredMixin, ListView):
     model = Action
     context_object_name = 'actions'
 
 
-class ActionDetailView(DetailView):
+class ActionDetailView(SuperuserRequiredMixin, DetailView):
     queryset = Action.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
 
 
-class ActionCreateView(CreateView):
+class ActionCreateView(SuperuserRequiredMixin, CreateView):
     model = Action
     fields = [
         'order', 'name', 'summary', 'description', 'interests',
@@ -344,7 +365,7 @@ class ActionCreateView(CreateView):
         return context
 
 
-class ActionUpdateView(UpdateView):
+class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Action
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -360,7 +381,7 @@ class ActionUpdateView(UpdateView):
         return context
 
 
-class ActionDeleteView(DeleteView):
+class ActionDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Action
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
