@@ -87,10 +87,9 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Media Uploads for Production
-# TODO: configure this site in nginx and point to the correct location
+# Media Uploads, default
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
-MEDIA_URL = "http://media.tndata.org/"
+MEDIA_URL = "/media/"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
