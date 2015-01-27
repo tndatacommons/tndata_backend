@@ -59,17 +59,15 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'tndata_backend.urls'
 WSGI_APPLICATION = 'tndata_backend.wsgi.application'
 
-
-# Database
+# Production Database settings.
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
-# TODO: Configure with production info.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
+        'NAME': 'tndata_backend',
+        'USER': 'tndata_backend',
+        'PASSWORD': 'plicater-nonurban-outlaw-moonfall',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }

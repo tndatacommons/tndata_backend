@@ -4,16 +4,17 @@ from .base import *
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-DATABASES = {  # NOTE: Currently requires Postgresql.app to be running.
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tndata',
-        'USER': 'brad',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
+# NOTE: config for local (osx) Postgresql.app (not vagrant)
+#DATABASES = {
+    #'default': {
+        #'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        #'NAME': 'tndata',
+        #'USER': 'brad',
+        #'PASSWORD': '',
+        #'HOST': '127.0.0.1',
+        #'PORT': '5432',
+    #}
+#}
 
 
 INSTALLED_APPS = INSTALLED_APPS + (
