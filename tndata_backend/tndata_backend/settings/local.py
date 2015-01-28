@@ -9,8 +9,7 @@ INSTALLED_APPS = INSTALLED_APPS + (
 )
 
 # Media Uploads for Development
-# NOTE. during dev, cd into uploads and run `serve 8888`
-MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
 MEDIA_URL = "/media/"
 
 # django-core-headers
