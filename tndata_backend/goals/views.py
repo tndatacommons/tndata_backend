@@ -94,7 +94,7 @@ class CategoryCreateView(SuperuserRequiredMixin, CreateView):
         InterestGroupFormset = modelformset_factory(
             InterestGroup,
             fields=('name', ),
-            extra=6
+            extra=3
         )
         if post_data:
             formset = InterestGroupFormset(post_data, prefix="ig")
