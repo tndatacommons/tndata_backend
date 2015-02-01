@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from . forms import CSVUploadForm, InterestGroupSelectionForm
+from . forms import ActionForm, CSVUploadForm, InterestGroupSelectionForm
 from . models import Action, Category, Interest, InterestGroup
 from . utils import get_max_order
 
@@ -347,11 +347,7 @@ class ActionDetailView(SuperuserRequiredMixin, DetailView):
 
 class ActionCreateView(SuperuserRequiredMixin, CreateView):
     model = Action
-    fields = [
-        'order', 'name', 'summary', 'description', 'interests',
-        'default_reminder_time', 'default_reminder_frequency',
-        'icon', 'notes', 'source_name', 'source_link',
-    ]
+    form_class = ActionForm
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done

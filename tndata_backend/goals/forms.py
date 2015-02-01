@@ -8,6 +8,19 @@ from . models import Action, Category, Interest, InterestGroup
 from . utils import get_max_order, read_uploaded_csv
 
 
+class ActionForm(forms.ModelForm):
+    class Meta:
+        model = Action
+        fields = [
+            'order', 'name', 'summary', 'description', 'interests',
+            'default_reminder_time', 'default_reminder_frequency',
+            'icon', 'notes', 'source_name', 'source_link',
+        ]
+        widgets = {
+            "default_reminder_time": forms.TimeInput(attrs={'class': 'foo', 'type': 'time'}),
+        }
+
+
 class InterestGroupSelectionForm(forms.Form):
     """This form allows a user to select multiple `InterestGroup`s.
 
