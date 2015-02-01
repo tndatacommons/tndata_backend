@@ -1,4 +1,13 @@
 {% extends "goals/base.html" %}
+{% load static from staticfiles %}
+
+
+{% block head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
+  {# See bodyjs block for the timepicker js and config #}
+{% endblock %}
+
 
 {% block content %}
 <h1>{% if object %}Action: {{object.name}}{% else %}Create Action{% endif %}</h1>
@@ -40,4 +49,18 @@
     </table>
   </div>
 </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
+  <script>
+  $(document).ready(function() {
+    $('.timepicker').timepicker({
+      timeFormat: "G:i",
+      minTime: '5:00'
+    });
+  });
+  </script>
 {% endblock %}

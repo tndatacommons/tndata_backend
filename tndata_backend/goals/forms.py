@@ -17,7 +17,10 @@ class ActionForm(forms.ModelForm):
             'icon', 'notes', 'source_name', 'source_link',
         ]
         widgets = {
-            "default_reminder_time": forms.TimeInput(attrs={'class': 'foo', 'type': 'time'}),
+            "default_reminder_time": forms.TimeInput(attrs={
+                'class': 'timepicker',
+                'type': 'time'
+            }),
         }
 
 

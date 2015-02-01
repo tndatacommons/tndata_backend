@@ -365,13 +365,9 @@ class ActionCreateView(SuperuserRequiredMixin, CreateView):
 
 class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Action
+    form_class = ActionForm
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-    fields = [
-        'order', 'name', 'summary', 'description', 'interests',
-        'default_reminder_time', 'default_reminder_frequency',
-        'icon', 'notes', 'source_name', 'source_link',
-    ]
 
     def get_context_data(self, **kwargs):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)
