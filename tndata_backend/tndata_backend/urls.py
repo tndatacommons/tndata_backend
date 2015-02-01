@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.contrib.auth.forms import AuthenticationForm
@@ -61,3 +62,10 @@ urlpatterns = patterns('',
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),
     url(r'^$', IndexView.as_view())
 )
+
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += patterns('',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )
