@@ -21,11 +21,23 @@ from django.utils.text import slugify
 
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
-    order = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=128, db_index=True, unique=True)
+    order = models.PositiveIntegerField(
+        unique=True,
+        help_text="Controls the order in which Categories are displayed."
+    )
+    name = models.CharField(
+        "Title",
+        max_length=128, db_index=True, unique=True,
+        help_text="A Title for the Category."
+    )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    description = models.TextField()
-    icon = models.ImageField(upload_to="goals/category", null=True, blank=True)
+    description = models.TextField(
+        help_text="Short description of this Category."
+    )
+    icon = models.ImageField(
+        upload_to="goals/category", null=True, blank=True,
+        help_text="Upload an image to be displayed next to the Category."
+    )
     notes = models.TextField(
         blank=True,
         null=True,
@@ -73,14 +85,23 @@ def delete_category_icon(sender, instance, using, **kwargs):
 
 
 class Interest(models.Model):
-    order = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=128, db_index=True, unique=True)
+    order = models.PositiveIntegerField(
+        unique=True,
+        help_text="Controls the order in which Interests are displayed."
+    )
+    name = models.CharField(
+        "Title",
+        max_length=128, db_index=True, unique=True,
+        help_text="A one-line title for this Interest."
+    )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    description = models.TextField()
+    description = models.TextField(
+        help_text="Short description of this Interest."
+    )
     notes = models.TextField(
         blank=True,
         null=True,
-        help_text="Additional notes regarding this Category"
+        help_text="Additional notes regarding this Interest."
     )
     source_name = models.CharField(
         max_length=128,
@@ -141,9 +162,18 @@ class Interest(models.Model):
 
 class InterestGroup(models.Model):
     """This is a model that associates Interests with Categories."""
-    category = models.ForeignKey(Category)
-    interests = models.ManyToManyField(Interest, blank=True, null=True)
-    name = models.CharField(max_length=128, db_index=True, unique=True)
+    category = models.ForeignKey(
+        Category, help_text="The Category under which this group appears."
+    )
+    interests = models.ManyToManyField(
+        Interest, blank=True, null=True,
+        help_text="Select the Interests to group together."
+    )
+    name = models.CharField(
+        "Title",
+        max_length=128, db_index=True, unique=True,
+        help_text="Give this group a one-line title."
+    )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     public = models.BooleanField(default=True, blank=True)
 
@@ -178,19 +208,43 @@ class Action(models.Model):
         ('monthly', 'Every Month'),
         ('yearly', 'Every Year'),
     )
-    interests = models.ManyToManyField(Interest)
-    order = models.PositiveIntegerField(unique=True)
-    name = models.CharField(max_length=128, db_index=True, unique=True)
+    interests = models.ManyToManyField(
+        Interest,
+        help_text="Select the Interests under which to display this Action."
+    )
+    order = models.PositiveIntegerField(
+        unique=True,
+        help_text="Controls the order in which Categories are displayed."
+    )
+    name = models.CharField(
+        "Title",
+        max_length=128, db_index=True, unique=True,
+        help_text="A one-line title for this Action."
+    )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    summary = models.TextField()
-    description = models.TextField()
-    default_reminder_time = models.TimeField(blank=True, null=True)
+    summary = models.TextField(
+        "Intro Text",
+        help_text="A short bit of introductory text that will be displayed "
+                  "before the action is selected."
+    )
+    description = models.TextField(
+        "Behavior",
+        help_text="The full text of this behavior."
+    )
+    default_reminder_time = models.TimeField(
+        blank=True, null=True,
+        help_text="Enter a time in 24-hour format, e.g. 13:30 for 1:30pm"
+    )
     default_reminder_frequency = models.CharField(
         max_length=10,
         blank=True,
-        choices=FREQUENCY_CHOICES
+        choices=FREQUENCY_CHOICES,
+        help_text="Choose a default frequency for the reminders."
     )
-    icon = models.ImageField(upload_to="goals/action", null=True, blank=True)
+    icon = models.ImageField(
+        upload_to="goals/action", null=True, blank=True,
+        help_text="Upload an image to be displayed for this Action."
+    )
     notes = models.TextField(
         blank=True,
         null=True,
