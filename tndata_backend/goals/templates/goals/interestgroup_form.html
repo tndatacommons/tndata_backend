@@ -11,6 +11,21 @@
 
 <div class="row">
   <div class="large-6 small-12 columns">
+
+    <p>An <strong>Interest Group</strong> is a grouping of similar
+    <strong>Interests</strong> within a Category.</p>
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+  Category
+    - Interest Group
+      - Interest 1
+        - Action 1
+        - Action 2
+      - Interest 2
+        - Action 3
+        - Action 4
+    </pre>
+    <p>Complete the form below to add or update an Interest Group.</p>
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:group-create' %}{% endif %}" method="post">{% csrf_token %}
     {{ form.as_p }}
     <hr/>

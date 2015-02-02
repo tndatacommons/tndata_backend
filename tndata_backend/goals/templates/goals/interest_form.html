@@ -5,6 +5,22 @@
 
 <div class="row">
   <div class="large-6 small-12 columns">
+    <p>An <strong>Interest</strong> is a container for similar behavior-change
+    actions. It can contain many Actions and similar Interests are grouped
+    together in an <strong>Interest Group</strong> which belongs to a
+    <strong>Category</strong></p>
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+  Category
+    - Interest Group
+      - Interest 1
+        - Action 1
+        - Action 2
+      - Interest 2
+        - Action 3
+        - Action 4
+    </pre>
+
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:interest-create' %}{% endif %}" method="post">{% csrf_token %}
     {{ form.as_p }}
     <hr/>

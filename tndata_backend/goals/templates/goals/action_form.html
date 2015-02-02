@@ -14,6 +14,23 @@
 
 <div class="row">
   <div class="large-6 small-12 columns">
+
+    <p>An <strong>Action</strong> is the Behavior-change activity in which
+    users will engange. Actions belong to one or more
+    <strong>Interests</strong>.</p>
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+  Category
+    - Interest Group
+      - Interest 1
+        - Action 1
+        - Action 2
+      - Interest 2
+        - Action 3
+        - Action 4
+    </pre>
+    <p>Complete the form below to add or update an Action.</p>
+
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
     {{ form.as_p }}
     <hr/>
