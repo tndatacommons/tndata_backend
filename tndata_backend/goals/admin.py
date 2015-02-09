@@ -2,31 +2,24 @@ from django.contrib import admin
 from . import models
 
 
-class InterestGroupInline(admin.TabularInline):
-    model = models.InterestGroup
-    fields = ('category', 'interests', 'name', 'public')
+class InterestGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'name_slug')
+admin.site.register(models.InterestGroup, InterestGroupAdmin)
 
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('order', 'name', 'name_slug', 'contains_groups')
     prepopulated_fields = {"name_slug": ("name", )}
-    inlines = [InterestGroupInline]
 
     def contains_groups(self, obj):
         return ", ".join([g.name for g in obj.groups])
 admin.site.register(models.Category, CategoryAdmin)
 
 
-class InterestGroupInlineForInterestAdmin(admin.TabularInline):
-    """This inline allows selection of InterestGroups while editing an Interest."""
-    model = models.InterestGroup.interests.through
-
-
 class InterestAdmin(admin.ModelAdmin):
     list_display = ('order', 'name', 'found_in_categories', 'found_in_groups')
     list_display_links = ('order', 'name')
     prepopulated_fields = {"name_slug": ("name", )}
-    inlines = [InterestGroupInlineForInterestAdmin]
 
     def found_in_categories(self, obj):
         return ", ".join([c.name for c in obj.categories])

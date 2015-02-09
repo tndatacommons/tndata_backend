@@ -85,6 +85,14 @@ def delete_category_icon(sender, instance, using, **kwargs):
 
 
 class Interest(models.Model):
+    """An interest is a broad topic that essentially groups multiple
+    behaviors. Interest is more granular than Category.
+
+    """
+    categories = models.ManyToManyField(
+        Category, blank=True, null=True,
+        help_text="Select Categories in which this Interest belongs."
+    )
     order = models.PositiveIntegerField(
         unique=True,
         help_text="Controls the order in which Interests are displayed."
@@ -127,11 +135,6 @@ class Interest(models.Model):
     @property
     def groups(self):
         return self.interestgroup_set.all()
-
-    @property
-    def categories(self):
-        ids = self.interestgroup_set.values_list('category', flat=True)
-        return Category.objects.filter(id__in=ids).distinct()
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
