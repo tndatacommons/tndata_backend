@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# My path has python 2.7 stuff attached,
+# Check to see if the PYTHOPATH is set (and if so, assume it's for 2.7),
 # so get rid of that.
-unset PYTHONPATH;
+if [ $PYTHONPATH ]
+    then
+    unset PYTHONPATH;
+fi
 
-# I'm lazy
-source env/bin/activate && cd tndata_backend
+# Then just source the pyenv
+source /webapps/tndata_backend/bin/activate && cd /webapps/tndata_backend/tndata_backend
