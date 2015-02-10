@@ -53,13 +53,9 @@ class Category(models.Model):
         verbose_name_plural = "Category"
 
     @property
-    def groups(self):
-        return self.interestgroup_set.all()
-
-    @property
     def interests(self):
-        ids = self.groups.values_list('interests', flat=True)
-        return Interest.objects.filter(id__in=ids).distinct()
+        """This property returns a QuerySet of the related Interest objects."""
+        return self.interest_set.all().distinct()
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
@@ -132,10 +128,6 @@ class Interest(models.Model):
         verbose_name = "Interest"
         verbose_name_plural = "Interest"
 
-    @property
-    def groups(self):
-        return self.interestgroup_set.all()
-
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
@@ -164,7 +156,9 @@ class Interest(models.Model):
 
 
 class InterestGroup(models.Model):
-    """This is a model that associates Interests with Categories."""
+    """This is a model that associates Interests with Categories.
+    NOTE: this model is deprecated, but I'm leaving it here for now."
+    """
     category = models.ForeignKey(
         Category, help_text="The Category under which this group appears."
     )

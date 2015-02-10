@@ -3,29 +3,27 @@ from . import models
 
 
 class InterestGroupAdmin(admin.ModelAdmin):
+    # DEPRECATED.
     list_display = ('name', 'name_slug')
 admin.site.register(models.InterestGroup, InterestGroupAdmin)
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('order', 'name', 'name_slug', 'contains_groups')
+    list_display = ('name', 'name_slug', 'contains_interests', 'order')
     prepopulated_fields = {"name_slug": ("name", )}
 
-    def contains_groups(self, obj):
-        return ", ".join([g.name for g in obj.groups])
+    def contains_interests(self, obj):
+        return ", ".join(sorted([i.name for i in obj.interests]))
 admin.site.register(models.Category, CategoryAdmin)
 
 
 class InterestAdmin(admin.ModelAdmin):
-    list_display = ('order', 'name', 'found_in_categories', 'found_in_groups')
+    list_display = ('name', 'in_category', 'order')
     list_display_links = ('order', 'name')
     prepopulated_fields = {"name_slug": ("name", )}
 
-    def found_in_categories(self, obj):
-        return ", ".join([c.name for c in obj.categories])
-
-    def found_in_groups(self, obj):
-        return ", ".join([g.name for g in obj.groups])
+    def in_category(self, obj):
+        return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
 admin.site.register(models.Interest, InterestAdmin)
 
 
