@@ -54,7 +54,7 @@ form p textarea {
       <li class="divider"></li>
       <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
       <li class="divider"></li>
-      <li><a href="#">Goals</a></li>
+      <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
       <li class="divider"></li>
       <li><a href="#">Triggers</a></li>
       <li class="divider"></li>
@@ -67,7 +67,7 @@ form p textarea {
         <ul class="dropdown">
           <li><a href="{% url 'goals:category-create' %}">Category</a></li>
           <li><a href="{% url 'goals:interest-create' %}">Interest</a></li>
-          <li><a href="#">Goal</a></li>
+          <li><a href="{% url 'goals:goal-create' %}">Goal</a></li>
           <li><a href="#">Trigger</a></li>
           <li><a href="#">Behavior Sequence</a></li>
           <li><a href="{% url 'goals:action-create' %}">Behavior Action</a></li>

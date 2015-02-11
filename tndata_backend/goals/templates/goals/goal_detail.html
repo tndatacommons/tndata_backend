@@ -1,0 +1,40 @@
+{% extends "goals/base.html" %}
+{% load goal_tags %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
+    <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
+    <li class="current">{{ goal.name }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h1>{{ goal.name }} {% object_controls goal %}</h1>
+      <dl>
+      <dt>Name</dt><dd>{{ goal.name }}</dd>
+      <dt>Title</dt><dd>{{ goal.title }}</dd>
+      <dt>Description</dt><dd>{{ goal.description|linebreaks }}</dt>
+      <dt>Outcome</dt><dd>{{ goal.outcome|linebreaks }}</dt>
+      </dl>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Categories</h2>
+      <p><em>{{goal.name}}</em> is listed in the following Categories:</p>
+      <ul>
+      {% for cat in goal.categories.all %}
+        <li>{{ cat.name }}</li>
+      {% endfor %}
+      </ul>
+
+      <h2 class="subheader">Interests</h2>
+      <p><em>{{goal.name}}</em> is listed under the folllowing Interests:</p>
+      <ul>
+      {% for interest in goal.interests.all %}
+        <li>{{ interest.name }}</li>
+      {% endfor %}
+      </ul>
+
+    </div>
+  </div> {# end .row #}
+{% endblock %}

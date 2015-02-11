@@ -21,6 +21,11 @@ urlpatterns = patterns('',
         name='interest-create'
     ),
     url(
+        r'new/goal/$',
+        views.GoalCreateView.as_view(),
+        name='goal-create'
+    ),
+    url(
         r'new/action/$',
         views.ActionCreateView.as_view(),
         name='action-create'
@@ -51,6 +56,28 @@ urlpatterns = patterns('',
         r'actions/$',
         views.ActionListView.as_view(),
         name='action-list'
+    ),
+
+    # Goals
+    url(
+        r'goal/(?P<name_slug>.+)/update/$',
+        views.GoalUpdateView.as_view(),
+        name='goal-update'
+    ),
+    url(
+        r'goal/(?P<name_slug>.+)/delete/$',
+        views.GoalDeleteView.as_view(),
+        name='goal-delete'
+    ),
+    url(
+        r'goal/(?P<name_slug>.+)/$',
+        views.GoalDetailView.as_view(),
+        name='goal-detail'
+    ),
+    url(
+        r'goals/$',
+        views.GoalListView.as_view(),
+        name='goal-list'
     ),
 
     # Interests

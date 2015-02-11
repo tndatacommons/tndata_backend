@@ -1,0 +1,71 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'goals:index' %}">Home</a></li>
+  <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
+  <li class="current">
+    {% if object %}{{ object.name }}{% else %}New Goal{% endif %}
+  </li>
+</ul>
+
+<h1>{% if object %}Goal: {{object.name}}{% else %}Create Goal{% endif %}</h1>
+
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <p>A <strong>Goal</strong> is consists of Behaviors. We define a goal, and
+    to achieve that goal, users will opt in to Behavior Sequences and Actions.</p>
+
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:goal-create' %}{% endif %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <hr/>
+    {% if object %}
+      <button type="submit">Update Goal</button>
+    {% else %}
+      <button type="submit">Create Goal</button>
+    {% endif %}
+    </form>
+  </div>
+  <div class="large-6 small-12 columns">
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+Category
+  - Interest
+  -- Goal
+  --- Behavior Sequence
+  ---- Behavior Action 1
+  ---- Behavior Action 2
+    </pre>
+    <table>
+      <caption>Existing Goals</caption>
+      <thead>
+        <tr><th>Name</th><th>Title</th><th>Categories</th><th>Interests</th></tr>
+      </thead>
+      <tbody>
+      {% for goal in goals %}
+        <tr>
+          <td><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a></td>
+          <td>{{ goal.title }}</td>
+          <td>
+            {% for c in goal.categories.all %}
+              <a href="{{c.get_absolute_url}}">{{c.name}}</a>
+              {% if not forloop.last %}<br/>{% endif %}
+            {% empty %}
+              <em>None</em>
+            {% endfor %}
+          </td>
+          <td>
+            {% for interest in goal.interests.all %}
+              <a href="{{interest.get_absolute_url}}">{{interest.name}}</a>
+              {% if not forloop.last %}<br/>{% endif %}
+            {% empty %}
+              <em>None</em>
+            {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

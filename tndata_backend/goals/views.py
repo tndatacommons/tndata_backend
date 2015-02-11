@@ -7,7 +7,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import ActionForm, CSVUploadForm
-from . models import Action, Category, Interest
+from . models import Action, Category, Goal, Interest
 from . utils import get_max_order
 
 
@@ -160,6 +160,50 @@ class InterestUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class InterestDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Interest
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:index')
+
+
+class GoalListView(SuperuserRequiredMixin, ListView):
+    model = Goal
+    context_object_name = 'goals'
+
+
+class GoalDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Goal.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+
+class GoalCreateView(SuperuserRequiredMixin, CreateView):
+    model = Goal
+    fields = [
+        'categories', 'interests', 'name', 'title', 'description', 'outcome'
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(GoalCreateView, self).get_context_data(**kwargs)
+        context['goals'] = Goal.objects.all()
+        return context
+
+
+class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Goal
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    fields = [
+        'categories', 'interests', 'name', 'title', 'description', 'outcome'
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(GoalUpdateView, self).get_context_data(**kwargs)
+        context['goals'] = Goal.objects.all()
+        return context
+
+
+class GoalDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Goal
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
