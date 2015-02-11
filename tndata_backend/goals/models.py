@@ -11,6 +11,8 @@ goal). Continued performance of that action constitutes a behavior or habit.
 Actions are the things we want to help people to do.
 
 """
+import os
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -94,12 +96,18 @@ class Interest(models.Model):
         help_text="Controls the order in which Interests are displayed."
     )
     name = models.CharField(
-        "Title",
         max_length=128, db_index=True, unique=True,
-        help_text="A one-line title for this Interest."
+        help_text="An informal/internal name. Conversational identifier only."
     )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    title = models.CharField(
+        max_length=128,
+        blank=True,
+        default="",
+        help_text="Formal title, used publicly."
+    )
     description = models.TextField(
+        blank=True,
         help_text="Short description of this Interest."
     )
     notes = models.TextField(
@@ -194,6 +202,269 @@ class InterestGroup(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:group-delete', args=[self.name_slug])
+
+
+class Goal(models.Model):
+    categories = models.ManyToManyField(
+        Category, null=True, blank=True,
+        help_text="Select the Categories in which this Goal should appear."
+    )
+    interests = models.ManyToManyField(
+        Interest, null=True, blank=True,
+        help_text="Select the Interests in which this Goal should be organized."
+    )
+    name = models.CharField(
+        max_length=128, db_index=True, unique=True,
+        help_text="An Internal name for this goal."
+    )
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    title = models.CharField(
+        max_length=256, db_index=True, unique=True,
+        help_text="A public Title for this goal."
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Short description of this Category."
+    )
+    outcome = models.TextField(
+        blank=True,
+        help_text="Desired outcome of this Goal."
+    )
+
+    def __str__(self):
+        return "{0}".format(self.name)
+
+    class Meta:
+        verbose_name = "Goal"
+        verbose_name_plural = "Goals"
+
+    def get_absolute_url(self):
+        # TODO:
+        return reverse('goals:index')
+
+
+class Trigger(models.Model):
+    """Information for a Trigger/Notificatin/Reminder. This may include date,
+    time, location and a frequency with which triggers repeat.
+
+    """
+    TRIGGER_TYPES = (
+        ('time', 'Time'),
+        ('place', 'Place'),
+    )
+    FREQUENCY_CHOICES = (
+        ('one-time', 'One Time'),
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly'),
+    )
+    name = models.CharField(
+        max_length=128,
+        unique=True,
+        db_index=True,
+        help_text="Give this trigger a helpful name. It must be unique, and "
+                  "will be used in drop-down lists and other places where you"
+                  "can select it later."
+    )
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    trigger_type = models.CharField(
+        blank=True,
+        max_length=10,
+        choices=TRIGGER_TYPES,
+        help_text='The type of Trigger used, e.g. Time, Place, etc'
+    )
+    frequency = models.CharField(
+        blank=True,
+        max_length=10,
+        choices=FREQUENCY_CHOICES,
+        help_text="How frequently a trigger is fired"
+    )
+    time = models.TimeField(
+        blank=True,
+        null=True,
+        help_text="Time the trigger/notification will fire, in 24-hour format."
+    )
+    date = models.DateField(
+        blank=True,
+        null=True,
+        help_text="The date of the trigger/notification. If the trigger is "
+                  "recurring, notifications will start on this date."
+    )
+    location = models.CharField(
+        max_length=256,
+        blank=True,
+        help_text="Only used when Trigger type is location. "
+                  "Can be 'home', 'work', or a (lat, long) pair."
+    )
+    text = models.CharField(
+        max_length="140",
+        blank=True,
+        help_text="The Trigger text shown to the user."
+    )
+    instruction = models.TextField(
+        blank=True,
+        help_text="Instructions sent to the user."
+    )
+
+    def __str__(self):
+        return "{0}".format(self.name)
+
+    class Meta:
+        verbose_name = "Trigger"
+        verbose_name_plural = "Triggers"
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(InterestGroup, self).save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        # TODO:
+        return reverse("goals:index")
+
+
+def _behavior_icon_path(instance, filename):
+    """Return the path for uploaded icons for `BehaviorSequence` and
+    `BehaviorAction` objects."""
+    p = "goals/{0}/icons".format(type(instance).__name__.lower())
+    return os.path.join(p, filename)
+
+
+def _behavior_img_path(instance, filename):
+    """Return the path for uploaded images for `BehaviorSequence` and
+    `BehaviorAction` objects."""
+    p = "goals/{0}/images".format(type(instance).__name__.lower())
+    return os.path.join(p, filename)
+
+
+class BaseBehavior(models.Model):
+    """This abstract base class contains fields that are common to both
+    `BehaviorSequence` and `BehaviorAction` models.
+
+    """
+    name = models.CharField(
+        max_length=128,
+        db_index=True,
+        unique=True,
+        help_text="Unique, informal and internal. Conversational identifier only."
+    )
+    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    notes = models.TextField(
+        blank=True,
+        help_text="Misc nodes about this behavior"
+    )
+    source_notes = models.TextField(
+        blank=True,
+        help_text="Narrative notes about the source"
+    )
+    source_link = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="A link to the source."
+    )
+    title = models.CharField(
+        max_length=256,
+        db_index=True,
+        unique=True,
+        help_text="Unique, Formal title. Displayed as a caption in the app."
+    )
+    description = models.TextField(blank=True, help_text="Brief description.")
+    case = models.TextField(
+        blank=True,
+        help_text="Brief description of why this is useful."
+    )
+    outcome = models.TextField(
+        blank=True,
+        help_text="Brief description of what the user can expect to get by "
+                  "adopting the behavior"
+    )
+    narrative_block = models.TextField(
+        blank=True,
+        help_text="Persuasive narrative description, case, outcome of the behavior"
+    )
+    external_resource = models.CharField(
+        blank=True,
+        max_length=256,
+        help_text="A link or reference to an outside resource necessary for adoption"
+    )
+    default_trigger = models.ForeignKey(
+        Trigger,
+        blank=True,
+        null=True,
+        help_text="A trigger/reminder for this behavior"
+    )
+    notification_text = models.CharField(
+        max_length=256,
+        blank=True,
+        help_text="Text message delivered through notification channel"
+    )
+    icon = models.ImageField(
+        upload_to=_behavior_icon_path,
+        null=True,
+        blank=True,
+        help_text="A Small icon for the Action."
+    )
+    image = models.ImageField(
+        upload_to=_behavior_img_path,
+        null=True,
+        blank=True,
+        help_text="Upload an image to be displayed for the Behavior Action."
+    )
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return "{0}".format(self.name)
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(Category, self).save(*args, **kwargs)
+
+
+class BehaviorSequence(models.Model):
+    """A container and meta-information for a sequence of actions."""
+    categories = models.ManyToManyField(
+        Category, null=True, blank=True,
+        help_text="Select the Categories in which this should appear."
+    )
+    interests = models.ManyToManyField(
+        Interest, null=True, blank=True,
+        help_text="Select the Interest(s) under which this should be organized."
+    )
+    goals = models.ManyToManyField(
+        Goal, null=True, blank=True,
+        help_text="Select the Goal(s) that this Behavior achieves."
+    )
+    informal_list = models.TextField(
+        blank=True,
+        help_text="Working list of the behavior sequence. Mnemonic only."
+    )
+
+    class Meta(BaseBehavior.Meta):
+        verbose_name = "Behavior Sequence"
+        verbose_name_plural = "Behavior Sequences"
+
+    def get_absolute_url(self):
+        return reverse('goals:index')
+
+
+class BehaviorAction(BaseBehavior):
+    sequence = models.ForeignKey(BehaviorSequence)
+    sequence_order = models.IntegerField(
+        default=0, db_index=True,
+        help_text="Order/number of action in stepwise behavior sequence"
+    )
+
+    class Meta(BaseBehavior.Meta):
+        verbose_name = "Behavior Action"
+        verbose_name_plural = "Behavior Actions"
+
+    def get_absolute_url(self):
+        return reverse('goals:index')
 
 
 class Action(models.Model):
