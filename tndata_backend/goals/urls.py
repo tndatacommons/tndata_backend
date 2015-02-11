@@ -26,11 +26,6 @@ urlpatterns = patterns('',
         name='action-create'
     ),
     url(
-        r'new/group/$',
-        views.InterestGroupCreateView.as_view(),
-        name='group-create'
-    ),
-    url(
         r'new/upload/$',
         views.upload_csv,
         name='upload-csv'
@@ -79,29 +74,6 @@ urlpatterns = patterns('',
         views.InterestListView.as_view(),
         name='interest-list'
     ),
-
-    # InterestGroups
-    url(
-        r'group/(?P<name_slug>.+)/update/$',
-        views.InterestGroupUpdateView.as_view(),
-        name='group-update'
-    ),
-    url(
-        r'group/(?P<name_slug>.+)/delete/$',
-        views.InterestGroupDeleteView.as_view(),
-        name='group-delete'
-    ),
-    url(
-        r'group/(?P<name_slug>.+)/$',
-        views.InterestGroupDetailView.as_view(),
-        name='group-detail'
-    ),
-    url(
-        r'groups/$',
-        views.InterestGroupListView.as_view(),
-        name='group-list'
-    ),
-
 
     # Categories
     url(

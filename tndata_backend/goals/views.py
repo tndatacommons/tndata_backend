@@ -2,13 +2,12 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
-from django.forms.models import modelformset_factory
 from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from . forms import ActionForm, CSVUploadForm, InterestGroupSelectionForm
-from . models import Action, Category, Interest, InterestGroup
+from . forms import ActionForm, CSVUploadForm
+from . models import Action, Category, Interest
 from . utils import get_max_order
 
 
@@ -161,46 +160,6 @@ class InterestUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class InterestDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Interest
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    success_url = reverse_lazy('goals:index')
-
-
-class InterestGroupListView(SuperuserRequiredMixin, ListView):
-    model = InterestGroup
-    context_object_name = 'interestgroups'
-
-
-class InterestGroupDetailView(SuperuserRequiredMixin, DetailView):
-    queryset = InterestGroup.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-
-class InterestGroupCreateView(SuperuserRequiredMixin, CreateView):
-    model = InterestGroup
-    fields = ['category', 'interests', 'name']
-
-    def get_context_data(self, **kwargs):
-        context = super(InterestGroupCreateView, self).get_context_data(**kwargs)
-        context['interestgroups'] = InterestGroup.objects.all()
-        return context
-
-
-class InterestGroupUpdateView(SuperuserRequiredMixin, UpdateView):
-    model = InterestGroup
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    fields = ['category', 'interests', 'name']
-
-    def get_context_data(self, **kwargs):
-        context = super(InterestGroupUpdateView, self).get_context_data(**kwargs)
-        context['interestgroups'] = InterestGroup.objects.all()
-        return context
-
-
-class InterestGroupDeleteView(SuperuserRequiredMixin, DeleteView):
-    model = InterestGroup
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
