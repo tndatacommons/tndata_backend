@@ -1,9 +1,14 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'goals:index' %}">Goals</a></li>
+  <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
+  <li class="current">{{ interest.name }}</li>
+</ul>
 
 <div data-alert class="alert-box warning">
-  <p>Are you sure you want to <em>permanently</em> delete this item?</p>
+  Are you sure you want to <em>permanently</em> delete this item?
   <a href="#" class="close">&times;</a>
 </div>
 

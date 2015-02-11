@@ -2,41 +2,42 @@
 {% load goal_tags %}
 
 {% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
+    <li class="current">{{ interest.name }}</li>
+  </ul>
 
-  <h1>{{ interest.name }} {% object_controls interest %}</h1>
   <div class="row">
     <div class="large-6 small-12 columns">
-      {{ interest.description|linebreaks }}
+      <h1>{{ interest.name }} {% object_controls interest %}</h1>
+      <dl>
+      <dt>Order</dt><dd>{{ interest.order }}</dd>
+      <dt>Name</dt><dd>{{ interest.name }}</dd>
+      <dt>Title</dt><dd>{{ interest.title }}</dd>
+      <dt>Description</dt><dd>{{ interest.description|linebreaks }}</dt>
+      <dt>Notes</dt><dd>{{ interest.description|linebreaks }}</dt>
+      <dt>Source</dt><dd>{{ interest.source_name|default:"none"}}</dt>
+      <dt>Source Link</dt><dd>{{ interest.source_link|urlize|default:"none"}}</dt>
+      </dl>
     </div>
     <div class="large-6 small-12 columns">
-      {% if interest.has_notes %}
-        <div class="panel">
-        {% with obj=interest %}{% include 'goals/_cite.html' %}{% endwith %}
-        </div>
-      {% endif %}
-      <div class="panel">
-        <h2>Categories/Groups</h2>
-        <p><em>{{interest.name}}</em> is listed in the following Categories/Groups:</p>
-        <ul>
-        {% for group in interest.groups %}
-          <li><a href="{{group.category.get_absolute_url}}">{{ group }}</a></li>
-        {% empty %}
-          <li><em>This Interest is not listed in any Categories/Groups.</em></li>
-        {% endfor %}
-        </ul>
-      </div>
+      <h2 class="subheader">Categories</h2>
+      <p><em>{{interest.name}}</em> is listed in the following Categories:</p>
+      <ul>
+      {% for cat in interest.categories.all %}
+        <li>{{ cat.name }}</li>
+      {% endfor %}
+      </ul>
 
-      <div class="panel">
-        <h2>Actions</h2>
-        <p><em>{{interest.name}}</em> contains the following actions:</p>
-        <ul>
-        {% for action in interest.action_set.all %}
-          <li><a href="{{ action.get_absolute_url }}">{{ action }}</a></li>
-        {% empty %}
-          <li><em>There are no actions for this Interest.</em></li>
-        {% endfor %}
-        </ul>
-      </div>
+      <h2 class="subheader">Goals</h2>
+      <p><em>{{interest.name}}</em> contains the following Goals:</p>
+      <ul>
+      {% for goal in interest.goals %}
+        <li>{{ goal }}</li>
+      {% endfor %}
+      </ul>
+
     </div>
   </div> {# end .row #}
 {% endblock %}

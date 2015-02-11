@@ -146,6 +146,11 @@ class Interest(models.Model):
         self.name_slug = slugify(self.name)
         super(Interest, self).save(*args, **kwargs)
 
+    @property
+    def goals(self):
+        """Returns a QuerySet of related Goals."""
+        return self.goal_set.all().distinct()
+
     def get_absolute_url(self):
         return reverse('goals:interest-detail', args=[self.name_slug])
 

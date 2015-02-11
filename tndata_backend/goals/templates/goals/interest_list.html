@@ -1,38 +1,32 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li class="current">Interests</li>
+  </ul>
+
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Interests</h1>
-      <table>
+      <table class="object-list">
       <thead>
       <tr>
-        <th>Interest</th>
-        <th>Actions</th>
-        <th>Category/Group</th>
+        <th>Order</th>
+        <th>Name</th>
+        <th>Title</th>
+        <th>Categories</th>
+        <th>Goals</th>
       </tr>
       </thead>
       <tbody>
       {% for interest in interests %}
         <tr>
-        <td>
-          <strong>
-            <a href="{{ interest.get_absolute_url }}">{{ interest }}</a>
-          </strong><br/>
-          {{ interest.description|truncatewords:10}}
-        </td>
-        <td>
-          {% for action in interest.action_set.all %}
-            <a href="{{ action.get_absolute_url }}">{{ action }}</a><br/>
-          {% empty %}
-            <em>None</em>
-          {% endfor %}
-        </td>
-        <td>
-          {% for group in interest.groups %}
-            {{ group }}<br/>{% empty %}<em>None</em>
-          {% endfor %}
-        </td>
+        <td>{{ interest.order }}</td>
+        <td><a href="{{ interest.get_absolute_url }}">{{ interest }}</a></td>
+        <td>{{ interest.title }}</td>
+        <td>{{ interest.categories.all|join:", " }}</td>
+        <td>{{ interest.goals|join:", " }}</td>
         </tr>
       {% endfor %}
       </tbody>
@@ -40,4 +34,3 @@
     </div> {# end .row #}
   </div> {# end .row #}
 {% endblock %}
-
