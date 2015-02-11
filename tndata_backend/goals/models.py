@@ -248,9 +248,19 @@ class Goal(models.Model):
         verbose_name = "Goal"
         verbose_name_plural = "Goals"
 
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super(Goal, self).save(*args, **kwargs)
+
     def get_absolute_url(self):
-        # TODO:
-        return reverse('goals:index')
+        return reverse('goals:goal-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:goal-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:goal-delete', args=[self.name_slug])
 
 
 class Trigger(models.Model):
