@@ -59,6 +59,11 @@ class Category(models.Model):
         """This property returns a QuerySet of the related Interest objects."""
         return self.interest_set.all().distinct()
 
+    @property
+    def goals(self):
+        """This property returns a QuerySet of the related Goal objects."""
+        return self.goal_set.all().distinct()
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)

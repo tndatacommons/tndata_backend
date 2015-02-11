@@ -2,37 +2,47 @@
 
 {% block content %}
 
-  <hr/>
-  {% for category in categories %}
-    <div class="row">
-      <div class="large-4 small-6 columns">
-        <h2><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></h2>
-        <div class="panel">{{ category.description|linebreaks}}</div>
-      </div>
-      <div class="large-8 small-6 columns">
-        <ul class="button-group">
-          <li><a href="{{ category.get_update_url }}"
-                 class="button small">Update</a></li>
-          <li><a href="{{ category.get_delete_url }}"
-                 class="button small alert">Delete</a></li>
-        </ul>
-        <h2 class="subheader">Interests</h2>
-        <ul>
-        {% for group in category.groups %}
-          <li><strong>{{ group.name }}</strong>
-            <ul>
-            {% for interest in group.interests.all %}
-              <li>{{ interest.name }}</li>
-            {% endfor %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li class="current">Categories</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Categories</h2>
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Order</th>
+        <th>Interests</th>
+        <th>Goals</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for category in categories %}
+        <tr>
+          <td>
+            <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+          </td>
+          <td>{{ category.order }}</td>
+          <td>{{ category.interests|join:", " }}</td>
+          <td>{{ category.goals|join:", " }}</td>
+          <td>
+            <ul class="button-group even-2">
+              <li><a href="{{ category.get_update_url }}"
+                     class="button tiny">Update</a></li>
+              <li><a href="{{ category.get_delete_url }}"
+                     class="button tiny alert">Delete</a></li>
             </ul>
-          </li>
-        {% empty %}
-          <li><em>No Interests for this Category</em></li>
-        {% endfor %}
-        </ul>
-      </div>
-    </div> {# end .row #}
-    <hr/>
-  {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
 {% endblock %}
 

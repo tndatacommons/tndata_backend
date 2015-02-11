@@ -1,6 +1,12 @@
 {% extends "goals/base.html" %}
 
 {% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'goals:index' %}">Goals</a></li>
+  <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
+  <li class="current">{{ category.name }}</li>
+</ul>
+
 <h1>{% if object %}Update Category: {{object.name}}{% else %}Create Category{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
@@ -11,22 +17,14 @@
     <p>The structure of our data looks something like the following:</p>
     <pre class="panel">
   Category
-    - Interest Group
-      - Interest 1
-        - Action 1
-        - Action 2
-      - Interest 2
-        - Action 3
-        - Action 4
+    - Interest
+      - Goal
+        - Behavior Sequence
+          - Behavior Action 1
+          - Behavior Action 2
     </pre>
-    <p>To create a category, add information to the following fields:</p>
+
     {{ form.as_p }}
-    <hr/>
-    <h2 class="subheader">Interest Groups</h2>
-    <p>You may also create groups in which Interests can be later added. All
-    of these are optional.</p>
-    {{ formset }}
-    {{ formset.management_form }}
     <hr/>
     {% if object %}
       <button type="submit">Update Category</button>

@@ -2,82 +2,42 @@
 {% load goal_tags %}
 
 {% block content %}
-  {# subnav for interests #}
-  <hr/>
-  <dl class="sub-nav">
-    <dt>Interests:</dt>
-    {% for interest in category.interests %}
-    <dd><a href="#int-{{interest.id}}">{{ interest.name }}</a></dd>
-    {% endfor %}
-  </dl>
-  <hr/>
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
+    <li class="current">{{ category.name }}</li>
+  </ul>
 
-  <h1>{{ category.name }} {% object_controls category %}</h1>
   <div class="row">
-    {% if category.notes %}
-      <div class="large-6 small-12 columns">
-        {% if category.icon %}
-          <img src="{{ category.icon.url }}" style="float:left;">
-        {% endif %}
-        {{ category.description|linebreaks }}
-      </div>
-      <div class="large-6 small-12 columns">
-        <div class="panel">
-          {% with obj=category %}{% include 'goals/_cite.html' %}{% endwith %}
-        </div>
-      </div>
-    {% else %}
-      <div class="large-12 small-12 columns">
-        {% if category.icon %}
-          <img src="{{ category.icon.url }}" style="float:left;">
-        {% endif %}
-        {{ category.description|linebreaks }}
-      </div>
-    {% endif %}
+    <div class="large-6 small-12 columns">
+      <h1>{{ category.name }} {% object_controls category %}</h1>
+      <dl>
+        <dt>Icon</dt><dd>
+          {% if category.icon %}
+            <img src="{{ category.icon.url }}" alt="{{ category.name }} icon" />
+          {% else %}
+            <em>No icon available</em>
+          {% endif %}
+        </dd>
+        <dt>Order</dt><dd>{{ category.order }}</dd>
+        <dt>Description</dt><dd>{{ category.description|linebreaks }}</dd>
+        <dt>Notes</dt><dd>{{ category.description|linebreaks }}</dd>
+      </dl>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Interests</h2>
+      <p><strong>{{ category.name }}</strong>
+        contains the following interests:</p>
+      <ul>
+      {% for interest in category.interests %}<li>{{ interest }}</li>{% endfor %}
+      </ul>
+
+      <h2 class="subheader">Goals</h2>
+      <p><strong>{{ category.name }}</strong>
+        contains the following goals:</p>
+      <ul>
+      {% for goal in category.goals %}<li>{{ goal }}</li>{% endfor %}
+      </ul>
+    </div>
   </div>
-
-  {% for interest in category.interests %}
-    <div class="row">
-      <div class="large-4 small-12 columns">
-        <h2 id="int-{{interest.id}}" data-magellan-destination="int-{{interest.id}}">
-          {{ interest.name }}
-          {% object_controls interest %}
-        </h2>
-        {% for group in interest.groups %}
-          <span class="secondary label">{{ group.name }}</span>
-        {% endfor %}
-        <div class="panel">
-          {{ interest.description|linebreaks}}
-        </div>
-      </div>
-
-      <div class="large-8 small-12 columns">
-      {% if interest.action_set.exists %}
-        <ul class="tabs vertical" data-tab>
-          {% for action in interest.action_set.all %}
-          <li class="tab-title{% if forloop.first %} active{% endif %}">
-            <a href="#interest-{{interest.id}}-action-{{action.id}}">
-              {{ action.name }}
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
-        <div class="tabs-content vertical">
-        {% for action in interest.action_set.all %}
-          <div class="content{% if forloop.first %} active{% endif %}"
-               id="interest-{{interest.id}}-action-{{action.id}}">
-            <h3 class="subheader">
-              {{ action.name }}
-              {% object_controls action %}
-            </h3>
-            {{ action.summary|linebreaks }}
-            {{ action.description|linebreaks }}
-          </div>
-        {% endfor %}
-        </div> {# end .tabs-content #}
-      {% endif %}
-      </div> {# end .columns #}
-    </div> {# end .row #}
-    <hr/>
-  {% endfor %}
 {% endblock %}

@@ -141,43 +141,7 @@ class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
-        if 'formset' not in kwargs:
-            context['formset'] = self.get_interestgroup_formset()
         return context
-
-    def get_interestgroup_formset(self, post_data=None):
-        InterestGroupFormset = modelformset_factory(
-            InterestGroup,
-            fields=('name', ),
-            extra=3
-        )
-        if post_data:
-            formset = InterestGroupFormset(post_data, prefix="ig")
-        else:
-            formset = InterestGroupFormset(queryset=self.object.groups, prefix="ig")
-        return formset
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        formset = self.get_interestgroup_formset(request.POST)
-        if form.is_valid() and formset.is_valid():
-            return self.form_valid(form, formset)
-        else:
-            return self.form_invalid(form, formset)
-
-    def form_invalid(self, form, formset=None):
-        context = self.get_context_data(form=form, formset=formset)
-        return self.render_to_response(context)
-
-    def form_valid(self, form, formset):
-        self.object = form.save()
-        for instance in formset.save(commit=False):
-            instance.category = self.object
-            instance.save()
-        formset.save_m2m()
-        return super(CategoryUpdateView, self).form_valid(form)
 
 
 class CategoryDeleteView(SuperuserRequiredMixin, DeleteView):
