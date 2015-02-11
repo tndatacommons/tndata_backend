@@ -18,13 +18,54 @@ admin.site.register(models.Category, CategoryAdmin)
 
 
 class InterestAdmin(admin.ModelAdmin):
-    list_display = ('name', 'in_category', 'order')
+    list_display = ('name', 'title', 'in_category', 'order')
     list_display_links = ('order', 'name')
     prepopulated_fields = {"name_slug": ("name", )}
 
     def in_category(self, obj):
         return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
 admin.site.register(models.Interest, InterestAdmin)
+
+
+class GoalAdmin(admin.ModelAdmin):
+    list_display = ('name', 'title', 'in_categories', 'in_interests')
+    prepopulated_fields = {"name_slug": ("name", )}
+
+    def in_categories(self, obj):
+        return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
+
+    def in_interests(self, obj):
+        return ", ".join(sorted([i.name for i in obj.interests.all()]))
+admin.site.register(models.Goal, GoalAdmin)
+
+
+class TriggerAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'trigger_type', 'frequency', 'time', 'date', 'location',
+    )
+    prepopulated_fields = {"name_slug": ("name", )}
+admin.site.register(models.Trigger, TriggerAdmin)
+
+
+class BehaviorSequenceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'title', 'in_categories', 'in_interests', 'in_goals')
+    prepopulated_fields = {"name_slug": ("name", )}
+
+    def in_categories(self, obj):
+        return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
+
+    def in_interests(self, obj):
+        return ", ".join(sorted([i.name for i in obj.interests.all()]))
+
+    def in_goals(self, obj):
+        return ", ".join(sorted([g.name for g in obj.goals.all()]))
+admin.site.register(models.BehaviorSequence, BehaviorSequenceAdmin)
+
+
+class BehaviorActionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'title', 'sequence', 'sequence_order')
+    prepopulated_fields = {"name_slug": ("name", )}
+admin.site.register(models.BehaviorAction, BehaviorActionAdmin)
 
 
 class ActionAdmin(admin.ModelAdmin):
