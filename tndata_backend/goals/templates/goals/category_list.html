@@ -13,8 +13,8 @@
       <table class="object-list">
       <thead>
       <tr>
-        <th>Name</th>
         <th>Order</th>
+        <th>Name</th>
         <th>Interests</th>
         <th>Goals</th>
         <th>Action</th>
@@ -23,10 +23,10 @@
       <tbody>
       {% for category in categories %}
         <tr>
+          <td>{{ category.order }}</td>
           <td>
             <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
           </td>
-          <td>{{ category.order }}</td>
           <td>{{ category.interests|join:", " }}</td>
           <td>{{ category.goals|join:", " }}</td>
           <td>

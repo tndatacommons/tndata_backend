@@ -4,7 +4,9 @@
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Goals</a></li>
   <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
-  <li class="current">{{ category.name }}</li>
+  <li class="current">
+    {% if object %}{{ category.name }}{% else %}New Category {% endif %}
+  </li>
 </ul>
 
 <h1>{% if object %}Update Category: {{object.name}}{% else %}Create Category{% endif %}</h1>
@@ -13,17 +15,6 @@
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
     <p>A <strong>Category</strong> is the top-level organizational unit for
     behavior-change Actions, and is the first thing a user will see in the app.</p>
-
-    <p>The structure of our data looks something like the following:</p>
-    <pre class="panel">
-  Category
-    - Interest
-      - Goal
-        - Behavior Sequence
-          - Behavior Action 1
-          - Behavior Action 2
-    </pre>
-
     {{ form.as_p }}
     <hr/>
     {% if object %}
@@ -34,6 +25,15 @@
     </form>
   </div>
   <div class="large-6 small-12 columns">
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+Category
+  - Interest
+  -- Goal
+  --- Behavior Sequence
+  ---- Behavior Action 1
+  ---- Behavior Action 2
+    </pre>
     <table>
       <caption>Existing Categories</caption>
       <thead>
