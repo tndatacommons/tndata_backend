@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
 from django.forms.models import modelformset_factory
 from django.shortcuts import redirect, render
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import ActionForm, CSVUploadForm, InterestGroupSelectionForm
@@ -59,10 +59,14 @@ def upload_csv(request):
     return render(request, 'goals/upload_csv.html', context)
 
 
+class IndexView(SuperuserRequiredMixin, TemplateView):
+    template_name = "goals/index.html"
+
+
 class CategoryListView(SuperuserRequiredMixin, ListView):
     model = Category
     context_object_name = 'categories'
-    template_name = "goals/index.html"
+    template_name = "goals/category_list.html"
 
 
 class CategoryDetailView(SuperuserRequiredMixin, DetailView):

@@ -1,11 +1,11 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 from . import views
 
 
 urlpatterns = patterns('',
     url(
         r'^$',
-        views.CategoryListView.as_view(),
+        views.IndexView.as_view(),
         name='index'
     ),
 
@@ -104,6 +104,11 @@ urlpatterns = patterns('',
 
 
     # Categories
+    url(
+        r'categories/$',
+        views.CategoryListView.as_view(),
+        name='category-list'
+    ),
     url(
         r'(?P<name_slug>.+)/update/$',
         views.CategoryUpdateView.as_view(),

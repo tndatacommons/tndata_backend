@@ -46,19 +46,27 @@ form p textarea {
     {# Left Nav Section #}
     <ul class="left">
       <li class="divider"></li>
-      <li><a href="{% url 'goals:group-list' %}">Interest Groups</a></li>
+      <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'goals:interest-list' %}">Interests</a></li>
       <li class="divider"></li>
-      <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+      <li><a href="#">Goals</a></li>
+      <li class="divider"></li>
+      <li><a href="#">Triggers</a></li>
+      <li class="divider"></li>
+      <li><a href="#">Behavior Sequences</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'goals:action-list' %}">Behavior Actions</a></li>
       <li class="divider"></li>
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
           <li><a href="{% url 'goals:category-create' %}">Category</a></li>
-          <li><a href="{% url 'goals:group-create' %}">Interest Group</a></li>
           <li><a href="{% url 'goals:interest-create' %}">Interest</a></li>
-          <li><a href="{% url 'goals:action-create' %}">Action</a></li>
+          <li><a href="#">Goal</a></li>
+          <li><a href="#">Trigger</a></li>
+          <li><a href="#">Behavior Sequence</a></li>
+          <li><a href="{% url 'goals:action-create' %}">Behavior Action</a></li>
         </ul>
       </li>
       <li class="divider"></li>

@@ -3,36 +3,16 @@
 {% block content %}
 
   <hr/>
-  {% for category in categories %}
-    <div class="row">
-      <div class="large-4 small-6 columns">
-        <h2><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></h2>
-        <div class="panel">{{ category.description|linebreaks}}</div>
-      </div>
-      <div class="large-8 small-6 columns">
-        <ul class="button-group">
-          <li><a href="{{ category.get_update_url }}"
-                 class="button small">Update</a></li>
-          <li><a href="{{ category.get_delete_url }}"
-                 class="button small alert">Delete</a></li>
-        </ul>
-        <h2 class="subheader">Interests</h2>
-        <ul>
-        {% for group in category.groups %}
-          <li><strong>{{ group.name }}</strong>
-            <ul>
-            {% for interest in group.interests.all %}
-              <li>{{ interest.name }}</li>
-            {% endfor %}
-            </ul>
-          </li>
-        {% empty %}
-          <li><em>No Interests for this Category</em></li>
-        {% endfor %}
-        </ul>
-      </div>
-    </div> {# end .row #}
-    <hr/>
-  {% endfor %}
+  <div class="row">
+    <div class="large-4 small-6 columns">
+      <h1>What goes hjere?</h1>
+      <p>Maybe some isntructions?</p>
+    </div>
+    <div class="large-8 small-6 columns">
+      <h1>or here?</h1>
+      <p>description of data/model?</p>
+    </div>
+  </div> {# end .row #}
+  <hr/>
 {% endblock %}
 
