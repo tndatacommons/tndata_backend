@@ -4,6 +4,8 @@
 {% block title %}Goals{% endblock %}
 
 {% block head %}
+{# Datatables' Foundation CSS (see bodyjs block for the JS) #}
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.css" />
 <style type="text/css">
 select[multiple] {min-height: 100px;}
 /* Styles for helptext within a <p> tag, e.g. when using form.as_p */
@@ -27,7 +29,7 @@ form p textarea {
   <nav class="top-bar" data-topbar role="navigation">
   <ul class="title-area">
     <li class="name">
-      <h1><a href="{% url 'goals:index' %}">Goals</a></h1>
+      <h1><a href="{% url 'goals:index' %}">?</a></h1>
     </li>
     <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
   </ul>
@@ -91,4 +93,15 @@ form p textarea {
     </div>
   </div>
 
-  {% endblock %}
+{% endblock %}
+
+{% block bodyjs %}
+  {{ block.super }}
+  {# Include DataTables Core and Foundation-specific JS #}
+  <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+  <script src="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.js"></script>
+  <script>
+  // NOTE: Apply datatables to all .object-list tables.
+  $(document).ready(function() {$('table.object-list').DataTable();});
+  </script>
+{% endblock %}
