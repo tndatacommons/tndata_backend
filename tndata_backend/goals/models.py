@@ -317,7 +317,7 @@ class Trigger(models.Model):
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
-        super(InterestGroup, self).save(*args, **kwargs)
+        super(Trigger, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         # TODO:
@@ -422,10 +422,10 @@ class BaseBehavior(models.Model):
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
-        super(Category, self).save(*args, **kwargs)
+        super(BaseBehavior, self).save(*args, **kwargs)
 
 
-class BehaviorSequence(models.Model):
+class BehaviorSequence(BaseBehavior):
     """A container and meta-information for a sequence of actions."""
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
