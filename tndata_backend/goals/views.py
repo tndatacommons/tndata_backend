@@ -6,8 +6,8 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from . forms import ActionForm, CSVUploadForm
-from . models import Action, Category, Goal, Interest
+from . forms import ActionForm, CSVUploadForm, TriggerForm
+from . models import Action, Category, Goal, Interest, Trigger
 from . utils import get_max_order
 
 
@@ -204,6 +204,46 @@ class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class GoalDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Goal
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:index')
+
+
+class TriggerListView(SuperuserRequiredMixin, ListView):
+    model = Trigger
+    context_object_name = 'triggers'
+
+
+class TriggerDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Trigger.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+
+class TriggerCreateView(SuperuserRequiredMixin, CreateView):
+    model = Trigger
+    form_class = TriggerForm
+
+    def get_context_data(self, **kwargs):
+        context = super(TriggerCreateView, self).get_context_data(**kwargs)
+        context['triggers'] = Trigger.objects.all()
+        return context
+
+
+class TriggerUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Trigger
+    form_class = TriggerForm
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+    def get_context_data(self, **kwargs):
+        context = super(TriggerUpdateView, self).get_context_data(**kwargs)
+        context['triggers'] = Trigger.objects.all()
+        return context
+
+
+class TriggerDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Trigger
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')

@@ -1,0 +1,40 @@
+{% extends "goals/base.html" %}
+{% load goal_tags %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
+    <li class="current">{{ trigger.name }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h1>{{ trigger.name }} {% object_controls trigger %}</h1>
+      <dl>
+        <dt>Type</dt><dd>{{ trigger.get_trigger_type_display}}</dd>
+        <dt>Frequency</dt><dd>{{ trigger.get_frequency_display }}</dd>
+        <dt>Time</dt><dd>{{ trigger.time }}</dd>
+        <dt>Date</dt><dd>{{ trigger.date }}</dd>
+        <dt>Location</dt><dd>{{ trigger.location|default:"none" }}</dd>
+        <dt>Text</dt><dd>{{ trigger.text|linebreaks }}</dd>
+        <dt>Instruction</dt><dd>{{ trigger.instruction|linebreaks }}</dd>
+      </dl>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Behavior Sequences</h2>
+      <p><strong>{{ trigger.name }}</strong>
+        is attached to the following behavior sequences:</p>
+      <ul>
+      {% for b in trigger.behaviorsequence_set.all %}<li>{{ b }}</li>{% endfor %}
+      </ul>
+
+      <h2 class="subheader">Behavior Actions</h2>
+      <p><strong>{{ trigger.name }}</strong>
+        is attached to the following behavior actions:</p>
+      <ul>
+      {% for b in trigger.behavioraction_set.all %}<li>{{ b }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

@@ -318,7 +318,7 @@ class Trigger(models.Model):
                   "Can be 'home', 'work', or a (lat, long) pair."
     )
     text = models.CharField(
-        max_length="140",
+        max_length=140,
         blank=True,
         help_text="The Trigger text shown to the user."
     )
@@ -340,8 +340,13 @@ class Trigger(models.Model):
         super(Trigger, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        # TODO:
-        return reverse("goals:index")
+        return reverse('goals:trigger-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:trigger-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:trigger-delete', args=[self.name_slug])
 
 
 def _behavior_icon_path(instance, filename):

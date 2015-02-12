@@ -1,0 +1,43 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li class="current">Triggers</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Triggers</h2>
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Frequency</th>
+        <th>Time</th>
+        <th>Date</th>
+        <th>Location</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for trigger in triggers %}
+        <tr>
+          <td>
+            <a href="{{ trigger.get_absolute_url }}">{{ trigger.name }}</a>
+          </td>
+          <td>{{ trigger.get_trigger_type_display }}</td>
+          <td>{{ trigger.get_frequency_display }}</td>
+          <td>{{ trigger.time|default:"-" }}</td>
+          <td>{{ trigger.date|default:"-" }}</td>
+          <td>{{ trigger.location|default:"none"}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

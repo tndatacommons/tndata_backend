@@ -1,0 +1,96 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+
+
+{% block head %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'datepair/lib/site.css' %}" />
+  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
+  {# See bodyjs block for the timepicker js and config #}
+{% endblock %}
+
+
+{% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'goals:index' %}">Goals</a></li>
+  <li><a href="{% url 'goals:trigger-list' %}">Trigger</a></li>
+  <li class="current">
+    {% if object %}{{ object.name }}{% else %}New Trigger{% endif %}
+  </li>
+</ul>
+
+<h1>{% if object %}Update Trigger: {{object.name}}{% else %}Create Trigger{% endif %}</h1>
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:trigger-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <p>A <strong>Trigger</strong> is the top-level organizational unit for
+    behavior-change Actions, and is the first thing a user will see in the app.</p>
+    {{ form.as_p }}
+    <hr/>
+    {% if object %}
+      <button type="submit">Update Trigger</button>
+    {% else %}
+      <button type="submit">Create Trigger</button>
+    {% endif %}
+    </form>
+  </div>
+  <div class="large-6 small-12 columns">
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+Category
+  - Interest
+  -- Goal
+  --- Behavior Sequence (contains a Trigger)
+  ---- Behavior Action 1 (contains a Trigger)
+  ---- Behavior Action 2 (contains a Trigger)
+    </pre>
+    <table>
+      <caption>Existing Triggers</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Frequency</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Location</th>
+          <th>Text</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for trigger in triggers%}
+        <tr>
+          <td><a href="{{ trigger.get_absolute_url }}">{{ trigger.name }}</a></td>
+          <td>{{ trigger.get_trigger_type_display }}</td>
+          <td>{{ trigger.get_frequency_display }}</td>
+          <td>{{ trigger.date }}</td>
+          <td>{{ trigger.time }}</td>
+          <td>{{ trigger.location }}</td>
+          <td>{{ trigger.text }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
+  <script src="{% static 'datepair/dist/jquery.datepair.min.js' %}"></script>
+  <script>
+  $(document).ready(function() {
+    $('.timepicker').timepicker({
+      timeFormat: "G:i",
+      minTime: '5:00'
+    });
+
+    $('.datepicker').datepicker({
+      'format': 'yyyy/m/d',
+      'autoclose': true
+    });
+  });
+  </script>
+{% endblock %}

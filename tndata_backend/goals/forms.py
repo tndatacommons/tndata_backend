@@ -4,8 +4,27 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 
-from . models import Action, Category, Interest, InterestGroup
+from . models import Action, Category, Interest, InterestGroup, Trigger
 from . utils import get_max_order, read_uploaded_csv
+
+
+class TriggerForm(forms.ModelForm):
+    class Meta:
+        model = Trigger
+        fields = [
+            'name', 'trigger_type', 'frequency', 'time', 'date', 'location',
+            'text', 'instruction',
+        ]
+        widgets = {
+            "time": forms.TimeInput(attrs={
+                'class': 'timepicker',
+                'type': 'time'
+            }),
+            "date": forms.DateInput(attrs={
+                'class': 'datepicker',
+                'type': 'date'
+            }),
+        }
 
 
 class ActionForm(forms.ModelForm):

@@ -21,6 +21,11 @@ urlpatterns = patterns('',
         name='interest-create'
     ),
     url(
+        r'new/trigger/$',
+        views.TriggerCreateView.as_view(),
+        name='trigger-create'
+    ),
+    url(
         r'new/goal/$',
         views.GoalCreateView.as_view(),
         name='goal-create'
@@ -78,6 +83,28 @@ urlpatterns = patterns('',
         r'goals/$',
         views.GoalListView.as_view(),
         name='goal-list'
+    ),
+
+    #Triggers
+    url(
+        r'triggers/$',
+        views.TriggerListView.as_view(),
+        name='trigger-list'
+    ),
+    url(
+        r'trigger/(?P<name_slug>.+)/update/$',
+        views.TriggerUpdateView.as_view(),
+        name='trigger-update'
+    ),
+    url(
+        r'trigger/(?P<name_slug>.+)/delete/$',
+        views.TriggerDeleteView.as_view(),
+        name='trigger-delete'
+    ),
+    url(
+        r'trigger/(?P<name_slug>.+)/$',
+        views.TriggerDetailView.as_view(),
+        name='trigger-detail'
     ),
 
     # Interests
