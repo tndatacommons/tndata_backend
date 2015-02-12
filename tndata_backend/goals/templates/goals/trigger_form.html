@@ -4,9 +4,8 @@
 
 {% block head %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'datepair/lib/site.css' %}" />
-  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
   {# See bodyjs block for the timepicker js and config #}
+  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
 {% endblock %}
 
 
@@ -78,19 +77,12 @@ Category
 
 {% block bodyjs %}
   {{ block.super }}
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
   <script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
-  <script src="{% static 'datepair/dist/jquery.datepair.min.js' %}"></script>
   <script>
   $(document).ready(function() {
-    $('.timepicker').timepicker({
-      timeFormat: "G:i",
-      minTime: '5:00'
-    });
-
-    $('.datepicker').datepicker({
-      'format': 'yyyy/m/d',
-      'autoclose': true
-    });
+    $('.timepicker').timepicker({timeFormat: "G:i", minTime: '5:00'});
+    $('.datepicker').datepicker({'format': 'yyyy/mm/dd'});
   });
   </script>
 {% endblock %}
