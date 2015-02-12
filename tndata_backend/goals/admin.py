@@ -69,6 +69,7 @@ admin.site.register(models.BehaviorAction, BehaviorActionAdmin)
 
 
 class ActionAdmin(admin.ModelAdmin):
+    # DEPRECATED.
     list_display = ('order', 'name')
     prepopulated_fields = {"name_slug": ("name", )}
 admin.site.register(models.Action, ActionAdmin)
