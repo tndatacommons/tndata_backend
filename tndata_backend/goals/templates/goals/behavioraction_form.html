@@ -1,5 +1,14 @@
 {% extends "goals/base.html" %}
 
+{% block head %}
+  {{ block.super }}
+  {# Custom CSS for behavior sequece lists in the side panel #}
+  <style type="text/css">
+  #sequence-info{display: none;}
+  </style>
+{% endblock %}
+
+
 {% block content %}
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Goals</a></li>
@@ -25,6 +34,14 @@
     </form>
   </div>
   <div class="large-6 small-12 columns">
+    <div id="sequence-info" class="panel">
+      <h2>Behavior Sequence</h2>
+      {% for seq in behaviorsequences %}
+        <div class="sequence" id="bs-{{seq.id}}">
+          {{seq.informal_list|linebreaks}}
+        </div>
+      {% endfor %}
+    </div>
     <p>The structure of our data looks something like the following:</p>
     <pre class="panel">
 Category
@@ -52,4 +69,31 @@ Category
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script>
+  var toggle_sequence_details = function(selector) {
+      $("#sequence-info").show();
+      $(".sequence").hide(); // hide all other sequences.
+      $(selector).show(); // show the selected one.
+      $("#sequence-info h2").text($("#id_sequence option:selected").text());
+
+  }
+
+  $(document).ready(function() {
+    $("#id_sequence").change(function() {
+      var selected_id = "#bs-" + $(this).val();
+      toggle_sequence_details(selected_id);
+    });
+
+    // Show any pre-selected sequence.
+    var selected_id = $("#id_sequence").val();
+    if(selected_id) {
+      selected_id = "#bs-" + selected_id;
+      toggle_sequence_details(selected_id);
+    };
+  });
+  </script>
 {% endblock %}

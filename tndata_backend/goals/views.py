@@ -324,6 +324,7 @@ class BehaviorActionCreateView(SuperuserRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(BehaviorActionCreateView, self).get_context_data(**kwargs)
         context['behavioractions'] = BehaviorAction.objects.all()
+        context['behaviorsequences'] = BehaviorSequence.objects.all()
         return context
 
 
@@ -341,6 +342,7 @@ class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(BehaviorActionUpdateView, self).get_context_data(**kwargs)
         context['behavioractions'] = BehaviorAction.objects.all()
+        context['behaviorsequences'] = BehaviorSequence.objects.all()
         return context
 
 
