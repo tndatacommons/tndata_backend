@@ -1,0 +1,70 @@
+{% extends "goals/base.html" %}
+{% load goal_tags %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
+    <li class="current">{{ behavioraction.name }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h1>{{ behavioraction.name }} {% object_controls behavioraction %}</h1>
+      <dl>
+        <dt>Sequence Order</dt><dd>{{ behavioraction.sequence_order }}</dd>
+        <dt>Title</dt><dd>{{ behavioraction.title }}</dd>
+        <dt>Notes</dt><dd>{{ behavioraction.description|linebreaks }}</dd>
+        <dt>Description</dt><dd>{{ behavioraction.description|linebreaks }}</dd>
+        <dt>Case</dt><dd>{{ behavioraction.case|linebreaks }}</dd>
+        <dt>Outcome</dt><dd>{{ behavioraction.outcome|linebreaks }}</dd>
+        <dt>Narrative Block</dt><dd>{{ behavioraction.narrative_block|linebreaks }}</dd>
+        <dt>External Resource</dt><dd>{{ behavioraction.external_resource }}</dd>
+        <dt>Default Trigger</dt>
+          {% with trigger=behavioraction.default_trigger %}
+          <dd>
+            {{ trigger.name }}: {{ trigger.get_frequency_display }}
+            {% if trigger.trigger_type == "time" %}
+              {{ trigger.time }}
+            {% else %}
+              {{ trigger.location }}
+            {% endif %}
+            <br/>{{ trigger.text }}<br/>{{ trigger.instruction }}
+          </dd>
+          {% endwith %}
+        <dt>Notification Text</dt><dd>{{ behavioraction.notification_text }}</dd>
+        <dt>Icon</dt><dd>
+          {% if behavioraction.icon %}
+            <img src="{{ behavioraction.icon.url }}" alt="{{ behavioraction.name }} icon" />
+          {% else %}
+            <em>No icon available</em>
+          {% endif %}
+        </dd>
+        <dt>Image</dt><dd>
+          {% if behavioraction.image %}
+            <img src="{{ behavioraction.image.url }}" alt="{{ behavioraction.name }} image" />
+          {% else %}
+            <em>No image available</em>
+          {% endif %}
+        </dd>
+        <dt>Source Notes</dt><dd>{{ behavioraction.source_notes}}</dd>
+        <dt>Source Link</dt><dd>{{ behavioraction.source_link}}</dd>
+      </dl>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Behavior Sequence</h2>
+      <p>This Action is part of the following Behavior Sequence:</p>
+      {% with seq=behavioraction.sequence %}
+      <table>
+        <caption>{{ seq }}</caption>
+        <tbody>
+        <tr><th>Sequence Order</th><td>{{ behavioraction.sequence_order }}</td></tr>
+        <tr><th>Informal LIst</th><td>{{ seq.informal_list|linebreaksbr }}</td></tr>
+        <tr><th>Categories</th><td>{{ seq.categories.all|join:", " }}</td></tr>
+        <tr><th>Interests</th><td>{{ seq.interests.all|join:", " }}</td></tr>
+        <tr><th>Goals</th><td>{{ seq.goals.all|join:", " }}</td></tr>
+      </table>
+      {% endwith %}
+    </div>
+  </div>
+{% endblock %}

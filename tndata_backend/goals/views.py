@@ -301,6 +301,56 @@ class BehaviorSequenceDeleteView(SuperuserRequiredMixin, DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
+class BehaviorActionListView(SuperuserRequiredMixin, ListView):
+    model = BehaviorAction
+    context_object_name = 'behavioractions'
+
+
+class BehaviorActionDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = BehaviorAction.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+
+class BehaviorActionCreateView(SuperuserRequiredMixin, CreateView):
+    model = BehaviorAction
+    fields = [
+        'sequence', 'sequence_order',
+        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'narrative_block', 'external_resource', 'default_trigger',
+        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(BehaviorActionCreateView, self).get_context_data(**kwargs)
+        context['behavioractions'] = BehaviorAction.objects.all()
+        return context
+
+
+class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = BehaviorAction
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    fields = [
+        'sequence', 'sequence_order',
+        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'narrative_block', 'external_resource', 'default_trigger',
+        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(BehaviorActionUpdateView, self).get_context_data(**kwargs)
+        context['behavioractions'] = BehaviorAction.objects.all()
+        return context
+
+
+class BehaviorActionDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = BehaviorAction
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:index')
+
+
 class ActionListView(SuperuserRequiredMixin, ListView):
     model = Action
     context_object_name = 'actions'

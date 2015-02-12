@@ -41,39 +41,39 @@ urlpatterns = patterns('',
         name='behaviorsequence-create'
     ),
     url(
+        r'new/behavioraction/$',
+        views.BehaviorActionCreateView.as_view(),
+        name='behavioraction-create'
+    ),
+    url(
         r'new/upload/$',
         views.upload_csv,
         name='upload-csv'
     ),
 
-    # Actions
+    # Behavior Actions
     url(
-        r'action/(?P<name_slug>.+)/update/$',
-        views.ActionUpdateView.as_view(),
-        name='action-update'
+        r'behavioractions/$',
+        views.BehaviorActionListView.as_view(),
+        name='behavioraction-list'
     ),
     url(
-        r'action/(?P<name_slug>.+)/delete/$',
-        views.ActionDeleteView.as_view(),
-        name='action-delete'
+        r'behavioraction/(?P<name_slug>.+)/update/$',
+        views.BehaviorActionUpdateView.as_view(),
+        name='behavioraction-update'
     ),
     url(
-        r'action/(?P<name_slug>.+)/$',
-        views.ActionDetailView.as_view(),
-        name='action-detail'
+        r'behavioraction/(?P<name_slug>.+)/delete/$',
+        views.BehaviorActionDeleteView.as_view(),
+        name='behavioraction-delete'
     ),
     url(
-        r'actions/$',
-        views.ActionListView.as_view(),
-        name='action-list'
-    ),
-    url(
-        r'actions/$',
-        views.ActionListView.as_view(),
-        name='action-list'
+        r'behavioraction/(?P<name_slug>.+)/$',
+        views.BehaviorActionDetailView.as_view(),
+        name='behavioraction-detail'
     ),
 
-    # BehaviorSequences
+    # Behavior Sequences
     url(
         r'behaviorsequences/$',
         views.BehaviorSequenceListView.as_view(),
@@ -182,4 +182,32 @@ urlpatterns = patterns('',
         views.CategoryDetailView.as_view(),
         name='category-detail'
     ),
+
+    # Actions
+    url(
+        r'action/(?P<name_slug>.+)/update/$',
+        views.ActionUpdateView.as_view(),
+        name='action-update'
+    ),
+    url(
+        r'action/(?P<name_slug>.+)/delete/$',
+        views.ActionDeleteView.as_view(),
+        name='action-delete'
+    ),
+    url(
+        r'action/(?P<name_slug>.+)/$',
+        views.ActionDetailView.as_view(),
+        name='action-detail'
+    ),
+    url(
+        r'actions/$',
+        views.ActionListView.as_view(),
+        name='action-list'
+    ),
+    url(
+        r'actions/$',
+        views.ActionListView.as_view(),
+        name='action-list'
+    ),
+
 )

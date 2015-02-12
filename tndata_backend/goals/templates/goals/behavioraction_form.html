@@ -1,0 +1,55 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'goals:index' %}">Goals</a></li>
+  <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
+  <li class="current">
+    {% if object %}{{ behavioraction.name }}{% else %}New Behavior Action {% endif %}
+  </li>
+</ul>
+
+<h1>{% if object %}Update Behavior Action: {{object.name}}{% else %}Create Behavior Action{% endif %}</h1>
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavioraction-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <p>A <strong>Behavior Action</strong> is the unit of activity in which
+    users will engage.</p>
+    {{ form.as_p }}
+    <hr/>
+    {% if object %}
+      <button type="submit">Update Behavior Action</button>
+    {% else %}
+      <button type="submit">Create Behavior Action</button>
+    {% endif %}
+    </form>
+  </div>
+  <div class="large-6 small-12 columns">
+    <p>The structure of our data looks something like the following:</p>
+    <pre class="panel">
+Category
+  - Interest
+  -- Goal
+  --- Behavior Sequence
+  ---- Behavior Action 1
+  ---- Behavior Action 2
+    </pre>
+    <table>
+      <caption>Existing Behavior Actions</caption>
+      <thead>
+        <tr><th>Behavior Sequence</th><th>Order</th><th>Name</th><th>Title</th></tr>
+      </thead>
+      <tbody>
+      {% for bs in behavioractions %}
+        <tr>
+          <td>{{ bs.sequence }}</td>
+          <td>{{ bs.sequence_order }}</td>
+          <td><a href="{{ cat.get_absolute_url }}">{{ bs.name }}</a></td>
+          <td>{{ bs.title }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
