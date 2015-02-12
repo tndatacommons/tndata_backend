@@ -36,6 +36,11 @@ urlpatterns = patterns('',
         name='action-create'
     ),
     url(
+        r'new/behaviorsequence/$',
+        views.BehaviorSequenceCreateView.as_view(),
+        name='behaviorsequence-create'
+    ),
+    url(
         r'new/upload/$',
         views.upload_csv,
         name='upload-csv'
@@ -62,27 +67,32 @@ urlpatterns = patterns('',
         views.ActionListView.as_view(),
         name='action-list'
     ),
+    url(
+        r'actions/$',
+        views.ActionListView.as_view(),
+        name='action-list'
+    ),
 
-    # Goals
+    # BehaviorSequences
     url(
-        r'goal/(?P<name_slug>.+)/update/$',
-        views.GoalUpdateView.as_view(),
-        name='goal-update'
+        r'behaviorsequences/$',
+        views.BehaviorSequenceListView.as_view(),
+        name='behaviorsequence-list'
     ),
     url(
-        r'goal/(?P<name_slug>.+)/delete/$',
-        views.GoalDeleteView.as_view(),
-        name='goal-delete'
+        r'behaviorsequence/(?P<name_slug>.+)/update/$',
+        views.BehaviorSequenceUpdateView.as_view(),
+        name='behaviorsequence-update'
     ),
     url(
-        r'goal/(?P<name_slug>.+)/$',
-        views.GoalDetailView.as_view(),
-        name='goal-detail'
+        r'behaviorsequence/(?P<name_slug>.+)/delete/$',
+        views.BehaviorSequenceDeleteView.as_view(),
+        name='behaviorsequence-delete'
     ),
     url(
-        r'goals/$',
-        views.GoalListView.as_view(),
-        name='goal-list'
+        r'behaviorsequence/(?P<name_slug>.+)/$',
+        views.BehaviorSequenceDetailView.as_view(),
+        name='behaviorsequence-detail'
     ),
 
     #Triggers
@@ -105,6 +115,28 @@ urlpatterns = patterns('',
         r'trigger/(?P<name_slug>.+)/$',
         views.TriggerDetailView.as_view(),
         name='trigger-detail'
+    ),
+
+    # Goals
+    url(
+        r'goal/(?P<name_slug>.+)/update/$',
+        views.GoalUpdateView.as_view(),
+        name='goal-update'
+    ),
+    url(
+        r'goal/(?P<name_slug>.+)/delete/$',
+        views.GoalDeleteView.as_view(),
+        name='goal-delete'
+    ),
+    url(
+        r'goal/(?P<name_slug>.+)/$',
+        views.GoalDetailView.as_view(),
+        name='goal-detail'
+    ),
+    url(
+        r'goals/$',
+        views.GoalListView.as_view(),
+        name='goal-list'
     ),
 
     # Interests

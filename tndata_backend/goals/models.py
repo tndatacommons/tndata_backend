@@ -474,7 +474,13 @@ class BehaviorSequence(BaseBehavior):
         verbose_name_plural = "Behavior Sequences"
 
     def get_absolute_url(self):
-        return reverse('goals:index')
+        return reverse('goals:behaviorsequence-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:behaviorsequence-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:behaviorsequence-delete', args=[self.name_slug])
 
 
 class BehaviorAction(BaseBehavior):
@@ -489,7 +495,13 @@ class BehaviorAction(BaseBehavior):
         verbose_name_plural = "Behavior Actions"
 
     def get_absolute_url(self):
-        return reverse('goals:index')
+        return reverse('goals:behavioraction-detail', args=[self.name_slug])
+
+    def get_update_url(self):
+        return reverse('goals:behavioraction-update', args=[self.name_slug])
+
+    def get_delete_url(self):
+        return reverse('goals:behavioraction-delete', args=[self.name_slug])
 
 
 class Action(models.Model):

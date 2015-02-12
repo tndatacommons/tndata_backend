@@ -1,0 +1,44 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li class="current">Behavior Sequences</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Behavior Sequences</h2>
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Title</th>
+        <th>Categories</th>
+        <th>Interests</th>
+        <th>Goals</th>
+        <th>Informal List</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for behaviorsequence in behaviorsequences %}
+        <tr>
+          <td>
+            <a href="{{ behaviorsequence.get_absolute_url }}">
+              {{ behaviorsequence.name }}</a>
+          </td>
+          <td>{{ behaviorsequence.title }}</td>
+          <td>{{ behaviorsequence.categories.all|join:", " }}</td>
+          <td>{{ behaviorsequence.interests.all|join:", " }}</td>
+          <td>{{ behaviorsequence.goals.all|join:", " }}</td>
+          <td>{{ behaviorsequence.informal_list|linebreaksbr }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

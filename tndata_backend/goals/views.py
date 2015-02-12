@@ -7,7 +7,9 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import ActionForm, CSVUploadForm, TriggerForm
-from . models import Action, Category, Goal, Interest, Trigger
+from . models import (
+    Action, BehaviorAction, BehaviorSequence, Category, Goal, Interest, Trigger
+)
 from . utils import get_max_order
 
 
@@ -244,6 +246,56 @@ class TriggerUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class TriggerDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Trigger
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:index')
+
+
+class BehaviorSequenceListView(SuperuserRequiredMixin, ListView):
+    model = BehaviorSequence
+    context_object_name = 'behaviorsequences'
+
+
+class BehaviorSequenceDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = BehaviorSequence.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+
+class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
+    model = BehaviorSequence
+    fields = [
+        'categories', 'interests', 'goals', 'informal_list',
+        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'narrative_block', 'external_resource', 'default_trigger',
+        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(BehaviorSequenceCreateView, self).get_context_data(**kwargs)
+        context['behaviorsequences'] = BehaviorSequence.objects.all()
+        return context
+
+
+class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = BehaviorSequence
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    fields = [
+        'categories', 'interests', 'goals', 'informal_list',
+        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'narrative_block', 'external_resource', 'default_trigger',
+        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super(BehaviorSequenceUpdateView, self).get_context_data(**kwargs)
+        context['behaviorsequences'] = BehaviorSequence.objects.all()
+        return context
+
+
+class BehaviorSequenceDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = BehaviorSequence
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
