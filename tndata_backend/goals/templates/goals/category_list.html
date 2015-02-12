@@ -17,7 +17,6 @@
         <th>Name</th>
         <th>Interests</th>
         <th>Goals</th>
-        <th>Action</th>
       </tr>
       </thead>
       <tbody>
@@ -29,14 +28,6 @@
           </td>
           <td>{{ category.interests|join:", " }}</td>
           <td>{{ category.goals|join:", " }}</td>
-          <td>
-            <ul class="button-group even-2">
-              <li><a href="{{ category.get_update_url }}"
-                     class="button tiny">Update</a></li>
-              <li><a href="{{ category.get_delete_url }}"
-                     class="button tiny alert">Delete</a></li>
-            </ul>
-          </td>
         </tr>
       {% endfor %}
       </tbody>
