@@ -39,27 +39,3 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
 class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.BehaviorAction.objects.all()
     serializer_class = serializers.BehaviorActionSerializer
-
-
-# Deprecated classes below...
-#class ActionViewSet(viewsets.ReadOnlyModelViewSet):
-#    queryset = models.Action.objects.all()
-#    serializer_class = ActionSerializer
-#
-#
-#class CustomReminderViewSet(viewsets.ModelViewSet):
-#    queryset = models.CustomReminder.objects.all()
-#    serializer_class = CustomReminderSerializer
-#    permission_classes = [IsOwner]  # NOTE: default perms require authentication
-#
-#
-#class SelectedActionViewSet(viewsets.ReadOnlyModelViewSet):
-#    queryset = models.SelectedAction.objects.all()
-#    serializer_class = SelectedActionSerializer
-#    permission_classes = [IsOwner]  # NOTE: default perms require authentication
-#
-#
-#class ActionTakenViewSet(viewsets.ModelViewSet):
-#    queryset = models.ActionTaken.objects.all()
-#    serializer_class = ActionTakenSerializer
-#    permission_classes = [IsOwner]  # NOTE: default perms require authentication

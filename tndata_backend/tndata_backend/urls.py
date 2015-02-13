@@ -33,6 +33,8 @@ class IndexView(TemplateView):
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter()
+
+# ViewSets from the goals app.
 router.register(r'categories', CategoryViewSet)
 router.register(r'interests', InterestViewSet)
 router.register(r'goals', GoalViewSet)
@@ -40,6 +42,7 @@ router.register(r'triggers', TriggerViewSet)
 router.register(r'sequences', BehaviorSequenceViewSet)
 router.register(r'actions', BehaviorActionViewSet)
 
+# ViewSets from the userprofile app.
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
 
