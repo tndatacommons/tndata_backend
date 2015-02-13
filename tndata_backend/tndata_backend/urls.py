@@ -7,14 +7,13 @@ from django.views.generic import TemplateView
 
 from rest_framework import routers
 
-from diary.api import EntryViewSet
 from goals.api import (
-    ActionViewSet,
-    ActionTakenViewSet,
+    BehaviorSequenceViewSet,
+    BehaviorActionViewSet,
     CategoryViewSet,
     InterestViewSet,
-    CustomReminderViewSet,
-    SelectedActionViewSet,
+    GoalViewSet,
+    TriggerViewSet,
 )
 from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
 
@@ -34,15 +33,15 @@ class IndexView(TemplateView):
 
 # Routers provide an easy way of automatically determining the URL conf
 router = routers.DefaultRouter()
-router.register(r'actions', ActionViewSet)
-router.register(r'actions_taken', ActionTakenViewSet)
 router.register(r'categories', CategoryViewSet)
 router.register(r'interests', InterestViewSet)
-router.register(r'selected_actions', SelectedActionViewSet)
-router.register(r'reminders', CustomReminderViewSet)
+router.register(r'goals', GoalViewSet)
+router.register(r'triggers', TriggerViewSet)
+router.register(r'sequences', BehaviorSequenceViewSet)
+router.register(r'actions', BehaviorActionViewSet)
+
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
-router.register(r'diary/entries', EntryViewSet)
 
 
 urlpatterns = patterns('',
