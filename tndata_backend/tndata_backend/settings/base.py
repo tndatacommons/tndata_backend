@@ -15,8 +15,8 @@ ADMINS = (
     ('Brad Montgomery', 'bkmontgomery@tndata.org'),
 )
 MANAGERS = ADMINS
-DEFAULT_FROM_EMAIL = 'connect@tndata.org'
-SERVER_EMAIL = 'connect@tndata.org'
+DEFAULT_FROM_EMAIL = 'webmaster@tndata.org'
+SERVER_EMAIL = 'webmaster@tndata.org'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
