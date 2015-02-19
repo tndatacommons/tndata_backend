@@ -181,7 +181,7 @@ class GoalDetailView(SuperuserRequiredMixin, DetailView):
 class GoalCreateView(SuperuserRequiredMixin, CreateView):
     model = Goal
     fields = [
-        'categories', 'interests', 'name', 'title', 'description', 'outcome'
+        'categories', 'name', 'title', 'description', 'outcome'
     ]
 
     def get_context_data(self, **kwargs):
@@ -195,7 +195,7 @@ class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     fields = [
-        'categories', 'interests', 'name', 'title', 'description', 'outcome'
+        'categories', 'name', 'title', 'description', 'outcome'
     ]
 
     def get_context_data(self, **kwargs):
@@ -265,7 +265,7 @@ class BehaviorSequenceDetailView(SuperuserRequiredMixin, DetailView):
 class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
     model = BehaviorSequence
     fields = [
-        'categories', 'interests', 'goals', 'informal_list',
+        'categories', 'goals', 'informal_list',
         'name', 'title', 'notes', 'description', 'case', 'outcome',
         'narrative_block', 'external_resource', 'default_trigger',
         'notification_text', 'icon', 'image', 'source_notes', 'source_link',
@@ -282,7 +282,7 @@ class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     fields = [
-        'categories', 'interests', 'goals', 'informal_list',
+        'categories', 'goals', 'informal_list',
         'name', 'title', 'notes', 'description', 'case', 'outcome',
         'narrative_block', 'external_resource', 'default_trigger',
         'notification_text', 'icon', 'image', 'source_notes', 'source_link',
