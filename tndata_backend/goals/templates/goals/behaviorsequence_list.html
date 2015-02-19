@@ -3,7 +3,7 @@
 {% block content %}
 
   <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
     <li class="current">Behavior Sequences</li>
   </ul>
 
@@ -16,7 +16,6 @@
         <th>Name</th>
         <th>Title</th>
         <th>Categories</th>
-        <th>Interests</th>
         <th>Goals</th>
         <th>Informal List</th>
       </tr>
@@ -30,7 +29,6 @@
           </td>
           <td>{{ behaviorsequence.title }}</td>
           <td>{{ behaviorsequence.categories.all|join:", " }}</td>
-          <td>{{ behaviorsequence.interests.all|join:", " }}</td>
           <td>{{ behaviorsequence.goals.all|join:", " }}</td>
           <td>{{ behaviorsequence.informal_list|linebreaksbr }}</td>
         </tr>

@@ -11,7 +11,7 @@
 
 {% block content %}
 <ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Goals</a></li>
+  <li><a href="{% url 'goals:index' %}">Home</a></li>
   <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
   <li class="current">
     {% if object %}{{ behavioraction.name }}{% else %}New Behavior Action {% endif %}

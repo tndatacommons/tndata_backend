@@ -3,7 +3,7 @@
 {% block content %}
 
   <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Goals</a></li>
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
     <li class="current">Categories</li>
   </ul>
 
@@ -15,7 +15,6 @@
       <tr>
         <th>Order</th>
         <th>Name</th>
-        <th>Interests</th>
         <th>Goals</th>
       </tr>
       </thead>
@@ -26,7 +25,6 @@
           <td>
             <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
           </td>
-          <td>{{ category.interests|join:", " }}</td>
           <td>{{ category.goals|join:", " }}</td>
         </tr>
       {% endfor %}

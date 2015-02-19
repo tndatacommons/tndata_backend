@@ -15,7 +15,6 @@
         <th>Name</th>
         <th>Title</th>
         <th>Categories</th>
-        <th>Interests</th>
       </tr>
       </thead>
       <tbody>
@@ -24,7 +23,6 @@
         <td><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a></td>
         <td>{{ goal.title }}</td>
         <td>{{ goal.categories.all|join:", " }}</td>
-        <td>{{ goal.interests.all|join:", " }}</td>
         </tr>
       {% endfor %}
       </tbody>
