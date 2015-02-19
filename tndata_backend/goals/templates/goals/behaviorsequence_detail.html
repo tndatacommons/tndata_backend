@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
 
 {% block content %}
   <ul class="breadcrumbs">
@@ -14,12 +15,12 @@
       <dl>
         <dt>Name</dt><dd>{{ behaviorsequence.name }}</dd>
         <dt>Title</dt><dd>{{ behaviorsequence.title }}</dd>
-        <dt>Informal List</dt><dd>{{ behaviorsequence.informal_list|linebreaks }}</dd>
-        <dt>Notes</dt><dd>{{ behaviorsequence.notes|linebreaks }}</dd>
-        <dt>Description</dt><dd>{{ behaviorsequence.description|linebreaks }}</dd>
-        <dt>Case</dt><dd>{{ behaviorsequence.case|linebreaks }}</dd>
-        <dt>Outcome</dt><dd>{{ behaviorsequence.outcome|linebreaks }}</dd>
-        <dt>Narrative Block</dt><dd>{{ behaviorsequence.narrative_block|linebreaks }}</dd>
+        <dt>Informal List</dt><dd>{{ behaviorsequence.informal_list|markdown }}</dd>
+        <dt>Notes</dt><dd>{{ behaviorsequence.notes|markdown }}</dd>
+        <dt>Description</dt><dd>{{ behaviorsequence.description|markdown }}</dd>
+        <dt>Case</dt><dd>{{ behaviorsequence.case|markdown }}</dd>
+        <dt>Outcome</dt><dd>{{ behaviorsequence.outcome|markdown }}</dd>
+        <dt>Narrative Block</dt><dd>{{ behaviorsequence.narrative_block|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ behaviorsequence.external_resource }}</dd>
         <dt>Default Trigger</dt><dd>{{ behaviorsequence.default_trigger }}</dd>
         <dt>Notification Text</dt><dd>{{ behaviorsequence.notification_text }}</dd>
@@ -37,7 +38,7 @@
             <em>No image available</em>
           {% endif %}
         </dd>
-        <dt>Source Notes</dt><dd>{{ behaviorsequence.source_notes}}</dd>
+        <dt>Source Notes</dt><dd>{{ behaviorsequence.source_notes|markdown}}</dd>
         <dt>Source Link</dt><dd>{{ behaviorsequence.source_link}}</dd>
       </dl>
     </div>
@@ -46,14 +47,13 @@
       <ul>
       {% for cat in behaviorsequence.categories.all %}<li>{{ cat }}</li>{% endfor %}
       </ul>
-      <h2 class="subheader">Interests</h2>
-      <ul>
-      {% for interest in behaviorsequence.interests.all %}<li>{{ interest }}</li>{% endfor %}
-      </ul>
-
       <h2 class="subheader">Goals</h2>
       <ul>
       {% for goal in behaviorsequence.goals.all %}<li>{{ goal }}</li>{% endfor %}
+      </ul>
+      <h2 class="subheader">Actions</h2>
+      <ul>
+      {% for ba in behaviorsequence.behavioraction_set.all %}<li>{{ ba }}</li>{% endfor %}
       </ul>
     </div>
   </div>

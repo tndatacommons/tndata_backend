@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
 
 {% block content %}
   <ul class="breadcrumbs">
@@ -14,8 +15,8 @@
       <dl>
       <dt>Name</dt><dd>{{ goal.name }}</dd>
       <dt>Title</dt><dd>{{ goal.title }}</dd>
-      <dt>Description</dt><dd>{{ goal.description|linebreaks }}</dt>
-      <dt>Outcome</dt><dd>{{ goal.outcome|linebreaks }}</dt>
+      <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
+      <dt>Outcome</dt><dd>{{ goal.outcome|markdown }}</dt>
       </dl>
     </div>
     <div class="large-6 small-12 columns">
@@ -27,11 +28,17 @@
       {% endfor %}
       </ul>
 
-      <h2 class="subheader">Interests</h2>
-      <p><em>{{goal.name}}</em> is listed under the folllowing Interests:</p>
+      <h2 class="subheader">Content</h2>
+      <p><em>{{goal.name}}</em> contains the following sequences and actions:</p>
       <ul>
-      {% for interest in goal.interests.all %}
-        <li>{{ interest.name }}</li>
+      {% for bs in goal.behaviorsequence_set.all %}
+        <li>{{bs}}
+          <ul>
+            {% for ba in bs.behavioraction_set.all %}
+              <li>{{ ba }}</li>
+            {% endfor %}
+          </ul>
+        </li>
       {% endfor %}
       </ul>
 

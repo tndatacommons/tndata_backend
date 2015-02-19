@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
 
 {% block content %}
   <ul class="breadcrumbs">
@@ -17,8 +18,8 @@
         <dt>Time</dt><dd>{{ trigger.time }}</dd>
         <dt>Date</dt><dd>{{ trigger.date }}</dd>
         <dt>Location</dt><dd>{{ trigger.location|default:"none" }}</dd>
-        <dt>Text</dt><dd>{{ trigger.text|linebreaks }}</dd>
-        <dt>Instruction</dt><dd>{{ trigger.instruction|linebreaks }}</dd>
+        <dt>Text</dt><dd>{{ trigger.text }}</dd>
+        <dt>Instruction</dt><dd>{{ trigger.instruction|markdown }}</dd>
       </dl>
     </div>
     <div class="large-6 small-12 columns">

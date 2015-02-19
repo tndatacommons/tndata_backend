@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
 
 {% block content %}
   <ul class="breadcrumbs">
@@ -14,11 +15,11 @@
       <dl>
         <dt>Sequence Order</dt><dd>{{ behavioraction.sequence_order }}</dd>
         <dt>Title</dt><dd>{{ behavioraction.title }}</dd>
-        <dt>Notes</dt><dd>{{ behavioraction.description|linebreaks }}</dd>
-        <dt>Description</dt><dd>{{ behavioraction.description|linebreaks }}</dd>
-        <dt>Case</dt><dd>{{ behavioraction.case|linebreaks }}</dd>
-        <dt>Outcome</dt><dd>{{ behavioraction.outcome|linebreaks }}</dd>
-        <dt>Narrative Block</dt><dd>{{ behavioraction.narrative_block|linebreaks }}</dd>
+        <dt>Notes</dt><dd>{{ behavioraction.description|markdown }}</dd>
+        <dt>Description</dt><dd>{{ behavioraction.description|markdown }}</dd>
+        <dt>Case</dt><dd>{{ behavioraction.case|markdown }}</dd>
+        <dt>Outcome</dt><dd>{{ behavioraction.outcome|markdown }}</dd>
+        <dt>Narrative Block</dt><dd>{{ behavioraction.narrative_block|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ behavioraction.external_resource }}</dd>
         <dt>Default Trigger</dt>
           {% with trigger=behavioraction.default_trigger %}
@@ -47,7 +48,7 @@
             <em>No image available</em>
           {% endif %}
         </dd>
-        <dt>Source Notes</dt><dd>{{ behavioraction.source_notes}}</dd>
+        <dt>Source Notes</dt><dd>{{ behavioraction.source_notes|markdown }}</dd>
         <dt>Source Link</dt><dd>{{ behavioraction.source_link}}</dd>
       </dl>
     </div>
@@ -59,9 +60,8 @@
         <caption>{{ seq }}</caption>
         <tbody>
         <tr><th>Sequence Order</th><td>{{ behavioraction.sequence_order }}</td></tr>
-        <tr><th>Informal LIst</th><td>{{ seq.informal_list|linebreaksbr }}</td></tr>
+        <tr><th>Informal LIst</th><td>{{ seq.informal_list|markdown }}</td></tr>
         <tr><th>Categories</th><td>{{ seq.categories.all|join:", " }}</td></tr>
-        <tr><th>Interests</th><td>{{ seq.interests.all|join:", " }}</td></tr>
         <tr><th>Goals</th><td>{{ seq.goals.all|join:", " }}</td></tr>
       </table>
       {% endwith %}
