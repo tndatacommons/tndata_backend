@@ -19,34 +19,33 @@ class GoalListField(serializers.RelatedField):
             'title': value.title,
             'description': value.description,
             'outcome': value.outcome,
+            'icon_url': value.get_absolute_icon(),
         }
 
 
-class InterestListField(serializers.RelatedField):
-    """A Custom Relational Serializer field that lists a subset of Interest
-    information on a Category."""
+class CategoryListField(serializers.RelatedField):
+    """A Custom Relational Serializer field that lists a subset of Categories."""
     def to_native(self, value):
         return {
             'id': value.id,
             'order': value.order,
             'name': value.name,
-            'title': value.title,
+            'name_slug': value.name_slug,
             'description': value.description,
-            'source_name': value.source_name,
-            'source_link': value.source_link,
+            'icon_url': value.get_absolute_icon(),
         }
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """A Serializer for `Category`."""
     goals = GoalListField(many=True)
-    interests = InterestListField(many=True)
+    icon_url = serializers.Field(source="get_absolute_icon")
 
     class Meta:
         model = Category
         fields = (
-            'id', 'order', 'name', 'name_slug', 'description', 'icon',
-            'goals', 'interests',
+            'id', 'order', 'name', 'name_slug', 'description',
+            'goals', 'icon_url',
         )
         depth = 1
 
@@ -65,12 +64,14 @@ class InterestSerializer(serializers.ModelSerializer):
 
 class GoalSerializer(serializers.ModelSerializer):
     """A Serializer for `Goal`."""
+    icon_url = serializers.Field(source="get_absolute_icon")
+    categories = CategoryListField(many=True)
 
     class Meta:
         model = Goal
         fields = (
             'id', 'name', 'name_slug', 'title', 'description', 'outcome',
-            'categories', 'interests',
+            'categories', 'interests', 'icon_url',
         )
         depth = 2
 
@@ -88,20 +89,25 @@ class TriggerSerializer(serializers.ModelSerializer):
 
 class BehaviorSequenceSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorSequence`."""
+    icon_url = serializers.Field(source="get_absolute_icon")
+    image_url = serializers.Field(source="get_absolute_image")
+    categories = CategoryListField(many=True)
 
     class Meta:
         model = BehaviorSequence
         fields = (
             'id', 'name', 'name_slug', 'title', 'description', 'case', 'outcome',
             'narrative_block', 'external_resource', 'default_trigger',
-            'notification_text', 'icon', 'image', 'source_notes', 'source_link',
-            'categories', 'interests', 'goals', 'informal_list',
+            'notification_text', 'source_notes', 'source_link', 'categories',
+            'interests', 'goals', 'informal_list', 'icon_url', 'image_url',
         )
         depth = 2
 
 
 class BehaviorActionSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorAction`."""
+    icon_url = serializers.Field(source="get_absolute_icon")
+    image_url = serializers.Field(source="get_absolute_image")
 
     class Meta:
         model = BehaviorAction
@@ -109,6 +115,6 @@ class BehaviorActionSerializer(serializers.ModelSerializer):
             'id', 'sequence', 'sequence_order', 'name', 'name_slug',
             'title', 'description', 'case', 'outcome', 'narrative_block',
             'external_resource', 'default_trigger', 'notification_text',
-            'icon', 'image', 'source_notes', 'source_link',
+            'source_notes', 'source_link', 'icon_url', 'image_url',
         )
         depth = 2
