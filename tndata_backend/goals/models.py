@@ -21,6 +21,13 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 
 
+MEDIA_DOMAIN = "http://app.tndata.org"
+
+
+def _build_url(path):
+    return "{0}{1}".format(MEDIA_DOMAIN, path)
+
+
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
     order = models.PositiveIntegerField(
@@ -77,6 +84,10 @@ class Category(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:category-delete', args=[self.name_slug])
+
+    def get_absolute_icon(self):
+        if self.icon:
+            return _build_url(self.icon.url)
 
 
 class Interest(models.Model):
@@ -245,6 +256,10 @@ class Goal(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:goal-delete', args=[self.name_slug])
+
+    def get_absolute_icon(self):
+        if self.icon:
+            return _build_url(self.icon.url)
 
 
 
@@ -433,6 +448,14 @@ class BaseBehavior(models.Model):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         super(BaseBehavior, self).save(*args, **kwargs)
+
+    def get_absolute_icon(self):
+        if self.icon:
+            return _build_url(self.icon.url)
+
+    def get_absolute_image(self):
+        if self.image:
+            return _build_url(self.image.url)
 
 
 class BehaviorSequence(BaseBehavior):
