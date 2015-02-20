@@ -79,14 +79,6 @@ class Category(models.Model):
         return reverse('goals:category-delete', args=[self.name_slug])
 
 
-@receiver(post_delete, sender=Category)
-def delete_category_icon(sender, instance, using, **kwargs):
-    """Once a Category has been deleted, this will remove its icon from the
-    filesystem."""
-    if instance.icon:
-        instance.icon.delete()
-
-
 class Interest(models.Model):
     """An interest is a broad topic that essentially groups multiple
     behaviors. Interest is more granular than Category.
@@ -678,3 +670,23 @@ class ActionTaken(models.Model):
         ordering = ['date_completed', 'selected_action', 'user']
         verbose_name = 'Action Taken'
         verbose_name_plural = 'Actions Taken'
+
+
+@receiver(post_delete, sender=BehaviorAction)
+@receiver(post_delete, sender=BehaviorSequence)
+@receiver(post_delete, sender=Goal)
+@receiver(post_delete, sender=Category)
+def delete_model_icon(sender, instance, using, **kwargs):
+    """Once a model instance has been deleted, this will remove its `icon` from
+    the filesystem."""
+    if hasattr(instance, 'icon') and instance.icon:
+        instance.icon.delete()
+
+
+@receiver(post_delete, sender=BehaviorAction)
+@receiver(post_delete, sender=BehaviorSequence)
+def delete_model_image(sender, instance, using, **kwargs):
+    """Once a model instance has been deleted, this will remove its `image`
+    from the filesystem."""
+    if hasattr(instance, 'image') and instance.image:
+        instance.image.delete()
