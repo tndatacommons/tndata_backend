@@ -24,7 +24,9 @@ SERVER_EMAIL = 'webmaster@tndata.org'
 SECRET_KEY = 'xt67918srm3f=0$#k%7quk+&pdtwy7#n=pfn%4kzyae$kxmw%j'
 DEBUG = False
 TEMPLATE_DEBUG = False
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.tndata.org', '.tndata.org.']
+ALLOWED_HOSTS = [
+    'localhost', '127.0.0.1', '.tndata.org', '.tndata.org.', '104.236.244.232',
+]
 
 TEMPLATE_DIRS = [
     os.path.join(BASE_DIR, 'templates')
