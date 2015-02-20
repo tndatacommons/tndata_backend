@@ -228,6 +228,10 @@ class Goal(models.Model):
         blank=True,
         help_text="Desired outcome of this Goal."
     )
+    icon = models.ImageField(
+        upload_to="goals/goal", null=True, blank=True,
+        help_text="Upload an image to be displayed next to the Goal."
+    )
 
     def __str__(self):
         return "{0}".format(self.name)
@@ -249,6 +253,7 @@ class Goal(models.Model):
 
     def get_delete_url(self):
         return reverse('goals:goal-delete', args=[self.name_slug])
+
 
 
 class Trigger(models.Model):
