@@ -16,11 +16,6 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.CategorySerializer
 
 
-class InterestViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = models.Interest.objects.all()
-    serializer_class = serializers.InterestSerializer
-
-
 class GoalViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Goal.objects.all()
     serializer_class = serializers.GoalSerializer

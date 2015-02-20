@@ -11,7 +11,6 @@ from goals.api import (
     BehaviorSequenceViewSet,
     BehaviorActionViewSet,
     CategoryViewSet,
-    InterestViewSet,
     GoalViewSet,
     TriggerViewSet,
 )
@@ -36,7 +35,6 @@ router = routers.DefaultRouter()
 
 # ViewSets from the goals app.
 router.register(r'categories', CategoryViewSet)
-#router.register(r'interests', InterestViewSet)
 router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet)
 router.register(r'sequences', BehaviorSequenceViewSet)

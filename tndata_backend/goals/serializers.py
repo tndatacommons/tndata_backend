@@ -4,7 +4,6 @@ from . models import (
     BehaviorSequence,
     Category,
     Goal,
-    Interest,
     Trigger,
 )
 
@@ -50,18 +49,6 @@ class CategorySerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class InterestSerializer(serializers.ModelSerializer):
-    """A Serializer for `Interest`."""
-
-    class Meta:
-        model = Interest
-        fields = (
-            'id', 'order', 'name', 'name_slug', 'title', 'description',
-            'source_name', 'source_link', 'categories',
-        )
-        depth = 2
-
-
 class GoalSerializer(serializers.ModelSerializer):
     """A Serializer for `Goal`."""
     icon_url = serializers.Field(source="get_absolute_icon")
@@ -71,7 +58,7 @@ class GoalSerializer(serializers.ModelSerializer):
         model = Goal
         fields = (
             'id', 'name', 'name_slug', 'title', 'description', 'outcome',
-            'categories', 'interests', 'icon_url',
+            'categories', 'icon_url',
         )
         depth = 2
 
@@ -99,7 +86,7 @@ class BehaviorSequenceSerializer(serializers.ModelSerializer):
             'id', 'name', 'name_slug', 'title', 'description', 'case', 'outcome',
             'narrative_block', 'external_resource', 'default_trigger',
             'notification_text', 'source_notes', 'source_link', 'categories',
-            'interests', 'goals', 'informal_list', 'icon_url', 'image_url',
+            'goals', 'informal_list', 'icon_url', 'image_url',
         )
         depth = 2
 
