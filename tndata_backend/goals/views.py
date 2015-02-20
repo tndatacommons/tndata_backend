@@ -181,7 +181,7 @@ class GoalDetailView(SuperuserRequiredMixin, DetailView):
 class GoalCreateView(SuperuserRequiredMixin, CreateView):
     model = Goal
     fields = [
-        'categories', 'name', 'title', 'description', 'outcome'
+        'categories', 'name', 'title', 'description', 'outcome', 'icon',
     ]
 
     def get_context_data(self, **kwargs):
@@ -195,7 +195,7 @@ class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     fields = [
-        'categories', 'name', 'title', 'description', 'outcome'
+        'categories', 'name', 'title', 'description', 'outcome', 'icon',
     ]
 
     def get_context_data(self, **kwargs):
