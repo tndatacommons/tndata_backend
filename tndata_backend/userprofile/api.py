@@ -48,7 +48,9 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [IsSelf]  # NOTE: default perms require authentication
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        if self.request.user.is_authenticated():
+            return self.queryset.filter(user=self.request.user)
+        return self.queryset.none()
 
 
 class ObtainAuthorization(ObtainAuthToken):
