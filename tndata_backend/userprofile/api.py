@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email', 'is_staff')
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsSelf]  # NOTE: default perms require authentication
@@ -42,7 +42,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         )
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsSelf]  # NOTE: default perms require authentication
