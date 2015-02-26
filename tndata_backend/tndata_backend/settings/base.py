@@ -51,6 +51,7 @@ INSTALLED_APPS = (
     'rules',
     'survey',
     'userprofile',
+    'utils',
 )
 
 MIDDLEWARE_CLASSES = (
