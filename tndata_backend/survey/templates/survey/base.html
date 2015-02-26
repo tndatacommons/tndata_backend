@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+
+{% block title %}Survey{% endblock %}
+
+{% block head %}
+{# Datatables' Foundation CSS (see bodyjs block for the JS) #}
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.css" />
+<style type="text/css">
+.breadcrumbs {margin-top:1em;}
+select[multiple] {min-height: 100px;}
+/* Styles for helptext within a <p> tag, e.g. when using form.as_p */
+p span.helptext {color:#777; font-style:italic;}
+/* remove whitespace for helptext */
+form p select,
+form p input[type="text"], form p input[type="date"], form p input[type="password"]
+form p input[type="datetime"], form p input[type="datetime-local"],
+form p input[type="month"], form p input[type="week"], form p input[type="email"],
+form p input[type="number"], form p input[type="search"], form p input[type="tel"],
+form p input[type="time"], form p input[type="url"], form p input[type="color"],
+form p textarea {
+  margin-bottom: 0px;
+}
+
+/* jquery-ui datepicker style */
+#ui-datepicker-div {
+  background-color: white;
+  border: 1px solid #aaa;
+  padding: .5em .5em 0 .5em;
+  box-shadow: 0 0 .5em #ccc;
+}
+a.ui-datepicker-next { float:right; }
+.ui-datepicker-today {background-color: #ddd;}
+</style>
+{% endblock %}
+
+
+{% block body %}
+  <div class="sticky">
+  <nav class="top-bar" data-topbar role="navigation">
+  <ul class="title-area">
+    <li class="name">
+      <h1><a href="{% url 'survey:index' %}">?</a></h1>
+    </li>
+    <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+  </ul>
+
+  <section class="top-bar-section">
+    {# Right Nav Section #}
+    <ul class="right">
+      <li class="divider"></li>
+      <li><a href="/admin/">Admin</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'logout' %}">Sign Out</a></li>
+    </ul>
+
+    {# Left Nav Section #}
+    <ul class="left">
+      <li class="divider"></li>
+      <li><a href="{% url 'survey:likert-list' %}">Likert Questions</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'survey:multiplechoice-list' %}">Multiple Choice</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'survey:openended-list' %}">Open-Ended</a></li>
+
+      <li class="divider"></li>
+      <li class="has-dropdown">
+        <a href="#">New</a>
+        <ul class="dropdown">
+          <li><a href="{% url 'survey:likert-create' %}">
+            Likert Question</a></li>
+          <li><a href="{% url 'survey:multiplechoice-create' %}">
+            Mulitple Choice Question</a></li>
+          <li><a href="{% url 'survey:openended-create' %}">
+            Open-Ended Question</a></li>
+        </ul>
+      </li>
+      <li class="divider"></li>
+    </ul>
+  </section>
+  </nav>
+  </div>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+
+    {# django.contrib.messages #}
+    {% if messages %}
+      {% for message in messages %}
+        <div data-alert class="alert-box {{message.tags}}">
+          {{ message }} <a href="#" class="close">&times;</a>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block bodyjs %}
+  {{ block.super }}
+  {# Include DataTables Core and Foundation-specific JS #}
+  <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+  <script src="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.js"></script>
+  <script>
+  // NOTE: Apply datatables to all .object-list tables.
+  $(document).ready(function() {$('table.object-list').DataTable();});
+  </script>
+{% endblock %}

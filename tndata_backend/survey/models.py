@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models
 
 
@@ -29,6 +30,15 @@ class MultipleChoiceQuestion(BaseQuestion):
     def options(self):
         options = self.multiplechoiceresponseoption_set.filter(available=True)
         return list(options.values('id', 'text'))
+
+    def get_absolute_url(self):
+        return reverse('survey:multiplechoice-detail', args=[self.id])
+
+    def get_update_url(self):
+        return reverse('survey:multiplechoice-update', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('survey:multiplechoice-delete', args=[self.id])
 
 
 class MultipleChoiceResponseOption(models.Model):
@@ -70,6 +80,15 @@ class OpenEndedQuestion(BaseQuestion):
         verbose_name = "Open-Ended Question"
         verbose_name_plural = "Open-Ended Questions"
 
+    def get_absolute_url(self):
+        return reverse('survey:openended-detail', args=[self.id])
+
+    def get_update_url(self):
+        return reverse('survey:openended-update', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('survey:openended-delete', args=[self.id])
+
 
 class OpenEndedResponse(models.Model):
     """A User's response to an `OpenEndedQuestion`."""
@@ -101,6 +120,15 @@ class LikertQuestion(BaseQuestion):
         MultipleChoiceQuestion model. Returns the possible options for a
         question."""
         return [{'id': o[0], 'text': o[1]} for o in LikertResponse.LIKERT_CHOICES]
+
+    def get_absolute_url(self):
+        return reverse('survey:likert-detail', args=[self.id])
+
+    def get_update_url(self):
+        return reverse('survey:likert-update', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('survey:likert-delete', args=[self.id])
 
 
 class LikertResponse(models.Model):

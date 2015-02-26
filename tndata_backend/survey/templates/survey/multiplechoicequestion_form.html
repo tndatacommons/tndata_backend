@@ -1,0 +1,43 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'survey:index' %}">Home</a></li>
+  <li><a href="{% url 'survey:multiplechoice-list' %}">Multiple Choice Questions</a></li>
+  <li class="current">
+    {% if object %}{{ object.text }}{% else %}New Multiple Choice Question {% endif %}
+  </li>
+</ul>
+
+<h1>{% if object %}Update Multiple Choice Question: {{object.name}}{% else %}Create Multiple Choice Question{% endif %}</h1>
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'survey:multiplechoice-create' %}{% endif %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <hr/>
+    {% if object %}
+      <button type="submit">Update Multiple Choice Question</button>
+    {% else %}
+      <button type="submit">Create Multiple Choice Question</button>
+    {% endif %}
+    </form>
+  </div>
+  <div class="large-6 small-12 columns">
+    <table>
+      <caption>Existing Multiple Choice Questions</caption>
+      <thead>
+        <tr><th>Order</th><th>Text</th><th>Options</th></tr>
+      </thead>
+      <tbody>
+      {% for question in questions %}
+        <tr>
+          <td>{{ question.order }}</td>
+          <td><a href="{{ question.get_absolute_url }}">{{ question.text }}</a></td>
+          <td>{% for opt in question.options %}{{opt.text}}<br/>{% endfor %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li class="current">Multiple Choice Questions</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Multiple Choice Questions</h2>
+
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>Order</th>
+        <th>Text</th>
+        <th>Available</th>
+        <th>Updated</th>
+        <th>Created</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for question in questions %}
+        <tr>
+          <td>{{ question.order }}</td>
+          <td>
+            <a href="{{ question.get_absolute_url }}">{{ question.text }}</a>
+          </td>
+          <td>{{ question.available|yesno }}</td>
+          <td>{{ question.updated }}</td>
+          <td>{{ question.created }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

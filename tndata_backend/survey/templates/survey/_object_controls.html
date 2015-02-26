@@ -1,0 +1,18 @@
+{# Inclusion template for the `object_controls` tag. #}
+<button
+  href="#"
+  data-dropdown="dd-{{label}}-{{object.id}}"
+  aria-controls="dd-{{label}}-{{object.id}}"
+  aria-expanded="false"
+  class="tiny button dropdown secondary">Edit</button><br>
+<ul
+  id="dd-{{label}}-{{object.id}}"
+  data-dropdown-content
+  class="f-dropdown"
+  aria-hidden="true"
+  tabindex="-1">
+
+  <li><a href="{{ object.get_update_url }}">Update</a></li>
+  <li><a href="{{ object.get_delete_url }}">Delete</a></li>
+
+</ul>

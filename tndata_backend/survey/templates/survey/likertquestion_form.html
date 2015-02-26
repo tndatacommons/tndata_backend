@@ -1,0 +1,48 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+<ul class="breadcrumbs">
+  <li><a href="{% url 'survey:index' %}">Home</a></li>
+  <li><a href="{% url 'survey:likert-list' %}">Likert Questions</a></li>
+  <li class="current">
+    {% if object %}{{ object.text }}{% else %}New Likert Question {% endif %}
+  </li>
+</ul>
+
+<h1>{% if object %}Update Likert Question: {{object.name}}{% else %}Create Likert Question{% endif %}</h1>
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'survey:likert-create' %}{% endif %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <hr/>
+    {% if object %}
+      <button type="submit">Update Likert Question</button>
+    {% else %}
+      <button type="submit">Create Likert Question</button>
+    {% endif %}
+    </form>
+  </div>
+  <div class="large-6 small-12 columns">
+    <p>All Likert Questions have the following options: </p>
+    <ul>
+    {% for opt in options %}
+      <li>{{ opt.1 }}</li>
+    {% endfor %}
+    </ul>
+    <table>
+      <caption>Existing Likert Questions</caption>
+      <thead>
+        <tr><th>Order</th><th>Name</th></tr>
+      </thead>
+      <tbody>
+      {% for question in questions %}
+        <tr>
+          <td>{{ question.order }}</td>
+          <td><a href="{{ question.get_absolute_url }}">{{ question.text }}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
