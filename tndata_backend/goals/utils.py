@@ -1,17 +1,5 @@
 import csv
-from django.db.models import Max
 from io import TextIOWrapper
-
-
-def get_max_order(model):
-    """Given an instance of a Model class, query the largest existing value
-    for the `order` field and add one. This is useful for pre-populated
-    Category, Interest, and Action fields.
-
-    """
-    result = model.objects.aggregate(Max('order'))
-    current_num = result['order__max'] or 0
-    return current_num + 1
 
 
 def read_uploaded_csv(uploaded_file, encoding='utf-8', errors='ignore'):

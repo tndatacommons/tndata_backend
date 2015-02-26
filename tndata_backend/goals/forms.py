@@ -4,8 +4,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 
+from utils.db import get_max_order
+
 from . models import Action, Category, Interest, InterestGroup, Trigger
-from . utils import get_max_order, read_uploaded_csv
+from . utils import read_uploaded_csv
 
 
 class TriggerForm(forms.ModelForm):

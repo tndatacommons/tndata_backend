@@ -10,7 +10,7 @@ from . forms import ActionForm, CSVUploadForm, TriggerForm
 from . models import (
     Action, BehaviorAction, BehaviorSequence, Category, Goal, Interest, Trigger
 )
-from . utils import get_max_order
+from utils.db import get_max_order
 
 
 def superuser_required(user):
