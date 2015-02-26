@@ -7,11 +7,8 @@ class BaseQuestion(models.Model):
     text = models.TextField(unique=True, help_text="The text of the question")
     order = models.IntegerField(default=0, help_text="Ordering of questions")
     available = models.BooleanField(default=True, help_text="Available to Users")
-    # TODO: add a Note or Details field here?
-    # See the app mockup's `Diary info` channel. It's essentially:
-    # 1. How do you feel?  (show options)
-    # 2. Why do you feel <response>?  (record open-ended text)
-    # 3. Thanks.
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.text
