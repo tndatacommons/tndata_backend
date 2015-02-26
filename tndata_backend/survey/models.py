@@ -110,6 +110,8 @@ class LikertQuestion(BaseQuestion):
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
     """
+    # TODO: Add support for reverse-coded likert questions;
+    # e.g. 1 - STRONGLY AGREE
     class Meta:
         verbose_name = "Likert Question"
         verbose_name_plural = "Likert Questions"
