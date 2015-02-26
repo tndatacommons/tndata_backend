@@ -6,10 +6,11 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
+from utils.db import get_max_order
+
 from . models import (
     LikertQuestion, LikertResponse, MultipleChoiceQuestion, OpenEndedQuestion,
 )
-#from . utils import get_max_order
 
 
 def superuser_required(user):
@@ -54,8 +55,8 @@ class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
         """Pre-populate the value for the initial order. This can't be done
         at the class level because we want to query the value each time."""
         initial = super(LikertQuestionCreateView, self).get_initial(*args, **kwargs)
-        #if 'order' not in initial:
-            #initial['order'] = get_max_order(LikertQuestion)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(LikertQuestion)
         return initial
 
     def get_context_data(self, **kwargs):
@@ -100,8 +101,8 @@ class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
         """Pre-populate the value for the initial order. This can't be done
         at the class level because we want to query the value each time."""
         initial = super(MultipleChoiceQuestionCreateView, self).get_initial(*args, **kwargs)
-        #if 'order' not in initial:
-            #initial['order'] = get_max_order(MultipleChoiceQuestion)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(MultipleChoiceQuestion)
         return initial
 
     def get_context_data(self, **kwargs):
@@ -146,8 +147,8 @@ class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
         """Pre-populate the value for the initial order. This can't be done
         at the class level because we want to query the value each time."""
         initial = super(OpenEndedQuestionCreateView, self).get_initial(*args, **kwargs)
-        #if 'order' not in initial:
-            #initial['order'] = get_max_order(OpenEndedQuestion)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(OpenEndedQuestion)
         return initial
 
     def get_context_data(self, **kwargs):
