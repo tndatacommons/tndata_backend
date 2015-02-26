@@ -4,7 +4,7 @@ from django import template
 register = template.Library()
 
 
-@register.inclusion_tag("goals/_object_controls.html")
+@register.inclusion_tag("utils/_object_controls.html")
 def object_controls(obj, label=None):
     """Renders a dropdown button with `Update` and `Delete` Links for the given
     object. Include an optional label for multiple controls on different types
