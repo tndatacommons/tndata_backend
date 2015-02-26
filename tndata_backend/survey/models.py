@@ -25,6 +25,11 @@ class MultipleChoiceQuestion(BaseQuestion):
         verbose_name = "Multiple Choice Question"
         verbose_name_plural = "Multiple Choice Questions"
 
+    @property
+    def options(self):
+        options = self.multiplechoiceresponseoption_set.filter(available=True)
+        return list(options.values('id', 'text'))
+
 
 class MultipleChoiceResponseOption(models.Model):
     """A Response option for a `MultipleChoiceQuestion`."""
@@ -89,6 +94,13 @@ class LikertQuestion(BaseQuestion):
     class Meta:
         verbose_name = "Likert Question"
         verbose_name_plural = "Likert Questions"
+
+    @property
+    def options(self):
+        """Kind of a hack, but this follows a similar pattern as in the
+        MultipleChoiceQuestion model. Returns the possible options for a
+        question."""
+        return [{'id': o[0], 'text': o[1]} for o in LikertResponse.LIKERT_CHOICES]
 
 
 class LikertResponse(models.Model):

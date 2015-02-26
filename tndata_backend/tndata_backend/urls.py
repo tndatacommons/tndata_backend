@@ -14,6 +14,11 @@ from goals.api import (
     GoalViewSet,
     TriggerViewSet,
 )
+from survey.api import (
+    LikertQuestionViewSet,
+    MultipleChoiceQuestionViewSet,
+    OpenEndedQuestionViewSet,
+)
 from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
 
 
@@ -39,6 +44,11 @@ router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet)
 router.register(r'sequences', BehaviorSequenceViewSet)
 router.register(r'actions', BehaviorActionViewSet)
+
+# ViewSets from the survey app.
+router.register(r'survey/likert', LikertQuestionViewSet)
+router.register(r'survey/multiplechoice', MultipleChoiceQuestionViewSet)
+router.register(r'survey/open', OpenEndedQuestionViewSet)
 
 # ViewSets from the userprofile app.
 router.register(r'users', UserViewSet)
