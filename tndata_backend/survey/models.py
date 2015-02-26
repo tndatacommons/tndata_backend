@@ -128,14 +128,18 @@ class LikertResponse(models.Model):
     """
     STRONGLY_DISAGREE = 1
     DISAGREE = 2
-    NEITHER = 3
-    AGREE = 4
-    STRONGLY_AGREE = 5
+    SLIGHTLY_DISAGREE = 3
+    NEITHER = 4
+    SLIGHTLY_AGREE = 5
+    AGREE = 6
+    STRONGLY_AGREE = 7
 
     LIKERT_CHOICES = (
         (STRONGLY_DISAGREE, 'Strongly Disagree'),
         (DISAGREE, 'Disagree'),
+        (SLIGHTLY_DISAGREE, 'Slightly Disagree'),
         (NEITHER, 'Neither Agree nor Disagree'),
+        (SLIGHTLY_AGREE, 'Slightly Agree'),
         (AGREE, 'Agree'),
         (STRONGLY_AGREE, 'Strongly Agree'),
     )
