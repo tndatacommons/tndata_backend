@@ -1,15 +1,17 @@
 from django.conf import settings
-from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import redirect, render
+from django.forms.models import modelformset_factory
+
+from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from utils.db import get_max_order
 
 from . models import (
-    LikertQuestion, LikertResponse, MultipleChoiceQuestion, OpenEndedQuestion,
+    LikertQuestion, LikertResponse, MultipleChoiceQuestion,
+    MultipleChoiceResponseOption, OpenEndedQuestion,
 )
 
 
@@ -46,6 +48,7 @@ class LikertQuestionListView(SuperuserRequiredMixin, ListView):
 class LikertQuestionDetailView(SuperuserRequiredMixin, DetailView):
     queryset = LikertQuestion.objects.all()
     context_object_name = 'question'
+
 
 class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = LikertQuestion
@@ -105,22 +108,94 @@ class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
             initial['order'] = get_max_order(MultipleChoiceQuestion)
         return initial
 
+    def get_formset(self, post_data=None):
+        OptionFormSet = modelformset_factory(
+            MultipleChoiceResponseOption,
+            fields=('text',),
+            extra=6
+        )
+        queryset = MultipleChoiceResponseOption.objects.none()
+        if post_data:
+            formset = OptionFormSet(post_data, queryset=queryset)
+        else:
+            formset = OptionFormSet(queryset=queryset)
+        return formset
+
     def get_context_data(self, **kwargs):
+        formset = kwargs.pop('formset', self.get_formset())
         context = super(MultipleChoiceQuestionCreateView, self).get_context_data(**kwargs)
         context['questions'] = MultipleChoiceQuestion.objects.all()
-        #context['options'] = TODO...
+        context['formset'] = formset
         return context
+
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        formset = self.get_formset(request.POST)
+        if form.is_valid() and formset.is_valid():
+            return self.form_valid(form, formset)
+        else:
+            return self.form_invalid(form, formset)
+
+    def form_valid(self, form, formset):
+        self.object = form.save()
+        for instance in formset.save(commit=False):
+            instance.question = self.object
+            instance.save()
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form, formset):
+        ctx = self.get_context_data(form=form, formset=formset)
+        return self.render_to_response(ctx)
 
 
 class MultipleChoiceQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = MultipleChoiceQuestion
     fields = ['order', 'text', 'available']
 
+    def get_formset(self, post_data=None):
+        OptionFormSet = modelformset_factory(
+            MultipleChoiceResponseOption,
+            fields=('text',),
+            extra=2
+        )
+        obj = self.get_object()
+        queryset = obj.multiplechoiceresponseoption_set.all()
+        if post_data:
+            formset = OptionFormSet(post_data, queryset=queryset)
+        else:
+            formset = OptionFormSet(queryset=queryset)
+        return formset
+
     def get_context_data(self, **kwargs):
+        formset = kwargs.pop('formset', self.get_formset())
         context = super(MultipleChoiceQuestionUpdateView, self).get_context_data(**kwargs)
         context['questions'] = MultipleChoiceQuestion.objects.all()
-        #context['options'] = TODO...
+        context['formset'] = formset
+        context['object'] = self.get_object()
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        formset = self.get_formset(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            return self.form_valid(form, formset)
+        else:
+            return self.form_invalid(form, formset)
+
+    def form_valid(self, form, formset):
+        self.object = form.save()
+        for instance in formset.save(commit=False):
+            instance.question = self.object
+            instance.save()
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form, formset):
+        ctx = self.get_context_data(form=form, formset=formset)
+        return self.render_to_response(ctx)
 
 
 class MultipleChoiceQuestionDeleteView(SuperuserRequiredMixin, DeleteView):

@@ -15,6 +15,7 @@
 
 <form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
   <h1>{{ object.text }}</h1>
+  <p>Deleting this question will also delete the following options:</p>
   <ul>
   {% for opt in object.options %}
     <li>{{ opt.text }}</li>

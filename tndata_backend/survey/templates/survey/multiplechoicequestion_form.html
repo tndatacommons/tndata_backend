@@ -9,19 +9,30 @@
   </li>
 </ul>
 
-<h1>{% if object %}Update Multiple Choice Question: {{object.name}}{% else %}Create Multiple Choice Question{% endif %}</h1>
+<h1>{% if object %}Update Multiple Choice Question: {{object.text }}{% else %}Create Multiple Choice Question{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
+
+    {% if formset.errors or form.errors %}
+      <div data-alert class="alert-box alert">
+        There was a problem saving your data. See below.
+      </div>
+    {% endif %}
+
+    {% if formset.non_form_errors or form.non_form_errors %}
+      <div data-alert class="alert-box alert">
+        {{ formset.non_form_errors }}
+        {{ form.non_form_errors }}
+      </div>
+    {% endif %}
+
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'survey:multiplechoice-create' %}{% endif %}" method="post">{% csrf_token %}
     {{ form.as_p }}
 
-{# TODO: Add form/fields to add options #}
-<div data-alert class="alert-box warning">
-  <strong>The form for this Type of Question is Incomplete.</strong>
-  There will soon be fields here that allow you to create the options for a
-  multiple choice question.
-  <a href="#" class="close">&times;</a>
-</div>
+    <h2 class="subheader">Question Options</h2>
+    <div class="formset">
+      {{ formset.as_p }}
+    </div>
 
     <hr/>
     {% if object %}
