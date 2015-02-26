@@ -84,38 +84,11 @@ class OpenEndedResponse(models.Model):
         verbose_name_plural = "Open-Ended Responses"
 
 
-class Goal(models.Model):
-    CATEGORIES = (
-        ('lifegoal', 'Life Goal'),
-    )
-    category = models.CharField(max_length=32, choices=CATEGORIES)
-    text = models.TextField(unique=True, help_text="The text of a User-Goal")
-    description = models.TextField(blank=True, help_text="Optional Description")
-    order = models.IntegerField(default=0, help_text="Ordering of questions")
-
-    def __str__(self):
-        return "{}: {}".format(self.category, self.text)
-
-    class Meta:
-        ordering = ["order"]
-        verbose_name = "Goal"
-        verbose_name_plural = "Goals"
-
-
-# TODO: POSSIBLY over-engineerd.  If all of our `Goals` have the same 3
-# likert questions (importance, likelyness, attainment), then this model is
-# unnecessary.
 class LikertQuestion(BaseQuestion):
-    """A five-level likert item/question
+    """A seven-level likert item/question
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
     """
-    goal = models.ManyToManyField(
-        Goal,
-        null=True,
-        help_text="Attach this question to one or more Goals"
-    )
-
     class Meta:
         verbose_name = "Likert Question"
         verbose_name_plural = "Likert Questions"
@@ -145,7 +118,6 @@ class LikertResponse(models.Model):
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    goal = models.ForeignKey(Goal)
     question = models.ForeignKey(LikertQuestion)
     selected_option = models.PositiveIntegerField(choices=LIKERT_CHOICES)
     submitted_on = models.DateTimeField(auto_now_add=True)

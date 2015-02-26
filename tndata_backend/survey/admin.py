@@ -29,11 +29,6 @@ class OpenEndedResponseAdmin(admin.ModelAdmin):
 admin.site.register(models.OpenEndedResponse, OpenEndedResponseAdmin)
 
 
-class GoalAdmin(admin.ModelAdmin):
-    list_display = ('category', 'text', 'order')
-admin.site.register(models.Goal, GoalAdmin)
-
-
 class LikertQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'order', 'available')
 admin.site.register(models.LikertQuestion, LikertQuestionAdmin)
