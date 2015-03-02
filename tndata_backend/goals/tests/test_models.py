@@ -129,12 +129,6 @@ class TestGoal(TestCase):
             name='Test Category',
             description='Category Description',
         )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test Interest',
-            description='Heres a description',
-        )
-        self.interest.categories.add(self.category)
         self.goal = Goal.objects.create(
             name="Test Goal",
             title="Title for Test Goal",
@@ -142,11 +136,9 @@ class TestGoal(TestCase):
             outcome="An Outcome"
         )
         self.goal.categories.add(self.category)
-        self.goal.interests.add(self.interest)
 
     def tearDown(self):
         Goal.objects.filter(id=self.goal.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
         Category.objects.filter(id=self.category.id).delete()
 
     def test__str__(self):
@@ -239,23 +231,16 @@ class TestBehaviorSequence(TestCase):
             name='Test Category',
             description='Category Description',
         )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test BehaviorSequence',
-            description='Heres a description',
-        )
         self.goal = Goal.objects.create(name="Test Goal")
         self.bs = BehaviorSequence.objects.create(
             name='Test BehaviorSequence',
             title="Formal Title",
         )
         self.bs.categories.add(self.category)
-        self.bs.interests.add(self.interest)
         self.bs.goals.add(self.goal)
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
         Goal.objects.filter(id=self.goal.id).delete()
         BehaviorSequence.objects.filter(id=self.bs.id).delete()
 

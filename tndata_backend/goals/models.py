@@ -1,14 +1,11 @@
 """
 Models for the Goals app.
 
-This is our collection of Goals. They're organized by category & interest;
+This is our collection of Goals & Behaviors. They're organized as follows:
 
-    [Category] <-> [Interest] -> [Action]
+    [Category] <-> [Goal] <-> [BehaviorSequence] <- [BehaviorAction]
 
-A User chooses an Action as something they want to do or achieve (this is their
-goal). Continued performance of that action constitutes a behavior or habit.
-
-Actions are the things we want to help people to do.
+BehaviorActions are the things we want to help people to do.
 
 """
 import os
@@ -91,8 +88,10 @@ class Category(models.Model):
 
 
 class Interest(models.Model):
-    """An interest is a broad topic that essentially groups multiple
+    """DEPRECATED. An interest is a broad topic that essentially groups multiple
     behaviors. Interest is more granular than Category.
+
+    TODO: Remove this model and all it's related fields.
 
     """
     categories = models.ManyToManyField(
@@ -165,8 +164,10 @@ class Interest(models.Model):
 
 
 class InterestGroup(models.Model):
-    """This is a model that associates Interests with Categories.
-    NOTE: this model is deprecated, but I'm leaving it here for now."
+    """DEPRECATED: This is a model that associates Interests with Categories.
+
+    TODO: remove this model
+
     """
     category = models.ForeignKey(
         Category, help_text="The Category under which this group appears."
@@ -209,10 +210,6 @@ class Goal(models.Model):
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
         help_text="Select the Categories in which this Goal should appear."
-    )
-    interests = models.ManyToManyField(
-        Interest, null=True, blank=True,
-        help_text="Select the Interests in which this Goal should be organized."
     )
     name = models.CharField(
         max_length=128, db_index=True, unique=True,
@@ -260,7 +257,6 @@ class Goal(models.Model):
     def get_absolute_icon(self):
         if self.icon:
             return _build_url(self.icon.url)
-
 
 
 class Trigger(models.Model):
@@ -464,10 +460,6 @@ class BehaviorSequence(BaseBehavior):
         Category, null=True, blank=True,
         help_text="Select the Categories in which this should appear."
     )
-    interests = models.ManyToManyField(
-        Interest, null=True, blank=True,
-        help_text="Select the Interest(s) under which this should be organized."
-    )
     goals = models.ManyToManyField(
         Goal, null=True, blank=True,
         help_text="Select the Goal(s) that this Behavior achieves."
@@ -513,7 +505,12 @@ class BehaviorAction(BaseBehavior):
 
 
 class Action(models.Model):
-    """Actions population the choices of 'I want to...' that users see."""
+    """DEPRECATED:  This model has been replaced by `BehaviorAction`.
+    Actions population the choices of 'I want to...' that users see.
+
+    TODO: Delete this model.
+
+    """
     FREQUENCY_CHOICES = (
         ('never', 'Never'),
         ('daily', 'Every Day'),
@@ -658,7 +655,10 @@ class CustomReminder(models.Model):
 
 
 class SelectedAction(models.Model):
-    """An `Action` which a user has selected to attempt to take."""
+    """An `Action` which a user has selected to attempt to take.
+
+    TODO: Refactor this to work with a BehaviorAction.
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     action = models.ForeignKey(Action)
     date_selected = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -678,7 +678,11 @@ class SelectedAction(models.Model):
 
 class ActionTaken(models.Model):
     """When a user _takes_ an `Action`. This is essentially a timestamp that
-    records the user's frequency/progress for actions."""
+    records the user's frequency/progress for actions.
+
+    TODO: Refactor this to work with a BehaviorAction.
+
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     selected_action = models.ForeignKey(SelectedAction)
     date_completed = models.DateTimeField(auto_now_add=True, db_index=True)
