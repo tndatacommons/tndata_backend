@@ -78,15 +78,14 @@ class BehaviorSequenceSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorSequence`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
-    categories = CategoryListField(many=True)
 
     class Meta:
         model = BehaviorSequence
         fields = (
             'id', 'name', 'name_slug', 'title', 'description', 'case', 'outcome',
             'narrative_block', 'external_resource', 'default_trigger',
-            'notification_text', 'source_notes', 'source_link', 'categories',
-            'goals', 'informal_list', 'icon_url', 'image_url',
+            'notification_text', 'source_notes', 'source_link', 'informal_list',
+            'icon_url', 'image_url', 'goals',
         )
         depth = 2
 
