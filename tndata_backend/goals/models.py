@@ -59,6 +59,11 @@ class Category(models.Model):
         verbose_name_plural = "Category"
 
     @property
+    def title(self):
+        """Title is a synonym for the model's name."""
+        return self.name
+
+    @property
     def goals(self):
         """This property returns a QuerySet of the related Goal objects."""
         return self.goal_set.all().distinct()
@@ -87,14 +92,17 @@ class Goal(models.Model):
         Category, null=True, blank=True,
         help_text="Select the Categories in which this Goal should appear."
     )
-    name = models.CharField(
-        max_length=128, db_index=True, unique=True,
-        help_text="An Internal name for this goal."
-    )
+    name = models.CharField(max_length=128, db_index=True, unique=True)
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    title_slug = models.SlugField(max_length=256, null=True)
     title = models.CharField(
         max_length=256, db_index=True, unique=True,
         help_text="A public Title for this goal."
+    )
+    subtitle = models.CharField(
+        max_length=256,
+        null=True,
+        help_text="A one-liner description for this goal."
     )
     description = models.TextField(
         blank=True,
@@ -119,6 +127,7 @@ class Goal(models.Model):
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
+        self.title_slug = slugify(self.title)
         super(Goal, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
