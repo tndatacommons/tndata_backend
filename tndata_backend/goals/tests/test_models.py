@@ -8,7 +8,6 @@ from .. models import (
     Action,
     ActionTaken,
     Category,
-    Interest,
     Goal,
     Trigger,
     BehaviorSequence,
@@ -42,9 +41,6 @@ class TestCategory(TestCase):
         category.save()
         self.assertEqual(category.name_slug, "new-name")
 
-    def test_interests(self):
-        self.assertIsInstance(self.category.interests, QuerySet)
-
     def test_goals(self):
         self.assertIsInstance(self.category.goals, QuerySet)
 
@@ -64,59 +60,6 @@ class TestCategory(TestCase):
         self.assertEqual(
             self.category.get_delete_url(),
             "/goals/category/test-category/delete/"
-        )
-
-
-class TestInterest(TestCase):
-    """Tests for the `Interest` model."""
-
-    def setUp(self):
-        self.category = Category.objects.create(
-            order=1,
-            name='Test Category',
-            description='Category Description',
-        )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test Interest',
-            description='Heres a description',
-        )
-        self.interest.categories.add(self.category)
-
-    def tearDown(self):
-        Category.objects.filter(id=self.category.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
-
-    def test__str__(self):
-        expected = "Test Interest"
-        actual = "{}".format(self.interest)
-        self.assertEqual(expected, actual)
-
-    def test_save(self):
-        """Verify that saving generates a name_slug"""
-        interest = Interest.objects.create(order=2, name="New Name")
-        interest.save()
-        self.assertEqual(interest.name_slug, "new-name")
-
-    def test_goals(self):
-        self.assertIsInstance(self.category.goals, QuerySet)
-
-    def test_get_absolute_url(self):
-        self.assertEqual(
-            self.interest.get_absolute_url(),
-            "/goals/interest/test-interest/"
-        )
-
-    def test_get_update_url(self):
-        self.assertEqual(
-            self.interest.get_update_url(),
-            "/goals/interest/test-interest/update/"
-        )
-
-    def test_get_delete_url(self):
-        self.assertEqual(
-            self.interest.get_delete_url(),
-            "/goals/interest/test-interest/delete/"
         )
 
 
@@ -333,13 +276,6 @@ class TestAction(TestCase):
             name='Test Category',
             description='Some explanation!',
         )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test Interest',
-            description='Heres a description',
-        )
-        self.interest.categories.add(self.category)
-
         self.action = Action.objects.create(
             order=1,
             name='Test Action',
@@ -347,8 +283,6 @@ class TestAction(TestCase):
             description='This is a action description',
             # NOTE: Omitting the default reminder time/frequency.
         )
-        self.action.interests.add(self.interest)
-
         self.User = get_user_model()
         self.user = self.User.objects.create_user(
             username="test_user",
@@ -357,8 +291,7 @@ class TestAction(TestCase):
         )
 
     def tearDown(self):
-        Action.objects.filter(id=self.interest.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
         Category.objects.filter(id=self.category.id).delete()
         self.User.objects.filter(id=self.user.id).delete()
 
@@ -385,13 +318,6 @@ class TestCustomReminder(TestCase):
             name='Test Category',
             description='Some explanation!',
         )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test Interest',
-            description='Heres a description',
-        )
-        self.interest.categories.add(self.category)
-
         self.action = Action.objects.create(
             order=1,
             name='Test Action',
@@ -400,7 +326,6 @@ class TestCustomReminder(TestCase):
             default_reminder_time=time(13, 30),
             default_reminder_frequency="daily"
         )
-        self.action.interests.add(self.interest)
 
         self.User = get_user_model()
         self.user = self.User.objects.create_user(
@@ -417,8 +342,7 @@ class TestCustomReminder(TestCase):
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
-        Action.objects.filter(id=self.interest.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
         self.User.objects.filter(id=self.user.id).delete()
         CustomReminder.objects.filter(id=self.reminder.id).delete()
 
@@ -437,13 +361,6 @@ class TestSelectedAction(TestCase):
             name='Test Category',
             description='Some explanation!',
         )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test Interest',
-            description='Heres a description',
-        )
-        self.interest.categories.add(self.category)
-
         self.action = Action.objects.create(
             order=1,
             name='Test Action',
@@ -452,7 +369,6 @@ class TestSelectedAction(TestCase):
             default_reminder_time=time(13, 30),
             default_reminder_frequency="daily"
         )
-        self.action.interests.add(self.interest)
 
         self.User = get_user_model()
         self.user = self.User.objects.create_user(
@@ -467,7 +383,6 @@ class TestSelectedAction(TestCase):
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
         self.User.objects.filter(id=self.user.id).delete()
@@ -492,13 +407,6 @@ class TestActionTaken(TestCase):
             name='Test Category',
             description='Some explanation!',
         )
-        self.interest = Interest.objects.create(
-            order=1,
-            name='Test Interest',
-            description='Heres a description',
-        )
-        self.interest.categories.add(self.category)
-
         self.action = Action.objects.create(
             order=1,
             name='Test Action',
@@ -507,7 +415,6 @@ class TestActionTaken(TestCase):
             default_reminder_time=time(13, 30),
             default_reminder_frequency="daily"
         )
-        self.action.interests.add(self.interest)
 
         self.User = get_user_model()
         self.user = self.User.objects.create_user(
@@ -527,7 +434,6 @@ class TestActionTaken(TestCase):
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
-        Interest.objects.filter(id=self.interest.id).delete()
         Action.objects.filter(id=self.action.id).delete()
         SelectedAction.objects.filter(id=self.selected_action.id).delete()
         ActionTaken.objects.filter(id=self.action_taken.id).delete()
