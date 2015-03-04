@@ -31,12 +31,13 @@ class Category(models.Model):
         unique=True,
         help_text="Controls the order in which Categories are displayed."
     )
-    name = models.CharField(
-        "Title",
-        max_length=128, db_index=True, unique=True,
+    title = models.CharField(
+        max_length=128,
+        db_index=True,
+        unique=True,
         help_text="A Title for the Category."
     )
-    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    title_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField(
         help_text="Short description of this Category."
     )
@@ -51,17 +52,12 @@ class Category(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return self.title
 
     class Meta:
-        ordering = ['order', 'name']
+        ordering = ['order', 'title']
         verbose_name = "Category"
         verbose_name_plural = "Category"
-
-    @property
-    def title(self):
-        """Title is a synonym for the model's name."""
-        return self.name
 
     @property
     def goals(self):
@@ -70,17 +66,18 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
-        self.name_slug = slugify(self.name)
+        #self.name_slug = slugify(self.name)
+        self.title_slug = slugify(self.title)
         super(Category, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('goals:category-detail', args=[self.name_slug])
+        return reverse('goals:category-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:category-update', args=[self.name_slug])
+        return reverse('goals:category-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:category-delete', args=[self.name_slug])
+        return reverse('goals:category-delete', args=[self.title_slug])
 
     def get_absolute_icon(self):
         if self.icon:
