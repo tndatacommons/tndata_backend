@@ -277,7 +277,7 @@ class TestGoalDetailView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_detail.html")
-        self.assertContains(resp, self.goal.name)
+        self.assertContains(resp, self.goal.title)
         self.assertIn("goal", resp.context)
 
         resp = self.ua_client.get(url)
@@ -316,7 +316,7 @@ class TestGoalCreateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_form.html")
-        self.assertContains(resp, self.goal.name)
+        self.assertContains(resp, self.goal.title)
         self.assertIn("goals", resp.context)
 
 
@@ -352,7 +352,7 @@ class TestGoalUpdateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_form.html")
-        self.assertContains(resp, self.goal.name)
+        self.assertContains(resp, self.goal.title)
         self.assertIn("goals", resp.context)
 
 
