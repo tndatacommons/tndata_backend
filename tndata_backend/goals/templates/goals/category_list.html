@@ -14,7 +14,7 @@
       <thead>
       <tr>
         <th>Order</th>
-        <th>Name</th>
+        <th>Title</th>
         <th>Goals</th>
       </tr>
       </thead>
@@ -23,7 +23,7 @@
         <tr>
           <td>{{ category.order }}</td>
           <td>
-            <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+            <a href="{{ category.get_absolute_url }}">{{ category }}</a>
           </td>
           <td>{{ category.goals|join:", " }}</td>
         </tr>

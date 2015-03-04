@@ -6,16 +6,16 @@
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
     <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
-    <li class="current">{{ category.name }}</li>
+    <li class="current">{{ category }}</li>
   </ul>
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ category.name }} {% object_controls category %}</h1>
+      <h1>{{ category }} {% object_controls category %}</h1>
       <dl>
         <dt>Icon</dt><dd>
           {% if category.icon %}
-            <img src="{{ category.icon.url }}" alt="{{ category.name }} icon" />
+            <img src="{{ category.icon.url }}" alt="{{ category }} icon" />
           {% else %}
             <em>No icon available</em>
           {% endif %}
@@ -27,7 +27,7 @@
     </div>
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Content</h2>
-      <p><strong>{{ category.name }}</strong>
+      <p><strong>{{ category }}</strong>
         contains the following goals, sequences, and behaviors:</p>
       <ul>
       {% for goal in category.goals %}
