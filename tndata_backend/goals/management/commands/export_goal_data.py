@@ -8,7 +8,6 @@ import tablib
 MODELS = {
     'category': models.Category,
     'interest': models.Interest,
-    'interestgroup': models.InterestGroup,
     'goal': models.Goal,
     'trigger': models.Trigger,
     'behaviorsequence': models.BehaviorSequence,

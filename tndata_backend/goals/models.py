@@ -163,49 +163,6 @@ class Interest(models.Model):
         return reverse('goals:interest-delete', args=[self.name_slug])
 
 
-class InterestGroup(models.Model):
-    """DEPRECATED: This is a model that associates Interests with Categories.
-
-    TODO: remove this model
-
-    """
-    category = models.ForeignKey(
-        Category, help_text="The Category under which this group appears."
-    )
-    interests = models.ManyToManyField(
-        Interest, blank=True, null=True,
-        help_text="Select the Interests to group together."
-    )
-    name = models.CharField(
-        "Title",
-        max_length=128, db_index=True, unique=True,
-        help_text="Give this group a one-line title."
-    )
-    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    public = models.BooleanField(default=True, blank=True)
-
-    def __str__(self):
-        return "{0} / {1}".format(self.category, self.name)
-
-    class Meta:
-        verbose_name = "Interest Group"
-        verbose_name_plural = "Interest Groups"
-
-    def save(self, *args, **kwargs):
-        """Always slugify the name prior to saving the model."""
-        self.name_slug = slugify(self.name)
-        super(InterestGroup, self).save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse('goals:group-detail', args=[self.name_slug])
-
-    def get_update_url(self):
-        return reverse('goals:group-update', args=[self.name_slug])
-
-    def get_delete_url(self):
-        return reverse('goals:group-delete', args=[self.name_slug])
-
-
 class Goal(models.Model):
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
@@ -585,11 +542,6 @@ class Action(models.Model):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         super(Action, self).save(*args, **kwargs)
-
-    @property
-    def groups(self):
-        """A Queryset of InterestGroups in which this action is listed."""
-        return InterestGroup.objects.filter(interests=self.interests.all())
 
     def get_absolute_url(self):
         return reverse('goals:action-detail', args=[self.name_slug])

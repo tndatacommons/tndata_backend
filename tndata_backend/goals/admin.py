@@ -2,12 +2,6 @@ from django.contrib import admin
 from . import models
 
 
-class InterestGroupAdmin(admin.ModelAdmin):
-    # DEPRECATED.
-    list_display = ('name', 'name_slug')
-admin.site.register(models.InterestGroup, InterestGroupAdmin)
-
-
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'name_slug', 'order')
     prepopulated_fields = {"name_slug": ("name", )}

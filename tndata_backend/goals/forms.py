@@ -6,7 +6,7 @@ from django.utils.text import slugify
 
 from utils.db import get_max_order
 
-from . models import Action, Category, Interest, InterestGroup, Trigger
+from . models import Action, Category, Interest, Trigger
 from . utils import read_uploaded_csv
 
 
@@ -45,25 +45,6 @@ class ActionForm(forms.ModelForm):
         }
 
 
-class InterestGroupSelectionForm(forms.Form):
-    """This form allows a user to select multiple `InterestGroup`s.
-
-    It is currently used to allow a user to assign a new/existing Interest
-    to InterestGroups / Categories.
-    """
-    add_to_groups = forms.ModelMultipleChoiceField(
-        queryset=InterestGroup.objects.all()
-    )
-
-    def __init__(self, *args, **kwargs):
-        # Grab some form-provided values for the `add_to_groups` field.
-        qs = kwargs.pop('queryset', InterestGroup.objects.all())
-        initial = kwargs.pop('initial', None)
-        super(InterestGroupSelectionForm, self).__init__(*args, **kwargs)
-        self.fields['add_to_groups'].queryset = qs
-        self.fields['add_to_groups'].initial = initial
-
-
 class InvalidFormatException(Exception):
     """Custom exception that gets raised when the CSVUploadForm fails."""
     pass
@@ -71,7 +52,7 @@ class InvalidFormatException(Exception):
 
 class CSVUploadForm(forms.Form):
     InvalidFormat = InvalidFormatException
-    VALID_TYPES = ['action', 'category', 'interest', 'interestgroup']
+    VALID_TYPES = ['action', 'category', 'interest']
 
     csv_file = forms.FileField(
         help_text="Upload a CSV file to populate the content library"
@@ -118,24 +99,6 @@ class CSVUploadForm(forms.Form):
             order = get_max_order(Interest)
             Interest.objects.create(order=order, name=name, description=desc)
 
-    def _create_interestgroup(self, row):
-        name = row[1]
-        category = Category.objects.get(name_slug=slugify(row[2]))
-        interest_names = [col.strip() for col in row[3:] if col.strip()]
-        try:
-            ig = InterestGroup.objects.get(name_slug=slugify(name))
-            ig.category = category
-            ig.name = name
-            ig.save()
-        except InterestGroup.DoesNotExist:
-            ig = InterestGroup.objects.create(category=category, name=name)
-
-        for iname in interest_names:
-            # Retreive the interest and connect with the above group.
-            # Assume they exist. if not, we'll fail/roll back the transaction
-            interest = Interest.objects.get(name_slug=slugify(iname))
-            ig.interests.add(interest)
-
     def _create_action(self, row):
         name, summary, desc, time, freq = row[1:6]
         freq = freq.strip().lower()
@@ -172,7 +135,6 @@ class CSVUploadForm(forms.Form):
             'action': self._create_action,
             'category': self._create_category,
             'interest': self._create_interest,
-            'interestgroup': self._create_interestgroup,
         }
         row_type = self._get_type(row)
         method_map[row_type](row)
