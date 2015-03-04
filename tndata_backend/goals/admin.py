@@ -9,16 +9,6 @@ class CategoryAdmin(admin.ModelAdmin):
 admin.site.register(models.Category, CategoryAdmin)
 
 
-class InterestAdmin(admin.ModelAdmin):
-    list_display = ('name', 'title', 'in_category', 'order')
-    list_display_links = ('order', 'name')
-    prepopulated_fields = {"name_slug": ("name", )}
-
-    def in_category(self, obj):
-        return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
-admin.site.register(models.Interest, InterestAdmin)
-
-
 class GoalAdmin(admin.ModelAdmin):
     list_display = ('name', 'title', 'in_categories')
     prepopulated_fields = {"name_slug": ("name", )}

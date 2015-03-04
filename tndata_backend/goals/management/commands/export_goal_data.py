@@ -7,7 +7,6 @@ import tablib
 # A Mapping of models this script supports.
 MODELS = {
     'category': models.Category,
-    'interest': models.Interest,
     'goal': models.Goal,
     'trigger': models.Trigger,
     'behaviorsequence': models.BehaviorSequence,

@@ -59,11 +59,6 @@ class Category(models.Model):
         verbose_name_plural = "Category"
 
     @property
-    def interests(self):
-        """This property returns a QuerySet of the related Interest objects."""
-        return self.interest_set.all().distinct()
-
-    @property
     def goals(self):
         """This property returns a QuerySet of the related Goal objects."""
         return self.goal_set.all().distinct()
@@ -85,82 +80,6 @@ class Category(models.Model):
     def get_absolute_icon(self):
         if self.icon:
             return _build_url(self.icon.url)
-
-
-class Interest(models.Model):
-    """DEPRECATED. An interest is a broad topic that essentially groups multiple
-    behaviors. Interest is more granular than Category.
-
-    TODO: Remove this model and all it's related fields.
-
-    """
-    categories = models.ManyToManyField(
-        Category, blank=True, null=True,
-        help_text="Select Categories in which this Interest belongs."
-    )
-    order = models.PositiveIntegerField(
-        unique=True,
-        help_text="Controls the order in which Interests are displayed."
-    )
-    name = models.CharField(
-        max_length=128, db_index=True, unique=True,
-        help_text="An informal/internal name. Conversational identifier only."
-    )
-    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    title = models.CharField(
-        max_length=128,
-        blank=True,
-        default="",
-        help_text="Formal title, used publicly."
-    )
-    description = models.TextField(
-        blank=True,
-        help_text="Short description of this Interest."
-    )
-    notes = models.TextField(
-        blank=True,
-        null=True,
-        help_text="Additional notes regarding this Interest."
-    )
-    source_name = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-        help_text="The name of the source from which this information was adapted."
-    )
-    source_link = models.URLField(
-        max_length=256,
-        blank=True,
-        null=True,
-        help_text="A link to the source."
-    )
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['order', 'name']
-        verbose_name = "Interest"
-        verbose_name_plural = "Interest"
-
-    def save(self, *args, **kwargs):
-        """Always slugify the name prior to saving the model."""
-        self.name_slug = slugify(self.name)
-        super(Interest, self).save(*args, **kwargs)
-
-    @property
-    def goals(self):
-        """Returns a QuerySet of related Goals."""
-        return self.goal_set.all().distinct()
-
-    def get_absolute_url(self):
-        return reverse('goals:interest-detail', args=[self.name_slug])
-
-    def get_update_url(self):
-        return reverse('goals:interest-update', args=[self.name_slug])
-
-    def get_delete_url(self):
-        return reverse('goals:interest-delete', args=[self.name_slug])
 
 
 class Goal(models.Model):
@@ -474,10 +393,6 @@ class Action(models.Model):
         ('weekly', 'Every Week'),
         ('monthly', 'Every Month'),
         ('yearly', 'Every Year'),
-    )
-    interests = models.ManyToManyField(
-        Interest,
-        help_text="Select the Interests under which to display this Action."
     )
     order = models.PositiveIntegerField(
         unique=True,

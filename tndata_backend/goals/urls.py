@@ -16,11 +16,6 @@ urlpatterns = patterns('',
         name='category-create'
     ),
     url(
-        r'new/interest/$',
-        views.InterestCreateView.as_view(),
-        name='interest-create'
-    ),
-    url(
         r'new/trigger/$',
         views.TriggerCreateView.as_view(),
         name='trigger-create'
@@ -137,28 +132,6 @@ urlpatterns = patterns('',
         r'goals/$',
         views.GoalListView.as_view(),
         name='goal-list'
-    ),
-
-    # Interests
-    url(
-        r'interest/(?P<name_slug>.+)/update/$',
-        views.InterestUpdateView.as_view(),
-        name='interest-update'
-    ),
-    url(
-        r'interest/(?P<name_slug>.+)/delete/$',
-        views.InterestDeleteView.as_view(),
-        name='interest-delete'
-    ),
-    url(
-        r'interest/(?P<name_slug>.+)/$',
-        views.InterestDetailView.as_view(),
-        name='interest-detail'
-    ),
-    url(
-        r'interests/$',
-        views.InterestListView.as_view(),
-        name='interest-list'
     ),
 
     # Categories

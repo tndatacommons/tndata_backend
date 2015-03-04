@@ -8,7 +8,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import ActionForm, CSVUploadForm, TriggerForm
 from . models import (
-    Action, BehaviorAction, BehaviorSequence, Category, Goal, Interest, Trigger
+    Action, BehaviorAction, BehaviorSequence, Category, Goal, Trigger
 )
 from utils.db import get_max_order
 
@@ -108,60 +108,6 @@ class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class CategoryDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Category
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    success_url = reverse_lazy('goals:index')
-
-
-class InterestListView(SuperuserRequiredMixin, ListView):
-    model = Interest
-    context_object_name = 'interests'
-
-
-class InterestDetailView(SuperuserRequiredMixin, DetailView):
-    queryset = Interest.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-
-class InterestCreateView(SuperuserRequiredMixin, CreateView):
-    model = Interest
-    fields = [
-        'categories', 'order', 'name', 'title', 'description', 'notes',
-        'source_name', 'source_link'
-    ]
-
-    def get_initial(self, *args, **kwargs):
-        """Pre-populate the value for the initial order. This can't be done
-        at the class level because we want to query the value each time."""
-        initial = super(InterestCreateView, self).get_initial(*args, **kwargs)
-        if 'order' not in initial:
-            initial['order'] = get_max_order(Interest)
-        return initial
-
-    def get_context_data(self, **kwargs):
-        context = super(InterestCreateView, self).get_context_data(**kwargs)
-        context['interests'] = Interest.objects.all()
-        return context
-
-
-class InterestUpdateView(SuperuserRequiredMixin, UpdateView):
-    model = Interest
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    fields = [
-        'categories', 'order', 'name', 'title', 'description', 'notes',
-        'source_name', 'source_link'
-    ]
-
-    def get_context_data(self, **kwargs):
-        context = super(InterestUpdateView, self).get_context_data(**kwargs)
-        context['interests'] = Interest.objects.all()
-        return context
-
-
-class InterestDeleteView(SuperuserRequiredMixin, DeleteView):
-    model = Interest
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')

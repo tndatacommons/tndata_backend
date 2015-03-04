@@ -6,7 +6,7 @@ from django.utils.text import slugify
 
 from utils.db import get_max_order
 
-from . models import Action, Category, Interest, Trigger
+from . models import Action, Category, Trigger
 from . utils import read_uploaded_csv
 
 
@@ -33,7 +33,7 @@ class ActionForm(forms.ModelForm):
     class Meta:
         model = Action
         fields = [
-            'order', 'name', 'summary', 'description', 'interests',
+            'order', 'name', 'summary', 'description',
             'default_reminder_time', 'default_reminder_frequency',
             'icon', 'notes', 'source_name', 'source_link',
         ]
@@ -52,7 +52,7 @@ class InvalidFormatException(Exception):
 
 class CSVUploadForm(forms.Form):
     InvalidFormat = InvalidFormatException
-    VALID_TYPES = ['action', 'category', 'interest']
+    VALID_TYPES = ['action', 'category']
 
     csv_file = forms.FileField(
         help_text="Upload a CSV file to populate the content library"
@@ -88,22 +88,10 @@ class CSVUploadForm(forms.Form):
             order = get_max_order(Category)
             Category.objects.create(order=order, name=name, description=desc)
 
-    def _create_interest(self, row):
-        name = row[1]
-        desc = row[2]
-        try:
-            interest = Interest.objects.get(name_slug=slugify(name))
-            interest.description = desc
-            interest.save()
-        except Interest.DoesNotExist:
-            order = get_max_order(Interest)
-            Interest.objects.create(order=order, name=name, description=desc)
-
     def _create_action(self, row):
         name, summary, desc, time, freq = row[1:6]
         freq = freq.strip().lower()
         time = datetime.strptime(time.strip(), "%H:%M")
-        interest_names = [col.strip() for col in row[6:] if col.strip()]
 
         try:
             action = Action.objects.get(name_slug=slugify(name))
@@ -123,18 +111,11 @@ class CSVUploadForm(forms.Form):
                 default_reminder_frequency=freq
             )
 
-        for iname in interest_names:
-            # Retreive the interest and connect with the above action.
-            # Assume they exist. if not, we'll fail/roll back the transaction
-            interest = Interest.objects.get(name_slug=slugify(iname))
-            action.interests.add(interest)
-
     def process_row(self, row):
         # A mapping between the row type and the method that should process it
         method_map = {
             'action': self._create_action,
             'category': self._create_category,
-            'interest': self._create_interest,
         }
         row_type = self._get_type(row)
         method_map[row_type](row)
