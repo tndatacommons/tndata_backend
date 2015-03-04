@@ -12,16 +12,16 @@
       <table class="object-list">
       <thead>
       <tr>
-        <th>Name</th>
         <th>Title</th>
+        <th>Subtitle</th>
         <th>Categories</th>
       </tr>
       </thead>
       <tbody>
       {% for goal in goals %}
         <tr>
-        <td><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a></td>
-        <td>{{ goal.title }}</td>
+        <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
+        <td>{{ goal.subtitle|default:"" }}</td>
         <td>{{ goal.categories.all|join:", " }}</td>
         </tr>
       {% endfor %}

@@ -5,11 +5,11 @@
   <li><a href="{% url 'goals:index' %}">Home</a></li>
   <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
   <li class="current">
-    {% if object %}{{ object.name }}{% else %}New Goal{% endif %}
+    {% if object %}{{ object }}{% else %}New Goal{% endif %}
   </li>
 </ul>
 
-<h1>{% if object %}Goal: {{object.name}}{% else %}Create Goal{% endif %}</h1>
+<h1>{% if object %}Goal: {{object}}{% else %}Create Goal{% endif %}</h1>
 
 <div class="row">
   <div class="large-6 small-12 columns">
@@ -30,36 +30,25 @@
     <p>The structure of our data looks something like the following:</p>
     <pre class="panel">
 Category
-  - Interest
-  -- Goal
-  --- Behavior Sequence
-  ---- Behavior Action 1
-  ---- Behavior Action 2
+  - Goal
+  -- Behavior Sequence
+  --- Behavior Action 1
+  --- Behavior Action 2
     </pre>
     <table>
       <caption>Existing Goals</caption>
       <thead>
-        <tr><th>Name</th><th>Title</th><th>Categories</th><th>Interests</th></tr>
+        <tr><th>Title</th><th>Subtitle</th><th>Categories</th></tr>
       </thead>
       <tbody>
       {% for goal in goals %}
         <tr>
-          <td><a href="{{ goal.get_absolute_url }}">{{ goal.name }}</a></td>
-          <td>{{ goal.title }}</td>
+          <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
+          <td>{{ goal.subtitle|default:"" }}</td>
           <td>
             {% for c in goal.categories.all %}
-              <a href="{{c.get_absolute_url}}">{{c.name}}</a>
+              <a href="{{c.get_absolute_url}}">{{c}}</a>
               {% if not forloop.last %}<br/>{% endif %}
-            {% empty %}
-              <em>None</em>
-            {% endfor %}
-          </td>
-          <td>
-            {% for interest in goal.interests.all %}
-              <a href="{{interest.get_absolute_url}}">{{interest.name}}</a>
-              {% if not forloop.last %}<br/>{% endif %}
-            {% empty %}
-              <em>None</em>
             {% endfor %}
           </td>
         </tr>

@@ -6,37 +6,37 @@
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
     <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
-    <li class="current">{{ goal.name }}</li>
+    <li class="current">{{ goal }}</li>
   </ul>
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ goal.name }} {% object_controls goal %}</h1>
+      <h1>{{ goal }} {% object_controls goal %}</h1>
       <dl>
       <dt>Icon</dt><dd>
         {% if goal.icon %}
-          <img src="{{ goal.icon.url }}" alt="{{ goal.name }} icon" />
+          <img src="{{ goal.icon.url }}" alt="{{ goal }} icon" />
         {% else %}
           <em>No icon available</em>
         {% endif %}
       </dd>
-      <dt>Name</dt><dd>{{ goal.name }}</dd>
       <dt>Title</dt><dd>{{ goal.title }}</dd>
+      <dt>Subtitle</dt><dd>{{ goal.subtitle }}</dd>
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
       <dt>Outcome</dt><dd>{{ goal.outcome|markdown }}</dt>
       </dl>
     </div>
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Categories</h2>
-      <p><em>{{goal.name}}</em> is listed in the following Categories:</p>
+      <p><em>{{goal}}</em> is listed in the following Categories:</p>
       <ul>
       {% for cat in goal.categories.all %}
-        <li>{{ cat.name }}</li>
+        <li>{{ cat }}</li>
       {% endfor %}
       </ul>
 
-      <h2 class="subheader">Content</h2>
-      <p><em>{{goal.name}}</em> contains the following sequences and actions:</p>
+      <h2 class="subheader">Behavior Content</h2>
+      <p><em>{{goal }}</em> contains the following sequences and actions:</p>
       <ul>
       {% for bs in goal.behaviorsequence_set.all %}
         <li>{{bs}}
