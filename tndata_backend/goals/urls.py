@@ -141,17 +141,17 @@ urlpatterns = patterns('',
         name='category-list'
     ),
     url(
-        r'category/(?P<name_slug>.+)/update/$',
+        r'category/(?P<title_slug>.+)/update/$',
         views.CategoryUpdateView.as_view(),
         name='category-update'
     ),
     url(
-        r'category/(?P<name_slug>.+)/delete/$',
+        r'category/(?P<title_slug>.+)/delete/$',
         views.CategoryDeleteView.as_view(),
         name='category-delete'
     ),
     url(
-        r'category/(?P<name_slug>.+)/$',
+        r'category/(?P<title_slug>.+)/$',
         views.CategoryDetailView.as_view(),
         name='category-detail'
     ),

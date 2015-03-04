@@ -77,16 +77,16 @@ class CSVUploadForm(forms.Form):
         return row_type
 
     def _create_category(self, row):
-        name = row[1]
+        title = row[1]
         desc = row[2]
         try:
             # Update the description if this exists.
-            category = Category.objects.get(name_slug=slugify(name))
+            category = Category.objects.get(title_slug=slugify(title))
             category.description = desc
             category.save()
         except Category.DoesNotExist:
             order = get_max_order(Category)
-            Category.objects.create(order=order, name=name, description=desc)
+            Category.objects.create(order=order, title=title, description=desc)
 
     def _create_action(self, row):
         name, summary, desc, time, freq = row[1:6]

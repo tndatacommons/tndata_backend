@@ -23,7 +23,7 @@ class TestCategory(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
 
@@ -36,10 +36,10 @@ class TestCategory(TestCase):
         self.assertEqual(expected, actual)
 
     def test_save(self):
-        """Verify that saving generates a name_slug"""
-        category = Category.objects.create(order=2, name="New Name")
+        """Verify that saving generates a title_slug"""
+        category = Category.objects.create(order=2, title="New Name")
         category.save()
-        self.assertEqual(category.name_slug, "new-name")
+        self.assertEqual(category.title_slug, "new-name")
 
     def test_goals(self):
         self.assertIsInstance(self.category.goals, QuerySet)
@@ -170,7 +170,7 @@ class TestBehaviorSequence(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Category Description',
         )
         self.goal = Goal.objects.create(title="Test Goal")
@@ -272,7 +272,7 @@ class TestAction(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
         self.action = Action.objects.create(
@@ -314,7 +314,7 @@ class TestCustomReminder(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
         self.action = Action.objects.create(
@@ -357,7 +357,7 @@ class TestSelectedAction(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
         self.action = Action.objects.create(
@@ -403,7 +403,7 @@ class TestActionTaken(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
         self.action = Action.objects.create(

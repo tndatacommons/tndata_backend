@@ -3,8 +3,8 @@ from . import models
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'name_slug', 'order')
-    prepopulated_fields = {"name_slug": ("name", )}
+    list_display = ('title', 'title_slug', 'order')
+    prepopulated_fields = {"title_slug": ("title", )}
 
 admin.site.register(models.Category, CategoryAdmin)
 

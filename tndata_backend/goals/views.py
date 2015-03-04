@@ -72,13 +72,13 @@ class CategoryListView(SuperuserRequiredMixin, ListView):
 
 class CategoryDetailView(SuperuserRequiredMixin, DetailView):
     queryset = Category.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
 
 class CategoryCreateView(SuperuserRequiredMixin, CreateView):
     model = Category
-    fields = ['order', 'name', 'description', 'icon', 'notes']
+    fields = ['order', 'title', 'description', 'icon', 'notes']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -96,9 +96,9 @@ class CategoryCreateView(SuperuserRequiredMixin, CreateView):
 
 class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Category
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    fields = ['order', 'name', 'description', 'icon', 'notes']
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
+    fields = ['order', 'title', 'description', 'icon', 'notes']
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
@@ -108,8 +108,8 @@ class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class CategoryDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Category
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 

@@ -66,7 +66,6 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
-        #self.name_slug = slugify(self.name)
         self.title_slug = slugify(self.title)
         super(Category, self).save(*args, **kwargs)
 

@@ -49,7 +49,7 @@ class TestCategoryListView(TestCase):
         # Create a Category
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
 
@@ -83,7 +83,7 @@ class TestCategoryDetailView(TestCase):
         # Create a Category
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
 
@@ -97,7 +97,7 @@ class TestCategoryDetailView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_detail.html")
-        self.assertContains(resp, self.category.name)
+        self.assertContains(resp, self.category.title)
         self.assertIn("category", resp.context)
 
         resp = self.ua_client.get(url)
@@ -118,7 +118,7 @@ class TestCategoryCreateView(TestCase):
         # Create a Category
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
 
@@ -136,7 +136,7 @@ class TestCategoryCreateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
-        self.assertContains(resp, self.category.name)
+        self.assertContains(resp, self.category.title)
         self.assertIn("categories", resp.context)
 
 
@@ -154,7 +154,7 @@ class TestCategoryUpdateView(TestCase):
         # Create a Category
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
 
@@ -172,7 +172,7 @@ class TestCategoryUpdateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
-        self.assertContains(resp, self.category.name)
+        self.assertContains(resp, self.category.title)
         self.assertIn("categories", resp.context)
 
 
@@ -190,7 +190,7 @@ class TestCategoryDeleteView(TestCase):
         # Create a Category
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Some explanation!',
         )
 

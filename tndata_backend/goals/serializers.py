@@ -29,8 +29,8 @@ class CategoryListField(serializers.RelatedField):
         return {
             'id': value.id,
             'order': value.order,
-            'name': value.name,
-            'name_slug': value.name_slug,
+            'title': value.title,
+            'title_slug': value.title_slug,
             'description': value.description,
             'icon_url': value.get_absolute_icon(),
         }
@@ -44,7 +44,7 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = (
-            'id', 'order', 'name', 'name_slug', 'description',
+            'id', 'order', 'title', 'title_slug', 'description',
             'goals', 'icon_url',
         )
         depth = 1
