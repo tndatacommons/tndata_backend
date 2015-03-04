@@ -92,8 +92,6 @@ class Goal(models.Model):
         Category, null=True, blank=True,
         help_text="Select the Categories in which this Goal should appear."
     )
-    name = models.CharField(max_length=128, db_index=True, unique=True)
-    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     title_slug = models.SlugField(max_length=256, null=True)
     title = models.CharField(
         max_length=256, db_index=True, unique=True,
@@ -125,8 +123,7 @@ class Goal(models.Model):
         verbose_name_plural = "Goals"
 
     def save(self, *args, **kwargs):
-        """Always slugify the name prior to saving the model."""
-        self.name_slug = slugify(self.name)
+        """Always slugify the title prior to saving the model."""
         self.title_slug = slugify(self.title)
         super(Goal, self).save(*args, **kwargs)
 
