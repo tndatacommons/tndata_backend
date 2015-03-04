@@ -228,7 +228,6 @@ class TestGoalListView(TestCase):
 
         # Create Goal
         self.goal = Goal.objects.create(
-            name="Test Goal",
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
@@ -263,7 +262,6 @@ class TestGoalDetailView(TestCase):
 
         # Create a Goal
         self.goal = Goal.objects.create(
-            name="Test Goal",
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
@@ -299,7 +297,6 @@ class TestGoalCreateView(TestCase):
 
         # Create a Goal
         self.goal = Goal.objects.create(
-            name="Test Goal",
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
@@ -336,7 +333,6 @@ class TestGoalUpdateView(TestCase):
 
         # Create a Goal
         self.goal = Goal.objects.create(
-            name="Test Goal",
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
@@ -373,7 +369,6 @@ class TestGoalDeleteView(TestCase):
 
         # Create n Goal
         self.goal = Goal.objects.create(
-            name="Test Goal",
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"

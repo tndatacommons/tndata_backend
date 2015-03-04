@@ -10,8 +10,8 @@ admin.site.register(models.Category, CategoryAdmin)
 
 
 class GoalAdmin(admin.ModelAdmin):
-    list_display = ('name', 'title', 'in_categories')
-    prepopulated_fields = {"name_slug": ("name", )}
+    list_display = ('title', 'title_slug', 'in_categories')
+    prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.name for cat in obj.categories.all()]))

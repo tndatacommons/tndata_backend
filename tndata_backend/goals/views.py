@@ -120,14 +120,14 @@ class GoalListView(SuperuserRequiredMixin, ListView):
 
 class GoalDetailView(SuperuserRequiredMixin, DetailView):
     queryset = Goal.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
 
 class GoalCreateView(SuperuserRequiredMixin, CreateView):
     model = Goal
     fields = [
-        'categories', 'name', 'title', 'description', 'outcome', 'icon',
+        'categories', 'title', 'subtitle', 'description', 'outcome', 'icon',
     ]
 
     def get_context_data(self, **kwargs):
@@ -138,10 +138,10 @@ class GoalCreateView(SuperuserRequiredMixin, CreateView):
 
 class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Goal
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     fields = [
-        'categories', 'name', 'title', 'description', 'outcome', 'icon',
+        'categories', 'title', 'subtitle', 'description', 'outcome', 'icon',
     ]
 
     def get_context_data(self, **kwargs):
@@ -152,8 +152,8 @@ class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class GoalDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Goal
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 

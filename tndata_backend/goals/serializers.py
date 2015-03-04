@@ -14,8 +14,9 @@ class GoalListField(serializers.RelatedField):
     def to_native(self, value):
         return {
             'id': value.id,
-            'name': value.name,
             'title': value.title,
+            'title_slug': value.title_slug,
+            'subtitle': value.subtitle,
             'description': value.description,
             'outcome': value.outcome,
             'icon_url': value.get_absolute_icon(),
@@ -57,7 +58,7 @@ class GoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Goal
         fields = (
-            'id', 'name', 'name_slug', 'title', 'description', 'outcome',
+            'id', 'title', 'title_slug', 'subtitle', 'description', 'outcome',
             'categories', 'icon_url',
         )
         depth = 2

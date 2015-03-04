@@ -118,7 +118,7 @@ class Goal(models.Model):
     )
 
     def __str__(self):
-        return "{0}".format(self.name)
+        return "{0}".format(self.title)
 
     class Meta:
         verbose_name = "Goal"
@@ -131,13 +131,13 @@ class Goal(models.Model):
         super(Goal, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse('goals:goal-detail', args=[self.name_slug])
+        return reverse('goals:goal-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:goal-update', args=[self.name_slug])
+        return reverse('goals:goal-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:goal-delete', args=[self.name_slug])
+        return reverse('goals:goal-delete', args=[self.title_slug])
 
     def get_absolute_icon(self):
         if self.icon:

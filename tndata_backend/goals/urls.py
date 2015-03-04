@@ -114,17 +114,17 @@ urlpatterns = patterns('',
 
     # Goals
     url(
-        r'goal/(?P<name_slug>.+)/update/$',
+        r'goal/(?P<title_slug>.+)/update/$',
         views.GoalUpdateView.as_view(),
         name='goal-update'
     ),
     url(
-        r'goal/(?P<name_slug>.+)/delete/$',
+        r'goal/(?P<title_slug>.+)/delete/$',
         views.GoalDeleteView.as_view(),
         name='goal-delete'
     ),
     url(
-        r'goal/(?P<name_slug>.+)/$',
+        r'goal/(?P<title_slug>.+)/$',
         views.GoalDetailView.as_view(),
         name='goal-detail'
     ),

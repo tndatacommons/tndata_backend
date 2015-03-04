@@ -69,11 +69,10 @@ class TestGoal(TestCase):
     def setUp(self):
         self.category = Category.objects.create(
             order=1,
-            name='Test Category',
+            title='Test Category',
             description='Category Description',
         )
         self.goal = Goal.objects.create(
-            name="Test Goal",
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
@@ -85,32 +84,32 @@ class TestGoal(TestCase):
         Category.objects.filter(id=self.category.id).delete()
 
     def test__str__(self):
-        expected = "Test Goal"
+        expected = "Title for Test Goal"
         actual = "{}".format(self.goal)
         self.assertEqual(expected, actual)
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        goal = Goal.objects.create(name="New Name")
+        goal = Goal.objects.create(title="New Name")
         goal.save()
-        self.assertEqual(goal.name_slug, "new-name")
+        self.assertEqual(goal.title_slug, "new-name")
 
     def test_get_absolute_url(self):
         self.assertEqual(
             self.goal.get_absolute_url(),
-            "/goals/goal/test-goal/"
+            "/goals/goal/title-for-test-goal/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.goal.get_update_url(),
-            "/goals/goal/test-goal/update/"
+            "/goals/goal/title-for-test-goal/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.goal.get_delete_url(),
-            "/goals/goal/test-goal/delete/"
+            "/goals/goal/title-for-test-goal/delete/"
         )
 
 
@@ -174,7 +173,7 @@ class TestBehaviorSequence(TestCase):
             name='Test Category',
             description='Category Description',
         )
-        self.goal = Goal.objects.create(name="Test Goal")
+        self.goal = Goal.objects.create(title="Test Goal")
         self.bs = BehaviorSequence.objects.create(
             name='Test BehaviorSequence',
             title="Formal Title",
