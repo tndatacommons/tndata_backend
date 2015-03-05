@@ -129,7 +129,7 @@ REST_FRAMEWORK = {
 
     # Makes the api only accessible by admin users
     #'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
-    'PAGINATE_BY': 20,  # Turns on Pagination.
+    'PAGINATE_BY': 100,  # Turns on Pagination.
 
     # the default authentication options. for more info, see:
     # http://www.django-rest-framework.org/api-guide/authentication/
