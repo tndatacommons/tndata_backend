@@ -1,10 +1,12 @@
 from django.contrib.auth import get_user_model
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import permissions, status, viewsets
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
 
 from . import models
+from . import serializers
 
 # TODO: Need an endpoint that allows signup and generates/returns a token.
 
@@ -19,33 +21,21 @@ class IsSelf(permissions.BasePermission):
             return obj == request.user
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'username', 'email', 'is_staff')
-
-
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = get_user_model().objects.all()
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
     permission_classes = [IsSelf]  # NOTE: default perms require authentication
+    authentication_classes = (TokenAuthentication, )
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.UserProfile
-        fields = (
-            'id', 'user', 'birthdate', 'race', 'gender', 'marital_status',
-        )
-
-
 class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
+    serializer_class = serializers.UserProfileSerializer
     permission_classes = [IsSelf]  # NOTE: default perms require authentication
+    authentication_classes = (TokenAuthentication, )
 
     def get_queryset(self):
         if self.request.user.is_authenticated():
@@ -64,6 +54,9 @@ class ObtainAuthorization(ObtainAuthToken):
     * last_name
     * full_name
     * email
+
+    USAGE: Send a POST request to this view containing username/password
+    data and receive a JSON-encoded response.
 
     """
 
