@@ -9,10 +9,13 @@ from . import models
 from . import permissions
 from . import serializers
 
-# TODO: Need an endpoint that allows signup and generates/returns a token.
+# TODOs:
+# 1. Need an endpoint that allows signup and generates/returns a token.
+# 2. Exclude the POST forms for UserViewSet and UserProfileViewSet
+#    from the browseable api.
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication, )
     queryset = get_user_model().objects.all()
     serializer_class = serializers.UserSerializer
@@ -22,7 +25,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         return self.queryset.filter(id=self.request.user.id)
 
 
-class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+class UserProfileViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication, )
     queryset = models.UserProfile.objects.all()
     serializer_class = serializers.UserProfileSerializer

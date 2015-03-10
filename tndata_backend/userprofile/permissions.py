@@ -3,7 +3,8 @@ from rest_framework import permissions
 
 class IsSelf(permissions.BasePermission):
     """This permission checks that the authenticated user is the owner for a
-    User or UserProfile instance.
+    User or UserProfile instance. Ultimately, this only allows users to see
+    their own data.
 
     NOTE: the default permissions require authentication
 
