@@ -56,10 +56,10 @@ router.register(r'userprofiles', UserProfileViewSet)
 
 
 urlpatterns = patterns('',
-    url(r'^api/token-auth/', obtain_auth_token),
+    url(r'^api/auth/token/$', obtain_auth_token),
     url(r'^api/', include(router.urls)),
     url(
-        r'^api-auth/',
+        r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')
     ),
     url(
