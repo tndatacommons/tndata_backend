@@ -141,11 +141,10 @@ REST_FRAMEWORK = {
 }
 
 
-# django-core-headers
+# django-cors-headers
 # https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     'localhost',
     '127.0.0.1'
 )
-

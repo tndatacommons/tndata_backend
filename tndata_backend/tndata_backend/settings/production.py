@@ -8,7 +8,7 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
 MEDIA_URL = "/media/"
 
-# django-core-headers: https://github.com/ottoyiu/django-cors-headers/
+# django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
 
 # EMAIL via Mailgun. Production server details, below (app.tndata.org)
