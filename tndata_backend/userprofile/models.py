@@ -55,6 +55,9 @@ def create_userprofile(sender, **kwargs):
             user=user
         )
 
-        # Perhaps this doesn't belong here, but let's go ahead and create a
-        # Token as well. Accessible as `user.auth_token.key`
-        Token.objects.create(user=user)
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='create_usertoken')
+def create_usertoken(sender, **kwargs):
+    """All newly-created Users should also get an API token."""
+    if kwargs.get('created', False) and 'instance' in kwargs:
+        Token.objects.create(user=kwargs['instance'])
