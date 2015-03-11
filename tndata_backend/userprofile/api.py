@@ -3,6 +3,8 @@ from rest_framework import status, viewsets
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import detail_route
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from . import models
@@ -10,7 +12,7 @@ from . import permissions
 from . import serializers
 
 # TODOs:
-# 1. Need an endpoint that allows signup and generates/returns a token.
+#
 # 2. Exclude the POST forms for UserViewSet and UserProfileViewSet
 #    from the browseable api.
 
@@ -23,6 +25,23 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            # allow a non-authenticated user to create via POST
+            # TODO: Potential security hole, here! Can we restrict to our app?
+            return [AllowAny()]
+        else:
+            return [permissions.IsSelf()]
+
+    def create(self, request, *args, **kwargs):
+        """Alter the returned response, so that it includes an API token for a
+        newly created user.
+        """
+        resp = super(UserViewSet, self).create(request, *args, **kwargs)
+        # Include the newly-created User's auth token.
+        resp.data['token'] = self.object.auth_token.key
+        return resp
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
