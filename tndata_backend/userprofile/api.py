@@ -26,14 +26,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
 
-    def get_permissions(self):
-        if self.request.method == "POST":
-            # allow a non-authenticated user to create via POST
-            # TODO: Potential security hole, here! Can we restrict to our app?
-            return [AllowAny()]
-        else:
-            return [permissions.IsSelf()]
-
     def create(self, request, *args, **kwargs):
         """Alter the returned response, so that it includes an API token for a
         newly created user.
