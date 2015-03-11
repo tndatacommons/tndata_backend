@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status, viewsets
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import detail_route
@@ -18,7 +18,7 @@ from . import serializers
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, )
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsSelf]
@@ -37,7 +37,10 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
-    authentication_classes = (TokenAuthentication, )
+    """
+    This is a User Profile.
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserProfile.objects.all()
     serializer_class = serializers.UserProfileSerializer
     permission_classes = [permissions.IsSelf]
