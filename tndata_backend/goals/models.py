@@ -356,10 +356,10 @@ class BehaviorSequence(BaseBehavior):
 
 
 class BehaviorAction(BaseBehavior):
-    sequence = models.ForeignKey(BehaviorSequence)
+    sequence = models.ForeignKey(BehaviorSequence, verbose_name="behavior")
     sequence_order = models.IntegerField(
         default=0, db_index=True,
-        help_text="Order/number of action in stepwise behavior sequence"
+        help_text="Order/number of action in stepwise sequence of behaviors"
     )
 
     class Meta(BaseBehavior.Meta):
