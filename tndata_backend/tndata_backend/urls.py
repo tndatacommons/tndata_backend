@@ -42,7 +42,7 @@ router = routers.DefaultRouter()
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet)
-router.register(r'sequences', BehaviorSequenceViewSet)
+router.register(r'behaviors', BehaviorSequenceViewSet)
 router.register(r'actions', BehaviorActionViewSet)
 
 # ViewSets from the survey app.

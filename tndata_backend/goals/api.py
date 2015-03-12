@@ -116,10 +116,10 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
-    """A Behavior Sequence (aka a *Behavior* or *Sequence* is a abstract
+    """A Behavior Sequence (aka a *Behavior*) is an abstract
     behavior as well as a potential container for concrete actions.
 
-    Each BehaviorSequence object contains the following:
+    Each Behavior object contains the following:
 
     * id: The unique database identifier for the behavior
     * title: A unique, Formal title. Use this to refer to this item.
@@ -134,21 +134,22 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
     * image_url: (optional) Possibly larger image for this item.
     * goals: A list of goals in which this BehaviorSequence appears.
 
-    ## Behavior Sequence Endpoints
+    ## Behavior Endpoints
 
-    Each item is available at an endpoint based on it's database ID: `/api/sequences/{id}/`.
+    Each item is available at an endpoint based on it's database ID: `/api/behaviors/{id}/`.
 
     ## Filtering
 
-    Behavior sequences can be filtered using a querystring parameter. Currently,
+    Behaviors can be filtered using a querystring parameter. Currently,
     filtering is availble for both goals and categories. You can filter by an
     ID or a slug.
 
-    * Retrieve all *BehaviorSequence*s that belong to a particular goal:
-      `/api/sequences/?goal={goal_id}` or by slug: `/api/sequences/?goal={goal_title_slug}`
-    * Retrieve all *BehaviorSequence*s that belong to a particular category:
-      `/api/sequences/?category={category_id}` or by slug:
-      `/api/sequences/?category={category_title_slug}`
+    * Retrieve all *Behavior*s that belong to a particular goal:
+      `/api/behaviors/?goal={goal_id}` or by slug
+      `/api/behaviors/?goal={goal_title_slug}`
+    * Retrieve all *Behavior*s that belong to a particular category:
+      `/api/behaviors/?category={category_id}` or by slug:
+      `/api/behaviors/?category={category_title_slug}`
 
     ----
 
@@ -181,10 +182,10 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     """A Behavior Action (aka an *Action*) is a concrete action that an person
     can perform.
 
-    Each BehaviorAction object contains the following:
+    Each Action object contains the following:
 
     * id: The unique database identifier for the action
-    * sequence: The [BehaviorSequence](/api/sequences/) to which the action belongs
+    * sequence: The [Behavior](/api/behaviors/) to which the action belongs
     * sequence_order: The order in which actions should be displayed/performed (if any)
     * title: A unique, Formal title. Use this to refer to this item.
     * title_slug: A url-friendly version of title.
@@ -197,23 +198,23 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     * icon_url: A URL for an icon associated with the category
     * image_url: (optional) Possibly larger image for this item.
 
-    ## Behavior Action Endpoints
+    ## Action Endpoints
 
     Each item is available at an endpoint based on it's database ID: `/api/actions/{id}/`.
 
     ## Filtering
 
-    Behavior Actions can be filtered using a querystring parameter. Currently,
-    filtering is availble for goals, categories, and sequences. You can filter
+    Actions can be filtered using a querystring parameter. Currently,
+    filtering is availble for goals, categories, and behaviors. You can filter
     by an ID or a slug.
 
-    * Retrieve all *BehaviorAction*s that belong to a particular Behavior Action:
-      `/api/actions/?sequence={sequence_id}`, or by slug:
-      `/api/actions/?goal={sequence_title_slug}`
-    * Retrieve all *BehaviorAction*s that belong to a particular goal:
+    * Retrieve all *Actions*s that belong to a particular Behavior:
+      `/api/actions/?behavior={behavior_id}`, or by slug:
+      `/api/actions/?behavior={behavior_title_slug}`
+    * Retrieve all *Action*s that belong to a particular goal:
       `/api/actions/?goal={goal_id}`, or by slug:
       `/api/actions/?goal={goal_title_slug}`
-    * Retrieve all *BehaviorAction*s that belong to a particular category:
+    * Retrieve all *Action*s that belong to a particular category:
       `/api/actions/?category={category_id}`, or by slug:
       `/api/actions/?category={category_title_slug}`
 
@@ -226,7 +227,9 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         category = self.request.GET.get("category", None)
         goal = self.request.GET.get("goal", None)
-        sequence = self.request.GET.get("sequence", None)
+        behavior = self.request.GET.get("behavior", None)
+        if behavior is None and 'sequence' in self.request.GET:
+            behavior = self.request.GET.get("sequence", None)
 
         if category is not None and category.isnumeric():
             # Filter by Category.id
@@ -242,9 +245,9 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
             # Filter by Goal.title_slug
             self.queryset = self.queryset.filter(sequence__goals__title_slug=goal)
 
-        if sequence is not None and sequence.isnumeric():
-            self.queryset = self.queryset.filter(sequence__pk=sequence)
-        elif sequence is not None:
-            self.queryset = self.queryset.filter(sequence__title_slug=sequence)
+        if behavior is not None and behavior.isnumeric():
+            self.queryset = self.queryset.filter(sequence__pk=behavior)
+        elif behavior is not None:
+            self.queryset = self.queryset.filter(sequence__title_slug=behavior)
 
         return self.queryset
