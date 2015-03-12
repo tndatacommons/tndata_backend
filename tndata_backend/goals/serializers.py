@@ -101,6 +101,6 @@ class BehaviorActionSerializer(serializers.ModelSerializer):
             'id', 'sequence', 'sequence_order', 'name', 'name_slug',
             'title', 'description', 'case', 'outcome', 'narrative_block',
             'external_resource', 'default_trigger', 'notification_text',
-            'source_notes', 'source_link', 'icon_url', 'image_url',
+            'icon_url', 'image_url',
         )
         depth = 2

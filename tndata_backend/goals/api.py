@@ -146,20 +146,77 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
+    """A Behavior Action (aka an *Action*) is a concrete action that an person
+    can perform.
+
+    Each BehaviorAction object contains the following:
+
+    * id: The unique database identifier for the category
+    * sequence: The [BehaviorSequence](/api/sequences/) to which the action belongs
+    * sequence_order: The order in which actions should be displayed/performed (if any)
+    * name: A unique, but informal, internally-used name for the behavior.
+    * name_slug: A url-friendly version of name.
+    * title: A unique, Formal title. Use this to refer to this item.
+    * description: A longer description for the goal. May contain markdown.
+    * case: (optional) Brief description of why this is useful.
+    * outcome: Additional (optional) text that may describe an expected outcome
+      of pursing this Goal.
+    * narrative_block: Persuasive narrative description, case, outcome of the behavior
+    * external_resource = A link or reference to an outside resource necessary for adoption
+    * default_trigger: A trigger/reminder for this behavior. See the
+        (Trigger)[/api/triggers/] endpoint.
+    * notification_text: Text of the message delivered through notifications
+    * icon_url: A URL for an icon associated with the category
+    * image_url: (optional) Possibly larger image for this item.
+
+    ## Behavior Action Endpoints
+
+    Each item is available at an endpoint based on it's database ID: `/api/actions/{id}/`.
+
+    ## Filtering
+
+    Behavior Actions can be filtered using a querystring parameter. Currently,
+    filtering is availble for goals, categories, and sequences. You can filter
+    by an ID or a slug.
+
+    * Retrieve all *BehaviorAction*s that belong to a particular Behavior Action:
+      `/api/actions/?sequence={sequence_id}`, or by slug:
+      `/api/actions/?goal={sequence_name_slug}`
+    * Retrieve all *BehaviorAction*s that belong to a particular goal:
+      `/api/actions/?goal={goal_id}`, or by slug:
+      `/api/actions/?goal={goal_title_slug}`
+    * Retrieve all *BehaviorAction*s that belong to a particular category:
+      `/api/actions/?category={category_id}`, or by slug:
+      `/api/actions/?category={category_title_slug}`
+
+    ----
+
+    """
     queryset = models.BehaviorAction.objects.all()
     serializer_class = serializers.BehaviorActionSerializer
 
     def get_queryset(self):
-        if 'category' in self.request.GET:
-            self.queryset = self.queryset.filter(
-                sequence__categories__id=self.request.GET['category']
-            )
-        if 'goal' in self.request.GET:
-            self.queryset = self.queryset.filter(
-                sequence__goals__id=self.request.GET['goal']
-            )
-        if 'sequence' in self.request.GET:
-            self.queryset = self.queryset.filter(
-                sequence__id=self.request.GET['sequence']
-            )
+        category = self.request.GET.get("category", None)
+        goal = self.request.GET.get("goal", None)
+        sequence = self.request.GET.get("sequence", None)
+
+        if category is not None and category.isnumeric():
+            # Filter by Category.id
+            self.queryset = self.queryset.filter(sequence__categories__id=category)
+        elif category is not None:
+            # Filter by Category.title_slug
+            self.queryset = self.queryset.filter(sequence__categories__title_slug=category)
+
+        if goal is not None and goal.isnumeric():
+            # Filter by Goal.id
+            self.queryset = self.queryset.filter(sequence__goals__id=goal)
+        elif goal is not None:
+            # Filter by Goal.title_slug
+            self.queryset = self.queryset.filter(sequence__goals__title_slug=goal)
+
+        if sequence is not None and sequence.isnumeric():
+            self.queryset = self.queryset.filter(sequence__pk=sequence)
+        elif sequence is not None:
+            self.queryset = self.queryset.filter(sequence__name_slug=sequence)
+
         return self.queryset
