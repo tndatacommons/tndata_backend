@@ -245,10 +245,29 @@ class BaseBehavior(models.Model):
         max_length=256,
         db_index=True,
         unique=True,
-        help_text="Unique, Formal title. Displayed as a caption in the app."
+        help_text="A unique title for this item. This will be displayed in the app."
     )
     title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
-    description = models.TextField(blank=True, help_text="Brief description.")
+    source_link = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="A link to the source."
+    )
+    source_notes = models.TextField(
+        blank=True,
+        help_text="Narrative notes about the source of this item."
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Misc notes about this item. This is for your use and will "
+                  "not be displayed in the app."
+    )
+    narrative_block = models.TextField(
+        blank=True,
+        help_text="Persuasive narrative description: Tell the user why this is imporrtant."
+    )
+    description = models.TextField(blank=True, help_text="A brief description about this item.")
     case = models.TextField(
         blank=True,
         help_text="Brief description of why this is useful."
@@ -257,10 +276,6 @@ class BaseBehavior(models.Model):
         blank=True,
         help_text="Brief description of what the user can expect to get by "
                   "adopting the behavior"
-    )
-    narrative_block = models.TextField(
-        blank=True,
-        help_text="Persuasive narrative description, case, outcome of the behavior"
     )
     external_resource = models.CharField(
         blank=True,
@@ -282,27 +297,13 @@ class BaseBehavior(models.Model):
         upload_to=_behavior_icon_path,
         null=True,
         blank=True,
-        help_text="A Small icon for the Action."
+        help_text="A square icon for this item in the app, preferrably 512x512."
     )
     image = models.ImageField(
         upload_to=_behavior_img_path,
         null=True,
         blank=True,
-        help_text="Upload an image to be displayed for the Behavior Action."
-    )
-    notes = models.TextField(
-        blank=True,
-        help_text="Misc nodes about this behavior"
-    )
-    source_notes = models.TextField(
-        blank=True,
-        help_text="Narrative notes about the source"
-    )
-    source_link = models.URLField(
-        max_length=256,
-        blank=True,
-        null=True,
-        help_text="A link to the source."
+        help_text="An image to be displayed for this item, preferrably 1024x1024."
     )
 
     class Meta:

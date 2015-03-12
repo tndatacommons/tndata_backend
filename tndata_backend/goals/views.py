@@ -211,10 +211,9 @@ class BehaviorSequenceDetailView(SuperuserRequiredMixin, DetailView):
 class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
     model = BehaviorSequence
     fields = [
-        'categories', 'goals', 'informal_list',
-        'title', 'notes', 'description',
-        'narrative_block', 'external_resource', 'default_trigger',
-        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+        'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
+        'description', 'outcome', 'external_resource', 'informal_list',
+        'categories', 'goals', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
@@ -228,10 +227,9 @@ class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     fields = [
-        'categories', 'goals', 'informal_list',
-        'title', 'notes', 'description',
-        'narrative_block', 'external_resource', 'default_trigger',
-        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+        'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
+        'description', 'outcome', 'external_resource', 'informal_list',
+        'categories', 'goals', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
@@ -261,10 +259,9 @@ class BehaviorActionDetailView(SuperuserRequiredMixin, DetailView):
 class BehaviorActionCreateView(SuperuserRequiredMixin, CreateView):
     model = BehaviorAction
     fields = [
-        'sequence', 'sequence_order',
-        'title', 'notes', 'description',
-        'narrative_block', 'external_resource', 'default_trigger',
-        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+        'sequence_order','sequence', 'title', 'source_link', 'source_notes',
+        'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
+        'notification_text', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
@@ -279,10 +276,9 @@ class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     fields = [
-        'sequence', 'sequence_order',
-        'title', 'notes', 'description',
-        'narrative_block', 'external_resource', 'default_trigger',
-        'notification_text', 'icon', 'image', 'source_notes', 'source_link',
+        'sequence_order','sequence', 'title', 'source_link', 'source_notes',
+        'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
+        'notification_text', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
