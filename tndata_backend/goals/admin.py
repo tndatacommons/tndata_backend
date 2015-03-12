@@ -14,7 +14,7 @@ class GoalAdmin(admin.ModelAdmin):
     prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
-        return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
+        return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
 
 admin.site.register(models.Goal, GoalAdmin)
 
@@ -32,10 +32,10 @@ class BehaviorSequenceAdmin(admin.ModelAdmin):
     prepopulated_fields = {"name_slug": ("name", )}
 
     def in_categories(self, obj):
-        return ", ".join(sorted([cat.name for cat in obj.categories.all()]))
+        return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
 
     def in_goals(self, obj):
-        return ", ".join(sorted([g.name for g in obj.goals.all()]))
+        return ", ".join(sorted([g.title for g in obj.goals.all()]))
 admin.site.register(models.BehaviorSequence, BehaviorSequenceAdmin)
 
 
