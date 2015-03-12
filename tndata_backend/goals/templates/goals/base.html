@@ -49,9 +49,6 @@ a.ui-datepicker-next { float:right; }
     {# Right Nav Section #}
     <ul class="right">
       <li class="divider"></li>
-      {# TODO: Refactor the CSV upload #}
-      {#<li class="active"><a href="{% url 'goals:upload-csv' %}">Upload CSV</a></li>#}
-      <li class="divider"></li>
       <li><a href="/admin/">Admin</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'logout' %}">Sign Out</a></li>
@@ -62,26 +59,23 @@ a.ui-datepicker-next { float:right; }
       <li class="divider"></li>
       <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
       <li class="divider"></li>
-      {#<li><a href="{% url 'goals:interest-list' %}">Interests</a></li>#}
       <li class="divider"></li>
       <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
       <li class="divider"></li>
-      <li><a href="{% url 'goals:behaviorsequence-list' %}">Behavior Sequences</a></li>
+      <li><a href="{% url 'goals:behaviorsequence-list' %}">Behaviors</a></li>
       <li class="divider"></li>
-      <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
+      <li><a href="{% url 'goals:behavioraction-list' %}">Actions</a></li>
       <li class="divider"></li>
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
           <li><a href="{% url 'goals:category-create' %}">Category</a></li>
-          {#<li><a href="{% url 'goals:interest-create' %}">Interest</a></li>#}
           <li><a href="{% url 'goals:goal-create' %}">Goal</a></li>
           <li><a href="{% url 'goals:trigger-create' %}">Trigger</a></li>
-          <li><a href="{% url 'goals:behaviorsequence-create' %}">
-            Behavior Sequence</a></li>
-          <li><a href="{% url 'goals:behavioraction-create' %}">Behavior Action</a></li>
+          <li><a href="{% url 'goals:behaviorsequence-create' %}">Behavior</a></li>
+          <li><a href="{% url 'goals:behavioraction-create' %}">Action</a></li>
         </ul>
       </li>
       <li class="divider"></li>

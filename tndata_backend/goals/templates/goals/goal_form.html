@@ -14,7 +14,7 @@
 <div class="row">
   <div class="large-6 small-12 columns">
     <p>A <strong>Goal</strong> is consists of Behaviors. We define a goal, and
-    to achieve that goal, users will opt in to Behavior Sequences and Actions.</p>
+    to achieve that goal, users will opt in to Behaviors and Actions.</p>
 
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:goal-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
     {{ form.as_p }}
@@ -31,9 +31,9 @@
     <pre class="panel">
 Category
   - Goal
-  -- Behavior Sequence
-  --- Behavior Action 1
-  --- Behavior Action 2
+  -- Behavior
+  --- Action
+  --- Action
     </pre>
     <table>
       <caption>Existing Goals</caption>

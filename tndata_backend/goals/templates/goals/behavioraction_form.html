@@ -12,30 +12,30 @@
 {% block content %}
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Home</a></li>
-  <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
+  <li><a href="{% url 'goals:behavioraction-list' %}">Actions</a></li>
   <li class="current">
-    {% if object %}{{ behavioraction }}{% else %}New Behavior Action {% endif %}
+    {% if object %}{{ behavioraction }}{% else %}New Action {% endif %}
   </li>
 </ul>
 
-<h1>{% if object %}Update Behavior Action: {{object }}{% else %}Create Behavior Action{% endif %}</h1>
+<h1>{% if object %}Update Action: {{object }}{% else %}Create Action{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavioraction-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
-    <p>A <strong>Behavior Action</strong> is the unit of activity in which
+    <p>A <strong>Action</strong> is the unit of activity in which
     users will engage.</p>
     {{ form.as_p }}
     <hr/>
     {% if object %}
-      <button type="submit">Update Behavior Action</button>
+      <button type="submit">Update Action</button>
     {% else %}
-      <button type="submit">Create Behavior Action</button>
+      <button type="submit">Create Action</button>
     {% endif %}
     </form>
   </div>
   <div class="large-6 small-12 columns">
     <div id="sequence-info" class="panel">
-      <h2>Behavior Sequence</h2>
+      <h2>Behavior</h2>
       {% for seq in behaviorsequences %}
         <div class="sequence" id="bs-{{seq.id}}">
           {{seq.informal_list|linebreaks}}
@@ -51,7 +51,7 @@ Category
   --- Action 2
     </pre>
     <table>
-      <caption>Existing Behavior Actions</caption>
+      <caption>Existing Action</caption>
       <thead>
         <tr><th>Behavior</th><th>Order</th><th>Title</th></tr>
       </thead>

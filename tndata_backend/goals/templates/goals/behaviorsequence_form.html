@@ -3,24 +3,27 @@
 {% block content %}
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Home</a></li>
-  <li><a href="{% url 'goals:behaviorsequence-list' %}">Behavior Sequences</a></li>
+  <li><a href="{% url 'goals:behaviorsequence-list' %}">Behaviors</a></li>
   <li class="current">
-    {% if object %}{{ behaviorsequence }}{% else %}New Behavior Sequence {% endif %}
+    {% if object %}{{ behaviorsequence }}{% else %}New Behavior
+ {% endif %}
   </li>
 </ul>
 
-<h1>{% if object %}Update Behavior Sequence: {{object}}{% else %}Create Behavior Sequence{% endif %}</h1>
+<h1>{% if object %}Update Behavior
+: {{object}}{% else %}Create Behavior
+{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behaviorsequence-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
-    <p>A <strong>Behavior Sequence</strong> is the top-level organizational unit for
+    <p>A <strong>Behavior</strong> is the top-level organizational unit for
     behavior-change Actions, and is the first thing a user will see in the app.</p>
     {{ form.as_p }}
     <hr/>
     {% if object %}
-      <button type="submit">Update Behavior Sequence</button>
+      <button type="submit">Update Behavior</button>
     {% else %}
-      <button type="submit">Create Behavior Sequence</button>
+      <button type="submit">Create Behavior</button>
     {% endif %}
     </form>
   </div>
@@ -34,7 +37,7 @@ Category
   --- Action 2
     </pre>
     <table>
-      <caption>Existing Behavior Sequences</caption>
+      <caption>Existing Behaviors</caption>
       <thead>
         <tr><th>Title</th><th>Informal List</th></tr>
       </thead>

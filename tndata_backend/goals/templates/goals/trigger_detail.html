@@ -23,14 +23,14 @@
       </dl>
     </div>
     <div class="large-6 small-12 columns">
-      <h2 class="subheader">Behavior Sequences</h2>
+      <h2 class="subheader">Behavior</h2>
       <p><strong>{{ trigger.name }}</strong>
         is attached to the following behavior sequences:</p>
       <ul>
       {% for b in trigger.behaviorsequence_set.all %}<li>{{ b }}</li>{% endfor %}
       </ul>
 
-      <h2 class="subheader">Behavior Actions</h2>
+      <h2 class="subheader">Action</h2>
       <p><strong>{{ trigger.name }}</strong>
         is attached to the following behavior actions:</p>
       <ul>

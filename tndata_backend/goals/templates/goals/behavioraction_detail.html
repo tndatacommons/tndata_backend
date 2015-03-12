@@ -5,7 +5,7 @@
 {% block content %}
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
-    <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
+    <li><a href="{% url 'goals:behavioraction-list' %}">Actions</a></li>
     <li class="current">{{ behavioraction }}</li>
   </ul>
 
@@ -56,8 +56,8 @@
       </dl>
     </div>
     <div class="large-6 small-12 columns">
-      <h2 class="subheader">Behavior Sequence</h2>
-      <p>This Action is part of the following Behavior Sequence:</p>
+      <h2 class="subheader">Behavior</h2>
+      <p>This Action is part of the following Behavior:</p>
       {% with seq=behavioraction.sequence %}
       <table>
         <caption>{{ seq }}</caption>
