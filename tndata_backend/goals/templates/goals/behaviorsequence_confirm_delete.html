@@ -5,7 +5,7 @@
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Home</a></li>
   <li><a href="{% url 'goals:behaviorsequence-list' %}">Behavior Sequences</a></li>
-  <li class="current">{{ object.name }}</li>
+  <li class="current">{{ object }}</li>
 </ul>
 
 <div data-alert class="alert-box warning">
@@ -14,10 +14,10 @@
 </div>
 
 <form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
-  <h1>{{ object.name }}</h1>
+  <h1>{{ object }}</h1>
   {{ object.description|linebreaks }}
 <hr/>
-<button type="submit" class="button alert">Delete {{object.name}}</button>
+<button type="submit" class="button alert">Delete {{object}}</button>
 </form>
 
 {% endblock %}

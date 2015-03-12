@@ -6,34 +6,31 @@
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
     <li><a href="{% url 'goals:behaviorsequence-list' %}">Behavior Sequences</a></li>
-    <li class="current">{{ behaviorsequence.name }}</li>
+    <li class="current">{{ behaviorsequence }}</li>
   </ul>
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ behaviorsequence.name }} {% object_controls behaviorsequence %}</h1>
+      <h1>{{ behaviorsequence }} {% object_controls behaviorsequence %}</h1>
       <dl>
-        <dt>Name</dt><dd>{{ behaviorsequence.name }}</dd>
         <dt>Title</dt><dd>{{ behaviorsequence.title }}</dd>
         <dt>Informal List</dt><dd>{{ behaviorsequence.informal_list|markdown }}</dd>
         <dt>Notes</dt><dd>{{ behaviorsequence.notes|markdown }}</dd>
         <dt>Description</dt><dd>{{ behaviorsequence.description|markdown }}</dd>
-        <dt>Case</dt><dd>{{ behaviorsequence.case|markdown }}</dd>
-        <dt>Outcome</dt><dd>{{ behaviorsequence.outcome|markdown }}</dd>
         <dt>Narrative Block</dt><dd>{{ behaviorsequence.narrative_block|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ behaviorsequence.external_resource }}</dd>
         <dt>Default Trigger</dt><dd>{{ behaviorsequence.default_trigger }}</dd>
         <dt>Notification Text</dt><dd>{{ behaviorsequence.notification_text }}</dd>
         <dt>Icon</dt><dd>
           {% if behaviorsequence.icon %}
-            <img src="{{ behaviorsequence.icon.url }}" alt="{{ behaviorsequence.name }} icon" />
+            <img src="{{ behaviorsequence.icon.url }}" alt="{{ behaviorsequence }} icon" />
           {% else %}
             <em>No icon available</em>
           {% endif %}
         </dd>
         <dt>Image</dt><dd>
           {% if behaviorsequence.image %}
-            <img src="{{ behaviorsequence.image.url }}" alt="{{ behaviorsequence.name }} image" />
+            <img src="{{ behaviorsequence.image.url }}" alt="{{ behaviorsequence }} image" />
           {% else %}
             <em>No image available</em>
           {% endif %}

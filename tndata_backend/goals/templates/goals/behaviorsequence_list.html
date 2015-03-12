@@ -13,7 +13,6 @@
       <table class="object-list">
       <thead>
       <tr>
-        <th>Name</th>
         <th>Title</th>
         <th>Categories</th>
         <th>Goals</th>
@@ -25,9 +24,8 @@
         <tr>
           <td>
             <a href="{{ behaviorsequence.get_absolute_url }}">
-              {{ behaviorsequence.name }}</a>
+              {{ behaviorsequence }}</a>
           </td>
-          <td>{{ behaviorsequence.title }}</td>
           <td>{{ behaviorsequence.categories.all|join:", " }}</td>
           <td>{{ behaviorsequence.goals.all|join:", " }}</td>
           <td>{{ behaviorsequence.informal_list|linebreaksbr }}</td>

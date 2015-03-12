@@ -607,10 +607,7 @@ class TestBehaviorSequenceListView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(
-            name="Test BehaviorSequence",
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
 
     def tearDown(self):
         User = get_user_model()
@@ -640,10 +637,7 @@ class TestBehaviorSequenceDetailView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(
-            name="Test BehaviorSequence",
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
 
     def tearDown(self):
         User = get_user_model()
@@ -655,7 +649,7 @@ class TestBehaviorSequenceDetailView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behaviorsequence_detail.html")
-        self.assertContains(resp, self.bs.name)
+        self.assertContains(resp, self.bs.title)
         self.assertIn("behaviorsequence", resp.context)
 
         resp = self.ua_client.get(url)
@@ -674,10 +668,7 @@ class TestBehaviorSequenceCreateView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(
-            name="Test BehaviorSequence",
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
 
     def tearDown(self):
         User = get_user_model()
@@ -689,7 +680,7 @@ class TestBehaviorSequenceCreateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behaviorsequence_detail.html")
-        self.assertContains(resp, self.bs.name)
+        self.assertContains(resp, self.bs.title)
         self.assertIn("behaviorsequence", resp.context)
 
         resp = self.ua_client.get(url)
@@ -708,10 +699,7 @@ class TestBehaviorSequenceUpdateView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(
-            name="Test BehaviorSequence",
-            title="Formal Title"
-        )
+        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
 
     def tearDown(self):
         User = get_user_model()
@@ -727,7 +715,7 @@ class TestBehaviorSequenceUpdateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behaviorsequence_form.html")
-        self.assertContains(resp, self.bs.name)
+        self.assertContains(resp, self.bs.title)
         self.assertIn("behaviorsequences", resp.context)
 
 
@@ -743,10 +731,7 @@ class TestBehaviorSequenceDeleteView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(
-            name="Test BehaviorSequence",
-            title="Formal Title"
-        )
+        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
 
     def tearDown(self):
         User = get_user_model()
@@ -769,7 +754,6 @@ class TestBehaviorSequenceDeleteView(TestCase):
         self.assertRedirects(resp, reverse("goals:index"))
 
 
-# ----------------------------------
 class TestBehaviorActionListView(TestCase):
 
     def setUp(self):
@@ -782,14 +766,10 @@ class TestBehaviorActionListView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create BehaviorAction
-        self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
         self.ba = BehaviorAction.objects.create(
             sequence=self.bs,
-            name="Test BehaviorAction",
-            title="Formal Title",
+            title="Test BehaviorAction"
         )
 
     def tearDown(self):
@@ -821,14 +801,10 @@ class TestBehaviorActionDetailView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
         self.ba = BehaviorAction.objects.create(
             sequence=self.bs,
-            name="Test BehaviorAction",
-            title="Formal Title",
+            title="Test BehaviorAction",
         )
 
     def tearDown(self):
@@ -842,7 +818,7 @@ class TestBehaviorActionDetailView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behavioraction_detail.html")
-        self.assertContains(resp, self.ba.name)
+        self.assertContains(resp, self.ba.title)
         self.assertIn("behavioraction", resp.context)
 
         resp = self.ua_client.get(url)
@@ -861,14 +837,10 @@ class TestBehaviorActionCreateView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
         self.ba = BehaviorAction.objects.create(
             sequence=self.bs,
-            name="Test BehaviorAction",
-            title="Formal Title",
+            title="Test BehaviorAction",
         )
 
     def tearDown(self):
@@ -882,7 +854,7 @@ class TestBehaviorActionCreateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behavioraction_detail.html")
-        self.assertContains(resp, self.ba.name)
+        self.assertContains(resp, self.ba.title)
         self.assertIn("behavioraction", resp.context)
 
         resp = self.ua_client.get(url)
@@ -901,14 +873,10 @@ class TestBehaviorActionUpdateView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
         self.ba = BehaviorAction.objects.create(
             sequence=self.bs,
-            name="Test BehaviorAction",
-            title="Formal Title",
+            title="Test BehaviorAction",
         )
 
     def tearDown(self):
@@ -926,7 +894,7 @@ class TestBehaviorActionUpdateView(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behavioraction_form.html")
-        self.assertContains(resp, self.ba.name)
+        self.assertContains(resp, self.ba.title)
         self.assertIn("behavioractions", resp.context)
 
 
@@ -942,14 +910,10 @@ class TestBehaviorActionDeleteView(TestCase):
         self.client.login(username="admin", password="pass")
 
         # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
-        )
+        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
         self.ba = BehaviorAction.objects.create(
             sequence=self.bs,
-            name="Test BehaviorAction",
-            title="Formal Title",
+            title="Test BehaviorAction",
         )
 
     def tearDown(self):

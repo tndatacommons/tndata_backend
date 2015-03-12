@@ -241,22 +241,13 @@ class BaseBehavior(models.Model):
     `BehaviorSequence` and `BehaviorAction` models.
 
     """
-    name = models.CharField(
-        max_length=128,
-        db_index=True,
-        unique=True,
-        help_text="Unique, informal and internal. Conversational identifier only."
-    )
-    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     title = models.CharField(
         max_length=256,
         db_index=True,
         unique=True,
         help_text="Unique, Formal title. Displayed as a caption in the app."
     )
-    # TODO: remove default and add unique constraints
-    #title_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    title_slug = models.SlugField(max_length=128, db_index=True, default="")
+    title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
     description = models.TextField(blank=True, help_text="Brief description.")
     case = models.TextField(
         blank=True,
@@ -318,11 +309,10 @@ class BaseBehavior(models.Model):
         abstract = True
 
     def __str__(self):
-        return "{0}".format(self.name)
+        return "{0}".format(self.title)
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
-        self.name_slug = slugify(self.name)
         self.title_slug = slugify(self.title)
         super(BaseBehavior, self).save(*args, **kwargs)
 
@@ -355,13 +345,13 @@ class BehaviorSequence(BaseBehavior):
         verbose_name_plural = "Behavior Sequences"
 
     def get_absolute_url(self):
-        return reverse('goals:behaviorsequence-detail', args=[self.name_slug])
+        return reverse('goals:behaviorsequence-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:behaviorsequence-update', args=[self.name_slug])
+        return reverse('goals:behaviorsequence-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:behaviorsequence-delete', args=[self.name_slug])
+        return reverse('goals:behaviorsequence-delete', args=[self.title_slug])
 
 
 class BehaviorAction(BaseBehavior):
@@ -376,13 +366,13 @@ class BehaviorAction(BaseBehavior):
         verbose_name_plural = "Behavior Actions"
 
     def get_absolute_url(self):
-        return reverse('goals:behavioraction-detail', args=[self.name_slug])
+        return reverse('goals:behavioraction-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:behavioraction-update', args=[self.name_slug])
+        return reverse('goals:behavioraction-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:behavioraction-delete', args=[self.name_slug])
+        return reverse('goals:behavioraction-delete', args=[self.title_slug])
 
 
 @receiver(post_delete, sender=BehaviorAction)

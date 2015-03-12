@@ -79,7 +79,6 @@ class BehaviorSequenceSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorSequence`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
-    title_slug = serializers.CharField(source="title_slug")
 
     class Meta:
         model = BehaviorSequence
@@ -95,7 +94,6 @@ class BehaviorActionSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorAction`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
-    title_slug = serializers.CharField(source="title_slug")
 
     class Meta:
         model = BehaviorAction

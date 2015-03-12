@@ -14,7 +14,6 @@
       <thead>
       <tr>
         <th>Order</th>
-        <th>Name</th>
         <th>Title</th>
         <th>Sequence</th>
       </tr>
@@ -25,9 +24,8 @@
           <td>{{ action.sequence_order }}</td>
           <td>
             <a href="{{ action.get_absolute_url }}">
-              {{ action.name }}</a>
+              {{ action }}</a>
           </td>
-          <td>{{ action.title }}</td>
           <td>{{ action.sequence }}</td>
         </tr>
       {% endfor %}

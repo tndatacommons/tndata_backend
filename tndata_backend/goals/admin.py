@@ -28,8 +28,8 @@ admin.site.register(models.Trigger, TriggerAdmin)
 
 
 class BehaviorSequenceAdmin(admin.ModelAdmin):
-    list_display = ('name', 'title', 'in_categories', 'in_goals')
-    prepopulated_fields = {"name_slug": ("name", )}
+    list_display = ('title', 'in_categories', 'in_goals')
+    prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
@@ -40,6 +40,6 @@ admin.site.register(models.BehaviorSequence, BehaviorSequenceAdmin)
 
 
 class BehaviorActionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'title', 'sequence', 'sequence_order')
-    prepopulated_fields = {"name_slug": ("name", )}
+    list_display = ('title', 'sequence', 'sequence_order')
+    prepopulated_fields = {"title_slug": ("title", )}
 admin.site.register(models.BehaviorAction, BehaviorActionAdmin)

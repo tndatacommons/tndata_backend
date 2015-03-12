@@ -204,15 +204,15 @@ class BehaviorSequenceListView(SuperuserRequiredMixin, ListView):
 
 class BehaviorSequenceDetailView(SuperuserRequiredMixin, DetailView):
     queryset = BehaviorSequence.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
 
 class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
     model = BehaviorSequence
     fields = [
         'categories', 'goals', 'informal_list',
-        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'title', 'notes', 'description',
         'narrative_block', 'external_resource', 'default_trigger',
         'notification_text', 'icon', 'image', 'source_notes', 'source_link',
     ]
@@ -225,11 +225,11 @@ class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
 
 class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
     model = BehaviorSequence
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     fields = [
         'categories', 'goals', 'informal_list',
-        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'title', 'notes', 'description',
         'narrative_block', 'external_resource', 'default_trigger',
         'notification_text', 'icon', 'image', 'source_notes', 'source_link',
     ]
@@ -242,8 +242,8 @@ class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class BehaviorSequenceDeleteView(SuperuserRequiredMixin, DeleteView):
     model = BehaviorSequence
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 
@@ -254,15 +254,15 @@ class BehaviorActionListView(SuperuserRequiredMixin, ListView):
 
 class BehaviorActionDetailView(SuperuserRequiredMixin, DetailView):
     queryset = BehaviorAction.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
 
 class BehaviorActionCreateView(SuperuserRequiredMixin, CreateView):
     model = BehaviorAction
     fields = [
         'sequence', 'sequence_order',
-        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'title', 'notes', 'description',
         'narrative_block', 'external_resource', 'default_trigger',
         'notification_text', 'icon', 'image', 'source_notes', 'source_link',
     ]
@@ -276,11 +276,11 @@ class BehaviorActionCreateView(SuperuserRequiredMixin, CreateView):
 
 class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = BehaviorAction
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     fields = [
         'sequence', 'sequence_order',
-        'name', 'title', 'notes', 'description', 'case', 'outcome',
+        'title', 'notes', 'description',
         'narrative_block', 'external_resource', 'default_trigger',
         'notification_text', 'icon', 'image', 'source_notes', 'source_link',
     ]
@@ -294,6 +294,6 @@ class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class BehaviorActionDeleteView(SuperuserRequiredMixin, DeleteView):
     model = BehaviorAction
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')

@@ -123,7 +123,7 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
 
     * id: The unique database identifier for the behavior
     * title: A unique, Formal title. Use this to refer to this item.
-    * title_slug: A url-friendly version of name.
+    * title_slug: A url-friendly version of title.
     * description: A longer description for the goal. May contain markdown.
     * narrative_block: Persuasive narrative description, case, outcome of the behavior
     * external_resource = A link or reference to an outside resource necessary for adoption
@@ -245,6 +245,6 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
         if sequence is not None and sequence.isnumeric():
             self.queryset = self.queryset.filter(sequence__pk=sequence)
         elif sequence is not None:
-            self.queryset = self.queryset.filter(sequence__name_slug=sequence)
+            self.queryset = self.queryset.filter(sequence__title_slug=sequence)
 
         return self.queryset

@@ -14,11 +14,11 @@
   <li><a href="{% url 'goals:index' %}">Home</a></li>
   <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
   <li class="current">
-    {% if object %}{{ behavioraction.name }}{% else %}New Behavior Action {% endif %}
+    {% if object %}{{ behavioraction }}{% else %}New Behavior Action {% endif %}
   </li>
 </ul>
 
-<h1>{% if object %}Update Behavior Action: {{object.name}}{% else %}Create Behavior Action{% endif %}</h1>
+<h1>{% if object %}Update Behavior Action: {{object }}{% else %}Create Behavior Action{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
     <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavioraction-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
@@ -61,7 +61,7 @@ Category
         <tr>
           <td>{{ bs.sequence }}</td>
           <td>{{ bs.sequence_order }}</td>
-          <td><a href="{{ cat.get_absolute_url }}">{{ bs.name }}</a></td>
+          <td><a href="{{ cat.get_absolute_url }}">{{ bs }}</a></td>
           <td>{{ bs.title }}</td>
         </tr>
       {% endfor %}

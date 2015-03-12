@@ -6,19 +6,16 @@
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
     <li><a href="{% url 'goals:behavioraction-list' %}">Behavior Actions</a></li>
-    <li class="current">{{ behavioraction.name }}</li>
+    <li class="current">{{ behavioraction }}</li>
   </ul>
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ behavioraction.name }} {% object_controls behavioraction %}</h1>
+      <h1>{{ behavioraction }} {% object_controls behavioraction %}</h1>
       <dl>
         <dt>Sequence Order</dt><dd>{{ behavioraction.sequence_order }}</dd>
         <dt>Title</dt><dd>{{ behavioraction.title }}</dd>
-        <dt>Notes</dt><dd>{{ behavioraction.description|markdown }}</dd>
         <dt>Description</dt><dd>{{ behavioraction.description|markdown }}</dd>
-        <dt>Case</dt><dd>{{ behavioraction.case|markdown }}</dd>
-        <dt>Outcome</dt><dd>{{ behavioraction.outcome|markdown }}</dd>
         <dt>Narrative Block</dt><dd>{{ behavioraction.narrative_block|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ behavioraction.external_resource }}</dd>
         <dt>Default Trigger</dt>
@@ -36,20 +33,21 @@
         <dt>Notification Text</dt><dd>{{ behavioraction.notification_text }}</dd>
         <dt>Icon</dt><dd>
           {% if behavioraction.icon %}
-            <img src="{{ behavioraction.icon.url }}" alt="{{ behavioraction.name }} icon" />
+            <img src="{{ behavioraction.icon.url }}" alt="{{ behavioraction }} icon" />
           {% else %}
             <em>No icon available</em>
           {% endif %}
         </dd>
         <dt>Image</dt><dd>
           {% if behavioraction.image %}
-            <img src="{{ behavioraction.image.url }}" alt="{{ behavioraction.name }} image" />
+            <img src="{{ behavioraction.image.url }}" alt="{{ behavioraction }} image" />
           {% else %}
             <em>No image available</em>
           {% endif %}
         </dd>
         <dt>Source Notes</dt><dd>{{ behavioraction.source_notes|markdown }}</dd>
         <dt>Source Link</dt><dd>{{ behavioraction.source_link}}</dd>
+        <dt>Notes</dt><dd>{{ behavioraction.description|markdown }}</dd>
       </dl>
     </div>
     <div class="large-6 small-12 columns">

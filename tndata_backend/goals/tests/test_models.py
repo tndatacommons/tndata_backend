@@ -168,8 +168,7 @@ class TestBehaviorSequence(TestCase):
         )
         self.goal = Goal.objects.create(title="Test Goal")
         self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
+            title='Test BehaviorSequence',
         )
         self.bs.categories.add(self.category)
         self.bs.goals.add(self.goal)
@@ -185,10 +184,10 @@ class TestBehaviorSequence(TestCase):
         self.assertEqual(expected, actual)
 
     def test_save(self):
-        """Verify that saving generates a name_slug"""
-        bs = BehaviorSequence.objects.create(name="New Name", title="X")
+        """Verify that saving generates a title_slug"""
+        bs = BehaviorSequence.objects.create(title="New Name")
         bs.save()
-        self.assertEqual(bs.name_slug, "new-name")
+        self.assertEqual(bs.title_slug, "new-name")
 
     def test_get_absolute_url(self):
         self.assertEqual(
@@ -214,13 +213,11 @@ class TestBehaviorAction(TestCase):
 
     def setUp(self):
         self.bs = BehaviorSequence.objects.create(
-            name='Test BehaviorSequence',
-            title="Formal Title",
+            title='Test BehaviorSequence'
         )
         self.ba = BehaviorAction.objects.create(
             sequence=self.bs,
-            name="Test BehaviorAction",
-            title="Formal Action Title",
+            title="Test BehaviorAction"
         )
 
     def tearDown(self):
@@ -234,11 +231,9 @@ class TestBehaviorAction(TestCase):
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        ba = BehaviorAction.objects.create(
-            sequence=self.bs, name="New Name", title="X"
-        )
+        ba = BehaviorAction.objects.create(sequence=self.bs, title="New Name")
         ba.save()
-        self.assertEqual(ba.name_slug, "new-name")
+        self.assertEqual(ba.title_slug, "new-name")
 
     def test_get_absolute_url(self):
         self.assertEqual(

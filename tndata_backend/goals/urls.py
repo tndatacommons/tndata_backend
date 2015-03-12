@@ -48,17 +48,17 @@ urlpatterns = patterns('',
         name='behavioraction-list'
     ),
     url(
-        r'behavioraction/(?P<name_slug>.+)/update/$',
+        r'behavioraction/(?P<title_slug>.+)/update/$',
         views.BehaviorActionUpdateView.as_view(),
         name='behavioraction-update'
     ),
     url(
-        r'behavioraction/(?P<name_slug>.+)/delete/$',
+        r'behavioraction/(?P<title_slug>.+)/delete/$',
         views.BehaviorActionDeleteView.as_view(),
         name='behavioraction-delete'
     ),
     url(
-        r'behavioraction/(?P<name_slug>.+)/$',
+        r'behavioraction/(?P<title_slug>.+)/$',
         views.BehaviorActionDetailView.as_view(),
         name='behavioraction-detail'
     ),
@@ -70,17 +70,17 @@ urlpatterns = patterns('',
         name='behaviorsequence-list'
     ),
     url(
-        r'behaviorsequence/(?P<name_slug>.+)/update/$',
+        r'behaviorsequence/(?P<title_slug>.+)/update/$',
         views.BehaviorSequenceUpdateView.as_view(),
         name='behaviorsequence-update'
     ),
     url(
-        r'behaviorsequence/(?P<name_slug>.+)/delete/$',
+        r'behaviorsequence/(?P<title_slug>.+)/delete/$',
         views.BehaviorSequenceDeleteView.as_view(),
         name='behaviorsequence-delete'
     ),
     url(
-        r'behaviorsequence/(?P<name_slug>.+)/$',
+        r'behaviorsequence/(?P<title_slug>.+)/$',
         views.BehaviorSequenceDetailView.as_view(),
         name='behaviorsequence-detail'
     ),
