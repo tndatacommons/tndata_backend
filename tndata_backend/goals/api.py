@@ -40,7 +40,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class GoalViewSet(viewsets.ReadOnlyModelViewSet):
     """Goals contain the following information:
 
-    * id: The unique database identifier for the category
+    * id: The unique database identifier for the goal
     * title: A unique Title (or name) for the goal.
     * title_slug: A url-friendly version of the title.
     * subtitle: A short, one-liner description for the goal (256 chars or less)
@@ -75,6 +75,42 @@ class GoalViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
+    """A Trigger represents information we send to a user (via a push
+    notification) to remind them to take an action or think about a behavior.
+
+    **NOTE**: This is still a work in progress and subject to change.
+
+    Triggers contain the following:
+
+    * id: The unique database identifier for the trigger
+    * name: A unique name for a trigger.
+    * name_slug: A web-friendly version of the name.
+    * trigger_type: Type of trigger; should be "time" or "place"
+    * frequency: Frequency with which the user gets an alert.
+    * time: for "time" trigger types, the time at which an alert is sent.
+    * date: a date on which an alert is sent.
+    * location: Only used when trigger_type is "location"
+    * text: The Trigger text shown to the user
+    * instruction: Additional text for the trigger.
+
+    ## Trigger Endpoints
+
+    Each trigger is available at an endpoint based on it's database ID: `/api/triggers/{id}/`.
+
+    ## TODO:
+
+    The data model for this is woefully incomplete. It should also provide:
+
+    * A way for a user to create their own triggers (reminders)
+    * The info necessary to implement repeating reminders (e.g. choosing days
+      of the week, etc, in addition to frequency)
+    * a location; for geo-based notifications.
+    * endpoints taht are *not* just read-only.
+    * probably other things...
+
+    ----
+
+    """
     queryset = models.Trigger.objects.all()
     serializer_class = serializers.TriggerSerializer
 
@@ -85,7 +121,7 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
 
     Each BehaviorSequence object contains the following:
 
-    * id: The unique database identifier for the category
+    * id: The unique database identifier for the behavior
     * name: A unique, but informal, internally-used name for the behavior.
     * name_slug: A url-friendly version of name.
     * title: A unique, Formal title. Use this to refer to this item.
@@ -151,7 +187,7 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
 
     Each BehaviorAction object contains the following:
 
-    * id: The unique database identifier for the category
+    * id: The unique database identifier for the action
     * sequence: The [BehaviorSequence](/api/sequences/) to which the action belongs
     * sequence_order: The order in which actions should be displayed/performed (if any)
     * name: A unique, but informal, internally-used name for the behavior.
