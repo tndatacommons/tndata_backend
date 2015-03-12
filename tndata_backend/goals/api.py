@@ -80,18 +80,68 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
+    """A Behavior Sequence (aka a *Behavior* or *Sequence* is a abstract
+    behavior as well as a potential container for concrete actions.
+
+    Each BehaviorSequence object contains the following:
+
+    * id: The unique database identifier for the category
+    * name: A unique, but informal, internally-used name for the behavior.
+    * name_slug: A url-friendly version of name.
+    * title: A unique, Formal title. Use this to refer to this item.
+    * description: A longer description for the goal. May contain markdown.
+    * case: (optional) Brief description of why this is useful.
+    * outcome: Additional (optional) text that may describe an expected outcome
+      of pursing this Goal.
+    * narrative_block: Persuasive narrative description, case, outcome of the behavior
+    * external_resource = A link or reference to an outside resource necessary for adoption
+    * default_trigger: A trigger/reminder for this behavior. See the
+        (Trigger)[/api/triggers/] endpoint.
+    * notification_text: Text of the message delivered through notifications
+    * icon_url: A URL for an icon associated with the category
+    * image_url: (optional) Possibly larger image for this item.
+    * goals: A list of goals in which this BehaviorSequence appears.
+
+    ## Behavior Sequence Endpoints
+
+    Each item is available at an endpoint based on it's database ID: `/api/sequences/{id}/`.
+
+    ## Filtering
+
+    Behavior sequences can be filtered using a querystring parameter. Currently,
+    filtering is availble for both goals and categories. You can filter by an
+    ID or a slug.
+
+    * Retrieve all *BehaviorSequence*s that belong to a particular goal:
+      `/api/sequences/?goal={goal_id}` or by slug: `/api/sequences/?goal={goal_title_slug}`
+    * Retrieve all *BehaviorSequence*s that belong to a particular category:
+      `/api/sequences/?category={category_id}` or by slug:
+      `/api/sequences/?category={category_title_slug}`
+
+    ----
+
+    """
     queryset = models.BehaviorSequence.objects.all()
     serializer_class = serializers.BehaviorSequenceSerializer
 
     def get_queryset(self):
-        if 'category' in self.request.GET:
-            self.queryset = self.queryset.filter(
-                categories__id=self.request.GET['category']
-            )
-        if 'goal' in self.request.GET:
-            self.queryset = self.queryset.filter(
-                goals__id=self.request.GET['goal']
-            )
+        category = self.request.GET.get('category', None)
+        goal = self.request.GET.get('goal', None)
+
+        if category is not None and category.isnumeric():
+            # Filter by Category.id
+            self.queryset = self.queryset.filter(categories__id=category)
+        elif category is not None:
+            # Filter by Category.title_slug
+            self.queryset = self.queryset.filter(categories__title_slug=category)
+
+        if goal is not None and goal.isnumeric():
+            # Filter by Goal.id
+            self.queryset = self.queryset.filter(goals__id=goal)
+        elif goal is not None:
+            # Filter by Goal.title_slug
+            self.queryset = self.queryset.filter(goals__title_slug=goal)
+
         return self.queryset
 
 

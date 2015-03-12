@@ -85,8 +85,7 @@ class BehaviorSequenceSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'name_slug', 'title', 'description', 'case', 'outcome',
             'narrative_block', 'external_resource', 'default_trigger',
-            'notification_text', 'source_notes', 'source_link', 'informal_list',
-            'icon_url', 'image_url', 'goals',
+            'notification_text', 'icon_url', 'image_url', 'goals',
         )
         depth = 2
 
