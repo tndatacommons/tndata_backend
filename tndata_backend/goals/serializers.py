@@ -79,13 +79,14 @@ class BehaviorSequenceSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorSequence`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
+    title_slug = serializers.CharField(source="title_slug")
 
     class Meta:
         model = BehaviorSequence
         fields = (
-            'id', 'name', 'name_slug', 'title', 'description', 'case', 'outcome',
-            'narrative_block', 'external_resource', 'default_trigger',
-            'notification_text', 'icon_url', 'image_url', 'goals',
+            'id', 'title', 'title_slug', 'description', 'narrative_block',
+            'external_resource', 'default_trigger', 'notification_text',
+            'icon_url', 'image_url', 'goals',
         )
         depth = 2
 
@@ -94,13 +95,13 @@ class BehaviorActionSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorAction`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
+    title_slug = serializers.CharField(source="title_slug")
 
     class Meta:
         model = BehaviorAction
         fields = (
-            'id', 'sequence', 'sequence_order', 'name', 'name_slug',
-            'title', 'description', 'case', 'outcome', 'narrative_block',
-            'external_resource', 'default_trigger', 'notification_text',
-            'icon_url', 'image_url',
+            'id', 'sequence', 'sequence_order', 'title', 'title_slug',
+            'title', 'description', 'narrative_block', 'external_resource',
+            'default_trigger', 'notification_text', 'icon_url', 'image_url',
         )
         depth = 2

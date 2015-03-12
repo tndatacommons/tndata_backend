@@ -122,13 +122,9 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
     Each BehaviorSequence object contains the following:
 
     * id: The unique database identifier for the behavior
-    * name: A unique, but informal, internally-used name for the behavior.
-    * name_slug: A url-friendly version of name.
     * title: A unique, Formal title. Use this to refer to this item.
+    * title_slug: A url-friendly version of name.
     * description: A longer description for the goal. May contain markdown.
-    * case: (optional) Brief description of why this is useful.
-    * outcome: Additional (optional) text that may describe an expected outcome
-      of pursing this Goal.
     * narrative_block: Persuasive narrative description, case, outcome of the behavior
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
@@ -190,13 +186,9 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     * id: The unique database identifier for the action
     * sequence: The [BehaviorSequence](/api/sequences/) to which the action belongs
     * sequence_order: The order in which actions should be displayed/performed (if any)
-    * name: A unique, but informal, internally-used name for the behavior.
-    * name_slug: A url-friendly version of name.
     * title: A unique, Formal title. Use this to refer to this item.
+    * title_slug: A url-friendly version of title.
     * description: A longer description for the goal. May contain markdown.
-    * case: (optional) Brief description of why this is useful.
-    * outcome: Additional (optional) text that may describe an expected outcome
-      of pursing this Goal.
     * narrative_block: Persuasive narrative description, case, outcome of the behavior
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
@@ -217,7 +209,7 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
 
     * Retrieve all *BehaviorAction*s that belong to a particular Behavior Action:
       `/api/actions/?sequence={sequence_id}`, or by slug:
-      `/api/actions/?goal={sequence_name_slug}`
+      `/api/actions/?goal={sequence_title_slug}`
     * Retrieve all *BehaviorAction*s that belong to a particular goal:
       `/api/actions/?goal={goal_id}`, or by slug:
       `/api/actions/?goal={goal_title_slug}`

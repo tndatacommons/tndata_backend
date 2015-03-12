@@ -318,6 +318,10 @@ class BaseBehavior(models.Model):
     def __str__(self):
         return "{0}".format(self.name)
 
+    @property
+    def title_slug(self):
+        return slugify(self.title)
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
