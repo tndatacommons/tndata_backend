@@ -248,26 +248,15 @@ class BaseBehavior(models.Model):
         help_text="Unique, informal and internal. Conversational identifier only."
     )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    notes = models.TextField(
-        blank=True,
-        help_text="Misc nodes about this behavior"
-    )
-    source_notes = models.TextField(
-        blank=True,
-        help_text="Narrative notes about the source"
-    )
-    source_link = models.URLField(
-        max_length=256,
-        blank=True,
-        null=True,
-        help_text="A link to the source."
-    )
     title = models.CharField(
         max_length=256,
         db_index=True,
         unique=True,
         help_text="Unique, Formal title. Displayed as a caption in the app."
     )
+    # TODO: remove default and add unique constraints
+    #title_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    title_slug = models.SlugField(max_length=128, db_index=True, default="")
     description = models.TextField(blank=True, help_text="Brief description.")
     case = models.TextField(
         blank=True,
@@ -310,6 +299,20 @@ class BaseBehavior(models.Model):
         blank=True,
         help_text="Upload an image to be displayed for the Behavior Action."
     )
+    notes = models.TextField(
+        blank=True,
+        help_text="Misc nodes about this behavior"
+    )
+    source_notes = models.TextField(
+        blank=True,
+        help_text="Narrative notes about the source"
+    )
+    source_link = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="A link to the source."
+    )
 
     class Meta:
         abstract = True
@@ -317,13 +320,10 @@ class BaseBehavior(models.Model):
     def __str__(self):
         return "{0}".format(self.name)
 
-    @property
-    def title_slug(self):
-        return slugify(self.title)
-
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
+        self.title_slug = slugify(self.title)
         super(BaseBehavior, self).save(*args, **kwargs)
 
     def get_absolute_icon(self):
