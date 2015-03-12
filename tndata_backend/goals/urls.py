@@ -26,11 +26,6 @@ urlpatterns = patterns('',
         name='goal-create'
     ),
     url(
-        r'new/action/$',
-        views.ActionCreateView.as_view(),
-        name='action-create'
-    ),
-    url(
         r'new/behaviorsequence/$',
         views.BehaviorSequenceCreateView.as_view(),
         name='behaviorsequence-create'
@@ -90,7 +85,7 @@ urlpatterns = patterns('',
         name='behaviorsequence-detail'
     ),
 
-    #Triggers
+    # Triggers
     url(
         r'triggers/$',
         views.TriggerListView.as_view(),
@@ -155,32 +150,4 @@ urlpatterns = patterns('',
         views.CategoryDetailView.as_view(),
         name='category-detail'
     ),
-
-    # Actions
-    url(
-        r'action/(?P<name_slug>.+)/update/$',
-        views.ActionUpdateView.as_view(),
-        name='action-update'
-    ),
-    url(
-        r'action/(?P<name_slug>.+)/delete/$',
-        views.ActionDeleteView.as_view(),
-        name='action-delete'
-    ),
-    url(
-        r'action/(?P<name_slug>.+)/$',
-        views.ActionDetailView.as_view(),
-        name='action-detail'
-    ),
-    url(
-        r'actions/$',
-        views.ActionListView.as_view(),
-        name='action-list'
-    ),
-    url(
-        r'actions/$',
-        views.ActionListView.as_view(),
-        name='action-list'
-    ),
-
 )

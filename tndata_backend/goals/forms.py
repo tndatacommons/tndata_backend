@@ -1,4 +1,3 @@
-from datetime import datetime
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
@@ -6,7 +5,7 @@ from django.utils.text import slugify
 
 from utils.db import get_max_order
 
-from . models import Action, Category, Trigger
+from . models import Category, Trigger
 from . utils import read_uploaded_csv
 
 
@@ -25,22 +24,6 @@ class TriggerForm(forms.ModelForm):
             "date": forms.DateInput(attrs={
                 'class': 'datepicker',
                 'type': 'date'
-            }),
-        }
-
-
-class ActionForm(forms.ModelForm):
-    class Meta:
-        model = Action
-        fields = [
-            'order', 'name', 'summary', 'description',
-            'default_reminder_time', 'default_reminder_frequency',
-            'icon', 'notes', 'source_name', 'source_link',
-        ]
-        widgets = {
-            "default_reminder_time": forms.TimeInput(attrs={
-                'class': 'timepicker',
-                'type': 'time'
             }),
         }
 
@@ -87,29 +70,6 @@ class CSVUploadForm(forms.Form):
         except Category.DoesNotExist:
             order = get_max_order(Category)
             Category.objects.create(order=order, title=title, description=desc)
-
-    def _create_action(self, row):
-        name, summary, desc, time, freq = row[1:6]
-        freq = freq.strip().lower()
-        time = datetime.strptime(time.strip(), "%H:%M")
-
-        try:
-            action = Action.objects.get(name_slug=slugify(name))
-            action.summary = summary
-            action.description = desc
-            action.default_reminder_time = time.time()
-            action.default_reminder_frequency = freq
-            action.save()
-        except Action.DoesNotExist:
-            order = get_max_order(Action)
-            action = Action.objects.create(
-                order=order,
-                name=name,
-                summary=summary,
-                description=desc,
-                default_reminder_time=time.time(),
-                default_reminder_frequency=freq
-            )
 
     def process_row(self, row):
         # A mapping between the row type and the method that should process it

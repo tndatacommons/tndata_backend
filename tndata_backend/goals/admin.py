@@ -43,25 +43,3 @@ class BehaviorActionAdmin(admin.ModelAdmin):
     list_display = ('name', 'title', 'sequence', 'sequence_order')
     prepopulated_fields = {"name_slug": ("name", )}
 admin.site.register(models.BehaviorAction, BehaviorActionAdmin)
-
-
-class ActionAdmin(admin.ModelAdmin):
-    # DEPRECATED.
-    list_display = ('order', 'name')
-    prepopulated_fields = {"name_slug": ("name", )}
-admin.site.register(models.Action, ActionAdmin)
-
-
-class CustomReminderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'time', 'frequency')
-admin.site.register(models.CustomReminder, CustomReminderAdmin)
-
-
-class SelectedActionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'date_selected')
-admin.site.register(models.SelectedAction, SelectedActionAdmin)
-
-
-class ActionTakenAdmin(admin.ModelAdmin):
-    list_display = ('user', 'selected_action', 'date_completed')
-admin.site.register(models.ActionTaken, ActionTakenAdmin)

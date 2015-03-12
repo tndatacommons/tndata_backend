@@ -6,9 +6,9 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from . forms import ActionForm, CSVUploadForm, TriggerForm
+from . forms import CSVUploadForm, TriggerForm
 from . models import (
-    Action, BehaviorAction, BehaviorSequence, Category, Goal, Trigger
+    BehaviorAction, BehaviorSequence, Category, Goal, Trigger
 )
 from utils.db import get_max_order
 
@@ -294,54 +294,6 @@ class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
 
 class BehaviorActionDeleteView(SuperuserRequiredMixin, DeleteView):
     model = BehaviorAction
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    success_url = reverse_lazy('goals:index')
-
-
-class ActionListView(SuperuserRequiredMixin, ListView):
-    model = Action
-    context_object_name = 'actions'
-
-
-class ActionDetailView(SuperuserRequiredMixin, DetailView):
-    queryset = Action.objects.all()
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-
-class ActionCreateView(SuperuserRequiredMixin, CreateView):
-    model = Action
-    form_class = ActionForm
-
-    def get_initial(self, *args, **kwargs):
-        """Pre-populate the value for the initial order. This can't be done
-        at the class level because we want to query the value each time."""
-        initial = super(ActionCreateView, self).get_initial(*args, **kwargs)
-        if 'order' not in initial:
-            initial['order'] = get_max_order(Action)
-        return initial
-
-    def get_context_data(self, **kwargs):
-        context = super(ActionCreateView, self).get_context_data(**kwargs)
-        context['actions'] = Action.objects.all()
-        return context
-
-
-class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
-    model = Action
-    form_class = ActionForm
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super(ActionUpdateView, self).get_context_data(**kwargs)
-        context['actions'] = Action.objects.all()
-        return context
-
-
-class ActionDeleteView(SuperuserRequiredMixin, DeleteView):
-    model = Action
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
