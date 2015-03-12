@@ -62,6 +62,8 @@ class UserViewSet(viewsets.ModelViewSet):
     See the *Options* on this page for more information regarding which fields
     are required (during PUT requests).
 
+    ----
+
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
@@ -103,6 +105,8 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
     View the *Options* on this page for more details regarding which fields
     are required.
+
+    ----
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
