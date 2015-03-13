@@ -123,6 +123,8 @@ MESSAGE_TAGS = {
 # Django Rest Framework
 REST_FRAMEWORK = {
     'PAGINATE_BY': 100,  # Turns on Pagination.
+    # Testing: http://www.django-rest-framework.org/api-guide/testing/#configuration
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 
