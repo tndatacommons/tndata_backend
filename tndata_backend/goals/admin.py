@@ -27,7 +27,7 @@ class TriggerAdmin(admin.ModelAdmin):
 admin.site.register(models.Trigger, TriggerAdmin)
 
 
-class BehaviorSequenceAdmin(admin.ModelAdmin):
+class BehaviorAdmin(admin.ModelAdmin):
     list_display = ('title', 'in_categories', 'in_goals')
     prepopulated_fields = {"title_slug": ("title", )}
 
@@ -36,10 +36,10 @@ class BehaviorSequenceAdmin(admin.ModelAdmin):
 
     def in_goals(self, obj):
         return ", ".join(sorted([g.title for g in obj.goals.all()]))
-admin.site.register(models.BehaviorSequence, BehaviorSequenceAdmin)
+admin.site.register(models.Behavior, BehaviorAdmin)
 
 
-class BehaviorActionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'sequence', 'sequence_order')
+class ActionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'behavior', 'sequence_order')
     prepopulated_fields = {"title_slug": ("title", )}
-admin.site.register(models.BehaviorAction, BehaviorActionAdmin)
+admin.site.register(models.Action, ActionAdmin)

@@ -326,7 +326,7 @@ class BaseBehavior(models.Model):
             return _build_url(self.image.url)
 
 
-class BehaviorSequence(BaseBehavior):
+class Behavior(BaseBehavior):
     """A container and meta-information for a sequence of actions."""
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
@@ -342,8 +342,8 @@ class BehaviorSequence(BaseBehavior):
     )
 
     class Meta(BaseBehavior.Meta):
-        verbose_name = "Behavior Sequence"
-        verbose_name_plural = "Behavior Sequences"
+        verbose_name = "Behavior"
+        verbose_name_plural = "Behaviors"
 
     def get_absolute_url(self):
         return reverse('goals:behaviorsequence-detail', args=[self.title_slug])
@@ -355,16 +355,16 @@ class BehaviorSequence(BaseBehavior):
         return reverse('goals:behaviorsequence-delete', args=[self.title_slug])
 
 
-class BehaviorAction(BaseBehavior):
-    sequence = models.ForeignKey(BehaviorSequence, verbose_name="behavior")
+class Action(BaseBehavior):
+    behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     sequence_order = models.IntegerField(
         default=0, db_index=True,
         help_text="Order/number of action in stepwise sequence of behaviors"
     )
 
     class Meta(BaseBehavior.Meta):
-        verbose_name = "Behavior Action"
-        verbose_name_plural = "Behavior Actions"
+        verbose_name = "Action"
+        verbose_name_plural = "Actions"
 
     def get_absolute_url(self):
         return reverse('goals:behavioraction-detail', args=[self.title_slug])
@@ -376,8 +376,8 @@ class BehaviorAction(BaseBehavior):
         return reverse('goals:behavioraction-delete', args=[self.title_slug])
 
 
-@receiver(post_delete, sender=BehaviorAction)
-@receiver(post_delete, sender=BehaviorSequence)
+@receiver(post_delete, sender=Action)
+@receiver(post_delete, sender=Behavior)
 @receiver(post_delete, sender=Goal)
 @receiver(post_delete, sender=Category)
 def delete_model_icon(sender, instance, using, **kwargs):
@@ -387,8 +387,8 @@ def delete_model_icon(sender, instance, using, **kwargs):
         instance.icon.delete()
 
 
-@receiver(post_delete, sender=BehaviorAction)
-@receiver(post_delete, sender=BehaviorSequence)
+@receiver(post_delete, sender=Action)
+@receiver(post_delete, sender=Behavior)
 def delete_model_image(sender, instance, using, **kwargs):
     """Once a model instance has been deleted, this will remove its `image`
     from the filesystem."""
