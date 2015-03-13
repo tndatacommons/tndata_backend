@@ -56,7 +56,7 @@ router.register(r'userprofiles', UserProfileViewSet)
 
 
 urlpatterns = patterns('',
-    url(r'^api/auth/token/$', obtain_auth_token),
+    url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(r'^api/', include(router.urls)),
     url(
         r'^api/auth/',
