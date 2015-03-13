@@ -15,7 +15,7 @@
       <tr>
         <th>Order</th>
         <th>Title</th>
-        <th>Sequence</th>
+        <th>Behavior</th>
       </tr>
       </thead>
       <tbody>
@@ -26,7 +26,7 @@
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
-          <td>{{ action.sequence }}</td>
+          <td>{{ action.behavior }}</td>
         </tr>
       {% endfor %}
       </tbody>

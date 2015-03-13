@@ -58,14 +58,14 @@
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Behavior</h2>
       <p>This Action is part of the following Behavior:</p>
-      {% with seq=action.sequence %}
+      {% with behavior=action.behavior%}
       <table>
-        <caption>{{ seq }}</caption>
+        <caption>{{ behavior}}</caption>
         <tbody>
         <tr><th>Sequence Order</th><td>{{ action.sequence_order }}</td></tr>
-        <tr><th>Informal List</th><td>{{ seq.informal_list|markdown }}</td></tr>
-        <tr><th>Categories</th><td>{{ seq.categories.all|join:", " }}</td></tr>
-        <tr><th>Goals</th><td>{{ seq.goals.all|join:", " }}</td></tr>
+        <tr><th>Informal List</th><td>{{ behavior.informal_list|markdown }}</td></tr>
+        <tr><th>Categories</th><td>{{ behavior.categories.all|join:", " }}</td></tr>
+        <tr><th>Goals</th><td>{{ behavior.goals.all|join:", " }}</td></tr>
       </table>
       {% endwith %}
     </div>

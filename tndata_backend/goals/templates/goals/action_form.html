@@ -2,9 +2,9 @@
 
 {% block head %}
   {{ block.super }}
-  {# Custom CSS for behavior sequece lists in the side panel #}
+  {# Custom CSS for behavior lists in the side panel #}
   <style type="text/css">
-  #sequence-info{display: none;}
+  #behavior-info{display: none;}
   </style>
 {% endblock %}
 
@@ -34,11 +34,11 @@
     </form>
   </div>
   <div class="large-6 small-12 columns">
-    <div id="sequence-info" class="panel">
+    <div id="behavior-info" class="panel">
       <h2>Behavior</h2>
-      {% for seq in behaviors %}
-        <div class="sequence" id="bs-{{seq.id}}">
-          {{seq.informal_list|linebreaks}}
+      {% for behavior in behaviors %}
+        <div class="behaviors" id="behavior-{{behavior.id}}">
+          {{behavior.informal_list|linebreaks}}
         </div>
       {% endfor %}
     </div>
@@ -51,16 +51,16 @@ Category
   --- Action 2
     </pre>
     <table>
-      <caption>Existing Action</caption>
+      <caption>Existing Actions</caption>
       <thead>
-        <tr><th>Behavior</th><th>Order</th><th>Title</th></tr>
+        <tr><th>Order</th><th>Behavior</th><th>Title</th></tr>
       </thead>
       <tbody>
-      {% for bs in actions %}
+      {% for action in actions %}
         <tr>
-          <td>{{ bs.sequence }}</td>
-          <td>{{ bs.sequence_order }}</td>
-          <td><a href="{{ cat.get_absolute_url }}">{{ bs }}</a></td>
+          <td>{{ action.sequence_order }}</td>
+          <td>{{ action.behavior }}</td>
+          <td><a href="{{ action.get_absolute_url }}">{{ action }}</a></td>
         </tr>
       {% endfor %}
       </tbody>
@@ -72,25 +72,24 @@ Category
 {% block bodyjs %}
   {{ block.super }}
   <script>
-  var toggle_sequence_details = function(selector) {
-      $("#sequence-info").show();
-      $(".sequence").hide(); // hide all other sequences.
+  var toggle_behavior_details = function(selector) {
+      $("#behavior-info").show();
+      $(".behaviors").hide(); // hide all other behaviors.
       $(selector).show(); // show the selected one.
-      $("#sequence-info h2").text($("#id_sequence option:selected").text());
-
+      $("#behavior-info h2").text($("#id_behavior option:selected").text());
   }
 
   $(document).ready(function() {
-    $("#id_sequence").change(function() {
-      var selected_id = "#bs-" + $(this).val();
-      toggle_sequence_details(selected_id);
+    $("#id_behavior").change(function() {
+      var selected_id = "#behavior-" + $(this).val();
+      toggle_behavior_details(selected_id);
     });
 
-    // Show any pre-selected sequence.
-    var selected_id = $("#id_sequence").val();
+    // Show any pre-selected behaviors.
+    var selected_id = $("#id_behavior").val();
     if(selected_id) {
-      selected_id = "#bs-" + selected_id;
-      toggle_sequence_details(selected_id);
+      selected_id = "#behavior-" + selected_id;
+      toggle_behavior_details(selected_id);
     };
   });
   </script>
