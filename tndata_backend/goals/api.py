@@ -115,7 +115,7 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.TriggerSerializer
 
 
-class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
+class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
     """A Behavior Sequence (aka a *Behavior*) is an abstract
     behavior as well as a potential container for concrete actions.
 
@@ -132,7 +132,7 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
     * notification_text: Text of the message delivered through notifications
     * icon_url: A URL for an icon associated with the category
     * image_url: (optional) Possibly larger image for this item.
-    * goals: A list of goals in which this BehaviorSequence appears.
+    * goals: A list of goals in which this Behavior appears.
 
     ## Behavior Endpoints
 
@@ -154,8 +154,8 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    queryset = models.BehaviorSequence.objects.all()
-    serializer_class = serializers.BehaviorSequenceSerializer
+    queryset = models.Behavior.objects.all()
+    serializer_class = serializers.BehaviorSerializer
 
     def get_queryset(self):
         category = self.request.GET.get('category', None)
@@ -178,7 +178,7 @@ class BehaviorSequenceViewSet(viewsets.ReadOnlyModelViewSet):
         return self.queryset
 
 
-class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
+class ActionViewSet(viewsets.ReadOnlyModelViewSet):
     """A Behavior Action (aka an *Action*) is a concrete action that an person
     can perform.
 
@@ -221,8 +221,8 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    queryset = models.BehaviorAction.objects.all()
-    serializer_class = serializers.BehaviorActionSerializer
+    queryset = models.Action.objects.all()
+    serializer_class = serializers.ActionSerializer
 
     def get_queryset(self):
         category = self.request.GET.get("category", None)

@@ -346,13 +346,13 @@ class Behavior(BaseBehavior):
         verbose_name_plural = "Behaviors"
 
     def get_absolute_url(self):
-        return reverse('goals:behaviorsequence-detail', args=[self.title_slug])
+        return reverse('goals:behavior-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:behaviorsequence-update', args=[self.title_slug])
+        return reverse('goals:behavior-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:behaviorsequence-delete', args=[self.title_slug])
+        return reverse('goals:behavior-delete', args=[self.title_slug])
 
 
 class Action(BaseBehavior):
@@ -367,13 +367,13 @@ class Action(BaseBehavior):
         verbose_name_plural = "Actions"
 
     def get_absolute_url(self):
-        return reverse('goals:behavioraction-detail', args=[self.title_slug])
+        return reverse('goals:action-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:behavioraction-update', args=[self.title_slug])
+        return reverse('goals:action-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:behavioraction-delete', args=[self.title_slug])
+        return reverse('goals:action-delete', args=[self.title_slug])
 
 
 @receiver(post_delete, sender=Action)
