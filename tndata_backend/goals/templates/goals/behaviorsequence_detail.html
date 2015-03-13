@@ -5,36 +5,36 @@
 {% block content %}
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
-    <li><a href="{% url 'goals:behaviorsequence-list' %}">Behaviors</a></li>
-    <li class="current">{{ behaviorsequence }}</li>
+    <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
+    <li class="current">{{ behavior }}</li>
   </ul>
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ behaviorsequence }} {% object_controls behaviorsequence %}</h1>
+      <h1>{{ behavior }} {% object_controls behavior %}</h1>
       <dl>
-        <dt>Title</dt><dd>{{ behaviorsequence.title }}</dd>
-        <dt>Source Link</dt><dd>{{ behaviorsequence.source_link}}</dd>
-        <dt>Source Notes</dt><dd>{{ behaviorsequence.source_notes|markdown}}</dd>
-        <dt>Notes</dt><dd>{{ behaviorsequence.notes|markdown }}</dd>
-        <dt>Narrative Block</dt><dd>{{ behaviorsequence.narrative_block|markdown }}</dd>
-        <dt>Description</dt><dd>{{ behaviorsequence.description|markdown }}</dd>
-        <dt>Outcome</dt><dd>{{ behaviorsequence.outcome|markdown }}</dd>
-        <dt>External Resource</dt><dd>{{ behaviorsequence.external_resource }}</dd>
-        <dt>Informal List</dt><dd>{{ behaviorsequence.informal_list|markdown }}</dd>
+        <dt>Title</dt><dd>{{ behavior.title }}</dd>
+        <dt>Source Link</dt><dd>{{ behavior.source_link}}</dd>
+        <dt>Source Notes</dt><dd>{{ behavior.source_notes|markdown}}</dd>
+        <dt>Notes</dt><dd>{{ behavior.notes|markdown }}</dd>
+        <dt>Narrative Block</dt><dd>{{ behavior.narrative_block|markdown }}</dd>
+        <dt>Description</dt><dd>{{ behavior.description|markdown }}</dd>
+        <dt>Outcome</dt><dd>{{ behavior.outcome|markdown }}</dd>
+        <dt>External Resource</dt><dd>{{ behavior.external_resource }}</dd>
+        <dt>Informal List</dt><dd>{{ behavior.informal_list|markdown }}</dd>
 
-        <dt>Default Trigger</dt><dd>{{ behaviorsequence.default_trigger }}</dd>
-        {#<dt>Notification Text</dt><dd>{{ behaviorsequence.notification_text }}</dd>#}
+        <dt>Default Trigger</dt><dd>{{ behavior.default_trigger }}</dd>
+        {#<dt>Notification Text</dt><dd>{{ behavior.notification_text }}</dd>#}
         <dt>Icon</dt><dd>
-          {% if behaviorsequence.icon %}
-            <img src="{{ behaviorsequence.icon.url }}" alt="{{ behaviorsequence }} icon" />
+          {% if behavior.icon %}
+            <img src="{{ behavior.icon.url }}" alt="{{ behavior }} icon" />
           {% else %}
             <em>No icon available</em>
           {% endif %}
         </dd>
         <dt>Image</dt><dd>
-          {% if behaviorsequence.image %}
-            <img src="{{ behaviorsequence.image.url }}" alt="{{ behaviorsequence }} image" />
+          {% if behavior.image %}
+            <img src="{{ behavior.image.url }}" alt="{{ behavior }} image" />
           {% else %}
             <em>No image available</em>
           {% endif %}
@@ -44,15 +44,15 @@
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Categories</h2>
       <ul>
-      {% for cat in behaviorsequence.categories.all %}<li>{{ cat }}</li>{% endfor %}
+      {% for cat in behavior.categories.all %}<li>{{ cat }}</li>{% endfor %}
       </ul>
       <h2 class="subheader">Goals</h2>
       <ul>
-      {% for goal in behaviorsequence.goals.all %}<li>{{ goal }}</li>{% endfor %}
+      {% for goal in behavior.goals.all %}<li>{{ goal }}</li>{% endfor %}
       </ul>
       <h2 class="subheader">Actions</h2>
       <ul>
-      {% for ba in behaviorsequence.behavioraction_set.all %}<li>{{ ba }}</li>{% endfor %}
+      {% for ba in behavior.action_set.all %}<li>{{ ba }}</li>{% endfor %}
       </ul>
     </div>
   </div>

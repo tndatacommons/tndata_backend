@@ -3,9 +3,9 @@
 {% block content %}
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Home</a></li>
-  <li><a href="{% url 'goals:behaviorsequence-list' %}">Behaviors</a></li>
+  <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
   <li class="current">
-    {% if object %}{{ behaviorsequence }}{% else %}New Behavior
+    {% if object %}{{ behavior }}{% else %}New Behavior
  {% endif %}
   </li>
 </ul>
@@ -15,7 +15,7 @@
 {% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
-    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behaviorsequence-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+    <form action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavior-create' %}{% endif %}" method="post" enctype="multipart/form-data">{% csrf_token %}
     <p>A <strong>Behavior</strong> is the top-level organizational unit for
     behavior-change Actions, and is the first thing a user will see in the app.</p>
     {{ form.as_p }}
@@ -42,7 +42,7 @@ Category
         <tr><th>Title</th><th>Informal List</th></tr>
       </thead>
       <tbody>
-      {% for bs in behaviorsequences %}
+      {% for bs in behaviors %}
         <tr>
           <td><a href="{{ cat.get_absolute_url }}">{{ bs }}</a></td>
           <td>{{ bs.informal_list|linebreaksbr }}</td>
