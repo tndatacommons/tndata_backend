@@ -185,7 +185,7 @@ class BehaviorActionViewSet(viewsets.ReadOnlyModelViewSet):
     Each Action object contains the following:
 
     * id: The unique database identifier for the action
-    * sequence: The [Behavior](/api/behaviors/) to which the action belongs
+    * behavior: The [Behavior](/api/behaviors/) to which the action belongs
     * sequence_order: The order in which actions should be displayed/performed (if any)
     * title: A unique, Formal title. Use this to refer to this item.
     * title_slug: A url-friendly version of title.

@@ -90,16 +90,31 @@ class BehaviorSequenceSerializer(serializers.ModelSerializer):
         depth = 2
 
 
+class SimpleBehaviorField(serializers.RelatedField):
+    """A simplified representation of a `BehaviorSequence`."""
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'title': value.title,
+            'title_slug': value.title_slug,
+            'description': value.description,
+            'narrative_block': value.narrative_block,
+            'icon_url': value.get_absolute_icon(),
+            'image_url': value.get_absolute_image(),
+        }
+
+
 class BehaviorActionSerializer(serializers.ModelSerializer):
     """A Serializer for `BehaviorAction`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
+    behavior = SimpleBehaviorField(source="sequence")
 
     class Meta:
         model = BehaviorAction
         fields = (
-            'id', 'sequence', 'sequence_order', 'title', 'title_slug',
+            'id', 'behavior', 'sequence_order', 'title', 'title_slug',
             'title', 'description', 'narrative_block', 'external_resource',
             'default_trigger', 'notification_text', 'icon_url', 'image_url',
         )
-        depth = 2
+        depth = 1
