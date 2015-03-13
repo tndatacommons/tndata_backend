@@ -26,14 +26,14 @@ urlpatterns = patterns('',
         name='goal-create'
     ),
     url(
-        r'new/behaviorsequence/$',
-        views.BehaviorSequenceCreateView.as_view(),
-        name='behaviorsequence-create'
+        r'new/behavior/$',
+        views.BehaviorCreateView.as_view(),
+        name='behavior-create'
     ),
     url(
-        r'new/behavioraction/$',
-        views.BehaviorActionCreateView.as_view(),
-        name='behavioraction-create'
+        r'new/action/$',
+        views.ActionCreateView.as_view(),
+        name='action-create'
     ),
     url(
         r'new/upload/$',
@@ -41,48 +41,48 @@ urlpatterns = patterns('',
         name='upload-csv'
     ),
 
-    # Behavior Actions
+    # Actions
     url(
-        r'behavioractions/$',
-        views.BehaviorActionListView.as_view(),
-        name='behavioraction-list'
+        r'actions/$',
+        views.ActionListView.as_view(),
+        name='action-list'
     ),
     url(
-        r'behavioraction/(?P<title_slug>.+)/update/$',
-        views.BehaviorActionUpdateView.as_view(),
-        name='behavioraction-update'
+        r'action/(?P<title_slug>.+)/update/$',
+        views.ActionUpdateView.as_view(),
+        name='action-update'
     ),
     url(
-        r'behavioraction/(?P<title_slug>.+)/delete/$',
-        views.BehaviorActionDeleteView.as_view(),
-        name='behavioraction-delete'
+        r'action/(?P<title_slug>.+)/delete/$',
+        views.ActionDeleteView.as_view(),
+        name='action-delete'
     ),
     url(
-        r'behavioraction/(?P<title_slug>.+)/$',
-        views.BehaviorActionDetailView.as_view(),
-        name='behavioraction-detail'
+        r'action/(?P<title_slug>.+)/$',
+        views.ActionDetailView.as_view(),
+        name='action-detail'
     ),
 
-    # Behavior Sequences
+    # Behaviors
     url(
-        r'behaviorsequences/$',
-        views.BehaviorSequenceListView.as_view(),
-        name='behaviorsequence-list'
+        r'behaviors/$',
+        views.BehaviorListView.as_view(),
+        name='behavior-list'
     ),
     url(
-        r'behaviorsequence/(?P<title_slug>.+)/update/$',
-        views.BehaviorSequenceUpdateView.as_view(),
-        name='behaviorsequence-update'
+        r'behavior/(?P<title_slug>.+)/update/$',
+        views.BehaviorUpdateView.as_view(),
+        name='behavior-update'
     ),
     url(
-        r'behaviorsequence/(?P<title_slug>.+)/delete/$',
-        views.BehaviorSequenceDeleteView.as_view(),
-        name='behaviorsequence-delete'
+        r'behavior/(?P<title_slug>.+)/delete/$',
+        views.BehaviorDeleteView.as_view(),
+        name='behavior-delete'
     ),
     url(
-        r'behaviorsequence/(?P<title_slug>.+)/$',
-        views.BehaviorSequenceDetailView.as_view(),
-        name='behaviorsequence-detail'
+        r'behavior/(?P<title_slug>.+)/$',
+        views.BehaviorDetailView.as_view(),
+        name='behavior-detail'
     ),
 
     # Triggers

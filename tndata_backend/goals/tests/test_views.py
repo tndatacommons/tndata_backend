@@ -6,8 +6,8 @@ from .. models import (
     Category,
     Goal,
     Trigger,
-    BehaviorSequence,
-    BehaviorAction,
+    Behavior,
+    Action,
 )
 
 
@@ -595,7 +595,7 @@ class TestTriggerDeleteView(TestCase):
         self.assertRedirects(resp, reverse("goals:index"))
 
 
-class TestBehaviorSequenceListView(TestCase):
+class TestBehaviorListView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -606,26 +606,26 @@ class TestBehaviorSequenceListView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
+        # Create Behavior
+        self.behavior = Behavior.objects.create(title="Test Behavior")
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = reverse("goals:behaviorsequence-list")
+        url = reverse("goals:behavior-list")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behaviorsequence_list.html")
-        self.assertIn("behaviorsequences", resp.context)
+        self.assertTemplateUsed(resp, "goals/behavior_list.html")
+        self.assertIn("behaviors", resp.context)
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
 
-class TestBehaviorSequenceDetailView(TestCase):
+class TestBehaviorDetailView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -636,27 +636,27 @@ class TestBehaviorSequenceDetailView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
+        # Create a Behavior
+        self.behavior = Behavior.objects.create(title="Test Behavior")
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.bs.get_absolute_url()
+        url = self.behavior.get_absolute_url()
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behaviorsequence_detail.html")
-        self.assertContains(resp, self.bs.title)
-        self.assertIn("behaviorsequence", resp.context)
+        self.assertTemplateUsed(resp, "goals/behavior_detail.html")
+        self.assertContains(resp, self.behavior.title)
+        self.assertIn("behavior", resp.context)
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
 
-class TestBehaviorSequenceCreateView(TestCase):
+class TestBehaviorCreateView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -667,27 +667,27 @@ class TestBehaviorSequenceCreateView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
+        # Create a Behavior
+        self.behavior = Behavior.objects.create(title="Test Behavior")
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.bs.get_absolute_url()
+        url = self.behavior.get_absolute_url()
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behaviorsequence_detail.html")
-        self.assertContains(resp, self.bs.title)
-        self.assertIn("behaviorsequence", resp.context)
+        self.assertTemplateUsed(resp, "goals/behavior_detail.html")
+        self.assertContains(resp, self.behavior.title)
+        self.assertIn("behavior", resp.context)
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
 
-class TestBehaviorSequenceUpdateView(TestCase):
+class TestBehaviorUpdateView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -698,28 +698,28 @@ class TestBehaviorSequenceUpdateView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
+        # Create a Behavior
+        self.behavior = Behavior.objects.create(title="Test Behavior")
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.bs.get_update_url()
+        url = self.behavior.get_update_url()
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behaviorsequence_form.html")
-        self.assertContains(resp, self.bs.title)
-        self.assertIn("behaviorsequences", resp.context)
+        self.assertTemplateUsed(resp, "goals/behavior_form.html")
+        self.assertContains(resp, self.behavior.title)
+        self.assertIn("behaviors", resp.context)
 
 
-class TestBehaviorSequenceDeleteView(TestCase):
+class TestBehaviorDeleteView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -730,31 +730,31 @@ class TestBehaviorSequenceDeleteView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorSequence
-        self.bs = BehaviorSequence.objects.create(title="Test BehaviorSequence")
+        # Create a Behavior
+        self.behavior = Behavior.objects.create(title="Test Behavior")
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.bs.get_delete_url()
+        url = self.behavior.get_delete_url()
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behaviorsequence_confirm_delete.html")
-        self.assertIn("behaviorsequence", resp.context)
+        self.assertTemplateUsed(resp, "goals/behavior_confirm_delete.html")
+        self.assertIn("behavior", resp.context)
 
     def test_post(self):
-        url = self.bs.get_delete_url()
+        url = self.behavior.get_delete_url()
         resp = self.client.post(url)
         self.assertRedirects(resp, reverse("goals:index"))
 
 
-class TestBehaviorActionListView(TestCase):
+class TestActionListView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -765,31 +765,31 @@ class TestBehaviorActionListView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create BehaviorAction
-        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
-        self.ba = BehaviorAction.objects.create(
-            sequence=self.bs,
-            title="Test BehaviorAction"
+        # Create Action
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            behavior=self.behavior,
+            title="Test Action"
         )
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorAction.objects.filter(id=self.ba.id).delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = reverse("goals:behavioraction-list")
+        url = reverse("goals:action-list")
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavioraction_list.html")
-        self.assertIn("behavioractions", resp.context)
+        self.assertTemplateUsed(resp, "goals/action_list.html")
+        self.assertIn("actions", resp.context)
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
 
-class TestBehaviorActionDetailView(TestCase):
+class TestActionDetailView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -800,32 +800,32 @@ class TestBehaviorActionDetailView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
-        self.ba = BehaviorAction.objects.create(
-            sequence=self.bs,
-            title="Test BehaviorAction",
+        # Create a Action
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            behavior=self.behavior,
+            title="Test Action",
         )
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorAction.objects.filter(id=self.ba.id).delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.ba.get_absolute_url()
+        url = self.action.get_absolute_url()
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavioraction_detail.html")
-        self.assertContains(resp, self.ba.title)
-        self.assertIn("behavioraction", resp.context)
+        self.assertTemplateUsed(resp, "goals/action_detail.html")
+        self.assertContains(resp, self.action.title)
+        self.assertIn("action", resp.context)
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
 
-class TestBehaviorActionCreateView(TestCase):
+class TestActionCreateView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -836,32 +836,32 @@ class TestBehaviorActionCreateView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
-        self.ba = BehaviorAction.objects.create(
-            sequence=self.bs,
-            title="Test BehaviorAction",
+        # Create a Action
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            behavior=self.behavior,
+            title="Test Action",
         )
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorAction.objects.filter(id=self.ba.id).delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.ba.get_absolute_url()
+        url = self.action.get_absolute_url()
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavioraction_detail.html")
-        self.assertContains(resp, self.ba.title)
-        self.assertIn("behavioraction", resp.context)
+        self.assertTemplateUsed(resp, "goals/action_detail.html")
+        self.assertContains(resp, self.action.title)
+        self.assertIn("action", resp.context)
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
 
-class TestBehaviorActionUpdateView(TestCase):
+class TestActionUpdateView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -872,33 +872,33 @@ class TestBehaviorActionUpdateView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
-        self.ba = BehaviorAction.objects.create(
-            sequence=self.bs,
-            title="Test BehaviorAction",
+        # Create a Action
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            behavior=self.behavior,
+            title="Test Action",
         )
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorAction.objects.filter(id=self.ba.id).delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.ba.get_update_url()
+        url = self.action.get_update_url()
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavioraction_form.html")
-        self.assertContains(resp, self.ba.title)
-        self.assertIn("behavioractions", resp.context)
+        self.assertTemplateUsed(resp, "goals/action_form.html")
+        self.assertContains(resp, self.action.title)
+        self.assertIn("actions", resp.context)
 
 
-class TestBehaviorActionDeleteView(TestCase):
+class TestActionDeleteView(TestCase):
 
     def setUp(self):
         User = get_user_model()
@@ -909,30 +909,30 @@ class TestBehaviorActionDeleteView(TestCase):
         self.ua_client = Client()
         self.client.login(username="admin", password="pass")
 
-        # Create a BehaviorAction
-        self.bs = BehaviorSequence.objects.create(title='Test BehaviorSequence')
-        self.ba = BehaviorAction.objects.create(
-            sequence=self.bs,
-            title="Test BehaviorAction",
+        # Create a Action
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            behavior=self.behavior,
+            title="Test Action",
         )
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(username="admin").delete()
-        BehaviorAction.objects.filter(id=self.ba.id).delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test_get(self):
-        url = self.ba.get_delete_url()
+        url = self.action.get_delete_url()
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
 
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavioraction_confirm_delete.html")
-        self.assertIn("behavioraction", resp.context)
+        self.assertTemplateUsed(resp, "goals/action_confirm_delete.html")
+        self.assertIn("action", resp.context)
 
     def test_post(self):
-        url = self.ba.get_delete_url()
+        url = self.action.get_delete_url()
         resp = self.client.post(url)
         self.assertRedirects(resp, reverse("goals:index"))

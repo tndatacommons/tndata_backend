@@ -15,18 +15,18 @@
       <tr>
         <th>Order</th>
         <th>Title</th>
-        <th>Sequence</th>
+        <th>Behavior</th>
       </tr>
       </thead>
       <tbody>
-      {% for action in behavioractions %}
+      {% for action in actions %}
         <tr>
           <td>{{ action.sequence_order }}</td>
           <td>
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
-          <td>{{ action.sequence }}</td>
+          <td>{{ action.behavior }}</td>
         </tr>
       {% endfor %}
       </tbody>

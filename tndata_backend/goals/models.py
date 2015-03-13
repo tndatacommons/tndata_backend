@@ -326,8 +326,9 @@ class BaseBehavior(models.Model):
             return _build_url(self.image.url)
 
 
-class BehaviorSequence(BaseBehavior):
-    """A container and meta-information for a sequence of actions."""
+class Behavior(BaseBehavior):
+    """A Behavior. Behaviors have many actions associated with them and contain
+    several bits of information for a user."""
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
         help_text="Select the Categories in which this should appear."
@@ -338,46 +339,46 @@ class BehaviorSequence(BaseBehavior):
     )
     informal_list = models.TextField(
         blank=True,
-        help_text="Working list of the behavior sequence. Mnemonic only."
+        help_text="A working list of actions associated with the behavior. Mnemonic only."
     )
 
     class Meta(BaseBehavior.Meta):
-        verbose_name = "Behavior Sequence"
-        verbose_name_plural = "Behavior Sequences"
+        verbose_name = "Behavior"
+        verbose_name_plural = "Behaviors"
 
     def get_absolute_url(self):
-        return reverse('goals:behaviorsequence-detail', args=[self.title_slug])
+        return reverse('goals:behavior-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:behaviorsequence-update', args=[self.title_slug])
+        return reverse('goals:behavior-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:behaviorsequence-delete', args=[self.title_slug])
+        return reverse('goals:behavior-delete', args=[self.title_slug])
 
 
-class BehaviorAction(BaseBehavior):
-    sequence = models.ForeignKey(BehaviorSequence, verbose_name="behavior")
+class Action(BaseBehavior):
+    behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     sequence_order = models.IntegerField(
         default=0, db_index=True,
         help_text="Order/number of action in stepwise sequence of behaviors"
     )
 
     class Meta(BaseBehavior.Meta):
-        verbose_name = "Behavior Action"
-        verbose_name_plural = "Behavior Actions"
+        verbose_name = "Action"
+        verbose_name_plural = "Actions"
 
     def get_absolute_url(self):
-        return reverse('goals:behavioraction-detail', args=[self.title_slug])
+        return reverse('goals:action-detail', args=[self.title_slug])
 
     def get_update_url(self):
-        return reverse('goals:behavioraction-update', args=[self.title_slug])
+        return reverse('goals:action-update', args=[self.title_slug])
 
     def get_delete_url(self):
-        return reverse('goals:behavioraction-delete', args=[self.title_slug])
+        return reverse('goals:action-delete', args=[self.title_slug])
 
 
-@receiver(post_delete, sender=BehaviorAction)
-@receiver(post_delete, sender=BehaviorSequence)
+@receiver(post_delete, sender=Action)
+@receiver(post_delete, sender=Behavior)
 @receiver(post_delete, sender=Goal)
 @receiver(post_delete, sender=Category)
 def delete_model_icon(sender, instance, using, **kwargs):
@@ -387,8 +388,8 @@ def delete_model_icon(sender, instance, using, **kwargs):
         instance.icon.delete()
 
 
-@receiver(post_delete, sender=BehaviorAction)
-@receiver(post_delete, sender=BehaviorSequence)
+@receiver(post_delete, sender=Action)
+@receiver(post_delete, sender=Behavior)
 def delete_model_image(sender, instance, using, **kwargs):
     """Once a model instance has been deleted, this will remove its `image`
     from the filesystem."""

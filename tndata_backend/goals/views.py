@@ -8,7 +8,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import CSVUploadForm, TriggerForm
 from . models import (
-    BehaviorAction, BehaviorSequence, Category, Goal, Trigger
+    Action, Behavior, Category, Goal, Trigger
 )
 from utils.db import get_max_order
 
@@ -197,19 +197,19 @@ class TriggerDeleteView(SuperuserRequiredMixin, DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class BehaviorSequenceListView(SuperuserRequiredMixin, ListView):
-    model = BehaviorSequence
-    context_object_name = 'behaviorsequences'
+class BehaviorListView(SuperuserRequiredMixin, ListView):
+    model = Behavior
+    context_object_name = 'behaviors'
 
 
-class BehaviorSequenceDetailView(SuperuserRequiredMixin, DetailView):
-    queryset = BehaviorSequence.objects.all()
+class BehaviorDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Behavior.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
-    model = BehaviorSequence
+class BehaviorCreateView(SuperuserRequiredMixin, CreateView):
+    model = Behavior
     fields = [
         'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
         'description', 'outcome', 'external_resource', 'informal_list',
@@ -217,13 +217,13 @@ class BehaviorSequenceCreateView(SuperuserRequiredMixin, CreateView):
     ]
 
     def get_context_data(self, **kwargs):
-        context = super(BehaviorSequenceCreateView, self).get_context_data(**kwargs)
-        context['behaviorsequences'] = BehaviorSequence.objects.all()
+        context = super(BehaviorCreateView, self).get_context_data(**kwargs)
+        context['behaviors'] = Behavior.objects.all()
         return context
 
 
-class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
-    model = BehaviorSequence
+class BehaviorUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     fields = [
@@ -233,63 +233,63 @@ class BehaviorSequenceUpdateView(SuperuserRequiredMixin, UpdateView):
     ]
 
     def get_context_data(self, **kwargs):
-        context = super(BehaviorSequenceUpdateView, self).get_context_data(**kwargs)
-        context['behaviorsequences'] = BehaviorSequence.objects.all()
+        context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
+        context['behaviors'] = Behavior.objects.all()
         return context
 
 
-class BehaviorSequenceDeleteView(SuperuserRequiredMixin, DeleteView):
-    model = BehaviorSequence
+class BehaviorDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class BehaviorActionListView(SuperuserRequiredMixin, ListView):
-    model = BehaviorAction
-    context_object_name = 'behavioractions'
+class ActionListView(SuperuserRequiredMixin, ListView):
+    model = Action
+    context_object_name = 'actions'
 
 
-class BehaviorActionDetailView(SuperuserRequiredMixin, DetailView):
-    queryset = BehaviorAction.objects.all()
+class ActionDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Action.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class BehaviorActionCreateView(SuperuserRequiredMixin, CreateView):
-    model = BehaviorAction
+class ActionCreateView(SuperuserRequiredMixin, CreateView):
+    model = Action
     fields = [
-        'sequence_order','sequence', 'title', 'source_link', 'source_notes',
+        'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
         'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
         'notification_text', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
-        context = super(BehaviorActionCreateView, self).get_context_data(**kwargs)
-        context['behavioractions'] = BehaviorAction.objects.all()
-        context['behaviorsequences'] = BehaviorSequence.objects.all()
+        context = super(ActionCreateView, self).get_context_data(**kwargs)
+        context['actions'] = Action.objects.all()
+        context['behaviors'] = Behavior.objects.all()
         return context
 
 
-class BehaviorActionUpdateView(SuperuserRequiredMixin, UpdateView):
-    model = BehaviorAction
+class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     fields = [
-        'sequence_order','sequence', 'title', 'source_link', 'source_notes',
+        'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
         'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
         'notification_text', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
-        context = super(BehaviorActionUpdateView, self).get_context_data(**kwargs)
-        context['behavioractions'] = BehaviorAction.objects.all()
-        context['behaviorsequences'] = BehaviorSequence.objects.all()
+        context = super(ActionUpdateView, self).get_context_data(**kwargs)
+        context['actions'] = Action.objects.all()
+        context['behaviors'] = Behavior.objects.all()
         return context
 
 
-class BehaviorActionDeleteView(SuperuserRequiredMixin, DeleteView):
-    model = BehaviorAction
+class ActionDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')

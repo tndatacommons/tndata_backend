@@ -1,0 +1,73 @@
+{% extends "goals/base.html" %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
+    <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+    <li class="current">{{ action }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h1>{{ action }} {% object_controls action %}</h1>
+      <dl>
+        <dt>Sequence Order</dt><dd>{{ action.sequence_order }}</dd>
+        <dt>Title</dt><dd>{{ action.title }}</dd>
+        <dt>Source Link</dt><dd>{{ action.source_link}}</dd>
+        <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
+        <dt>Notes</dt><dd>{{ action.description|markdown }}</dd>
+
+        <dt>Narrative Block</dt><dd>{{ action.narrative_block|markdown }}</dd>
+        <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
+        <dt>Outcome</dt><dd>{{ action.outcome|markdown }}</dd>
+        <dt>Default Trigger</dt>
+          {% with trigger=action.default_trigger %}
+          <dd>
+            {% if trigger %}
+              {{ trigger }}: {{ trigger.get_frequency_display }}
+              {% if trigger.trigger_type == "time" %}
+                {{ trigger.time }}
+              {% else %}
+                {{ trigger.location }}
+              {% endif %}
+              <br/>{{ trigger.text }}<br/>{{ trigger.instruction }}
+            {% else %}
+              <em>No trigger defined.</em>
+            {% endif %}
+          </dd>
+          {% endwith %}
+        <dt>Notification Text</dt><dd>{{ action.notification_text }}</dd>
+        <dt>Icon</dt><dd>
+          {% if action.icon %}
+            <img src="{{ action.icon.url }}" alt="{{ action }} icon" />
+          {% else %}
+            <em>No icon available</em>
+          {% endif %}
+        </dd>
+        <dt>Image</dt><dd>
+          {% if action.image %}
+            <img src="{{ action.image.url }}" alt="{{ action }} image" />
+          {% else %}
+            <em>No image available</em>
+          {% endif %}
+        </dd>
+      </dl>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Behavior</h2>
+      <p>This Action is part of the following Behavior:</p>
+      {% with behavior=action.behavior%}
+      <table>
+        <caption>{{ behavior}}</caption>
+        <tbody>
+        <tr><th>Sequence Order</th><td>{{ action.sequence_order }}</td></tr>
+        <tr><th>Informal List</th><td>{{ behavior.informal_list|markdown }}</td></tr>
+        <tr><th>Categories</th><td>{{ behavior.categories.all|join:", " }}</td></tr>
+        <tr><th>Goals</th><td>{{ behavior.goals.all|join:", " }}</td></tr>
+      </table>
+      {% endwith %}
+    </div>
+  </div>
+{% endblock %}

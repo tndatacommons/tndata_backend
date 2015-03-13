@@ -38,10 +38,10 @@
       <h2 class="subheader">Behavior Content</h2>
       <p><em>{{goal }}</em> contains the following sequences and actions:</p>
       <ul>
-      {% for bs in goal.behaviorsequence_set.all %}
+      {% for bs in goal.behavior_set.all %}
         <li>{{bs}}
           <ul>
-            {% for ba in bs.behavioraction_set.all %}
+            {% for ba in bs.action_set.all %}
               <li>{{ ba }}</li>
             {% endfor %}
           </ul>

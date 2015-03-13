@@ -27,14 +27,14 @@
       <p><strong>{{ trigger.name }}</strong>
         is attached to the following behavior sequences:</p>
       <ul>
-      {% for b in trigger.behaviorsequence_set.all %}<li>{{ b }}</li>{% endfor %}
+      {% for b in trigger.behavior_set.all %}<li>{{ b }}</li>{% endfor %}
       </ul>
 
       <h2 class="subheader">Action</h2>
       <p><strong>{{ trigger.name }}</strong>
         is attached to the following behavior actions:</p>
       <ul>
-      {% for b in trigger.behavioraction_set.all %}<li>{{ b }}</li>{% endfor %}
+      {% for b in trigger.action_set.all %}<li>{{ b }}</li>{% endfor %}
       </ul>
     </div>
   </div>

@@ -20,15 +20,15 @@
       </tr>
       </thead>
       <tbody>
-      {% for behaviorsequence in behaviorsequences %}
+      {% for behavior in behaviors %}
         <tr>
           <td>
-            <a href="{{ behaviorsequence.get_absolute_url }}">
-              {{ behaviorsequence }}</a>
+            <a href="{{ behavior.get_absolute_url }}">
+              {{ behavior }}</a>
           </td>
-          <td>{{ behaviorsequence.categories.all|join:", " }}</td>
-          <td>{{ behaviorsequence.goals.all|join:", " }}</td>
-          <td>{{ behaviorsequence.informal_list|linebreaksbr }}</td>
+          <td>{{ behavior.categories.all|join:", " }}</td>
+          <td>{{ behavior.goals.all|join:", " }}</td>
+          <td>{{ behavior.informal_list|linebreaksbr }}</td>
         </tr>
       {% endfor %}
       </tbody>

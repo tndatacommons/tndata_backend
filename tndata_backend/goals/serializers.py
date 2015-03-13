@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from . models import (
-    BehaviorAction,
-    BehaviorSequence,
+    Action,
+    Behavior,
     Category,
     Goal,
     Trigger,
@@ -75,13 +75,13 @@ class TriggerSerializer(serializers.ModelSerializer):
         )
 
 
-class BehaviorSequenceSerializer(serializers.ModelSerializer):
-    """A Serializer for `BehaviorSequence`."""
+class BehaviorSerializer(serializers.ModelSerializer):
+    """A Serializer for `Behavior`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
 
     class Meta:
-        model = BehaviorSequence
+        model = Behavior
         fields = (
             'id', 'title', 'title_slug', 'description', 'narrative_block',
             'external_resource', 'default_trigger', 'notification_text',
@@ -104,14 +104,14 @@ class SimpleBehaviorField(serializers.RelatedField):
         }
 
 
-class BehaviorActionSerializer(serializers.ModelSerializer):
-    """A Serializer for `BehaviorAction`."""
+class ActionSerializer(serializers.ModelSerializer):
+    """A Serializer for `Action`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
-    behavior = SimpleBehaviorField(source="sequence")
+    behavior = SimpleBehaviorField(source="behavior")
 
     class Meta:
-        model = BehaviorAction
+        model = Action
         fields = (
             'id', 'behavior', 'sequence_order', 'title', 'title_slug',
             'title', 'description', 'narrative_block', 'external_resource',
