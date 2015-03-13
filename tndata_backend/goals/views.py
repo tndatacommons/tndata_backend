@@ -259,7 +259,7 @@ class ActionDetailView(SuperuserRequiredMixin, DetailView):
 class ActionCreateView(SuperuserRequiredMixin, CreateView):
     model = Action
     fields = [
-        'sequence_order','sequence', 'title', 'source_link', 'source_notes',
+        'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
         'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
         'notification_text', 'icon', 'image',
     ]
@@ -276,7 +276,7 @@ class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     fields = [
-        'sequence_order','sequence', 'title', 'source_link', 'source_notes',
+        'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
         'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
         'notification_text', 'icon', 'image',
     ]

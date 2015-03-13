@@ -108,7 +108,7 @@ class ActionSerializer(serializers.ModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.Field(source="get_absolute_icon")
     image_url = serializers.Field(source="get_absolute_image")
-    behavior = SimpleBehaviorField(source="sequence")
+    behavior = SimpleBehaviorField(source="behavior")
 
     class Meta:
         model = Action

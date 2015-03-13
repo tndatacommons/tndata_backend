@@ -327,7 +327,8 @@ class BaseBehavior(models.Model):
 
 
 class Behavior(BaseBehavior):
-    """A container and meta-information for a sequence of actions."""
+    """A Behavior. Behaviors have many actions associated with them and contain
+    several bits of information for a user."""
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
         help_text="Select the Categories in which this should appear."
@@ -338,7 +339,7 @@ class Behavior(BaseBehavior):
     )
     informal_list = models.TextField(
         blank=True,
-        help_text="Working list of the behavior sequence. Mnemonic only."
+        help_text="A working list of actions associated with the behavior. Mnemonic only."
     )
 
     class Meta(BaseBehavior.Meta):

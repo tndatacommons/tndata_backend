@@ -187,7 +187,7 @@ class TestBehavior(TestCase):
         """Verify that saving generates a title_slug"""
         behavior = Behavior.objects.create(title="New Name")
         behavior.save()
-        self.assertEqual(bs.title_slug, "new-name")
+        self.assertEqual(behavior.title_slug, "new-name")
 
     def test_get_absolute_url(self):
         self.assertEqual(
@@ -216,7 +216,7 @@ class TestAction(TestCase):
             title='Test Behavior'
         )
         self.action = Action.objects.create(
-            sequence=self.behavior,
+            behavior=self.behavior,
             title="Test Action"
         )
 
@@ -231,7 +231,7 @@ class TestAction(TestCase):
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        action = Action.objects.create(sequence=self.behavior, title="New Name")
+        action = Action.objects.create(behavior=self.behavior, title="New Name")
         action.save()
         self.assertEqual(action.title_slug, "new-name")
 

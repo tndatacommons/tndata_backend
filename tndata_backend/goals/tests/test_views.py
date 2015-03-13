@@ -768,7 +768,7 @@ class TestActionListView(TestCase):
         # Create Action
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.action = Action.objects.create(
-            sequence=self.behavior,
+            behavior=self.behavior,
             title="Test Action"
         )
 
@@ -803,7 +803,7 @@ class TestActionDetailView(TestCase):
         # Create a Action
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.action = Action.objects.create(
-            sequence=self.behavior,
+            behavior=self.behavior,
             title="Test Action",
         )
 
@@ -839,7 +839,7 @@ class TestActionCreateView(TestCase):
         # Create a Action
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.action = Action.objects.create(
-            sequence=self.behavior,
+            behavior=self.behavior,
             title="Test Action",
         )
 
@@ -875,7 +875,7 @@ class TestActionUpdateView(TestCase):
         # Create a Action
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.action = Action.objects.create(
-            sequence=self.behavior,
+            behavior=self.behavior,
             title="Test Action",
         )
 
@@ -912,7 +912,7 @@ class TestActionDeleteView(TestCase):
         # Create a Action
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.action = Action.objects.create(
-            sequence=self.behavior,
+            behavior=self.behavior,
             title="Test Action",
         )
 
