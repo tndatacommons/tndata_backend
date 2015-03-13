@@ -78,8 +78,9 @@ class UserViewSet(viewsets.ModelViewSet):
         newly created user.
         """
         resp = super(UserViewSet, self).create(request, *args, **kwargs)
-        # Include the newly-created User's auth token.
-        resp.data['token'] = self.object.auth_token.key
+        # Include the newly-created User's auth token (if we have a user)
+        if hasattr(self, 'object') and hasattr(self.object, 'auth_token'):
+            resp.data['token'] = self.object.auth_token.key
         return resp
 
 
