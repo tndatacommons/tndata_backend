@@ -5,8 +5,8 @@ from .. models import (
     Category,
     Goal,
     Trigger,
-    BehaviorSequence,
-    BehaviorAction,
+    Behavior,
+    Action,
 )
 
 
@@ -157,8 +157,8 @@ class TestTrigger(TestCase):
         )
 
 
-class TestBehaviorSequence(TestCase):
-    """Tests for the `BehaviorSequence` model."""
+class TestBehavior(TestCase):
+    """Tests for the `Behavior` model."""
 
     def setUp(self):
         self.category = Category.objects.create(
@@ -167,88 +167,88 @@ class TestBehaviorSequence(TestCase):
             description='Category Description',
         )
         self.goal = Goal.objects.create(title="Test Goal")
-        self.bs = BehaviorSequence.objects.create(
-            title='Test BehaviorSequence',
+        self.behavior = Behavior.objects.create(
+            title='Test Behavior',
         )
-        self.bs.categories.add(self.category)
-        self.bs.goals.add(self.goal)
+        self.behavior.categories.add(self.category)
+        self.behavior.goals.add(self.goal)
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
         Goal.objects.filter(id=self.goal.id).delete()
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test__str__(self):
-        expected = "Test BehaviorSequence"
-        actual = "{}".format(self.bs)
+        expected = "Test Behavior"
+        actual = "{}".format(self.behavior)
         self.assertEqual(expected, actual)
 
     def test_save(self):
         """Verify that saving generates a title_slug"""
-        bs = BehaviorSequence.objects.create(title="New Name")
-        bs.save()
+        behavior = Behavior.objects.create(title="New Name")
+        behavior.save()
         self.assertEqual(bs.title_slug, "new-name")
 
     def test_get_absolute_url(self):
         self.assertEqual(
-            self.bs.get_absolute_url(),
-            "/goals/behaviorsequence/test-behaviorsequence/"
+            self.behavior.get_absolute_url(),
+            "/goals/behavior/test-behavior/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
-            self.bs.get_update_url(),
-            "/goals/behaviorsequence/test-behaviorsequence/update/"
+            self.behavior.get_update_url(),
+            "/goals/behavior/test-behavior/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
-            self.bs.get_delete_url(),
-            "/goals/behaviorsequence/test-behaviorsequence/delete/"
+            self.behavior.get_delete_url(),
+            "/goals/behavior/test-behavior/delete/"
         )
 
 
-class TestBehaviorAction(TestCase):
-    """Tests for the `BehaviorAction` model."""
+class TestAction(TestCase):
+    """Tests for the `Action` model."""
 
     def setUp(self):
-        self.bs = BehaviorSequence.objects.create(
-            title='Test BehaviorSequence'
+        self.behavior = Behavior.objects.create(
+            title='Test Behavior'
         )
-        self.ba = BehaviorAction.objects.create(
-            sequence=self.bs,
-            title="Test BehaviorAction"
+        self.action = Action.objects.create(
+            sequence=self.behavior,
+            title="Test Action"
         )
 
     def tearDown(self):
-        BehaviorSequence.objects.filter(id=self.bs.id).delete()
-        BehaviorAction.objects.filter(id=self.ba.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
 
     def test__str__(self):
-        expected = "Test BehaviorAction"
-        actual = "{}".format(self.ba)
+        expected = "Test Action"
+        actual = "{}".format(self.action)
         self.assertEqual(expected, actual)
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        ba = BehaviorAction.objects.create(sequence=self.bs, title="New Name")
-        ba.save()
-        self.assertEqual(ba.title_slug, "new-name")
+        action = Action.objects.create(sequence=self.behavior, title="New Name")
+        action.save()
+        self.assertEqual(action.title_slug, "new-name")
 
     def test_get_absolute_url(self):
         self.assertEqual(
-            self.ba.get_absolute_url(),
-            "/goals/behavioraction/test-behavioraction/"
+            self.action.get_absolute_url(),
+            "/goals/action/test-action/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
-            self.ba.get_update_url(),
-            "/goals/behavioraction/test-behavioraction/update/"
+            self.action.get_update_url(),
+            "/goals/action/test-action/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
-            self.ba.get_delete_url(),
-            "/goals/behavioraction/test-behavioraction/delete/"
+            self.action.get_delete_url(),
+            "/goals/action/test-action/delete/"
         )
