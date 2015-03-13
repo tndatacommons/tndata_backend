@@ -246,7 +246,7 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(behavior__goals__title_slug=goal)
 
         if behavior is not None and behavior.isnumeric():
-            self.queryset = self.queryset.filter(behvior__pk=behavior)
+            self.queryset = self.queryset.filter(behavior__pk=behavior)
         elif behavior is not None:
             self.queryset = self.queryset.filter(behavior__title_slug=behavior)
 

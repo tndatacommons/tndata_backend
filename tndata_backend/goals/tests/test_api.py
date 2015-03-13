@@ -70,6 +70,7 @@ class TestGoalAPI(APITestCase):
             description="A Description",
             outcome="The outcome"
         )
+        self.goal.categories.add(self.category)
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
@@ -87,6 +88,26 @@ class TestGoalAPI(APITestCase):
         self.assertEqual(obj['title_slug'], self.goal.title_slug)
         self.assertEqual(obj['subtitle'], self.goal.subtitle)
         self.assertEqual(obj['description'], self.goal.description)
+
+    def test_goal_list_by_category(self):
+        """Ensure we can filter by category."""
+        # Create another Goal (not in a catgory)
+        g = Goal.objects.create(title="ignore me")
+
+        url = reverse('goal-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)  # Our other goal is here
+
+        # Check the filtered result
+        url = "{0}?category={1}".format(url, self.category.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.goal.id)
+
+        # Clean up.
+        g.delete()
 
     def test_post_goal_list(self):
         """Ensure this endpoint is read-only."""
@@ -183,8 +204,88 @@ class TestBehaviorAPI(APITestCase):
         self.assertEqual(obj['title'], self.behavior.title)
         self.assertEqual(obj['title_slug'], self.behavior.title_slug)
         self.assertEqual(obj['description'], self.behavior.description)
-        self.assertEqual(len(obj['goals']), 1) # Should have 1 goal
+        self.assertEqual(len(obj['goals']), 1)  # Should have 1 goal
         self.assertEqual(obj['goals'][0]['title'], self.goal.title)
+
+    def test_behavior_list_by_category_id(self):
+        """Ensure we can filter by category.id."""
+        # Create another Behavior (with no Category)
+        b = Behavior.objects.create(title="ignore me")
+
+        url = reverse('behavior-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?category={1}".format(url, self.category.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.behavior.id)
+
+        # Clean up.
+        b.delete()
+
+    def test_behavior_list_by_category_title_slug(self):
+        """Ensure we can filter by category.title_slug."""
+        # Create another Behavior (with no Category)
+        b = Behavior.objects.create(title="ignore me")
+
+        url = reverse('behavior-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?category={1}".format(url, self.category.title_slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.behavior.id)
+
+        # Clean up.
+        b.delete()
+
+    def test_behavior_list_by_goal_id(self):
+        """Ensure we can filter by goal.id"""
+        # Create another Behavior (with no Goal)
+        b = Behavior.objects.create(title="ignore me")
+
+        url = reverse('behavior-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?goal={1}".format(url, self.goal.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.behavior.id)
+
+        # Clean up.
+        b.delete()
+
+    def test_behavior_list_by_goal_title_slug(self):
+        """Ensure we can filter by goal.title_slug"""
+        # Create another Behavior (with no Goal)
+        b = Behavior.objects.create(title="ignore me")
+
+        url = reverse('behavior-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?goal={1}".format(url, self.goal.title_slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.behavior.id)
+
+        # Clean up.
+        b.delete()
 
     def test_post_behavior_list(self):
         """Ensure this endpoint is read-only."""
@@ -203,7 +304,6 @@ class TestBehaviorAPI(APITestCase):
         url = reverse('behavior-detail', args=[self.behavior.id])
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
 
 
 class TestActionAPI(APITestCase):
@@ -254,6 +354,138 @@ class TestActionAPI(APITestCase):
         self.assertEqual(obj['title_slug'], self.action.title_slug)
         self.assertEqual(obj['description'], self.action.description)
         self.assertEqual(obj['behavior']['id'], self.behavior.id)
+
+    def test_action_list_by_category_id(self):
+        """Ensure we can filter by category.id."""
+        # Create another Action (with no Category)
+        b = Behavior.objects.create(title='ignore me')
+        a = Action.objects.create(title="ignore me", behavior=b)
+
+        url = reverse('action-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?category={1}".format(url, self.category.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.action.id)
+
+        # Clean up.
+        a.delete()
+        b.delete()
+
+    def test_action_list_by_category_title_slug(self):
+        """Ensure we can filter by category.title_slug."""
+        # Create another Action (with no Category)
+        b = Behavior.objects.create(title='ignore me')
+        a = Action.objects.create(title="ignore me", behavior=b)
+
+        url = reverse('action-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?category={1}".format(url, self.category.title_slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.action.id)
+
+        # Clean up.
+        a.delete()
+        b.delete()
+
+    def test_action_list_by_goal_id(self):
+        """Ensure we can filter by goal.id"""
+        # Create another Action (with no Goal)
+        b = Behavior.objects.create(title='ignore me')
+        a = Action.objects.create(title="ignore me", behavior=b)
+
+        url = reverse('action-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?goal={1}".format(url, self.goal.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.action.id)
+
+        # Clean up.
+        a.delete()
+        b.delete()
+
+    def test_action_list_by_goal_title_slug(self):
+        """Ensure we can filter by goal.title_slug"""
+        # Create another Action (with no Goal)
+        b = Behavior.objects.create(title='ignore me')
+        a = Action.objects.create(title="ignore me", behavior=b)
+
+        url = reverse('action-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?goal={1}".format(url, self.goal.title_slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.action.id)
+
+        # Clean up.
+        a.delete()
+        b.delete()
+
+    def test_action_list_by_behavior_id(self):
+        """Ensure we can filter by behavior.id"""
+        # Create another Action
+        b = Behavior.objects.create(title='ignore me')
+        a = Action.objects.create(title="ignore me", behavior=b)
+
+        url = reverse('action-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?behavior={1}".format(url, self.behavior.id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.action.id)
+
+        # Clean up.
+        a.delete()
+        b.delete()
+
+    def test_action_list_by_behavior_title_slug(self):
+        """Ensure we can filter by behavior.title_slug"""
+        # Create another Action
+        b = Behavior.objects.create(title='ignore me')
+        a = Action.objects.create(title="ignore me", behavior=b)
+
+        url = reverse('action-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+
+        # Check the filtered result
+        url = "{0}?behavior={1}".format(url, self.behavior.title_slug)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.action.id)
+
+        # Clean up.
+        a.delete()
+        b.delete()
 
     def test_post_action_list(self):
         """Ensure this endpoint is read-only."""
