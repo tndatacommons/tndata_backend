@@ -19,7 +19,7 @@ class EmailAuthenticationBackend(ModelBackend):
             email = username
 
         try:
-            user = User.objects.get(email__iexact=email.strip())
+            user = User.objects.get(email__iexact=email)
             if check_password(password, user.password):
                 return user
         except User.DoesNotExist:
