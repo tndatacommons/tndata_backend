@@ -54,6 +54,11 @@ INSTALLED_APPS = (
     'utils',
 )
 
+AUTHENTICATION_BACKENDS = (
+    'utils.backends.EmailAuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
