@@ -8,6 +8,7 @@ from . import models
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.Field(source='get_full_name')
     userprofile_id = serializers.Field(source='userprofile.id')
+    username = serializers.CharField(required=False)
 
     class Meta:
         model = get_user_model()
@@ -26,6 +27,8 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def restore_object(self, attrs, instance=None):
+        if 'username' not in attrs and 'email' in attrs:
+            attrs['username'] = attrs['email']
         user = super(UserSerializer, self).restore_object(attrs, instance)
         user = self._set_user_password(user, attrs)
         return user

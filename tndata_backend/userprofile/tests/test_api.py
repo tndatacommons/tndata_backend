@@ -40,6 +40,24 @@ class TestUsersAPI(APITestCase):
         # Clean up.
         u.delete()
 
+    def test_post_user_list_email_only(self):
+        """POSTing to the user-list with a minimum of an email/password should
+        create a new user, with that email address"""
+        url = reverse('user-list')
+        data = {'email': 'new@example.com', 'password': 'secret'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.User.objects.count(), 2)
+
+        # Ensure retrieved info contains an auth token
+        u = self.User.objects.get(email='new@example.com')
+        self.assertEqual(u.username, u.email)  # username gets set, too
+        self.assertEqual(response.data['username'], 'new@example.com')
+        self.assertEqual(response.data['token'], u.auth_token.key)
+
+        # Clean up.
+        u.delete()
+
     def test_get_user_detail(self):
         """Ensure authenticated users can access their data."""
         url = reverse('user-detail', args=[self.user.id])

@@ -29,9 +29,28 @@ class UserViewSet(viewsets.ModelViewSet):
             "last_name": "Last"
         }
 
-    The response includes the created user's info, such as their database id and
-    the id for their created User Profile *as well as* an Auth Token for subsequent
-    API requests.
+    **Note**: `username` and `email` can be used interchangibly; You must
+    provide at least one (and a password). Aslo, `first_name` and `last_name`
+    are optional.
+
+    *Valid Examples*:
+
+        {
+            "username": "YOUR-USERNAME",
+            "password": "YOUR-PASSWORD",
+        }
+
+    or
+
+        {
+            "email": "YOUR-EMAIL",
+            "password": "YOUR-PASSWORD",
+        }
+
+
+    The response includes the created user's info, such as their database id
+    and the id for their created User Profile *as well as* an Auth Token for
+    subsequent API requests.
 
     ## Acquiring an Auth token
 
