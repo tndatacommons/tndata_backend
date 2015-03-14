@@ -1,3 +1,5 @@
+import hashlib
+
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 
@@ -49,10 +51,16 @@ class TestUsersAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(self.User.objects.count(), 2)
 
-        # Ensure retrieved info contains an auth token
+        # Ensure retrieved info contains an auth token and the expected email
+        # and generated username.
+        m = hashlib.md5()
+        m.update("new@example.com".encode("utf8"))
+        expected_username = m.hexdigest()[:30]
+
         u = self.User.objects.get(email='new@example.com')
-        self.assertEqual(u.username, u.email)  # username gets set, too
-        self.assertEqual(response.data['username'], 'new@example.com')
+        self.assertEqual(u.username, expected_username)
+        self.assertEqual(u.email, "new@example.com")
+        self.assertEqual(response.data['username'], expected_username)
         self.assertEqual(response.data['token'], u.auth_token.key)
 
         # Clean up.
