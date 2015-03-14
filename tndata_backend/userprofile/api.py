@@ -35,10 +35,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
     ## Acquiring an Auth token
 
-    POST to `/api/auth/token/` with a `username` and `password`. The response
-    will contain a `token` attribute, which you can then include with subsequent
-    requests. Include the token in an `Authorization` HTTP header, where the
-    token is prefixed by the string, "Token", e.g.:
+    POST to `/api/auth/token/` with either a username/password or email/password
+    pair:
+
+        {"username": "YOUR-USERNAME", "password": "YOUR-PASSWORD"}
+
+    or:
+
+        {"email": "YOUR-EMAIL", "password": "YOUR-PASSWORD"}
+
+
+    The response will contain a `token` attribute, which you can then include
+    with subsequent requests. Include the token in an `Authorization` HTTP
+    header, where the token is prefixed by the string, "Token", e.g.:
 
         Authorization: Token <token-value-here>
 
@@ -135,6 +144,7 @@ class ObtainAuthorization(ObtainAuthToken):
     data and receive a JSON-encoded response.
 
     """
+    serializer_class = serializers.AuthTokenSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.DATA)

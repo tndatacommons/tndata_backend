@@ -60,10 +60,19 @@ class TestUsersAPI(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_auth_token_retrieval(self):
-        """Ensure a user can retrieve their auth token."""
+    def test_auth_token_retrieval_with_username(self):
+        """Ensure a user can retrieve their auth token by providing their
+        username/password."""
         url = reverse("auth-token")
         data = {'username': 'me', 'password': 'secret'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.data['token'], self.user.auth_token.key)
+
+    def test_auth_token_retrieval_with_email(self):
+        """Ensure a user can retrieve their auth token by providing their
+        email/password."""
+        url = reverse("auth-token")
+        data = {'email': 'me@example.com', 'password': 'secret'}
         response = self.client.post(url, data)
         self.assertEqual(response.data['token'], self.user.auth_token.key)
 
