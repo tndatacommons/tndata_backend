@@ -1,3 +1,5 @@
+import hashlib
+
 from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
@@ -26,9 +28,19 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
         return user
 
-    def restore_object(self, attrs, instance=None):
+    def _set_username_from_email(self, attrs):
+        """NOTE: We allow users to sign up with an email/password pair. This
+        method will generate a (hopefully unique) username hash using the
+        email address (the first 30 chars from an md5 hex digest).
+        """
         if 'username' not in attrs and 'email' in attrs:
-            attrs['username'] = attrs['email']
+            m = hashlib.md5()
+            m.update(attrs['email'].encode("utf8"))
+            attrs['username'] = m.hexdigest()[:30]
+        return attrs
+
+    def restore_object(self, attrs, instance=None):
+        self._set_username_from_email(attrs)
         user = super(UserSerializer, self).restore_object(attrs, instance)
         user = self._set_user_password(user, attrs)
         return user
