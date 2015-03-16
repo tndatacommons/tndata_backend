@@ -91,7 +91,7 @@ class BehaviorSerializer(serializers.ModelSerializer):
 
 
 class SimpleBehaviorField(serializers.RelatedField):
-    """A simplified representation of a `BehaviorSequence`."""
+    """A simplified representation of a `Behavior`."""
     def to_native(self, value):
         return {
             'id': value.id,

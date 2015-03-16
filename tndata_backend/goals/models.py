@@ -3,9 +3,9 @@ Models for the Goals app.
 
 This is our collection of Goals & Behaviors. They're organized as follows:
 
-    [Category] <-> [Goal] <-> [BehaviorSequence] <- [BehaviorAction]
+    [Category] <-> [Goal] <-> [Behavior] <- [Action]
 
-BehaviorActions are the things we want to help people to do.
+Actions are the things we want to help people to do.
 
 """
 import os
@@ -223,22 +223,20 @@ class Trigger(models.Model):
 
 
 def _behavior_icon_path(instance, filename):
-    """Return the path for uploaded icons for `BehaviorSequence` and
-    `BehaviorAction` objects."""
+    """Return the path for uploaded icons for `Behavior` and `Action` objects."""
     p = "goals/{0}/icons".format(type(instance).__name__.lower())
     return os.path.join(p, filename)
 
 
 def _behavior_img_path(instance, filename):
-    """Return the path for uploaded images for `BehaviorSequence` and
-    `BehaviorAction` objects."""
+    """Return the path for uploaded images for `Behavior` and `Action` objects."""
     p = "goals/{0}/images".format(type(instance).__name__.lower())
     return os.path.join(p, filename)
 
 
 class BaseBehavior(models.Model):
     """This abstract base class contains fields that are common to both
-    `BehaviorSequence` and `BehaviorAction` models.
+    `Behavior` and `Action` models.
 
     """
     title = models.CharField(
