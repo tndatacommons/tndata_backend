@@ -43,3 +43,21 @@ class ActionAdmin(admin.ModelAdmin):
     list_display = ('title', 'behavior', 'sequence_order')
     prepopulated_fields = {"title_slug": ("title", )}
 admin.site.register(models.Action, ActionAdmin)
+
+
+class UserGoalAdmin(admin.ModelAdmin):
+    list_display = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+    search_fields = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+admin.site.register(models.UserGoal, UserGoalAdmin)
+
+
+class UserBehaviorAdmin(admin.ModelAdmin):
+    list_display = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+    search_fields = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+admin.site.register(models.UserBehavior, UserBehaviorAdmin)
+
+
+class UserActionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+    search_fields = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+admin.site.register(models.UserAction, UserActionAdmin)

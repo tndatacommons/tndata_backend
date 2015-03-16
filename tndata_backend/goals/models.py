@@ -10,6 +10,7 @@ Actions are the things we want to help people to do.
 """
 import os
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_delete
@@ -393,3 +394,56 @@ def delete_model_image(sender, instance, using, **kwargs):
     from the filesystem."""
     if hasattr(instance, 'image') and instance.image:
         instance.image.delete()
+
+
+# -----------------------------------------------------------------------------
+#
+# Models that track a user's progress toward Goals, Behaviors, Actions.
+#
+# -----------------------------------------------------------------------------
+class UserGoal(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    goal = models.ForeignKey(Goal)
+    completed = models.BooleanField(default=False)
+    completed_on = models.DateTimeField(blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.id
+
+    class Meta:
+        ordering = ['user', 'goal']
+        verbose_name = "User Goal"
+        verbose_name_plural = "User Goals"
+
+
+class UserBehavior(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    behavior = models.ForeignKey(Behavior)
+    completed = models.BooleanField(default=False)
+    completed_on = models.DateTimeField(blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.id
+
+    class Meta:
+        ordering = ['user', 'behavior']
+        verbose_name = "User Behavior"
+        verbose_name_plural = "User Behaviors"
+
+
+class UserAction(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    action = models.ForeignKey(Action)
+    completed = models.BooleanField(default=False)
+    completed_on = models.DateTimeField(blank=True, null=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.id
+
+    class Meta:
+        ordering = ['user', 'action']
+        verbose_name = "User Action"
+        verbose_name_plural = "User Actions"
