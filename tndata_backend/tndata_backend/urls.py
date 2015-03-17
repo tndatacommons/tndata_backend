@@ -51,7 +51,7 @@ router.register(r'behaviors', BehaviorViewSet)
 router.register(r'actions', ActionViewSet)
 router.register(r'users/actions', UserActionViewSet)
 router.register(r'users/behaviors', UserBehaviorViewSet)
-router.register(r'users/categories', UserCategoryViewSet)
+router.register(r'users/categories', UserCategoryViewSet, "usercategory")
 router.register(r'users/goals', UserGoalViewSet)
 
 # ViewSets from the survey app.
