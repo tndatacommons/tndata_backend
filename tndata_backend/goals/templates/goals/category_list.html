@@ -16,6 +16,7 @@
         <th>Order</th>
         <th>Title</th>
         <th>Goals</th>
+        <th>Behaviors</th>
       </tr>
       </thead>
       <tbody>
@@ -26,6 +27,7 @@
             <a href="{{ category.get_absolute_url }}">{{ category }}</a>
           </td>
           <td>{{ category.goals|join:", " }}</td>
+          <td>{{ category.behavior_set.all|join:", " }}</td>
         </tr>
       {% endfor %}
       </tbody>

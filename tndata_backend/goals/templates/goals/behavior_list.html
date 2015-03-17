@@ -14,8 +14,9 @@
       <thead>
       <tr>
         <th>Title</th>
-        <th>Categories</th>
+        <th>Actions</th>
         <th>Goals</th>
+        <th>Categories</th>
         <th>Informal List</th>
       </tr>
       </thead>
@@ -26,8 +27,9 @@
             <a href="{{ behavior.get_absolute_url }}">
               {{ behavior }}</a>
           </td>
-          <td>{{ behavior.categories.all|join:", " }}</td>
+          <td>{{ behavior.action_set.all|join:", " }}</td>
           <td>{{ behavior.goals.all|join:", " }}</td>
+          <td>{{ behavior.categories.all|join:", " }}</td>
           <td>{{ behavior.informal_list|linebreaksbr }}</td>
         </tr>
       {% endfor %}
