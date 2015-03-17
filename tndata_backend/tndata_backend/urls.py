@@ -13,6 +13,7 @@ from goals.api import (
     CategoryViewSet,
     GoalViewSet,
     TriggerViewSet,
+    UserGoalViewSet,
 )
 from survey.api import (
     LikertQuestionViewSet,
@@ -41,9 +42,11 @@ router = routers.DefaultRouter()
 # ViewSets from the goals app.
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
+router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet)
 router.register(r'behaviors', BehaviorViewSet)
 router.register(r'actions', ActionViewSet)
+router.register(r'users/goals', UserGoalViewSet)
 
 # ViewSets from the survey app.
 router.register(r'survey/likert', LikertQuestionViewSet)

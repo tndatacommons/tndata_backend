@@ -6,20 +6,25 @@ from rest_framework import serializers
 
 from . import models
 
+from goals.serializers import UserGoalListField
+
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.Field(source='get_full_name')
     userprofile_id = serializers.Field(source='userprofile.id')
     username = serializers.CharField(required=False)
+    goals = UserGoalListField(many=True, source="usergoal_set")
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "full_name", 'date_joined', 'userprofile_id', "password",
+            "goals",
         )
         read_only_fields = ("id", "date_joined", )
         write_only_fields = ("password", )
+        depth = 1
 
     def _set_user_password(self, user, attrs):
         """Ensure that the User password gets set correctly."""
