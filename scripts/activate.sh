@@ -8,4 +8,4 @@ if [ $PYTHONPATH ]
 fi
 
 # Then just source the pyenv
-source /webapps/tndata_backend/bin/activate && cd /webapps/tndata_backend/tndata_backend
+source /webapps/tndata_backend/bin/activate && cd /webapps/tndata_backend/tndata_backend/tndata_backend/
