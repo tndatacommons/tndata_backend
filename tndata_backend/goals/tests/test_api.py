@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -8,6 +9,7 @@ from .. models import (
     Category,
     Goal,
     Trigger,
+    UserGoal,
 )
 
 
@@ -504,3 +506,137 @@ class TestActionAPI(APITestCase):
         url = reverse('action-detail', args=[self.action.id])
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TestUserGoalAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.goal = Goal.objects.create(
+            title="Test Goal",
+            subtitle="A subtitle",
+            description="A Description",
+            outcome="The outcome"
+        )
+
+        self.ug = UserGoal.objects.create(
+            user=self.user,
+            goal=self.goal,
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        UserGoal.objects.filter(id=self.ug.id).delete()
+
+    def test_usergoal_list(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        url = reverse('usergoal-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_usergoal_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        url = reverse('usergoal-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['user'], self.user.id)
+        self.assertEqual(
+            response.data['results'][0]['goal']['id'],
+            self.goal.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['goal']['title'],
+            self.goal.title
+        )
+
+    def test_post_usergoal_list_unathenticated(self):
+        """Unauthenticated requests should not be allowed to post new UserGoals"""
+        url = reverse('usergoal-list')
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_usergoal_list_athenticated(self):
+        """Authenticated users Should be able to create a UserGoal."""
+        newgoal = Goal.objects.create(title="New", subtitle="New")
+
+        url = reverse('usergoal-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {"goal": newgoal.id})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(UserGoal.objects.filter(user=self.user).count(), 2)
+
+        # Clean up.
+        newgoal.delete()
+
+    def test_get_usergoal_detail_unauthed(self):
+        """Ensure unauthenticated users cannot view this endpoint."""
+        url = reverse('usergoal-detail', args=[self.ug.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_usergoal_detail(self):
+        """Ensure authenticated users can view this endpoint."""
+        url = reverse('usergoal-detail', args=[self.ug.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_usergoal_detail_not_allowed(self):
+        """Ensure POSTing to the detail endpoint is not allowed."""
+        url = reverse('usergoal-detail', args=[self.ug.id])
+        response = self.client.post(url, {'goal': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'goal': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_put_usergoal_detail_not_allowed(self):
+        """Ensure PUTing to the detail endpoint is not allowed."""
+        url = reverse('usergoal-detail', args=[self.ug.id])
+        response = self.client.put(url, {'goal': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, {'goal': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_delete_usergoal_detail_unauthed(self):
+        """Ensure unauthenticated users cannot delete."""
+        url = reverse('usergoal-detail', args=[self.ug.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_usergoal_detail(self):
+        """Ensure authenticated users can deelte."""
+        url = reverse('usergoal-detail', args=[self.ug.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(UserGoal.objects.filter(id=self.ug.id).count(), 0)
+
+
