@@ -10,6 +10,7 @@ from .. models import (
     Goal,
     Trigger,
     UserGoal,
+    UserBehavior,
 )
 
 
@@ -640,3 +641,137 @@ class TestUserGoalAPI(APITestCase):
         self.assertEqual(UserGoal.objects.filter(id=self.ug.id).count(), 0)
 
 
+class TestUserBehaviorAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.goal = Goal.objects.create(
+            title="Test Goal",
+            subtitle="A subtitle",
+            description="A Description",
+            outcome="The outcome"
+        )
+        self.behavior = Behavior.objects.create(title="Test Behavior")
+        self.behavior.goals.add(self.goal)
+        self.behavior.save()
+
+        self.ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=self.behavior,
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        UserBehavior.objects.filter(id=self.ub.id).delete()
+
+    def test_userbehavior_list(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        url = reverse('userbehavior-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_userbehavior_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        url = reverse('userbehavior-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['user'], self.user.id)
+        self.assertEqual(
+            response.data['results'][0]['behavior']['id'],
+            self.behavior.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['behavior']['title'],
+            self.behavior.title
+        )
+
+    def test_post_userbehavior_list_unathenticated(self):
+        """Unauthenticated requests should not be allowed to post"""
+        url = reverse('userbehavior-list')
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_userbehavior_list_athenticated(self):
+        """Authenticated users Should be able to create a UserBehavior."""
+        newbehavior = Behavior.objects.create(title="New")
+
+        url = reverse('userbehavior-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {"behavior": newbehavior.id})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(UserBehavior.objects.filter(user=self.user).count(), 2)
+
+        # Clean up.
+        newbehavior.delete()
+
+    def test_get_userbehavior_detail_unauthed(self):
+        """Ensure unauthenticated users cannot view this endpoint."""
+        url = reverse('userbehavior-detail', args=[self.ub.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_userbehavior_detail(self):
+        """Ensure authenticated users can view this endpoint."""
+        url = reverse('userbehavior-detail', args=[self.ub.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_userbehavior_detail_not_allowed(self):
+        """Ensure POSTing to the detail endpoint is not allowed."""
+        url = reverse('userbehavior-detail', args=[self.ub.id])
+        response = self.client.post(url, {'behavior': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'behavior': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_put_userbehavior_detail_not_allowed(self):
+        """Ensure PUTing to the detail endpoint is not allowed."""
+        url = reverse('userbehavior-detail', args=[self.ub.id])
+        response = self.client.put(url, {'behavior': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, {'behavior': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_delete_userbehavior_detail_unauthed(self):
+        """Ensure unauthenticated users cannot delete."""
+        url = reverse('userbehavior-detail', args=[self.ub.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_userbehavior_detail(self):
+        """Ensure authenticated users can deelte."""
+        url = reverse('userbehavior-detail', args=[self.ub.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(UserBehavior.objects.filter(id=self.ub.id).count(), 0)

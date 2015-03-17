@@ -164,3 +164,32 @@ class UserGoalSerializer(serializers.ModelSerializer):
         if obj:
             return SimpleGoalField().to_native(obj.goal)
         return value
+
+
+class UserBehaviorListField(serializers.RelatedField):
+    """This is used to serialize the reverse relationship between a User and
+    a UserBehavior object; e.g. the `user.userbehavior_set` field.
+
+    It uses the SimpleBehaviorField to serialize related Behavior objects.
+    """
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'created_on': value.created_on,
+            'behavior': SimpleBehaviorField().to_native(value.behavior),
+        }
+
+
+class UserBehaviorSerializer(serializers.ModelSerializer):
+    """A Serializer for the `UserBehavior` model."""
+
+    class Meta:
+        model = UserBehavior
+        fields = ('id', 'user', 'behavior', 'created_on')
+        read_only_fields = ("id", "created_on", )
+
+    def transform_behavior(self, obj, value):
+        """Display behavior data using the SimpleBehaviorField representation."""
+        if obj:
+            return SimpleBehaviorField().to_native(obj.behavior)
+        return value

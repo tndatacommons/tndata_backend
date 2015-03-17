@@ -265,7 +265,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     [Goals](/api/goals/).
 
     GET requests to this page will simply list this mapping for the authenticated
-    users.
+    user.
 
     ## Adding a Goal
 
@@ -308,3 +308,58 @@ class UserGoalViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         request.DATA['user'] = request.user.id
         return super(UserGoalViewSet, self).create(request, *args, **kwargs)
+
+
+class UserBehaviorViewSet(mixins.CreateModelMixin,
+                          mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
+    """This endpoint represents a mapping between [Users](/api/users/) and
+    [Behaviors](/api/behaviors/).
+
+    GET requests to this page will simply list this mapping for the authenticated
+    user.
+
+    ## Adding a Behavior
+
+    To associate a Behavior with a User, POST to `/api/users/behaviors/` with the
+    following data:
+
+        {'behavior': BEHAVIOR_ID}
+
+    ## Viewing the Behavior data
+
+    Additional information for the Behavior mapping is available at
+    `/api/users/behaviors/{userbehavior_id}/`. In this case, `{userbehavior_id}`
+    is the database id for the mapping between a user and a behavior.
+
+    ## Removing a Behavior from the user's list.
+
+    Send a DELETE request to the userbehavior mapping endpoint:
+    `/api/users/behaviors/{userbehavior_id}/`.
+
+    ## Update a Behavior Mapping.
+
+    Updating a behavior mapping is currently not supported.
+
+    ## Additional information
+
+    The Behaviors that a User has selected are also available through the
+    `/api/users/` endpoint as a `behaviors` object on the user.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.UserBehavior.objects.all()
+    serializer_class = serializers.UserBehaviorSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.DATA['user'] = request.user.id
+        return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
