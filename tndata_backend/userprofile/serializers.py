@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from . import models
 
-from goals.serializers import (
+from goals.serializer_fields import (
     UserActionListField,
     UserBehaviorListField,
     UserGoalListField,
