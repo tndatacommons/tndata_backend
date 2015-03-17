@@ -418,3 +418,26 @@ class UserActionViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         request.DATA['user'] = request.user.id
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
+
+
+class UserCategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """This endpoint lists the categories in which a [Users](/api/users/) has
+    selected [Goals](/api/goals/), [Behaviors](/api/behaviors/), or
+    [Actions](/api/actions/).
+
+    GET requests to this page will list categories for the authenticated user.
+
+    ## Additional information
+
+    New values are added to this list when a user selects a Goal, Behavior, or
+    Action.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.Category.objects.none()
+    serializer_class = serializers.UserCategorySerializer
+
+    def get_queryset(self):
+        return models._get_categories_for_user(self.request.user)

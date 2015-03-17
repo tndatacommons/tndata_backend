@@ -58,7 +58,7 @@ class SimpleGoalField(serializers.RelatedField):
 
 
 class SimpleActionField(serializers.RelatedField):
-    """A simple view of a action."""
+    """A simple view of an action."""
     def to_native(self, value):
         return {
             'id': value.id,

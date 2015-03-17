@@ -447,3 +447,27 @@ class UserAction(models.Model):
         ordering = ['user', 'action']
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
+
+
+# -----------------------------------------------------------------------------
+#
+# Misc Functions
+#
+# -----------------------------------------------------------------------------
+
+def _get_categories_for_user(user):
+    """Given a User object, find the Categories in which the user has associated
+    Goals, Behaviors, or Actions.
+
+    """
+    category_ids = set()
+    category_ids = category_ids.union(
+        set(user.usergoal_set.values_list("goal__categories", flat=True))
+    )
+    category_ids = category_ids.union(
+        set(user.userbehavior_set.values_list("behavior__categories", flat=True))
+    )
+    category_ids = category_ids.union(
+        set(user.useraction_set.values_list("action__behavior__categories", flat=True))
+    )
+    return Category.objects.filter(pk__in=category_ids)

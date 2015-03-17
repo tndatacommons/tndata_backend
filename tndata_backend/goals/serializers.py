@@ -132,3 +132,12 @@ class UserActionSerializer(serializers.ModelSerializer):
         if obj:
             return SimpleActionField().to_native(obj.action)
         return value
+
+
+class UserCategorySerializer(serializers.ModelSerializer):
+    """A serializer for `Category` objects in which a user has selected items."""
+    icon_url = serializers.Field(source="get_absolute_icon")
+
+    class Meta:
+        model = Category
+        fields = ('id', 'order', 'title', 'title_slug', 'description', 'icon_url')
