@@ -440,4 +440,7 @@ class UserCategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = serializers.UserCategorySerializer
 
     def get_queryset(self):
-        return models._get_categories_for_user(self.request.user)
+        if self.request.user.is_authenticated():
+            return models._get_categories_for_user(self.request.user)
+        else:
+            return self.queryset
