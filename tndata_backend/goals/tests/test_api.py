@@ -793,7 +793,9 @@ class TestUserActionAPI(APITestCase):
             outcome="The outcome"
         )
         self.behavior = Behavior.objects.create(title="Test Action")
-        self.behavior.goals.add(self.behavior)
+        self.behavior.goals.add(self.goal)
+        self.behavior.save()
+
         self.action = Action.objects.create(
             title="Test Action",
             behavior=self.behavior
@@ -846,7 +848,7 @@ class TestUserActionAPI(APITestCase):
 
     def test_post_useraction_list_athenticated(self):
         """Authenticated users Should be able to create a UserAction."""
-        newaction = Action.objects.create(title="New")
+        newaction = Action.objects.create(title="New", behavior=self.behavior)
 
         url = reverse('useraction-list')
         self.client.credentials(
