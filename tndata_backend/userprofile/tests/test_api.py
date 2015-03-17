@@ -39,8 +39,9 @@ class TestUsersAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
-        # There should also be a section for goals
+        # There should also be a section for goals, behaviors
         self.assertIn('goals', response.data['results'][0])
+        self.assertIn('behaviors', response.data['results'][0])
 
     def test_post_user_list(self):
         """POSTing to the user-list should create a new user."""

@@ -6,7 +6,10 @@ from rest_framework import serializers
 
 from . import models
 
-from goals.serializers import UserGoalListField
+from goals.serializers import (
+    UserBehaviorListField,
+    UserGoalListField,
+)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,13 +17,14 @@ class UserSerializer(serializers.ModelSerializer):
     userprofile_id = serializers.Field(source='userprofile.id')
     username = serializers.CharField(required=False)
     goals = UserGoalListField(many=True, source="usergoal_set")
+    behaviors = UserBehaviorListField(many=True, source="userbehavior_set")
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "full_name", 'date_joined', 'userprofile_id', "password",
-            "goals",
+            "goals", "behaviors",
         )
         read_only_fields = ("id", "date_joined", )
         write_only_fields = ("password", )
