@@ -20,12 +20,25 @@ class TestUsersAPI(APITestCase):
     def tearDown(self):
         self.User.objects.all().delete()
 
-    def test_get_user_list(self):
+    def test_get_user_list_unauthenticated(self):
         """Ensure unauthenticated requests don't return any data."""
         url = reverse('user-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
+
+    def test_get_user_list_authenticated(self):
+        """Ensure authenticated requests DO return data."""
+        url = reverse('user-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # There should also be a section for goals
+        self.assertIn('goals', response.data['results'][0])
 
     def test_post_user_list(self):
         """POSTing to the user-list should create a new user."""
