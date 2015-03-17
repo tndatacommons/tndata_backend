@@ -52,12 +52,12 @@ admin.site.register(models.UserGoal, UserGoalAdmin)
 
 
 class UserBehaviorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'goal', 'completed', 'completed_on', 'created_on')
-    search_fields = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+    list_display = ('user', 'behavior', 'completed', 'completed_on', 'created_on')
+    search_fields = ('user', 'behavior', 'completed', 'completed_on', 'created_on')
 admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 
 class UserActionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'goal', 'completed', 'completed_on', 'created_on')
-    search_fields = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+    list_display = ('user', 'action', 'completed', 'completed_on', 'created_on')
+    search_fields = ('user', 'action', 'completed', 'completed_on', 'created_on')
 admin.site.register(models.UserAction, UserActionAdmin)
