@@ -425,7 +425,7 @@ class UserBehavior(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.id
+        return "{0}".format(self.behavior.title)
 
     class Meta:
         ordering = ['user', 'behavior']
@@ -441,7 +441,7 @@ class UserAction(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.id
+        return "{0}".format(self.action.title)
 
     class Meta:
         ordering = ['user', 'action']

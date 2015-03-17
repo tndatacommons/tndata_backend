@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.db.models import QuerySet
 
@@ -7,6 +8,9 @@ from .. models import (
     Trigger,
     Behavior,
     Action,
+    UserGoal,
+    UserBehavior,
+    UserAction,
 )
 
 
@@ -252,3 +256,92 @@ class TestAction(TestCase):
             self.action.get_delete_url(),
             "/goals/action/test-action/delete/"
         )
+
+class TestUserGoal(TestCase):
+    """Tests for the `UserGoal` model."""
+
+    def setUp(self):
+        User = get_user_model()
+        self.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        self.goal = Goal.objects.create(
+            title='Test Goal',
+            subtitle="Test Subtitle",
+
+        )
+        self.ug = UserGoal.objects.create(
+            user=self.user,
+            goal=self.goal
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        UserGoal.objects.filter(id=self.ug.id).delete()
+
+    def test__str__(self):
+        expected = "Test Goal"
+        actual = "{}".format(self.ug)
+        self.assertEqual(expected, actual)
+
+
+class TestUserBehavior(TestCase):
+    """Tests for the `UserBehavior` model."""
+
+    def setUp(self):
+        User = get_user_model()
+        self.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=self.behavior
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        UserBehavior.objects.filter(id=self.ub.id).delete()
+
+    def test__str__(self):
+        expected = "Test Behavior"
+        actual = "{}".format(self.ub)
+        self.assertEqual(expected, actual)
+
+
+class TestUserAction(TestCase):
+    """Tests for the `UserAction` model."""
+
+    def setUp(self):
+        User = get_user_model()
+        self.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            title='Test Action',
+            behavior=self.behavior
+        )
+        self.ua = UserAction.objects.create(
+            user=self.user,
+            action=self.action
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        UserAction.objects.filter(id=self.ua.id).delete()
+
+    def test__str__(self):
+        expected = "Test Action"
+        actual = "{}".format(self.ua)
+        self.assertEqual(expected, actual)
