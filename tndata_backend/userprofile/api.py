@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -112,7 +112,10 @@ class UserViewSet(viewsets.ModelViewSet):
         return resp
 
 
-class UserProfileViewSet(viewsets.ModelViewSet):
+class UserProfileViewSet(mixins.ListModelMixin,
+                         mixins.UpdateModelMixin,
+                         mixins.RetrieveModelMixin,
+                         viewsets.GenericViewSet):
     """This defines methods for viewing a User Profile. User Profiles are
     created automatically after a user account is created.
 
