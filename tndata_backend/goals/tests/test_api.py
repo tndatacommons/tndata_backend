@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -918,3 +918,84 @@ class TestUserActionAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(UserAction.objects.filter(id=self.ua.id).count(), 0)
+
+
+class TestUserCategoryAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+
+        # A single category, in which we'll place a test goal/behavior/action
+        self.category = Category.objects.create(
+            title="Test Category",
+            order=1
+        )
+
+        self.goal = Goal.objects.create(
+            title="Test Goal",
+            subtitle="A subtitle",
+            description="A Description",
+            outcome="The outcome"
+        )
+        self.goal.categories.add(self.category)
+        self.goal.save()
+
+        # Assign a Goal to the User
+        self.ug = UserGoal.objects.create(user=self.user, goal=self.goal)
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Category.objects.filter(id=self.category.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        UserGoal.objects.filter(id=self.ug.id).delete()
+
+    def test_get_usercategory_list_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        url = reverse('usercategory-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_usercategory_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        url = reverse('usercategory-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # check the fields of a result object.
+        self.assertIn("id", response.data['results'][0])
+        self.assertIn("order", response.data['results'][0])
+        self.assertIn("title", response.data['results'][0])
+        self.assertIn("title_slug", response.data['results'][0])
+        self.assertIn("description", response.data['results'][0])
+        self.assertIn("icon_url", response.data['results'][0])
+
+        self.assertEqual(response.data['results'][0]['id'], self.category.id)
+        self.assertEqual(response.data['results'][0]['title'], self.category.title)
+
+    def test_post_usercategory_list(self):
+        """POST should not be allowed"""
+        url = reverse('usercategory-list')
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_no_usercategory_detail_view(self):
+        """Detail views are not allowed."""
+        with self.assertRaises(NoReverseMatch):
+            url = reverse('usercategory-detail', args=[self.category.id])
