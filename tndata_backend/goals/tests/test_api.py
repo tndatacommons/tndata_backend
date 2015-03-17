@@ -11,6 +11,7 @@ from .. models import (
     Trigger,
     UserGoal,
     UserBehavior,
+    UserAction,
 )
 
 
@@ -775,3 +776,143 @@ class TestUserBehaviorAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(UserBehavior.objects.filter(id=self.ub.id).count(), 0)
+
+
+class TestUserActionAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.goal = Goal.objects.create(
+            title="Test Goal",
+            subtitle="A subtitle",
+            description="A Description",
+            outcome="The outcome"
+        )
+        self.behavior = Behavior.objects.create(title="Test Action")
+        self.behavior.goals.add(self.behavior)
+        self.action = Action.objects.create(
+            title="Test Action",
+            behavior=self.behavior
+        )
+
+        self.ua = UserAction.objects.create(
+            user=self.user,
+            action=self.action,
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        UserAction.objects.filter(id=self.ua.id).delete()
+
+    def test_get_useraction_list(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        url = reverse('useraction-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_useraction_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        url = reverse('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['user'], self.user.id)
+        self.assertEqual(
+            response.data['results'][0]['action']['id'],
+            self.action.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['action']['title'],
+            self.action.title
+        )
+
+    def test_post_useraction_list_unathenticated(self):
+        """Unauthenticated requests should not be allowed to post"""
+        url = reverse('useraction-list')
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_useraction_list_athenticated(self):
+        """Authenticated users Should be able to create a UserAction."""
+        newaction = Action.objects.create(title="New")
+
+        url = reverse('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {"action": newaction.id})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(UserAction.objects.filter(user=self.user).count(), 2)
+
+        # Clean up.
+        newaction.delete()
+
+    def test_get_useraction_detail_unauthenticated(self):
+        """Ensure unauthenticated users cannot view this endpoint."""
+        url = reverse('useraction-detail', args=[self.ua.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_useraction_detail_authenticated(self):
+        """Ensure authenticated users can view this endpoint."""
+        url = reverse('useraction-detail', args=[self.ua.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_useraction_detail_not_allowed(self):
+        """Ensure POSTing to the detail endpoint is not allowed."""
+        url = reverse('useraction-detail', args=[self.ua.id])
+        response = self.client.post(url, {'action': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'action': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_put_useraction_detail_not_allowed(self):
+        """Ensure PUTing to the detail endpoint is not allowed."""
+        url = reverse('useraction-detail', args=[self.ua.id])
+        response = self.client.put(url, {'action': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, {'action': 1})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_delete_useraction_detail_unauthenticated(self):
+        """Ensure unauthenticated users cannot delete."""
+        url = reverse('useraction-detail', args=[self.ua.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_useraction_detail_authenticated(self):
+        """Ensure authenticated users can deelte."""
+        url = reverse('useraction-detail', args=[self.ua.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(UserAction.objects.filter(id=self.ua.id).count(), 0)

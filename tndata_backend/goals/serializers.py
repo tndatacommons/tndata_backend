@@ -193,3 +193,47 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         if obj:
             return SimpleBehaviorField().to_native(obj.behavior)
         return value
+
+
+class SimpleActionField(serializers.RelatedField):
+    """A simple view of a action."""
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'title': value.title,
+            'title_slug': value.title_slug,
+            'description': value.description,
+            'outcome': value.outcome,
+            'icon_url': value.get_absolute_icon(),
+            'image_url': value.get_absolute_image(),
+            'behavior_id': value.behavior.id,
+        }
+
+
+class UserActionListField(serializers.RelatedField):
+    """This is used to serialize the reverse relationship between a User and
+    a UserAction object; e.g. the `user.useraction_set` field.
+
+    It uses the SimpleActionField to serialize related Action objects.
+    """
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'created_on': value.created_on,
+            'action': SimpleActionField().to_native(value.action),
+        }
+
+
+class UserActionSerializer(serializers.ModelSerializer):
+    """A Serializer for the `UserAction` model."""
+
+    class Meta:
+        model = UserAction
+        fields = ('id', 'user', 'action', 'created_on')
+        read_only_fields = ("id", "created_on", )
+
+    def transform_action(self, obj, value):
+        """Display action data using the SimpleActionField representation."""
+        if obj:
+            return SimpleActionField().to_native(obj.action)
+        return value

@@ -363,3 +363,58 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         request.DATA['user'] = request.user.id
         return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
+
+
+class UserActionViewSet(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
+    """This endpoint represents a mapping between [Users](/api/users/) and
+    [Actions](/api/actions/).
+
+    GET requests to this page will simply list this mapping for the authenticated
+    user.
+
+    ## Adding a Action
+
+    To associate a Action with a User, POST to `/api/users/actions/` with the
+    following data:
+
+        {'action': ACTION_ID}
+
+    ## Viewing the Action data
+
+    Additional information for the Action mapping is available at
+    `/api/users/actions/{useraction_id}/`. In this case, `{useraction_id}`
+    is the database id for the mapping between a user and a action.
+
+    ## Removing a Action from the user's list.
+
+    Send a DELETE request to the useraction mapping endpoint:
+    `/api/users/actions/{useraction_id}/`.
+
+    ## Update a Action Mapping.
+
+    Updating a action mapping is currently not supported.
+
+    ## Additional information
+
+    The Actions that a User has selected are also available through the
+    `/api/users/` endpoint as a `actions` object on the user.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.UserAction.objects.all()
+    serializer_class = serializers.UserActionSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.DATA['user'] = request.user.id
+        return super(UserActionViewSet, self).create(request, *args, **kwargs)
