@@ -5,6 +5,9 @@ from . models import (
     Category,
     Goal,
     Trigger,
+    UserAction,
+    UserGoal,
+    UserBehavior,
 )
 
 
@@ -118,3 +121,41 @@ class ActionSerializer(serializers.ModelSerializer):
             'default_trigger', 'notification_text', 'icon_url', 'image_url',
         )
         depth = 1
+
+
+class SimpleGoalField(serializers.RelatedField):
+    """A simple view of a goal."""
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'title': value.title,
+            'title_slug': value.title_slug,
+            'subtitle': value.subtitle,
+            'description': value.description,
+            'outcome': value.outcome,
+            'icon_url': value.get_absolute_icon(),
+        }
+
+
+class UserGoalListField(serializers.RelatedField):
+    """This is used to serialize the reverse relationship between a User and
+    a UserGoal object; e.g. the `user.usergoal_set` field.
+
+    It uses the SimpleGoalField to serialize related Goal objects.
+    """
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'created_on': value.created_on,
+            'goal': SimpleGoalField().to_native(value.goal),
+        }
+
+
+class UserGoalSerializer(serializers.ModelSerializer):
+    """A Serializer for the `UserGoal` model."""
+    goal = SimpleGoalField(source='goal')
+
+    class Meta:
+        model = UserGoal
+        fields = ('id', 'user', 'goal', 'created_on')
+        read_only_fields = ("id", "created_on", )

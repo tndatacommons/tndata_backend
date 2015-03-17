@@ -1,4 +1,7 @@
-from rest_framework import permissions, viewsets
+from rest_framework import mixins, permissions, viewsets
+from rest_framework.authentication import (
+    SessionAuthentication, TokenAuthentication
+)
 
 from . import models
 from . import serializers
@@ -251,3 +254,56 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(behavior__title_slug=behavior)
 
         return self.queryset
+
+
+class UserGoalViewSet(mixins.CreateModelMixin,
+                      mixins.ListModelMixin,
+                      mixins.RetrieveModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
+    """This endpoint represents a mapping between [Users](/api/users/) and
+    [Goals](/api/goals/).
+
+    GET requests to this page will simply list this mapping for the authenticated
+    users.
+
+    ## Adding a Goal
+
+    Send a POST request with the following data:
+
+        {'goal': GOAL_ID}
+
+    ## Viewing the Goal data
+
+    Additional information for the Goal mapping is available at
+    `/api/users/goals/{usergoal_id}/`. In this case, `{usergoal_id}` is the
+    database id for the mapping between a user and a goal.
+
+    ## Removing a Goal from the user's list.
+
+    Send a DELETE request to the usergoal mapping endpoint:
+    `/api/users/goals/{usergoal_id}/`.
+
+    ## Update a Goal Mapping.
+
+    Updating a goal mapping is currently not supported.
+
+    ## Additional information
+
+    The Goals that a User has selected are also available through the
+    `/api/users/` endpoint as a `goals` object on the user.
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.UserGoal.objects.all()
+    serializer_class = serializers.UserGoalSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.DATA['user'] = request.user.id
+        return super(UserGoalViewSet, self).create(request, *args, **kwargs)

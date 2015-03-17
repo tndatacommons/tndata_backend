@@ -409,7 +409,7 @@ class UserGoal(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.id
+        return "{0}".format(self.goal.title)
 
     class Meta:
         ordering = ['user', 'goal']
