@@ -269,7 +269,8 @@ class UserGoalViewSet(mixins.CreateModelMixin,
 
     ## Adding a Goal
 
-    Send a POST request with the following data:
+    To associate a Goal with a User, POST to `/api/users/goals/` with the
+    following data:
 
         {'goal': GOAL_ID}
 

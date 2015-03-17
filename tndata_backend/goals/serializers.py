@@ -153,9 +153,14 @@ class UserGoalListField(serializers.RelatedField):
 
 class UserGoalSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserGoal` model."""
-    goal = SimpleGoalField(source='goal')
 
     class Meta:
         model = UserGoal
         fields = ('id', 'user', 'goal', 'created_on')
         read_only_fields = ("id", "created_on", )
+
+    def transform_goal(self, obj, value):
+        """Display goal data using the SimpleGoalField representation."""
+        if obj:
+            return SimpleGoalField().to_native(obj.goal)
+        return value
