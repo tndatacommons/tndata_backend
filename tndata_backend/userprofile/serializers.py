@@ -9,6 +9,7 @@ from . import models
 from goals.serializer_fields import (
     UserActionListField,
     UserBehaviorListField,
+    UserCategoryListField,
     UserGoalListField,
 )
 
@@ -20,13 +21,14 @@ class UserSerializer(serializers.ModelSerializer):
     goals = UserGoalListField(many=True, source="usergoal_set")
     behaviors = UserBehaviorListField(many=True, source="userbehavior_set")
     actions = UserActionListField(many=True, source="useraction_set")
+    categories = UserCategoryListField(many=True, source="usercategory_set")
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "full_name", 'date_joined', 'userprofile_id', "password",
-            "goals", "behaviors", "actions",
+            "goals", "behaviors", "actions", "categories",
         )
         read_only_fields = ("id", "date_joined", )
         write_only_fields = ("password", )
