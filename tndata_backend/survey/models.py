@@ -110,34 +110,6 @@ class LikertQuestion(BaseQuestion):
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
     """
-    # TODO: Add support for reverse-coded likert questions;
-    # e.g. 1 - STRONGLY AGREE
-    class Meta:
-        verbose_name = "Likert Question"
-        verbose_name_plural = "Likert Questions"
-
-    @property
-    def options(self):
-        """Kind of a hack, but this follows a similar pattern as in the
-        MultipleChoiceQuestion model. Returns the possible options for a
-        question."""
-        return [{'id': o[0], 'text': o[1]} for o in LikertResponse.LIKERT_CHOICES]
-
-    def get_absolute_url(self):
-        return reverse('survey:likert-detail', args=[self.id])
-
-    def get_update_url(self):
-        return reverse('survey:likert-update', args=[self.id])
-
-    def get_delete_url(self):
-        return reverse('survey:likert-delete', args=[self.id])
-
-
-class LikertResponse(models.Model):
-    """Response to a `LikertQuestion`.
-    http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
-
-    """
     STRONGLY_DISAGREE = 1
     DISAGREE = 2
     SLIGHTLY_DISAGREE = 3
@@ -155,10 +127,39 @@ class LikertResponse(models.Model):
         (AGREE, 'Agree'),
         (STRONGLY_AGREE, 'Strongly Agree'),
     )
+    class Meta:
+        verbose_name = "Likert Question"
+        verbose_name_plural = "Likert Questions"
+
+    @property
+    def options(self):
+        """Kind of a hack, but this follows a similar pattern as in the
+        MultipleChoiceQuestion model. Returns the possible options for a
+        question."""
+        return [{'id': o[0], 'text': o[1]} for o in self.LIKERT_CHOICES]
+
+    def get_absolute_url(self):
+        return reverse('survey:likert-detail', args=[self.id])
+
+    def get_update_url(self):
+        return reverse('survey:likert-update', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('survey:likert-delete', args=[self.id])
+
+
+class LikertResponse(models.Model):
+    """Response to a `LikertQuestion`.
+    http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
+
+    """
+
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     question = models.ForeignKey(LikertQuestion)
-    selected_option = models.PositiveIntegerField(choices=LIKERT_CHOICES)
+    selected_option = models.PositiveIntegerField(
+        choices=LikertQuestion.LIKERT_CHOICES
+    )
     submitted_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
