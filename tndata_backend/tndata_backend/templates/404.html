@@ -1,0 +1,6 @@
+{% extends "base_error.html" %}
+
+{% block heading_content %}Sorry. Not Found{% endblock %}
+{% block message_content %}
+  <p>There's no page matching <tt>{{ request_path }}</tt>.</p>
+{% endblock %}
