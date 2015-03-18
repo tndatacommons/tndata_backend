@@ -449,25 +449,16 @@ class UserAction(models.Model):
         verbose_name_plural = "User Actions"
 
 
-# -----------------------------------------------------------------------------
-#
-# Misc Functions
-#
-# -----------------------------------------------------------------------------
+class UserCategory(models.Model):
+    """A Mapping between users and specific categories."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    category = models.ForeignKey(Category)
+    created_on = models.DateTimeField(auto_now_add=True)
 
-def _get_categories_for_user(user):
-    """Given a User object, find the Categories in which the user has associated
-    Goals, Behaviors, or Actions.
+    def __str__(self):
+        return "{0}".format(self.category.title)
 
-    """
-    category_ids = set()
-    category_ids = category_ids.union(
-        set(user.usergoal_set.values_list("goal__categories", flat=True))
-    )
-    category_ids = category_ids.union(
-        set(user.userbehavior_set.values_list("behavior__categories", flat=True))
-    )
-    category_ids = category_ids.union(
-        set(user.useraction_set.values_list("action__behavior__categories", flat=True))
-    )
-    return Category.objects.filter(pk__in=category_ids)
+    class Meta:
+        ordering = ['user', 'category']
+        verbose_name = "User Category"
+        verbose_name_plural = "User Categories"
