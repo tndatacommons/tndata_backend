@@ -3,6 +3,17 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 
+# TODO: How to associate a question with a Channel in the app (Category?)
+# TODO: How to serve questions to the app in the simplest manner.
+
+
+class QuestionManager(models.Manager):
+
+    def available(self, *args, **kwargs):
+        qs = self.get_queryset()
+        return qs.filter(available=True)
+
+
 class BaseQuestion(models.Model):
     """A Base class for a Question."""
     text = models.TextField(unique=True, help_text="The text of the question")
@@ -10,6 +21,8 @@ class BaseQuestion(models.Model):
     available = models.BooleanField(default=True, help_text="Available to Users")
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    objects = QuestionManager()
 
     def __str__(self):
         return self.text
@@ -168,3 +181,7 @@ class LikertResponse(models.Model):
     class Meta:
         verbose_name = "Likert Response"
         verbose_name_plural = "Likert Responses"
+
+    @property
+    def selected_option_text(self):
+        return self.get_selected_option_display()

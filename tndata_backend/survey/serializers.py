@@ -1,16 +1,16 @@
 from rest_framework import serializers
 from . models import (
     LikertQuestion,
+    LikertResponse,
     MultipleChoiceQuestion,
     OpenEndedQuestion,
 )
 
-
-class LikertOptionsField(serializers.RelatedField):
-    """Includes the available options for a MultipleChoiceQuestion. To
-    customize this, see `MultipleChoiceQuestion.options`."""
-    def to_native(self, value):
-        return value
+from . serializer_fields import (
+    LikertOptionsField,
+    LikertQuestionField,
+    MultipleChoiceOptionsField,
+)
 
 
 class LikertQuestionSerializer(serializers.ModelSerializer):
@@ -22,13 +22,6 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created', 'options',
         )
-
-
-class MultipleChoiceOptionsField(serializers.RelatedField):
-    """Includes the available options for a MultipleChoiceQuestion. To
-    customize this, see `MultipleChoiceQuestion.options`."""
-    def to_native(self, value):
-        return value
 
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
@@ -50,3 +43,22 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
         )
+
+
+class LikertResponseSerializer(serializers.ModelSerializer):
+    """A Serializer for the `LikertResponse` model."""
+    selected_option_text = serializers.Field(source='selected_option_text')
+    question = LikertQuestionField(source="question")
+
+    class Meta:
+        model = LikertResponse
+        fields = (
+            'id', 'user', 'question', 'selected_option', 'selected_option_text',
+            'submitted_on'
+        )
+        read_only_fields = ("id", "submitted_on", )
+
+    def transform_selected_option(self, obj, value):
+        if obj:
+            return LikertOptionsField().to_native(obj.selected_option)
+        return value
