@@ -8,8 +8,10 @@ class LikertOptionsField(serializers.RelatedField):
         return value
 
 
-class LikertQuestionField(serializers.RelatedField):
-    """This is used to serialize a LikertQuestion object."""
+class QuestionField(serializers.RelatedField):
+    """This is used to serialize a generic Question object. It can be used on
+    a related field for LikertQuestions, OpenEndedQuestions, and
+    MultipleChoiceQuestions"""
     def to_native(self, value):
         return {
             'id': value.id,

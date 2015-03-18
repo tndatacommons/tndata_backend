@@ -69,3 +69,39 @@ class LikertResponseViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         request.DATA['user'] = request.user.id
         return super(LikertResponseViewSet, self).create(request, *args, **kwargs)
+
+
+class OpenEndedResponseViewSet(mixins.CreateModelMixin,
+                               mixins.ListModelMixin,
+                               viewsets.GenericViewSet):
+    """This endpoint lists the [OpenEndedQuestion](/api/survey/likert/)s to
+    which a [User](/api/users/) has responded.
+
+    GET requests to this page will list all questions belonging to the User.
+
+    ## Adding a Response
+
+    To save a User's response to a question, POST to this endpoint with the
+    following data:
+
+        {'question': QUESTION_ID, 'response': "SOME TEXT"}
+
+    ## Updating/Deleting a Response.
+
+    Updating or deleting a response is currently not supported.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.OpenEndedResponse.objects.all()
+    serializer_class = serializers.OpenEndedResponseSerializer
+    permission_classes = [permissions.IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.DATA['user'] = request.user.id
+        return super(OpenEndedResponseViewSet, self).create(request, *args, **kwargs)

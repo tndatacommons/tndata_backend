@@ -140,6 +140,7 @@ class LikertQuestion(BaseQuestion):
         (AGREE, 'Agree'),
         (STRONGLY_AGREE, 'Strongly Agree'),
     )
+
     class Meta:
         verbose_name = "Likert Question"
         verbose_name_plural = "Likert Questions"
@@ -166,8 +167,6 @@ class LikertResponse(models.Model):
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
     """
-
-
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     question = models.ForeignKey(LikertQuestion)
     selected_option = models.PositiveIntegerField(

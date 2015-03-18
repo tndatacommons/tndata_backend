@@ -23,6 +23,7 @@ from survey.api import (
     LikertResponseViewSet,
     MultipleChoiceQuestionViewSet,
     OpenEndedQuestionViewSet,
+    OpenEndedResponseViewSet,
 )
 from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
 
@@ -59,6 +60,7 @@ router.register(r'users/goals', UserGoalViewSet)
 router.register(r'survey/likert/responses', LikertResponseViewSet)
 router.register(r'survey/likert', LikertQuestionViewSet)
 router.register(r'survey/multiplechoice', MultipleChoiceQuestionViewSet)
+router.register(r'survey/open/responses', OpenEndedResponseViewSet)
 router.register(r'survey/open', OpenEndedQuestionViewSet)
 
 # ViewSets from the userprofile app.
