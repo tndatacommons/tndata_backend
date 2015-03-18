@@ -65,7 +65,7 @@ class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionCreateView, self).get_context_data(**kwargs)
         context['questions'] = LikertQuestion.objects.all()
-        context['options'] = LikertResponse.LIKERT_CHOICES
+        context['options'] = LikertQuestion.LIKERT_CHOICES
         return context
 
 
@@ -76,7 +76,7 @@ class LikertQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionUpdateView, self).get_context_data(**kwargs)
         context['questions'] = LikertQuestion.objects.all()
-        context['options'] = LikertResponse.LIKERT_CHOICES
+        context['options'] = LikertQuestion.LIKERT_CHOICES
         return context
 
 
