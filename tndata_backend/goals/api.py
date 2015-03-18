@@ -420,27 +420,55 @@ class UserActionViewSet(mixins.CreateModelMixin,
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
 
 
-class UserCategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    """This endpoint lists the categories in which a [Users](/api/users/) has
-    selected [Goals](/api/goals/), [Behaviors](/api/behaviors/), or
-    [Actions](/api/actions/).
+class UserCategoryViewSet(mixins.CreateModelMixin,
+                          mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
+    """This endpoint represents a mapping between [Users](/api/users/) and
+    [Categories](/api/categories/).
 
-    GET requests to this page will list categories for the authenticated user.
+    GET requests to this page will simply list this mapping for the authenticated
+    user.
+
+    ## Adding a Category
+
+    To associate a Category with a User, POST to `/api/users/categories/` with the
+    following data:
+
+        {'category': CATEGORY_ID}
+
+    ## Viewing the Category data
+
+    Additional information for the Category mapping is available at
+    `/api/users/categories/{usercategory_id}/`. In this case, `{usercategory_id}`
+    is the database id for the mapping between a user and a category
+
+    ## Removing a Category from the user's list.
+
+    Send a DELETE request to the usercategory mapping endpoint:
+    `/api/users/categories/{usercategory_id}/`.
+
+    ## Update a Category Mapping.
+
+    Updating a category mapping is currently not supported.
 
     ## Additional information
 
-    New values are added to this list when a user selects a Goal, Behavior, or
-    Action.
+    The Categories that a User has selected are also available through the
+    `/api/users/` endpoint as a `categories` object on the user.
 
     ----
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.Category.objects.none()
+    queryset = models.UserCategory.objects.all()
     serializer_class = serializers.UserCategorySerializer
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
-            return models._get_categories_for_user(self.request.user)
-        else:
-            return self.queryset
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.DATA['user'] = request.user.id
+        return super(UserCategoryViewSet, self).create(request, *args, **kwargs)

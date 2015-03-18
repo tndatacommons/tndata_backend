@@ -8,6 +8,7 @@ from . models import (
     UserAction,
     UserGoal,
     UserBehavior,
+    UserCategory,
 )
 
 from . serializer_fields import (
@@ -15,6 +16,7 @@ from . serializer_fields import (
     GoalListField,
     SimpleActionField,
     SimpleBehaviorField,
+    SimpleCategoryField,
     SimpleGoalField,
 )
 
@@ -135,9 +137,15 @@ class UserActionSerializer(serializers.ModelSerializer):
 
 
 class UserCategorySerializer(serializers.ModelSerializer):
-    """A serializer for `Category` objects in which a user has selected items."""
-    icon_url = serializers.Field(source="get_absolute_icon")
+    """A serializer for `UserCategory` model."""
 
     class Meta:
-        model = Category
-        fields = ('id', 'order', 'title', 'title_slug', 'description', 'icon_url')
+        model = UserCategory
+        fields = ('id', 'user', 'category', 'created_on')
+        read_only_fields = ("id", "created_on", )
+
+    def transform_category(self, obj, value):
+        """Display category data using the SimpleCategoryField representation."""
+        if obj:
+            return SimpleCategoryField().to_native(obj.category)
+        return value

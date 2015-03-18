@@ -29,6 +29,19 @@ class CategoryListField(serializers.RelatedField):
         }
 
 
+class SimpleCategoryField(serializers.RelatedField):
+    """A simplified representation of a `Category`."""
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'title': value.title,
+            'title_slug': value.title_slug,
+            'order': value.order,
+            'description': value.description,
+            'icon_url': value.get_absolute_icon(),
+        }
+
+
 class SimpleBehaviorField(serializers.RelatedField):
     """A simplified representation of a `Behavior`."""
     def to_native(self, value):
@@ -97,6 +110,20 @@ class UserBehaviorListField(serializers.RelatedField):
             'id': value.id,
             'created_on': value.created_on,
             'behavior': SimpleBehaviorField().to_native(value.behavior),
+        }
+
+
+class UserCategoryListField(serializers.RelatedField):
+    """This is used to serialize the reverse relationship between a User and
+    a UserCategory object; e.g. the `user.usercategory_set` field.
+
+    It uses the SimpleCategoryField to serialize related Category objects.
+    """
+    def to_native(self, value):
+        return {
+            'id': value.id,
+            'created_on': value.created_on,
+            'category': SimpleCategoryField().to_native(value.goal),
         }
 
 

@@ -10,6 +10,7 @@ from .. models import (
     Action,
     UserGoal,
     UserBehavior,
+    UserCategory,
     UserAction,
 )
 
@@ -257,6 +258,7 @@ class TestAction(TestCase):
             "/goals/action/test-action/delete/"
         )
 
+
 class TestUserGoal(TestCase):
     """Tests for the `UserGoal` model."""
 
@@ -344,4 +346,34 @@ class TestUserAction(TestCase):
     def test__str__(self):
         expected = "Test Action"
         actual = "{}".format(self.ua)
+        self.assertEqual(expected, actual)
+
+
+class TestUserCategory(TestCase):
+    """Tests for the `UserCategory` model."""
+
+    def setUp(self):
+        User = get_user_model()
+        self.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        self.category = Category.objects.create(
+            title='Test Category',
+            order=1,
+        )
+        self.uc = UserCategory.objects.create(
+            user=self.user,
+            category=self.category
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Category.objects.filter(id=self.category.id).delete()
+        UserCategory.objects.filter(id=self.uc.id).delete()
+
+    def test__str__(self):
+        expected = "Test Category"
+        actual = "{}".format(self.uc)
         self.assertEqual(expected, actual)
