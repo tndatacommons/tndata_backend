@@ -961,14 +961,25 @@ class TestUserCategoryAPI(APITestCase):
 
         # check the fields of a result object.
         self.assertIn("id", response.data['results'][0])
-        self.assertIn("order", response.data['results'][0])
-        self.assertIn("title", response.data['results'][0])
-        self.assertIn("title_slug", response.data['results'][0])
-        self.assertIn("description", response.data['results'][0])
-        self.assertIn("icon_url", response.data['results'][0])
+        self.assertIn("category", response.data['results'][0])
+        self.assertIn("order", response.data['results'][0]['category'])
+        self.assertIn("title", response.data['results'][0]['category'])
+        self.assertIn("title_slug", response.data['results'][0]['category'])
+        self.assertIn("description", response.data['results'][0]['category'])
+        self.assertIn("icon_url", response.data['results'][0]['category'])
 
-        self.assertEqual(response.data['results'][0]['id'], self.category.id)
-        self.assertEqual(response.data['results'][0]['title'], self.category.title)
+        self.assertEqual(
+            response.data['results'][0]['id'],
+            self.uc.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['category']['id'],
+            self.category.id
+        )
+        self.assertEqual(
+            response.data['results'][0]['category']['title'],
+            self.category.title
+        )
 
     def test_post_usercategory_list_unauthenticated(self):
         """POST should not be allowed for unauthenticated users"""
