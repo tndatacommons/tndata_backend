@@ -260,8 +260,8 @@ class ActionCreateView(SuperuserRequiredMixin, CreateView):
     model = Action
     fields = [
         'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
-        'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
-        'notification_text', 'icon', 'image',
+        'notes', 'narrative_block', 'description', 'outcome', 'external_resource',
+        'default_trigger', 'notification_text', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
@@ -277,8 +277,8 @@ class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
     slug_url_kwarg = "title_slug"
     fields = [
         'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
-        'notes', 'narrative_block', 'description', 'outcome', 'default_trigger',
-        'notification_text', 'icon', 'image',
+        'notes', 'narrative_block', 'description', 'outcome', 'external_resource',
+        'default_trigger', 'notification_text', 'icon', 'image',
     ]
 
     def get_context_data(self, **kwargs):
