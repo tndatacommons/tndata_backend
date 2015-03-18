@@ -163,7 +163,7 @@ class LikertResponse(models.Model):
     submitted_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{}".format(self.selected_option)
+        return "{}".format(self.get_selected_option_display())
 
     class Meta:
         verbose_name = "Likert Response"
