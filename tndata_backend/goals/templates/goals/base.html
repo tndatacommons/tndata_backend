@@ -7,6 +7,7 @@
 {% block head %}
 {# Datatables' Foundation CSS (see bodyjs block for the JS) #}
 <link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.css" />
+<link rel="stylesheet" href="{% static 'js/chosen/chosen.css' %}" />
 <style type="text/css">
 .breadcrumbs {margin-top:1em;}
 select[multiple] {min-height: 100px;}
@@ -109,8 +110,14 @@ a.ui-datepicker-next { float:right; }
   <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
   <script src="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.js"></script>
   <script src="{% static 'js/garlic.min.js' %}"></script> {# Garlic.js: Save form state in localstorage #}
+  <script src="{% static 'js/chosen/chosen.jquery.min.js' %}"></script>
   <script>
-  // NOTE: Apply datatables to all .object-list tables.
-  $(document).ready(function() {$('table.object-list').DataTable({paging:false});});
+  $(document).ready(function() {
+    // Apply datatables to all .object-list tables.
+    $('table.object-list').DataTable({paging:false});
+
+    // Use chosen for all <select> elements
+    $('select').chosen();
+  });
   </script>
 {% endblock %}
