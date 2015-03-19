@@ -12,7 +12,7 @@ from . utils import read_uploaded_csv
 class ActionForm(forms.ModelForm):
     """A Form for creating/updating actions. This form orders related behaviors
     alphabetically."""
-    behavior = forms.ModelMultipleChoiceField(queryset=Behavior.objects.all().order_by("title"))
+    behavior = forms.ModelChoiceField(queryset=Behavior.objects.all().order_by("title"))
 
     class Meta:
         model = Action
