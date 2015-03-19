@@ -35,6 +35,7 @@ class OpenEndedQuestionViewSet(viewsets.ReadOnlyModelViewSet):
 
 class LikertResponseViewSet(mixins.CreateModelMixin,
                             mixins.ListModelMixin,
+                            mixins.RetrieveModelMixin,
                             viewsets.GenericViewSet):
     """This endpoint lists the [LikertQuestion](/api/survey/likert/)s to which
     a [User](/api/users/) has responded.
@@ -53,6 +54,11 @@ class LikertResponseViewSet(mixins.CreateModelMixin,
     ## Updating/Deleting a Response.
 
     Updating or deleting a response is currently not supported.
+
+    ## Viewing the individual response
+
+    Additionally, you can retrieve information for a single Response through
+    the endpoint including it's ID: `/api/survey/likert/responses/{response_id}/`.
 
     ----
 
@@ -73,6 +79,7 @@ class LikertResponseViewSet(mixins.CreateModelMixin,
 
 class OpenEndedResponseViewSet(mixins.CreateModelMixin,
                                mixins.ListModelMixin,
+                               mixins.RetrieveModelMixin,
                                viewsets.GenericViewSet):
     """This endpoint lists the [OpenEndedQuestion](/api/survey/open/)s to
     which a [User](/api/users/) has responded.
@@ -89,6 +96,11 @@ class OpenEndedResponseViewSet(mixins.CreateModelMixin,
     ## Updating/Deleting a Response.
 
     Updating or deleting a response is currently not supported.
+
+    ## Viewing the individual response
+
+    Additionally, you can retrieve information for a single Response through
+    the endpoint including it's ID: `/api/survey/openended/responses/{response_id}/`.
 
     ----
 
@@ -109,6 +121,7 @@ class OpenEndedResponseViewSet(mixins.CreateModelMixin,
 
 class MultipleChoiceResponseViewSet(mixins.CreateModelMixin,
                                     mixins.ListModelMixin,
+                                    mixins.RetrieveModelMixin,
                                     viewsets.GenericViewSet):
     """This endpoint lists the [MultipleChoiceQuestion](/api/survey/likert/)s
     to which a [User](/api/users/) has responded.
@@ -126,6 +139,12 @@ class MultipleChoiceResponseViewSet(mixins.CreateModelMixin,
     ## Updating/Deleting a Response.
 
     Updating or deleting a response is currently not supported.
+
+    ## Viewing the individual response
+
+    Additionally, you can retrieve information for a single Response through
+    the endpoint including it's ID:
+    `/api/survey/multiplechoice/responses/{response_id}/`.
 
     ----
 
