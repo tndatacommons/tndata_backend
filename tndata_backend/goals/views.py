@@ -7,7 +7,10 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import (
-    BehaviorForm, CSVUploadForm, TriggerForm
+    BehaviorForm,
+    CSVUploadForm,
+    GoalForm,
+    TriggerForm,
 )
 from . models import (
     Action, Behavior, Category, Goal, Trigger
@@ -128,9 +131,7 @@ class GoalDetailView(SuperuserRequiredMixin, DetailView):
 
 class GoalCreateView(SuperuserRequiredMixin, CreateView):
     model = Goal
-    fields = [
-        'categories', 'title', 'subtitle', 'description', 'outcome', 'icon',
-    ]
+    form_class = GoalForm
 
     def get_context_data(self, **kwargs):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
@@ -142,9 +143,7 @@ class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Goal
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    fields = [
-        'categories', 'title', 'subtitle', 'description', 'outcome', 'icon',
-    ]
+    form_class = GoalForm
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)

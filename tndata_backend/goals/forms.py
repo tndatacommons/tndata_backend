@@ -10,6 +10,8 @@ from . utils import read_uploaded_csv
 
 
 class BehaviorForm(forms.ModelForm):
+    """A Form for creating/updating behaviors. This form orders related
+    categories and goals alphabetically."""
     categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by("title"))
     goals = forms.ModelMultipleChoiceField(queryset=Goal.objects.all().order_by("title"))
 
@@ -19,6 +21,18 @@ class BehaviorForm(forms.ModelForm):
             'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
             'description', 'outcome', 'external_resource', 'informal_list',
             'categories', 'goals', 'icon', 'image',
+        ]
+
+
+class GoalForm(forms.ModelForm):
+    """A Form for creating/updating goals. This form orders related categories
+    alphabetically."""
+    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by("title"))
+
+    class Meta:
+        model = Goal
+        fields = [
+            'categories', 'title', 'subtitle', 'description', 'outcome', 'icon',
         ]
 
 
