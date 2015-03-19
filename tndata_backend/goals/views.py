@@ -7,6 +7,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from . forms import (
+    ActionForm,
     BehaviorForm,
     CSVUploadForm,
     GoalForm,
@@ -251,11 +252,7 @@ class ActionDetailView(SuperuserRequiredMixin, DetailView):
 
 class ActionCreateView(SuperuserRequiredMixin, CreateView):
     model = Action
-    fields = [
-        'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
-        'notes', 'narrative_block', 'description', 'outcome', 'external_resource',
-        'default_trigger', 'notification_text', 'icon', 'image',
-    ]
+    form_class = ActionForm
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
@@ -268,11 +265,7 @@ class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    fields = [
-        'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
-        'notes', 'narrative_block', 'description', 'outcome', 'external_resource',
-        'default_trigger', 'notification_text', 'icon', 'image',
-    ]
+    form_class = ActionForm
 
     def get_context_data(self, **kwargs):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)

@@ -5,8 +5,23 @@ from django.utils.text import slugify
 
 from utils.db import get_max_order
 
-from . models import Behavior, Category, Goal, Trigger
+from . models import Action, Behavior, Category, Goal, Trigger
 from . utils import read_uploaded_csv
+
+
+class ActionForm(forms.ModelForm):
+    """A Form for creating/updating actions. This form orders related behaviors
+    alphabetically."""
+    behavior = forms.ModelMultipleChoiceField(queryset=Behavior.objects.all().order_by("title"))
+
+    class Meta:
+        model = Action
+        fields = [
+            'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
+            'notes', 'narrative_block', 'description', 'outcome',
+            'external_resource', 'default_trigger', 'notification_text',
+            'icon', 'image',
+        ]
 
 
 class BehaviorForm(forms.ModelForm):
