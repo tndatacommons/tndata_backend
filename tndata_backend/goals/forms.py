@@ -5,8 +5,21 @@ from django.utils.text import slugify
 
 from utils.db import get_max_order
 
-from . models import Category, Trigger
+from . models import Behavior, Category, Goal, Trigger
 from . utils import read_uploaded_csv
+
+
+class BehaviorForm(forms.ModelForm):
+    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by("title"))
+    goals = forms.ModelMultipleChoiceField(queryset=Goal.objects.all().order_by("title"))
+
+    class Meta:
+        model = Behavior
+        fields = [
+            'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
+            'description', 'outcome', 'external_resource', 'informal_list',
+            'categories', 'goals', 'icon', 'image',
+        ]
 
 
 class TriggerForm(forms.ModelForm):

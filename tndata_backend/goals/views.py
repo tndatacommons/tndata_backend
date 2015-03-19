@@ -6,7 +6,9 @@ from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
-from . forms import CSVUploadForm, TriggerForm
+from . forms import (
+    BehaviorForm, CSVUploadForm, TriggerForm
+)
 from . models import (
     Action, Behavior, Category, Goal, Trigger
 )
@@ -210,11 +212,7 @@ class BehaviorDetailView(SuperuserRequiredMixin, DetailView):
 
 class BehaviorCreateView(SuperuserRequiredMixin, CreateView):
     model = Behavior
-    fields = [
-        'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
-        'description', 'outcome', 'external_resource', 'informal_list',
-        'categories', 'goals', 'icon', 'image',
-    ]
+    form_class = BehaviorForm
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorCreateView, self).get_context_data(**kwargs)
@@ -226,11 +224,7 @@ class BehaviorUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    fields = [
-        'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
-        'description', 'outcome', 'external_resource', 'informal_list',
-        'categories', 'goals', 'icon', 'image',
-    ]
+    form_class = BehaviorForm
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
