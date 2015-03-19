@@ -3,6 +3,7 @@ from . models import (
     LikertQuestion,
     LikertResponse,
     MultipleChoiceQuestion,
+    MultipleChoiceResponse,
     OpenEndedQuestion,
     OpenEndedResponse,
 )
@@ -61,6 +62,29 @@ class LikertResponseSerializer(serializers.ModelSerializer):
     def transform_selected_option(self, obj, value):
         if obj:
             return LikertOptionsField().to_native(obj.selected_option)
+        return value
+
+    def transform_question(self, obj, value):
+        if obj:
+            return QuestionField().to_native(obj.question)
+        return value
+
+
+class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
+    """A Serializer for the `MultipleChoiceResponse` model."""
+    selected_option_text = serializers.Field(source='selected_option_text')
+
+    class Meta:
+        model = MultipleChoiceResponse
+        fields = (
+            'id', 'user', 'question', 'selected_option', 'selected_option_text',
+            'submitted_on'
+        )
+        read_only_fields = ("id", "submitted_on", )
+
+    def transform_selected_option(self, obj, value):
+        if obj:
+            return obj.selected_option.id
         return value
 
     def transform_question(self, obj, value):

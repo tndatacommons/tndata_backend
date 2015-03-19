@@ -22,6 +22,7 @@ from survey.api import (
     LikertQuestionViewSet,
     LikertResponseViewSet,
     MultipleChoiceQuestionViewSet,
+    MultipleChoiceResponseViewSet,
     OpenEndedQuestionViewSet,
     OpenEndedResponseViewSet,
 )
@@ -59,6 +60,7 @@ router.register(r'users/goals', UserGoalViewSet)
 # ViewSets from the survey app.
 router.register(r'survey/likert/responses', LikertResponseViewSet)
 router.register(r'survey/likert', LikertQuestionViewSet)
+router.register(r'survey/multiplechoice/responses', MultipleChoiceResponseViewSet)
 router.register(r'survey/multiplechoice', MultipleChoiceQuestionViewSet)
 router.register(r'survey/open/responses', OpenEndedResponseViewSet)
 router.register(r'survey/open', OpenEndedQuestionViewSet)

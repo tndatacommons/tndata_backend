@@ -85,6 +85,10 @@ class MultipleChoiceResponse(models.Model):
         verbose_name = "Multiple Choice Response"
         verbose_name_plural = "Multiple Choice Responses"
 
+    @property
+    def selected_option_text(self):
+        return self.selected_option.text
+
 
 class OpenEndedQuestion(BaseQuestion):
     """An Open-Ended Question Allows for a plain-text response."""
