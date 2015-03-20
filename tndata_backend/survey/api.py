@@ -1,6 +1,6 @@
 import random
 
-from rest_framework import mixins, viewsets
+from rest_framework import exceptions, mixins, viewsets
 from rest_framework.authentication import (
     SessionAuthentication,
     TokenAuthentication,
@@ -40,6 +40,9 @@ class RandomQuestionViewSet(viewsets.ViewSet):
     ----
 
     """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    permission_classes = [permissions.IsOwner]
+
     # Since this viewset serves up data from multiple types of models, this
     # dictionary contains some detail that help us work with the different
     # models; The key for each item is the model's lower case __name__
@@ -80,6 +83,8 @@ class RandomQuestionViewSet(viewsets.ViewSet):
         return item
 
     def list(self, request):
+        if not request.user.is_authenticated():
+            raise exceptions.NotAuthenticated
         item = self._get_random_question(request.user)
         return Response(item)
 

@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -12,6 +12,67 @@ from .. models import (
     OpenEndedQuestion,
     OpenEndedResponse,
 )
+
+
+class TestRandomQuestionAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.q1 = LikertQuestion.objects.create(text='Likert')
+        self.q2 = OpenEndedQuestion.objects.create(text='OpenEnded')
+        self.q3 = MultipleChoiceQuestion.objects.create(text='MultipleChoice')
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        LikertQuestion.objects.filter(id=self.q1.id).delete()
+        OpenEndedQuestion.objects.filter(id=self.q2.id).delete()
+        MultipleChoiceQuestion.objects.filter(id=self.q3.id).delete()
+
+    def test_get_list_unauthorized(self):
+        url = reverse('surveyrandom-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_list_authorized(self):
+        url = reverse('surveyrandom-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # We should get a single object, and it should be one of our questions.
+        self.assertIn("id", response.data)
+        self.assertIn(response.data["id"], [self.q1.id, self.q2.id, self.q3])
+
+    def test_post_list(self):
+        """Ensure this endpoint is read-only."""
+        url = reverse('surveyrandom-list')
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+        # Even when authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def test_no_detail(self):
+        """There should be no detail endpoint."""
+        with self.assertRaises(NoReverseMatch):
+            reverse('surveyrandom-detail', args=[1])
 
 
 class TestLikertQuestionAPI(APITestCase):
