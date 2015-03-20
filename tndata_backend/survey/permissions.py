@@ -9,6 +9,6 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         try:
-            return obj.user == request.user
+            return request.user.is_authenticated() and obj.user == request.user
         except AttributeError:
             return False
