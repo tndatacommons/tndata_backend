@@ -25,6 +25,7 @@ from survey.api import (
     MultipleChoiceResponseViewSet,
     OpenEndedQuestionViewSet,
     OpenEndedResponseViewSet,
+    RandomQuestionViewSet,
 )
 from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
 
@@ -64,6 +65,7 @@ router.register(r'survey/multiplechoice/responses', MultipleChoiceResponseViewSe
 router.register(r'survey/multiplechoice', MultipleChoiceQuestionViewSet)
 router.register(r'survey/open/responses', OpenEndedResponseViewSet)
 router.register(r'survey/open', OpenEndedQuestionViewSet)
+router.register(r'survey', RandomQuestionViewSet, base_name="surveyrandom")
 
 # ViewSets from the userprofile app.
 router.register(r'users', UserViewSet)

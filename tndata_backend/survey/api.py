@@ -1,12 +1,84 @@
+import random
+
 from rest_framework import mixins, viewsets
 from rest_framework.authentication import (
     SessionAuthentication,
     TokenAuthentication,
 )
+from rest_framework.response import Response
 
 from . import models
 from . import permissions
 from . import serializers
+
+
+class RandomQuestionViewSet(viewsets.ViewSet):
+    """This endpoint retuns a single, random Question. The returned data
+    may represent one of three different types of questions: Liker,
+    Multiple Choice, or Open-Ended.
+
+    The questions provided by this endpoint are guaranteed to not have been
+    answered by the authenticated user.
+
+    ## Question Types
+
+    For details on the different question types, see their respective api docs:
+
+    * [LikertQuestion](/api/survey/likert/)
+    * [MultipleChoiceQuestion](/api/survey/multiplechoice/)
+    * [OpenEndedQuestion](/api/survey/open/)
+
+    ## Additional information
+
+    This endpoint includes two pieces of additional information in its response:
+
+    * `question_type` -- tells you the type of question returned, and will be
+      on of "likertquestion", "multiplechoicequestion", or "openendedquestion"
+    * `response_url` -- is the link to the endpoint to which response data
+      should be POSTed.
+
+    ----
+
+    """
+    questions = {
+        models.LikertQuestion.__name__.lower(): {
+            'model': models.LikertQuestion,
+            'serializer': serializers.LikertQuestionSerializer,
+            'related_response_name': 'likertresponse',
+        },
+        models.MultipleChoiceQuestion.__name__.lower(): {
+            'model': models.MultipleChoiceQuestion,
+            'serializer': serializers.MultipleChoiceQuestionSerializer,
+            'related_response_name': 'multiplechoiceresponse',
+        },
+        models.OpenEndedQuestion.__name__.lower(): {
+            'model': models.OpenEndedQuestion,
+            'serializer': serializers.OpenEndedQuestionSerializer,
+            'related_response_name': 'openendedresponse',
+        }
+    }
+
+    def _get_random_question(self, user):
+        questions = []
+        # Find all the available questions that the user has not answered.
+        for q in self.questions.values():
+            kwargs = {"{0}__user".format(q['related_response_name']): user}
+            questions.extend(list(q['model'].objects.available().exclude(**kwargs)))
+
+        # Pick a random one.
+        item = random.choice(questions)
+        api_path = item.get_api_response_url()  # Grab the URI for the response.
+        model_name = item.__class__.__name__.lower()  # remember which model
+
+        # Serialize it.
+        item = self.questions[model_name]['serializer']().to_native(item)
+        item['question_type'] = model_name
+        item['response_url'] = self.request.build_absolute_uri(api_path)
+        return item
+
+    def list(self, request):
+        item = self._get_random_question(request.user)
+        return Response(item)
 
 
 class LikertQuestionViewSet(viewsets.ReadOnlyModelViewSet):
