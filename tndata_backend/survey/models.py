@@ -28,6 +28,12 @@ class BaseQuestion(models.Model):
     available = models.BooleanField(default=True, help_text="Available to Users")
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+    instruments = models.ManyToManyField(
+        Instrument,
+        blank=True,
+        null=True,
+        help_text="The Instrument(s) to which this question belongs."
+    )
 
     objects = QuestionManager()
 
