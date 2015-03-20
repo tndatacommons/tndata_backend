@@ -2,6 +2,12 @@ from django.contrib import admin
 from . import models
 
 
+class InstrumentAdmin(admin.ModelAdmin):
+    list_display = ("id", "title")
+    search_fields = ['title', 'description']
+admin.site.register(models.Instrument, InstrumentAdmin)
+
+
 class MultipleChoiceResponseOptionInline(admin.TabularInline):
     model = models.MultipleChoiceResponseOption
 

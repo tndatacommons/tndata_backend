@@ -8,6 +8,18 @@ from . managers import QuestionManager
 # TODO: How to serve questions to the app in the simplest manner.
 
 
+class Instrument(models.Model):
+    title = models.TextField(unique=True, db_index=True)
+    description = models.TextField(help_text="Optional Description for this Instrument")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['title']
+        verbose_name = "Instrument"
+        verbose_name_plural = "Instruments"
+
 
 class BaseQuestion(models.Model):
     """A Base class for a Question."""
