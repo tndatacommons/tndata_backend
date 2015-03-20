@@ -2,16 +2,11 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 
+from . managers import QuestionManager
 
 # TODO: How to associate a question with a Channel in the app (Category?)
 # TODO: How to serve questions to the app in the simplest manner.
 
-
-class QuestionManager(models.Manager):
-
-    def available(self, *args, **kwargs):
-        qs = self.get_queryset()
-        return qs.filter(available=True)
 
 
 class BaseQuestion(models.Model):
