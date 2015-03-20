@@ -40,7 +40,10 @@ class RandomQuestionViewSet(viewsets.ViewSet):
     ----
 
     """
-    questions = {
+    # Since this viewset serves up data from multiple types of models, this
+    # dictionary contains some detail that help us work with the different
+    # models; The key for each item is the model's lower case __name__
+    question_models = {
         models.LikertQuestion.__name__.lower(): {
             'model': models.LikertQuestion,
             'serializer': serializers.LikertQuestionSerializer,
@@ -61,7 +64,7 @@ class RandomQuestionViewSet(viewsets.ViewSet):
     def _get_random_question(self, user):
         questions = []
         # Find all the available questions that the user has not answered.
-        for q in self.questions.values():
+        for q in self.question_models.values():
             kwargs = {"{0}__user".format(q['related_response_name']): user}
             questions.extend(list(q['model'].objects.available().exclude(**kwargs)))
 
@@ -71,7 +74,7 @@ class RandomQuestionViewSet(viewsets.ViewSet):
         model_name = item.__class__.__name__.lower()  # remember which model
 
         # Serialize it.
-        item = self.questions[model_name]['serializer']().to_native(item)
+        item = self.question_models[model_name]['serializer']().to_native(item)
         item['question_type'] = model_name
         item['response_url'] = self.request.build_absolute_uri(api_path)
         return item
@@ -84,6 +87,26 @@ class RandomQuestionViewSet(viewsets.ViewSet):
 class LikertQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """This is a read-only endpoint for all available Likert Questions.
 
+    Likert Questions contain the following attributes:
+
+    * id: The database ID for the Question.
+    * text: The text of the question. This is what the user should see.
+    * order: The order in which multiple questions should be displayed.
+    * available: Boolean. Whether or not this question should be available to
+        users. This should always be `true` for this endpoint.
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
+    * options: The options available to a user for answering this question.
+      For likert questions, this is a list of objects with `id` and `text`
+      attributes.
+
+    To save a User's response, POST the question ID and the option ID to the
+    [LikertResponse](/api/survey/likert/responses/) endpoint:
+
+        {question: ID, 'selected_option': OPTION_ID}
+
+    ----
+
     """
     queryset = models.LikertQuestion.objects.available()
     serializer_class = serializers.LikertQuestionSerializer
@@ -92,6 +115,26 @@ class LikertQuestionViewSet(viewsets.ReadOnlyModelViewSet):
 class MultipleChoiceQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """This is a read-only endpoint for all available Multiple Choice Questions.
 
+    Multiple Choice Questions contain the following attributes:
+
+    * id: The database ID for the Question.
+    * text: The text of the question. This is what the user should see.
+    * order: The order in which multiple questions should be displayed.
+    * available: Boolean. Whether or not this question should be available to
+        users. This should always be `true` for this endpoint.
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
+    * options: The options available to a user for answering this question.
+      For multiple choice questions, this is a list of objects with `id` and
+      `text` attributes.
+
+    To save a User's response, POST the question ID and the option ID to the
+    [MultipleChoiceResponse](/api/survey/multiplechoice/responses/) endpoint:
+
+        {question: ID, 'selected_option': OPTION_ID}
+
+    ----
+
     """
     queryset = models.MultipleChoiceQuestion.objects.available()
     serializer_class = serializers.MultipleChoiceQuestionSerializer
@@ -99,6 +142,23 @@ class MultipleChoiceQuestionViewSet(viewsets.ReadOnlyModelViewSet):
 
 class OpenEndedQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """This is a read-only endpoint for all available Open-Ended Questions.
+
+    Open-Ended Questions contain the following attributes:
+
+    * id: The database ID for the Question.
+    * text: The text of the question. This is what the user should see.
+    * order: The order in which multiple questions should be displayed.
+    * available: Boolean. Whether or not this question should be available to
+        users. This should always be `true` for this endpoint.
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
+
+    To save a User's response, POST the question ID and the user's response
+    to the [OpenEndedResponse](/api/survey/open/responses/) endpoint:
+
+        {question: ID, 'response': USER_RESPONSE}
+
+    ----
 
     """
     queryset = models.OpenEndedQuestion.objects.available()
