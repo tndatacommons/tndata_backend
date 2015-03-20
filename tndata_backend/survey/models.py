@@ -53,6 +53,10 @@ class MultipleChoiceQuestion(BaseQuestion):
     def get_delete_url(self):
         return reverse('survey:multiplechoice-delete', args=[self.id])
 
+    @staticmethod
+    def get_api_response_url():
+        return reverse("multiplechoiceresponse-list")
+
 
 class MultipleChoiceResponseOption(models.Model):
     """A Response option for a `MultipleChoiceQuestion`."""
@@ -105,6 +109,10 @@ class OpenEndedQuestion(BaseQuestion):
 
     def get_delete_url(self):
         return reverse('survey:openended-delete', args=[self.id])
+
+    @staticmethod
+    def get_api_response_url():
+        return reverse("openendedresponse-list")
 
 
 class OpenEndedResponse(models.Model):
@@ -164,6 +172,10 @@ class LikertQuestion(BaseQuestion):
 
     def get_delete_url(self):
         return reverse('survey:likert-delete', args=[self.id])
+
+    @staticmethod
+    def get_api_response_url():
+        return reverse("likertresponse-list")
 
 
 class LikertResponse(models.Model):
