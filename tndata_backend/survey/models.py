@@ -9,7 +9,7 @@ from . managers import QuestionManager
 
 
 class Instrument(models.Model):
-    title = models.TextField(unique=True, db_index=True)
+    title = models.CharField(max_length=128, unique=True, db_index=True)
     description = models.TextField(help_text="Optional Description for this Instrument")
 
     def __str__(self):
@@ -19,6 +19,15 @@ class Instrument(models.Model):
         ordering = ['title']
         verbose_name = "Instrument"
         verbose_name_plural = "Instruments"
+
+    def get_absolute_url(self):
+        return reverse('survey:instrument-detail', args=[self.id])
+
+    def get_update_url(self):
+        return reverse('survey:instrument-update', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('survey:instrument-delete', args=[self.id])
 
 
 class BaseQuestion(models.Model):
