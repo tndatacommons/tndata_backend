@@ -6,7 +6,7 @@ TEMPLATE_DEBUG = DEBUG
 # Static Files/Media Uploads (TODO: put these on s3)
 STATIC_URL = '/static/'
 MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
-MEDIA_URL = "/media/"
+MEDIA_URL = "http://app.tndata.org/media/"
 
 # django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False

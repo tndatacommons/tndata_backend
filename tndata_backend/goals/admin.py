@@ -3,14 +3,16 @@ from . import models
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'title_slug', 'order')
+    list_display = ('title', 'title_slug', 'order', 'get_absolute_icon')
+    search_fields = ['title', 'description', 'notes']
     prepopulated_fields = {"title_slug": ("title", )}
 
 admin.site.register(models.Category, CategoryAdmin)
 
 
 class GoalAdmin(admin.ModelAdmin):
-    list_display = ('title', 'title_slug', 'in_categories')
+    list_display = ('title', 'title_slug', 'in_categories', 'get_absolute_icon')
+    search_fields = ['title', 'subtitle', 'description', 'outcome']
     prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
@@ -28,7 +30,14 @@ admin.site.register(models.Trigger, TriggerAdmin)
 
 
 class BehaviorAdmin(admin.ModelAdmin):
-    list_display = ('title', 'in_categories', 'in_goals')
+    list_display = (
+        'title', 'in_categories', 'in_goals', 'get_absolute_icon',
+        'get_absolute_image'
+    )
+    search_fields = [
+        'title', 'source_notes', 'notes', 'narrative_block', 'description',
+        'case', 'outcome', 'notification_text',
+    ]
     prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
@@ -40,7 +49,14 @@ admin.site.register(models.Behavior, BehaviorAdmin)
 
 
 class ActionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'behavior', 'sequence_order')
+    list_display = (
+        'title', 'behavior', 'sequence_order', 'get_absolute_icon',
+        'get_absolute_image'
+    )
+    search_fields = [
+        'title', 'source_notes', 'notes', 'narrative_block', 'description',
+        'case', 'outcome', 'notification_text',
+    ]
     prepopulated_fields = {"title_slug": ("title", )}
 admin.site.register(models.Action, ActionAdmin)
 

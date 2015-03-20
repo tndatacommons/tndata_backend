@@ -18,13 +18,6 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 
 
-MEDIA_DOMAIN = "http://app.tndata.org"
-
-
-def _build_url(path):
-    return "{0}{1}".format(MEDIA_DOMAIN, path)
-
-
 class Category(models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
     order = models.PositiveIntegerField(
@@ -80,7 +73,7 @@ class Category(models.Model):
 
     def get_absolute_icon(self):
         if self.icon:
-            return _build_url(self.icon.url)
+            return self.icon.url
 
 
 class Goal(models.Model):
@@ -134,7 +127,7 @@ class Goal(models.Model):
 
     def get_absolute_icon(self):
         if self.icon:
-            return _build_url(self.icon.url)
+            return self.icon.url
 
 
 class Trigger(models.Model):
@@ -318,11 +311,11 @@ class BaseBehavior(models.Model):
 
     def get_absolute_icon(self):
         if self.icon:
-            return _build_url(self.icon.url)
+            return self.icon.url
 
     def get_absolute_image(self):
         if self.image:
-            return _build_url(self.image.url)
+            return self.image.url
 
 
 class Behavior(BaseBehavior):
