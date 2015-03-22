@@ -1,0 +1,36 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li class="current">Instruments</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Instruments</h2>
+
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for instrument in instruments %}
+        <tr>
+          <td>
+            <a href="{{ instrument.get_absolute_url }}">{{ instrument.title }}</a>
+          </td>
+          <td>{{ instrument.description|truncatewords:10}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

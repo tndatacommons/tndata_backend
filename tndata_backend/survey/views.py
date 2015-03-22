@@ -10,7 +10,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from utils.db import get_max_order
 
 from . models import (
-    LikertQuestion, LikertResponse, MultipleChoiceQuestion,
+    Instrument, LikertQuestion, LikertResponse, MultipleChoiceQuestion,
     MultipleChoiceResponseOption, OpenEndedQuestion,
 )
 
@@ -39,6 +39,43 @@ class IndexView(SuperuserRequiredMixin, TemplateView):
     template_name = "survey/index.html"
 
 
+class InstrumentListView(SuperuserRequiredMixin, ListView):
+    model = Instrument
+    context_object_name = 'instruments'
+    template_name = "survey/instrument_list.html"
+
+
+class InstrumentDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Instrument.objects.all()
+    context_object_name = 'instrument'
+
+
+class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
+    model = Instrument
+    fields = ['title', 'description']
+
+    def get_context_data(self, **kwargs):
+        context = super(InstrumentCreateView, self).get_context_data(**kwargs)
+        context['instruments'] = Instrument.objects.all()
+        return context
+
+
+class InstrumentUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Instrument
+    fields = ['title', 'description']
+
+    def get_context_data(self, **kwargs):
+        context = super(InstrumentUpdateView, self).get_context_data(**kwargs)
+        context['instruments'] = Instrument.objects.all()
+        return context
+
+
+class InstrumentDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Instrument
+    success_url = reverse_lazy('survey:index')
+    context_object_name = 'instrument'
+
+
 class LikertQuestionListView(SuperuserRequiredMixin, ListView):
     model = LikertQuestion
     context_object_name = 'questions'
@@ -52,7 +89,7 @@ class LikertQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = LikertQuestion
-    fields = ['order', 'text', 'available']
+    fields = ['order', 'text', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -71,7 +108,7 @@ class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class LikertQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = LikertQuestion
-    fields = ['order', 'text', 'available']
+    fields = ['order', 'text', 'available', 'instruments']
 
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionUpdateView, self).get_context_data(**kwargs)
@@ -98,7 +135,7 @@ class MultipleChoiceQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = MultipleChoiceQuestion
-    fields = ['order', 'text', 'available']
+    fields = ['order', 'text', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -151,7 +188,7 @@ class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class MultipleChoiceQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = MultipleChoiceQuestion
-    fields = ['order', 'text', 'available']
+    fields = ['order', 'text', 'available', 'instruments']
 
     def get_formset(self, post_data=None):
         OptionFormSet = modelformset_factory(
@@ -216,7 +253,7 @@ class OpenEndedQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = OpenEndedQuestion
-    fields = ['order', 'text', 'available']
+    fields = ['order', 'text', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -234,7 +271,7 @@ class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class OpenEndedQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = OpenEndedQuestion
-    fields = ['order', 'text', 'available']
+    fields = ['order', 'text', 'available', 'instruments']
 
     def get_context_data(self, **kwargs):
         context = super(OpenEndedQuestionUpdateView, self).get_context_data(**kwargs)

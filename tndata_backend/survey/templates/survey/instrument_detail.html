@@ -1,0 +1,35 @@
+{% extends "survey/base.html" %}
+{% load util_tags %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li><a href="{% url 'survey:instrument-list' %}">Instruments</a></li>
+    <li class="current">{{ instrument }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h1>{{ instrument }} {% object_controls instrument %}</h1>
+      <div>
+        {{ instrument.description|default:"No Description given" }}
+      </div>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Questions</h2>
+      <p>The following questions are included in this Instrument:</p>
+      <ul>
+      {% for question_type, question in instrument.questions %}
+        <li>
+          <span class="label secondary">{{question_type}}</span>
+          {{ question }}
+        </li>
+      {% empty %}
+        <li style="list-style-type: none">
+          <em>This instrument currently has no questions.</em>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

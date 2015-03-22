@@ -58,6 +58,8 @@ a.ui-datepicker-next { float:right; }
     {# Left Nav Section #}
     <ul class="left">
       <li class="divider"></li>
+      <li><a href="{% url 'survey:instrument-list' %}">Instruments</a></li>
+      <li class="divider"></li>
       <li><a href="{% url 'survey:likert-list' %}">Likert Questions</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'survey:multiplechoice-list' %}">Multiple Choice</a></li>
@@ -68,6 +70,8 @@ a.ui-datepicker-next { float:right; }
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
+          <li><a href="{% url 'survey:instrument-create' %}">
+            Instrument</a></li>
           <li><a href="{% url 'survey:likert-create' %}">
             Likert Question</a></li>
           <li><a href="{% url 'survey:multiplechoice-create' %}">

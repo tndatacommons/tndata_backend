@@ -20,6 +20,23 @@ class Instrument(models.Model):
         verbose_name = "Instrument"
         verbose_name_plural = "Instruments"
 
+    @property
+    def questions(self):
+        """Returns all questions associated with this Instrument. This is a
+        list of tuples of the form [(Question Type, Question object) ... ]
+
+        """
+        results = [
+            (q.__class__.__name__, q) for q in self.likertquestion_set.all()
+        ]
+        results += [
+            (q.__class__.__name__, q) for q in self.openendedquestion_set.all()
+        ]
+        results += [
+            (q.__class__.__name__, q) for q in self.multiplechoicequestion_set.all()
+        ]
+        return results
+
     def get_absolute_url(self):
         return reverse('survey:instrument-detail', args=[self.id])
 

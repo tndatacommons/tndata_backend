@@ -11,6 +11,11 @@ urlpatterns = patterns('',
 
     # Create views
     url(
+        r'new/instrument/$',
+        views.InstrumentCreateView.as_view(),
+        name='instrument-create'
+    ),
+    url(
         r'new/likert/$',
         views.LikertQuestionCreateView.as_view(),
         name='likert-create'
@@ -24,6 +29,28 @@ urlpatterns = patterns('',
         r'new/openended/$',
         views.OpenEndedQuestionCreateView.as_view(),
         name='openended-create'
+    ),
+
+    # Instruments
+    url(
+        r'instrument/$',
+        views.InstrumentListView.as_view(),
+        name='instrument-list'
+    ),
+    url(
+        r'instrument/(?P<pk>\d+)/update/$',
+        views.InstrumentUpdateView.as_view(),
+        name='instrument-update'
+    ),
+    url(
+        r'instrument/(?P<pk>\d+)/delete/$',
+        views.InstrumentDeleteView.as_view(),
+        name='instrument-delete'
+    ),
+    url(
+        r'instrument/(?P<pk>\d+)/$',
+        views.InstrumentDetailView.as_view(),
+        name='instrument-detail'
     ),
 
     # LikertQuestions
