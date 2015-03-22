@@ -41,7 +41,7 @@ a.ui-datepicker-next { float:right; }
   <nav class="top-bar" data-topbar role="navigation">
   <ul class="title-area">
     <li class="name">
-      <h1><a href="{% url 'survey:index' %}">?</a></h1>
+      <h1><a href="/">&#8962;</a></h1>
     </li>
     <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
   </ul>
@@ -57,6 +57,8 @@ a.ui-datepicker-next { float:right; }
 
     {# Left Nav Section #}
     <ul class="left">
+      <li class="divider"></li>
+      <li><a href="{% url 'survey:index' %}">?</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'survey:instrument-list' %}">Instruments</a></li>
       <li class="divider"></li>
