@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
 
 from .. models import (
+    Instrument,
     LikertQuestion,
     MultipleChoiceQuestion,
     OpenEndedQuestion,
@@ -31,6 +32,179 @@ class TestIndexView(TestCase):
 
         resp = self.ua_client.get(url)
         self.assertEqual(resp.status_code, 302)
+
+
+class TestInstrumentListView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a instrument
+        self.instrument = Instrument.objects.create(
+            title='Test Instrument',
+            description="Testing..."
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test_get(self):
+        url = reverse("survey:instrument-list")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/instrument_list.html")
+        self.assertIn("instruments", resp.context)
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+
+class TestInstrumentDetailView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a Instrument
+        self.instrument = Instrument.objects.create(
+            title='Test Instrument',
+            description="Testing..."
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test_get(self):
+        url = self.instrument.get_absolute_url()
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/instrument_detail.html")
+        self.assertContains(resp, self.instrument.title)
+        self.assertIn("instrument", resp.context)
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+
+class TestInstrumentCreateView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a Instrument
+        self.instrument = Instrument.objects.create(
+            title='Test Instrument',
+            description="Testing..."
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test_get(self):
+        url = reverse("survey:instrument-create")
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/instrument_form.html")
+
+
+class TestInstrumentUpdateView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a Instrument
+        self.instrument = Instrument.objects.create(
+            title='Test Instrument',
+            description="Testing..."
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test_get(self):
+        url = self.instrument.get_update_url()
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/instrument_form.html")
+        self.assertContains(resp, self.instrument.title)
+        self.assertIn("instruments", resp.context)
+
+
+class TestInstrumentDeleteView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a Instrument
+        self.instrument = Instrument.objects.create(
+            title='Test Instrument',
+            description="Testing..."
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test_get(self):
+        url = self.instrument.get_delete_url()
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/instrument_confirm_delete.html")
+        self.assertIn("instrument", resp.context)
+
+    def test_post(self):
+        url = self.instrument.get_delete_url()
+        resp = self.client.post(url)
+        self.assertRedirects(resp, reverse("survey:index"))
 
 
 class TestLikertQuestionListView(TestCase):
