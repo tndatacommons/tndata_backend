@@ -304,9 +304,22 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def get_serializer(self, *args, **kwargs):
+        """Ensure we pass `many=True` into the serializer if we're dealing
+        with a list of items."""
+        if isinstance(self.request.DATA, list):
+            kwargs['many'] = True
+        return super(UserGoalViewSet, self).get_serializer(*args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        if isinstance(request.DATA, list):
+            # We're creating multiple items.
+            for d in request.DATA:
+                d['user'] = request.user.id
+        else:
+            # We're creating a single items.
+            request.DATA['user'] = request.user.id
         return super(UserGoalViewSet, self).create(request, *args, **kwargs)
 
 
@@ -471,7 +484,7 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
         with a list of items."""
-        if  isinstance(self.request.DATA, list):
+        if isinstance(self.request.DATA, list):
             kwargs['many'] = True
         return super(UserCategoryViewSet, self).get_serializer(*args, **kwargs)
 

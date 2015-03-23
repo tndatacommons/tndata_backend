@@ -585,6 +585,29 @@ class TestUserGoalAPI(APITestCase):
         # Clean up.
         newgoal.delete()
 
+    def test_post_usergoal_list_multiple_authenticated(self):
+        """POST should be allowed for authenticated users"""
+        goal_a = Goal.objects.create(title="A", subtitle="New Goal A")
+        goal_b = Goal.objects.create(title="B", subtitle="New Goal B")
+
+        url = reverse('usergoal-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = [
+            {'goal': goal_a.id},
+            {'goal': goal_b.id}
+        ]
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure our user is associated with the categories.
+        self.assertEqual(self.user.usergoal_set.count(), 3)
+
+        # clean up.
+        goal_a.delete()
+        goal_b.delete()
+
     def test_get_usergoal_detail_unauthed(self):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = reverse('usergoal-detail', args=[self.ug.id])

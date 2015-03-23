@@ -101,8 +101,10 @@ class UserGoalSerializer(serializers.ModelSerializer):
 
     def transform_goal(self, obj, value):
         """Display goal data using the SimpleGoalField representation."""
-        if obj:
+        if obj and isinstance(obj, UserGoal):
             return SimpleGoalField().to_native(obj.goal)
+        else:
+            return obj
         return value
 
 
