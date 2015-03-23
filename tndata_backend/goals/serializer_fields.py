@@ -123,7 +123,7 @@ class UserCategoryListField(serializers.RelatedField):
         return {
             'id': value.id,
             'created_on': value.created_on,
-            'category': SimpleCategoryField().to_native(value.goal),
+            'category': SimpleCategoryField().to_native(value.category),
         }
 
 
