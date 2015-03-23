@@ -137,7 +137,7 @@ class UserActionSerializer(serializers.ModelSerializer):
 
 
 class UserCategorySerializer(serializers.ModelSerializer):
-    """A serializer for `UserCategory` model."""
+    """A serializer for `UserCategory` model(s)."""
 
     class Meta:
         model = UserCategory
@@ -146,6 +146,8 @@ class UserCategorySerializer(serializers.ModelSerializer):
 
     def transform_category(self, obj, value):
         """Display category data using the SimpleCategoryField representation."""
-        if obj:
+        if obj and isinstance(obj, UserCategory):
             return SimpleCategoryField().to_native(obj.category)
+        elif obj:
+            return obj
         return value

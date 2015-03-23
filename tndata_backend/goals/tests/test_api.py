@@ -1004,6 +1004,29 @@ class TestUserCategoryAPI(APITestCase):
         # clean up.
         newcat.delete()
 
+    def test_post_usercategory_list_multiple_authenticated(self):
+        """POST should be allowed for authenticated users"""
+        cat_a = Category.objects.create(order=2, title="A")
+        cat_b = Category.objects.create(order=3, title="B")
+
+        url = reverse('usercategory-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = [
+            {'category': cat_a.id},
+            {'category': cat_b.id}
+        ]
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure our user is associated with the categories.
+        self.assertEqual(self.user.usercategory_set.count(), 3)
+
+        # clean up.
+        cat_a.delete()
+        cat_b.delete()
+
     def test_get_usercategory_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = reverse('usercategory-detail', args=[self.uc.id])
