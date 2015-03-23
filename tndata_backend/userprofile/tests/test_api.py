@@ -2,11 +2,53 @@ import hashlib
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .. models import UserProfile
+from .. serializers import UserSerializer
+
+
+class TestUserSerializer(TestCase):
+    def setUp(self):
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="me",
+            email="me@example.com",
+            password="secret"
+        )
+
+    def tearDown(self):
+        self.User.objects.all().delete()
+
+    def test_serialize_queryset(self):
+        """Run a QuerySet thru the serializer to ensure it doesn't explode."""
+        users = self.User.objects.all()
+        s = UserSerializer(users, many=True)
+        self.assertEqual(len(s.data), 1)  # Should contain data for 1 user
+        self.assertEqual(s.data[0]['id'], self.user.id)
+
+    def test_serialize_object(self):
+        """Run a Single instance thru the serializer."""
+        s = UserSerializer(self.user)
+        self.assertIn('id', s.data)
+        self.assertEqual(s.data['id'], self.user.id)
+
+    def test_deserialize_partial(self):
+        data = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'is_staff': False,
+            'first_name': "Test",
+            'last_name': "User",
+            #"goals", "behaviors", "actions", "categories",
+        }
+        s = UserSerializer(self.user, data=data, partial=True)
+        self.assertTrue(s.is_valid())
+        self.assertEqual(s.object, self.user)
 
 
 class TestUsersAPI(APITestCase):
