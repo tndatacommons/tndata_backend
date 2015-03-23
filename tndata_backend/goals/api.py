@@ -274,6 +274,17 @@ class UserGoalViewSet(mixins.CreateModelMixin,
 
         {'goal': GOAL_ID}
 
+    ## Adding multiple Goals in one request
+
+    This endpoint also allows you to associate multiple goals with a user
+    in a single request. Do do this, POST an array of goal IDs, e.g.:
+
+        [
+            {'goal': 3},
+            {'goal': 4},
+            {'goal': 5}
+        ]
+
     ## Viewing the Goal data
 
     Additional information for the Goal mapping is available at
@@ -450,6 +461,17 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     following data:
 
         {'category': CATEGORY_ID}
+
+    ## Adding multiple Categories in one request
+
+    This endpoint also allows you to associate multiple categories with a user
+    in a single request. Do do this, POST an array of category IDs, e.g.:
+
+        [
+            {'category': 3},
+            {'category': 4},
+            {'category': 5}
+        ]
 
     ## Viewing the Category data
 
