@@ -4,13 +4,18 @@ from django.db import models
 
 from . managers import QuestionManager
 
-# TODO: How to associate a question with a Channel in the app (Category?)
-# TODO: How to serve questions to the app in the simplest manner.
-
 
 class Instrument(models.Model):
     title = models.CharField(max_length=128, unique=True, db_index=True)
-    description = models.TextField(help_text="Optional Description for this Instrument")
+    description = models.TextField(
+        help_text="Optional Description for this Instrument"
+    )
+    user_instructions = models.TextField(
+        blank=True,
+        default='',
+        help_text="A (very) short set of instructions for all questions within "
+                  "this Instrument"
+    )
 
     def __str__(self):
         return self.title
