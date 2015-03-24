@@ -744,6 +744,25 @@ class TestUserBehaviorAPI(APITestCase):
         # Clean up.
         newbehavior.delete()
 
+    def test_post_userbehavior_list_multiple_athenticated(self):
+        """Authenticated users Should be able to create a multiple UserBehaviors."""
+        behavior_a = Behavior.objects.create(title="New A")
+        behavior_b = Behavior.objects.create(title="New B")
+
+        url = reverse('userbehavior-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = [{"behavior": behavior_a.id}, {"behavior": behavior_b.id}]
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        self.assertEqual(UserBehavior.objects.filter(user=self.user).count(), 3)
+
+        # Clean up.
+        behavior_a.delete()
+        behavior_b.delete()
+
     def test_get_userbehavior_detail_unauthed(self):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = reverse('userbehavior-detail', args=[self.ub.id])
@@ -885,6 +904,24 @@ class TestUserActionAPI(APITestCase):
 
         # Clean up.
         newaction.delete()
+
+    def test_post_useraction_list_multiple_athenticated(self):
+        """Authenticated users should be able to create multiple UserActions."""
+        action_a = Action.objects.create(title="Action A", behavior=self.behavior)
+        action_b = Action.objects.create(title="Action B", behavior=self.behavior)
+
+        url = reverse('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = [{"action": action_a.id}, {"action": action_b.id}]
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(UserAction.objects.filter(user=self.user).count(), 3)
+
+        # Clean up.
+        action_a.delete()
+        action_b.delete()
 
     def test_get_useraction_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot view this endpoint."""

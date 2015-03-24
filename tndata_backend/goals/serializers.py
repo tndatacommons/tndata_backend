@@ -103,7 +103,7 @@ class UserGoalSerializer(serializers.ModelSerializer):
         """Display goal data using the SimpleGoalField representation."""
         if obj and isinstance(obj, UserGoal):
             return SimpleGoalField().to_native(obj.goal)
-        else:
+        elif obj:
             return obj
         return value
 
@@ -118,8 +118,10 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
 
     def transform_behavior(self, obj, value):
         """Display behavior data using the SimpleBehaviorField representation."""
-        if obj:
+        if obj and isinstance(obj, UserBehavior):
             return SimpleBehaviorField().to_native(obj.behavior)
+        elif obj:
+            return obj
         return value
 
 
@@ -133,8 +135,10 @@ class UserActionSerializer(serializers.ModelSerializer):
 
     def transform_action(self, obj, value):
         """Display action data using the SimpleActionField representation."""
-        if obj:
+        if obj and isinstance(obj, UserAction):
             return SimpleActionField().to_native(obj.action)
+        elif obj:
+            return obj
         return value
 
 

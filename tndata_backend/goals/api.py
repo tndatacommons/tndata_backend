@@ -352,6 +352,17 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
 
         {'behavior': BEHAVIOR_ID}
 
+    ## Adding multiple Behaviors in one request
+
+    This endpoint also allows you to associate multiple behaviors with a user
+    in a single request. Do do this, POST an array of behavior IDs, e.g.:
+
+        [
+            {'behavior': 3},
+            {'behavior': 4},
+            {'behavior': 5}
+        ]
+
     ## Viewing the Behavior data
 
     Additional information for the Behavior mapping is available at
@@ -383,9 +394,21 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def get_serializer(self, *args, **kwargs):
+        """Ensure we pass `many=True` into the serializer if we're dealing
+        with a list of items."""
+        if isinstance(self.request.DATA, list):
+            kwargs['many'] = True
+        return super(UserBehaviorViewSet, self).get_serializer(*args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        if isinstance(request.DATA, list):
+            # We're creating multiple items
+            for d in request.DATA:
+                d['user'] = request.user.id
+        else:
+            request.DATA['user'] = request.user.id
         return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
 
 
@@ -406,6 +429,17 @@ class UserActionViewSet(mixins.CreateModelMixin,
     following data:
 
         {'action': ACTION_ID}
+
+    ## Adding multiple Actions in one request
+
+    This endpoint also allows you to associate multiple actions with a user
+    in a single request. Do do this, POST an array of action IDs, e.g.:
+
+        [
+            {'action': 3},
+            {'action': 4},
+            {'action': 5}
+        ]
 
     ## Viewing the Action data
 
@@ -438,9 +472,22 @@ class UserActionViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def get_serializer(self, *args, **kwargs):
+        """Ensure we pass `many=True` into the serializer if we're dealing with
+        a list of items."""
+        if isinstance(self.request.DATA, list):
+            kwargs['many'] = True
+        return super(UserActionViewSet, self).get_serializer(*args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        if isinstance(self.request.DATA, list):
+            # We're creating multiple items
+            for d in request.DATA:
+                d['user'] = request.user.id
+        else:
+            # We're creating a single item
+            request.DATA['user'] = request.user.id
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
 
 
