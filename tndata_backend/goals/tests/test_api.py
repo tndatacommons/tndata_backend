@@ -608,6 +608,16 @@ class TestUserGoalAPI(APITestCase):
         goal_a.delete()
         goal_b.delete()
 
+    def test_post_duplicate_usergoal_list(self):
+        """Attempting to POST a duplicate UserGoal should return a 400."""
+        url = reverse('usergoal-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # Post an ID to which the user already has an association
+        response = self.client.post(url, {'goal': self.ug.goal.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_get_usergoal_detail_unauthed(self):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = reverse('usergoal-detail', args=[self.ug.id])
@@ -762,6 +772,16 @@ class TestUserBehaviorAPI(APITestCase):
         # Clean up.
         behavior_a.delete()
         behavior_b.delete()
+
+    def test_post_duplicate_userbehavior_list(self):
+        """Attempting to POST a duplicate UserBehavior should return a 400."""
+        url = reverse('userbehavior-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # Post an ID to which the user already has an association
+        response = self.client.post(url, {'behavior': self.ub.behavior.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_userbehavior_detail_unauthed(self):
         """Ensure unauthenticated users cannot view this endpoint."""
@@ -922,6 +942,16 @@ class TestUserActionAPI(APITestCase):
         # Clean up.
         action_a.delete()
         action_b.delete()
+
+    def test_post_duplicate_useraction_list(self):
+        """Attempting to POST a duplicate UserAction should return a 400."""
+        url = reverse('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # Post an ID to which the user already has an association
+        response = self.client.post(url, {'action': self.ua.action.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_useraction_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot view this endpoint."""
@@ -1086,6 +1116,16 @@ class TestUserCategoryAPI(APITestCase):
         # clean up.
         cat_a.delete()
         cat_b.delete()
+
+    def test_post_duplicate_usercategory_list(self):
+        """Attempting to POST a duplicate UserCategory should return a 400."""
+        url = reverse('usercategory-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # Post an ID to which the user already has an association
+        response = self.client.post(url, {'category': self.uc.category.id})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_usercategory_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot view this endpoint."""
