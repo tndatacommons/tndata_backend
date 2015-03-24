@@ -406,6 +406,7 @@ class UserGoal(models.Model):
 
     class Meta:
         ordering = ['user', 'goal']
+        unique_together = ("user", "goal")
         verbose_name = "User Goal"
         verbose_name_plural = "User Goals"
 
@@ -422,6 +423,7 @@ class UserBehavior(models.Model):
 
     class Meta:
         ordering = ['user', 'behavior']
+        unique_together = ("user", "behavior")
         verbose_name = "User Behavior"
         verbose_name_plural = "User Behaviors"
 
@@ -438,6 +440,7 @@ class UserAction(models.Model):
 
     class Meta:
         ordering = ['user', 'action']
+        unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
 
@@ -453,5 +456,6 @@ class UserCategory(models.Model):
 
     class Meta:
         ordering = ['user', 'category']
+        unique_together = ("user", "category")
         verbose_name = "User Category"
         verbose_name_plural = "User Categories"
