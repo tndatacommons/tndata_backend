@@ -14,8 +14,8 @@ from . import serializers
 
 class RandomQuestionViewSet(viewsets.ViewSet):
     """This endpoint retuns a single, random Question. The returned data
-    may represent one of three different types of questions: Liker,
-    Multiple Choice, or Open-Ended.
+    may represent one of three different types of questions: Binary (Yes/No),
+    Likert, Multiple Choice, or Open-Ended.
 
     The questions provided by this endpoint are guaranteed to not have been
     answered by the authenticated user.
@@ -24,6 +24,7 @@ class RandomQuestionViewSet(viewsets.ViewSet):
 
     For details on the different question types, see their respective api docs:
 
+    * [BinaryQuestion](/api/survey/binary/)
     * [LikertQuestion](/api/survey/likert/)
     * [MultipleChoiceQuestion](/api/survey/multiplechoice/)
     * [OpenEndedQuestion](/api/survey/open/)
@@ -47,6 +48,11 @@ class RandomQuestionViewSet(viewsets.ViewSet):
     # dictionary contains some detail that help us work with the different
     # models; The key for each item is the model's lower case __name__
     question_models = {
+        models.BinaryQuestion.__name__.lower(): {
+            'model': models.BinaryQuestion,
+            'serializer': serializers.BinaryQuestionSerializer,
+            'related_response_name': 'binaryresponse',
+        },
         models.LikertQuestion.__name__.lower(): {
             'model': models.LikertQuestion,
             'serializer': serializers.LikertQuestionSerializer,
