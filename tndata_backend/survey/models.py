@@ -11,12 +11,6 @@ class Instrument(models.Model):
     description = models.TextField(
         help_text="Optional Description for this Instrument"
     )
-    user_instructions = models.TextField(
-        blank=True,
-        default='',
-        help_text="A (very) short set of instructions for all questions within "
-                  "this Instrument"
-    )
 
     def __str__(self):
         return self.title
@@ -66,6 +60,12 @@ class BaseQuestion(models.Model):
         help_text="When specified, all questions with a priority of 1 will be "
                   "delivered to users before any questions of priority 2, and "
                   "so on..."
+    )
+    instructions = models.CharField(
+        max_length=140,
+        blank=True,
+        default='',
+        help_text="Instructions for the user answering this question."
     )
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
