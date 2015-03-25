@@ -115,7 +115,7 @@ class BinaryResponse(models.Model):
     submitted_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{}".format(self.response)
+        return "{}".format(self.selected_option_text)
 
     class Meta:
         verbose_name = "Binary Response"
@@ -123,7 +123,7 @@ class BinaryResponse(models.Model):
 
     @property
     def selected_option_text(self):
-        return self.get_selected_option_display()
+        return "Yes" if self.selected_option else "No"
 
 
 class MultipleChoiceQuestion(BaseQuestion):

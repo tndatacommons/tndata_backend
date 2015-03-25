@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
 
 from .. models import (
+    BinaryQuestion,
     Instrument,
     LikertQuestion,
     MultipleChoiceQuestion,
@@ -203,6 +204,181 @@ class TestInstrumentDeleteView(TestCase):
 
     def test_post(self):
         url = self.instrument.get_delete_url()
+        resp = self.client.post(url)
+        self.assertRedirects(resp, reverse("survey:index"))
+
+
+class TestBinaryQuestionListView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a question
+        self.question = BinaryQuestion.objects.create(
+            order=1,
+            text='Test Question',
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+
+    def test_get(self):
+        url = reverse("survey:binary-list")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/binaryquestion_list.html")
+        self.assertIn("questions", resp.context)
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+
+class TestBinaryQuestionDetailView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a BinaryQuestion
+        self.question = BinaryQuestion.objects.create(
+            order=1,
+            text='Test BinaryQuestion',
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+
+    def test_get(self):
+        url = self.question.get_absolute_url()
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/binaryquestion_detail.html")
+        self.assertContains(resp, self.question.text)
+        self.assertIn("question", resp.context)
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+
+class TestBinaryQuestionCreateView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a BinaryQuestion
+        self.question = BinaryQuestion.objects.create(
+            order=1,
+            text='Test BinaryQuestion',
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+
+    def test_get(self):
+        url = reverse("survey:binary-create")
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/binaryquestion_form.html")
+        self.assertContains(resp, self.question.text)
+        self.assertIn("questions", resp.context)
+
+
+class TestBinaryQuestionUpdateView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a BinaryQuestion
+        self.question = BinaryQuestion.objects.create(
+            order=1,
+            text='Test BinaryQuestion',
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+
+    def test_get(self):
+        url = self.question.get_update_url()
+
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/binaryquestion_form.html")
+        self.assertContains(resp, self.question.text)
+        self.assertIn("questions", resp.context)
+
+
+class TestBinaryQuestionDeleteView(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        user_args = ("admin", "admin@example.com", "pass")
+        self.user = User.objects.create_superuser(*user_args)
+
+        # Create an Authed/Unauthed client
+        self.ua_client = Client()
+        self.client.login(username="admin", password="pass")
+
+        # Create a BinaryQuestion
+        self.question = BinaryQuestion.objects.create(
+            order=1,
+            text='Test BinaryQuestion',
+        )
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(username="admin").delete()
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+
+    def test_get(self):
+        url = self.question.get_delete_url()
+        resp = self.ua_client.get(url)
+        self.assertEqual(resp.status_code, 302)
+
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "survey/binaryquestion_confirm_delete.html")
+        self.assertIn("question", resp.context)
+
+    def test_post(self):
+        url = self.question.get_delete_url()
         resp = self.client.post(url)
         self.assertRedirects(resp, reverse("survey:index"))
 

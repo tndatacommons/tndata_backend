@@ -2,6 +2,9 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from .. models import (
+    Instrument,
+    BinaryQuestion,
+    BinaryResponse,
     LikertQuestion,
     LikertResponse,
     MultipleChoiceQuestion,
@@ -10,6 +13,136 @@ from .. models import (
     OpenEndedQuestion,
     OpenEndedResponse,
 )
+
+
+class TestInstrument(TestCase):
+    """Tests for the `Instrument` model."""
+
+    def setUp(self):
+        self.instrument = Instrument.objects.create(
+            title="Test Instrument"
+        )
+
+    def tearDown(self):
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test__str__(self):
+        expected = "Test Instrument"
+        actual = "{}".format(self.instrument)
+        self.assertEqual(expected, actual)
+
+    def test_questions(self):
+        q1 = BinaryQuestion.objects.create(text="Q1")
+        q2 = LikertQuestion.objects.create(text="Q2")
+        q3 = OpenEndedQuestion.objects.create(text="Q3")
+        q4 = MultipleChoiceQuestion.objects.create(text="Q4")
+        for q in [q1, q2, q3, q4]:
+            q.instruments.add(self.instrument)
+
+        expected = [
+            ('BinaryQuestion', q1),
+            ('LikertQuestion', q2),
+            ('OpenEndedQuestion', q3),
+            ('MultipleChoiceQuestion', q4)
+        ]
+        self.assertEqual(self.instrument.questions, expected)
+
+        # Clean up.
+        q1.delete()
+        q2.delete()
+        q3.delete()
+        q4.delete()
+
+    def test_get_absolute_url(self):
+        self.assertEqual(
+            self.instrument.get_absolute_url(),
+            "/survey/instrument/{0}/".format(self.instrument.id)
+        )
+
+    def test_get_update_url(self):
+        self.assertEqual(
+            self.instrument.get_update_url(),
+            "/survey/instrument/{0}/update/".format(self.instrument.id)
+        )
+
+    def test_get_delete_url(self):
+        self.assertEqual(
+            self.instrument.get_delete_url(),
+            "/survey/instrument/{0}/delete/".format(self.instrument.id)
+        )
+
+
+class TestBinaryQuestion(TestCase):
+    """Tests for the `BinaryQuestion` model."""
+
+    def setUp(self):
+        self.question = BinaryQuestion.objects.create(
+            text="Is this a yes or no question?"
+        )
+
+    def tearDown(self):
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+
+    def test__str__(self):
+        expected = "Is this a yes or no question?"
+        actual = "{}".format(self.question)
+        self.assertEqual(expected, actual)
+
+    def test_options(self):
+        expected_options = [
+            {"id": False, "text": "No"},
+            {"id": True, "text": "Yes"},
+        ]
+        self.assertEqual(self.question.options, expected_options)
+
+    def test_get_absolute_url(self):
+        self.assertEqual(
+            self.question.get_absolute_url(),
+            "/survey/binary/{0}/".format(self.question.id)
+        )
+
+    def test_get_update_url(self):
+        self.assertEqual(
+            self.question.get_update_url(),
+            "/survey/binary/{0}/update/".format(self.question.id)
+        )
+
+    def test_get_delete_url(self):
+        self.assertEqual(
+            self.question.get_delete_url(),
+            "/survey/binary/{0}/delete/".format(self.question.id)
+        )
+
+    def test_get_api_response_url(self):
+        self.assertEqual(
+            self.question.get_api_response_url(),
+            "/api/survey/binary/responses/".format(self.question.id)
+        )
+
+
+class TestBinaryResponse(TestCase):
+    """Tests for the `BinaryResponse` model."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            "user", "user@example.com", "secret"
+        )
+        self.question = BinaryQuestion.objects.create(
+            text="Is this a yes or no question?"
+        )
+        self.response = BinaryResponse.objects.create(
+            user=self.user,
+            question=self.question,
+            selected_option=True,
+        )
+
+    def tearDown(self):
+        get_user_model().objects.filter(username="user").delete()
+        BinaryQuestion.objects.filter(id=self.question.id).delete()
+        BinaryResponse.objects.filter(id=self.response.id).delete()
+
+    def test__str__(self):
+        self.assertEqual("{}".format(self.response), "Yes")
 
 
 class TestLikertQuestion(TestCase):
