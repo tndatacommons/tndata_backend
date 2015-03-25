@@ -103,6 +103,8 @@ class RandomQuestionViewSet(viewsets.ViewSet):
                 qs = qs.filter(instruments=instrument)
             questions.extend(list(qs))
 
+        # TODO: Respect the questions' Priority field.
+
         # Pick a random one.
         if len(questions) > 0:
             item = random.choice(questions)
