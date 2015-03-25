@@ -50,9 +50,16 @@ class RandomQuestionViewSet(viewsets.ViewSet):
     This endpoint includes two pieces of additional information in its response:
 
     * `question_type` -- tells you the type of question returned, and will be
-      on of "likertquestion", "multiplechoicequestion", or "openendedquestion"
+      on of `likertquestion`, `multiplechoicequestion`, or `openendedquestion`
     * `response_url` -- is the link to the endpoint to which response data
       should be POSTed.
+
+    ## Filtering
+
+    These questions can be filtered by Instrument (see the
+    [survey/instruments endpoint](/api/survey/instruments/)) using a
+    querystring paramter. Provide an instrument ID and this endpoint will return
+    questions within that instrument: `/api/survey/?instrument={instrument_id}`
 
     ----
 
@@ -86,28 +93,34 @@ class RandomQuestionViewSet(viewsets.ViewSet):
         }
     }
 
-    def _get_random_question(self, user):
+    def _get_random_question(self, user, instrument=None):
         questions = []
         # Find all the available questions that the user has not answered.
         for q in self.question_models.values():
             kwargs = {"{0}__user".format(q['related_response_name']): user}
-            questions.extend(list(q['model'].objects.available().exclude(**kwargs)))
+            qs = q['model'].objects.available().exclude(**kwargs)
+            if instrument:
+                qs = qs.filter(instruments=instrument)
+            questions.extend(list(qs))
 
         # Pick a random one.
-        item = random.choice(questions)
-        api_path = item.get_api_response_url()  # Grab the URI for the response.
-        model_name = item.__class__.__name__.lower()  # remember which model
+        if len(questions) > 0:
+            item = random.choice(questions)
+            api_path = item.get_api_response_url()  # Grab the URI for the response.
+            model_name = item.__class__.__name__.lower()  # remember which model
 
-        # Serialize it.
-        item = self.question_models[model_name]['serializer']().to_native(item)
-        item['question_type'] = model_name
-        item['response_url'] = self.request.build_absolute_uri(api_path)
-        return item
+            # Serialize it.
+            item = self.question_models[model_name]['serializer']().to_native(item)
+            item['question_type'] = model_name
+            item['response_url'] = self.request.build_absolute_uri(api_path)
+            return item
+        return {}
 
     def list(self, request):
         if not request.user.is_authenticated():
             raise exceptions.NotAuthenticated
-        item = self._get_random_question(request.user)
+        instrument = request.GET.get("instrument", None)
+        item = self._get_random_question(request.user, instrument)
         return Response(item)
 
 
