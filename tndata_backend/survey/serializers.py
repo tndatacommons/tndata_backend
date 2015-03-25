@@ -33,8 +33,9 @@ class BinaryQuestionSerializer(serializers.ModelSerializer):
         model = BinaryQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions',
+            'options', 'instructions', 'instruments'
         )
+        depth = 1
 
 
 class LikertQuestionSerializer(serializers.ModelSerializer):
@@ -45,8 +46,9 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
         model = LikertQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions',
+            'options', 'instructions', 'instruments'
         )
+        depth = 1
 
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
@@ -57,8 +59,9 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
         model = MultipleChoiceQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions',
+            'options', 'instructions', 'instruments'
         )
+        depth = 1
 
 
 class OpenEndedQuestionSerializer(serializers.ModelSerializer):
@@ -68,8 +71,9 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
         model = OpenEndedQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'instructions',
+            'instructions', 'instruments'
         )
+        depth = 1
 
 
 class BinaryResponseSerializer(serializers.ModelSerializer):
