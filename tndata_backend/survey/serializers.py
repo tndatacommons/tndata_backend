@@ -25,7 +25,8 @@ class BinaryQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = BinaryQuestion
         fields = (
-            'id', 'order', 'text', 'available', 'updated', 'created', 'options',
+            'id', 'order', 'text', 'available', 'updated', 'created',
+            'options', 'instructions',
         )
 
 
@@ -36,7 +37,8 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = LikertQuestion
         fields = (
-            'id', 'order', 'text', 'available', 'updated', 'created', 'options',
+            'id', 'order', 'text', 'available', 'updated', 'created',
+            'options', 'instructions',
         )
 
 
@@ -47,17 +49,19 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = MultipleChoiceQuestion
         fields = (
-            'id', 'order', 'text', 'available', 'updated', 'created', 'options',
+            'id', 'order', 'text', 'available', 'updated', 'created',
+            'options', 'instructions',
         )
 
 
 class OpenEndedQuestionSerializer(serializers.ModelSerializer):
-    """A Serializer for `MultipleChoiceQuestion`."""
+    """A Serializer for `OpenEndedQuestion`."""
 
     class Meta:
         model = OpenEndedQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
+            'instructions',
         )
 
 

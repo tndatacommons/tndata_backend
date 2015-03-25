@@ -105,11 +105,12 @@ class LikertQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     * order: The order in which multiple questions should be displayed.
     * available: Boolean. Whether or not this question should be available to
         users. This should always be `true` for this endpoint.
-    * updated: Date & time the question was last updated.
-    * created: Date & time the question was created.
     * options: The options available to a user for answering this question.
       For likert questions, this is a list of objects with `id` and `text`
       attributes.
+    * instructions: The instructions for the user answering the question (if any)
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
 
     To save a User's response, POST the question ID and the option ID to the
     [LikertResponse](/api/survey/likert/responses/) endpoint:
@@ -129,15 +130,17 @@ class BinaryQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     Binary Questions contain the following attributes:
 
     * id: The database ID for the Question.
+    * order: The order in which questions should be displayed (if displaying
+      multiple items)
     * text: The text of the question. This is what the user should see.
-    * order: The order in which multiple questions should be displayed.
     * available: Boolean. Whether or not this question should be available to
         users. This should always be `true` for this endpoint.
-    * updated: Date & time the question was last updated.
-    * created: Date & time the question was created.
     * options: The options available to a user for answering this question.
       For binary questions, this is a list of objects with `id` and `text`
       attributes.
+    * instructions: The instructions for the user answering the question (if any)
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
 
     To save a User's response, POST the question ID and the option ID to the
     [BinaryResponse](/api/survey/binary/responses/) endpoint:
@@ -161,11 +164,12 @@ class MultipleChoiceQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     * order: The order in which multiple questions should be displayed.
     * available: Boolean. Whether or not this question should be available to
         users. This should always be `true` for this endpoint.
-    * updated: Date & time the question was last updated.
-    * created: Date & time the question was created.
     * options: The options available to a user for answering this question.
       For multiple choice questions, this is a list of objects with `id` and
       `text` attributes.
+    * instructions: The instructions for the user answering the question (if any)
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
 
     To save a User's response, POST the question ID and the option ID to the
     [MultipleChoiceResponse](/api/survey/multiplechoice/responses/) endpoint:
@@ -189,6 +193,7 @@ class OpenEndedQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     * order: The order in which multiple questions should be displayed.
     * available: Boolean. Whether or not this question should be available to
         users. This should always be `true` for this endpoint.
+    * instructions: The instructions for the user answering the question (if any)
     * updated: Date & time the question was last updated.
     * created: Date & time the question was created.
 
