@@ -60,6 +60,12 @@ class BaseQuestion(models.Model):
     text = models.TextField(unique=True, help_text="The text of the question")
     order = models.IntegerField(default=0, help_text="Ordering of questions")
     available = models.BooleanField(default=True, help_text="Available to Users")
+    priority = models.PositiveIntegerField(
+        default=0,
+        help_text="When specified, all questions with a priority of 1 will be "
+                  "delivered to users before any questions of priority 2, and "
+                  "so on..."
+    )
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     instruments = models.ManyToManyField(
