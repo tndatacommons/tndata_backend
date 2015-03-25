@@ -136,7 +136,7 @@ class LikertQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = LikertQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'available', 'scale', 'priority', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -149,18 +149,16 @@ class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionCreateView, self).get_context_data(**kwargs)
         context['questions'] = LikertQuestion.objects.all()
-        context['options'] = LikertQuestion.LIKERT_CHOICES
         return context
 
 
 class LikertQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = LikertQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'available', 'scale', 'priority', 'instruments']
 
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionUpdateView, self).get_context_data(**kwargs)
         context['questions'] = LikertQuestion.objects.all()
-        context['options'] = LikertQuestion.LIKERT_CHOICES
         return context
 
 

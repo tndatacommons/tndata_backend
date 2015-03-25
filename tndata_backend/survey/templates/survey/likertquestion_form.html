@@ -23,12 +23,24 @@
     </form>
   </div>
   <div class="large-6 small-12 columns">
-    <p>All Likert Questions have the following options: </p>
-    <ul>
-    {% for opt in options %}
-      <li>{{ opt.1 }}</li>
-    {% endfor %}
-    </ul>
+    {% if object %}
+    <h2 class="subheader">Options</h2>
+    <p>This question has the following options:</p>
+    <table>
+      <thead>
+        <tr><th>Value</th><th>Text</th></tr>
+      </thead>
+      <tbody>
+        {% for opt in object.options %}
+          <tr>
+            <td>{{ opt.id }}</td>
+            <td>{{ opt.text }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
     <table>
       <caption>Existing Likert Questions</caption>
       <thead>
