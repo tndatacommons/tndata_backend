@@ -16,6 +16,8 @@
         <dt>Availble</dt><dd>{{ question.available|yesno}}</dd>
         <dt>Scale</dt><dd>{{ question.scale_text}}</dd>
         <dt>Priority</dt><dd>{{ question.priority }}</dd>
+        <dt>Instructions</dt>
+        <dd>{{ question.instructions|default:"No Instructions" }}</dd>
         <dt>Instruments</dt>
           <dd>{{ question.instruments.all|join:", "|default:"None." }}</dd>
         <dt>Updated On</dt><dd>{{ question.updated}}</dd>

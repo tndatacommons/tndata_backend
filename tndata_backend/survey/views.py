@@ -52,7 +52,7 @@ class InstrumentDetailView(SuperuserRequiredMixin, DetailView):
 
 class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
     model = Instrument
-    fields = ['title', 'description', 'user_instructions']
+    fields = ['title', 'description']
 
     def get_context_data(self, **kwargs):
         context = super(InstrumentCreateView, self).get_context_data(**kwargs)
@@ -62,7 +62,7 @@ class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
 
 class InstrumentUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Instrument
-    fields = ['title', 'description', 'user_instructions']
+    fields = ['title', 'description']
 
     def get_context_data(self, **kwargs):
         context = super(InstrumentUpdateView, self).get_context_data(**kwargs)
@@ -89,7 +89,7 @@ class BinaryQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class BinaryQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = BinaryQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -108,7 +108,7 @@ class BinaryQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class BinaryQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = BinaryQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
     def get_context_data(self, **kwargs):
         context = super(BinaryQuestionUpdateView, self).get_context_data(**kwargs)
@@ -136,7 +136,10 @@ class LikertQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = LikertQuestion
-    fields = ['order', 'text', 'available', 'scale', 'priority', 'instruments']
+    fields = [
+        'order', 'text', 'instructions', 'available', 'scale',
+        'priority', 'instruments'
+    ]
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -154,7 +157,10 @@ class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class LikertQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = LikertQuestion
-    fields = ['order', 'text', 'available', 'scale', 'priority', 'instruments']
+    fields = [
+        'order', 'text', 'instructions', 'available', 'scale',
+        'priority', 'instruments'
+    ]
 
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionUpdateView, self).get_context_data(**kwargs)
@@ -180,7 +186,7 @@ class MultipleChoiceQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = MultipleChoiceQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -233,7 +239,7 @@ class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class MultipleChoiceQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = MultipleChoiceQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
     def get_formset(self, post_data=None):
         OptionFormSet = modelformset_factory(
@@ -298,7 +304,7 @@ class OpenEndedQuestionDetailView(SuperuserRequiredMixin, DetailView):
 
 class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
     model = OpenEndedQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -316,7 +322,7 @@ class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
 
 class OpenEndedQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
     model = OpenEndedQuestion
-    fields = ['order', 'text', 'available', 'instruments']
+    fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
     def get_context_data(self, **kwargs):
         context = super(OpenEndedQuestionUpdateView, self).get_context_data(**kwargs)
