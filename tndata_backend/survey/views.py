@@ -52,7 +52,7 @@ class InstrumentDetailView(SuperuserRequiredMixin, DetailView):
 
 class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
     model = Instrument
-    fields = ['title', 'description']
+    fields = ['title', 'description', 'user_instructions']
 
     def get_context_data(self, **kwargs):
         context = super(InstrumentCreateView, self).get_context_data(**kwargs)
@@ -62,7 +62,7 @@ class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
 
 class InstrumentUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Instrument
-    fields = ['title', 'description']
+    fields = ['title', 'description', 'user_instructions']
 
     def get_context_data(self, **kwargs):
         context = super(InstrumentUpdateView, self).get_context_data(**kwargs)
@@ -76,7 +76,6 @@ class InstrumentDeleteView(SuperuserRequiredMixin, DeleteView):
     context_object_name = 'instrument'
 
 
-# =============================================================================
 class BinaryQuestionListView(SuperuserRequiredMixin, ListView):
     model = BinaryQuestion
     context_object_name = 'questions'
@@ -122,7 +121,6 @@ class BinaryQuestionDeleteView(SuperuserRequiredMixin, DeleteView):
     model = BinaryQuestion
     success_url = reverse_lazy('survey:index')
     context_object_name = 'question'
-# =============================================================================
 
 
 class LikertQuestionListView(SuperuserRequiredMixin, ListView):

@@ -32,6 +32,9 @@ class Instrument(models.Model):
 
         """
         results = [
+            (q.__class__.__name__, q) for q in self.binaryquestion_set.all()
+        ]
+        results += [
             (q.__class__.__name__, q) for q in self.likertquestion_set.all()
         ]
         results += [

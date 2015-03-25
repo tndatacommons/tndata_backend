@@ -5,7 +5,7 @@
   <li><a href="{% url 'survey:index' %}">Home</a></li>
   <li><a href="{% url 'survey:instrument-list' %}">Instruments</a></li>
   <li class="current">
-    {% if object %}{{ object.text }}{% else %}New Instrument {% endif %}
+    {% if object %}{{ object }}{% else %}New Instrument {% endif %}
   </li>
 </ul>
 
