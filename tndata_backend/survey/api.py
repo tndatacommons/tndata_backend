@@ -12,6 +12,22 @@ from . import permissions
 from . import serializers
 
 
+class InstrumentViewSet(viewsets.ReadOnlyModelViewSet):
+    """This is a read-only endpoint for all available Instruments.
+
+    Instruments contain the following attributes:
+
+    * id: The database ID for the Instrument
+    * title: The title of the instrument
+    * description: A description of the instrument.
+
+    ----
+
+    """
+    queryset = models.Instrument.objects.all()
+    serializer_class = serializers.InstrumentSerializer
+
+
 class RandomQuestionViewSet(viewsets.ViewSet):
     """This endpoint retuns a single, random Question. The returned data
     may represent one of three different types of questions: Binary (Yes/No),

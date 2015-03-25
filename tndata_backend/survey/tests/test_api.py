@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from .. models import (
     BinaryQuestion,
     BinaryResponse,
+    Instrument,
     LikertQuestion,
     LikertResponse,
     MultipleChoiceQuestion,
@@ -14,6 +15,51 @@ from .. models import (
     OpenEndedQuestion,
     OpenEndedResponse,
 )
+
+
+class TestInstrumentAPI(APITestCase):
+
+    def setUp(self):
+        self.instrument = Instrument.objects.create(title='Test Instrument')
+
+    def tearDown(self):
+        Instrument.objects.filter(id=self.instrument.id).delete()
+
+    def test_get_list(self):
+        url = reverse('instrument-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['count'], 1)
+        c = response.data['results'][0]
+        self.assertEqual(c['id'], self.instrument.id)
+        self.assertEqual(c['title'], self.instrument.title)
+        self.assertEqual(c['description'], self.instrument.description)
+
+    def test_post_list(self):
+        """Ensure this endpoint is read-only."""
+        url = reverse('instrument-list')
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def test_get_detail(self):
+        """Ensure this endpoint provides instrument detail info."""
+        url = reverse('instrument-detail', args=[self.instrument.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.instrument.id)
+
+    def test_post_detail(self):
+        """Ensure this endpoint is read-only."""
+        url = reverse('instrument-detail', args=[self.instrument.id])
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
 
 class TestRandomQuestionAPI(APITestCase):

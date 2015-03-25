@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from . models import (
-    LikertQuestion,
-    LikertResponse,
     BinaryQuestion,
     BinaryResponse,
+    Instrument,
+    LikertQuestion,
+    LikertResponse,
     MultipleChoiceQuestion,
     MultipleChoiceResponse,
     OpenEndedQuestion,
@@ -16,6 +17,12 @@ from . serializer_fields import (
     MultipleChoiceOptionsField,
     QuestionField,
 )
+
+
+class InstrumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Instrument
+        fields = ('id', 'title', 'description')
 
 
 class BinaryQuestionSerializer(serializers.ModelSerializer):
