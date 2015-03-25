@@ -19,6 +19,13 @@ LIKERT_SCALES = {
         (4, 'Agree'),
         (5, 'Strongly Agree'),
     ),
+    "5_point_reverse_agreement": (
+        (5, 'Strongly Disagree'),
+        (4, 'Disagree'),
+        (3, 'Neither Agree nor Disagree'),
+        (2, 'Agree'),
+        (1, 'Strongly Agree'),
+    ),
     "7_point_agreement": (
         (1, 'Strongly Disagree'),
         (2, 'Disagree'),
@@ -27,6 +34,15 @@ LIKERT_SCALES = {
         (5, 'Slightly Agree'),
         (6, 'Agree'),
         (7, 'Strongly Agree'),
+    ),
+    "7_point_reverse_agreement": (
+        (7, 'Strongly Disagree'),
+        (6, 'Disagree'),
+        (5, 'Slightly Disagree'),
+        (4, 'Neither Agree nor Disagree'),
+        (3, 'Slightly Agree'),
+        (2, 'Agree'),
+        (1, 'Strongly Agree'),
     ),
     "9_point_agreement": (
         (1, 'Extremely Disagree'),
@@ -38,6 +54,17 @@ LIKERT_SCALES = {
         (7, 'Moderately Agree'),
         (8, 'Strongly Agree'),
         (9, 'Extremely Agree'),
+    ),
+    "9_point_reverse_agreement": (
+        (9, 'Extremely Disagree'),
+        (8, 'Strongly Disagree'),
+        (7, 'Moderately Disagree'),
+        (6, 'Slightly Disagree'),
+        (5, 'Neither Agree nor Disagree'),
+        (4, 'Slightly Agree'),
+        (3, 'Moderately Agree'),
+        (2, 'Strongly Agree'),
+        (1, 'Extremely Agree'),
     ),
 
     # Temporal/Frequency
