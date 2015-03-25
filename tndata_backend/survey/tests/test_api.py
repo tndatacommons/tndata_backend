@@ -98,6 +98,39 @@ class TestRandomQuestionAPI(APITestCase):
         self.assertIn("id", response.data)
         self.assertIn(response.data["id"], [self.q1.id, self.q2.id, self.q3])
 
+    def test_get_list_authorized_filtered_by_instrument(self):
+        """Ensure that the random question enpoint can filter by instrument."""
+        inst = Instrument.objects.create(title="Test Instrument")
+        q = BinaryQuestion.objects.create(text="Q?")
+        q.instruments.add(inst)  # <-- The only question in this instrument.
+
+        url = reverse('surveyrandom-list') + "?instrument={0}".format(inst.id)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # We should get a single object, and it should be the instrument's question.
+        self.assertIn("id", response.data)
+        self.assertEqual(response.data["id"], q.id)
+
+        # Clean up.
+        q.delete()
+        inst.delete()
+
+    def test_get_list_authorized_filtered_by_invalid_instrument(self):
+        """The random question enpoint returns an empty object when given an
+        invalid instrument id."""
+
+        url = reverse('surveyrandom-list') + "?instrument=99999"
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {})
+
     def test_post_list(self):
         """Ensure this endpoint is read-only."""
         url = reverse('surveyrandom-list')
