@@ -16,6 +16,11 @@ urlpatterns = patterns('',
         name='instrument-create'
     ),
     url(
+        r'new/binary/$',
+        views.BinaryQuestionCreateView.as_view(),
+        name='binary-create'
+    ),
+    url(
         r'new/likert/$',
         views.LikertQuestionCreateView.as_view(),
         name='likert-create'
@@ -51,6 +56,28 @@ urlpatterns = patterns('',
         r'instrument/(?P<pk>\d+)/$',
         views.InstrumentDetailView.as_view(),
         name='instrument-detail'
+    ),
+
+    # BinaryQuestions
+    url(
+        r'binary/$',
+        views.BinaryQuestionListView.as_view(),
+        name='binary-list'
+    ),
+    url(
+        r'binary/(?P<pk>\d+)/update/$',
+        views.BinaryQuestionUpdateView.as_view(),
+        name='binary-update'
+    ),
+    url(
+        r'binary/(?P<pk>\d+)/delete/$',
+        views.BinaryQuestionDeleteView.as_view(),
+        name='binary-delete'
+    ),
+    url(
+        r'binary/(?P<pk>\d+)/$',
+        views.BinaryQuestionDetailView.as_view(),
+        name='binary-detail'
     ),
 
     # LikertQuestions

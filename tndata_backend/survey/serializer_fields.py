@@ -1,9 +1,17 @@
 from rest_framework import serializers
 
 
+# TODO: Replace BinaryOptionsField & LikertOptionsField with an `OptionsField`
+class BinaryOptionsField(serializers.RelatedField):
+    """Includes the available options for a BinaryQuestion. To customize this,
+    see `BinaryQuestion.options`."""
+    def to_native(self, value):
+        return value
+
+
 class LikertOptionsField(serializers.RelatedField):
-    """Includes the available options for a MultipleChoiceQuestion. To
-    customize this, see `MultipleChoiceQuestion.options`."""
+    """Includes the available options for a LIkertQuestion. To customize this,
+    see `LikertQuestion.options`."""
     def to_native(self, value):
         return value
 

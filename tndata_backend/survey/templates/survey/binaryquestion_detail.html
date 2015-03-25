@@ -1,0 +1,47 @@
+{% extends "survey/base.html" %}
+{% load util_tags %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li><a href="{% url 'survey:binary-list' %}">Binary Questions</a></li>
+    <li class="current">{{ question }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h1>{{ question }} {% object_controls question %}</h1>
+      <dl>
+        <dt>Order</dt><dd>{{ question.order }}</dd>
+        <dt>Availble</dt><dd>{{ question.available|yesno}}</dd>
+        <dt>Instruments</dt>
+          <dd>{{ question.instruments.all|join:", "|default:"None." }}</dd>
+        <dt>Updated On</dt><dd>{{ question.updated}}</dd>
+        <dt>Created On</dt><dd>{{ question.created}}</dd>
+      </dl>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2 class="subheader">Options</h2>
+      <p>All Binary Questions have the following options:</p>
+      <ul>
+      {% for opt in question.options %}
+        <li>{{ opt.text }} ({{ opt.id }})</li>
+      {% endfor %}
+      </ul>
+
+      {% if question.instruments.exists %}
+        <h2 class="subheader">Instruments</h2>
+        <p>This question is included in the following instrument(s):</p>
+        {% for inst in question.instruments.all %}
+          <ul>
+            <li><a href="{{ inst.get_absolute_url }}">{{ inst }}</a>
+              {% if inst.user_instructions %}
+                <em>{{ inst.user_instructions }}</em>
+              {% endif %}
+            </li>
+          </ul>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

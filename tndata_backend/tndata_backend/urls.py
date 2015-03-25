@@ -19,6 +19,8 @@ from goals.api import (
     UserGoalViewSet,
 )
 from survey.api import (
+    BinaryQuestionViewSet,
+    BinaryResponseViewSet,
     LikertQuestionViewSet,
     LikertResponseViewSet,
     MultipleChoiceQuestionViewSet,
@@ -59,6 +61,8 @@ router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/goals', UserGoalViewSet)
 
 # ViewSets from the survey app.
+router.register(r'survey/binary/responses', BinaryResponseViewSet)
+router.register(r'survey/binary', BinaryQuestionViewSet)
 router.register(r'survey/likert/responses', LikertResponseViewSet)
 router.register(r'survey/likert', LikertQuestionViewSet)
 router.register(r'survey/multiplechoice/responses', MultipleChoiceResponseViewSet)

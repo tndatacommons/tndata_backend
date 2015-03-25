@@ -10,8 +10,8 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from utils.db import get_max_order
 
 from . models import (
-    Instrument, LikertQuestion, LikertResponse, MultipleChoiceQuestion,
-    MultipleChoiceResponseOption, OpenEndedQuestion,
+    BinaryQuestion, Instrument, LikertQuestion, LikertResponse,
+    MultipleChoiceQuestion, MultipleChoiceResponseOption, OpenEndedQuestion,
 )
 
 
@@ -74,6 +74,55 @@ class InstrumentDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Instrument
     success_url = reverse_lazy('survey:index')
     context_object_name = 'instrument'
+
+
+# =============================================================================
+class BinaryQuestionListView(SuperuserRequiredMixin, ListView):
+    model = BinaryQuestion
+    context_object_name = 'questions'
+    template_name = "survey/binaryquestion_list.html"
+
+
+class BinaryQuestionDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = BinaryQuestion.objects.all()
+    context_object_name = 'question'
+
+
+class BinaryQuestionCreateView(SuperuserRequiredMixin, CreateView):
+    model = BinaryQuestion
+    fields = ['order', 'text', 'available', 'instruments']
+
+    def get_initial(self, *args, **kwargs):
+        """Pre-populate the value for the initial order. This can't be done
+        at the class level because we want to query the value each time."""
+        initial = super(BinaryQuestionCreateView, self).get_initial(*args, **kwargs)
+        if 'order' not in initial:
+            initial['order'] = get_max_order(BinaryQuestion)
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super(BinaryQuestionCreateView, self).get_context_data(**kwargs)
+        context['questions'] = BinaryQuestion.objects.all()
+        context['options'] = BinaryQuestion.OPTIONS
+        return context
+
+
+class BinaryQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = BinaryQuestion
+    fields = ['order', 'text', 'available', 'instruments']
+
+    def get_context_data(self, **kwargs):
+        context = super(BinaryQuestionUpdateView, self).get_context_data(**kwargs)
+        context['questions'] = BinaryQuestion.objects.all()
+        context['options'] = BinaryQuestion.OPTIONS
+        return context
+
+
+class BinaryQuestionDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = BinaryQuestion
+    success_url = reverse_lazy('survey:index')
+    context_object_name = 'question'
+# =============================================================================
 
 
 class LikertQuestionListView(SuperuserRequiredMixin, ListView):

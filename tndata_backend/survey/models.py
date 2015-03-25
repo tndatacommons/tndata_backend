@@ -76,6 +76,53 @@ class BaseQuestion(models.Model):
         ordering = ['order']
 
 
+class BinaryQuestion(BaseQuestion):
+    """A Question with a Yes/No Answer."""
+    OPTIONS = (
+        (False, "No"),
+        (True, "Yes"),
+    )
+
+    class Meta:
+        verbose_name = "Binary Question"
+        verbose_name_plural = "Binary Questions"
+
+    @property
+    def options(self):
+        return [{"id": o[0], "text": o[1]} for o in self.OPTIONS]
+
+    def get_absolute_url(self):
+        return reverse('survey:binary-detail', args=[self.id])
+
+    def get_update_url(self):
+        return reverse('survey:binary-update', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('survey:binary-delete', args=[self.id])
+
+    @staticmethod
+    def get_api_response_url():
+        return reverse("binaryresponse-list")
+
+
+class BinaryResponse(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    question = models.ForeignKey(BinaryQuestion)
+    selected_option = models.BooleanField(default=False)
+    submitted_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{}".format(self.response)
+
+    class Meta:
+        verbose_name = "Binary Response"
+        verbose_name_plural = "Binary Responses"
+
+    @property
+    def selected_option_text(self):
+        return self.get_selected_option_display()
+
+
 class MultipleChoiceQuestion(BaseQuestion):
     """A Question that contains multiple choices for a response."""
 

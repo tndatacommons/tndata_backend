@@ -62,6 +62,8 @@ a.ui-datepicker-next { float:right; }
       <li class="divider"></li>
       <li><a href="{% url 'survey:instrument-list' %}">Instruments</a></li>
       <li class="divider"></li>
+      <li><a href="{% url 'survey:binary-list' %}">Binary Questions</a></li>
+      <li class="divider"></li>
       <li><a href="{% url 'survey:likert-list' %}">Likert Questions</a></li>
       <li class="divider"></li>
       <li><a href="{% url 'survey:multiplechoice-list' %}">Multiple Choice</a></li>
@@ -74,6 +76,8 @@ a.ui-datepicker-next { float:right; }
         <ul class="dropdown">
           <li><a href="{% url 'survey:instrument-create' %}">
             Instrument</a></li>
+          <li><a href="{% url 'survey:binary-create' %}">
+            Binary Question</a></li>
           <li><a href="{% url 'survey:likert-create' %}">
             Likert Question</a></li>
           <li><a href="{% url 'survey:multiplechoice-create' %}">

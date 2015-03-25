@@ -2,6 +2,8 @@ from rest_framework import serializers
 from . models import (
     LikertQuestion,
     LikertResponse,
+    BinaryQuestion,
+    BinaryResponse,
     MultipleChoiceQuestion,
     MultipleChoiceResponse,
     OpenEndedQuestion,
@@ -9,10 +11,22 @@ from . models import (
 )
 
 from . serializer_fields import (
+    BinaryOptionsField,
     LikertOptionsField,
     MultipleChoiceOptionsField,
     QuestionField,
 )
+
+
+class BinaryQuestionSerializer(serializers.ModelSerializer):
+    """A Serializer for `BinaryQuestion`."""
+    options = BinaryOptionsField()
+
+    class Meta:
+        model = BinaryQuestion
+        fields = (
+            'id', 'order', 'text', 'available', 'updated', 'created', 'options',
+        )
 
 
 class LikertQuestionSerializer(serializers.ModelSerializer):
@@ -45,6 +59,29 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
         )
+
+
+class BinaryResponseSerializer(serializers.ModelSerializer):
+    """A Serializer for the `BinaryResponse` model."""
+    selected_option_text = serializers.Field(source='selected_option_text')
+
+    class Meta:
+        model = BinaryResponse
+        fields = (
+            'id', 'user', 'question', 'selected_option', 'selected_option_text',
+            'submitted_on'
+        )
+        read_only_fields = ("id", "submitted_on", )
+
+    def transform_selected_option(self, obj, value):
+        if obj:
+            return BinaryOptionsField().to_native(obj.selected_option)
+        return value
+
+    def transform_question(self, obj, value):
+        if obj:
+            return QuestionField().to_native(obj.question)
+        return value
 
 
 class LikertResponseSerializer(serializers.ModelSerializer):

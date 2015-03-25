@@ -117,6 +117,34 @@ class LikertQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.LikertQuestionSerializer
 
 
+class BinaryQuestionViewSet(viewsets.ReadOnlyModelViewSet):
+    """This is a read-only endpoint for all available Binary Questions.
+
+    Binary Questions contain the following attributes:
+
+    * id: The database ID for the Question.
+    * text: The text of the question. This is what the user should see.
+    * order: The order in which multiple questions should be displayed.
+    * available: Boolean. Whether or not this question should be available to
+        users. This should always be `true` for this endpoint.
+    * updated: Date & time the question was last updated.
+    * created: Date & time the question was created.
+    * options: The options available to a user for answering this question.
+      For binary questions, this is a list of objects with `id` and `text`
+      attributes.
+
+    To save a User's response, POST the question ID and the option ID to the
+    [BinaryResponse](/api/survey/binary/responses/) endpoint:
+
+        {question: ID, 'selected_option': OPTION_ID}
+
+    ----
+
+    """
+    queryset = models.BinaryQuestion.objects.available()
+    serializer_class = serializers.BinaryQuestionSerializer
+
+
 class MultipleChoiceQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """This is a read-only endpoint for all available Multiple Choice Questions.
 
@@ -168,6 +196,50 @@ class OpenEndedQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.OpenEndedQuestion.objects.available()
     serializer_class = serializers.OpenEndedQuestionSerializer
+
+
+class BinaryResponseViewSet(mixins.CreateModelMixin,
+                            mixins.ListModelMixin,
+                            mixins.RetrieveModelMixin,
+                            viewsets.GenericViewSet):
+    """This endpoint lists the [BinaryQuestion](/api/survey/binary/)s to which
+    a [User](/api/users/) has responded.
+
+    GET requests to this page will list all questions belonging to the User.
+
+    ## Adding a Response
+
+    To save a User's response to a question, POST to this endpoint with the
+    following data:
+
+        {'question': QUESTION_ID, 'selected_option': VALUE}
+
+    Where value is one of the given options for the question.
+
+    ## Updating/Deleting a Response.
+
+    Updating or deleting a response is currently not supported.
+
+    ## Viewing the individual response
+
+    Additionally, you can retrieve information for a single Response through
+    the endpoint including it's ID: `/api/survey/binary/responses/{response_id}/`.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.BinaryResponse.objects.all()
+    serializer_class = serializers.BinaryResponseSerializer
+    permission_classes = [permissions.IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.DATA['user'] = request.user.id
+        return super(BinaryResponseViewSet, self).create(request, *args, **kwargs)
 
 
 class LikertResponseViewSet(mixins.CreateModelMixin,
