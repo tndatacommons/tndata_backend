@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from .. likert import LIKERT_SCALES
 from .. models import (
     Instrument,
     BinaryQuestion,
@@ -163,13 +164,7 @@ class TestLikertQuestion(TestCase):
 
     def test_options(self):
         expected_options = [
-            {"id": 1, "text": "Strongly Disagree"},
-            {"id": 2, "text": "Disagree"},
-            {"id": 3, "text": "Slightly Disagree"},
-            {"id": 4, "text": "Neither Agree nor Disagree"},
-            {"id": 5, "text": "Slightly Agree"},
-            {"id": 6, "text": "Agree"},
-            {"id": 7, "text": "Strongly Agree"},
+            {"id": d[0], "text": d[1]} for d in LIKERT_SCALES['5_point_agreement']
         ]
         self.assertEqual(self.question.options, expected_options)
 
@@ -200,12 +195,13 @@ class TestLikertResponse(TestCase):
             "user", "user@example.com", "secret"
         )
         self.question = LikertQuestion.objects.create(
-            text="What is your favorite color?"
+            text="What is your favorite color?",
+            scale="5_point_agreement"
         )
         self.response = LikertResponse.objects.create(
             user=self.user,
             question=self.question,
-            selected_option=LikertQuestion.STRONGLY_DISAGREE,
+            selected_option=LIKERT_SCALES['5_point_agreement'][0][0]
         )
 
     def tearDown(self):

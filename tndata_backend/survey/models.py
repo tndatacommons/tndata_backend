@@ -3,6 +3,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from . managers import QuestionManager
+from . likert import LIKERT_SCALES
 
 
 class Instrument(models.Model):
@@ -235,22 +236,14 @@ class LikertQuestion(BaseQuestion):
     http://en.wikipedia.org/wiki/Likert_scale#Likert_scales_and_items
 
     """
-    STRONGLY_DISAGREE = 1
-    DISAGREE = 2
-    SLIGHTLY_DISAGREE = 3
-    NEITHER = 4
-    SLIGHTLY_AGREE = 5
-    AGREE = 6
-    STRONGLY_AGREE = 7
-
-    LIKERT_CHOICES = (
-        (STRONGLY_DISAGREE, 'Strongly Disagree'),
-        (DISAGREE, 'Disagree'),
-        (SLIGHTLY_DISAGREE, 'Slightly Disagree'),
-        (NEITHER, 'Neither Agree nor Disagree'),
-        (SLIGHTLY_AGREE, 'Slightly Agree'),
-        (AGREE, 'Agree'),
-        (STRONGLY_AGREE, 'Strongly Agree'),
+    SCALE_CHOICES = [
+        (k, " ".join(k.split("_")).title()) for k in LIKERT_SCALES.keys()
+    ]
+    scale = models.CharField(
+        max_length=32,
+        default="5_point_agreement",  # See likert.LIKERT_SCALES
+        choices=SCALE_CHOICES,
+        help_text="Select the Scale for this question"
     )
 
     class Meta:
@@ -258,11 +251,19 @@ class LikertQuestion(BaseQuestion):
         verbose_name_plural = "Likert Questions"
 
     @property
+    def scale_text(self):
+        return " ".join(self.scale.split("_")).title()
+
+    @property
+    def choices(self):
+        return LIKERT_SCALES[self.scale]
+
+    @property
     def options(self):
         """Kind of a hack, but this follows a similar pattern as in the
         MultipleChoiceQuestion model. Returns the possible options for a
         question."""
-        return [{'id': o[0], 'text': o[1]} for o in self.LIKERT_CHOICES]
+        return [{'id': o[0], 'text': o[1]} for o in self.choices]
 
     def get_absolute_url(self):
         return reverse('survey:likert-detail', args=[self.id])
@@ -285,9 +286,9 @@ class LikertResponse(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     question = models.ForeignKey(LikertQuestion)
-    selected_option = models.PositiveIntegerField(
-        choices=LikertQuestion.LIKERT_CHOICES
-    )
+    # TODO: I'd like to enforce choices on selected_option, but those would
+    # have to be set dynamically based on the question's scale.
+    selected_option = models.PositiveIntegerField()
     submitted_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -300,3 +301,8 @@ class LikertResponse(models.Model):
     @property
     def selected_option_text(self):
         return self.get_selected_option_display()
+
+    def get_selected_option_display(self):
+        for value, text in self.question.choices:
+            if self.selected_option == value:
+                return text
