@@ -45,19 +45,19 @@ class TestCategory(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.category.get_absolute_url(),
-            "/goals/category/test-category/"
+            "/goals/categories/test-category/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.category.get_update_url(),
-            "/goals/category/test-category/update/"
+            "/goals/categories/test-category/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.category.get_delete_url(),
-            "/goals/category/test-category/delete/"
+            "/goals/categories/test-category/delete/"
         )
 
 
@@ -95,19 +95,19 @@ class TestGoal(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.goal.get_absolute_url(),
-            "/goals/goal/title-for-test-goal/"
+            "/goals/goals/title-for-test-goal/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.goal.get_update_url(),
-            "/goals/goal/title-for-test-goal/update/"
+            "/goals/goals/title-for-test-goal/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.goal.get_delete_url(),
-            "/goals/goal/title-for-test-goal/delete/"
+            "/goals/goals/title-for-test-goal/delete/"
         )
 
 
@@ -146,19 +146,19 @@ class TestTrigger(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.trigger.get_absolute_url(),
-            "/goals/trigger/test-trigger/"
+            "/goals/triggers/test-trigger/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.trigger.get_update_url(),
-            "/goals/trigger/test-trigger/update/"
+            "/goals/triggers/test-trigger/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.trigger.get_delete_url(),
-            "/goals/trigger/test-trigger/delete/"
+            "/goals/triggers/test-trigger/delete/"
         )
 
 
@@ -197,19 +197,19 @@ class TestBehavior(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.behavior.get_absolute_url(),
-            "/goals/behavior/test-behavior/"
+            "/goals/behaviors/test-behavior/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.behavior.get_update_url(),
-            "/goals/behavior/test-behavior/update/"
+            "/goals/behaviors/test-behavior/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.behavior.get_delete_url(),
-            "/goals/behavior/test-behavior/delete/"
+            "/goals/behaviors/test-behavior/delete/"
         )
 
 
@@ -243,19 +243,19 @@ class TestAction(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.action.get_absolute_url(),
-            "/goals/action/test-action/"
+            "/goals/actions/test-action/"
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.action.get_update_url(),
-            "/goals/action/test-action/update/"
+            "/goals/actions/test-action/update/"
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.action.get_delete_url(),
-            "/goals/action/test-action/delete/"
+            "/goals/actions/test-action/delete/"
         )
 
 
