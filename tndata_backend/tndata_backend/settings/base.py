@@ -48,11 +48,17 @@ INSTALLED_APPS = (
     'corsheaders',
     'diary',
     'goals',
+    'notifications',
     'rules',
     'survey',
     'userprofile',
     'utils',
 )
+
+# Settings for Google Cloud Messaging.
+GCM = {
+    'API_KEY': 'AIzaSyCi5AGkIhEWPrO8xo3ec3MIo7-tGlRtng0',
+}
 
 AUTHENTICATION_BACKENDS = (
     'utils.backends.EmailAuthenticationBackend',
