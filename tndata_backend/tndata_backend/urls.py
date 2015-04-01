@@ -18,6 +18,7 @@ from goals.api import (
     UserCategoryViewSet,
     UserGoalViewSet,
 )
+from notifications.api import GCMMessageViewSet
 from survey.api import (
     BinaryQuestionViewSet,
     BinaryResponseViewSet,
@@ -60,6 +61,9 @@ router.register(r'users/actions', UserActionViewSet)
 router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/goals', UserGoalViewSet)
+
+# ViewSets from the goals app.
+router.register(r'notifications', GCMMessageViewSet)
 
 # ViewSets from the survey app.
 router.register(r'survey/binary/responses', BinaryResponseViewSet)
