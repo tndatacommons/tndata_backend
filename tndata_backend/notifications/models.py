@@ -27,6 +27,9 @@ class GCMMessage(models.Model):
         db_index=True,
         help_text="The Android device ID"
     )
+
+    # TODO: IS THIS Right? From the app's perspective, should we be building a
+    # chunk of JSON or shoule we just push up a message string?
     content = JSONField(help_text="JSON content for the message")
 
     # Successful deliver? True/False, Null == message not sent.
