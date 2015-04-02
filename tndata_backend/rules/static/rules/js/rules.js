@@ -60,8 +60,16 @@ $(document).ready(function() {
         });
     }
 
+    /**
+     * Build each Rules-form section. This function should get two elements,
+     *
+     * - key: a key for the type of rule (i.e. a django app name)
+     */
     function buildSection(key) {
-        var section = $('<form></form>').addClass("rules-section");
+        var section = $('<div></div>');
+        section.addClass("large-6 medium-6 small-12 columns");
+        section.append($('<form></form>').addClass("rules-section"));
+
         section.append(
           $('<div></div>').addClass("row").append(
             $('<div></div>').addClass("large-12 small-12 columns").append(
