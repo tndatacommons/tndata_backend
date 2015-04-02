@@ -6,6 +6,9 @@ from . managers import QuestionManager
 from . likert import LIKERT_SCALES
 
 
+# TODO: We need aggregated results/scores for all questions in an instrument.
+# ^ these will feed into our rules.
+
 class Instrument(models.Model):
     title = models.CharField(max_length=128, unique=True, db_index=True)
     description = models.TextField(
