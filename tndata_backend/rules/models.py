@@ -13,9 +13,7 @@ class Rule(models.Model):
     modified = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
-        if self.rule_name:
-            return "{0}: {1}".format(self.app_name, self.rule_name)
-        return self.app_name
+        return self.rule_name if self.rule_name else self.app_name
 
     class Meta:
         ordering = ['app_name', 'created']
