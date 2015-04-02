@@ -3,13 +3,27 @@
 
 
 {% block content %}
-  <ul>
-  {% for rule in rules %}
-    <li>
-      <a href="{{ rule.get_absolute_url }}">{{ rule }}</a> ({{ rule.created }})
-    </li>
+  <p>The following are a list of defined Rules. Click on a rule to review or
+  edit it. You can also <a href="{% url 'rules:add-rule' %}">Add a Rule</a>.</p>
+  <table>
+  <caption>Our Content Recommendation Rules</caption>
+  <thead>
+    <tr><th>Rule Name</th><th>App</th><th>Created</th></tr>
+  </thead>
+  <tbody>
+    {% for rule in rules %}
+      <tr>
+      <td>
+        <a href="{{ rule.get_absolute_url }}">
+          {{ rule.rule_name|default:rule.id }}
+        </a>
+      </td>
+      <td>{{ rule.app_name }}</td>
+      <td>{{ rule.created }}</td>
+      </tr>
   {% empty %}
-    <li>No rules defined.</li>
+    <tr><td colspan="3">No rules defined.</td></tr>
   {% endfor %}
-  </ul>
+  </tbody>
+  </table>
 {% endblock %}

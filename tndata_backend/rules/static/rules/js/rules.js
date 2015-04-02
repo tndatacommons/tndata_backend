@@ -4,12 +4,22 @@ $(document).ready(function() {
 
     function initializeConditions(key, data) {
         var selector = '.' + key + '-conditions';
-        $(selector).conditionsBuilder(data)
+        $(selector).conditionsBuilder(data);
     }
 
     function initializeActions(key, data) {
         var selector = '.' + key + '-actions';
         $(selector).actionsBuilder(data);
+    }
+
+    /*
+     * Add class names to generated elements so they work with
+     * and/or look nice in Foundation.
+     */
+    function updateFoundationUI() {
+        $('a.add-rule, a.add-condition, a.remove, a.add')
+            .addClass("button secondary tiny");
+        $('a.remove').addClass("alert");
     }
 
     function initializeForm() {
@@ -32,7 +42,7 @@ $(document).ready(function() {
                 rule_name: name,
                 conditions: conditions_code,
                 actions: actions_code,
-            }
+            };
             var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
 
             // DO the AJAX request to create the Rule.
@@ -53,15 +63,33 @@ $(document).ready(function() {
     function buildSection(key) {
         var section = $('<form></form>').addClass("rules-section");
         section.append(
-            $('<h2></h2>').text(key),
-            $('<label></label>').prop('for', key + '-name').text('Name: '),
-            $('<input>').prop('type', 'name').prop('id', key + '-name'),
+          $('<div></div>').addClass("row").append(
+            $('<div></div>').addClass("large-12 small-12 columns").append(
+                $('<h2></h2>').addClass("subheader").text(key),
+                $('<label></label>')
+                    .prop('for', key + '-name')
+                    .text('Name: ')
+                    .append(
+                        $('<input>')
+                            .prop('type', 'text')
+                            .prop('name', 'name')
+                            .prop('id', key + '-name')
+                            .prop('placeholder', 'Give this Rule a Name')
+                    )
+                )
+          ),
+          $('<div></div>').addClass("row").append(
             $('<div></div>')
                 .addClass(key + '-conditions')
-                .text(key + '-conditions'),
+                .addClass("large-12 small-12 columns")
+                .text(key + '-conditions')
+          ),
+          $('<div></div>').addClass("row").append(
             $('<div></div>')
                 .addClass(key + '-actions')
+                .addClass("large-12 small-12 columns")
                 .text(key + '-actions'),
+            $('<hr/>'),
             $('<button></button>')
                 .prop('id', key + '-submit')
                 .prop('type', 'submit')
@@ -69,6 +97,7 @@ $(document).ready(function() {
                 .data('key', key)
                 .data('conditions', "." + key + '-conditions')  // selectors.
                 .data('actions', "." + key + '-actions')
+          )
         );
         $('#rules-container').append(section);
     }
@@ -87,6 +116,7 @@ $(document).ready(function() {
             }
         }
         initializeForm();
+        updateFoundationUI();
     }
 
     // Fire off Ajax Request to get Variable/Action data.
@@ -94,5 +124,4 @@ $(document).ready(function() {
         allData = data;
         init();
     });
-
 });

@@ -2,11 +2,6 @@
 {% load static from staticfiles %}
 
 
-{% block extrahead %}
-<script src="{% static "rules/js/rules.js" %}" type="text/javascript"></script>
-{% endblock %}
-
-
 {% block content %}
   {% csrf_token %} {# NOTE: Needed to POST via AJAX #}
   {% comment %}
@@ -23,10 +18,18 @@
     ----------------------------------
 
   {% endcomment %}
-  <div id="rules-container"></div>
+  <div class="row">
+    <div class="large-6 small-6 columns" id="rules-container"></div>
+    <div class="large-6 small-6 columns" id="results">
+      <h2>Conditions</h2>
+      <pre id="conditions-code" class="code panel"></pre>
+      <h2>Actions</h2>
+      <pre id="actions-code" class="code panel"></pre>
+    </div>
+{% endblock %}
 
-  <div id="results">
-    <h2>Conditions</h2><pre id="conditions-code" class="code"></pre>
-    <h2>Actions</h2><pre id="actions-code" class="code"></pre>
-  </div>
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script src="{% static "rules/js/rules.js" %}" type="text/javascript"></script>
 {% endblock %}

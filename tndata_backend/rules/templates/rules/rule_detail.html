@@ -2,43 +2,21 @@
 {% load static from staticfiles %}
 {% load rules_tags %}
 
-{% block extrahead %}
-<script>
-$(document).ready(function() {
-  var delete_url = "{{ object.get_absolute_url }}";
-  var redirect_url = "{% url 'rules:rules' %}";
-  var csrftoken = $('input[name=csrfmiddlewaretoken]').val();
-
-  $("#delete").click(function(e) {
-    e.preventDefault();
-    $.ajax({
-      type: "POST", // Still too hard to DELETE with django :(
-      url: delete_url,
-      beforeSend: function(xhr) {
-        xhr.setRequestHeader("X-CSRFToken", csrftoken);
-      }
-    })
-    .done(function(response) {
-      window.location = redirect_url;
-    });
-  });
-});
-</script>
-{% endblock %}
 
 {% block content %}
-  <h2>
-    {{ object.app_name }}
-    {% if object.rule_name %}/ {{ object.rule_name }}{% endif %}
-  </h2>
-  <p>Created on {{ object.created }}<br/>Updated on {{ object.modified }}</p>
+  <h2 class="subheader">{{ object }}</h2>
+  <p>Created: {{ object.created }}.<br/>
+     Updated: {{ object.modified }}</p>
 
   <h3>Conditions</h3>
-  <pre><code>{{ rule|format_rule:"conditions"}}</code></pre>
-
+  <pre class="panel">{{ rule|format_rule:"conditions" }}</pre>
   <h3>Actions</h3>
-  <pre><code>{{ rule|format_rule:"actions"}}</code></pre>
+  <pre class="panel">{{ rule|format_rule:"actions"}}</pre>
+  <hr/>
 
-  <p><button id="delete" data-pk="{{ object.pk }}">Delete</button></p>
-  {% csrf_token %}
+  {# DELETE Form #}
+  <form action="{{ object.get_absolute_url }}" method="post">{% csrf_token %}
+  <p><button id="delete" data-pk="{{ object.pk }}" class="button alert">
+    Delete</button></p>
+  </form>
 {% endblock %}

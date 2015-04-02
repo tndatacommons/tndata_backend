@@ -1,10 +1,10 @@
+{% extends "base.html" %}
 {% load static from staticfiles %}
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-  <script src="{% static "business-rules-ui/lib/business-rules/conditions-builder.js" %}"></script>
-  <script src="{% static "business-rules-ui/lib/business-rules/actions-builder.js" %}"></script>
+
+{% block title %}Rules {% endblock %}
+
+{% block head %}
+  {% comment %}
   <style type="text/css">
     body {margin:0; padding:2em;font-size:14pt;color:#333;font-family:Helvetica;}
     #conditions,#actions {margin:1em auto; padding: 1em; border: 1px solid #ccc;}
@@ -41,26 +41,63 @@
     #messages li.warning{border-color: #fa0; background-color: #ffe; color: #850;}
     #messages li.error {border-color: #00f; background-color: #eef; color: #008;}
   </style>
-  {% block extrahead %}{% endblock %}
-</head>
-<body>
-  <div class="nav">
-    <a href="{% url 'rules:rules' %}">Rules</a>
-    <a href="{% url 'rules:add-rule' %}">+ Add Rule</a>
-    <a href="{% url 'rules:rules-data' %}">Rules Data</a>
-  </div>
-  {% if messages %}
-    <ul id="messages">
-      {% for message in messages %}
-      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-        {{ message }}
-       </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+  {% endcomment %}
+{% endblock %}
 
-  <h1>Business Rules</h1>
-  {% block content %}
-  {% endblock %}
-</body>
-</html>
+
+{% block body %}
+  <div class="sticky">
+  <nav class="top-bar" data-topbar role="navigation">
+  <ul class="title-area">
+    <li class="name">
+      <h1><a href="/">&#8962;</a></h1>
+    </li>
+    <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+  </ul>
+
+  <section class="top-bar-section">
+    {# Right Nav Section #}
+    <ul class="right">
+      <li class="divider"></li>
+      <li><a href="/admin/">Admin</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'logout' %}">Sign Out</a></li>
+    </ul>
+
+    {# Left Nav Section #}
+    <ul class="left">
+      <li class="divider"></li>
+      <li><a href="{% url 'rules:rules' %}">Rules</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'rules:rules-data' %}">JSON Data</a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'rules:add-rule' %}">+ Add Rule</a></li>
+      <li class="divider"></li>
+    </ul>
+  </section>
+  </nav>
+  </div>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+    {# django.contrib.messages #}
+    {% if messages %}
+      {% for message in messages %}
+        <div data-alert class="alert-box {{message.tags}}">
+          {{ message }} <a href="#" class="close">&times;</a>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <h1>Business/Recommendation Rules</h1>
+    {% block content %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+{{ block.super }}
+<script src="{% static "business-rules-ui/lib/business-rules/conditions-builder.js" %}"></script>
+<script src="{% static "business-rules-ui/lib/business-rules/actions-builder.js" %}"></script>
+{% endblock %}
