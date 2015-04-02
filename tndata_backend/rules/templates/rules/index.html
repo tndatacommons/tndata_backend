@@ -8,7 +8,13 @@
   <table>
   <caption>Our Content Recommendation Rules</caption>
   <thead>
-    <tr><th>Rule Name</th><th>App</th><th>Created</th></tr>
+    <tr>
+      <th>Rule Name</th>
+      <th>App</th>
+      <th>Created</th>
+      <th>Conditions</th>
+      <th>Actions</th>
+    </tr>
   </thead>
   <tbody>
     {% for rule in rules %}
@@ -20,6 +26,8 @@
       </td>
       <td>{{ rule.app_name }}</td>
       <td>{{ rule.created }}</td>
+      <td>{{ rule.get_conditions_text|linebreaksbr }}</td>
+      <td>{{ rule.get_action_names }}</td>
       </tr>
   {% empty %}
     <tr><td colspan="3">No rules defined.</td></tr>
