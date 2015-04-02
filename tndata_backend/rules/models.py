@@ -30,6 +30,21 @@ class Rule(models.Model):
         """Return json-decoded versions of the actions."""
         return json.loads(self.actions)
 
+    def get_conditions_text(self):
+        """Return a simple, human-readable text representation of the
+        conditions data."""
+        output = ''
+        for criteria, item_list in self._conditions.items():
+            output += "{0}: {1}\n".format(
+                criteria.upper(),
+                ', '.join(c.get('name', '') for c in item_list)
+            )
+        return output
+
+    def get_action_names(self):
+        """Return the 'name' attribute for the Actions."""
+        return ', '.join(a.get('name', '') for a in self._actions)
+
     @models.permalink
     def get_absolute_url(self):
         return ('rules:detail', [str(self.id)])
