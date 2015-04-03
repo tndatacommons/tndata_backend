@@ -28,6 +28,9 @@
         <form action="{% url 'login' %}" method="post">{% csrf_token %}
         {{ login_form }}<hr>
         <button class="button" type="submit">Sign In</button>
+        <span>
+          <a href="{% url 'utils:password_reset' %}">Forgot Password?</a>
+        </span>
         </form>
       </div>
     {% endif %} {# user.is_authenticated #}
