@@ -98,6 +98,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/$', login, name="login"),
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),
+    url(r'^utils/', include('utils.urls', namespace='utils')),
     url(r'^$', IndexView.as_view())
 )
 

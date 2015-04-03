@@ -9,6 +9,9 @@
       {{ form }}<hr>
       <input type="hidden" name="next" value="{{ next|default:"/"}}" />
       <button class="button" type="submit">Sign In</button>
+      <span>
+        <a href="{% url 'utils:password_reset' %}">Forgot Password?</a>
+      </span>
     </form>
   </div>
 </div> {# end .row #}
