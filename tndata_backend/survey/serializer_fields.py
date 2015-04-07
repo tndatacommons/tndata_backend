@@ -5,7 +5,17 @@ from rest_framework import serializers
 class BinaryOptionsField(serializers.RelatedField):
     """Includes the available options for a BinaryQuestion. To customize this,
     see `BinaryQuestion.options`."""
+
     def to_native(self, value):
+        # value is a list of options, e.g.:
+        # [{'id': False, 'text': 'No'}, {'id': True, 'text': 'Yes'}]
+        #
+        # We want to convert False -> 0, True -> 1.
+        for d in value:
+            if d['id'] is False:
+                d['id'] = 0
+            else:
+                d['id'] = 1
         return value
 
 
