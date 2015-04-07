@@ -89,6 +89,9 @@ class TestBinaryQuestion(TestCase):
         actual = "{}".format(self.question)
         self.assertEqual(expected, actual)
 
+    def test_question_type(self):
+        self.assertEqual(self.question.question_type, "binaryquestion")
+
     def test_options(self):
         expected_options = [
             {"id": False, "text": "No"},
@@ -162,6 +165,9 @@ class TestLikertQuestion(TestCase):
         actual = "{}".format(self.question)
         self.assertEqual(expected, actual)
 
+    def test_question_type(self):
+        self.assertEqual(self.question.question_type, "likertquestion")
+
     def test_options(self):
         expected_options = [
             {"id": d[0], "text": d[1]} for d in LIKERT_SCALES['5_point_agreement']
@@ -231,6 +237,9 @@ class TestOpenEndedQuestion(TestCase):
         actual = "{}".format(self.question)
         self.assertEqual(expected, actual)
 
+    def test_question_type(self):
+        self.assertEqual(self.question.question_type, "openendedquestion")
+
     def test_get_absolute_url(self):
         self.assertEqual(
             self.question.get_absolute_url(),
@@ -287,6 +296,9 @@ class TestMultipleChoiceQuestion(TestCase):
 
     def tearDown(self):
         MultipleChoiceQuestion.objects.filter(id=self.question.id).delete()
+
+    def test_question_type(self):
+        self.assertEqual(self.question.question_type, "multiplechoicequestion")
 
     def test__str__(self):
         expected = "What is your favorite color?"

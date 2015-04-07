@@ -35,6 +35,7 @@ class TestInstrumentAPI(APITestCase):
         self.assertEqual(c['id'], self.instrument.id)
         self.assertEqual(c['title'], self.instrument.title)
         self.assertEqual(c['description'], self.instrument.description)
+        self.assertEqual(c['questions'], [])  # There are no questions, yet
 
     def test_post_list(self):
         """Ensure this endpoint is read-only."""
