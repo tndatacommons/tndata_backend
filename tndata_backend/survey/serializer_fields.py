@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 
-# TODO: Replace BinaryOptionsField & LikertOptionsField with an `OptionsField`
 class BinaryOptionsField(serializers.RelatedField):
     """Includes the available options for a BinaryQuestion. To customize this,
     see `BinaryQuestion.options`."""
@@ -23,7 +22,14 @@ class LikertOptionsField(serializers.RelatedField):
     """Includes the available options for a LIkertQuestion. To customize this,
     see `LikertQuestion.options`."""
     def to_native(self, value):
-        return value
+        # value is a list of options, e.g.:
+        # [{'text': 'Strongly Disagree', 'id': 1},
+        #  {'text': 'Disagree', 'id': 2},
+        #  ...
+        #  {'text': 'Strongly Agree', 'id': 5}]
+        #
+        # We want to ensure that this is always sorted by id.
+        return sorted(value, key=lambda d: d['id'])
 
 
 class QuestionField(serializers.RelatedField):
