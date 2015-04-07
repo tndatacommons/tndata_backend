@@ -46,7 +46,6 @@ class GoalViewSet(viewsets.ReadOnlyModelViewSet):
     * id: The unique database identifier for the goal
     * title: A unique Title (or name) for the goal.
     * title_slug: A url-friendly version of the title.
-    * subtitle: A short, one-liner description for the goal (256 chars or less)
     * description: A longer description for the goal. May contain markdown.
     * outcome: Additional (optional) text that may describe an expected outcome
       of pursing this Goal.

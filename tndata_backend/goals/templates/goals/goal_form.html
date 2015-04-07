@@ -42,13 +42,12 @@ Category
     <table>
       <caption>Existing Goals</caption>
       <thead>
-        <tr><th>Title</th><th>Subtitle</th><th>Categories</th></tr>
+        <tr><th>Title</th><th>Categories</th></tr>
       </thead>
       <tbody>
       {% for goal in goals %}
         <tr>
           <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
-          <td>{{ goal.subtitle|default:"" }}</td>
           <td>
             {% for c in goal.categories.all %}
               <a href="{{c.get_absolute_url}}">{{c}}</a>

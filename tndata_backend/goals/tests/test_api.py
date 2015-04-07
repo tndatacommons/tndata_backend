@@ -91,7 +91,6 @@ class TestGoalAPI(APITestCase):
         self.assertEqual(obj['id'], self.goal.id)
         self.assertEqual(obj['title'], self.goal.title)
         self.assertEqual(obj['title_slug'], self.goal.title_slug)
-        self.assertEqual(obj['subtitle'], self.goal.subtitle)
         self.assertEqual(obj['description'], self.goal.description)
 
     def test_goal_list_by_category(self):

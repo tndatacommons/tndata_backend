@@ -13,7 +13,6 @@
       <thead>
       <tr>
         <th>Title</th>
-        <th>Subtitle</th>
         <th>Behaviors</th>
         <th>Categories</th>
       </tr>
@@ -22,7 +21,6 @@
       {% for goal in goals %}
         <tr>
         <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
-        <td>{{ goal.subtitle|default:"" }}</td>
         <td>{{ goal.behavior_set.all|join:", " }}</td>
         <td>{{ goal.categories.all|join:", " }}</td>
         </tr>
