@@ -20,20 +20,44 @@ from . serializer_fields import (
 
 
 class InstrumentSerializer(serializers.ModelSerializer):
+    questions = serializers.Field(source='questions')
+
     class Meta:
         model = Instrument
-        fields = ('id', 'title', 'description')
+        fields = ('id', 'title', 'description', 'questions')
+
+    def transform_questions(self, obj, value):
+        """Format the list of questions so they can be serialized appropriately."""
+        # NOTE: obj is an Instrument instance.
+        # value is our list of (class name, question text) tuples.
+
+        # NOTE: This code only works because this is used in a Read-Only
+        # endpoint; notice how we pull questions from the Instrument instance,
+        # and not the provided value
+        if obj and value:
+            for i, (qname, question) in enumerate(obj.questions):
+                if qname == "BinaryQuestion":
+                    value[i] = BinaryQuestionSerializer(question).data
+                elif qname == "LikertQuestion":
+                    value[i] = LikertQuestionSerializer(question).data
+                elif qname == "MultipleChoiceQuestion":
+                    value[i] = MultipleChoiceQuestionSerializer(question).data
+                elif qname == "OpenEndedQuestion":
+                    value[i] = OpenEndedQuestionSerializer(question).data
+            return value
+        return []
 
 
 class BinaryQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `BinaryQuestion`."""
     options = BinaryOptionsField()
+    question_type = serializers.CharField(source="question_type")
 
     class Meta:
         model = BinaryQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions', 'instruments'
+            'options', 'instructions', 'question_type',
         )
         depth = 1
 
@@ -41,12 +65,13 @@ class BinaryQuestionSerializer(serializers.ModelSerializer):
 class LikertQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `LikertQuestion`."""
     options = LikertOptionsField()
+    question_type = serializers.CharField(source="question_type")
 
     class Meta:
         model = LikertQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions', 'instruments'
+            'options', 'instructions', 'question_type',
         )
         depth = 1
 
@@ -54,24 +79,26 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `MultipleChoiceQuestion`."""
     options = MultipleChoiceOptionsField(many=True)
+    question_type = serializers.CharField(source="question_type")
 
     class Meta:
         model = MultipleChoiceQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions', 'instruments'
+            'options', 'instructions', 'question_type',
         )
         depth = 1
 
 
 class OpenEndedQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `OpenEndedQuestion`."""
+    question_type = serializers.CharField(source="question_type")
 
     class Meta:
         model = OpenEndedQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'instructions', 'instruments'
+            'instructions', 'question_type',
         )
         depth = 1
 
