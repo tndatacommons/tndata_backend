@@ -88,6 +88,10 @@ class BaseQuestion(models.Model):
         abstract = True
         ordering = ['order']
 
+    @property
+    def question_type(self):
+        return self.__class__.__name__.lower()
+
 
 class BinaryQuestion(BaseQuestion):
     """A Question with a Yes/No Answer."""

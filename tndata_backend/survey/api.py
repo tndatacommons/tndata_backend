@@ -113,7 +113,6 @@ class RandomQuestionViewSet(viewsets.ViewSet):
 
             # Serialize it.
             item = self.question_models[model_name]['serializer']().to_native(item)
-            item['question_type'] = model_name
             item['response_url'] = self.request.build_absolute_uri(api_path)
             return item
         return {}
