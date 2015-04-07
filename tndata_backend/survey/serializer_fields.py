@@ -10,11 +10,12 @@ class BinaryOptionsField(serializers.RelatedField):
         # [{'id': False, 'text': 'No'}, {'id': True, 'text': 'Yes'}]
         #
         # We want to convert False -> 0, True -> 1.
-        for d in value:
-            if d['id'] is False:
-                d['id'] = 0
-            else:
-                d['id'] = 1
+        if isinstance(value, list):
+            for d in value:
+                if d['id'] is False:
+                    d['id'] = 0
+                else:
+                    d['id'] = 1
         return value
 
 
@@ -29,7 +30,9 @@ class LikertOptionsField(serializers.RelatedField):
         #  {'text': 'Strongly Agree', 'id': 5}]
         #
         # We want to ensure that this is always sorted by id.
-        return sorted(value, key=lambda d: d['id'])
+        if isinstance(value, list):
+            return sorted(value, key=lambda d: d['id'])
+        return value
 
 
 class QuestionField(serializers.RelatedField):
