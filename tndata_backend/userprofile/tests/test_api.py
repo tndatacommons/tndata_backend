@@ -211,25 +211,25 @@ class TestUserProfilesAPI(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['home_zip'], '')  # was never set
+        self.assertEqual(response.data['race'], '')  # was never set
 
     def test_post_userprofile_detail_not_allowed(self):
         """Ensure we cannot post to userprofile-detail"""
         url = reverse('userprofile-detail', args=[self.p.id])
-        response = self.client.post(url, {'home_zip': '12345'})
+        response = self.client.post(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
         # Even when authorized
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.post(url, {'home_zip': '12345'})
+        response = self.client.post(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_put_userprofile_detail_unauthorized(self):
         """Ensure unauthenticated users cannot update data."""
         url = reverse('userprofile-detail', args=[self.p.id])
-        response = self.client.put(url, {'home_zip': '12345'})
+        response = self.client.put(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_put_userprofile_detail_authorized(self):

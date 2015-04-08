@@ -138,6 +138,85 @@ class UserProfileViewSet(mixins.ListModelMixin,
     View the *Options* on this page for more details regarding which fields
     are required.
 
+    ## UserProfile Fields:
+
+    A `UserProfile` consists of the following fields. This information is based
+    on the [BIO-8 survey](http://goo.gl/IcZmxo).
+
+    * `birthdate` - A string representing the user's birth date, in
+      YYYY-MM-DD format.
+    * `race` - A String representing the user's selected race: Options should
+      include:
+        * African American
+        * Asian
+        * Caucasian
+        * Hispanic
+        * Native American
+        * Pacific Islander
+        * Don't ask
+        * Skip
+    * `gender` - A string representing the user's gender identity. Options should
+      include:
+        * Male
+        * Female
+        * Don't ask
+        * Skip
+    * `relationship_status` - A string representing the user's relationship
+      status. Options should include:
+        * Single
+        * In a relationship
+        * It's Complicated
+        * Married
+        * Separate
+        * Divorced
+        * Widowed
+        * Don't ask
+        * Skip
+    * `educational_level` - A string representing the user's eductional level.
+      Options should include:
+        * Eighth Grade Graduation
+        * High School Diploma (or equivalent)
+        * Bachelor's Degree
+        * Professional Degree
+        * Master's Degree
+        * Doctoral Degree
+        * None of the Above
+        * Don't ask
+        * Skip
+    * `employment_status` - A string representing the user's employment status.
+        * Working for wages (full-time)
+        * Working for wages (part-time)
+        * Working for myself
+        * Looking for work
+        * Being a homemaker
+        * Being a student
+        * In military service
+        * However I want (Retired)
+        * However I want (independently wealthy)
+        * Wishing I could work (due to disability)
+        * Don't ask
+        * Skip
+    * `children` - A string representing the user's current number of children.
+      or their plans for children. Options should include:
+        * No children
+        * A child on the way
+        * A desire to have children
+        * 1 child
+        * 2 children
+        * 3 children
+        * 4 children
+        * 5 children
+        * 6 children
+        * 7 children
+    * `economic_aspiration` - A string representing the user's economic
+      aspirations. Options should include:
+        * Money? Who cares
+        * Pay my bills
+        * Better my life
+        * Feel rich
+        * Feel scure
+        * Buy whatever I want
+
     ----
 
     """

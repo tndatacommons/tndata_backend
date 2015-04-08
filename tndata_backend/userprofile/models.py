@@ -12,18 +12,23 @@ class UserProfile(models.Model):
     This profile contains information about a user, such as demographic and
     biographical data, that doesn't change frequently.
 
+    Bio-8: Storing answers to 8 biographical questions: http://goo.gl/CSzRZp
+
     """
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         help_text="The user to whom this profile belongs"
     )
-    birthdate = models.DateField(blank=True, null=True)
+    birthdate = models.DateField(blank=True, null=True, db_index=True)
+    race = models.CharField(max_length=128, blank=True, db_index=True)
+    gender = models.CharField(max_length=128, blank=True, db_index=True)
 
-    # TODO: These should have CHOICEs
-    race = models.CharField(max_length=10, blank=True)
-    gender = models.CharField(max_length=10, blank=True)
-    marital_status = models.CharField(max_length=10, blank=True)
-    educational_level = models.CharField(max_length=32, blank=True)
+    relationship_status = models.CharField(max_length=128, blank=True)
+    educational_level = models.CharField(max_length=128, blank=True)
+    employment_status = models.CharField(max_length=128, blank=True)
+    children = models.CharField(max_length=128, blank=True)
+    economic_aspiration = models.CharField(max_length=128, blank=True)
 
     mobile_phone = models.CharField(max_length=32, blank=True)
     home_phone = models.CharField(max_length=32, blank=True)
@@ -32,7 +37,6 @@ class UserProfile(models.Model):
     home_state = models.CharField(max_length=32, blank=True)
     home_zip = models.CharField(max_length=32, blank=True)
 
-    # TODO: There's lots of other potential data here.
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
