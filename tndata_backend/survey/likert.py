@@ -102,7 +102,6 @@ LIKERT_SCALES["7_point_importance"] = (
     (7, 'Extremely important'),
 )
 
-
 # Satisfaction
 LIKERT_SCALES["5_point_satisfaction"] = (
     (1, 'Not at all satisfied'),
@@ -120,4 +119,13 @@ LIKERT_SCALES["7_point_satisfaction"] = (
     (5, 'Somewhat satisfied'),
     (6, 'Mostly satisfied'),
     (7, 'Completely satisfied'),
+)
+
+# Necessity
+LIKERT_SCALES["5_point_necessary"] = (
+    (1, 'Very UNnecessary'),
+    (2, 'Somewhat UNnecessary'),
+    (3, 'Neither Necessary nor UNnecessary'),
+    (4, 'Somewhat Necessary'),
+    (5, 'Very Necessary'),
 )
