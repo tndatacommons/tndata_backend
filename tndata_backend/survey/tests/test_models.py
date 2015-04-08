@@ -73,6 +73,28 @@ class TestInstrument(TestCase):
         )
 
 
+class TestBaseQuestion(TestCase):
+    """Test any methods on BaseQuestion that are not Question-specific."""
+
+    def test_get_instructions_from_instrument(self):
+        """ensure that a question can return instructions from the instrument."""
+        i = Instrument.objects.create(title="X", instructions="Testing")
+        q = BinaryQuestion.objects.create(text="Q")
+        q.instruments.add(i)
+        self.assertEqual(q.get_instructions(), "Testing")
+        i.delete()
+        q.delete()
+
+    def test_get_instructions_from_question(self):
+        """Ensure that a question can returns it's own instructions if they exist."""
+        i = Instrument.objects.create(title="X", instructions="Testing")
+        q = BinaryQuestion.objects.create(text="Q", instructions="Get These")
+        q.instruments.add(i)
+        self.assertEqual(q.get_instructions(), "Get These")
+        i.delete()
+        q.delete()
+
+
 class TestBinaryQuestion(TestCase):
     """Tests for the `BinaryQuestion` model."""
 

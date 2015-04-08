@@ -101,6 +101,19 @@ class BaseQuestion(models.Model):
     def question_type(self):
         return self.__class__.__name__.lower()
 
+    def get_instructions(self):
+        """If the question does NOT have any instructions, look at the instrument."""
+        if self.instructions:
+            return self.instructions
+        # WHICH set to keep?
+        instructions = [
+            x for x in self.instruments.values_list('instructions', flat=True) if x
+        ]
+        keep = ''
+        if len(instructions) > 0:
+            keep = instructions[0]
+        return keep
+
 
 class BinaryQuestion(BaseQuestion):
     """A Question with a Yes/No Answer."""
