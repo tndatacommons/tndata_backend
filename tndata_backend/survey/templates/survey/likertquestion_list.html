@@ -18,6 +18,7 @@
         <th>Text</th>
         <th>Scale</th>
         <th>Priority</th>
+        <th>Instrument(s)</th>
         <th>Available</th>
         <th>Updated</th>
         <th>Created</th>
@@ -32,6 +33,7 @@
           </td>
           <td>{{ question.scale_text }}</td>
           <td>{{ question.priority }}</td>
+          <td>{{ question.instruments.all|join:"<br/>" }}</td>
           <td>{{ question.available|yesno }}</td>
           <td>{{ question.updated }}</td>
           <td>{{ question.created }}</td>

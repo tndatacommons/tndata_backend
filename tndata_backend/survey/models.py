@@ -86,7 +86,7 @@ class BaseQuestion(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['order']
+        ordering = ['instruments', 'order']
 
     @property
     def question_type(self):

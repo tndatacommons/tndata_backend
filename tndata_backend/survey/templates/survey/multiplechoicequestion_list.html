@@ -16,6 +16,7 @@
       <tr>
         <th>Order</th>
         <th>Text</th>
+        <th>Instrument(s)</th>
         <th>Available</th>
         <th>Updated</th>
         <th>Created</th>
@@ -28,6 +29,7 @@
           <td>
             <a href="{{ question.get_absolute_url }}">{{ question.text }}</a>
           </td>
+          <td>{{ question.instruments.all|join:"<br/>" }}</td>
           <td>{{ question.available|yesno }}</td>
           <td>{{ question.updated }}</td>
           <td>{{ question.created }}</td>
