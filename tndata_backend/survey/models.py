@@ -14,6 +14,15 @@ class Instrument(models.Model):
     description = models.TextField(
         help_text="Optional Description for this Instrument"
     )
+    instructions = models.CharField(
+        max_length=140,
+        blank=True,
+        default='',
+        help_text="Instructions for the user answering this question. NOTE: "
+                  "Each question also has an instructions field. The information "
+                  "here will only be used if you do not provide instructions "
+                  "on the question"
+    )
 
     def __str__(self):
         return self.title
