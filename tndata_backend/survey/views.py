@@ -52,7 +52,7 @@ class InstrumentDetailView(SuperuserRequiredMixin, DetailView):
 
 class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
     model = Instrument
-    fields = ['title', 'description']
+    fields = ['title', 'description', 'instructions']
 
     def get_context_data(self, **kwargs):
         context = super(InstrumentCreateView, self).get_context_data(**kwargs)
@@ -62,7 +62,7 @@ class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
 
 class InstrumentUpdateView(SuperuserRequiredMixin, UpdateView):
     model = Instrument
-    fields = ['title', 'description']
+    fields = ['title', 'description', 'instructions']
 
     def get_context_data(self, **kwargs):
         context = super(InstrumentUpdateView, self).get_context_data(**kwargs)
