@@ -61,19 +61,63 @@ class ActionAdmin(admin.ModelAdmin):
 admin.site.register(models.Action, ActionAdmin)
 
 
-class UserGoalAdmin(admin.ModelAdmin):
-    list_display = ('user', 'goal', 'completed', 'completed_on', 'created_on')
-    search_fields = ('user', 'goal', 'completed', 'completed_on', 'created_on')
+class UserRelatedModelAdmin(admin.ModelAdmin):
+    """This class contains methods that allow you to list user details in the
+    list_display field. Use with objects that have a `user` related field."""
+
+    def user_email(self, obj):
+        return obj.user.email
+    user_email.short_description = "Email"
+
+    def user_first(self, obj):
+        return obj.user.first_name
+    user_first.short_description = "First Name"
+
+    def user_last(self, obj):
+        return obj.user.last_name
+    user_last.short_description = "Last Name"
+
+
+class UserCategoryAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'user_email', 'user_first', 'user_last', 'category', 'created_on'
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'category__title', 'category__id'
+    )
+
+admin.site.register(models.UserCategory, UserCategoryAdmin)
+
+
+class UserGoalAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'user_email', 'user_first', 'user_last', 'goal', 'created_on'
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'goal__title', 'goal__id',
+    )
 admin.site.register(models.UserGoal, UserGoalAdmin)
 
 
-class UserBehaviorAdmin(admin.ModelAdmin):
-    list_display = ('user', 'behavior', 'completed', 'completed_on', 'created_on')
-    search_fields = ('user', 'behavior', 'completed', 'completed_on', 'created_on')
+class UserBehaviorAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'user_email', 'user_first', 'user_last', 'behavior', 'created_on'
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'behavior__id', 'behavior__title',
+    )
 admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 
-class UserActionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'action', 'completed', 'completed_on', 'created_on')
-    search_fields = ('user', 'action', 'completed', 'completed_on', 'created_on')
+class UserActionAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'user_email', 'user_first', 'user_last', 'action', 'created_on'
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'action__id', 'action__title',
+    )
 admin.site.register(models.UserAction, UserActionAdmin)
