@@ -303,6 +303,12 @@ class UserGoalViewSet(mixins.CreateModelMixin,
 
     The Goals that a User has selected are also available through the
     `/api/users/` endpoint as a `goals` object on the user.
+
+    Each results object also includes a `user_categories` object in addition to
+    a `goal` object. The `user_categories` object is a list of Categories in
+    which the goal belongs that have also be selected by the User. Related:
+    [/api/users/categories/](/api/users/categories/).
+
     ----
 
     """
@@ -538,6 +544,11 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
 
     The Categories that a User has selected are also available through the
     `/api/users/` endpoint as a `categories` object on the user.
+
+    Each results object also includes a `user_goals` object in addition to
+    a `category` object. The `user_goals` object is a list of Goals that are
+    contained in the Category, and have also be selected by the User. Related:
+    [/api/users/goals/](/api/users/goals/).
 
     ----
 
