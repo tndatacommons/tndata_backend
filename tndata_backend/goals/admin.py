@@ -1,6 +1,8 @@
 from django.contrib import admin
 from . import models
 
+from utils.admin import UserRelatedModelAdmin
+
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'title_slug', 'order', 'get_absolute_icon')
@@ -59,23 +61,6 @@ class ActionAdmin(admin.ModelAdmin):
     ]
     prepopulated_fields = {"title_slug": ("title", )}
 admin.site.register(models.Action, ActionAdmin)
-
-
-class UserRelatedModelAdmin(admin.ModelAdmin):
-    """This class contains methods that allow you to list user details in the
-    list_display field. Use with objects that have a `user` related field."""
-
-    def user_email(self, obj):
-        return obj.user.email
-    user_email.short_description = "Email"
-
-    def user_first(self, obj):
-        return obj.user.first_name
-    user_first.short_description = "First Name"
-
-    def user_last(self, obj):
-        return obj.user.last_name
-    user_last.short_description = "Last Name"
 
 
 class UserCategoryAdmin(UserRelatedModelAdmin):
