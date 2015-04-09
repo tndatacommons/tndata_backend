@@ -410,6 +410,12 @@ class UserGoal(models.Model):
         verbose_name = "User Goal"
         verbose_name_plural = "User Goals"
 
+    def get_user_categories(self):
+        """Returns a QuerySet of Categories related to this Goal, but restricts
+        those categories to those which the user has selected."""
+        cids = self.user.usercategory_set.values_list('category__id', flat=True)
+        return self.goal.categories.filter(id__in=cids)
+
 
 class UserBehavior(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -459,3 +465,9 @@ class UserCategory(models.Model):
         unique_together = ("user", "category")
         verbose_name = "User Category"
         verbose_name_plural = "User Categories"
+
+    def get_user_goals(self):
+        """Returns a QuerySet of Goals related to this Category, but restricts
+        those goals to those which the user has selected."""
+        gids = self.user.usergoal_set.values_list('goal__id', flat=True)
+        return self.category.goals.filter(id__in=gids)

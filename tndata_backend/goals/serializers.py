@@ -93,10 +93,11 @@ class ActionSerializer(serializers.ModelSerializer):
 
 class UserGoalSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserGoal` model."""
+    user_categories = SimpleCategoryField(source="get_user_categories", many=True)
 
     class Meta:
         model = UserGoal
-        fields = ('id', 'user', 'goal', 'created_on')
+        fields = ('id', 'user', 'goal', 'user_categories', 'created_on')
         read_only_fields = ("id", "created_on", )
 
     def transform_goal(self, obj, value):
@@ -144,10 +145,11 @@ class UserActionSerializer(serializers.ModelSerializer):
 
 class UserCategorySerializer(serializers.ModelSerializer):
     """A serializer for `UserCategory` model(s)."""
+    user_goals = SimpleGoalField(source="get_user_goals", many=True)
 
     class Meta:
         model = UserCategory
-        fields = ('id', 'user', 'category', 'created_on')
+        fields = ('id', 'user', 'category', 'user_goals', 'created_on')
         read_only_fields = ("id", "created_on", )
 
     def transform_category(self, obj, value):
