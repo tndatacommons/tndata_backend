@@ -276,7 +276,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     ## Adding multiple Goals in one request
 
     This endpoint also allows you to associate multiple goals with a user
-    in a single request. Do do this, POST an array of goal IDs, e.g.:
+    in a single request. To do this, POST an array of goal IDs, e.g.:
 
         [
             {'goal': 3},
@@ -360,7 +360,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     ## Adding multiple Behaviors in one request
 
     This endpoint also allows you to associate multiple behaviors with a user
-    in a single request. Do do this, POST an array of behavior IDs, e.g.:
+    in a single request. To do this, POST an array of behavior IDs, e.g.:
 
         [
             {'behavior': 3},
@@ -438,7 +438,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
     ## Adding multiple Actions in one request
 
     This endpoint also allows you to associate multiple actions with a user
-    in a single request. Do do this, POST an array of action IDs, e.g.:
+    in a single request. To do this, POST an array of action IDs, e.g.:
 
         [
             {'action': 3},
@@ -517,7 +517,7 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     ## Adding multiple Categories in one request
 
     This endpoint also allows you to associate multiple categories with a user
-    in a single request. Do do this, POST an array of category IDs, e.g.:
+    in a single request. To do this, POST an array of category IDs, e.g.:
 
         [
             {'category': 3},
