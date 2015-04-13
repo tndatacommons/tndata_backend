@@ -17,11 +17,17 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField
 
-from .mixins import WorkflowMixin
+from .mixins import RUDMixin, WorkflowMixin
 
 
-class Category(WorkflowMixin, models.Model):
+class Category(RUDMixin, WorkflowMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
+
+    # RUDMixin attributes
+    rud_app_namespace = "goals"
+    rud_model_name = "category"
+
+    # Data Fields
     order = models.PositiveIntegerField(
         unique=True,
         help_text="Controls the order in which Categories are displayed."
@@ -77,21 +83,18 @@ class Category(WorkflowMixin, models.Model):
         self.title_slug = slugify(self.title)
         super(Category, self).save(*args, **kwargs)
 
-    def get_absolute_url(self):
-        return reverse('goals:category-detail', args=[self.title_slug])
-
-    def get_update_url(self):
-        return reverse('goals:category-update', args=[self.title_slug])
-
-    def get_delete_url(self):
-        return reverse('goals:category-delete', args=[self.title_slug])
-
     def get_absolute_icon(self):
         if self.icon:
             return self.icon.url
 
 
-class Goal(WorkflowMixin, models.Model):
+class Goal(RUDMixin, WorkflowMixin, models.Model):
+
+    # RUDMixin attributes
+    rud_app_namespace = "goals"
+    rud_model_name = "goal"
+
+    # Data Fields
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
         help_text="Select the Categories in which this Goal should appear."
@@ -143,15 +146,6 @@ class Goal(WorkflowMixin, models.Model):
         """Always slugify the title prior to saving the model."""
         self.title_slug = slugify(self.title)
         super(Goal, self).save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse('goals:goal-detail', args=[self.title_slug])
-
-    def get_update_url(self):
-        return reverse('goals:goal-update', args=[self.title_slug])
-
-    def get_delete_url(self):
-        return reverse('goals:goal-delete', args=[self.title_slug])
 
     def get_absolute_icon(self):
         if self.icon:
@@ -349,9 +343,15 @@ class BaseBehavior(models.Model):
             return self.image.url
 
 
-class Behavior(WorkflowMixin, BaseBehavior):
+class Behavior(RUDMixin, WorkflowMixin, BaseBehavior):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
+
+    # RUDMixin attributes
+    rud_app_namespace = "goals"
+    rud_model_name = "behavior"
+
+    # Data Fields
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
         help_text="Select the Categories in which this should appear."
@@ -379,17 +379,14 @@ class Behavior(WorkflowMixin, BaseBehavior):
         verbose_name = "Behavior"
         verbose_name_plural = "Behaviors"
 
-    def get_absolute_url(self):
-        return reverse('goals:behavior-detail', args=[self.title_slug])
 
-    def get_update_url(self):
-        return reverse('goals:behavior-update', args=[self.title_slug])
+class Action(RUDMixin, WorkflowMixin, BaseBehavior):
 
-    def get_delete_url(self):
-        return reverse('goals:behavior-delete', args=[self.title_slug])
+    # RUDMixin attributes
+    rud_app_namespace = "goals"
+    rud_model_name = "action"
 
-
-class Action(WorkflowMixin, BaseBehavior):
+    # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     sequence_order = models.IntegerField(
         default=0, db_index=True,
@@ -409,15 +406,6 @@ class Action(WorkflowMixin, BaseBehavior):
     class Meta(BaseBehavior.Meta):
         verbose_name = "Action"
         verbose_name_plural = "Actions"
-
-    def get_absolute_url(self):
-        return reverse('goals:action-detail', args=[self.title_slug])
-
-    def get_update_url(self):
-        return reverse('goals:action-update', args=[self.title_slug])
-
-    def get_delete_url(self):
-        return reverse('goals:action-delete', args=[self.title_slug])
 
 
 @receiver(post_delete, sender=Action)
