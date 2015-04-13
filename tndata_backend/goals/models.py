@@ -152,11 +152,18 @@ class Goal(RUDMixin, WorkflowMixin, models.Model):
             return self.icon.url
 
 
-class Trigger(models.Model):
+class Trigger(RUDMixin, models.Model):
     """Information for a Trigger/Notificatin/Reminder. This may include date,
     time, location and a frequency with which triggers repeat.
 
     """
+
+    # RUDMixin attributes
+    rud_app_namespace = "goals"
+    rud_model_name = "trigger"
+    rud_slug_field = "name_slug"
+
+    # Data Fields
     TRIGGER_TYPES = (
         ('time', 'Time'),
         ('place', 'Place'),
@@ -227,15 +234,6 @@ class Trigger(models.Model):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         super(Trigger, self).save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse('goals:trigger-detail', args=[self.name_slug])
-
-    def get_update_url(self):
-        return reverse('goals:trigger-update', args=[self.name_slug])
-
-    def get_delete_url(self):
-        return reverse('goals:trigger-delete', args=[self.name_slug])
 
 
 def _behavior_icon_path(instance, filename):

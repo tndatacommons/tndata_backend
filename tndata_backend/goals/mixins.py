@@ -57,8 +57,12 @@ class RUDMixin:
     * Delete: category-delete
 
     """
-    rud_app_namespace = None
-    rud_model_name = None
+    rud_app_namespace = None  # e.g. 'goals'
+    rud_model_name = None  # e.g. 'category'
+    rud_slug_field = "title_slug"  # e.g. 'name_slug', if different.
+
+    def _slug_field(self):
+        return getattr(self, self.rud_slug_field, None)
 
     def _view(self, view_name):
         if self.rud_app_namespace is None or self.rud_model_name is None:
@@ -71,10 +75,10 @@ class RUDMixin:
         )
 
     def get_absolute_url(self):
-        return reverse(self._view('detail'), args=[self.title_slug])
+        return reverse(self._view('detail'), args=[self._slug_field()])
 
     def get_update_url(self):
-        return reverse(self._view('update'), args=[self.title_slug])
+        return reverse(self._view('update'), args=[self._slug_field()])
 
     def get_delete_url(self):
-        return reverse(self._view('delete'), args=[self.title_slug])
+        return reverse(self._view('delete'), args=[self._slug_field()])
