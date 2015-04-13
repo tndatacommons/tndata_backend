@@ -5,7 +5,10 @@ from utils.admin import UserRelatedModelAdmin
 
 
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'title_slug', 'order', 'get_absolute_icon')
+    list_display = (
+        'title', 'title_slug', 'order', 'get_absolute_icon',
+        'created_by', 'created_on', 'updated_by', 'updated_on',
+    )
     search_fields = ['title', 'description', 'notes']
     prepopulated_fields = {"title_slug": ("title", )}
 
@@ -13,7 +16,10 @@ admin.site.register(models.Category, CategoryAdmin)
 
 
 class GoalAdmin(admin.ModelAdmin):
-    list_display = ('title', 'title_slug', 'in_categories', 'get_absolute_icon')
+    list_display = (
+        'title', 'title_slug', 'in_categories', 'get_absolute_icon',
+        'created_by', 'created_on', 'updated_by', 'updated_on',
+    )
     search_fields = ['title', 'subtitle', 'description', 'outcome']
     prepopulated_fields = {"title_slug": ("title", )}
 
@@ -33,8 +39,9 @@ admin.site.register(models.Trigger, TriggerAdmin)
 
 class BehaviorAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'in_categories', 'in_goals', 'get_absolute_icon',
-        'get_absolute_image'
+        'title', 'in_categories', 'in_goals',
+        'get_absolute_icon', 'get_absolute_image',
+        'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'narrative_block', 'description',
@@ -52,8 +59,9 @@ admin.site.register(models.Behavior, BehaviorAdmin)
 
 class ActionAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'behavior', 'sequence_order', 'get_absolute_icon',
-        'get_absolute_image'
+        'title', 'behavior', 'sequence_order',
+        'get_absolute_icon', 'get_absolute_image',
+        'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'narrative_block', 'description',

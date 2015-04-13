@@ -43,6 +43,18 @@ class Category(models.Model):
         null=True,
         help_text="Additional notes regarding this Category"
     )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="categories_updated",
+        null=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="categories_created",
+        null=True
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -50,7 +62,7 @@ class Category(models.Model):
     class Meta:
         ordering = ['order', 'title']
         verbose_name = "Category"
-        verbose_name_plural = "Category"
+        verbose_name_plural = "Categories"
 
     @property
     def goals(self):
@@ -103,6 +115,18 @@ class Goal(models.Model):
         upload_to="goals/goal", null=True, blank=True,
         help_text="Upload an image to be displayed next to the Goal."
     )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="goals_updated",
+        null=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="goals_created",
+        null=True
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{0}".format(self.title)
@@ -297,6 +321,8 @@ class BaseBehavior(models.Model):
         blank=True,
         help_text="An image to be displayed for this item, preferrably 1024x1024."
     )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -331,7 +357,17 @@ class Behavior(BaseBehavior):
     )
     informal_list = models.TextField(
         blank=True,
-        help_text="A working list of actions associated with the behavior. Mnemonic only."
+        help_text="A working list of actions for the behavior. Mnemonic only."
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="behaviors_updated",
+        null=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="behaviors_created",
+        null=True
     )
 
     class Meta(BaseBehavior.Meta):
@@ -353,6 +389,16 @@ class Action(BaseBehavior):
     sequence_order = models.IntegerField(
         default=0, db_index=True,
         help_text="Order/number of action in stepwise sequence of behaviors"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="actions_updated",
+        null=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="actions_created",
+        null=True
     )
 
     class Meta(BaseBehavior.Meta):
