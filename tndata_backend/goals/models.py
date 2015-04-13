@@ -1,5 +1,4 @@
-"""
-Models for the Goals app.
+"""Models for the Goals app.
 
 This is our collection of Goals & Behaviors. They're organized as follows:
 
@@ -16,9 +15,12 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
+from django_fsm import FSMField
+
+from .mixins import WorkflowMixin
 
 
-class Category(models.Model):
+class Category(WorkflowMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
     order = models.PositiveIntegerField(
         unique=True,
@@ -43,6 +45,7 @@ class Category(models.Model):
         null=True,
         help_text="Additional notes regarding this Category"
     )
+    state = FSMField(default="draft")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="categories_updated",
@@ -88,7 +91,7 @@ class Category(models.Model):
             return self.icon.url
 
 
-class Goal(models.Model):
+class Goal(WorkflowMixin, models.Model):
     categories = models.ManyToManyField(
         Category, null=True, blank=True,
         help_text="Select the Categories in which this Goal should appear."
@@ -115,6 +118,7 @@ class Goal(models.Model):
         upload_to="goals/goal", null=True, blank=True,
         help_text="Upload an image to be displayed next to the Goal."
     )
+    state = FSMField(default="draft")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="goals_updated",
@@ -321,6 +325,7 @@ class BaseBehavior(models.Model):
         blank=True,
         help_text="An image to be displayed for this item, preferrably 1024x1024."
     )
+    state = FSMField(default="draft")
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -344,7 +349,7 @@ class BaseBehavior(models.Model):
             return self.image.url
 
 
-class Behavior(BaseBehavior):
+class Behavior(WorkflowMixin, BaseBehavior):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
     categories = models.ManyToManyField(
@@ -384,7 +389,7 @@ class Behavior(BaseBehavior):
         return reverse('goals:behavior-delete', args=[self.title_slug])
 
 
-class Action(BaseBehavior):
+class Action(WorkflowMixin, BaseBehavior):
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     sequence_order = models.IntegerField(
         default=0, db_index=True,
