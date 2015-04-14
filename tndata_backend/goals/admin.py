@@ -1,26 +1,65 @@
 from django.contrib import admin
-from . import models
+from django.contrib.messages import ERROR
+from django.db import transaction
+
+from django_fsm import TransitionNotAllowed
 
 from utils.admin import UserRelatedModelAdmin
 
+from . import models
 
-class CategoryAdmin(admin.ModelAdmin):
+
+class ContentWorkflowAdmin(admin.ModelAdmin):
+    """This class adds action methods for changing the state of content."""
+
+    actions = ['set_draft', 'set_review', 'set_declined', 'set_published']
+
+    def _transition_to(self, request, queryset, method, message):
+        try:
+            with transaction.atomic():
+                for obj in queryset:
+                    getattr(obj, method)()  # Call the transition method.
+                    obj.save(updated_by=request.user)
+            self.message_user(request, message)
+        except TransitionNotAllowed as err:
+            self.message_user(request, err, level=ERROR)
+
+    def set_draft(self, request, queryset):
+        self._transition_to(request, queryset, "draft", "Items marked Draft")
+    set_draft.short_description = "Mark as Draft"
+
+    def set_review(self, request, queryset):
+        self._transition_to(request, queryset, "review", "Items submitted for review")
+    set_review.short_description = "Submit for Review"
+
+    def set_declined(self, request, queryset):
+        self._transition_to(request, queryset, "decline", "Items Declined")
+    set_declined.short_description = "Decline Items"
+
+    def set_published(self, request, queryset):
+        self._transition_to(request, queryset, "publish", "Items Published")
+    set_published.short_description = "Publish"
+
+
+class CategoryAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'title_slug', 'order', 'get_absolute_icon',
+        'title', 'title_slug', 'state', 'order', 'get_absolute_icon',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = ['title', 'description', 'notes']
+    list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
 
 admin.site.register(models.Category, CategoryAdmin)
 
 
-class GoalAdmin(admin.ModelAdmin):
+class GoalAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'title_slug', 'in_categories', 'get_absolute_icon',
+        'title', 'title_slug', 'state', 'in_categories', 'get_absolute_icon',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = ['title', 'subtitle', 'description', 'outcome']
+    list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
@@ -37,9 +76,9 @@ class TriggerAdmin(admin.ModelAdmin):
 admin.site.register(models.Trigger, TriggerAdmin)
 
 
-class BehaviorAdmin(admin.ModelAdmin):
+class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'in_categories', 'in_goals',
+        'title', 'state', 'in_categories', 'in_goals',
         'get_absolute_icon', 'get_absolute_image',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
@@ -47,6 +86,7 @@ class BehaviorAdmin(admin.ModelAdmin):
         'title', 'source_notes', 'notes', 'narrative_block', 'description',
         'case', 'outcome', 'notification_text',
     ]
+    list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
 
     def in_categories(self, obj):
@@ -57,9 +97,9 @@ class BehaviorAdmin(admin.ModelAdmin):
 admin.site.register(models.Behavior, BehaviorAdmin)
 
 
-class ActionAdmin(admin.ModelAdmin):
+class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'behavior', 'sequence_order',
+        'title', 'state', 'behavior', 'sequence_order',
         'get_absolute_icon', 'get_absolute_image',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
@@ -67,6 +107,7 @@ class ActionAdmin(admin.ModelAdmin):
         'title', 'source_notes', 'notes', 'narrative_block', 'description',
         'case', 'outcome', 'notification_text',
     ]
+    list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
 admin.site.register(models.Action, ActionAdmin)
 
