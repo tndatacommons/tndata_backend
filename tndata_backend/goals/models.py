@@ -10,22 +10,25 @@ Actions are the things we want to help people to do.
 import os
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField
 
-from .mixins import RUDMixin, WorkflowMixin
+from .mixins import URLMixin, WorkflowMixin
+
+# TODO: Permissions for CRUD operations on the content models?
+# TODO: Update Views to give Eidtors a "dashboard"
 
 
-class Category(RUDMixin, WorkflowMixin, models.Model):
+class Category(URLMixin, WorkflowMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
 
-    # RUDMixin attributes
-    rud_app_namespace = "goals"
-    rud_model_name = "category"
+    # URLMixin attributes
+    urls_app_namespace = "goals"
+    urls_model_name = "category"
+    urls_icon_field = "icon"
 
     # Data Fields
     order = models.PositiveIntegerField(
@@ -83,16 +86,13 @@ class Category(RUDMixin, WorkflowMixin, models.Model):
         self.title_slug = slugify(self.title)
         super(Category, self).save(*args, **kwargs)
 
-    def get_absolute_icon(self):
-        if self.icon:
-            return self.icon.url
 
+class Goal(URLMixin, WorkflowMixin, models.Model):
 
-class Goal(RUDMixin, WorkflowMixin, models.Model):
-
-    # RUDMixin attributes
-    rud_app_namespace = "goals"
-    rud_model_name = "goal"
+    # URLMixin attributes
+    urls_app_namespace = "goals"
+    urls_model_name = "goal"
+    urls_icon_field = "icon"
 
     # Data Fields
     categories = models.ManyToManyField(
@@ -147,21 +147,17 @@ class Goal(RUDMixin, WorkflowMixin, models.Model):
         self.title_slug = slugify(self.title)
         super(Goal, self).save(*args, **kwargs)
 
-    def get_absolute_icon(self):
-        if self.icon:
-            return self.icon.url
 
-
-class Trigger(RUDMixin, models.Model):
+class Trigger(URLMixin, models.Model):
     """Information for a Trigger/Notificatin/Reminder. This may include date,
     time, location and a frequency with which triggers repeat.
 
     """
 
-    # RUDMixin attributes
-    rud_app_namespace = "goals"
-    rud_model_name = "trigger"
-    rud_slug_field = "name_slug"
+    # URLMixin attributes
+    urls_app_namespace = "goals"
+    urls_model_name = "trigger"
+    urls_slug_field = "name_slug"
 
     # Data Fields
     TRIGGER_TYPES = (
@@ -332,22 +328,16 @@ class BaseBehavior(models.Model):
         self.title_slug = slugify(self.title)
         super(BaseBehavior, self).save(*args, **kwargs)
 
-    def get_absolute_icon(self):
-        if self.icon:
-            return self.icon.url
 
-    def get_absolute_image(self):
-        if self.image:
-            return self.image.url
-
-
-class Behavior(RUDMixin, WorkflowMixin, BaseBehavior):
+class Behavior(URLMixin, WorkflowMixin, BaseBehavior):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
 
-    # RUDMixin attributes
-    rud_app_namespace = "goals"
-    rud_model_name = "behavior"
+    # URLMixin attributes
+    urls_app_namespace = "goals"
+    urls_model_name = "behavior"
+    urls_icon_field = "icon"
+    urls_image_field = "image"
 
     # Data Fields
     categories = models.ManyToManyField(
@@ -378,11 +368,13 @@ class Behavior(RUDMixin, WorkflowMixin, BaseBehavior):
         verbose_name_plural = "Behaviors"
 
 
-class Action(RUDMixin, WorkflowMixin, BaseBehavior):
+class Action(URLMixin, WorkflowMixin, BaseBehavior):
 
-    # RUDMixin attributes
-    rud_app_namespace = "goals"
-    rud_model_name = "action"
+    # URLMixin attributes
+    urls_app_namespace = "goals"
+    urls_model_name = "action"
+    urls_icon_field = "icon"
+    urls_image_field = "image"
 
     # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")

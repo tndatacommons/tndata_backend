@@ -40,14 +40,19 @@ class WorkflowMixin:
         pass
 
 
-class RUDMixin:
-    """Contains methods for reversing Read, Update, Delete URLs.
+class URLMixin:
+    """Contains methods for reversing Model URLs. This Mixin DRYs up the various
+    get_XXXX_url methods that I use on models, particularly for Read, Update,
+    and Delete actions.
 
-    To use this, the model must have a `title_slug` field, and it must define
-    the following:
+    Models using this mixin can customize its behavior by specifying the
+    following:
 
-    * rud_app_namespace: The url namespace used for the app
-    * rud_model_name: The model name used for the url
+    * (required) urls_app_namespace: The url namespace used for the app
+    * (required) urls_model_name: The model name used for the url
+    * urls_slug_field: The unique slug used for the model. Default is `title_slug`
+    * urls_icon_field: An icon field for the model. Defaut is None.
+    * urls_image_field: An image field for the model. Defaut is None.
 
     And we make the assumption that we have the following URLs defined, e.g.
     for the Category model:
@@ -57,21 +62,23 @@ class RUDMixin:
     * Delete: category-delete
 
     """
-    rud_app_namespace = None  # e.g. 'goals'
-    rud_model_name = None  # e.g. 'category'
-    rud_slug_field = "title_slug"  # e.g. 'name_slug', if different.
+    urls_app_namespace = None  # e.g. 'goals'
+    urls_model_name = None  # e.g. 'category'
+    urls_slug_field = "title_slug"  # e.g. 'name_slug', if different.
+    urls_icon_field = None
+    urls_image_field = None
 
     def _slug_field(self):
-        return getattr(self, self.rud_slug_field, None)
+        return getattr(self, self.urls_slug_field, None)
 
     def _view(self, view_name):
-        if self.rud_app_namespace is None or self.rud_model_name is None:
+        if self.urls_app_namespace is None or self.urls_model_name is None:
             raise ImproperlyConfigured(
-                "Models using RUDMixin must define both rud_app_namespace and "
-                "rud_model_name."
+                "Models using URLMixin must define both urls_app_namespace and "
+                "urls_model_name."
             )
         return "{0}:{1}-{2}".format(
-            self.rud_app_namespace, self.rud_model_name, view_name
+            self.urls_app_namespace, self.urls_model_name, view_name
         )
 
     def get_absolute_url(self):
@@ -82,3 +89,13 @@ class RUDMixin:
 
     def get_delete_url(self):
         return reverse(self._view('delete'), args=[self._slug_field()])
+
+    def get_absolute_icon(self):
+        icon_field = getattr(self, self.urls_icon_field, None)
+        if self.urls_icon_field and icon_field:
+            return icon_field.url
+
+    def get_absolute_image(self):
+        image_field = getattr(self, self.urls_image_field, None)
+        if self.urls_image_field and image_field:
+            return image_field.url
