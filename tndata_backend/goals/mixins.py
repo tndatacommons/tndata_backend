@@ -31,11 +31,11 @@ class WorkflowMixin:
     def review(self):
         pass
 
-    @transition(field=state, source="review", target='declined')
+    @transition(field=state, source="pending-review", target='declined')
     def decline(self):
         pass
 
-    @transition(field=state, source="review", target='published')
+    @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
         pass
 
