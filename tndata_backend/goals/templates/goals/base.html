@@ -60,26 +60,45 @@ a.ui-datepicker-next { float:right; }
     <ul class="left">
       <li class="divider"></li>
       <li><a href="{% url 'goals:index' %}">?</a></li>
-      <li class="divider"></li>
-      <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
-      <li class="divider"></li>
-      <li class="divider"></li>
-      <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
-      <li class="divider"></li>
-      <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
-      <li class="divider"></li>
-      <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
-      <li class="divider"></li>
-      <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+      {% if perms.goals.view_category %}
+        <li class="divider"></li>
+        <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
+      {% endif %}
+      {% if perms.goals.view_goals %}
+        <li class="divider"></li>
+        <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
+      {% endif %}
+      {% if perms.goals.view_triggers %}
+        <li class="divider"></li>
+        <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
+      {% endif %}
+      {% if perms.goals.view_behaviors %}
+        <li class="divider"></li>
+        <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
+      {% endif %}
+      {% if perms.goals.view_actions %}
+        <li class="divider"></li>
+        <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+      {% endif %}
       <li class="divider"></li>
       <li class="has-dropdown">
         <a href="#">New</a>
         <ul class="dropdown">
+        {% if perms.goals.add_category %}
           <li><a href="{% url 'goals:category-create' %}">Category</a></li>
+        {% endif %}
+        {% if perms.goals.add_goal %}
           <li><a href="{% url 'goals:goal-create' %}">Goal</a></li>
+        {% endif %}
+        {% if perms.goals.add_trigger %}
           <li><a href="{% url 'goals:trigger-create' %}">Trigger</a></li>
+        {% endif %}
+        {% if perms.goals.add_behavior %}
           <li><a href="{% url 'goals:behavior-create' %}">Behavior</a></li>
+        {% endif %}
+        {% if perms.goals.add_action %}
           <li><a href="{% url 'goals:action-create' %}">Action</a></li>
+        {% endif %}
         </ul>
       </li>
       <li class="divider"></li>

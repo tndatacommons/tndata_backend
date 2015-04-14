@@ -10,7 +10,7 @@
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ question }} {% object_controls question %}</h1>
+      <h1>{{ question }} {% object_controls question "survey" %}</h1>
       <dl>
         <dt>Order</dt><dd>{{ question.order }}</dd>
         <dt>Availble</dt><dd>{{ question.available|yesno}}</dd>

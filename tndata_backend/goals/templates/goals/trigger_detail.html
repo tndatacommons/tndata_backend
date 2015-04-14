@@ -11,7 +11,7 @@
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ trigger.name }} {% object_controls trigger %}</h1>
+      <h1>{{ trigger.name }} {% object_controls trigger "goals" %}</h1>
       <dl>
         <dt>Type</dt><dd>{{ trigger.get_trigger_type_display}}</dd>
         <dt>Frequency</dt><dd>{{ trigger.get_frequency_display }}</dd>

@@ -10,7 +10,7 @@
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ instrument }} {% object_controls instrument %}</h1>
+      <h1>{{ instrument }} {% object_controls instrument "survey" %}</h1>
       <dl>
         <dt>Description</dt>
         <dd>{{ instrument.description|linebreaks|default:"No Description given" }}</dd>
