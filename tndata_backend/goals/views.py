@@ -69,6 +69,16 @@ def upload_csv(request):
 class IndexView(SuperuserRequiredMixin, TemplateView):
     template_name = "goals/index.html"
 
+    def get(self, request, *args, **kwargs):
+        """Include info on pending and declined content items."""
+        context = self.get_context_data(**kwargs)
+        if request.user.is_staff:  # TODO: check for Editor group/permissions?
+            context['categories'] = Category.objects.filter(state='pending-review')
+            context['goals'] = Goal.objects.filter(state='pending-review')
+            context['behaviors'] = Behavior.objects.filter(state='pending-review')
+            context['actions'] = Action.objects.filter(state='pending-review')
+        return self.render_to_response(context)
+
 
 class CategoryListView(SuperuserRequiredMixin, ListView):
     model = Category

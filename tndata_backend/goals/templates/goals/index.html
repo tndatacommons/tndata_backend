@@ -9,7 +9,53 @@
       <p>coming soon!</p>
     </div>
     <div class="large-6 small-6 columns">
-      {# todo... add some content #}
+      {% if user.is_staff %}  {# check for group/permissions #}
+        <table>
+        <caption>Content for Review</caption>
+        <thead>
+          <tr>
+          <th>Type</th>
+          <th>Title</th>
+          <th>Created By</th>
+          <th>Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for obj in categories %}
+            <tr>
+              <td>Category</td>
+              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
+              <td>{{ obj.created_by }}</td>
+              <td>{{ obj.updated_on|timesince }} ago</td>
+            </tr>
+          {% endfor %}
+          {% for obj in goals %}
+            <tr>
+              <td>Goal</td>
+              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
+              <td>{{ obj.created_by }}</td>
+              <td>{{ obj.updated_on|timesince }} ago</td>
+            </tr>
+          {% endfor %}
+          {% for obj in behaviors %}
+            <tr>
+              <td>Behavior</td>
+              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
+              <td>{{ obj.created_by }}</td>
+              <td>{{ obj.updated_on|timesince }} ago</td>
+            </tr>
+          {% endfor %}
+          {% for obj in actions %}
+            <tr>
+              <td>Action</td>
+              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
+              <td>{{ obj.created_by }}</td>
+              <td>{{ obj.updated_on|timesince }} ago</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+        </table>
+      {% endif %}
     </div>
   </div> {# end .row #}
   <hr/>
