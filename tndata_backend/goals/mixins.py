@@ -6,6 +6,25 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 
 
+class ModifiedMixin:
+    def _check_updated_or_created_by(self, **kwargs):
+        """Allows passing `updated_by` or `created_by` paramters in a model's
+        save() method.
+
+        USAGE: override `save` in a model and call:
+
+            _check_updated_or_created_by(**kwargs)
+
+        """
+        updated_by = kwargs.pop("updated_by", None)
+        if updated_by:
+            self.updated_by = updated_by
+        created_by = kwargs.pop("created_by", None)
+        if created_by:
+            self.created_by = created_by
+        return kwargs
+
+
 class URLMixin:
     """Contains methods for reversing Model URLs. This Mixin DRYs up the various
     get_XXXX_url methods that I use on models, particularly for Read, Update,

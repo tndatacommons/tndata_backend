@@ -14,6 +14,8 @@ from .. models import (
     UserAction,
 )
 
+User = get_user_model()
+
 
 class TestCategory(TestCase):
     """Tests for the `Category` model."""
@@ -38,6 +40,23 @@ class TestCategory(TestCase):
         category = Category.objects.create(order=2, title="New Name")
         category.save()
         self.assertEqual(category.title_slug, "new-name")
+        category.delete()  # Clean up.
+
+    def test_save_created_by(self):
+        """Allow passing an `created_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        c = Category(order=3, title="New")
+        c.save(created_by=u)
+        self.assertEqual(c.created_by, u)
+        u.delete()  # Clean up
+        c.delete()
+
+    def test_save_updated_by(self):
+        """Allow passing an `updated_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        self.category.save(updated_by=u)
+        self.assertEqual(self.category.updated_by, u)
+        u.delete()  # Clean up
 
     def test_goals(self):
         self.assertIsInstance(self.category.goals, QuerySet)
@@ -114,6 +133,22 @@ class TestGoal(TestCase):
         goal = Goal.objects.create(title="New Name")
         goal.save()
         self.assertEqual(goal.title_slug, "new-name")
+
+    def test_save_created_by(self):
+        """Allow passing an `created_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        g = Goal(title="New")
+        g.save(created_by=u)
+        self.assertEqual(g.created_by, u)
+        u.delete()  # Clean up
+        g.delete()
+
+    def test_save_updated_by(self):
+        """Allow passing an `updated_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        self.goal.save(updated_by=u)
+        self.assertEqual(self.goal.updated_by, u)
+        u.delete()  # Clean up
 
     def test_get_absolute_url(self):
         self.assertEqual(
@@ -240,6 +275,22 @@ class TestBehavior(TestCase):
         behavior.save()
         self.assertEqual(behavior.title_slug, "new-name")
 
+    def test_save_created_by(self):
+        """Allow passing an `created_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        b = Behavior(title="New")
+        b.save(created_by=u)
+        self.assertEqual(b.created_by, u)
+        u.delete()  # Clean up
+        b.delete()
+
+    def test_save_updated_by(self):
+        """Allow passing an `updated_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        self.behavior.save(updated_by=u)
+        self.assertEqual(self.behavior.updated_by, u)
+        u.delete()  # Clean up
+
     def test_get_absolute_url(self):
         self.assertEqual(
             self.behavior.get_absolute_url(),
@@ -309,6 +360,22 @@ class TestAction(TestCase):
         action.save()
         self.assertEqual(action.title_slug, "new-name")
 
+    def test_save_created_by(self):
+        """Allow passing an `created_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        a = Action(title="New", behavior=self.behavior)
+        a.save(created_by=u)
+        self.assertEqual(a.created_by, u)
+        u.delete()  # Clean up
+        a.delete()
+
+    def test_save_updated_by(self):
+        """Allow passing an `updated_by` param into save."""
+        u = User.objects.create_user('user', 'u@example.com', 'secret')
+        self.action.save(updated_by=u)
+        self.assertEqual(self.action.updated_by, u)
+        u.delete()  # Clean up
+
     def test_get_absolute_url(self):
         self.assertEqual(
             self.action.get_absolute_url(),
@@ -355,7 +422,6 @@ class TestUserGoal(TestCase):
     """Tests for the `UserGoal` model."""
 
     def setUp(self):
-        User = get_user_model()
         self.user, created = User.objects.get_or_create(
             username="test",
             email="test@example.com"
@@ -371,7 +437,6 @@ class TestUserGoal(TestCase):
         )
 
     def tearDown(self):
-        User = get_user_model()
         User.objects.filter(id=self.user.id).delete()
         Goal.objects.filter(id=self.goal.id).delete()
         UserGoal.objects.filter(id=self.ug.id).delete()
@@ -386,7 +451,6 @@ class TestUserBehavior(TestCase):
     """Tests for the `UserBehavior` model."""
 
     def setUp(self):
-        User = get_user_model()
         self.user, created = User.objects.get_or_create(
             username="test",
             email="test@example.com"
@@ -398,7 +462,6 @@ class TestUserBehavior(TestCase):
         )
 
     def tearDown(self):
-        User = get_user_model()
         User.objects.filter(id=self.user.id).delete()
         Behavior.objects.filter(id=self.behavior.id).delete()
         UserBehavior.objects.filter(id=self.ub.id).delete()
@@ -413,7 +476,6 @@ class TestUserAction(TestCase):
     """Tests for the `UserAction` model."""
 
     def setUp(self):
-        User = get_user_model()
         self.user, created = User.objects.get_or_create(
             username="test",
             email="test@example.com"
@@ -429,7 +491,6 @@ class TestUserAction(TestCase):
         )
 
     def tearDown(self):
-        User = get_user_model()
         User.objects.filter(id=self.user.id).delete()
         Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
@@ -445,7 +506,6 @@ class TestUserCategory(TestCase):
     """Tests for the `UserCategory` model."""
 
     def setUp(self):
-        User = get_user_model()
         self.user, created = User.objects.get_or_create(
             username="test",
             email="test@example.com"
@@ -460,7 +520,6 @@ class TestUserCategory(TestCase):
         )
 
     def tearDown(self):
-        User = get_user_model()
         User.objects.filter(id=self.user.id).delete()
         Category.objects.filter(id=self.category.id).delete()
         UserCategory.objects.filter(id=self.uc.id).delete()

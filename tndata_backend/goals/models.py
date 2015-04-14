@@ -16,12 +16,12 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField, transition
 
-from .mixins import URLMixin
+from .mixins import ModifiedMixin, URLMixin
 
 # TODO: Update Views to give Eidtors a "dashboard"
 
 
-class Category(URLMixin, models.Model):
+class Category(ModifiedMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
 
     # URLMixin attributes
@@ -87,8 +87,10 @@ class Category(URLMixin, models.Model):
         return self.goal_set.all().distinct()
 
     def save(self, *args, **kwargs):
-        """Always slugify the name prior to saving the model."""
+        """Always slugify the name prior to saving the model and set
+        created_by or updated_by fields if specified."""
         self.title_slug = slugify(self.title)
+        kwargs = self._check_updated_or_created_by(**kwargs)
         super(Category, self).save(*args, **kwargs)
 
     @transition(field=state, source="*", target='draft')
@@ -108,7 +110,7 @@ class Category(URLMixin, models.Model):
         pass
 
 
-class Goal(URLMixin, models.Model):
+class Goal(ModifiedMixin, URLMixin, models.Model):
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -172,6 +174,7 @@ class Goal(URLMixin, models.Model):
     def save(self, *args, **kwargs):
         """Always slugify the title prior to saving the model."""
         self.title_slug = slugify(self.title)
+        kwargs = self._check_updated_or_created_by(**kwargs)
         super(Goal, self).save(*args, **kwargs)
 
     @transition(field=state, source="*", target='draft')
@@ -293,7 +296,7 @@ def _behavior_img_path(instance, filename):
     return os.path.join(p, filename)
 
 
-class BaseBehavior(models.Model):
+class BaseBehavior(ModifiedMixin, models.Model):
     """This abstract base class contains fields that are common to both
     `Behavior` and `Action` models.
 
@@ -375,6 +378,7 @@ class BaseBehavior(models.Model):
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
+        kwargs = self._check_updated_or_created_by(**kwargs)
         super(BaseBehavior, self).save(*args, **kwargs)
 
     @transition(field=state, source="*", target='draft')
