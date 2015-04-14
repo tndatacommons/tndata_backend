@@ -1,4 +1,5 @@
 {% extends "goals/base.html" %}
+{% load goal_filters %}
 
 {% block content %}
 
@@ -15,6 +16,7 @@
       <tr>
         <th>Order</th>
         <th>Title</th>
+        <th>State</th>
         <th>Behavior</th>
       </tr>
       </thead>
@@ -26,6 +28,7 @@
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
+          <td>{{ action.state|label }}</td>
           <td>{{ action.behavior }}</td>
         </tr>
       {% endfor %}

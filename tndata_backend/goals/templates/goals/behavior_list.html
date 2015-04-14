@@ -1,4 +1,5 @@
 {% extends "goals/base.html" %}
+{% load goal_filters %}
 
 {% block content %}
 
@@ -14,6 +15,7 @@
       <thead>
       <tr>
         <th>Title</th>
+        <th>State</th>
         <th>Actions</th>
         <th>Goals</th>
         <th>Categories</th>
@@ -27,6 +29,7 @@
             <a href="{{ behavior.get_absolute_url }}">
               {{ behavior }}</a>
           </td>
+          <td>{{ behavior.state|label }}</td>
           <td>{{ behavior.action_set.all|join:", " }}</td>
           <td>{{ behavior.goals.all|join:", " }}</td>
           <td>{{ behavior.categories.all|join:", " }}</td>
