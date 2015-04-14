@@ -1,4 +1,5 @@
 {# Inclusion template for the `object_controls` tag. #}
+{% if can_update or can_delete %}
 <button
   href="#"
   data-dropdown="dd-{{label}}-{{object.id}}"
@@ -12,7 +13,11 @@
   aria-hidden="true"
   tabindex="-1">
 
-  <li><a href="{{ object.get_update_url }}">Update</a></li>
-  <li><a href="{{ object.get_delete_url }}">Delete</a></li>
-
+  {% if can_update %}
+    <li><a href="{{ object.get_update_url }}">Update</a></li>
+  {% endif %}
+  {% if can_delete %}
+    <li><a href="{{ object.get_delete_url }}">Delete</a></li>
+  {% endif %}
 </ul>
+{% endif %}
