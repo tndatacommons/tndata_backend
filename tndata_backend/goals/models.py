@@ -14,15 +14,14 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
-from django_fsm import FSMField
+from django_fsm import FSMField, transition
 
-from .mixins import URLMixin, WorkflowMixin
+from .mixins import URLMixin
 
-# TODO: Permissions for CRUD operations on the content models?
 # TODO: Update Views to give Eidtors a "dashboard"
 
 
-class Category(URLMixin, WorkflowMixin, models.Model):
+class Category(URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
 
     # URLMixin attributes
@@ -92,8 +91,24 @@ class Category(URLMixin, WorkflowMixin, models.Model):
         self.title_slug = slugify(self.title)
         super(Category, self).save(*args, **kwargs)
 
+    @transition(field=state, source="*", target='draft')
+    def draft(self):
+        pass
 
-class Goal(URLMixin, WorkflowMixin, models.Model):
+    @transition(field=state, source="draft", target='pending-review')
+    def review(self):
+        pass
+
+    @transition(field=state, source="pending-review", target='declined')
+    def decline(self):
+        pass
+
+    @transition(field=state, source=["draft", "pending-review"], target='published')
+    def publish(self):
+        pass
+
+
+class Goal(URLMixin, models.Model):
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -158,6 +173,22 @@ class Goal(URLMixin, WorkflowMixin, models.Model):
         """Always slugify the title prior to saving the model."""
         self.title_slug = slugify(self.title)
         super(Goal, self).save(*args, **kwargs)
+
+    @transition(field=state, source="*", target='draft')
+    def draft(self):
+        pass
+
+    @transition(field=state, source="draft", target='pending-review')
+    def review(self):
+        pass
+
+    @transition(field=state, source="pending-review", target='declined')
+    def decline(self):
+        pass
+
+    @transition(field=state, source=["draft", "pending-review"], target='published')
+    def publish(self):
+        pass
 
 
 class Trigger(URLMixin, models.Model):
@@ -346,8 +377,24 @@ class BaseBehavior(models.Model):
         self.title_slug = slugify(self.title)
         super(BaseBehavior, self).save(*args, **kwargs)
 
+    @transition(field=state, source="*", target='draft')
+    def draft(self):
+        pass
 
-class Behavior(URLMixin, WorkflowMixin, BaseBehavior):
+    @transition(field=state, source="draft", target='pending-review')
+    def review(self):
+        pass
+
+    @transition(field=state, source="pending-review", target='declined')
+    def decline(self):
+        pass
+
+    @transition(field=state, source=["draft", "pending-review"], target='published')
+    def publish(self):
+        pass
+
+
+class Behavior(URLMixin, BaseBehavior):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
 
@@ -392,7 +439,7 @@ class Behavior(URLMixin, WorkflowMixin, BaseBehavior):
         )
 
 
-class Action(URLMixin, WorkflowMixin, BaseBehavior):
+class Action(URLMixin, BaseBehavior):
 
     # URLMixin attributes
     urls_app_namespace = "goals"

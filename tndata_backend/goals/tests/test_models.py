@@ -60,6 +60,29 @@ class TestCategory(TestCase):
             "/goals/categories/test-category/delete/"
         )
 
+    def test_default_state(self):
+        """Ensure that the default state is 'draft'."""
+        self.assertEqual(self.category.state, "draft")
+
+    def test_review(self):
+        self.category.review()  # Switch to pending-review
+        self.assertEqual(self.category.state, "pending-review")
+
+    def test_decline(self):
+        self.category.review()  # Switch to pending-review
+        self.category.decline()  # then decline
+        self.assertEqual(self.category.state, "declined")
+
+    def test_publish(self):
+        self.category.review()  # Switch to pending-review
+        self.category.publish()  # then publish
+        self.assertEqual(self.category.state, "published")
+
+    def test_publish_from_draft(self):
+        self.assertEqual(self.category.state, "draft")
+        self.category.publish()  # then publish
+        self.assertEqual(self.category.state, "published")
+
 
 class TestGoal(TestCase):
     """Tests for the `Goal` model."""
@@ -109,6 +132,29 @@ class TestGoal(TestCase):
             self.goal.get_delete_url(),
             "/goals/goals/title-for-test-goal/delete/"
         )
+
+    def test_default_state(self):
+        """Ensure that the default state is 'draft'."""
+        self.assertEqual(self.goal.state, "draft")
+
+    def test_review(self):
+        self.goal.review()  # Switch to pending-review
+        self.assertEqual(self.goal.state, "pending-review")
+
+    def test_decline(self):
+        self.goal.review()  # Switch to pending-review
+        self.goal.decline()  # then decline
+        self.assertEqual(self.goal.state, "declined")
+
+    def test_publish(self):
+        self.goal.review()  # Switch to pending-review
+        self.goal.publish()  # then publish
+        self.assertEqual(self.goal.state, "published")
+
+    def test_publish_from_draft(self):
+        self.assertEqual(self.goal.state, "draft")
+        self.goal.publish()  # then publish
+        self.assertEqual(self.goal.state, "published")
 
 
 class TestTrigger(TestCase):
@@ -212,6 +258,29 @@ class TestBehavior(TestCase):
             "/goals/behaviors/test-behavior/delete/"
         )
 
+    def test_default_state(self):
+        """Ensure that the default state is 'draft'."""
+        self.assertEqual(self.behavior.state, "draft")
+
+    def test_review(self):
+        self.behavior.review()  # Switch to pending-review
+        self.assertEqual(self.behavior.state, "pending-review")
+
+    def test_decline(self):
+        self.behavior.review()  # Switch to pending-review
+        self.behavior.decline()  # then decline
+        self.assertEqual(self.behavior.state, "declined")
+
+    def test_publish(self):
+        self.behavior.review()  # Switch to pending-review
+        self.behavior.publish()  # then publish
+        self.assertEqual(self.behavior.state, "published")
+
+    def test_publish_from_draft(self):
+        self.assertEqual(self.behavior.state, "draft")
+        self.behavior.publish()  # then publish
+        self.assertEqual(self.behavior.state, "published")
+
 
 class TestAction(TestCase):
     """Tests for the `Action` model."""
@@ -257,6 +326,29 @@ class TestAction(TestCase):
             self.action.get_delete_url(),
             "/goals/actions/test-action/delete/"
         )
+
+    def test_default_state(self):
+        """Ensure that the default state is 'draft'."""
+        self.assertEqual(self.action.state, "draft")
+
+    def test_review(self):
+        self.action.review()  # Switch to pending-review
+        self.assertEqual(self.action.state, "pending-review")
+
+    def test_decline(self):
+        self.action.review()  # Switch to pending-review
+        self.action.decline()  # then decline
+        self.assertEqual(self.action.state, "declined")
+
+    def test_publish(self):
+        self.action.review()  # Switch to pending-review
+        self.action.publish()  # then publish
+        self.assertEqual(self.action.state, "published")
+
+    def test_publish_from_draft(self):
+        self.assertEqual(self.action.state, "draft")
+        self.action.publish()  # then publish
+        self.assertEqual(self.action.state, "published")
 
 
 class TestUserGoal(TestCase):
