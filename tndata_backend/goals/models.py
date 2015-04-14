@@ -75,6 +75,12 @@ class Category(URLMixin, WorkflowMixin, models.Model):
         ordering = ['order', 'title']
         verbose_name = "Category"
         verbose_name_plural = "Categories"
+        # add_category, change_category, delete_category are created by default.
+        permissions = (
+            ("view_category", "Can view Categories"),
+            ("decline_category", "Can Decline Categories"),
+            ("publish_category", "Can Publish Categories"),
+        )
 
     @property
     def goals(self):
@@ -141,6 +147,12 @@ class Goal(URLMixin, WorkflowMixin, models.Model):
     class Meta:
         verbose_name = "Goal"
         verbose_name_plural = "Goals"
+        # add_goal, change_goal, delete_goal are created by default.
+        permissions = (
+            ("view_goal", "Can view Goals"),
+            ("decline_goal", "Can Decline Goals"),
+            ("publish_goal", "Can Publish Goals"),
+        )
 
     def save(self, *args, **kwargs):
         """Always slugify the title prior to saving the model."""
@@ -225,6 +237,12 @@ class Trigger(URLMixin, models.Model):
     class Meta:
         verbose_name = "Trigger"
         verbose_name_plural = "Triggers"
+        # add_trigger, change_trigger, delete_trigger are created by default.
+        permissions = (
+            ("view_trigger", "Can view Triggers"),
+            ("decline_trigger", "Can Decline Triggers"),
+            ("publish_trigger", "Can Publish Triggers"),
+        )
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
@@ -366,6 +384,12 @@ class Behavior(URLMixin, WorkflowMixin, BaseBehavior):
     class Meta(BaseBehavior.Meta):
         verbose_name = "Behavior"
         verbose_name_plural = "Behaviors"
+        # add_behavior, change_behavior, delete_behavior are created by default.
+        permissions = (
+            ("view_behavior", "Can view Permissions"),
+            ("decline_behavior", "Can Decline Permissions"),
+            ("publish_behavior", "Can Publish Permissions"),
+        )
 
 
 class Action(URLMixin, WorkflowMixin, BaseBehavior):
@@ -396,6 +420,12 @@ class Action(URLMixin, WorkflowMixin, BaseBehavior):
     class Meta(BaseBehavior.Meta):
         verbose_name = "Action"
         verbose_name_plural = "Actions"
+        # add_action, change_action, delete_action are created by default.
+        permissions = (
+            ("view_action", "Can view Actions"),
+            ("decline_action", "Can Decline Actions"),
+            ("publish_action", "Can Publish Actions"),
+        )
 
 
 @receiver(post_delete, sender=Action)
