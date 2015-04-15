@@ -1,0 +1,27 @@
+<hr/>
+<ul class="button-group">
+{% if obj %}
+  <li>
+    <button type="submit">
+      Save{% if object_name %} {{ object_name }}{% endif %}
+    </button>
+  </li>
+{% else %}
+  <li>
+    <button type="submit">
+      Create{% if object_name %} {{ object_name }}{% endif %}
+    </button>
+  </li>
+{% endif %}
+<li>
+  <button
+    type="submit" name="review" value="1"
+    {% if disabled %}
+      disabled="disabled" class="info disabled"
+    {% else %}
+      class="info"
+    {% endif %}>
+    Submit for Review
+  </button>
+</li>
+</ul>

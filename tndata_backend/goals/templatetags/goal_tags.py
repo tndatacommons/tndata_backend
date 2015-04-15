@@ -14,3 +14,19 @@ def modified(obj):
 
     """
     return {"obj": obj}
+
+
+@register.inclusion_tag("goals/_form_buttons.html")
+def form_buttons(obj, object_name=None):
+    """Renders Form submit buttons. There's one required parameter: The object
+    being modified (if any). This can also be None.
+
+    Additionaly, if an object name is given, that's included
+    on the Create/Save button; e.g. [Create Category]
+
+    """
+    return {
+        "obj": obj,  # The object
+        "object_name": object_name,  # The object's friendly name
+        "disabled": obj.state != "draft",  # Do we allow submitting for review?
+    }
