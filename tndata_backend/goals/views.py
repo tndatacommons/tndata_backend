@@ -21,6 +21,27 @@ from . permissions import is_content_editor, superuser_required
 from utils.db import get_max_order
 
 
+class ReviewableUpdateView(UpdateView):
+    """A subclass of UpdateView; This allows users to submit content for
+    review. On POST, we simply check for a True `review` value once the object
+    has been saved.
+
+    """
+    def form_valid(self, form):
+        result = super(ReviewableUpdateView, self).form_valid(form)
+
+        # If the POSTed data contains a True 'review' value, the user clicked
+        # the "Submit for Review" button.
+        if self.request.POST.get('review', False):
+            self.object.review()  # Transition to the new state
+            msg = "{0} has been submitted for review".format(self.object)
+            messages.success(self.request, msg)
+
+        # Record who saved the item.
+        self.object.save(updated_by=self.request.user)
+        return result
+
+
 @user_passes_test(superuser_required, login_url='/')
 def upload_csv(request):
     """Allow a user to upload a CSV file to populate our data backend."""
@@ -104,7 +125,7 @@ class CategoryCreateView(ContentEditorMixin, CreateView):
         return result
 
 
-class CategoryUpdateView(ContentEditorMixin, UpdateView):
+class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateView):
     model = Category
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -114,11 +135,6 @@ class CategoryUpdateView(ContentEditorMixin, UpdateView):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(CategoryUpdateView, self).form_valid(form)
-        self.object.save(updated_by=self.request.user)
-        return result
 
 
 class CategoryDeleteView(ContentEditorMixin, DeleteView):
@@ -154,7 +170,7 @@ class GoalCreateView(ContentAuthorMixin, CreateView):
         return result
 
 
-class GoalUpdateView(ContentAuthorMixin, UpdateView):
+class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     model = Goal
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -164,11 +180,6 @@ class GoalUpdateView(ContentAuthorMixin, UpdateView):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
         context['goals'] = Goal.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(GoalUpdateView, self).form_valid(form)
-        self.object.save(updated_by=self.request.user)
-        return result
 
 
 class GoalDeleteView(ContentEditorMixin, DeleteView):
@@ -204,7 +215,7 @@ class TriggerCreateView(ContentEditorMixin, CreateView):
         return result
 
 
-class TriggerUpdateView(ContentEditorMixin, UpdateView):
+class TriggerUpdateView(ContentEditorMixin, ReviewableUpdateView):
     model = Trigger
     form_class = TriggerForm
     slug_field = "name_slug"
@@ -214,11 +225,6 @@ class TriggerUpdateView(ContentEditorMixin, UpdateView):
         context = super(TriggerUpdateView, self).get_context_data(**kwargs)
         context['triggers'] = Trigger.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(TriggerUpdateView, self).form_valid(form)
-        self.object.save(updated_by=self.request.user)
-        return result
 
 
 class TriggerDeleteView(ContentEditorMixin, DeleteView):
@@ -254,7 +260,7 @@ class BehaviorCreateView(ContentAuthorMixin, CreateView):
         return result
 
 
-class BehaviorUpdateView(ContentAuthorMixin, UpdateView):
+class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -264,11 +270,6 @@ class BehaviorUpdateView(ContentAuthorMixin, UpdateView):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
         context['behaviors'] = Behavior.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(BehaviorUpdateView, self).form_valid(form)
-        self.object.save(updated_by=self.request.user)
-        return result
 
 
 class BehaviorDeleteView(ContentEditorMixin, DeleteView):
@@ -305,7 +306,7 @@ class ActionCreateView(ContentAuthorMixin, CreateView):
         return result
 
 
-class ActionUpdateView(ContentAuthorMixin, UpdateView):
+class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -316,11 +317,6 @@ class ActionUpdateView(ContentAuthorMixin, UpdateView):
         context['actions'] = Action.objects.all()
         context['behaviors'] = Behavior.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(ActionUpdateView, self).form_valid(form)
-        self.object.save(updated_by=self.request.user)
-        return result
 
 
 class ActionDeleteView(ContentEditorMixin, DeleteView):
