@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
@@ -13,30 +12,12 @@ from . forms import (
     GoalForm,
     TriggerForm,
 )
+from . mixins import ContentAuthorMixin, ContentEditorMixin
 from . models import (
     Action, Behavior, Category, Goal, Trigger
 )
+from . permissions import superuser_required
 from utils.db import get_max_order
-
-
-def superuser_required(user):
-    """Verifies that a user is authenticated and a super user."""
-    return user.is_authenticated() and user.is_superuser
-
-
-class SuperuserRequiredMixin(object):
-    """A Mixin that requires the user to be a superuser in order to access
-    the view.
-
-    NOTE: Eventually we'll want to have more granular permissions, here. We
-    probably need a group or object-level permissions and check for those
-    instead (namely, once we have more than just our group editing content)
-    """
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
-        dec = user_passes_test(superuser_required, login_url=settings.LOGIN_URL)
-        return dec(view)
 
 
 @user_passes_test(superuser_required, login_url='/')
@@ -66,7 +47,7 @@ def upload_csv(request):
     return render(request, 'goals/upload_csv.html', context)
 
 
-class IndexView(SuperuserRequiredMixin, TemplateView):
+class IndexView(ContentAuthorMixin, TemplateView):
     template_name = "goals/index.html"
 
     def get(self, request, *args, **kwargs):
@@ -80,19 +61,19 @@ class IndexView(SuperuserRequiredMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class CategoryListView(SuperuserRequiredMixin, ListView):
+class CategoryListView(ContentAuthorMixin, ListView):
     model = Category
     context_object_name = 'categories'
     template_name = "goals/category_list.html"
 
 
-class CategoryDetailView(SuperuserRequiredMixin, DetailView):
+class CategoryDetailView(ContentAuthorMixin, DetailView):
     queryset = Category.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class CategoryCreateView(SuperuserRequiredMixin, CreateView):
+class CategoryCreateView(ContentEditorMixin, CreateView):
     model = Category
     fields = ['order', 'title', 'description', 'icon', 'notes']
 
@@ -110,7 +91,7 @@ class CategoryCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
+class CategoryUpdateView(ContentEditorMixin, UpdateView):
     model = Category
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -122,25 +103,25 @@ class CategoryUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class CategoryDeleteView(SuperuserRequiredMixin, DeleteView):
+class CategoryDeleteView(ContentEditorMixin, DeleteView):
     model = Category
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class GoalListView(SuperuserRequiredMixin, ListView):
+class GoalListView(ContentAuthorMixin, ListView):
     model = Goal
     context_object_name = 'goals'
 
 
-class GoalDetailView(SuperuserRequiredMixin, DetailView):
+class GoalDetailView(ContentAuthorMixin, DetailView):
     queryset = Goal.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class GoalCreateView(SuperuserRequiredMixin, CreateView):
+class GoalCreateView(ContentAuthorMixin, CreateView):
     model = Goal
     form_class = GoalForm
 
@@ -150,7 +131,7 @@ class GoalCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
+class GoalUpdateView(ContentAuthorMixin, UpdateView):
     model = Goal
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -162,25 +143,25 @@ class GoalUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class GoalDeleteView(SuperuserRequiredMixin, DeleteView):
+class GoalDeleteView(ContentEditorMixin, DeleteView):
     model = Goal
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class TriggerListView(SuperuserRequiredMixin, ListView):
+class TriggerListView(ContentAuthorMixin, ListView):
     model = Trigger
     context_object_name = 'triggers'
 
 
-class TriggerDetailView(SuperuserRequiredMixin, DetailView):
+class TriggerDetailView(ContentAuthorMixin, DetailView):
     queryset = Trigger.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
 
 
-class TriggerCreateView(SuperuserRequiredMixin, CreateView):
+class TriggerCreateView(ContentEditorMixin, CreateView):
     model = Trigger
     form_class = TriggerForm
 
@@ -190,7 +171,7 @@ class TriggerCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class TriggerUpdateView(SuperuserRequiredMixin, UpdateView):
+class TriggerUpdateView(ContentEditorMixin, UpdateView):
     model = Trigger
     form_class = TriggerForm
     slug_field = "name_slug"
@@ -202,25 +183,25 @@ class TriggerUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class TriggerDeleteView(SuperuserRequiredMixin, DeleteView):
+class TriggerDeleteView(ContentEditorMixin, DeleteView):
     model = Trigger
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class BehaviorListView(SuperuserRequiredMixin, ListView):
+class BehaviorListView(ContentAuthorMixin, ListView):
     model = Behavior
     context_object_name = 'behaviors'
 
 
-class BehaviorDetailView(SuperuserRequiredMixin, DetailView):
+class BehaviorDetailView(ContentAuthorMixin, DetailView):
     queryset = Behavior.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class BehaviorCreateView(SuperuserRequiredMixin, CreateView):
+class BehaviorCreateView(ContentAuthorMixin, CreateView):
     model = Behavior
     form_class = BehaviorForm
 
@@ -230,7 +211,7 @@ class BehaviorCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class BehaviorUpdateView(SuperuserRequiredMixin, UpdateView):
+class BehaviorUpdateView(ContentAuthorMixin, UpdateView):
     model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -242,25 +223,25 @@ class BehaviorUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class BehaviorDeleteView(SuperuserRequiredMixin, DeleteView):
+class BehaviorDeleteView(ContentEditorMixin, DeleteView):
     model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
 
 
-class ActionListView(SuperuserRequiredMixin, ListView):
+class ActionListView(ContentAuthorMixin, ListView):
     model = Action
     context_object_name = 'actions'
 
 
-class ActionDetailView(SuperuserRequiredMixin, DetailView):
+class ActionDetailView(ContentAuthorMixin, DetailView):
     queryset = Action.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class ActionCreateView(SuperuserRequiredMixin, CreateView):
+class ActionCreateView(ContentAuthorMixin, CreateView):
     model = Action
     form_class = ActionForm
 
@@ -271,7 +252,7 @@ class ActionCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
+class ActionUpdateView(ContentAuthorMixin, UpdateView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -284,7 +265,7 @@ class ActionUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class ActionDeleteView(SuperuserRequiredMixin, DeleteView):
+class ActionDeleteView(ContentEditorMixin, DeleteView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
