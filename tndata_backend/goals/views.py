@@ -42,6 +42,15 @@ class ReviewableUpdateView(UpdateView):
         return result
 
 
+class CreatedByView(CreateView):
+    """A Subclass of CreateView that tracks who created the object."""
+
+    def form_valid(self, form):
+        result = super(CreatedByView, self).form_valid(form)
+        self.object.save(created_by=self.request.user)
+        return result
+
+
 @user_passes_test(superuser_required, login_url='/')
 def upload_csv(request):
     """Allow a user to upload a CSV file to populate our data backend."""
@@ -102,7 +111,7 @@ class CategoryDetailView(ContentAuthorMixin, DetailView):
     slug_url_kwarg = "title_slug"
 
 
-class CategoryCreateView(ContentEditorMixin, CreateView):
+class CategoryCreateView(ContentEditorMixin, CreatedByView):
     model = Category
     fields = ['order', 'title', 'description', 'icon', 'notes']
 
@@ -118,11 +127,6 @@ class CategoryCreateView(ContentEditorMixin, CreateView):
         context = super(CategoryCreateView, self).get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(CategoryCreateView, self).form_valid(form)
-        self.object.save(created_by=self.request.user)
-        return result
 
 
 class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateView):
@@ -155,7 +159,7 @@ class GoalDetailView(ContentAuthorMixin, DetailView):
     slug_url_kwarg = "title_slug"
 
 
-class GoalCreateView(ContentAuthorMixin, CreateView):
+class GoalCreateView(ContentAuthorMixin, CreatedByView):
     model = Goal
     form_class = GoalForm
 
@@ -163,11 +167,6 @@ class GoalCreateView(ContentAuthorMixin, CreateView):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
         context['goals'] = Goal.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(GoalCreateView, self).form_valid(form)
-        self.object.save(created_by=self.request.user)
-        return result
 
 
 class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateView):
@@ -200,7 +199,7 @@ class TriggerDetailView(ContentAuthorMixin, DetailView):
     slug_url_kwarg = "name_slug"
 
 
-class TriggerCreateView(ContentEditorMixin, CreateView):
+class TriggerCreateView(ContentEditorMixin, CreatedByView):
     model = Trigger
     form_class = TriggerForm
 
@@ -209,13 +208,8 @@ class TriggerCreateView(ContentEditorMixin, CreateView):
         context['triggers'] = Trigger.objects.all()
         return context
 
-    def form_valid(self, form):
-        result = super(TriggerCreateView, self).form_valid(form)
-        self.object.save(created_by=self.request.user)
-        return result
 
-
-class TriggerUpdateView(ContentEditorMixin, ReviewableUpdateView):
+class TriggerUpdateView(ContentEditorMixin, UpdateView):
     model = Trigger
     form_class = TriggerForm
     slug_field = "name_slug"
@@ -225,6 +219,11 @@ class TriggerUpdateView(ContentEditorMixin, ReviewableUpdateView):
         context = super(TriggerUpdateView, self).get_context_data(**kwargs)
         context['triggers'] = Trigger.objects.all()
         return context
+
+    def form_valid(self, form):
+        result = super(TriggerUpdateView, self).form_valid(form)
+        self.object.save(updated_by=self.request.user)
+        return result
 
 
 class TriggerDeleteView(ContentEditorMixin, DeleteView):
@@ -245,7 +244,7 @@ class BehaviorDetailView(ContentAuthorMixin, DetailView):
     slug_url_kwarg = "title_slug"
 
 
-class BehaviorCreateView(ContentAuthorMixin, CreateView):
+class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
     model = Behavior
     form_class = BehaviorForm
 
@@ -253,11 +252,6 @@ class BehaviorCreateView(ContentAuthorMixin, CreateView):
         context = super(BehaviorCreateView, self).get_context_data(**kwargs)
         context['behaviors'] = Behavior.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(BehaviorCreateView, self).form_valid(form)
-        self.object.save(created_by=self.request.user)
-        return result
 
 
 class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateView):
@@ -290,7 +284,7 @@ class ActionDetailView(ContentAuthorMixin, DetailView):
     slug_url_kwarg = "title_slug"
 
 
-class ActionCreateView(ContentAuthorMixin, CreateView):
+class ActionCreateView(ContentAuthorMixin, CreatedByView):
     model = Action
     form_class = ActionForm
 
@@ -299,11 +293,6 @@ class ActionCreateView(ContentAuthorMixin, CreateView):
         context['actions'] = Action.objects.all()
         context['behaviors'] = Behavior.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(ActionCreateView, self).form_valid(form)
-        self.object.save(created_by=self.request.user)
-        return result
 
 
 class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):

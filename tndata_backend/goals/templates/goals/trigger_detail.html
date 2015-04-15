@@ -1,6 +1,5 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
-{% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
 
@@ -15,7 +14,6 @@
     <div class="large-6 small-12 columns">
       <h1>{{ trigger.name }} {% object_controls trigger "goals" %}</h1>
       <dl>
-        <dt>State</dt><dd>{{ trigger.state|label }}</dd>
         <dt>Type</dt><dd>{{ trigger.get_trigger_type_display}}</dd>
         <dt>Frequency</dt><dd>{{ trigger.get_frequency_display }}</dd>
         <dt>Time</dt><dd>{{ trigger.time }}</dd>
