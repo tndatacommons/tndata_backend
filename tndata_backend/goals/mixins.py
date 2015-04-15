@@ -31,7 +31,6 @@ class ContentAuthorMixin:
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
         dec = user_passes_test(is_content_author, login_url=settings.LOGIN_URL)
         return dec(view)
-        return dec(view)
 
 
 class ContentEditorMixin:
