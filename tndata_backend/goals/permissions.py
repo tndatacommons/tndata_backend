@@ -74,10 +74,9 @@ def _is_superuser_or_in_group(user, group_name):
 def is_content_author(user):
     """Verifies that a user is authenticated and a content author (or an editor
     since editors get all author permissions as well)."""
-    return (
-        _is_superuser_or_in_group(user, CONTENT_AUTHORS) or
-        _is_superuser_or_in_group(user, CONTENT_EDITORS)
-    )
+    author = _is_superuser_or_in_group(user, CONTENT_AUTHORS)
+    editor = _is_superuser_or_in_group(user, CONTENT_EDITORS)
+    return (author or editor)
 
 
 def is_content_editor(user):
