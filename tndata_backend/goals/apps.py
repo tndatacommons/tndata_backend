@@ -1,7 +1,10 @@
 from django.apps import AppConfig
-from django.apps import apps as django_apps
-
 from rules.rulesets import ruleset
+
+from . permissions import (
+    get_or_create_content_authors,
+    get_or_create_content_editors,
+)
 from . rulesets import ActionRuleset, BehaviorRuleset, GoalRuleset
 
 
@@ -10,7 +13,14 @@ class GoalsConfig(AppConfig):
     verbose_name = "Goals"
 
     def ready(self):
-        """Register all of our business-rules rulesets."""
+        """Register all of our business-rules rulesets and ensure that
+        appropriate groups have been created."""
+
+        # Register the rules.
         ruleset.register(self.name, GoalRuleset)
         ruleset.register(self.name, BehaviorRuleset)
         ruleset.register(self.name, ActionRuleset)
+
+        # Create Groups if needed.
+        get_or_create_content_authors()
+        get_or_create_content_editors()
