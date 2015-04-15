@@ -2,9 +2,49 @@
 This module contains Mixins.
 
 """
+from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 
+from . permissions import superuser_required, is_content_author, is_content_editor
+
+
+# Mixins for Views
+# ----------------
+
+class SuperuserRequiredMixin(object):
+    """A Mixin that requires the user to be a superuser in order to access
+    the view.
+    """
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
+        dec = user_passes_test(superuser_required, login_url=settings.LOGIN_URL)
+        return dec(view)
+
+
+class ContentAuthorMixin(object):
+    """A Mixin that requires the user to be in the 'Content Authors' group."""
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
+        dec = user_passes_test(is_content_author, login_url=settings.LOGIN_URL)
+        return dec(view)
+        return dec(view)
+
+
+class ContentEditorMixin(object):
+    """A Mixin that requires the user to be in the 'Content Editors' group."""
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(ContentEditorMixin, cls).as_view(**initkwargs)
+        dec = user_passes_test(is_content_editor, login_url=settings.LOGIN_URL)
+        return dec(view)
+
+
+# Mixins for Models
+# -----------------
 
 class ModifiedMixin:
     def _check_updated_or_created_by(self, **kwargs):
