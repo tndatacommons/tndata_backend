@@ -64,19 +64,19 @@ a.ui-datepicker-next { float:right; }
         <li class="divider"></li>
         <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
       {% endif %}
-      {% if perms.goals.view_goals %}
+      {% if perms.goals.view_goal %}
         <li class="divider"></li>
         <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
       {% endif %}
-      {% if perms.goals.view_triggers %}
+      {% if perms.goals.view_trigger %}
         <li class="divider"></li>
         <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
       {% endif %}
-      {% if perms.goals.view_behaviors %}
+      {% if perms.goals.view_behavior %}
         <li class="divider"></li>
         <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
       {% endif %}
-      {% if perms.goals.view_actions %}
+      {% if perms.goals.view_action %}
         <li class="divider"></li>
         <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
       {% endif %}
