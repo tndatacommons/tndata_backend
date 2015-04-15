@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
+from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -16,7 +17,7 @@ from . mixins import ContentAuthorMixin, ContentEditorMixin
 from . models import (
     Action, Behavior, Category, Goal, Trigger
 )
-from . permissions import superuser_required
+from . permissions import is_content_editor, superuser_required
 from utils.db import get_max_order
 
 
@@ -53,11 +54,18 @@ class IndexView(ContentAuthorMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         """Include info on pending and declined content items."""
         context = self.get_context_data(**kwargs)
-        if request.user.is_staff:  # TODO: check for Editor group/permissions?
+        if is_content_editor(request.user):
+            # Show content pending review.
             context['categories'] = Category.objects.filter(state='pending-review')
             context['goals'] = Goal.objects.filter(state='pending-review')
             context['behaviors'] = Behavior.objects.filter(state='pending-review')
             context['actions'] = Action.objects.filter(state='pending-review')
+        # List content created/updated by the current user.
+        conditions = Q(created_by=request.user) | Q(updated_by=request.user)
+        context['my_categories'] = Category.objects.filter(conditions)
+        context['my_goals'] = Goal.objects.filter(conditions)
+        context['my_behaviors'] = Behavior.objects.filter(conditions)
+        context['my_actions'] = Action.objects.filter(conditions)
         return self.render_to_response(context)
 
 
@@ -90,6 +98,11 @@ class CategoryCreateView(ContentEditorMixin, CreateView):
         context['categories'] = Category.objects.all()
         return context
 
+    def form_valid(self, form):
+        result = super(CategoryCreateView, self).form_valid(form)
+        self.object.save(created_by=self.request.user)
+        return result
+
 
 class CategoryUpdateView(ContentEditorMixin, UpdateView):
     model = Category
@@ -101,6 +114,11 @@ class CategoryUpdateView(ContentEditorMixin, UpdateView):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         return context
+
+    def form_valid(self, form):
+        result = super(CategoryUpdateView, self).form_valid(form)
+        self.object.save(updated_by=self.request.user)
+        return result
 
 
 class CategoryDeleteView(ContentEditorMixin, DeleteView):
@@ -130,6 +148,11 @@ class GoalCreateView(ContentAuthorMixin, CreateView):
         context['goals'] = Goal.objects.all()
         return context
 
+    def form_valid(self, form):
+        result = super(GoalCreateView, self).form_valid(form)
+        self.object.save(created_by=self.request.user)
+        return result
+
 
 class GoalUpdateView(ContentAuthorMixin, UpdateView):
     model = Goal
@@ -141,6 +164,11 @@ class GoalUpdateView(ContentAuthorMixin, UpdateView):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
         context['goals'] = Goal.objects.all()
         return context
+
+    def form_valid(self, form):
+        result = super(GoalUpdateView, self).form_valid(form)
+        self.object.save(updated_by=self.request.user)
+        return result
 
 
 class GoalDeleteView(ContentEditorMixin, DeleteView):
@@ -170,6 +198,11 @@ class TriggerCreateView(ContentEditorMixin, CreateView):
         context['triggers'] = Trigger.objects.all()
         return context
 
+    def form_valid(self, form):
+        result = super(TriggerCreateView, self).form_valid(form)
+        self.object.save(created_by=self.request.user)
+        return result
+
 
 class TriggerUpdateView(ContentEditorMixin, UpdateView):
     model = Trigger
@@ -181,6 +214,11 @@ class TriggerUpdateView(ContentEditorMixin, UpdateView):
         context = super(TriggerUpdateView, self).get_context_data(**kwargs)
         context['triggers'] = Trigger.objects.all()
         return context
+
+    def form_valid(self, form):
+        result = super(TriggerUpdateView, self).form_valid(form)
+        self.object.save(updated_by=self.request.user)
+        return result
 
 
 class TriggerDeleteView(ContentEditorMixin, DeleteView):
@@ -210,6 +248,11 @@ class BehaviorCreateView(ContentAuthorMixin, CreateView):
         context['behaviors'] = Behavior.objects.all()
         return context
 
+    def form_valid(self, form):
+        result = super(BehaviorCreateView, self).form_valid(form)
+        self.object.save(created_by=self.request.user)
+        return result
+
 
 class BehaviorUpdateView(ContentAuthorMixin, UpdateView):
     model = Behavior
@@ -221,6 +264,11 @@ class BehaviorUpdateView(ContentAuthorMixin, UpdateView):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
         context['behaviors'] = Behavior.objects.all()
         return context
+
+    def form_valid(self, form):
+        result = super(BehaviorUpdateView, self).form_valid(form)
+        self.object.save(updated_by=self.request.user)
+        return result
 
 
 class BehaviorDeleteView(ContentEditorMixin, DeleteView):
@@ -251,6 +299,11 @@ class ActionCreateView(ContentAuthorMixin, CreateView):
         context['behaviors'] = Behavior.objects.all()
         return context
 
+    def form_valid(self, form):
+        result = super(ActionCreateView, self).form_valid(form)
+        self.object.save(created_by=self.request.user)
+        return result
+
 
 class ActionUpdateView(ContentAuthorMixin, UpdateView):
     model = Action
@@ -263,6 +316,11 @@ class ActionUpdateView(ContentAuthorMixin, UpdateView):
         context['actions'] = Action.objects.all()
         context['behaviors'] = Behavior.objects.all()
         return context
+
+    def form_valid(self, form):
+        result = super(ActionUpdateView, self).form_valid(form)
+        self.object.save(updated_by=self.request.user)
+        return result
 
 
 class ActionDeleteView(ContentEditorMixin, DeleteView):
