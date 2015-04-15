@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
 
@@ -14,6 +15,7 @@
     <div class="large-6 small-12 columns">
       <h1>{{ action }} {% object_controls action "goals" %}</h1>
       <dl>
+        <dt>State</dt><dd>{{ action.state|label }}</dd>
         <dt>Sequence Order</dt><dd>{{ action.sequence_order }}</dd>
         <dt>Title</dt><dd>{{ action.title }}</dd>
         <dt>Source Link</dt><dd>{{ action.source_link}}</dd>

@@ -1,6 +1,6 @@
 {% extends "goals/base.html" %}
 {% load static from staticfiles %}
-
+{% load goal_tags %}
 
 {% block head %}
   {{ block.super }}
@@ -29,12 +29,7 @@
     <p>A <strong>Trigger</strong> is the top-level organizational unit for
     behavior-change Actions, and is the first thing a user will see in the app.</p>
     {{ form.as_p }}
-    <hr/>
-    {% if object %}
-      <button type="submit">Update Trigger</button>
-    {% else %}
-      <button type="submit">Create Trigger</button>
-    {% endif %}
+    {% form_buttons object "Goal" %}
     </form>
   </div>
   <div class="large-6 small-12 columns">

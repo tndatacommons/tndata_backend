@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
 
@@ -14,6 +15,7 @@
     <div class="large-6 small-12 columns">
       <h1>{{ behavior }} {% object_controls behavior "goals" %}</h1>
       <dl>
+        <dt>State</dt><dd>{{ behavior.state|label }}</dd>
         <dt>Title</dt><dd>{{ behavior.title }}</dd>
         <dt>Source Link</dt><dd>{{ behavior.source_link}}</dd>
         <dt>Source Notes</dt><dd>{{ behavior.source_notes|markdown}}</dd>

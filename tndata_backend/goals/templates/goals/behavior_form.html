@@ -1,4 +1,5 @@
 {% extends "goals/base.html" %}
+{% load goal_tags %}
 
 {% block content %}
 <ul class="breadcrumbs">
@@ -23,12 +24,7 @@
     <p>A <strong>Behavior</strong> is the top-level organizational unit for
     behavior-change Actions, and is the first thing a user will see in the app.</p>
     {{ form.as_p }}
-    <hr/>
-    {% if object %}
-      <button type="submit">Update Behavior</button>
-    {% else %}
-      <button type="submit">Create Behavior</button>
-    {% endif %}
+    {% form_buttons object "Behavior" %}
     </form>
   </div>
   <div class="large-6 small-12 columns">
