@@ -18,8 +18,6 @@ from django_fsm import FSMField, transition
 
 from .mixins import ModifiedMixin, URLMixin
 
-# TODO: Update Views to give Eidtors a "dashboard"
-
 
 class Category(ModifiedMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""

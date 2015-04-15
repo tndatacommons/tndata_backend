@@ -13,7 +13,7 @@ from . permissions import superuser_required, is_content_author, is_content_edit
 # Mixins for Views
 # ----------------
 
-class SuperuserRequiredMixin(object):
+class SuperuserRequiredMixin:
     """A Mixin that requires the user to be a superuser in order to access
     the view.
     """
@@ -24,7 +24,7 @@ class SuperuserRequiredMixin(object):
         return dec(view)
 
 
-class ContentAuthorMixin(object):
+class ContentAuthorMixin:
     """A Mixin that requires the user to be in the 'Content Authors' group."""
     @classmethod
     def as_view(cls, **initkwargs):
@@ -34,7 +34,7 @@ class ContentAuthorMixin(object):
         return dec(view)
 
 
-class ContentEditorMixin(object):
+class ContentEditorMixin:
     """A Mixin that requires the user to be in the 'Content Editors' group."""
     @classmethod
     def as_view(cls, **initkwargs):

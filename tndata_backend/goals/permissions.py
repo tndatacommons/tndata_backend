@@ -11,9 +11,14 @@ custom groups for people who create and review content:
 from django.contrib.auth.models import Group, Permission
 
 
+# Group Names
+CONTENT_AUTHORS = "Content Authors"
+CONTENT_EDITORS = "Content Editors"
+
+
 def get_or_create_content_authors():
     group, created = Group.objects.get_or_create(
-        name="Content Authors"
+        name=CONTENT_AUTHORS
     )
     if created:
         perms = [
@@ -30,7 +35,7 @@ def get_or_create_content_authors():
 
 def get_or_create_content_editors():
     group, created = Group.objects.get_or_create(
-        name="Content Editors"
+        name=CONTENT_EDITORS
     )
     if created:
         perms = []
@@ -53,15 +58,28 @@ def superuser_required(user):
     return user.is_authenticated() and user.is_superuser
 
 
-def _in_group(user, group_name):
-    return user.groups.filter(name=group_name).exists()
+def _is_superuser_or_in_group(user, group_name):
+    """Checks for the following conditions:
+
+    1. User is authenticated.
+    2. User is a superuser, OR
+    3. User is in the specified group.
+
+    """
+    return user.is_authenticated() and (
+        user.is_superuser or user.groups.filter(name=group_name).exists()
+    )
 
 
 def is_content_author(user):
-    """Verifies that a user is authenticated and a content author."""
-    return user.is_authenticated() and _in_group(user, "Content Authors")
+    """Verifies that a user is authenticated and a content author (or an editor
+    since editors get all author permissions as well)."""
+    return (
+        _is_superuser_or_in_group(user, CONTENT_AUTHORS) or
+        _is_superuser_or_in_group(user, CONTENT_EDITORS)
+    )
 
 
 def is_content_editor(user):
     """Verifies that a user is authenticated and a content editor."""
-    return user.is_authenticated() and _in_group(user, "Content Editors")
+    return _is_superuser_or_in_group(user, CONTENT_EDITORS)
