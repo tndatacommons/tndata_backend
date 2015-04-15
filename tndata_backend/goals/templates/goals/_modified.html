@@ -1,0 +1,11 @@
+<p class="panel callout">
+  {% if obj.updated_on %}
+    Updated {% if obj.updated_by %} by <em>{{ obj.updated_by }}</em>{% endif %}
+    {{ obj.updated_on|timesince }} ago.
+    <br/>
+  {% endif %}
+  {% if obj.created_on %}
+    Created {% if obj.created_by %}by <em>{{ obj.created_by }}</em>{% endif %}
+    {{ obj.created_on|timesince }} ago.
+  {% endif %}
+</p>

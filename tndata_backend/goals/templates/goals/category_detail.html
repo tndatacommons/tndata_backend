@@ -1,4 +1,5 @@
 {% extends "goals/base.html" %}
+{% load goal_tags %}
 {% load util_tags %}
 {% load util_filters %}
 
@@ -24,6 +25,8 @@
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Notes</dt><dd>{{ category.description|markdown }}</dd>
       </dl>
+      {% modified category %}
+
     </div>
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Content</h2>
