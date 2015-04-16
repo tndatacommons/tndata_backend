@@ -48,7 +48,13 @@ class Category(ModifiedMixin, URLMixin, models.Model):
     )
     icon = models.ImageField(
         upload_to="goals/category", null=True, blank=True,
-        help_text="Upload an image to be displayed next to the Category."
+        help_text="Upload a square icon to be displayed for the Category."
+    )
+    image = models.ImageField(
+        upload_to="goals/category/images",
+        null=True,
+        blank=True,
+        help_text="A Hero image to be displayed at the top of the Category pager"
     )
     notes = models.TextField(
         blank=True,
