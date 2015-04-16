@@ -19,6 +19,10 @@ from django_fsm import FSMField, transition
 from .mixins import ModifiedMixin, URLMixin
 
 
+# TODO: Should we reset the state (back to draft?) if something is changed
+# after it's been declined or published?
+
+
 class Category(ModifiedMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
 
@@ -95,7 +99,7 @@ class Category(ModifiedMixin, URLMixin, models.Model):
     def draft(self):
         pass
 
-    @transition(field=state, source="draft", target='pending-review')
+    @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
         pass
 
@@ -179,7 +183,7 @@ class Goal(ModifiedMixin, URLMixin, models.Model):
     def draft(self):
         pass
 
-    @transition(field=state, source="draft", target='pending-review')
+    @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
         pass
 
@@ -383,7 +387,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
     def draft(self):
         pass
 
-    @transition(field=state, source="draft", target='pending-review')
+    @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
         pass
 

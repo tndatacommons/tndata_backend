@@ -25,7 +25,7 @@ def form_buttons(obj, object_name=None):
     on the Create/Save button; e.g. [Create Category]
 
     """
-    if obj and obj.state != "draft":
+    if obj and obj.state not in ["draft", "declined"]:
         disabled = True
     else:
         disabled = False
