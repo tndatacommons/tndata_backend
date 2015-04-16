@@ -48,6 +48,11 @@ urlpatterns = patterns('',
         name='action-list'
     ),
     url(
+        r'^actions/(?P<title_slug>.+)/publish/$',
+        views.ActionPublishView.as_view(),
+        name='action-publish'
+    ),
+    url(
         r'^actions/(?P<title_slug>.+)/update/$',
         views.ActionUpdateView.as_view(),
         name='action-update'
@@ -68,6 +73,11 @@ urlpatterns = patterns('',
         r'^behaviors/$',
         views.BehaviorListView.as_view(),
         name='behavior-list'
+    ),
+    url(
+        r'^behaviors/(?P<title_slug>.+)/publish/$',
+        views.BehaviorPublishView.as_view(),
+        name='behavior-publish'
     ),
     url(
         r'^behaviors/(?P<title_slug>.+)/update/$',
@@ -109,6 +119,11 @@ urlpatterns = patterns('',
 
     # Goals
     url(
+        r'^goals/(?P<title_slug>.+)/publish/$',
+        views.GoalPublishView.as_view(),
+        name='goal-publish'
+    ),
+    url(
         r'^goals/(?P<title_slug>.+)/update/$',
         views.GoalUpdateView.as_view(),
         name='goal-update'
@@ -134,6 +149,11 @@ urlpatterns = patterns('',
         r'^categories/$',
         views.CategoryListView.as_view(),
         name='category-list'
+    ),
+    url(
+        r'^categories/(?P<title_slug>.+)/publish/$',
+        views.CategoryPublishView.as_view(),
+        name='category-publish'
     ),
     url(
         r'^categories/(?P<title_slug>.+)/update/$',

@@ -108,6 +108,9 @@ class URLMixin:
     def get_absolute_url(self):
         return reverse(self._view('detail'), args=[self._slug_field()])
 
+    def get_publish_url(self):
+        return reverse(self._view('publish'), args=[self._slug_field()])
+
     def get_update_url(self):
         return reverse(self._view('update'), args=[self._slug_field()])
 

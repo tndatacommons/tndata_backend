@@ -3,8 +3,10 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+
+from django_fsm import TransitionNotAllowed
 
 from . forms import (
     ActionForm,
@@ -19,6 +21,44 @@ from . models import (
 )
 from . permissions import is_content_editor, superuser_required
 from utils.db import get_max_order
+
+
+class PublishView(View):
+    """A Simple Base View for subclasses that need to publish content.
+
+    """
+    http_method_names = ['post']
+    model = None
+    slug_field = None
+
+    def get_object(self, kwargs):
+        if self.model is None or self.slug_field is None:
+            raise RuntimeError(
+                "PublishView subclasses must define a model and slug_field "
+                "attributes."
+            )
+        params = {self.slug_field: kwargs.get(self.slug_field, None)}
+        return self.model.objects.get(**params)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            obj = self.get_object(kwargs)
+
+            if request.POST.get('publish', False):
+                obj.publish()
+                obj.save(updated_by=request.user)
+                messages.success(request, "{0} has been published".format(obj))
+            elif request.POST.get('decline', False):
+                obj.decline()
+                obj.save(updated_by=request.user)
+                messages.success(request, "{0} has been declined".format(obj))
+        except self.model.DoesNotExist:
+            messages.error(
+                request, "Could not find the specified {0}".format(self.model)
+            )
+        except TransitionNotAllowed:
+            messages.error(request, "Unable to process transition.")
+        return redirect("goals:index")
 
 
 class ReviewableUpdateView(UpdateView):
@@ -130,6 +170,11 @@ class CategoryCreateView(ContentEditorMixin, CreatedByView):
         return context
 
 
+class CategoryPublishView(ContentEditorMixin, PublishView):
+    model = Category
+    slug_field = 'title_slug'
+
+
 class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateView):
     model = Category
     slug_field = "title_slug"
@@ -168,6 +213,11 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
         context['goals'] = Goal.objects.all()
         return context
+
+
+class GoalPublishView(ContentEditorMixin, PublishView):
+    model = Goal
+    slug_field = 'title_slug'
 
 
 class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateView):
@@ -255,6 +305,11 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
         return context
 
 
+class BehaviorPublishView(ContentEditorMixin, PublishView):
+    model = Behavior
+    slug_field = 'title_slug'
+
+
 class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     model = Behavior
     slug_field = "title_slug"
@@ -294,6 +349,11 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         context['actions'] = Action.objects.all()
         context['behaviors'] = Behavior.objects.all()
         return context
+
+
+class ActionPublishView(ContentEditorMixin, PublishView):
+    model = Action
+    slug_field = 'title_slug'
 
 
 class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
