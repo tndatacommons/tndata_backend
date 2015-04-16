@@ -231,6 +231,69 @@ class TestCategoryCreateView(TestCaseWithGroups):
         u.delete()
 
 
+class TestCategoryPublishView(TestCaseWithGroups):
+
+    def setUp(self):
+        # Create author/editor in appropriate Groups.
+        author_group = Group.objects.get(name=CONTENT_AUTHORS)
+        self.author = User.objects.create_user("author", password="p")
+        self.author.groups.add(author_group)
+
+        editor_group = Group.objects.get(name=CONTENT_EDITORS)
+        self.editor = User.objects.create_user("editor", password="p")
+        self.editor.groups.add(editor_group)
+
+        # Create a Category under review
+        self.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+            state="pending-review"
+        )
+        self.url = self.category.get_publish_url()
+
+    def tearDown(self):
+        User.objects.filter(pk__in=[self.author.id, self.editor.id]).delete()
+        Category.objects.filter(id=self.category.id).delete()
+        self.client.logout()
+
+    def test_publish_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Category.objects.get(pk=self.category.pk).state,
+            "pending-review"  # Failed.
+        )
+
+    def test_decline_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Category.objects.get(pk=self.category.pk).state,
+            "pending-review"
+        )
+
+    def test_publish_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Category.objects.get(pk=self.category.pk).state,
+            "published"
+        )
+
+    def test_decline_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Category.objects.get(pk=self.category.pk).state,
+            "declined"
+        )
+
+
 class TestCategoryUpdateView(TestCaseWithGroups):
 
     def setUp(self):
@@ -503,6 +566,69 @@ class TestGoalCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         u.delete()
+
+
+class TestGoalPublishView(TestCaseWithGroups):
+
+    def setUp(self):
+        # Create author/editor in appropriate Groups.
+        author_group = Group.objects.get(name=CONTENT_AUTHORS)
+        self.author = User.objects.create_user("author", password="p")
+        self.author.groups.add(author_group)
+
+        editor_group = Group.objects.get(name=CONTENT_EDITORS)
+        self.editor = User.objects.create_user("editor", password="p")
+        self.editor.groups.add(editor_group)
+
+        # Create a Goal under review
+        self.goal = Goal.objects.create(
+            title='Test Goal',
+            description='Some explanation!',
+            outcome="An Outcome",
+            state="pending-review"
+        )
+        self.url = self.goal.get_publish_url()
+
+    def tearDown(self):
+        User.objects.filter(pk__in=[self.author.id, self.editor.id]).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        self.client.logout()
+
+    def test_publish_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Goal.objects.get(pk=self.goal.pk).state,
+            "pending-review"  # Failed.
+        )
+
+    def test_decline_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Goal.objects.get(pk=self.goal.pk).state,
+            "pending-review"
+        )
+
+    def test_publish_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Goal.objects.get(pk=self.goal.pk).state,
+            "published"
+        )
+
+    def test_decline_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Goal.objects.get(pk=self.goal.pk).state,
+            "declined"
+        )
 
 
 class TestGoalUpdateView(TestCaseWithGroups):
@@ -1047,6 +1173,67 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         u.delete()
 
 
+class TestBehaviorPublishView(TestCaseWithGroups):
+
+    def setUp(self):
+        # Create author/editor in appropriate Groups.
+        author_group = Group.objects.get(name=CONTENT_AUTHORS)
+        self.author = User.objects.create_user("author", password="p")
+        self.author.groups.add(author_group)
+
+        editor_group = Group.objects.get(name=CONTENT_EDITORS)
+        self.editor = User.objects.create_user("editor", password="p")
+        self.editor.groups.add(editor_group)
+
+        # Create a Behavior under review
+        self.behavior = Behavior.objects.create(
+            title='Test Behavior',
+            state="pending-review"
+        )
+        self.url = self.behavior.get_publish_url()
+
+    def tearDown(self):
+        User.objects.filter(pk__in=[self.author.id, self.editor.id]).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        self.client.logout()
+
+    def test_publish_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Behavior.objects.get(pk=self.behavior.pk).state,
+            "pending-review"  # Failed.
+        )
+
+    def test_decline_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Behavior.objects.get(pk=self.behavior.pk).state,
+            "pending-review"
+        )
+
+    def test_publish_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Behavior.objects.get(pk=self.behavior.pk).state,
+            "published"
+        )
+
+    def test_decline_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Behavior.objects.get(pk=self.behavior.pk).state,
+            "declined"
+        )
+
+
 class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def setUp(self):
@@ -1308,6 +1495,69 @@ class TestActionCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         u.delete()
+
+
+class TestActionPublishView(TestCaseWithGroups):
+
+    def setUp(self):
+        # Create author/editor in appropriate Groups.
+        author_group = Group.objects.get(name=CONTENT_AUTHORS)
+        self.author = User.objects.create_user("author", password="p")
+        self.author.groups.add(author_group)
+
+        editor_group = Group.objects.get(name=CONTENT_EDITORS)
+        self.editor = User.objects.create_user("editor", password="p")
+        self.editor.groups.add(editor_group)
+
+        # Create a Action under review
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            behavior=self.behavior,
+            title="Test Action",
+            state="pending-review"
+        )
+        self.url = self.action.get_publish_url()
+
+    def tearDown(self):
+        User.objects.filter(pk__in=[self.author.id, self.editor.id]).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        self.client.logout()
+
+    def test_publish_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Action.objects.get(pk=self.action.pk).state,
+            "pending-review"  # Failed.
+        )
+
+    def test_decline_with_contentauthor(self):
+        self.client.login(username="author", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Action.objects.get(pk=self.action.pk).state,
+            "pending-review"
+        )
+
+    def test_publish_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Action.objects.get(pk=self.action.pk).state,
+            "published"
+        )
+
+    def test_decline_with_contenteditor(self):
+        self.client.login(username="editor", password="p")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Action.objects.get(pk=self.action.pk).state,
+            "declined"
+        )
 
 
 class TestActionUpdateView(TestCaseWithGroups):
