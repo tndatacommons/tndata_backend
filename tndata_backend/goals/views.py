@@ -44,6 +44,7 @@ class PublishView(View):
         try:
             obj = self.get_object(kwargs)
 
+            # TODO:explicitely check model's publish_XXX, and decline_XXX perms.
             if request.POST.get('publish', False):
                 obj.publish()
                 obj.save(updated_by=request.user)
