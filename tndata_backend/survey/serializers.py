@@ -52,12 +52,13 @@ class BinaryQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `BinaryQuestion`."""
     options = BinaryOptionsField()
     question_type = serializers.CharField(source="question_type")
+    response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
         model = BinaryQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions', 'question_type',
+            'options', 'instructions', 'question_type', 'response_url',
         )
         depth = 1
 
@@ -66,12 +67,13 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `LikertQuestion`."""
     options = LikertOptionsField()
     question_type = serializers.CharField(source="question_type")
+    response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
         model = LikertQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions', 'question_type',
+            'options', 'instructions', 'question_type', 'response_url',
         )
         depth = 1
 
@@ -80,12 +82,13 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `MultipleChoiceQuestion`."""
     options = MultipleChoiceOptionsField(many=True)
     question_type = serializers.CharField(source="question_type")
+    response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
         model = MultipleChoiceQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'options', 'instructions', 'question_type',
+            'options', 'instructions', 'question_type', 'response_url',
         )
         depth = 1
 
@@ -93,12 +96,13 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
 class OpenEndedQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `OpenEndedQuestion`."""
     question_type = serializers.CharField(source="question_type")
+    response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
         model = OpenEndedQuestion
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
-            'instructions', 'question_type',
+            'instructions', 'question_type', "response_url",
         )
         depth = 1
 
@@ -106,6 +110,7 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
 class BinaryResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `BinaryResponse` model."""
     selected_option_text = serializers.Field(source='selected_option_text')
+
 
     class Meta:
         model = BinaryResponse
