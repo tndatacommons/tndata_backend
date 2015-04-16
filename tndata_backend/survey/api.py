@@ -27,6 +27,21 @@ class InstrumentViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = models.Instrument.objects.all()
     serializer_class = serializers.InstrumentSerializer
 
+    def list(self, request, *args, **kwargs):
+        resp = super(InstrumentViewSet, self).list(request, *args, **kwargs)
+        # Hack the data to include FQDNs for the response_url item.
+        #import ipdb;ipdb.set_trace();
+        for item in resp.data['results']:
+            for q in item['questions']:
+                q['response_url'] = self.request.build_absolute_uri(q['response_url'])
+        return resp
+
+    def retrieve(self, request, *args, **kwargs):
+        resp = super(InstrumentViewSet, self).retrieve(request, *args, **kwargs)
+        for q in resp.data['questions']:
+            q['response_url'] = self.request.build_absolute_uri(q['response_url'])
+        return resp
+
 
 class RandomQuestionViewSet(viewsets.ViewSet):
     """This endpoint retuns a single, random Question. The returned data
