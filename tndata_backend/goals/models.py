@@ -30,6 +30,7 @@ class Category(ModifiedMixin, URLMixin, models.Model):
     urls_app_namespace = "goals"
     urls_model_name = "category"
     urls_icon_field = "icon"
+    urls_image_field = "image"
 
     # Data Fields
     order = models.PositiveIntegerField(

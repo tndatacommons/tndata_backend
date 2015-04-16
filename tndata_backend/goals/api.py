@@ -25,7 +25,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     * title: The unique Title (or name) of the Category
     * title_slug: A url-friendly version of the title.
     * description: A short description of this Category. May contain markdown.
-    * icon_url: A URL for an image associated with the category
+    * icon_url: A URL for a square image. This is the category's Icon.
+    * image_url: A URL for a larger image associated with the category. Use as the
+      category's _hero_ image above each tab.
     * goals: A list of goals that appear in this category. See the [Goals](/api/goals/)
         endpoint for more information.
 

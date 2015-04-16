@@ -25,12 +25,13 @@ class CategorySerializer(serializers.ModelSerializer):
     """A Serializer for `Category`."""
     goals = GoalListField(many=True)
     icon_url = serializers.Field(source="get_absolute_icon")
+    image_url = serializers.Field(source="get_absolute_image")
 
     class Meta:
         model = Category
         fields = (
             'id', 'order', 'title', 'title_slug', 'description',
-            'goals', 'icon_url',
+            'goals', 'icon_url', 'image_url',
         )
         depth = 1
 
