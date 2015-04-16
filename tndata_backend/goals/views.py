@@ -155,7 +155,7 @@ class CategoryDetailView(ContentAuthorMixin, DetailView):
 
 class CategoryCreateView(ContentEditorMixin, CreatedByView):
     model = Category
-    fields = ['order', 'title', 'description', 'icon', 'notes']
+    fields = ['order', 'title', 'description', 'icon', 'image', 'notes']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -180,7 +180,7 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateView):
     model = Category
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    fields = ['order', 'title', 'description', 'icon', 'notes']
+    fields = ['order', 'title', 'description', 'icon', 'image', 'notes']
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)

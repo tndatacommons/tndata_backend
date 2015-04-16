@@ -11,17 +11,17 @@ urlpatterns = patterns('',
 
     # Create views
     url(
-        r'^new/categories/g$',
+        r'^new/categories/$',
         views.CategoryCreateView.as_view(),
         name='category-create'
     ),
     url(
-        r'^new/triggers/g$',
+        r'^new/triggers/$',
         views.TriggerCreateView.as_view(),
         name='trigger-create'
     ),
     url(
-        r'^new/goals/g$',
+        r'^new/goals/$',
         views.GoalCreateView.as_view(),
         name='goal-create'
     ),
