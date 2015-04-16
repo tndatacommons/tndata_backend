@@ -86,6 +86,7 @@ class IndexView(ContentAuthorMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         if is_content_editor(request.user):
             # Show content pending review.
+            context['is_editor'] = True
             context['categories'] = Category.objects.filter(state='pending-review')
             context['goals'] = Goal.objects.filter(state='pending-review')
             context['behaviors'] = Behavior.objects.filter(state='pending-review')

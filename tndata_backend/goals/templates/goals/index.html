@@ -10,7 +10,7 @@
       <p>coming soon!</p>
     </div>
     <div class="large-6 small-6 columns">
-      {% if user.is_staff %}  {# check for group/permissions #}
+      {% if is_editor %}
         <table>
         <caption>Content for Review</caption>
         <thead>
