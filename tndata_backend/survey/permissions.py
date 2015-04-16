@@ -1,8 +1,19 @@
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import Group, Permission
+
 from rest_framework import permissions
 
 SURVEY_ADMINS = "Survey Admins"  # Name of the group containing survey admins.
+
+
+def get_or_create_survey_admins_group():
+    group, created = Group.objects.get_or_create(name=SURVEY_ADMINS)
+    if created:
+        # Should have all of the survey-related permissions
+        for p in Permission.objects.filter(content_type__app_label="survey"):
+            group.permissions.add(p)
+    return group
 
 
 class IsOwner(permissions.BasePermission):

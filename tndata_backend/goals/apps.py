@@ -22,5 +22,8 @@ class GoalsConfig(AppConfig):
         ruleset.register(self.name, ActionRuleset)
 
         # Create Groups if needed.
+        # NOTE: We really should do anything that writes to the DB here because
+        # this gets run on every management command: http://goo.gl/Idtz8F
+        # I have no idea where else to programmatically create Groups, though :(
         get_or_create_content_authors()
         get_or_create_content_editors()
