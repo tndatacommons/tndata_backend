@@ -45,6 +45,7 @@ class PublishView(View):
             obj = self.get_object(kwargs)
 
             # TODO:explicitely check model's publish_XXX, and decline_XXX perms.
+            # Right now we just assume ContentEditors can do both (and that's safe, right?)
             if request.POST.get('publish', False):
                 obj.publish()
                 obj.save(updated_by=request.user)
@@ -53,6 +54,10 @@ class PublishView(View):
                 obj.decline()
                 obj.save(updated_by=request.user)
                 messages.success(request, "{0} has been declined".format(obj))
+            elif request.POST.get('draft', False):
+                obj.draft()
+                obj.save(updated_by=request.user)
+                messages.success(request, "{0} is now in Draft".format(obj))
         except self.model.DoesNotExist:
             messages.error(
                 request, "Could not find the specified {0}".format(self.model)

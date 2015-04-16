@@ -101,7 +101,7 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
 
     Each trigger is available at an endpoint based on it's database ID: `/api/triggers/{id}/`.
 
-    ## TODO:
+    ## TODO: triggers are useless right now.
 
     The data model for this is woefully incomplete. It should also provide:
 

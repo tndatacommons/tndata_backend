@@ -1,6 +1,12 @@
 <form action="{{ obj.get_publish_url }}" method="post">{% csrf_token %}
 <ul class="button-group">
   <li><button
+    name="draft"
+    value="1"
+    class="button info">
+    Draft</button>
+  </li>
+  <li><button
     name="publish"
     value="1"
     {% if not publishable %}disabled="disabled"{% endif %}
