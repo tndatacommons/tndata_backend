@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
 from django.forms.models import modelformset_factory
 
@@ -10,47 +8,29 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from utils.db import get_max_order
 
 from . models import (
-    BinaryQuestion, Instrument, LikertQuestion, LikertResponse,
+    BinaryQuestion, Instrument, LikertQuestion,
     MultipleChoiceQuestion, MultipleChoiceResponseOption, OpenEndedQuestion,
 )
 
-
-def superuser_required(user):
-    """Verifies that a user is authenticated and a super user."""
-    return user.is_authenticated() and user.is_superuser
+from . permissions import SurveyAdminsMixin
 
 
-class SuperuserRequiredMixin(object):
-    """A Mixin that requires the user to be a superuser in order to access
-    the view.
-
-    NOTE: Eventually we'll want to have more granular permissions, here. We
-    probably need a group or object-level permissions and check for those
-    instead (namely, once we have more than just our group editing content)
-    """
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
-        dec = user_passes_test(superuser_required, login_url=settings.LOGIN_URL)
-        return dec(view)
-
-
-class IndexView(SuperuserRequiredMixin, TemplateView):
+class IndexView(SurveyAdminsMixin, TemplateView):
     template_name = "survey/index.html"
 
 
-class InstrumentListView(SuperuserRequiredMixin, ListView):
+class InstrumentListView(SurveyAdminsMixin, ListView):
     model = Instrument
     context_object_name = 'instruments'
     template_name = "survey/instrument_list.html"
 
 
-class InstrumentDetailView(SuperuserRequiredMixin, DetailView):
+class InstrumentDetailView(SurveyAdminsMixin, DetailView):
     queryset = Instrument.objects.all()
     context_object_name = 'instrument'
 
 
-class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
+class InstrumentCreateView(SurveyAdminsMixin, CreateView):
     model = Instrument
     fields = ['title', 'description', 'instructions']
 
@@ -60,7 +40,7 @@ class InstrumentCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class InstrumentUpdateView(SuperuserRequiredMixin, UpdateView):
+class InstrumentUpdateView(SurveyAdminsMixin, UpdateView):
     model = Instrument
     fields = ['title', 'description', 'instructions']
 
@@ -70,24 +50,24 @@ class InstrumentUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class InstrumentDeleteView(SuperuserRequiredMixin, DeleteView):
+class InstrumentDeleteView(SurveyAdminsMixin, DeleteView):
     model = Instrument
     success_url = reverse_lazy('survey:index')
     context_object_name = 'instrument'
 
 
-class BinaryQuestionListView(SuperuserRequiredMixin, ListView):
+class BinaryQuestionListView(SurveyAdminsMixin, ListView):
     model = BinaryQuestion
     context_object_name = 'questions'
     template_name = "survey/binaryquestion_list.html"
 
 
-class BinaryQuestionDetailView(SuperuserRequiredMixin, DetailView):
+class BinaryQuestionDetailView(SurveyAdminsMixin, DetailView):
     queryset = BinaryQuestion.objects.all()
     context_object_name = 'question'
 
 
-class BinaryQuestionCreateView(SuperuserRequiredMixin, CreateView):
+class BinaryQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = BinaryQuestion
     fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
@@ -106,7 +86,7 @@ class BinaryQuestionCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class BinaryQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
+class BinaryQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = BinaryQuestion
     fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
@@ -117,24 +97,24 @@ class BinaryQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class BinaryQuestionDeleteView(SuperuserRequiredMixin, DeleteView):
+class BinaryQuestionDeleteView(SurveyAdminsMixin, DeleteView):
     model = BinaryQuestion
     success_url = reverse_lazy('survey:index')
     context_object_name = 'question'
 
 
-class LikertQuestionListView(SuperuserRequiredMixin, ListView):
+class LikertQuestionListView(SurveyAdminsMixin, ListView):
     model = LikertQuestion
     context_object_name = 'questions'
     template_name = "survey/likertquestion_list.html"
 
 
-class LikertQuestionDetailView(SuperuserRequiredMixin, DetailView):
+class LikertQuestionDetailView(SurveyAdminsMixin, DetailView):
     queryset = LikertQuestion.objects.all()
     context_object_name = 'question'
 
 
-class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
+class LikertQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = LikertQuestion
     fields = [
         'order', 'text', 'instructions', 'available', 'scale',
@@ -155,7 +135,7 @@ class LikertQuestionCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class LikertQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
+class LikertQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = LikertQuestion
     fields = [
         'order', 'text', 'instructions', 'available', 'scale',
@@ -168,23 +148,23 @@ class LikertQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class LikertQuestionDeleteView(SuperuserRequiredMixin, DeleteView):
+class LikertQuestionDeleteView(SurveyAdminsMixin, DeleteView):
     model = LikertQuestion
     success_url = reverse_lazy('survey:index')
     context_object_name = 'question'
 
 
-class MultipleChoiceQuestionListView(SuperuserRequiredMixin, ListView):
+class MultipleChoiceQuestionListView(SurveyAdminsMixin, ListView):
     model = MultipleChoiceQuestion
     context_object_name = 'questions'
 
 
-class MultipleChoiceQuestionDetailView(SuperuserRequiredMixin, DetailView):
+class MultipleChoiceQuestionDetailView(SurveyAdminsMixin, DetailView):
     queryset = MultipleChoiceQuestion.objects.all()
     context_object_name = 'question'
 
 
-class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
+class MultipleChoiceQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = MultipleChoiceQuestion
     fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
@@ -237,7 +217,7 @@ class MultipleChoiceQuestionCreateView(SuperuserRequiredMixin, CreateView):
         return self.render_to_response(ctx)
 
 
-class MultipleChoiceQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
+class MultipleChoiceQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = MultipleChoiceQuestion
     fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
@@ -286,23 +266,23 @@ class MultipleChoiceQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
         return self.render_to_response(ctx)
 
 
-class MultipleChoiceQuestionDeleteView(SuperuserRequiredMixin, DeleteView):
+class MultipleChoiceQuestionDeleteView(SurveyAdminsMixin, DeleteView):
     model = MultipleChoiceQuestion
     context_object_name = 'question'
     success_url = reverse_lazy('survey:index')
 
 
-class OpenEndedQuestionListView(SuperuserRequiredMixin, ListView):
+class OpenEndedQuestionListView(SurveyAdminsMixin, ListView):
     model = OpenEndedQuestion
     context_object_name = 'questions'
 
 
-class OpenEndedQuestionDetailView(SuperuserRequiredMixin, DetailView):
+class OpenEndedQuestionDetailView(SurveyAdminsMixin, DetailView):
     queryset = OpenEndedQuestion.objects.all()
     context_object_name = 'question'
 
 
-class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
+class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = OpenEndedQuestion
     fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
@@ -320,7 +300,7 @@ class OpenEndedQuestionCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class OpenEndedQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
+class OpenEndedQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = OpenEndedQuestion
     fields = ['order', 'text', 'instructions', 'available', 'instruments']
 
@@ -330,7 +310,7 @@ class OpenEndedQuestionUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class OpenEndedQuestionDeleteView(SuperuserRequiredMixin, DeleteView):
+class OpenEndedQuestionDeleteView(SurveyAdminsMixin, DeleteView):
     model = OpenEndedQuestion
     context_object_name = 'question'
     success_url = reverse_lazy('survey:index')
