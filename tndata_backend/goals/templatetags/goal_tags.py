@@ -34,3 +34,13 @@ def form_buttons(obj, object_name=None):
         "object_name": object_name,  # The object's friendly name
         "disabled": disabled,  # Do we allow submitting for review?
     }
+
+
+@register.inclusion_tag("goals/_publish_deny_form.html")
+def publish_deny_form(obj):
+    """Given an object, render Publish / Deny buttons."""
+    return {
+        "obj": obj,
+        "publishable": obj.state in ['draft', 'pending-review'],
+        "declineable": obj.state in ['pending-review'],
+    }

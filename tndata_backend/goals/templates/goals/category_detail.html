@@ -28,6 +28,7 @@
         <dt>Notes</dt><dd>{{ category.description|markdown }}</dd>
       </dl>
       {% modified category %}
+      {% if perms.goals.publish_category %}{% publish_deny_form category %}{% endif %}
 
     </div>
     <div class="large-6 small-12 columns">

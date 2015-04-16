@@ -28,6 +28,7 @@
       <dt>Outcome</dt><dd>{{ goal.outcome|markdown }}</dt>
       </dl>
       {% modified goal %}
+      {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}
 
     </div>
     <div class="large-6 small-12 columns">

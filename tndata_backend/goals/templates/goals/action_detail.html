@@ -59,6 +59,7 @@
         </dd>
       </dl>
       {% modified action %}
+      {% if perms.goals.publish_action %}{% publish_deny_form action %}{% endif %}
     </div>
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Behavior</h2>

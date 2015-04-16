@@ -1,0 +1,17 @@
+<form action="{{ obj.get_publish_url }}" method="post">{% csrf_token %}
+<ul class="button-group">
+  <li><button
+    name="publish"
+    value="1"
+    {% if not publishable %}disabled="disabled"{% endif %}
+    class="button success{% if not publishable %} disabled{% endif %}">
+    Publish</button>
+  </li>
+  <li><button
+    name="decline"
+    value="1"
+    {% if not declineable %}disabled="disabled"{% endif %}
+    class="button alert{% if not declineable %} disabled{% endif %}">
+    Decline</button></li>
+</ul>
+</form>
