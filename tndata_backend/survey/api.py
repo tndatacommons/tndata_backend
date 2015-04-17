@@ -234,6 +234,8 @@ class OpenEndedQuestionViewSet(viewsets.ReadOnlyModelViewSet):
     Open-Ended Questions contain the following attributes:
 
     * id: The database ID for the Question.
+    * input_type: The type of data to allow as input. Will be one of:
+      `text`, `datetime`, or `numeric`.
     * text: The text of the question. This is what the user should see.
     * order: The order in which multiple questions should be displayed.
     * available: Boolean. Whether or not this question should be available to

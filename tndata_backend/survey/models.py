@@ -225,7 +225,22 @@ class MultipleChoiceResponse(models.Model):
 
 
 class OpenEndedQuestion(BaseQuestion):
-    """An Open-Ended Question Allows for a plain-text response."""
+    """An Open-Ended Question Allows for a plain-text response. This question
+    also allows specifying an input type that restricts the input to various
+    data types."""
+
+    INPUT_TYPE_CHOICES = (
+        ('text', 'Text'),
+        ('datetime', 'Date/Time'),
+        ('numeric', 'Numeric'),
+    )
+
+    input_type = models.CharField(
+        max_length=32,
+        default="text",
+        choices=INPUT_TYPE_CHOICES,
+        help_text="Select the type of data to allow for responses"
+    )
 
     class Meta:
         verbose_name = "Open-Ended Question"

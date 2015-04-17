@@ -284,7 +284,7 @@ class OpenEndedQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = OpenEndedQuestion
-    fields = ['order', 'text', 'instructions', 'available', 'instruments']
+    fields = ['order', 'input_type', 'text', 'instructions', 'available', 'instruments']
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -302,7 +302,7 @@ class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class OpenEndedQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = OpenEndedQuestion
-    fields = ['order', 'text', 'instructions', 'available', 'instruments']
+    fields = ['order', 'input_type', 'text', 'instructions', 'available', 'instruments']
 
     def get_context_data(self, **kwargs):
         context = super(OpenEndedQuestionUpdateView, self).get_context_data(**kwargs)

@@ -101,7 +101,7 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = OpenEndedQuestion
         fields = (
-            'id', 'order', 'text', 'available', 'updated', 'created',
+            'id', 'order', 'input_type', 'text', 'available', 'updated', 'created',
             'instructions', 'question_type', "response_url",
         )
         depth = 1
