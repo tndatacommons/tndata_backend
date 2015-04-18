@@ -92,6 +92,10 @@ class TestGoalAPI(APITestCase):
         self.assertEqual(obj['title'], self.goal.title)
         self.assertEqual(obj['title_slug'], self.goal.title_slug)
         self.assertEqual(obj['description'], self.goal.description)
+        # Check the SimpleCategorySerializer used with goals
+        self.assertIn('categories', obj)
+        self.assertIn("image_url", obj['categories'][0])
+        self.assertIn("icon_url", obj['categories'][0])
 
     def test_goal_list_by_category(self):
         """Ensure we can filter by category."""
@@ -1056,6 +1060,7 @@ class TestUserCategoryAPI(APITestCase):
         self.assertIn("title_slug", response.data['results'][0]['category'])
         self.assertIn("description", response.data['results'][0]['category'])
         self.assertIn("icon_url", response.data['results'][0]['category'])
+        self.assertIn("image_url", response.data['results'][0]['category'])
 
         self.assertEqual(
             response.data['results'][0]['id'],
