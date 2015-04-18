@@ -23,6 +23,13 @@
             <em>No icon available</em>
           {% endif %}
         </dd>
+        <dt>Hero Image</dt><dd>
+          {% if category.image %}
+            <img src="{{ category.image.url }}" alt="{{ category }} image" />
+          {% else %}
+            <em>No image available</em>
+          {% endif %}
+        </dd>
         <dt>Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Notes</dt><dd>{{ category.description|markdown }}</dd>
