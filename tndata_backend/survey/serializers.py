@@ -107,6 +107,7 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+# TODO: VALIDATE the response using the question's input_type?
 class BinaryResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `BinaryResponse` model."""
     selected_option_text = serializers.Field(source='selected_option_text')

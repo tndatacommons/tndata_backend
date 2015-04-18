@@ -267,6 +267,9 @@ class OpenEndedResponse(models.Model):
     response = models.TextField()
     submitted_on = models.DateTimeField(auto_now_add=True)
 
+    # TODO: add a getter method for response that converts the resposne info
+    # to the correct data type specified by the Question's input_type
+
     def __str__(self):
         return "{}".format(self.response)
 
