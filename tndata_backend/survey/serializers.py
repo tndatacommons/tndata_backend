@@ -24,7 +24,7 @@ class InstrumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Instrument
-        fields = ('id', 'title', 'description', 'questions')
+        fields = ('id', 'title', 'description', 'instructions', 'questions')
 
     def transform_questions(self, obj, value):
         """Format the list of questions so they can be serialized appropriately."""

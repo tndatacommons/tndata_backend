@@ -20,6 +20,7 @@ class InstrumentViewSet(viewsets.ReadOnlyModelViewSet):
     * id: The database ID for the Instrument
     * title: The title of the instrument
     * description: A description of the instrument.
+    * instructions: Instructions that apply to all questions in the instrument
 
     ----
 
