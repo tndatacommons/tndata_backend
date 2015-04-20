@@ -282,6 +282,30 @@ class TestOpenEndedQuestion(TestCase):
             "/survey/openended/{0}/delete/".format(self.question.id)
         )
 
+    def test_convert_to_input_type(self):
+        """Ensure the `convert_to_input_type` returns the correct type of data."""
+        self.question.input_type = "text"
+        self.question.save()
+        self.assertEqual(self.question.convert_to_input_type("foo"), "foo")
+
+        self.question.input_type = "numeric"
+        self.question.save()
+        self.assertEqual(self.question.convert_to_input_type("42"), 42)
+
+        self.question.input_type = "datetime"
+        self.question.save()
+        self.assertEqual(
+            self.question.convert_to_input_type("2015-04-20"),
+            datetime(2015, 4, 20)
+        )
+
+        self.question.input_type = "datetime"
+        self.question.save()
+        self.assertEqual(
+            self.question.convert_to_input_type("2015-04-20 12:32:45"),
+            datetime(2015, 4, 20, 12, 32, 45)
+        )
+
 
 class TestOpenEndedResponse(TestCase):
     """Tests for the `OpenEndedResponse` model."""
