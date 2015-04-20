@@ -248,6 +248,10 @@ class OpenEndedQuestion(BaseQuestion):
         verbose_name = "Open-Ended Question"
         verbose_name_plural = "Open-Ended Questions"
 
+    @staticmethod
+    def get_api_response_url():
+        return reverse("openendedresponse-list")
+
     def get_absolute_url(self):
         return reverse('survey:openended-detail', args=[self.id])
 
@@ -257,10 +261,23 @@ class OpenEndedQuestion(BaseQuestion):
     def get_delete_url(self):
         return reverse('survey:openended-delete', args=[self.id])
 
-    @staticmethod
-    def get_api_response_url():
-        return reverse("openendedresponse-list")
-
+    def convert_to_input_type(self, value):
+        """Given a value, attempt to convert it to the specified input_type."""
+        f = {
+            "text": str,
+            "numeric": int,
+            "datetime": lambda t: datetime.strptime(t, "%m-%d-%Y %H:%M:%S"),
+            "date": lambda t: datetime.strptime(t, "%m-%d-%Y"),
+        }
+        if self.input_type == "text":
+            return f["text"](value)
+        elif self.input_type == "numeric":
+            return f["numeric"](value)
+        elif self.input_type == "datetime" and len(value) == 10:
+            return f["date"](value)
+        elif self.input_type == "datetime":
+            return f["datetime"](value)
+        raise ValueError("Invalid input_type for Response")
 
 class OpenEndedResponse(models.Model):
     """A User's response to an `OpenEndedQuestion`."""
@@ -284,23 +301,7 @@ class OpenEndedResponse(models.Model):
         the question's `input_type`.
 
         """
-        f = {
-            "text": str,
-            "numeric": int,
-            "datetime": lambda t: datetime.strptime(t, "%m-%d-%Y %H:%M:%S"),
-            "date": lambda t: datetime.strptime(t, "%m-%d-%Y"),
-        }
-        it = self.question.input_type
-        resp = self.response.strip()
-        if it == "text":
-            return f["text"](resp)
-        elif it == "numeric":
-            return f["numeric"](resp)
-        elif it == "datetime" and len(resp) == 10:
-            return f["date"](resp)
-        elif it == "datetime":
-            return f["datetime"](resp)
-        raise AttributeError("Invalid input_type for Response")
+        return self.question.convert_to_input_type(self.response.strip())
 
 
 class LikertQuestion(BaseQuestion):
