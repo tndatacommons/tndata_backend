@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -306,6 +308,50 @@ class TestOpenEndedResponse(TestCase):
         expected = "Yellow. No Blue!"
         actual = "{}".format(self.response)
         self.assertEqual(expected, actual)
+
+    def test_response_as_input_type(self):
+        """Ensure this method returns a data type specified by the question's
+        input_type field."""
+        kwargs = {'user': self.user, 'question': None, 'response': None}
+
+        q = OpenEndedQuestion.objects.create(text="A", input_type="text")
+        kwargs['question'] = q
+        kwargs['response'] = "hi"
+        r = OpenEndedResponse.objects.create(**kwargs)
+        self.assertEqual(type(r.get_response_as_input_type()), str)
+        self.assertEqual(r.get_response_as_input_type(), "hi")
+        q.delete()
+        r.delete()
+
+        q = OpenEndedQuestion.objects.create(text="B", input_type="numeric")
+        kwargs['question'] = q
+        kwargs['response'] = "7"
+        r = OpenEndedResponse.objects.create(**kwargs)
+        self.assertEqual(type(r.get_response_as_input_type()), int)
+        self.assertEqual(r.get_response_as_input_type(), 7)
+        q.delete()
+        r.delete()
+
+        q = OpenEndedQuestion.objects.create(text="C", input_type="datetime")
+        kwargs['question'] = q
+        kwargs['response'] = "04-20-2015"
+        r = OpenEndedResponse.objects.create(**kwargs)
+        self.assertEqual(type(r.get_response_as_input_type()), datetime)
+        self.assertEqual(r.get_response_as_input_type(), datetime(2015, 4, 20))
+        q.delete()
+        r.delete()
+
+        q = OpenEndedQuestion.objects.create(text="D", input_type="datetime")
+        kwargs['question'] = q
+        kwargs['response'] = "04-20-2015 13:40:56"
+        r = OpenEndedResponse.objects.create(**kwargs)
+        self.assertEqual(type(r.get_response_as_input_type()), datetime)
+        self.assertEqual(
+            r.get_response_as_input_type(),
+            datetime(2015, 4, 20, 13, 40, 56)
+        )
+        q.delete()
+        r.delete()
 
 
 class TestMultipleChoiceQuestion(TestCase):

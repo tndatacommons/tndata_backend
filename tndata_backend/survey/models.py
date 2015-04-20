@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -276,6 +278,29 @@ class OpenEndedResponse(models.Model):
     class Meta:
         verbose_name = "Open-Ended Response"
         verbose_name_plural = "Open-Ended Responses"
+
+    def get_response_as_input_type(self):
+        """Returns the response, but converts it to the data type enforced by
+        the question's `input_type`.
+
+        """
+        f = {
+            "text": str,
+            "numeric": int,
+            "datetime": lambda t: datetime.strptime(t, "%m-%d-%Y %H:%M:%S"),
+            "date": lambda t: datetime.strptime(t, "%m-%d-%Y"),
+        }
+        it = self.question.input_type
+        resp = self.response.strip()
+        if it == "text":
+            return f["text"](resp)
+        elif it == "numeric":
+            return f["numeric"](resp)
+        elif it == "datetime" and len(resp) == 10:
+            return f["date"](resp)
+        elif it == "datetime":
+            return f["datetime"](resp)
+        raise AttributeError("Invalid input_type for Response")
 
 
 class LikertQuestion(BaseQuestion):
