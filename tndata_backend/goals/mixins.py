@@ -7,11 +7,36 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 
+from rest_framework import status
+from rest_framework.response import Response
+
 from . permissions import superuser_required, is_content_author, is_content_editor
 
 
 # Mixins for Views
 # ----------------
+
+class DeleteMultipleMixin:
+    """A Mixin that allows deleting multiple objects when a DELETE request is
+    sent with a list of modelnames and object IDs.
+
+    """
+    def delete(self, request, *args, **kwargs):
+        # TODO: why is auth not getting handled by the authentication_classes, here?
+
+        model = self.get_queryset().model
+        model_name = model.__name__.lower()
+
+        if isinstance(request.DATA, list) and request.user.is_authenticated():
+            # We're deleting multiple items; just assume they exist?
+            params = {
+                "pk__in": filter(None, (d[model_name] for d in request.DATA)),
+                "user": request.user.id,
+            }
+            model.objects.filter(**params).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 class SuperuserRequiredMixin:
     """A Mixin that requires the user to be a superuser in order to access

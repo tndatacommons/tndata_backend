@@ -1,9 +1,9 @@
-from rest_framework import mixins, permissions, status, viewsets
+from rest_framework import mixins, permissions, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.response import Response
 
+from . mixins import DeleteMultipleMixin
 from . import models
 from . import serializers
 
@@ -503,6 +503,7 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.DestroyModelMixin,
+                          DeleteMultipleMixin,
                           viewsets.GenericViewSet):
     """This endpoint represents a mapping between [Users](/api/users/) and
     [Categories](/api/categories/).
@@ -592,15 +593,3 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
             # We're creating a single items.
             request.DATA['user'] = request.user.id
         return super(UserCategoryViewSet, self).create(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        # TODO: why is auth not getting handled by the authentication_classes, here?
-        if isinstance(request.DATA, list) and request.user.is_authenticated():
-            # We're deleting multiple items; just assume they exist?
-            params = {
-                "pk__in": filter(None, (d['usercategory'] for d in request.DATA)),
-                "user": request.user.id,
-            }
-            models.UserCategory.objects.filter(**params).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
