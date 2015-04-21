@@ -41,7 +41,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'djorm_pgarray',
     'jsonfield',
     'rest_framework',
     'rest_framework.authtoken',
