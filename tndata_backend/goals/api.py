@@ -288,6 +288,18 @@ class UserGoalViewSet(mixins.CreateModelMixin,
             {'goal': 5}
         ]
 
+    ## Removing multiple Goals in one request.
+
+    This endpoint also allows you to remove  multiple instances of the
+    user-to-goal association. Tod do this, send a DELETE request with
+    an array of `usergoal` IDs, e.g.:
+
+        [
+            {'usergoal': 3},
+            {'usergoal': 4},
+            {'usergoal': 5}
+        ]
+
     ## Viewing the Goal data
 
     Additional information for the Goal mapping is available at
@@ -373,6 +385,18 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
             {'behavior': 5}
         ]
 
+    ## Removing multiple Behaviors in one request.
+
+    This endpoint also allows you to remove  multiple instances of the
+    user-to-behavior association. Tod do this, send a DELETE request with
+    an array of `userbehavior` IDs, e.g.:
+
+        [
+            {'userbehavior': 3},
+            {'userbehavior': 4},
+            {'userbehavior': 5}
+        ]
+
     ## Viewing the Behavior data
 
     Additional information for the Behavior mapping is available at
@@ -450,6 +474,18 @@ class UserActionViewSet(mixins.CreateModelMixin,
             {'action': 3},
             {'action': 4},
             {'action': 5}
+        ]
+
+    ## Removing multiple Actions in one request.
+
+    This endpoint also allows you to remove  multiple instances of the
+    user-to-action association. Tod do this, send a DELETE request with
+    an array of `useraction` IDs, e.g.:
+
+        [
+            {'useraction': 3},
+            {'useraction': 4},
+            {'useraction': 5}
         ]
 
     ## Viewing the Action data
