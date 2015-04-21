@@ -1026,6 +1026,7 @@ class TestUserCategoryAPI(APITestCase):
             title="Test Category",
             order=1
         )
+
         # Assign a Category to the User
         self.uc = UserCategory.objects.create(user=self.user, category=self.category)
 
@@ -1187,3 +1188,42 @@ class TestUserCategoryAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(UserCategory.objects.filter(id=self.uc.id).count(), 0)
+
+    def test_delete_usercategory_multiple_unauthenticated(self):
+        """Ensure unauthenticated users cannot delete UserCategory's"""
+        other_cat = Category.objects.create(title="Second Category", order=2)
+        other_uc = UserCategory.objects.create(user=self.user, category=other_cat)
+
+        url = reverse('usercategory-list')
+        uc_data = [
+            {'usercategory': self.uc.id},
+            {'usercategory': other_uc.id},
+        ]
+
+        response = self.client.delete(url, uc_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Clean up.
+        other_uc.delete()
+        other_cat.delete()
+
+    def test_delete_usercategory_multiple_authenticated(self):
+        """Ensure that we can delete multiple UserCategory objects."""
+        other_cat = Category.objects.create(title="Second Category", order=2)
+        other_uc = UserCategory.objects.create(user=self.user, category=other_cat)
+
+        url = reverse('usercategory-list')
+        uc_data = [
+            {'usercategory': self.uc.id},
+            {'usercategory': other_uc.id},
+        ]
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url, uc_data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(UserCategory.objects.filter(id=other_uc.id).exists())
+
+        # Clean up.
+        other_cat.delete()
