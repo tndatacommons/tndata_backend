@@ -262,6 +262,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
                       mixins.ListModelMixin,
                       mixins.RetrieveModelMixin,
                       mixins.DestroyModelMixin,
+                      DeleteMultipleMixin,
                       viewsets.GenericViewSet):
     """This endpoint represents a mapping between [Users](/api/users/) and
     [Goals](/api/goals/).
@@ -346,6 +347,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.DestroyModelMixin,
+                          DeleteMultipleMixin,
                           viewsets.GenericViewSet):
     """This endpoint represents a mapping between [Users](/api/users/) and
     [Behaviors](/api/behaviors/).
@@ -424,6 +426,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         mixins.DestroyModelMixin,
+                        DeleteMultipleMixin,
                         viewsets.GenericViewSet):
     """This endpoint represents a mapping between [Users](/api/users/) and
     [Actions](/api/actions/).

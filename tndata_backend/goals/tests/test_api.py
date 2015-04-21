@@ -678,6 +678,45 @@ class TestUserGoalAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(UserGoal.objects.filter(id=self.ug.id).count(), 0)
 
+    def test_delete_usergoal_multiple_unauthenticated(self):
+        """Ensure unauthenticated users cannot delete UserGoal's"""
+        other_goal = Goal.objects.create(title="Second Goal")
+        other_ug = UserGoal.objects.create(user=self.user, goal=other_goal)
+
+        url = reverse('usergoal-list')
+        data = [
+            {'usergoal': self.ug.id},
+            {'usergoal': other_ug.id},
+        ]
+
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Clean up.
+        other_ug.delete()
+        other_goal.delete()
+
+    def test_delete_usercategory_multiple_authenticated(self):
+        """Ensure that we can delete multiple UserCategory objects."""
+        other_goal = Goal.objects.create(title="Second Goal")
+        other_ug = UserGoal.objects.create(user=self.user, goal=other_goal)
+
+        url = reverse('usergoal-list')
+        data = [
+            {'usergoal': self.ug.id},
+            {'usergoal': other_ug.id},
+        ]
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(UserGoal.objects.filter(id=other_ug.id).exists())
+
+        # Clean up.
+        other_goal.delete()
+
 
 class TestUserBehaviorAPI(APITestCase):
 
@@ -842,6 +881,51 @@ class TestUserBehaviorAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(UserBehavior.objects.filter(id=self.ub.id).count(), 0)
+
+    def test_delete_userbehavior_multiple_unauthenticated(self):
+        """Ensure unauthenticated users cannot delete UserBehavior's"""
+        other_behavior = Behavior.objects.create(title="Second Behavior")
+        other_ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=other_behavior
+        )
+
+        url = reverse('userbehavior-list')
+        data = [
+            {'userbehavior': self.ub.id},
+            {'userbehavior': other_ub.id},
+        ]
+
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Clean up.
+        other_ub.delete()
+        other_behavior.delete()
+
+    def test_delete_usercategory_multiple_authenticated(self):
+        """Ensure that we can delete multiple UserCategory objects."""
+        other_behavior = Behavior.objects.create(title="Second Behavior")
+        other_ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=other_behavior
+        )
+
+        url = reverse('userbehavior-list')
+        data = [
+            {'userbehavior': self.ub.id},
+            {'userbehavior': other_ub.id},
+        ]
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(UserBehavior.objects.filter(id=other_ub.id).exists())
+
+        # Clean up.
+        other_behavior.delete()
 
 
 class TestUserActionAPI(APITestCase):
@@ -1012,6 +1096,51 @@ class TestUserActionAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(UserAction.objects.filter(id=self.ua.id).count(), 0)
+
+    def test_delete_useraction_multiple_unauthenticated(self):
+        """Ensure unauthenticated users cannot delete UserAction's"""
+        other_action = Action.objects.create(
+            title="Second Action",
+            behavior=self.behavior
+        )
+        other_ua = UserAction.objects.create(user=self.user, action=other_action)
+
+        url = reverse('useraction-list')
+        data = [
+            {'useraction': self.ua.id},
+            {'useraction': other_ua.id},
+        ]
+
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Clean up.
+        other_ua.delete()
+        other_action.delete()
+
+    def test_delete_usercategory_multiple_authenticated(self):
+        """Ensure that we can delete multiple UserCategory objects."""
+        other_action = Action.objects.create(
+            title="Second Action",
+            behavior=self.behavior
+        )
+        other_ua = UserAction.objects.create(user=self.user, action=other_action)
+
+        url = reverse('useraction-list')
+        data = [
+            {'useraction': self.ua.id},
+            {'useraction': other_ua.id},
+        ]
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url, data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(UserAction.objects.filter(id=other_ua.id).exists())
+
+        # Clean up.
+        other_action.delete()
 
 
 class TestUserCategoryAPI(APITestCase):
