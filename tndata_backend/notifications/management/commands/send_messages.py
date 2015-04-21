@@ -1,13 +1,13 @@
 from datetime import datetime
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 
 from notifications import GCMMessage
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = 'Sends messages to GCM'
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         delivery_date = datetime.utcnow()
 
         # Look for all the undelivered/non-errored messages.
