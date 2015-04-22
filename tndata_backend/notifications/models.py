@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from hashlib import md5
 
@@ -102,7 +101,3 @@ class GCMMessage(models.Model):
         result = client.send(self.registration_id, self.content, **options)
         # TODO: Inspect result to see if successful; update accordingly.
         return result
-
-    def get_content_data(self):
-        """return a parsed version of the Json `content`."""
-        return json.loads(self.content)
