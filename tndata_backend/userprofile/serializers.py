@@ -22,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
     behaviors = UserBehaviorListField(many=True, source="userbehavior_set")
     actions = UserActionListField(many=True, source="useraction_set")
     categories = UserCategoryListField(many=True, source="usercategory_set")
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = get_user_model()
@@ -31,31 +32,35 @@ class UserSerializer(serializers.ModelSerializer):
             "goals", "behaviors", "actions", "categories",
         )
         read_only_fields = ("id", "date_joined", )
-        write_only_fields = ("password", )
-        depth = 1
 
-    def _set_user_password(self, user, attrs):
+    def _set_user_password(self, instance, password=None):
         """Ensure that the User password gets set correctly."""
-        password = attrs.get('password', None)
         if password:
-            user.set_password(password)
-        return user
+            instance.set_password(password)
+            instance.save()
+        return instance
 
-    def _set_username_from_email(self, attrs):
+    def _generate_username(self, data):
         """NOTE: We allow users to sign up with an email/password pair. This
         method will generate a (hopefully unique) username hash using the
         email address (the first 30 chars from an md5 hex digest).
         """
-        if 'username' not in attrs and 'email' in attrs:
+        if not data.get('username', False) and 'email' in data:
             m = hashlib.md5()
-            m.update(attrs['email'].encode("utf8"))
-            attrs['username'] = m.hexdigest()[:30]
-        return attrs
+            m.update(data['email'].encode("utf8"))
+            data['username'] = m.hexdigest()[:30]
+        return data
 
-    def restore_object(self, attrs, instance=None):
-        self._set_username_from_email(attrs)
-        user = super(UserSerializer, self).restore_object(attrs, instance)
-        user = self._set_user_password(user, attrs)
+    def update(self, instance, validated_data):
+        validated_data = self._generate_username(validated_data)
+        instance = super(UserSerializer, self).update(instance, validated_data)
+        instance = self._set_user_password(instance, validated_data.get('password', None))
+        return instance
+
+    def create(self, validated_data):
+        validated_data = self._generate_username(validated_data)
+        user = super(UserSerializer, self).create(validated_data)
+        user = self._set_user_password(user, validated_data.get('password', None))
         return user
 
 
