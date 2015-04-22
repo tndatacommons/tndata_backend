@@ -18,10 +18,10 @@ class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.Field(source='get_full_name')
     userprofile_id = serializers.Field(source='userprofile.id')
     username = serializers.CharField(required=False)
-    goals = UserGoalListField(many=True, source="usergoal_set")
-    behaviors = UserBehaviorListField(many=True, source="userbehavior_set")
-    actions = UserActionListField(many=True, source="useraction_set")
-    categories = UserCategoryListField(many=True, source="usercategory_set")
+    goals = UserGoalListField(many=True, source="usergoal_set", read_only=True)
+    behaviors = UserBehaviorListField(many=True, source="userbehavior_set", read_only=True)
+    actions = UserActionListField(many=True, source="useraction_set", read_only=True)
+    categories = UserCategoryListField(many=True, source="usercategory_set", read_only=True)
     password = serializers.CharField(write_only=True)
 
     class Meta:

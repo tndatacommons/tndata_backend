@@ -5,7 +5,7 @@ class BinaryOptionsField(serializers.RelatedField):
     """Includes the available options for a BinaryQuestion. To customize this,
     see `BinaryQuestion.options`."""
 
-    def to_native(self, value):
+    def to_representation(self, value):
         # value is a list of options, e.g.:
         # [{'id': False, 'text': 'No'}, {'id': True, 'text': 'Yes'}]
         #
@@ -22,7 +22,7 @@ class BinaryOptionsField(serializers.RelatedField):
 class LikertOptionsField(serializers.RelatedField):
     """Includes the available options for a LIkertQuestion. To customize this,
     see `LikertQuestion.options`."""
-    def to_native(self, value):
+    def to_representation(self, value):
         # value is a list of options, e.g.:
         # [{'text': 'Strongly Disagree', 'id': 1},
         #  {'text': 'Disagree', 'id': 2},
@@ -39,7 +39,7 @@ class QuestionField(serializers.RelatedField):
     """This is used to serialize a generic Question object. It can be used on
     a related field for LikertQuestions, OpenEndedQuestions, and
     MultipleChoiceQuestions"""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'text': value.text,
@@ -51,5 +51,5 @@ class QuestionField(serializers.RelatedField):
 class MultipleChoiceOptionsField(serializers.RelatedField):
     """Includes the available options for a MultipleChoiceQuestion. To
     customize this, see `MultipleChoiceQuestion.options`."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return value

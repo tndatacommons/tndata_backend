@@ -4,7 +4,7 @@ from rest_framework import serializers
 class GoalListField(serializers.RelatedField):
     """A Custom Relational Serializer field that lists a subset of Goal
     information on a Category."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'title': value.title,
@@ -17,7 +17,7 @@ class GoalListField(serializers.RelatedField):
 
 class CategoryListField(serializers.RelatedField):
     """A Custom Relational Serializer field that lists a subset of Categories."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'order': value.order,
@@ -31,7 +31,7 @@ class CategoryListField(serializers.RelatedField):
 
 class SimpleCategoryField(serializers.RelatedField):
     """A simplified representation of a `Category`."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'title': value.title,
@@ -45,7 +45,7 @@ class SimpleCategoryField(serializers.RelatedField):
 
 class SimpleBehaviorField(serializers.RelatedField):
     """A simplified representation of a `Behavior`."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'title': value.title,
@@ -59,7 +59,7 @@ class SimpleBehaviorField(serializers.RelatedField):
 
 class SimpleGoalField(serializers.RelatedField):
     """A simple view of a goal."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'title': value.title,
@@ -72,7 +72,7 @@ class SimpleGoalField(serializers.RelatedField):
 
 class SimpleActionField(serializers.RelatedField):
     """A simple view of an action."""
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'title': value.title,
@@ -91,11 +91,11 @@ class UserActionListField(serializers.RelatedField):
 
     It uses the SimpleActionField to serialize related Action objects.
     """
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'created_on': value.created_on,
-            'action': SimpleActionField().to_native(value.action),
+            'action': SimpleActionField().to_representation(value.action),
         }
 
 
@@ -105,11 +105,11 @@ class UserBehaviorListField(serializers.RelatedField):
 
     It uses the SimpleBehaviorField to serialize related Behavior objects.
     """
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'created_on': value.created_on,
-            'behavior': SimpleBehaviorField().to_native(value.behavior),
+            'behavior': SimpleBehaviorField().to_representation(value.behavior),
         }
 
 
@@ -119,11 +119,11 @@ class UserCategoryListField(serializers.RelatedField):
 
     It uses the SimpleCategoryField to serialize related Category objects.
     """
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'created_on': value.created_on,
-            'category': SimpleCategoryField().to_native(value.category),
+            'category': SimpleCategoryField().to_representation(value.category),
         }
 
 
@@ -133,9 +133,9 @@ class UserGoalListField(serializers.RelatedField):
 
     It uses the SimpleGoalField to serialize related Goal objects.
     """
-    def to_native(self, value):
+    def to_representation(self, value):
         return {
             'id': value.id,
             'created_on': value.created_on,
-            'goal': SimpleGoalField().to_native(value.goal),
+            'goal': SimpleGoalField().to_representation(value.goal),
         }

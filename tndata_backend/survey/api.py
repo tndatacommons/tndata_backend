@@ -128,7 +128,7 @@ class RandomQuestionViewSet(viewsets.ViewSet):
             model_name = item.__class__.__name__.lower()  # remember which model
 
             # Serialize it.
-            item = self.question_models[model_name]['serializer']().to_native(item)
+            item = self.question_models[model_name]['serializer']().to_representation(item)
             item['response_url'] = self.request.build_absolute_uri(api_path)
             return item
         return {}

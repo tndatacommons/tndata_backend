@@ -123,8 +123,8 @@ class BinaryResponseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(BinaryResponseSerializer, self).to_representation(instance)
-        ret['selected_option'] = BinaryOptionsField().to_native(instance.selected_option)
-        ret['question'] = QuestionField().to_native(instance.question)
+        ret['selected_option'] = BinaryOptionsField().to_representation(instance.selected_option)
+        ret['question'] = QuestionField().to_representation(instance.question)
         return ret
 
 
@@ -142,8 +142,8 @@ class LikertResponseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(LikertResponseSerializer, self).to_representation(instance)
-        ret['selected_option'] = LikertOptionsField().to_native(instance.selected_option)
-        ret['question'] = QuestionField().to_native(instance.question)
+        ret['selected_option'] = LikertOptionsField().to_representation(instance.selected_option)
+        ret['question'] = QuestionField().to_representation(instance.question)
         return ret
 
 
@@ -162,7 +162,7 @@ class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super(MultipleChoiceResponseSerializer, self).to_representation(instance)
         ret['selected_option'] = instance.selected_option.id
-        ret['question'] = QuestionField().to_native(instance.question)
+        ret['question'] = QuestionField().to_representation(instance.question)
         return ret
 
 
@@ -187,5 +187,5 @@ class OpenEndedResponseSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(OpenEndedResponseSerializer, self).to_representation(instance)
-        ret['question'] = QuestionField().to_native(instance.question)
+        ret['question'] = QuestionField().to_representation(instance.question)
         return ret

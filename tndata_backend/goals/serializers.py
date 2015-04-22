@@ -104,7 +104,7 @@ class UserGoalSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Display goal data using the SimpleGoalField representation."""
         ret = super(UserGoalSerializer, self).to_representation(instance)
-        ret['goal'] = SimpleGoalField().to_native(instance.goal)
+        ret['goal'] = SimpleGoalField().to_representation(instance.goal)
         return ret
 
 
@@ -119,7 +119,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Display behavior data using the SimpleBehaviorField representation."""
         ret = super(UserBehaviorSerializer, self).to_representation(instance)
-        ret['behavior'] = SimpleBehaviorField().to_native(instance.behavior)
+        ret['behavior'] = SimpleBehaviorField().to_representation(instance.behavior)
         return ret
 
 
@@ -134,7 +134,7 @@ class UserActionSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Display action data using the SimpleActionField representation."""
         ret = super(UserActionSerializer, self).to_representation(instance)
-        ret['action'] = SimpleActionField().to_native(instance.action)
+        ret['action'] = SimpleActionField().to_representation(instance.action)
         return ret
 
 
@@ -150,5 +150,5 @@ class UserCategorySerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Display category data using the SimpleCategoryField representation."""
         ret = super(UserCategorySerializer, self).to_representation(instance)
-        ret['category'] = SimpleCategoryField().to_native(instance.category)
+        ret['category'] = SimpleCategoryField().to_representation(instance.category)
         return ret
