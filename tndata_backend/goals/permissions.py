@@ -8,15 +8,40 @@ custom groups for people who create and review content:
    decline content created by authors.
 
 """
-from django.contrib.auth.models import Group, Permission
-
+# NOTE: Dont' import any models directly; the functions here are called from
+# a migration, so let's import from an AppConfig if at all possible.
 
 # Group Names
 CONTENT_AUTHORS = "Content Authors"
 CONTENT_EDITORS = "Content Editors"
 
 
-def get_or_create_content_authors():
+def _get_group_and_permission(apps):
+    """Use the given AppConfig (if available) to import Group and Permission.
+    Returns a (Group, Permission) tuple.
+    """
+    if apps is not None:
+        return (
+            apps.get_model("auth", "Group"),
+            apps.get_model("auth", "Permission")
+        )
+    else:
+        # Just import as normal
+        from django.contrib.auth.models import Group, Permission
+        return (Group, Permission)
+
+
+def get_or_create_content_authors(apps=None, schema_editor=None):
+    """Creates the 'Content Authors' Group, and adds the appropriate
+    permissions.
+
+    This accepts `apps` and `schema_editor` arguments so it can be called
+    from a Migration.
+
+    NOTE that this functions attempts to be idempotent, so new permissions
+    will not be created if the Group already exists.
+    """
+    Group, Permission = _get_group_and_permission(apps)
     group, created = Group.objects.get_or_create(
         name=CONTENT_AUTHORS
     )
@@ -33,7 +58,17 @@ def get_or_create_content_authors():
     return group
 
 
-def get_or_create_content_editors():
+def get_or_create_content_editors(apps=None, schema_editor=None):
+    """Creates the 'Content Editors' Group, and adds the appropriate
+    permissions.
+
+    This accepts `apps` and `schema_editor` arguments so it can be called
+    from a Migration.
+
+    NOTE that this functions attempts to be idempotent, so new permissions
+    will not be created if the Group already exists.
+    """
+    Group, Permission = _get_group_and_permission(apps)
     group, created = Group.objects.get_or_create(
         name=CONTENT_EDITORS
     )

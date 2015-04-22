@@ -3,11 +3,21 @@ from business_rules.variables import BaseVariables
 from business_rules.variables import (
     string_rule_variable
 )
-from rules.rulesets import ModelRuleset
-from . models import Action, Behavior, Goal
+from rules.rulesets import ModelRuleset, ruleset
+from . import models
+
 
 # NOTE: After createing a ModelRulset subclass, you need to register it in the
 # AppConfig.ready method.
+# TODO: I'm not sure where to call this, so It's currently not getting called
+# anywhere. We can't do this in the AppConfig.ready, because this will load
+# Models before the app is actually ready.
+def register_rules(app_name):
+    """Register all of the Rules."""
+    ruleset.register(app_name, GoalRuleset)
+    ruleset.register(app_name, BehaviorRuleset)
+    ruleset.register(app_name, ActionRuleset)
+
 
 # TODO: Not sure how to really structure all of this; it seems these rules
 # should be based on user inputs, so maybe creating Action/Behavior/Goal
@@ -30,19 +40,21 @@ class GoalVariables(BaseVariables):
 
 
 class GoalActions(BaseActions):
+    model = models.Goal
+
     def __init__(self, goal):
         self.goal = goal
 
     # TODO: Figure out what *real* actions we need.
     @rule_action()
     def similar_goals(self):
-        qs = Goal.objects.exclude(id=self.goal.id)
+        qs = self.model.objects.exclude(id=self.goal.id)
         qs = qs.filter(categories__in=self.goal.categories.all())
         print("Similar Goals: {0}".format(g.title for g in qs))
 
 
 class GoalRuleset(ModelRuleset):
-    model = Goal
+    model = models.Goal
     variables = GoalVariables
     actions = GoalActions
     stop_on_first_trigger = False
@@ -61,19 +73,21 @@ class BehaviorVariables(BaseVariables):
 
 
 class BehaviorActions(BaseActions):
+    model = models.Behavior
+
     def __init__(self, behavior):
         self.behavior = behavior
 
     # TODO: Figure out what *real* actions we need.
     @rule_action()
     def similar_behaviors(self):
-        qs = Behavior.objects.exclude(id=self.behavior.id)
+        qs = self.model.objects.exclude(id=self.behavior.id)
         qs = qs.filter(categories__in=self.behavior.categories.all())
         print("Similar Behaviors: {0}".format(b.title for b in qs))
 
 
 class BehaviorRuleset(ModelRuleset):
-    model = Behavior
+    model = models.Behavior
     variables = BehaviorVariables
     actions = BehaviorActions
     stop_on_first_trigger = False
@@ -92,19 +106,21 @@ class ActionVariables(BaseVariables):
 
 
 class ActionActions(BaseActions):
+    model = models.Action
+
     def __init__(self, action):
         self.action = action
 
     # TODO: Figure out what *real* actions we need.
     @rule_action()
     def similar_actions(self):
-        qs = Action.objects.exclude(id=self.action.id)
+        qs = self.model.objects.exclude(id=self.action.id)
         qs = qs.filter(categories__in=self.action.categories.all())
         print("Similar Actions: {0}".format(b.title for b in qs))
 
 
 class ActionRuleset(ModelRuleset):
-    model = Action
+    model = models.Action
     variables = ActionVariables
     actions = ActionActions
     stop_on_first_trigger = False
