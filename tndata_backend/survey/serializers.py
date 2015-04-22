@@ -176,11 +176,11 @@ class OpenEndedResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def validate_response(self, attrs, source):
+    def validate(self, attrs):
         try:
             # Try to convert the given response into the question's input_type;
             # if this fails, it will raise an Exception
-            attrs["question"].convert_to_input_type(attrs[source])
+            attrs['question'].convert_to_input_type(attrs['response'])
         except ValueError:
             raise serializers.ValidationError("The response is not a valid input_type")
         return attrs
