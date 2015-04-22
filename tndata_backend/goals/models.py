@@ -128,7 +128,8 @@ class Goal(ModifiedMixin, URLMixin, models.Model):
 
     # Data Fields
     categories = models.ManyToManyField(
-        Category, null=True, blank=True,
+        Category,
+        blank=True,
         help_text="Select the Categories in which this Goal should appear."
     )
     title_slug = models.SlugField(max_length=256, null=True)
@@ -419,11 +420,13 @@ class Behavior(URLMixin, BaseBehavior):
 
     # Data Fields
     categories = models.ManyToManyField(
-        Category, null=True, blank=True,
+        Category,
+        blank=True,
         help_text="Select the Categories in which this should appear."
     )
     goals = models.ManyToManyField(
-        Goal, null=True, blank=True,
+        Goal,
+        blank=True,
         help_text="Select the Goal(s) that this Behavior achieves."
     )
     informal_list = models.TextField(
