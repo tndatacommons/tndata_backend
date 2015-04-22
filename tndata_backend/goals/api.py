@@ -339,19 +339,19 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
         with a list of items."""
-        if isinstance(self.request.DATA, list):
+        if isinstance(self.request.data, list):
             kwargs['many'] = True
         return super(UserGoalViewSet, self).get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        if isinstance(request.DATA, list):
+        if isinstance(request.data, list):
             # We're creating multiple items.
-            for d in request.DATA:
+            for d in request.data:
                 d['user'] = request.user.id
         else:
             # We're creating a single items.
-            request.DATA['user'] = request.user.id
+            request.data['user'] = request.user.id
         return super(UserGoalViewSet, self).create(request, *args, **kwargs)
 
 
@@ -431,18 +431,18 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
         with a list of items."""
-        if isinstance(self.request.DATA, list):
+        if isinstance(self.request.data, list):
             kwargs['many'] = True
         return super(UserBehaviorViewSet, self).get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        if isinstance(request.DATA, list):
+        if isinstance(request.data, list):
             # We're creating multiple items
-            for d in request.DATA:
+            for d in request.data:
                 d['user'] = request.user.id
         else:
-            request.DATA['user'] = request.user.id
+            request.data['user'] = request.user.id
         return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
 
 
@@ -522,19 +522,19 @@ class UserActionViewSet(mixins.CreateModelMixin,
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing with
         a list of items."""
-        if isinstance(self.request.DATA, list):
+        if isinstance(self.request.data, list):
             kwargs['many'] = True
         return super(UserActionViewSet, self).get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        if isinstance(self.request.DATA, list):
+        if isinstance(self.request.data, list):
             # We're creating multiple items
-            for d in request.DATA:
+            for d in request.data:
                 d['user'] = request.user.id
         else:
             # We're creating a single item
-            request.DATA['user'] = request.user.id
+            request.data['user'] = request.user.id
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
 
 
@@ -618,17 +618,17 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
         with a list of items."""
-        if isinstance(self.request.DATA, list):
+        if isinstance(self.request.data, list):
             kwargs['many'] = True
         return super(UserCategoryViewSet, self).get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        if isinstance(request.DATA, list):
+        if isinstance(request.data, list):
             # We're creating multiple items.
-            for d in request.DATA:
+            for d in request.data:
                 d['user'] = request.user.id
         else:
             # We're creating a single items.
-            request.DATA['user'] = request.user.id
+            request.data['user'] = request.user.id
         return super(UserCategoryViewSet, self).create(request, *args, **kwargs)

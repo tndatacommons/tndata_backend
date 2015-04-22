@@ -27,10 +27,10 @@ class DeleteMultipleMixin:
         model = self.get_queryset().model
         model_name = model.__name__.lower()
 
-        if isinstance(request.DATA, list) and request.user.is_authenticated():
+        if isinstance(request.data, list) and request.user.is_authenticated():
             # We're deleting multiple items; just assume they exist?
             params = {
-                "pk__in": filter(None, (d[model_name] for d in request.DATA)),
+                "pk__in": filter(None, (d[model_name] for d in request.data)),
                 "user": request.user.id,
             }
             model.objects.filter(**params).delete()

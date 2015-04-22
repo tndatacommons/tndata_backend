@@ -45,5 +45,5 @@ class GCMMessageViewSet(mixins.CreateModelMixin,
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         # We're creating a single items.
-        request.DATA['user'] = request.user.id
+        request.data['user'] = request.user.id
         return super(GCMMessageViewSet, self).create(request, *args, **kwargs)

@@ -297,7 +297,7 @@ class BinaryResponseViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        request.data['user'] = request.user.id
         return super(BinaryResponseViewSet, self).create(request, *args, **kwargs)
 
 
@@ -341,7 +341,7 @@ class LikertResponseViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        request.data['user'] = request.user.id
         return super(LikertResponseViewSet, self).create(request, *args, **kwargs)
 
 
@@ -383,7 +383,7 @@ class OpenEndedResponseViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        request.data['user'] = request.user.id
         return super(OpenEndedResponseViewSet, self).create(request, *args, **kwargs)
 
 
@@ -427,5 +427,5 @@ class MultipleChoiceResponseViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        request.DATA['user'] = request.user.id
+        request.data['user'] = request.user.id
         return super(MultipleChoiceResponseViewSet, self).create(request, *args, **kwargs)
