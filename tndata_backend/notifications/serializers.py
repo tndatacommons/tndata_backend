@@ -17,11 +17,9 @@ class GCMMessageSerializer(serializers.ModelSerializer):
             "response_text", "created_on",
         )
 
-    def transform_content(self, obj, value):
+    def to_representation(self, instance):
         """Return a JSON-decoded version of the content, because rest framework
         will re-encode it."""
-        if obj and isinstance(obj, GCMMessage):
-            return obj.get_content_data()
-        elif obj:
-            return obj
-        return value
+        ret = super(GCMMessageSerializer, self).to_representation(instance)
+        ret['content'] = instance.get_content_data()
+        return ret

@@ -101,13 +101,11 @@ class UserGoalSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'goal', 'user_categories', 'created_on')
         read_only_fields = ("id", "created_on", )
 
-    def transform_goal(self, obj, value):
+    def to_representation(self, instance):
         """Display goal data using the SimpleGoalField representation."""
-        if obj and isinstance(obj, UserGoal):
-            return SimpleGoalField().to_native(obj.goal)
-        elif obj:
-            return obj
-        return value
+        ret = super(UserGoalSerializer, self).to_representation(instance)
+        ret['goal'] = SimpleGoalField().to_native(instance.goal)
+        return ret
 
 
 class UserBehaviorSerializer(serializers.ModelSerializer):
@@ -118,13 +116,11 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'behavior', 'created_on')
         read_only_fields = ("id", "created_on", )
 
-    def transform_behavior(self, obj, value):
+    def to_representation(self, instance):
         """Display behavior data using the SimpleBehaviorField representation."""
-        if obj and isinstance(obj, UserBehavior):
-            return SimpleBehaviorField().to_native(obj.behavior)
-        elif obj:
-            return obj
-        return value
+        ret = super(UserBehaviorSerializer, self).to_representation(instance)
+        ret['behavior'] = SimpleBehaviorField().to_native(instance.behavior)
+        return ret
 
 
 class UserActionSerializer(serializers.ModelSerializer):
@@ -135,13 +131,11 @@ class UserActionSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'action', 'created_on')
         read_only_fields = ("id", "created_on", )
 
-    def transform_action(self, obj, value):
+    def to_representation(self, instance):
         """Display action data using the SimpleActionField representation."""
-        if obj and isinstance(obj, UserAction):
-            return SimpleActionField().to_native(obj.action)
-        elif obj:
-            return obj
-        return value
+        ret = super(UserActionSerializer, self).to_representation(instance)
+        ret['action'] = SimpleActionField().to_native(instance.action)
+        return ret
 
 
 class UserCategorySerializer(serializers.ModelSerializer):
@@ -153,10 +147,8 @@ class UserCategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'category', 'user_goals', 'created_on')
         read_only_fields = ("id", "created_on", )
 
-    def transform_category(self, obj, value):
+    def to_representation(self, instance):
         """Display category data using the SimpleCategoryField representation."""
-        if obj and isinstance(obj, UserCategory):
-            return SimpleCategoryField().to_native(obj.category)
-        elif obj:
-            return obj
-        return value
+        ret = super(UserCategorySerializer, self).to_representation(instance)
+        ret['category'] = SimpleCategoryField().to_native(instance.category)
+        return ret

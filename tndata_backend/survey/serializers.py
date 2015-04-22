@@ -26,7 +26,7 @@ class InstrumentSerializer(serializers.ModelSerializer):
         model = Instrument
         fields = ('id', 'title', 'description', 'instructions', 'questions')
 
-    def transform_questions(self, obj, value):
+    def to_representation(self, instance):
         """Format the list of questions so they can be serialized appropriately."""
         # NOTE: obj is an Instrument instance.
         # value is our list of (class name, question text) tuples.
@@ -34,18 +34,19 @@ class InstrumentSerializer(serializers.ModelSerializer):
         # NOTE: This code only works because this is used in a Read-Only
         # endpoint; notice how we pull questions from the Instrument instance,
         # and not the provided value
-        if obj and value:
-            for i, (qname, question) in enumerate(obj.questions):
-                if qname == "BinaryQuestion":
-                    value[i] = BinaryQuestionSerializer(question).data
-                elif qname == "LikertQuestion":
-                    value[i] = LikertQuestionSerializer(question).data
-                elif qname == "MultipleChoiceQuestion":
-                    value[i] = MultipleChoiceQuestionSerializer(question).data
-                elif qname == "OpenEndedQuestion":
-                    value[i] = OpenEndedQuestionSerializer(question).data
-            return value
-        return []
+        ret = super(InstrumentSerializer, self).to_representation(instance)
+        questions = []
+        for i, (qname, question) in enumerate(instance.questions):
+            if qname == "BinaryQuestion":
+                questions.append(BinaryQuestionSerializer(question).data)
+            elif qname == "LikertQuestion":
+                questions.append(LikertQuestionSerializer(question).data)
+            elif qname == "MultipleChoiceQuestion":
+                questions.append(MultipleChoiceQuestionSerializer(question).data)
+            elif qname == "OpenEndedQuestion":
+                questions.append(OpenEndedQuestionSerializer(question).data)
+        ret['questions'] = questions
+        return ret
 
 
 class BinaryQuestionSerializer(serializers.ModelSerializer):
@@ -112,7 +113,6 @@ class BinaryResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `BinaryResponse` model."""
     selected_option_text = serializers.Field(source='selected_option_text')
 
-
     class Meta:
         model = BinaryResponse
         fields = (
@@ -121,15 +121,11 @@ class BinaryResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def transform_selected_option(self, obj, value):
-        if obj:
-            return BinaryOptionsField().to_native(obj.selected_option)
-        return value
-
-    def transform_question(self, obj, value):
-        if obj:
-            return QuestionField().to_native(obj.question)
-        return value
+    def to_representation(self, instance):
+        ret = super(BinaryResponseSerializer, self).to_representation(instance)
+        ret['selected_option'] = BinaryOptionsField().to_native(instance.selected_option)
+        ret['question'] = QuestionField().to_native(instance.question)
+        return ret
 
 
 class LikertResponseSerializer(serializers.ModelSerializer):
@@ -144,15 +140,11 @@ class LikertResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def transform_selected_option(self, obj, value):
-        if obj:
-            return LikertOptionsField().to_native(obj.selected_option)
-        return value
-
-    def transform_question(self, obj, value):
-        if obj:
-            return QuestionField().to_native(obj.question)
-        return value
+    def to_representation(self, instance):
+        ret = super(LikertResponseSerializer, self).to_representation(instance)
+        ret['selected_option'] = LikertOptionsField().to_native(instance.selected_option)
+        ret['question'] = QuestionField().to_native(instance.question)
+        return ret
 
 
 class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
@@ -167,15 +159,11 @@ class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def transform_selected_option(self, obj, value):
-        if obj:
-            return obj.selected_option.id
-        return value
-
-    def transform_question(self, obj, value):
-        if obj:
-            return QuestionField().to_native(obj.question)
-        return value
+    def to_representation(self, instance):
+        ret = super(MultipleChoiceResponseSerializer, self).to_representation(instance)
+        ret['selected_option'] = instance.selected_option.id
+        ret['question'] = QuestionField().to_native(instance.question)
+        return ret
 
 
 class OpenEndedResponseSerializer(serializers.ModelSerializer):
@@ -197,7 +185,7 @@ class OpenEndedResponseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The response is not a valid input_type")
         return attrs
 
-    def transform_question(self, obj, value):
-        if obj:
-            return QuestionField().to_native(obj.question)
-        return value
+    def to_representation(self, instance):
+        ret = super(OpenEndedResponseSerializer, self).to_representation(instance)
+        ret['question'] = QuestionField().to_native(instance.question)
+        return ret
