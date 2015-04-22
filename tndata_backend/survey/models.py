@@ -86,7 +86,6 @@ class BaseQuestion(models.Model):
     instruments = models.ManyToManyField(
         Instrument,
         blank=True,
-        null=True,
         help_text="The Instrument(s) to which this question belongs."
     )
 
