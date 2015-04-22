@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from . models import (
     Action,
@@ -21,11 +22,14 @@ from . serializer_fields import (
 )
 
 
+User = get_user_model()
+
+
 class CategorySerializer(serializers.ModelSerializer):
     """A Serializer for `Category`."""
-    goals = GoalListField(many=True)
-    icon_url = serializers.Field(source="get_absolute_icon")
-    image_url = serializers.Field(source="get_absolute_image")
+    goals = GoalListField(many=True, read_only=True)
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    image_url = serializers.ReadOnlyField(source="get_absolute_image")
 
     class Meta:
         model = Category
@@ -33,13 +37,12 @@ class CategorySerializer(serializers.ModelSerializer):
             'id', 'order', 'title', 'title_slug', 'description',
             'goals', 'icon_url', 'image_url',
         )
-        depth = 1
 
 
 class GoalSerializer(serializers.ModelSerializer):
     """A Serializer for `Goal`."""
-    icon_url = serializers.Field(source="get_absolute_icon")
-    categories = CategoryListField(many=True)
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    categories = CategoryListField(many=True, read_only=True)
 
     class Meta:
         model = Goal
@@ -47,7 +50,6 @@ class GoalSerializer(serializers.ModelSerializer):
             'id', 'title', 'title_slug', 'description', 'outcome',
             'icon_url', 'categories',
         )
-        depth = 2
 
 
 class TriggerSerializer(serializers.ModelSerializer):
@@ -63,8 +65,9 @@ class TriggerSerializer(serializers.ModelSerializer):
 
 class BehaviorSerializer(serializers.ModelSerializer):
     """A Serializer for `Behavior`."""
-    icon_url = serializers.Field(source="get_absolute_icon")
-    image_url = serializers.Field(source="get_absolute_image")
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    image_url = serializers.ReadOnlyField(source="get_absolute_image")
+    goals = GoalListField(many=True, read_only=True)
 
     class Meta:
         model = Behavior
@@ -73,14 +76,13 @@ class BehaviorSerializer(serializers.ModelSerializer):
             'external_resource', 'default_trigger', 'notification_text',
             'icon_url', 'image_url', 'goals',
         )
-        depth = 2
 
 
 class ActionSerializer(serializers.ModelSerializer):
     """A Serializer for `Action`."""
-    icon_url = serializers.Field(source="get_absolute_icon")
-    image_url = serializers.Field(source="get_absolute_image")
-    behavior = SimpleBehaviorField(source="behavior")
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    image_url = serializers.ReadOnlyField(source="get_absolute_image")
+    behavior = SimpleBehaviorField(read_only=True)
 
     class Meta:
         model = Action
@@ -89,66 +91,49 @@ class ActionSerializer(serializers.ModelSerializer):
             'title', 'description', 'narrative_block', 'external_resource',
             'default_trigger', 'notification_text', 'icon_url', 'image_url',
         )
-        depth = 1
 
 
 class UserGoalSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserGoal` model."""
-    user_categories = SimpleCategoryField(source="get_user_categories", many=True)
+    user_categories = SimpleCategoryField(
+        source="get_user_categories",
+        many=True,
+        read_only=True,
+    )
+    goal = SimpleGoalField(queryset=Goal.objects.none())
 
     class Meta:
         model = UserGoal
         fields = ('id', 'user', 'goal', 'user_categories', 'created_on')
-        read_only_fields = ("id", "created_on", )
-
-    def to_representation(self, instance):
-        """Display goal data using the SimpleGoalField representation."""
-        ret = super(UserGoalSerializer, self).to_representation(instance)
-        ret['goal'] = SimpleGoalField().to_representation(instance.goal)
-        return ret
+        read_only_fields = ("id", "created_on")
 
 
 class UserBehaviorSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserBehavior` model."""
+    behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
 
     class Meta:
         model = UserBehavior
         fields = ('id', 'user', 'behavior', 'created_on')
         read_only_fields = ("id", "created_on", )
 
-    def to_representation(self, instance):
-        """Display behavior data using the SimpleBehaviorField representation."""
-        ret = super(UserBehaviorSerializer, self).to_representation(instance)
-        ret['behavior'] = SimpleBehaviorField().to_representation(instance.behavior)
-        return ret
-
 
 class UserActionSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserAction` model."""
+    action = SimpleActionField(queryset=Action.objects.all())
 
     class Meta:
         model = UserAction
         fields = ('id', 'user', 'action', 'created_on')
         read_only_fields = ("id", "created_on", )
 
-    def to_representation(self, instance):
-        """Display action data using the SimpleActionField representation."""
-        ret = super(UserActionSerializer, self).to_representation(instance)
-        ret['action'] = SimpleActionField().to_representation(instance.action)
-        return ret
-
 
 class UserCategorySerializer(serializers.ModelSerializer):
     """A serializer for `UserCategory` model(s)."""
-    user_goals = SimpleGoalField(source="get_user_goals", many=True)
+    category = SimpleCategoryField(queryset=Category.objects.all())
+    user_goals = SimpleGoalField(source="get_user_goals", many=True, read_only=True)
 
     class Meta:
         model = UserCategory
         fields = ('id', 'user', 'category', 'user_goals', 'created_on')
         read_only_fields = ("id", "created_on", )
-
-    def to_representation(self, instance):
-        """Display category data using the SimpleCategoryField representation."""
-        ret = super(UserCategorySerializer, self).to_representation(instance)
-        ret['category'] = SimpleCategoryField().to_representation(instance.category)
-        return ret
