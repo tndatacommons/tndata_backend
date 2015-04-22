@@ -48,7 +48,7 @@ class TestUserSerializer(TestCase):
         }
         s = UserSerializer(self.user, data=data, partial=True)
         self.assertTrue(s.is_valid())
-        self.assertEqual(s.object, self.user)
+        self.assertEqual(s.validated_data['username'], "me")
 
 
 class TestUsersAPI(APITestCase):
@@ -230,7 +230,7 @@ class TestUserProfilesAPI(APITestCase):
         """Ensure unauthenticated users cannot update data."""
         url = reverse('userprofile-detail', args=[self.p.id])
         response = self.client.put(url, {'race': "Don't ask"})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_put_userprofile_detail_authorized(self):
         """Ensure authenticated users can update their data."""
@@ -241,6 +241,6 @@ class TestUserProfilesAPI(APITestCase):
         response = self.client.put(url, {'birthdate': '1900-01-31'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            response.data['birthdate'].strftime("%Y-%m-%d"),
+            response.data['birthdate'],
             '1900-01-31'
         )

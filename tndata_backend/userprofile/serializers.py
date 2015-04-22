@@ -4,32 +4,44 @@ from django.contrib.auth import authenticate, get_user_model
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
-from . import models
-
-from goals.serializer_fields import (
-    UserActionListField,
-    UserBehaviorListField,
-    UserCategoryListField,
-    UserGoalListField,
+from goals.serializers import (
+    UserActionSerializer,
+    UserBehaviorSerializer,
+    UserCategorySerializer,
+    UserGoalSerializer,
 )
+from . import models
 
 
 class UserSerializer(serializers.ModelSerializer):
-    full_name = serializers.Field(source='get_full_name')
-    userprofile_id = serializers.Field(source='userprofile.id')
+    full_name = serializers.ReadOnlyField(source='get_full_name')
+    userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     username = serializers.CharField(required=False)
-    goals = UserGoalListField(many=True, source="usergoal_set", read_only=True)
-    behaviors = UserBehaviorListField(many=True, source="userbehavior_set", read_only=True)
-    actions = UserActionListField(many=True, source="useraction_set", read_only=True)
-    categories = UserCategoryListField(many=True, source="usercategory_set", read_only=True)
+    goals = UserGoalSerializer(many=True, source='usergoal_set', read_only=True)
+    behaviors = UserBehaviorSerializer(
+        many=True,
+        source="userbehavior_set",
+        read_only=True
+    )
+    actions = UserActionSerializer(
+        many=True,
+        source="useraction_set",
+        read_only=True,
+    )
+    categories = UserCategorySerializer(
+        many=True,
+        source="usercategory_set",
+        read_only=True
+    )
     password = serializers.CharField(write_only=True)
+    token = serializers.ReadOnlyField(source='auth_token.key')
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "full_name", 'date_joined', 'userprofile_id', "password",
-            "goals", "behaviors", "actions", "categories",
+            "goals", "behaviors", "actions", "categories", 'token',
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -83,7 +95,7 @@ class AuthTokenSerializer(serializers.Serializer):
     """
     username = serializers.CharField(required=False)
     email = serializers.EmailField(required=False)
-    password = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
 
     def _authenticate(self, username, email, password):
         """Authenticates with either username+password or email+password. Returns
