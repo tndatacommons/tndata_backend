@@ -7,6 +7,7 @@ from . models import (
     LikertResponse,
     MultipleChoiceQuestion,
     MultipleChoiceResponse,
+    MultipleChoiceResponseOption,
     OpenEndedQuestion,
     OpenEndedResponse,
 )
@@ -14,13 +15,13 @@ from . models import (
 from . serializer_fields import (
     BinaryOptionsField,
     LikertOptionsField,
-    MultipleChoiceOptionsField,
+    MultipleChoiceResponseOptionField,
     QuestionField,
 )
 
 
 class InstrumentSerializer(serializers.ModelSerializer):
-    questions = serializers.Field(source='questions')
+    questions = serializers.ReadOnlyField()
 
     class Meta:
         model = Instrument
@@ -51,8 +52,8 @@ class InstrumentSerializer(serializers.ModelSerializer):
 
 class BinaryQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `BinaryQuestion`."""
-    options = BinaryOptionsField()
-    question_type = serializers.CharField(source="question_type")
+    options = BinaryOptionsField(read_only=True)
+    question_type = serializers.CharField()
     response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
@@ -66,8 +67,8 @@ class BinaryQuestionSerializer(serializers.ModelSerializer):
 
 class LikertQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `LikertQuestion`."""
-    options = LikertOptionsField()
-    question_type = serializers.CharField(source="question_type")
+    options = LikertOptionsField(read_only=True)
+    question_type = serializers.CharField()
     response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
@@ -81,8 +82,8 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `MultipleChoiceQuestion`."""
-    options = MultipleChoiceOptionsField(many=True)
-    question_type = serializers.CharField(source="question_type")
+    options = MultipleChoiceResponseOptionField(many=True, read_only=True)
+    question_type = serializers.CharField()
     response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
@@ -96,7 +97,7 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
 
 class OpenEndedQuestionSerializer(serializers.ModelSerializer):
     """A Serializer for `OpenEndedQuestion`."""
-    question_type = serializers.CharField(source="question_type")
+    question_type = serializers.CharField()
     response_url = serializers.CharField(source="get_api_response_url")
 
     class Meta:
@@ -111,7 +112,9 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
 # TODO: VALIDATE the response using the question's input_type?
 class BinaryResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `BinaryResponse` model."""
-    selected_option_text = serializers.Field(source='selected_option_text')
+    selected_option_text = serializers.ReadOnlyField()
+    selected_option = BinaryOptionsField(read_only=True)
+    question = QuestionField(queryset=BinaryQuestion.objects.all())
 
     class Meta:
         model = BinaryResponse
@@ -121,16 +124,17 @@ class BinaryResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def to_representation(self, instance):
-        ret = super(BinaryResponseSerializer, self).to_representation(instance)
-        ret['selected_option'] = BinaryOptionsField().to_representation(instance.selected_option)
-        ret['question'] = QuestionField().to_representation(instance.question)
-        return ret
-
 
 class LikertResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `LikertResponse` model."""
-    selected_option_text = serializers.Field(source='selected_option_text')
+    selected_option_text = serializers.ReadOnlyField()
+    # This isn't really a RelatedField, but I'm not sure how to do this, other
+    # wise, so this is a bit of a hack; we need to placate the need for a
+    # queryset, even those this makes no sense.
+    selected_option = LikertOptionsField(
+        queryset=LikertQuestion.objects.none()
+    )
+    question = QuestionField(queryset=LikertQuestion.objects.all())
 
     class Meta:
         model = LikertResponse
@@ -140,16 +144,14 @@ class LikertResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def to_representation(self, instance):
-        ret = super(LikertResponseSerializer, self).to_representation(instance)
-        ret['selected_option'] = LikertOptionsField().to_representation(instance.selected_option)
-        ret['question'] = QuestionField().to_representation(instance.question)
-        return ret
-
 
 class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `MultipleChoiceResponse` model."""
-    selected_option_text = serializers.Field(source='selected_option_text')
+    selected_option_text = serializers.ReadOnlyField()
+    selected_option = MultipleChoiceResponseOptionField(
+        queryset=MultipleChoiceResponseOption.objects.all()
+    )
+    question = QuestionField(queryset=MultipleChoiceQuestion.objects.all())
 
     class Meta:
         model = MultipleChoiceResponse
@@ -159,15 +161,10 @@ class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "submitted_on", )
 
-    def to_representation(self, instance):
-        ret = super(MultipleChoiceResponseSerializer, self).to_representation(instance)
-        ret['selected_option'] = instance.selected_option.id
-        ret['question'] = QuestionField().to_representation(instance.question)
-        return ret
-
 
 class OpenEndedResponseSerializer(serializers.ModelSerializer):
     """A Serializer for the `OpenEndedResponse` model."""
+    question = QuestionField(queryset=OpenEndedQuestion.objects.all())
 
     class Meta:
         model = OpenEndedResponse
@@ -184,8 +181,3 @@ class OpenEndedResponseSerializer(serializers.ModelSerializer):
         except ValueError:
             raise serializers.ValidationError("The response is not a valid input_type")
         return attrs
-
-    def to_representation(self, instance):
-        ret = super(OpenEndedResponseSerializer, self).to_representation(instance)
-        ret['question'] = QuestionField().to_representation(instance.question)
-        return ret

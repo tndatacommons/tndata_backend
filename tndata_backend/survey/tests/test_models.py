@@ -295,14 +295,14 @@ class TestOpenEndedQuestion(TestCase):
         self.question.input_type = "datetime"
         self.question.save()
         self.assertEqual(
-            self.question.convert_to_input_type("2015-04-20"),
+            self.question.convert_to_input_type("04-20-2015"),
             datetime(2015, 4, 20)
         )
 
         self.question.input_type = "datetime"
         self.question.save()
         self.assertEqual(
-            self.question.convert_to_input_type("2015-04-20 12:32:45"),
+            self.question.convert_to_input_type("04-20-2015 12:32:45"),
             datetime(2015, 4, 20, 12, 32, 45)
         )
 

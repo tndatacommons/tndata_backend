@@ -176,8 +176,6 @@ class TestBinaryQuestionAPI(APITestCase):
         self.assertEqual(c['order'], self.question.order)
         self.assertEqual(c['text'], self.question.text)
         self.assertEqual(c['available'], self.question.available)
-        self.assertEqual(c['updated'], self.question.updated)
-        self.assertEqual(c['created'], self.question.created)
 
     def test_post_list(self):
         """Ensure this endpoint is read-only."""
@@ -224,8 +222,6 @@ class TestLikertQuestionAPI(APITestCase):
         self.assertEqual(c['order'], self.question.order)
         self.assertEqual(c['text'], self.question.text)
         self.assertEqual(c['available'], self.question.available)
-        self.assertEqual(c['updated'], self.question.updated)
-        self.assertEqual(c['created'], self.question.created)
 
     def test_post_list(self):
         """Ensure this endpoint is read-only."""
@@ -272,8 +268,6 @@ class TestOpenEndedQuestionAPI(APITestCase):
         self.assertEqual(c['order'], self.question.order)
         self.assertEqual(c['text'], self.question.text)
         self.assertEqual(c['available'], self.question.available)
-        self.assertEqual(c['updated'], self.question.updated)
-        self.assertEqual(c['created'], self.question.created)
 
     def test_post_list(self):
         """Ensure this endpoint is read-only."""
@@ -328,8 +322,7 @@ class TestMultipleChoiceQuestionAPI(APITestCase):
         self.assertEqual(c['order'], self.question.order)
         self.assertEqual(c['text'], self.question.text)
         self.assertEqual(c['available'], self.question.available)
-        self.assertEqual(c['updated'], self.question.updated)
-        self.assertEqual(c['created'], self.question.created)
+
         # Make sure the question has a list of option(s)
         self.assertIn("options", c)
         self.assertEqual(c['options'][0]['id'], self.option.id)

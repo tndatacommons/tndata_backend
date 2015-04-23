@@ -278,6 +278,7 @@ class OpenEndedQuestion(BaseQuestion):
             return f["datetime"](value)
         raise ValueError("Invalid input_type for Response")
 
+
 class OpenEndedResponse(models.Model):
     """A User's response to an `OpenEndedQuestion`."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)

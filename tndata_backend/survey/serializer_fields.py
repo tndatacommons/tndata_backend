@@ -1,4 +1,15 @@
 from rest_framework import serializers
+from .models import MultipleChoiceResponseOption
+
+
+def _get_object(model, pk):
+    """Given a data model class and a primary key value, try to look up an
+    object; If the object is not found, raise a ValidationError."""
+    try:
+        return model.objects.get(pk=pk)
+    except model.DoesNotExist:
+        msg = 'Could not find a {0} instance with a key of {1}'
+        raise serializers.ValidationError(msg.format(model.__name__, pk))
 
 
 class BinaryOptionsField(serializers.RelatedField):
@@ -22,6 +33,11 @@ class BinaryOptionsField(serializers.RelatedField):
 class LikertOptionsField(serializers.RelatedField):
     """Includes the available options for a LIkertQuestion. To customize this,
     see `LikertQuestion.options`."""
+
+    def to_internal_value(self, data):
+        # Likert options are not model instances, so this is a bit of a hack.
+        return data
+
     def to_representation(self, value):
         # value is a list of options, e.g.:
         # [{'text': 'Strongly Disagree', 'id': 1},
@@ -39,6 +55,13 @@ class QuestionField(serializers.RelatedField):
     """This is used to serialize a generic Question object. It can be used on
     a related field for LikertQuestions, OpenEndedQuestions, and
     MultipleChoiceQuestions"""
+
+    def to_internal_value(self, data):
+        # data could be an int or a dict?
+        if isinstance(data, int):
+            return _get_object(self.queryset.model, data)
+        return _get_object(self.queryset.model, data.get('id'))
+
     def to_representation(self, value):
         return {
             'id': value.id,
@@ -48,8 +71,19 @@ class QuestionField(serializers.RelatedField):
         }
 
 
-class MultipleChoiceOptionsField(serializers.RelatedField):
+class MultipleChoiceResponseOptionField(serializers.RelatedField):
     """Includes the available options for a MultipleChoiceQuestion. To
     customize this, see `MultipleChoiceQuestion.options`."""
+
+    def to_internal_value(self, data):
+        # data is a dict of POSTed info
+        if isinstance(data, int):
+            return _get_object(MultipleChoiceResponseOption, data)
+        return _get_object(MultipleChoiceResponseOption, data.get('id'))
+
     def to_representation(self, value):
-        return value
+        # value is a MultipleChoiceResponseOption instance or a dict
+        # WANT: {'text': 'Male', 'id': 1}
+        if isinstance(value, dict):
+            return value
+        return {'text': value.text, 'id': value.id}

@@ -31,7 +31,6 @@ class InstrumentViewSet(viewsets.ReadOnlyModelViewSet):
     def list(self, request, *args, **kwargs):
         resp = super(InstrumentViewSet, self).list(request, *args, **kwargs)
         # Hack the data to include FQDNs for the response_url item.
-        #import ipdb;ipdb.set_trace();
         for item in resp.data['results']:
             for q in item['questions']:
                 q['response_url'] = self.request.build_absolute_uri(q['response_url'])
