@@ -63,3 +63,19 @@ class LikertResponseAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
     )
 admin.site.register(models.LikertResponse, LikertResponseAdmin)
+
+
+class BinaryQuestionAdmin(admin.ModelAdmin):
+    list_display = ('text', 'order', 'available')
+admin.site.register(models.BinaryQuestion, BinaryQuestionAdmin)
+
+
+class BinaryResponseAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'user_email', 'user_first', 'user_last',
+        'question', 'selected_option', 'submitted_on',
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+    )
+admin.site.register(models.BinaryResponse, BinaryResponseAdmin)
