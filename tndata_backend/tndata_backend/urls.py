@@ -8,8 +8,8 @@ from django.views.generic import TemplateView
 from rest_framework import routers
 
 from goals.api import (
-    BehaviorViewSet,
     ActionViewSet,
+    BehaviorViewSet,
     CategoryViewSet,
     GoalViewSet,
     TriggerViewSet,
@@ -53,7 +53,6 @@ router = routers.DefaultRouter()
 # ViewSets from the goals app.
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
-router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet)
 router.register(r'behaviors', BehaviorViewSet)
 router.register(r'actions', ActionViewSet)
@@ -62,7 +61,7 @@ router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/goals', UserGoalViewSet)
 
-# ViewSets from the goals app.
+# ViewSets from the notifications app.
 router.register(r'notifications', GCMMessageViewSet)
 
 # ViewSets from the survey app.
