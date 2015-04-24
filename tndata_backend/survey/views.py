@@ -7,6 +7,12 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from utils.db import get_max_order
 
+from . forms import (
+    BinaryQuestionForm,
+    LikertQuestionForm,
+    MultipleChoiceQuestionForm,
+    OpenEndedQuestionForm,
+)
 from . models import (
     BinaryQuestion, Instrument, LikertQuestion,
     MultipleChoiceQuestion, MultipleChoiceResponseOption, OpenEndedQuestion,
@@ -69,10 +75,7 @@ class BinaryQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class BinaryQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = BinaryQuestion
-    fields = [
-        'order', 'subscale', 'text', 'instructions', 'available',
-        'labels', 'instruments',
-    ]
+    form_class = BinaryQuestionForm
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -91,10 +94,7 @@ class BinaryQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class BinaryQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = BinaryQuestion
-    fields = [
-        'order', 'subscale', 'text', 'instructions', 'available',
-        'labels', 'instruments',
-    ]
+    form_class = BinaryQuestionForm
 
     def get_context_data(self, **kwargs):
         context = super(BinaryQuestionUpdateView, self).get_context_data(**kwargs)
@@ -122,10 +122,7 @@ class LikertQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class LikertQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = LikertQuestion
-    fields = [
-        'order', 'subscale', 'text', 'instructions', 'available', 'scale',
-        'priority', 'labels', 'instruments'
-    ]
+    form_class = LikertQuestionForm
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -143,10 +140,7 @@ class LikertQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class LikertQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = LikertQuestion
-    fields = [
-        'order', 'subscale', 'text', 'instructions', 'available', 'scale',
-        'priority', 'labels', 'instruments'
-    ]
+    form_class = LikertQuestionForm
 
     def get_context_data(self, **kwargs):
         context = super(LikertQuestionUpdateView, self).get_context_data(**kwargs)
@@ -172,10 +166,7 @@ class MultipleChoiceQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class MultipleChoiceQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = MultipleChoiceQuestion
-    fields = [
-        'order', 'subscale', 'text', 'instructions', 'available',
-        'labels', 'instruments',
-    ]
+    form_class = MultipleChoiceQuestionForm
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -228,10 +219,7 @@ class MultipleChoiceQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class MultipleChoiceQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = MultipleChoiceQuestion
-    fields = [
-        'order', 'subscale', 'text', 'instructions', 'available',
-        'labels', 'instruments',
-    ]
+    form_class = MultipleChoiceQuestionForm
 
     def get_formset(self, post_data=None):
         OptionFormSet = modelformset_factory(
@@ -296,10 +284,7 @@ class OpenEndedQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = OpenEndedQuestion
-    fields = [
-        'order', 'subscale', 'input_type', 'text', 'instructions',
-        'available', 'labels', 'instruments',
-    ]
+    form_class = OpenEndedQuestionForm
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -317,10 +302,7 @@ class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class OpenEndedQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = OpenEndedQuestion
-    fields = [
-        'order', 'subscale', 'input_type', 'text', 'instructions',
-        'available', 'labels', 'instruments',
-    ]
+    form_class = OpenEndedQuestionForm
 
     def get_context_data(self, **kwargs):
         context = super(OpenEndedQuestionUpdateView, self).get_context_data(**kwargs)
