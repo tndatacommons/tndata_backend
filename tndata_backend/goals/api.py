@@ -417,6 +417,11 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     The Behaviors that a User has selected are also available through the
     `/api/users/` endpoint as a `behaviors` object on the user.
 
+    Each results object also includes a `user_goals` object in addition to
+    a `behavior` object. The `user_goals` object is a list of Goals in
+    which the behavior belongs that have also be selected by the User. Related:
+    [/api/users/goals/](/api/users/goals/).
+
     ----
 
     """
@@ -507,6 +512,11 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     The Actions that a User has selected are also available through the
     `/api/users/` endpoint as a `actions` object on the user.
+
+    Each results object also includes a `user_behaviors` object in addition to
+    an `action` object. The `user_behaviors` object is a list of Behaviors in
+    which the action belongs that have also be selected by the User. Related:
+    [/api/users/behaviors/](/api/users/behaviors/).
 
     ----
 

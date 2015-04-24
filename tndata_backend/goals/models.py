@@ -555,6 +555,12 @@ class UserBehavior(models.Model):
         verbose_name = "User Behavior"
         verbose_name_plural = "User Behaviors"
 
+    def get_user_goals(self):
+        """Returns a QuerySet of Goals related to this Behavior, but restricts
+        those goals to those which the user has selected."""
+        gids = self.user.usergoal_set.values_list('goal__id', flat=True)
+        return self.behavior.goals.filter(id__in=gids)
+
 
 class UserAction(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -571,6 +577,14 @@ class UserAction(models.Model):
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
+
+    def get_user_behaviors(self):
+        """Returns a QuerySet of Behaviors related to this Action, but restricts
+        those behaviors to those which the user has selected."""
+        bids = self.user.userbehavior_set.values_list('behavior__id', flat=True)
+        # Intersect the user-selected and the current action's behavior
+        bids = set(bids).intersection({self.action.behavior.id})
+        return Behavior.objects.filter(id__in=bids)  # might be none.
 
 
 class UserCategory(models.Model):

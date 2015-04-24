@@ -110,21 +110,31 @@ class UserGoalSerializer(serializers.ModelSerializer):
 
 class UserBehaviorSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserBehavior` model."""
+    user_goals = SimpleGoalField(
+        source="get_user_goals",
+        many=True,
+        read_only=True,
+    )
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
 
     class Meta:
         model = UserBehavior
-        fields = ('id', 'user', 'behavior', 'created_on')
+        fields = ('id', 'user', 'behavior', 'user_goals', 'created_on')
         read_only_fields = ("id", "created_on", )
 
 
 class UserActionSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
+    user_behaviors = SimpleBehaviorField(
+        source="get_user_behaviors",
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = UserAction
-        fields = ('id', 'user', 'action', 'created_on')
+        fields = ('id', 'user', 'action', 'user_behaviors', 'created_on')
         read_only_fields = ("id", "created_on", )
 
 
