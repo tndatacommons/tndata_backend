@@ -69,7 +69,10 @@ class BinaryQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class BinaryQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = BinaryQuestion
-    fields = ['order', 'text', 'instructions', 'available', 'instruments']
+    fields = [
+        'order', 'subscale', 'text', 'instructions', 'available',
+        'labels', 'instruments',
+    ]
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -88,7 +91,10 @@ class BinaryQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class BinaryQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = BinaryQuestion
-    fields = ['order', 'text', 'instructions', 'available', 'instruments']
+    fields = [
+        'order', 'subscale', 'text', 'instructions', 'available',
+        'labels', 'instruments',
+    ]
 
     def get_context_data(self, **kwargs):
         context = super(BinaryQuestionUpdateView, self).get_context_data(**kwargs)
@@ -117,8 +123,8 @@ class LikertQuestionDetailView(SurveyAdminsMixin, DetailView):
 class LikertQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = LikertQuestion
     fields = [
-        'order', 'text', 'instructions', 'available', 'scale',
-        'priority', 'instruments'
+        'order', 'subscale', 'text', 'instructions', 'available', 'scale',
+        'priority', 'labels', 'instruments'
     ]
 
     def get_initial(self, *args, **kwargs):
@@ -138,8 +144,8 @@ class LikertQuestionCreateView(SurveyAdminsMixin, CreateView):
 class LikertQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = LikertQuestion
     fields = [
-        'order', 'text', 'instructions', 'available', 'scale',
-        'priority', 'instruments'
+        'order', 'subscale', 'text', 'instructions', 'available', 'scale',
+        'priority', 'labels', 'instruments'
     ]
 
     def get_context_data(self, **kwargs):
@@ -166,7 +172,10 @@ class MultipleChoiceQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class MultipleChoiceQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = MultipleChoiceQuestion
-    fields = ['order', 'text', 'instructions', 'available', 'instruments']
+    fields = [
+        'order', 'subscale', 'text', 'instructions', 'available',
+        'labels', 'instruments',
+    ]
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -219,7 +228,10 @@ class MultipleChoiceQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class MultipleChoiceQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = MultipleChoiceQuestion
-    fields = ['order', 'text', 'instructions', 'available', 'instruments']
+    fields = [
+        'order', 'subscale', 'text', 'instructions', 'available',
+        'labels', 'instruments',
+    ]
 
     def get_formset(self, post_data=None):
         OptionFormSet = modelformset_factory(
@@ -284,7 +296,10 @@ class OpenEndedQuestionDetailView(SurveyAdminsMixin, DetailView):
 
 class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
     model = OpenEndedQuestion
-    fields = ['order', 'input_type', 'text', 'instructions', 'available', 'instruments']
+    fields = [
+        'order', 'subscale', 'input_type', 'text', 'instructions',
+        'available', 'labels', 'instruments',
+    ]
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -302,7 +317,10 @@ class OpenEndedQuestionCreateView(SurveyAdminsMixin, CreateView):
 
 class OpenEndedQuestionUpdateView(SurveyAdminsMixin, UpdateView):
     model = OpenEndedQuestion
-    fields = ['order', 'input_type', 'text', 'instructions', 'available', 'instruments']
+    fields = [
+        'order', 'subscale', 'input_type', 'text', 'instructions',
+        'available', 'labels', 'instruments',
+    ]
 
     def get_context_data(self, **kwargs):
         context = super(OpenEndedQuestionUpdateView, self).get_context_data(**kwargs)

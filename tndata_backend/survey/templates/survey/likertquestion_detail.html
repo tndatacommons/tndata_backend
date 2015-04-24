@@ -13,6 +13,7 @@
       <h1>{{ question.text }} {% object_controls question "survey" %}</h1>
       <dl>
         <dt>Order</dt><dd>{{ question.order }}</dd>
+        <dt>Subscale</dt><dd>{{ question.get_subscale_display }}</dd>
         <dt>Availble</dt><dd>{{ question.available|yesno}}</dd>
         <dt>Scale</dt><dd>{{ question.scale_text}}</dd>
         <dt>Priority</dt><dd>{{ question.priority }}</dd>
@@ -20,6 +21,12 @@
         <dd>{{ question.instructions|default:"No Instructions" }}</dd>
         <dt>Instruments</dt>
           <dd>{{ question.instruments.all|join:", "|default:"None." }}</dd>
+        <dt>Labels</dt>
+          <dd>
+          {% for label in question.labels %}
+            <span class="label">{{ label }}</span>
+          {% endfor %}
+          </dd>
         <dt>Updated On</dt><dd>{{ question.updated}}</dd>
         <dt>Created On</dt><dd>{{ question.created}}</dd>
       </dl>

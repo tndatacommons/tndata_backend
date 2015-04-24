@@ -15,6 +15,7 @@
       <thead>
       <tr>
         <th>Order</th>
+        <th>Subscale</th>
         <th>Text</th>
         <th>Instrument(s)</th>
         <th>Available</th>
@@ -26,6 +27,7 @@
       {% for question in questions %}
         <tr>
           <td>{{ question.order }}</td>
+          <td>{{ question.get_subscale_display }}</td>
           <td>
             <a href="{{ question.get_absolute_url }}">{{ question.text }}</a>
           </td>
