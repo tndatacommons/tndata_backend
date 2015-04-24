@@ -21,18 +21,32 @@
     <div class="large-6 small-12 columns">
       <h2 class="subheader">Questions</h2>
       <p>The following questions are included in this Instrument:</p>
-      <ul>
+      <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Subscale</th>
+          <th>Order</th>
+          <th>Question</th>
+        </tr>
+      </thead>
+      <tbody>
       {% for question_type, question in instrument.questions %}
-        <li>
-          <span class="label secondary">{{question_type}}</span>
-          {{ question }}
-        </li>
+        <tr>
+          <td><span class="label secondary">{{question_type}}</span></td>
+          <td>{{ question.get_subscale_display }}</td>
+          <td>{{ question.order }}</td>
+          <td><a href="{{ question.get_absolute_url }}">{{ question }}</a></td>
+        </tr>
       {% empty %}
-        <li style="list-style-type: none">
-          <em>This instrument currently has no questions.</em>
-        </li>
+        <tr>
+          <td colspan="4">
+            <em>This instrument currently has no questions.</em>
+          </td>
+        </tr>
       {% endfor %}
-      </ul>
+      </tbody>
+      </table>
     </div>
   </div>
 {% endblock %}
