@@ -87,6 +87,7 @@ class BaseQuestion(models.Model):
     labels = ArrayField(
         models.CharField(max_length=32, blank=True, choices=LABEL_CHOICES),
         default=[],
+        blank=True,
         help_text="You can apply any number of labels to this question"
     )
     available = models.BooleanField(default=True, help_text="Available to Users")
