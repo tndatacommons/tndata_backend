@@ -1,8 +1,11 @@
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
+
+from utils.content_labels import LABEL_CHOICES
 
 from . managers import QuestionManager
 from . likert import LIKERT_SCALES
@@ -66,8 +69,26 @@ class Instrument(models.Model):
 
 class BaseQuestion(models.Model):
     """A Base class for a Question."""
+
+    SUBSCALE_OPTIONS = (  # NOTE: subscale stores an int, so it's sortable.
+        (0, 'None'),
+        (1, 'Importance'),
+        (2, 'Satisfaction'),
+    )
+
     text = models.TextField(unique=True, help_text="The text of the question")
     order = models.IntegerField(default=0, help_text="Ordering of questions")
+    subscale = models.IntegerField(
+        default=0,
+        db_index=True,
+        choices=SUBSCALE_OPTIONS,
+        help_text="Optional: Select a Subscale for this question"
+    )
+    labels = ArrayField(
+        models.CharField(max_length=32, blank=True, choices=LABEL_CHOICES),
+        default=[],
+        help_text="You can apply any number of labels to this question"
+    )
     available = models.BooleanField(default=True, help_text="Available to Users")
     priority = models.PositiveIntegerField(
         default=0,
@@ -96,7 +117,7 @@ class BaseQuestion(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['instruments', 'order']
+        ordering = ['instruments', 'subscale', 'order']
 
     @property
     def question_type(self):
