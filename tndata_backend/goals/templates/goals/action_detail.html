@@ -45,14 +45,18 @@
         <dt>Notification Text</dt><dd>{{ action.notification_text }}</dd>
         <dt>Icon</dt><dd>
           {% if action.icon %}
+            <a href="{{ action.icon.url }}" target="_blank">
             <img src="{{ action.icon.url }}" alt="{{ action }} icon" />
+            </a>
           {% else %}
             <em>No icon available</em>
           {% endif %}
         </dd>
         <dt>Image</dt><dd>
           {% if action.image %}
+            <a href="{{ action.image.url }}" target="_blank">
             <img src="{{ action.image.url }}" alt="{{ action }} image" />
+            </a>
           {% else %}
             <em>No image available</em>
           {% endif %}

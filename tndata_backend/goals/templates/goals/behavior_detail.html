@@ -30,14 +30,18 @@
         {#<dt>Notification Text</dt><dd>{{ behavior.notification_text }}</dd>#}
         <dt>Icon</dt><dd>
           {% if behavior.icon %}
+            <a href="{{ behavior.icon.url }}" target="_blank">
             <img src="{{ behavior.icon.url }}" alt="{{ behavior }} icon" />
+            </a>
           {% else %}
             <em>No icon available</em>
           {% endif %}
         </dd>
         <dt>Image</dt><dd>
           {% if behavior.image %}
+            <a href="{{ behavior.image.url }}" target="_blank">
             <img src="{{ behavior.image.url }}" alt="{{ behavior }} image" />
+            </a>
           {% else %}
             <em>No image available</em>
           {% endif %}

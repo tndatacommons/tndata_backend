@@ -18,7 +18,9 @@
       <dt>State</dt><dd>{{ goal.state|label }}</dd>
       <dt>Icon</dt><dd>
         {% if goal.icon %}
+          <a href="{{ goal.icon.url }}" target="_blank">
           <img src="{{ goal.icon.url }}" alt="{{ goal }} icon" />
+          </a>
         {% else %}
           <em>No icon available</em>
         {% endif %}

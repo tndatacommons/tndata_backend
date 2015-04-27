@@ -18,14 +18,18 @@
         <dt>State</dt><dd>{{ category.state|label }}</dd>
         <dt>Icon</dt><dd>
           {% if category.icon %}
+            <a href="{{ category.icon.url }}" target="_blank">
             <img src="{{ category.icon.url }}" alt="{{ category }} icon" />
+            </a>
           {% else %}
             <em>No icon available</em>
           {% endif %}
         </dd>
         <dt>Hero Image</dt><dd>
           {% if category.image %}
+            <a href="{{ category.image.url }}" target="_blank">
             <img src="{{ category.image.url }}" alt="{{ category }} image" />
+            </a>
           {% else %}
             <em>No image available</em>
           {% endif %}
