@@ -119,6 +119,14 @@ class Category(ModifiedMixin, URLMixin, models.Model):
         pass
 
 
+def get_categories_as_choices():
+    """This is a convenience function that returns all Category data as a
+    tuple of choices (suitable for forms or fields that accept a `choices`
+    argument).
+    """
+    return tuple(Category.objects.values_list("title_slug", "title"))
+
+
 class Goal(ModifiedMixin, URLMixin, models.Model):
 
     # URLMixin attributes

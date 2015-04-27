@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.db.models import QuerySet
 
 from .. models import (
+    get_categories_as_choices,
     Category,
     Goal,
     Trigger,
@@ -34,6 +35,13 @@ class TestCategory(TestCase):
         expected = "Test Category"
         actual = "{}".format(self.category)
         self.assertEqual(expected, actual)
+
+    def test_get_categories_as_choices(self):
+        """Ensure all categories are returned as a tuple of choices."""
+        expected = (
+            ("test-category", "Test Category"),
+        )
+        self.assertEqual(get_categories_as_choices(), expected)
 
     def test_save(self):
         """Verify that saving generates a title_slug"""
