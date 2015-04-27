@@ -77,14 +77,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    surveys = serializers.ReadOnlyField(required=False)
+
     class Meta:
         model = models.UserProfile
-        fields = (
-            'id', 'user', 'birthdate', 'race', 'gender', 'relationship_status',
-            'educational_level', 'employment_status', 'children',
-            'economic_aspiration',
-        )
-        read_only_fields = ("id", "user", )
+        fields = ('id', 'user', 'surveys')
 
 
 class AuthTokenSerializer(serializers.Serializer):

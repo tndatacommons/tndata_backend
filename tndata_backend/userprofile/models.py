@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
@@ -15,11 +16,11 @@ class UserProfile(models.Model):
     Bio-8: Storing answers to 8 biographical questions: http://goo.gl/CSzRZp
 
     """
-
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         help_text="The user to whom this profile belongs"
     )
+    # TODO: REMOVE the following profile-like fields; we get those from surveys.
     birthdate = models.DateField(blank=True, null=True, db_index=True)
     race = models.CharField(max_length=128, blank=True, db_index=True)
     gender = models.CharField(max_length=128, blank=True, db_index=True)
@@ -46,6 +47,78 @@ class UserProfile(models.Model):
         order_with_respect_to = "user"
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
+
+    @property
+    def surveys(self):
+        """Return a simple representation of the survey questions that the
+        user has answered.
+
+        """
+        # NOTE: I'm not sure what the best approach is, here, because our
+        # questions are M2M fields under Instruments; That means there's possibly
+        # no 1-to-1 relationship between a User's response and the instrument
+        # in which it's placed.
+
+        # Get all the questions & return a dict of primitive types
+        # (dicts & lists; so it's easy to serialize)
+        surveys = defaultdict(list)
+        for resp in self.user.binaryresponse_set.all():
+            for inst in resp.question.instruments.all():
+                surveys[inst.id].append({
+                    'id': resp.id,
+                    'instrument': {
+                        "id": inst.id,
+                        "title": "{0}".format(inst),
+                    },
+                    'question_id': resp.question.id,
+                    'question_type': resp.question.question_type,
+                    'question_text': "{0}".format(resp.question),
+                    'selected_option': resp.selected_option,
+                })
+        for resp in self.user.openendedresponse_set.all():
+            for inst in resp.question.instruments.all():
+                surveys[inst.id].append({
+                    'id': resp.id,
+                    'instrument': {
+                        "id": inst.id,
+                        "title": "{0}".format(inst),
+                    },
+                    'question_id': resp.question.id,
+                    'question_text': "{0}".format(resp.question),
+                    'question_type': resp.question.question_type,
+                    'response': resp.response,
+                })
+        for resp in self.user.likertresponse_set.all():
+            for inst in resp.question.instruments.all():
+                surveys[inst.id].append({
+                    'id': resp.id,
+                    'instrument': {
+                        "id": inst.id,
+                        "title": "{0}".format(inst),
+                    },
+                    'question_id': resp.question.id,
+                    'question_text': "{0}".format(resp.question),
+                    'question_type': resp.question.question_type,
+                    'selected_option': resp.selected_option,
+                })
+        for resp in self.user.multiplechoiceresponse_set.all():
+            for inst in resp.question.instruments.all():
+                surveys[inst.id].append({
+                    'id': resp.id,
+                    'instrument': {
+                        "id": inst.id,
+                        "title": "{0}".format(inst),
+                    },
+                    'question_id': resp.question.id,
+                    'question_text': "{0}".format(resp.question),
+                    'question_type': resp.question.question_type,
+                    'selected_option': {
+                        "id": resp.selected_option.id,
+                        "text": resp.selected_option.text,
+                    },
+                    'selected_option_text': resp.selected_option.text,
+                })
+        return dict(surveys)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='create_userprofile')

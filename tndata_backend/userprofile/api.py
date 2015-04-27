@@ -112,14 +112,12 @@ class UserViewSet(viewsets.ModelViewSet):
         return resp
 
 
-class UserProfileViewSet(mixins.ListModelMixin,
-                         mixins.UpdateModelMixin,
-                         mixins.RetrieveModelMixin,
-                         viewsets.GenericViewSet):
-    """This defines methods for viewing a User Profile. User Profiles are
+class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    """This defines methods for viewing a User's _Profile_. User Profiles are
     created automatically after a user account is created.
 
-    This endpoint requires authorization, and requests must include an Auth Token.
+    This endpoint is read-only, requires authorization, and requests must
+    include an Auth Token.
 
     ## Retrieving a User Profile
 
@@ -128,94 +126,33 @@ class UserProfileViewSet(mixins.ListModelMixin,
     part of their [user data](/api/users/). This should include a single
     result set that contains the authenticated user.
 
-    ## Updating a User Profile
+    ## Surveys
 
-    Send a PUT request to `/api/userprofiles/{profile-id}/` including the data
-    that you wish to update.
+    The `/api/userprofiles/` endpoint includes information about the survey
+    questions that a user has answered. The `survey` attribute is an object
+    whose key is the ID of a [survey instrument](/api/survey/instruments/),
+    and whose value is a list of _responses_ to that instrument's questions.
 
-    ## Options
+    The type of data in a response will depend on the question type, but all
+    responses will have the following:
 
-    View the *Options* on this page for more details regarding which fields
-    are required.
+    * id: The database id for the user's response.
+    * question_id: The database id for the question.
+    * question_type: The type of question
+    * question_text: The text of the question (this is what the user sees)
+    * instrument: An object representing the instrument's id and text
 
-    ## UserProfile Fields:
+    Likert, Multiple Choice, and Binary responses will have the following:
 
-    A `UserProfile` consists of the following fields. This information is based
-    on the [BIO-8 survey](http://goo.gl/IcZmxo).
+    * selected_option: An object representing the id and text of the k
 
-    * `birthdate` - A string representing the user's birth date, in
-      YYYY-MM-DD format.
-    * `race` - A String representing the user's selected race: Options should
-      include:
-        * African American
-        * Asian
-        * Caucasian
-        * Hispanic
-        * Native American
-        * Pacific Islander
-        * Don't ask
-        * Skip
-    * `gender` - A string representing the user's gender identity. Options should
-      include:
-        * Male
-        * Female
-        * Don't ask
-        * Skip
-    * `relationship_status` - A string representing the user's relationship
-      status. Options should include:
-        * Single
-        * In a relationship
-        * It's Complicated
-        * Married
-        * Separate
-        * Divorced
-        * Widowed
-        * Don't ask
-        * Skip
-    * `educational_level` - A string representing the user's eductional level.
-      Options should include:
-        * Eighth Grade Graduation
-        * High School Diploma (or equivalent)
-        * Bachelor's Degree
-        * Professional Degree
-        * Master's Degree
-        * Doctoral Degree
-        * None of the Above
-        * Don't ask
-        * Skip
-    * `employment_status` - A string representing the user's employment status.
-        * Working for wages (full-time)
-        * Working for wages (part-time)
-        * Working for myself
-        * Looking for work
-        * Being a homemaker
-        * Being a student
-        * In military service
-        * However I want (Retired)
-        * However I want (independently wealthy)
-        * Wishing I could work (due to disability)
-        * Don't ask
-        * Skip
-    * `children` - A string representing the user's current number of children.
-      or their plans for children. Options should include:
-        * No children
-        * A child on the way
-        * A desire to have children
-        * 1 child
-        * 2 children
-        * 3 children
-        * 4 children
-        * 5 children
-        * 6 children
-        * 7 children
-    * `economic_aspiration` - A string representing the user's economic
-      aspirations. Options should include:
-        * Money? Who cares
-        * Pay my bills
-        * Better my life
-        * Feel rich
-        * Feel scure
-        * Buy whatever I want
+    OpenEnded Questions will have the following:
+
+    * response: The Text of the user's response
+
+    Multiple Choice Responses will also have the following:
+
+    * selected_option_text: The text of the user's response
 
     ----
 
