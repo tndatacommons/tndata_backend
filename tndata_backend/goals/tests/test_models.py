@@ -69,6 +69,10 @@ class TestCategory(TestCase):
     def test_goals(self):
         self.assertIsInstance(self.category.goals, QuerySet)
 
+    def test__format_color(self):
+        self.assertEqual(self.category._format_color("ffaabb"), "#ffaabb")
+        self.assertEqual(self.category._format_color("#ffaabb"), "#ffaabb")
+
     def test_get_absolute_url(self):
         self.assertEqual(
             self.category.get_absolute_url(),

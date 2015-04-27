@@ -62,6 +62,11 @@ class Category(ModifiedMixin, URLMixin, models.Model):
         null=True,
         help_text="Additional notes regarding this Category"
     )
+    color = models.CharField(
+        max_length=7,
+        default="#2ECC71",
+        help_text="Select the Color for this Category"
+    )
     state = FSMField(default="draft")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -95,10 +100,15 @@ class Category(ModifiedMixin, URLMixin, models.Model):
         """This property returns a QuerySet of the related Goal objects."""
         return self.goal_set.all().distinct()
 
+    def _format_color(self, color):
+        """Ensure that colors include a # symbol at the beginning."""
+        return color if color.startswith("#") else "#{0}".format(color)
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model and set
         created_by or updated_by fields if specified."""
         self.title_slug = slugify(self.title)
+        self.color = self._format_color(self.color)
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Category, self).save(*args, **kwargs)
 

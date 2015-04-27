@@ -33,6 +33,11 @@
         <dt>Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Notes</dt><dd>{{ category.description|markdown }}</dd>
+        <dt>Color</dt><dd>
+          <span style="display:inline-block;width:18px;height:18px;background-color:{{category.color}};">
+          </span>
+          {{ category.color }}
+         </dd>
       </dl>
       {% modified category %}
       {% if perms.goals.publish_category %}{% publish_deny_form category %}{% endif %}

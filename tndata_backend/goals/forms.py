@@ -39,6 +39,19 @@ class BehaviorForm(forms.ModelForm):
         ]
 
 
+class CategoryForm(forms.ModelForm):
+    """A Form for creating/updateing Categories. This form customizes the widget
+    for the color field."""
+
+    class Meta:
+        model = Category
+        fields = [
+            'order', 'title', 'description', 'icon', 'image', 'notes', 'color',
+        ]
+        widgets = {
+            "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
+        }
+
 class GoalForm(forms.ModelForm):
     """A Form for creating/updating goals. This form orders related categories
     alphabetically."""
