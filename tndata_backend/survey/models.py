@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from utils.content_labels import LABEL_CHOICES
+from goals.models import get_categories_as_choices
 
 from . managers import QuestionManager
 from . likert import LIKERT_SCALES
@@ -85,7 +85,7 @@ class BaseQuestion(models.Model):
         help_text="Optional: Select a Subscale for this question"
     )
     labels = ArrayField(
-        models.CharField(max_length=32, blank=True, choices=LABEL_CHOICES),
+        models.CharField(max_length=32, blank=True, choices=get_categories_as_choices()),
         default=[],
         blank=True,
         help_text="You can apply any number of labels to this question"
