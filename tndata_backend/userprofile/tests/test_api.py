@@ -44,7 +44,6 @@ class TestUserSerializer(TestCase):
             'is_staff': False,
             'first_name': "Test",
             'last_name': "User",
-            #"goals", "behaviors", "actions", "categories",
         }
         s = UserSerializer(self.user, data=data, partial=True)
         self.assertTrue(s.is_valid())
@@ -211,7 +210,9 @@ class TestUserProfilesAPI(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['race'], '')  # was never set
+        self.assertEqual(response.data['id'], self.user.userprofile.id)
+        self.assertEqual(response.data['user'], self.user.id)
+        self.assertEqual(response.data['surveys'], {})
 
     def test_post_userprofile_detail_not_allowed(self):
         """Ensure we cannot post to userprofile-detail"""
@@ -219,28 +220,22 @@ class TestUserProfilesAPI(APITestCase):
         response = self.client.post(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-        # Even when authorized
+        # Even when authenticated
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.post(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_put_userprofile_detail_unauthorized(self):
-        """Ensure unauthenticated users cannot update data."""
+    def test_put_userprofile_detail_not_allowed(self):
+        """Ensure users cannot PUT to this endpoint."""
         url = reverse('userprofile-detail', args=[self.p.id])
         response = self.client.put(url, {'race': "Don't ask"})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_put_userprofile_detail_authorized(self):
-        """Ensure authenticated users can update their data."""
-        url = reverse('userprofile-detail', args=[self.p.id])
+        # Even when authenticated
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.put(url, {'birthdate': '1900-01-31'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data['birthdate'],
-            '1900-01-31'
-        )
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

@@ -23,6 +23,11 @@ class TestUserProfile(TestCase):
         actual = "{}".format(self.user)
         self.assertEqual(expected, actual)
 
+    def test_surveys(self):
+        # We didn't create any surveys.
+        profile = self.user.userprofile
+        self.assertEqual(profile.surveys, {})
+
     def test_profile_created(self):
         """Ensure creating a user creates a profile."""
         self.assertEqual(UserProfile.objects.filter(user=self.user).count(), 1)
