@@ -15,6 +15,7 @@
       <thead>
       <tr>
         <th>Order</th>
+        <th>Color</th>
         <th>Title</th>
         <th>State</th>
         <th>Goals</th>
@@ -26,7 +27,12 @@
         <tr>
           <td>{{ category.order }}</td>
           <td>
-            <a href="{{ category.get_absolute_url }}">{{ category }}</a>
+            <div class="color"
+                 style="height:25px;width:25px;background-color:{{ category.color}};">
+            </div>
+          </td>
+          <td>
+              <a href="{{ category.get_absolute_url }}">{{ category }}</a>
           </td>
           <td>{{ category.state|label }}</td>
           <td>{{ category.goals|join:", " }}</td>
