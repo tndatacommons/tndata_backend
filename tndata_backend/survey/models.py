@@ -7,12 +7,9 @@ from django.db import models
 
 from goals.models import get_categories_as_choices
 
-from . managers import QuestionManager
+from . managers import QuestionManager, SurveyResultManager
 from . likert import LIKERT_SCALES
 
-
-# TODO: We need aggregated results/scores for all questions in an instrument.
-# ^ these will feed into our rules.
 
 class Instrument(models.Model):
     title = models.CharField(max_length=128, unique=True, db_index=True)
@@ -177,6 +174,7 @@ class BinaryResponse(models.Model):
         return "{}".format(self.selected_option_text)
 
     class Meta:
+        get_latest_by = "submitted_on"
         verbose_name = "Binary Response"
         verbose_name_plural = "Binary Responses"
 
@@ -239,6 +237,7 @@ class MultipleChoiceResponse(models.Model):
         return "{}".format(self.selected_option)
 
     class Meta:
+        get_latest_by = "submitted_on"
         verbose_name = "Multiple Choice Response"
         verbose_name_plural = "Multiple Choice Responses"
 
@@ -312,6 +311,7 @@ class OpenEndedResponse(models.Model):
         return "{}".format(self.response)
 
     class Meta:
+        get_latest_by = "submitted_on"
         verbose_name = "Open-Ended Response"
         verbose_name_plural = "Open-Ended Responses"
 
@@ -387,6 +387,7 @@ class LikertResponse(models.Model):
         return "{}".format(self.get_selected_option_display())
 
     class Meta:
+        get_latest_by = "submitted_on"
         verbose_name = "Likert Response"
         verbose_name_plural = "Likert Responses"
 
@@ -398,3 +399,50 @@ class LikertResponse(models.Model):
         for value, text in self.question.choices:
             if self.selected_option == value:
                 return text
+
+
+class SurveyResult(models.Model):
+    """Stores the calculated results from a survey Instrument. This result
+    makes a few assumptions about the instrument:
+
+    NOTE: This assumes Likert questions.
+
+    1. Instruments consist of *necessary* / *satisfied* subscales. If any
+       questions in an Instrument do not have an assigned subscale, results
+       should not be stored.
+    2. Instruments should consist of an *even* number of question; e.g. an
+       instance of this model will be created from every 2 questions; Q2 - Q1
+    3. Questions have labels applied, which be copied into this model for easy
+       access.
+    4. Instances of this model are *only* created through the Manager; e.g.
+       via `SurveyResult.objects.create(user, instrument)`
+
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    instrument = models.ForeignKey(Instrument)
+    score = models.IntegerField()
+    labels = ArrayField(
+        models.CharField(
+            max_length=32,
+            blank=True,
+            choices=get_categories_as_choices()
+        ),
+        default=[],
+        blank=True,
+        help_text="The labels from the associated questions in this instrument"
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.created_on
+
+    class Meta:
+        ordering = ['-created_on']
+        verbose_name = "Survey Result"
+        verbose_name_plural = "Survey Results"
+
+    @property
+    def questions(self):
+        return self.instrument.questions
+
+    objects = SurveyResultManager()

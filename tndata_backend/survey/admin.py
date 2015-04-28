@@ -79,3 +79,12 @@ class BinaryResponseAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
     )
 admin.site.register(models.BinaryResponse, BinaryResponseAdmin)
+
+
+class SurveyResultAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "instrument", "score", "labels", "created_on")
+    search_fields = (
+        'instrument__title', 'labels',
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+    )
+admin.site.register(models.SurveyResult, SurveyResultAdmin)
