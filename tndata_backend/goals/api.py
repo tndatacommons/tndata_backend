@@ -513,11 +513,6 @@ class UserActionViewSet(mixins.CreateModelMixin,
     The Actions that a User has selected are also available through the
     `/api/users/` endpoint as a `actions` object on the user.
 
-    Each results object also includes a `user_behaviors` object in addition to
-    an `action` object. The `user_behaviors` object is a list of Behaviors in
-    which the action belongs that have also be selected by the User. Related:
-    [/api/users/behaviors/](/api/users/behaviors/).
-
     ----
 
     """

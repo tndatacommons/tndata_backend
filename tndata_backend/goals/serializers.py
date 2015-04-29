@@ -126,15 +126,10 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
 class UserActionSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
-    user_behaviors = SimpleBehaviorField(
-        source="get_user_behaviors",
-        many=True,
-        read_only=True,
-    )
 
     class Meta:
         model = UserAction
-        fields = ('id', 'user', 'action', 'user_behaviors', 'created_on')
+        fields = ('id', 'user', 'action', 'created_on')
         read_only_fields = ("id", "created_on", )
 
 

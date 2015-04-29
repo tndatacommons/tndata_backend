@@ -596,14 +596,6 @@ class UserAction(models.Model):
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
 
-    def get_user_behaviors(self):
-        """Returns a QuerySet of Behaviors related to this Action, but restricts
-        those behaviors to those which the user has selected."""
-        bids = self.user.userbehavior_set.values_list('behavior__id', flat=True)
-        # Intersect the user-selected and the current action's behavior
-        bids = set(bids).intersection({self.action.behavior.id})
-        return Behavior.objects.filter(id__in=bids)  # might be none.
-
 
 class UserCategory(models.Model):
     """A Mapping between users and specific categories."""
