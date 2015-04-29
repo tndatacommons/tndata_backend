@@ -434,10 +434,14 @@ class SurveyResult(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.created_on
+        return "{0} | {1}".format(
+            self.created_on.strftime("%Y-%m-%d"),
+            self.instrument
+        )
 
     class Meta:
-        ordering = ['-created_on']
+        ordering = ['-created_on', 'score']
+        get_latest_by = 'created_on'
         verbose_name = "Survey Result"
         verbose_name_plural = "Survey Results"
 

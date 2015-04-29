@@ -1,0 +1,26 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li class="current">Pick an Instrument</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Instruments</h1>
+      <p><strong>Step 1: </strong> Pick an instrument below.</p>
+      <ul>
+      {% for instrument in instruments %}
+        <li>
+          <a href="{% url 'survey:take-questions' instrument.pk %}">
+          {{ instrument.title }}</a>
+        </li>
+      {% endfor %}
+      </li>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

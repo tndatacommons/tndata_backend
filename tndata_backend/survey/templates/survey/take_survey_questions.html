@@ -1,0 +1,26 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li><a href="{% url 'survey:take' %}">Pick an Instrument</a></li>
+    <li class="current">{{ instrument }}</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>{{ instrument }}</h1>
+      <p><strong>{{ instrument.instructions }}</strong></p>
+
+      <form action="{% url 'survey:take-questions' instrument.pk %}" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <hr>
+      <p><button type="submit">Submit</button></p>
+      </form>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

@@ -1,0 +1,71 @@
+{% extends "survey/base.html" %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'survey:index' %}">Home</a></li>
+    <li><a href="{% url 'survey:take' %}">Pick an Instrument</a></li>
+    <li><a href="{% url 'survey:take-questions' instrument.pk %}">
+      {{ instrument }}</a></li>
+    <li class="current">Results</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-6 medium-12 small-12 columns">
+      <h1>{{ instrument }}</h1>
+      <table>
+        <caption>Survey Results</caption>
+        <thead>
+          <tr>
+            <th>Score</th>
+            <th>Labels</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for result in results %}
+          <tr>
+            <td>{{ result.score }}</td>
+            <td>{{ result.labels|join:", "}}</td>
+            <td>{{ result.created_on|timesince }} ago</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="large-6 medium-12 small-12 columns">
+      <h2>Suggested Categories</h2>
+      <p>Based on the most recent survey results (below), these categories would
+         be suggested.</p>
+      <table>
+      <caption>Weighted Labels/Categories</caption>
+      <thead><tr><th>Count/Weight</th><th>Label/Category</th></tr></thead>
+      <tbody>
+      {% for label, count in labels %}
+        <tr><td>{{ count }}</td><td>{{ label }}</td></tr>
+      {% endfor %}
+      </tbody>
+      </table>
+
+      <table>
+        <caption>LATEST Results</caption>
+        <thead>
+          <tr>
+            <th>Score</th>
+            <th>Labels</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for result in latest_results %}
+          <tr>
+            <td>{{ result.score }}</td>
+            <td>{{ result.labels|join:", "}}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

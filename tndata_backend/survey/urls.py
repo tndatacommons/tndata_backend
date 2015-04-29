@@ -9,6 +9,23 @@ urlpatterns = patterns('',
         name='index'
     ),
 
+    # URLs for taking the survey (e.g. answering the questions)
+    url(
+        r'take/(?P<instrument_id>\d+)/results/$',
+        views.TakeSurveyResultsView.as_view(),
+        name='take-results'
+    ),
+    url(
+        r'take/(?P<instrument_id>\d+)/$',
+        views.TakeSurveyQuestionsView.as_view(),
+        name='take-questions'
+    ),
+    url(
+        r'take/$',
+        views.TakeSurveyView.as_view(),
+        name='take'
+    ),
+
     # Create views
     url(
         r'new/instrument/$',

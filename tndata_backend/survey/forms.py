@@ -4,9 +4,14 @@ from goals.models import get_categories_as_choices
 
 from . models import (
     BinaryQuestion,
+    BinaryResponse,
     LikertQuestion,
+    LikertResponse,
     MultipleChoiceQuestion,
+    MultipleChoiceResponse,
     OpenEndedQuestion,
+    OpenEndedResponse,
+    SurveyResult
 )
 
 
@@ -93,3 +98,102 @@ class OpenEndedQuestionForm(BaseQuestionForm):
             'order', 'subscale', 'input_type', 'text', 'instructions',
             'available', 'labels', 'instruments',
         ]
+
+
+
+class SurveyResponseForm(forms.Form):
+    """EXPERIMENTAL! This is a dynamically generated form containing all
+    questions/options for a given instrument.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        self._models = {}
+        self.instrument = kwargs.pop("instrument")
+        if self.instrument is None:
+            raise TypeError("SurveyResponseForm requires an instrument argument")
+
+        super(SurveyResponseForm, self).__init__(*args, **kwargs)
+        self._build_fields()
+        # Keep a dict of the question field id that maps to the question model
+        # and response model so we can create responses.
+
+    def _build_fields(self):
+        # Iterate over the instrument's questions and create appropriate fields.
+        self.fields = {}
+        if set(t for t, q in self.instrument.questions) != {"LikertQuestion"}:
+            msg = "Only Instruments with LikertQuestions are supported"
+            self.cleaned_data = {}  # hack so add_error doesn't fail
+            self.add_error(None, msg)
+            #raise forms.ValidationError(msg, code="invalid")
+
+        for qtype, question in self.instrument.questions:
+            question_key = "question_{0}".format(question.id)
+            if qtype == "LikertQuestion":
+                self._models[question_key] = {
+                    'question': question,
+                    'response_model': LikertResponse,
+                    'response_field': 'selected_option',
+                }
+                self.fields[question_key] = forms.ChoiceField(
+                    label=question.text,
+                    choices=((o['id'], o['text']) for o in question.options),
+                    help_text=question.instructions
+                )
+            elif qtype == "BinaryQuestion":
+                self._models[question_key] = {
+                    'question': question,
+                    'response_model': BinaryResponse,
+                    'response_field': 'selected_option',
+                }
+                self.fields[question_key] = forms.ChoiceField(
+                    label=question.text,
+                    choices=((o['id'], o['text']) for o in question.options),
+                    help_text=question.instructions
+                )
+            elif qtype == "MultipleChoiceQuestion":
+                self._models[question_key] = {
+                    'question': question,
+                    'response_model': MultipleChoiceResponse,
+                    'response_field': 'selected_option',
+                }
+                self.fields[question_key] = forms.ChoiceField(
+                    label=question.text,
+                    choices=((o['id'], o['text']) for o in question.options),
+                    help_text=question.instructions
+                )
+            elif qtype == "OpenEndedQuestion":
+                self._models[question_key] = {
+                    'question': question,
+                    'response_model': OpenEndedResponse,
+                    'response_field': 'response',
+                }
+                self.fields[question_key] = forms.CharField(
+                    label=question.text,
+                    help_text=question.instructions
+                )
+
+    def save_responses(self, user):
+        # Once validation has passes, create responses for the form's
+        # questions, then generate a SurveyResponse object?
+        #
+        # cleaned_data will look like this:
+        #
+        # {'question_1': 'False',
+        #  'question_2': 'asdf',
+        #  'question_28': '1',
+        #  'question_8': '47'}
+        for question_id, value in self.cleaned_data.items():
+            # Create a survey response
+            question = self._models[question_id]['question']
+            response_field = self._models[question_id]['response_field']
+            Model = self._models[question_id]['response_model']
+            kwargs = {
+                'user': user,
+                'question': question,
+                response_field: self.cleaned_data[question_id],
+            }
+            Model.objects.create(**kwargs)
+
+        # create SurveyResult object(s)
+        return SurveyResult.objects.create_objects(user, self.instrument)
