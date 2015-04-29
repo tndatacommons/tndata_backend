@@ -140,6 +140,21 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def list(self, request, *args, **kwargs):
+        resp = super(UserProfileViewSet, self).list(request, *args, **kwargs)
+        # Hack the data to include FQDNs for the response_url item.
+        for profile in resp.data['results']:
+            for q in profile['bio']:
+                q['response_url'] = self.request.build_absolute_uri(q['response_url'])
+        return resp
+
+    def retrieve(self, request, *args, **kwargs):
+        resp = super(UserProfileViewSet, self).retrieve(request, *args, **kwargs)
+        profile = resp.data
+        for q in profile['bio']:
+            q['response_url'] = self.request.build_absolute_uri(q['response_url'])
+        return resp
+
 
 class ObtainAuthorization(ObtainAuthToken):
     """Custom Authorization view that, in addition to the user's auth token (default

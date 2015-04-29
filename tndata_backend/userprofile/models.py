@@ -102,7 +102,6 @@ class UserProfile(models.Model):
                     pass
                 results.append(data)
 
-
         except Instrument.DoesNotExist:
             pass
         return results
