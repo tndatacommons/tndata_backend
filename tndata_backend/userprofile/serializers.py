@@ -77,11 +77,11 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    surveys = serializers.ReadOnlyField(required=False)
+    bio = serializers.ReadOnlyField(required=False)
 
     class Meta:
         model = models.UserProfile
-        fields = ('id', 'user', 'surveys')
+        fields = ('id', 'user', 'bio')
 
 
 class AuthTokenSerializer(serializers.Serializer):

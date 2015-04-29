@@ -2,9 +2,11 @@ from collections import defaultdict
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
+from django.db.models import ObjectDoesNotExist
 from django.dispatch import receiver
 
 from rest_framework.authtoken.models import Token
+from survey.models import Instrument
 
 
 class UserProfile(models.Model):
@@ -48,9 +50,71 @@ class UserProfile(models.Model):
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
 
+    def _response(self, question):
+        m = {
+            'binaryquestion': 'binaryresponse_set',
+            'likertquestion': 'likertresponse_set',
+            'multiplechoicequestion': 'multiplechoiceresponse_set',
+            'openendedquestion': 'openendedresponse_set'
+        }
+        return getattr(question, m[question.question_type]).latest()
+
+    @property
+    def bio(self):
+        # UGH. We shoe-horned this shit into a survey and now there's no
+        # clean way to get what *should* be a 1-to-1 relationship between
+        # a user an some responses. I'm just hard-coding this for now because
+        # i hate future me.
+        results = []
+        try:
+            inst = Instrument.objects.get(pk=4)
+            for qtype, question in inst.questions:
+                data = {
+                    'question_id': question.id,
+                    'question_type': question.question_type,
+                    'question_text': "{0}".format(question),
+                    'instrument': {
+                        "id": inst.id,
+                        "title": "{0}".format(inst),
+                    },
+                    'response_url': question.get_api_response_url(),
+                    'response_id': None,
+                }
+                option_types = [
+                    'binaryquestion', 'likertquestion', 'multiplechoicequestion'
+                ]
+                if question.question_type in option_types:
+                    data['selected_option'] = None
+                    data['selected_option_text'] = ''
+                elif question.question_type == 'openendedquestion':
+                    data['response'] = None
+
+                # Fill in any of the user's responses.
+                try:
+                    r = self._response(question)
+                    data['response_id'] = r.id
+                    if question.question_type in option_types:
+                        data['selected_option'] = r.selected_option.id
+                        data['selected_option_text'] = r.selected_option_text
+                    elif question.question_type == 'openendedquestion':
+                        data['response'] = r.response
+                except ObjectDoesNotExist:
+                    pass
+                results.append(data)
+
+
+        except Instrument.DoesNotExist:
+            pass
+        return results
+
     @property
     def surveys(self):
-        """Return a simple representation of the survey questions that the
+        """
+        # TODO: Figure out what to do with this and if/when we need it (probably
+        for users to go back to their survey questions or directly complete
+        surveys; it'll need to be re-worked)
+
+        Return a simple representation of the survey questions that the
         user has answered.
 
         """

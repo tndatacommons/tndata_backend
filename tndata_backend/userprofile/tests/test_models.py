@@ -23,6 +23,9 @@ class TestUserProfile(TestCase):
         actual = "{}".format(self.user)
         self.assertEqual(expected, actual)
 
+    def test_bio(self):
+        self.assertEqual(self.user.userprofile.bio(), [])
+
     def test_surveys(self):
         # We didn't create any surveys.
         profile = self.user.userprofile

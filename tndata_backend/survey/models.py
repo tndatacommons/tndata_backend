@@ -39,6 +39,8 @@ class Instrument(models.Model):
         """Returns all questions associated with this Instrument. This is a
         list of tuples of the form [(Question Type, Question object) ... ]
 
+        NOTE: This property destroys any sort of ordering
+
         """
         results = [
             (q.__class__.__name__, q) for q in self.binaryquestion_set.all()

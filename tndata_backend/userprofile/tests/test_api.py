@@ -212,7 +212,7 @@ class TestUserProfilesAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.user.userprofile.id)
         self.assertEqual(response.data['user'], self.user.id)
-        self.assertEqual(response.data['surveys'], {})
+        self.assertEqual(response.data['bio'], [])
 
     def test_post_userprofile_detail_not_allowed(self):
         """Ensure we cannot post to userprofile-detail"""

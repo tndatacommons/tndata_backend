@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import mixins, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -8,9 +8,6 @@ from rest_framework.response import Response
 from . import models
 from . import permissions
 from . import serializers
-
-# TODO: Exclude the POST forms for UserViewSet and UserProfileViewSet
-# from the browseable api (Ensure appropriate permissions for (un)authed users)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -126,33 +123,11 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
     part of their [user data](/api/users/). This should include a single
     result set that contains the authenticated user.
 
-    ## Surveys
+    ## Bio Information
 
-    The `/api/userprofiles/` endpoint includes information about the survey
-    questions that a user has answered. The `survey` attribute is an object
-    whose key is the ID of a [survey instrument](/api/survey/instruments/),
-    and whose value is a list of _responses_ to that instrument's questions.
-
-    The type of data in a response will depend on the question type, but all
-    responses will have the following:
-
-    * id: The database id for the user's response.
-    * question_id: The database id for the question.
-    * question_type: The type of question
-    * question_text: The text of the question (this is what the user sees)
-    * instrument: An object representing the instrument's id and text
-
-    Likert, Multiple Choice, and Binary responses will have the following:
-
-    * selected_option: An object representing the id and text of the k
-
-    OpenEnded Questions will have the following:
-
-    * response: The Text of the user's response
-
-    Multiple Choice Responses will also have the following:
-
-    * selected_option_text: The text of the user's response
+    The `bio` attribute contains the questions and the authenticated user's
+    answers (if any) to the
+    [Bio survey](http://app.tndata.org/api/survey/instruments/4/).
 
     ----
 
