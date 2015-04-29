@@ -24,7 +24,6 @@ from . models import (
 )
 
 from . permissions import SurveyAdminsMixin
-from clog.clog import clog
 
 
 class IndexView(SurveyAdminsMixin, TemplateView):
