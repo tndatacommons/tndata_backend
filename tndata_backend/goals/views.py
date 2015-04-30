@@ -16,7 +16,7 @@ from . forms import (
     GoalForm,
     TriggerForm,
 )
-from . mixins import ContentAuthorMixin, ContentEditorMixin
+from . mixins import ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin
 from . models import (
     Action, Behavior, Category, Goal, Trigger
 )
@@ -125,7 +125,7 @@ def upload_csv(request):
     return render(request, 'goals/upload_csv.html', context)
 
 
-class IndexView(ContentAuthorMixin, TemplateView):
+class IndexView(ContentViewerMixin, TemplateView):
     template_name = "goals/index.html"
 
     def get(self, request, *args, **kwargs):
@@ -147,13 +147,13 @@ class IndexView(ContentAuthorMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class CategoryListView(ContentAuthorMixin, ListView):
+class CategoryListView(ContentViewerMixin, ListView):
     model = Category
     context_object_name = 'categories'
     template_name = "goals/category_list.html"
 
 
-class CategoryDetailView(ContentAuthorMixin, DetailView):
+class CategoryDetailView(ContentViewerMixin, DetailView):
     queryset = Category.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -201,12 +201,12 @@ class CategoryDeleteView(ContentEditorMixin, DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class GoalListView(ContentAuthorMixin, ListView):
+class GoalListView(ContentViewerMixin, ListView):
     model = Goal
     context_object_name = 'goals'
 
 
-class GoalDetailView(ContentAuthorMixin, DetailView):
+class GoalDetailView(ContentViewerMixin, DetailView):
     queryset = Goal.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -246,12 +246,12 @@ class GoalDeleteView(ContentEditorMixin, DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class TriggerListView(ContentAuthorMixin, ListView):
+class TriggerListView(ContentViewerMixin, ListView):
     model = Trigger
     context_object_name = 'triggers'
 
 
-class TriggerDetailView(ContentAuthorMixin, DetailView):
+class TriggerDetailView(ContentViewerMixin, DetailView):
     queryset = Trigger.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -291,12 +291,12 @@ class TriggerDeleteView(ContentEditorMixin, DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class BehaviorListView(ContentAuthorMixin, ListView):
+class BehaviorListView(ContentViewerMixin, ListView):
     model = Behavior
     context_object_name = 'behaviors'
 
 
-class BehaviorDetailView(ContentAuthorMixin, DetailView):
+class BehaviorDetailView(ContentViewerMixin, DetailView):
     queryset = Behavior.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -336,12 +336,12 @@ class BehaviorDeleteView(ContentEditorMixin, DeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class ActionListView(ContentAuthorMixin, ListView):
+class ActionListView(ContentViewerMixin, ListView):
     model = Action
     context_object_name = 'actions'
 
 
-class ActionDetailView(ContentAuthorMixin, DetailView):
+class ActionDetailView(ContentViewerMixin, DetailView):
     queryset = Action.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"

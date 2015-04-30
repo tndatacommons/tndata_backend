@@ -11,7 +11,12 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.response import Response
 
-from . permissions import superuser_required, is_content_author, is_content_editor
+from . permissions import (
+    can_view,
+    is_content_author,
+    is_content_editor,
+    superuser_required,
+)
 
 
 # Mixins for Views
@@ -48,6 +53,18 @@ class SuperuserRequiredMixin:
         view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
         dec = user_passes_test(superuser_required, login_url=settings.LOGIN_URL)
         return dec(view)
+
+
+class ContentViewerMixin:
+    """A Mixin that requires the user have 'view_[object]' permissions for views
+    with `model` or `queryset` attributes (e.g. ListView/DetailView) or that
+    they be authenticated, otherwise.
+
+    """
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(ContentViewerMixin, cls).as_view(**initkwargs)
+        return can_view(view, settings.LOGIN_URL)
 
 
 class ContentAuthorMixin:

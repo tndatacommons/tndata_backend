@@ -10,6 +10,7 @@ custom groups for people who create and review content:
 """
 # NOTE: Dont' import any models directly; the functions here are called from
 # a migration, so let's import from an AppConfig if at all possible.
+from django.contrib.auth.decorators import user_passes_test
 from utils.permissions import _get_group_and_permission
 
 # Group Names
@@ -90,6 +91,28 @@ def _is_superuser_or_in_group(user, group_name):
     return user.is_authenticated() and (
         user.is_superuser or user.groups.filter(name=group_name).exists()
     )
+
+
+def can_view(view, login_url):
+    """This function applies a decorator to a view to determine if a user
+    should be able to view some content. Here's the criteria:
+
+    1. If the view has a model attribute (then it's a generic model view),
+       see if the user has a "view_[model]" permission.
+    2. If the view is not associated with a model, just ensure they
+       are authenticated.
+
+    """
+    if hasattr(view, 'model'):
+        perm = "goals.{0}".format(view.model.__name__.lower())
+        check = lambda u: u.is_authenticated() and u.has_perm(perm)
+    elif hasattr(view, 'queryset'):
+        perm = "goals.{0}".format(view.queryset.model.__name__.lower())
+        check = lambda u: u.is_authenticated() and u.has_perm(perm)
+    else:
+        check = lambda u: u.is_authenticated()
+    dec = user_passes_test(check, login_url=login_url)
+    return dec(view)
 
 
 def is_content_author(user):

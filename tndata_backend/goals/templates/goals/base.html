@@ -89,6 +89,10 @@ a.ui-datepicker-next { float:right; }
         <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
       {% endif %}
       <li class="divider"></li>
+
+      {# Check all of the 'add' permissions before including the drop-down #}
+      {% if perms.goals.add_category or goals.add_goal or perms.goals.add_trigger or perms.goals.add_behavior or perms.goals.add_action %}
+
       <li class="has-dropdown">
         <a href="#"><i class="fa fa-plus-circle"></i> New</a>
         <ul class="dropdown">
@@ -110,6 +114,7 @@ a.ui-datepicker-next { float:right; }
         </ul>
       </li>
       <li class="divider"></li>
+      {% endif %} {# end check for all perms #}
     </ul>
   </section>
   </nav>
