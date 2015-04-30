@@ -1,6 +1,12 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
 
+
+{% block head %}
+  {{ block.super }}
+  <style type="text/css">img.icon {width:50px;height:50px;}</style>
+{% endblock %}
+
 {% block content %}
 
   <ul class="breadcrumbs">
@@ -34,7 +40,7 @@
           <td>
             {% with icon=action.get_absolute_icon %}
               {% if icon %}
-                <img src="{{ icon }}" alt="{{ action }} icon" />
+                <img src="{{ icon }}" alt="{{ action }} icon" class="icon" />
               {% else %}
                 -
               {% endif %}
