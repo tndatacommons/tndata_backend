@@ -30,13 +30,16 @@
       <dt>Title</dt><dd>{{ goal.title }}</dd>
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
       <dt>Outcome</dt><dd>{{ goal.outcome|markdown }}</dt>
-      <dt>Notes</dt><dd>{{ goal.notes|markdown }}</dt>
       </dl>
       {% modified goal %}
       {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}
 
     </div>
     <div class="large-6 small-12 columns">
+      {% if goal.notes %}
+        <h2 class="subheader">Notes</h2>
+        <div class="panel">{{ goal.notes|markdown }}</div>
+      {% endif %}
       <h2 class="subheader">Categories</h2>
       <p><em>{{goal}}</em> is listed in the following Categories:</p>
       <ul>

@@ -20,7 +20,6 @@
         <dt>Title</dt><dd>{{ action.title }}</dd>
         <dt>Source Link</dt><dd>{{ action.source_link}}</dd>
         <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
-        <dt>Notes</dt><dd>{{ action.description|markdown }}</dd>
 
         <dt>Narrative Block</dt><dd>{{ action.narrative_block|markdown }}</dd>
         <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
@@ -70,6 +69,11 @@
       {% if perms.goals.publish_action %}{% publish_deny_form action %}{% endif %}
     </div>
     <div class="large-6 small-12 columns">
+      {% if action.notes %}
+        <h2 class="subheader">Notes</h2>
+        <div class="panel">{{ action.notes|markdown }}</div>
+      {% endif %}
+
       <h2 class="subheader">Behavior</h2>
       <p>This Action is part of the following Behavior:</p>
       {% with behavior=action.behavior%}

@@ -19,7 +19,6 @@
         <dt>Title</dt><dd>{{ behavior.title }}</dd>
         <dt>Source Link</dt><dd>{{ behavior.source_link}}</dd>
         <dt>Source Notes</dt><dd>{{ behavior.source_notes|markdown}}</dd>
-        <dt>Notes</dt><dd>{{ behavior.notes|markdown }}</dd>
         <dt>Narrative Block</dt><dd>{{ behavior.narrative_block|markdown }}</dd>
         <dt>Description</dt><dd>{{ behavior.description|markdown }}</dd>
         <dt>Outcome</dt><dd>{{ behavior.outcome|markdown }}</dd>
@@ -56,6 +55,10 @@
 
     </div>
     <div class="large-6 small-12 columns">
+      {% if behavior.notes %}
+        <h2 class="subheader">Notes</h2>
+        <div class="panel">{{ behavior.notes|markdown }}</div>
+      {% endif %}
       <h2 class="subheader">Categories</h2>
       <ul>
       {% for cat in behavior.categories.all %}<li>{{ cat }}</li>{% endfor %}

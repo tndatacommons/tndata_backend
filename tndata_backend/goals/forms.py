@@ -18,9 +18,8 @@ class ActionForm(forms.ModelForm):
         model = Action
         fields = [
             'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
-            'notes', 'narrative_block', 'description', 'outcome',
-            'external_resource', 'default_trigger', 'notification_text',
-            'icon', 'image',
+            'narrative_block', 'description', 'outcome', 'external_resource',
+            'default_trigger', 'notification_text', 'icon', 'image', 'notes',
         ]
 
 
@@ -33,9 +32,9 @@ class BehaviorForm(forms.ModelForm):
     class Meta:
         model = Behavior
         fields = [
-            'title', 'source_link', 'source_notes', 'notes', 'narrative_block',
+            'title', 'source_link', 'source_notes', 'narrative_block',
             'description', 'outcome', 'external_resource', 'informal_list',
-            'categories', 'goals', 'icon', 'image',
+            'categories', 'goals', 'icon', 'image', 'notes',
         ]
 
 
@@ -46,7 +45,7 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = [
-            'order', 'title', 'description', 'icon', 'image', 'notes', 'color',
+            'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
         ]
         widgets = {
             "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
@@ -60,7 +59,7 @@ class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = [
-            'categories', 'title', 'description', 'outcome', 'notes', 'icon',
+            'categories', 'title', 'description', 'outcome', 'icon', 'notes',
         ]
 
 

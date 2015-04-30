@@ -40,7 +40,6 @@
         </dd>
         <dt>Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
-        <dt>Notes</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Color</dt><dd>
           <span style="display:inline-block;width:18px;height:18px;background-color:{{category.color}};">
           </span>
@@ -52,6 +51,10 @@
 
     </div>
     <div class="large-6 small-12 columns">
+      {% if category.notes %}
+        <h2 class="subheader">Notes</h2>
+        <div class="panel">{{ category.notes|markdown }}</div>
+      {% endif %}
       <h2 class="subheader">Content</h2>
       <p><strong>{{ category }}</strong>
         contains the following goals, sequences, and behaviors:</p>
