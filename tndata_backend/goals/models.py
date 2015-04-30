@@ -168,6 +168,12 @@ class Goal(ModifiedMixin, URLMixin, models.Model):
         blank=True,
         help_text="Desired outcome of this Goal."
     )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Misc notes about this item. This is for your use and will "
+                  "not be displayed in the app."
+    )
     icon = models.ImageField(
         upload_to="goals/goal", null=True, blank=True,
         help_text="Upload an image to be displayed next to the Goal."

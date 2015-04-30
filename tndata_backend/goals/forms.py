@@ -60,7 +60,7 @@ class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = [
-            'categories', 'title', 'description', 'outcome', 'icon',
+            'categories', 'title', 'description', 'outcome', 'notes', 'icon',
         ]
 
 

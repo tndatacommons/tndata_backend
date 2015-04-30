@@ -30,6 +30,7 @@
       <dt>Title</dt><dd>{{ goal.title }}</dd>
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
       <dt>Outcome</dt><dd>{{ goal.outcome|markdown }}</dt>
+      <dt>Notes</dt><dd>{{ goal.notes|markdown }}</dt>
       </dl>
       {% modified goal %}
       {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}
