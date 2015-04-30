@@ -1,5 +1,5 @@
 import random
-
+from django.db.models import ObjectDoesNotExist
 from rest_framework import exceptions, mixins, viewsets
 from rest_framework.authentication import (
     SessionAuthentication,
@@ -43,7 +43,9 @@ class InstrumentViewSet(viewsets.ReadOnlyModelViewSet):
         return resp
 
 
-class RandomQuestionViewSet(viewsets.ViewSet):
+class RandomQuestionViewSet(mixins.ListModelMixin,
+                            mixins.RetrieveModelMixin,
+                            viewsets.GenericViewSet):
     """This endpoint retuns a single, random Question. The returned data
     may represent one of three different types of questions: Binary (Yes/No),
     Likert, Multiple Choice, or Open-Ended.
@@ -76,9 +78,20 @@ class RandomQuestionViewSet(viewsets.ViewSet):
     querystring paramter. Provide an instrument ID and this endpoint will return
     questions within that instrument: `/api/survey/?instrument={instrument_id}`
 
+    ## OK, not so random, after all
+
+    If you provide a concatenation of a question's `question_type` and its
+    `id`, you will get a representation of that question. For example, given a
+    `LikertQuestion` whose ID is 1, you could retrive it with an identifier of
+    `likertquestion-1`:
+    [/api/survey/likertquestion-1/](/api/survey/likertquestion-1)
+
     ----
 
     """
+    # individual questions can be returned via an concatenation of the question
+    # type and the question id, e.g. "openendedquestion-1"
+    lookup_field = "type_and_id"
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     permission_classes = [permissions.IsOwner]
 
@@ -138,6 +151,23 @@ class RandomQuestionViewSet(viewsets.ViewSet):
         instrument = request.GET.get("instrument", None)
         item = self._get_random_question(request.user, instrument)
         return Response(item)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve a single question, given: "question_type-id", e.g.:
+
+            /api/survey/openendedquestion-1/
+
+        """
+        if not request.user.is_authenticated():
+            raise exceptions.NotAuthenticated
+
+        try:
+            qt, pk = kwargs.get(self.lookup_field, '-').split("-")
+            item = self.question_models[qt]['model'].objects.get(pk=pk)
+            item = self.question_models[qt]['serializer']().to_representation(item)
+            return Response(item)
+        except ObjectDoesNotExist:
+            raise exceptions.NotFound
 
 
 class LikertQuestionViewSet(viewsets.ReadOnlyModelViewSet):

@@ -161,6 +161,14 @@ class BinaryQuestion(BaseQuestion):
     def get_delete_url(self):
         return reverse('survey:binary-delete', args=[self.id])
 
+    def get_survey_question_url(self):
+        pk = "{0}-{1}".format(self.question_type, self.id)
+        return reverse("surveyrandom-detail", args=[pk])
+
+    def get_survey_question_url(self):
+        pk = "{0}-{1}".format(self.question_type, self.id)
+        return reverse("surveyrandom-detail", args=[pk])
+
     @staticmethod
     def get_api_response_url():
         return reverse("binaryresponse-list")
@@ -205,6 +213,10 @@ class MultipleChoiceQuestion(BaseQuestion):
 
     def get_delete_url(self):
         return reverse('survey:multiplechoice-delete', args=[self.id])
+
+    def get_survey_question_url(self):
+        pk = "{0}-{1}".format(self.question_type, self.id)
+        return reverse("surveyrandom-detail", args=[pk])
 
     @staticmethod
     def get_api_response_url():
@@ -273,6 +285,10 @@ class OpenEndedQuestion(BaseQuestion):
     @staticmethod
     def get_api_response_url():
         return reverse("openendedresponse-list")
+
+    def get_survey_question_url(self):
+        pk = "{0}-{1}".format(self.question_type, self.id)
+        return reverse("surveyrandom-detail", args=[pk])
 
     def get_absolute_url(self):
         return reverse('survey:openended-detail', args=[self.id])
@@ -367,6 +383,10 @@ class LikertQuestion(BaseQuestion):
 
     def get_delete_url(self):
         return reverse('survey:likert-delete', args=[self.id])
+
+    def get_survey_question_url(self):
+        pk = "{0}-{1}".format(self.question_type, self.id)
+        return reverse("surveyrandom-detail", args=[pk])
 
     @staticmethod
     def get_api_response_url():

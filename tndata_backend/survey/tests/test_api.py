@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse, NoReverseMatch
+from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -74,10 +74,12 @@ class TestRandomQuestionAPI(APITestCase):
         self.q1 = LikertQuestion.objects.create(text='Likert')
         self.q2 = OpenEndedQuestion.objects.create(text='OpenEnded')
         self.q3 = MultipleChoiceQuestion.objects.create(text='MultipleChoice')
+        self.q4 = BinaryQuestion.objects.create(text='Binary')
 
     def tearDown(self):
         User = get_user_model()
         User.objects.filter(id=self.user.id).delete()
+        BinaryQuestion.objects.filter(id=self.q4.id).delete()
         LikertQuestion.objects.filter(id=self.q1.id).delete()
         OpenEndedQuestion.objects.filter(id=self.q2.id).delete()
         MultipleChoiceQuestion.objects.filter(id=self.q3.id).delete()
@@ -97,7 +99,10 @@ class TestRandomQuestionAPI(APITestCase):
 
         # We should get a single object, and it should be one of our questions.
         self.assertIn("id", response.data)
-        self.assertIn(response.data["id"], [self.q1.id, self.q2.id, self.q3])
+        self.assertIn(
+            response.data["id"],
+            [self.q1.id, self.q2.id, self.q3, self.q4]
+        )
 
     def test_get_list_authorized_filtered_by_instrument(self):
         """Ensure that the random question enpoint can filter by instrument."""
@@ -151,10 +156,24 @@ class TestRandomQuestionAPI(APITestCase):
             status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def test_no_detail(self):
-        """There should be no detail endpoint."""
-        with self.assertRaises(NoReverseMatch):
-            reverse('surveyrandom-detail', args=[1])
+    def test_retrieve(self):
+        """Ensure we can retrieve a single question given a combination of its
+        type and id."""
+        pk = "{0}-{1}".format(self.q1.question_type, self.q1.id)
+        url = reverse('surveyrandom-detail', args=[pk])
+        self.assertEqual(url, self.q1.get_survey_question_url())
+
+        pk = "{0}-{1}".format(self.q2.question_type, self.q2.id)
+        url = reverse('surveyrandom-detail', args=[pk])
+        self.assertEqual(url, self.q2.get_survey_question_url())
+
+        pk = "{0}-{1}".format(self.q3.question_type, self.q3.id)
+        url = reverse('surveyrandom-detail', args=[pk])
+        self.assertEqual(url, self.q3.get_survey_question_url())
+
+        pk = "{0}-{1}".format(self.q4.question_type, self.q4.id)
+        url = reverse('surveyrandom-detail', args=[pk])
+        self.assertEqual(url, self.q4.get_survey_question_url())
 
 
 class TestBinaryQuestionAPI(APITestCase):
