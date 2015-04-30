@@ -480,6 +480,7 @@ class Action(URLMixin, BaseBehavior):
     urls_model_name = "action"
     urls_icon_field = "icon"
     urls_image_field = "image"
+    default_icon = "img/grow-gray-256x256.png"
 
     # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
