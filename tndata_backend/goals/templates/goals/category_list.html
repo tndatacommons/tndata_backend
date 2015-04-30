@@ -37,7 +37,7 @@
           </td>
           <td>{{ category.state|label }}</td>
           <td>{{ category.goals|join:", " }}</td>
-          <td>{{ category.behavior_set.all|join:", " }}</td>
+          <td>{{ category.behaviors|join:", " }}</td>
           <td>
             {% with icon=category.get_absolute_icon %}
               {% if icon %}

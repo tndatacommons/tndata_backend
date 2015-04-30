@@ -69,6 +69,9 @@ class TestCategory(TestCase):
     def test_goals(self):
         self.assertIsInstance(self.category.goals, QuerySet)
 
+    def test_behaviors(self):
+        self.assertIsInstance(self.category.behaviors, QuerySet)
+
     def test__format_color(self):
         self.assertEqual(self.category._format_color("ffaabb"), "#ffaabb")
         self.assertEqual(self.category._format_color("#ffaabb"), "#ffaabb")

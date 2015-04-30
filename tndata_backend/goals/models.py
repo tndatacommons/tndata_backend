@@ -100,6 +100,13 @@ class Category(ModifiedMixin, URLMixin, models.Model):
         """This property returns a QuerySet of the related Goal objects."""
         return self.goal_set.all().distinct()
 
+    @property
+    def behaviors(self):
+        """Returns a QuerySet of all Behaviors nested beneath this category's
+        set of goals."""
+        ids = self.goals.values_list('behavior', flat=True)
+        return Behavior.objects.filter(pk__in=ids)
+
     def _format_color(self, color):
         """Ensure that colors include a # symbol at the beginning."""
         return color if color.startswith("#") else "#{0}".format(color)
