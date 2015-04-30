@@ -44,22 +44,26 @@
           {% endwith %}
         <dt>Notification Text</dt><dd>{{ action.notification_text }}</dd>
         <dt>Icon</dt><dd>
-          {% if action.icon %}
-            <a href="{{ action.icon.url }}" target="_blank">
-            <img src="{{ action.icon.url }}" alt="{{ action }} icon" />
+          {% with icon=action.get_absolute_icon %}
+          {% if icon %}
+            <a href="{{ icon }}" target="_blank">
+            <img src="{{ icon }}" alt="{{ action }} icon" />
             </a>
           {% else %}
             <em>No icon available</em>
           {% endif %}
+          {% endwith %}
         </dd>
         <dt>Image</dt><dd>
-          {% if action.image %}
-            <a href="{{ action.image.url }}" target="_blank">
-            <img src="{{ action.image.url }}" alt="{{ action }} image" />
+          {% with image=action.get_absolute_image %}
+          {% if image %}
+            <a href="{{ image }}" target="_blank">
+            <img src="{{ image }}" alt="{{ action }} image" />
             </a>
           {% else %}
             <em>No image available</em>
           {% endif %}
+          {% endwith %}
         </dd>
       </dl>
       {% modified action %}

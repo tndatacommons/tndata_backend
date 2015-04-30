@@ -18,6 +18,7 @@
         <th>Title</th>
         <th>State</th>
         <th>Behavior</th>
+        <th>Icon</th>
       </tr>
       </thead>
       <tbody>
@@ -30,6 +31,15 @@
           </td>
           <td>{{ action.state|label }}</td>
           <td>{{ action.behavior }}</td>
+          <td>
+            {% with icon=action.get_absolute_icon %}
+              {% if icon %}
+                <img src="{{ icon }}" alt="{{ action }} icon" />
+              {% else %}
+                -
+              {% endif %}
+            {% endwith %}
+          </td>
         </tr>
       {% endfor %}
       </tbody>

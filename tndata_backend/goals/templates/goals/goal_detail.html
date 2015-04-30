@@ -17,13 +17,15 @@
       <dl>
       <dt>State</dt><dd>{{ goal.state|label }}</dd>
       <dt>Icon</dt><dd>
-        {% if goal.icon %}
-          <a href="{{ goal.icon.url }}" target="_blank">
-          <img src="{{ goal.icon.url }}" alt="{{ goal }} icon" />
+        {% with goal=goal.get_absolute_icon %}
+        {% if icon %}
+          <a href="{{ icon }}" target="_blank">
+          <img src="{{ icon }}" alt="{{ goal }} icon" />
           </a>
         {% else %}
           <em>No icon available</em>
         {% endif %}
+        {% endwith %}
       </dd>
       <dt>Title</dt><dd>{{ goal.title }}</dd>
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>

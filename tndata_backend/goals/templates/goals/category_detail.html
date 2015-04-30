@@ -17,22 +17,26 @@
       <dl>
         <dt>State</dt><dd>{{ category.state|label }}</dd>
         <dt>Icon</dt><dd>
-          {% if category.icon %}
-            <a href="{{ category.icon.url }}" target="_blank">
-            <img src="{{ category.icon.url }}" alt="{{ category }} icon" />
+          {% with icon=category.get_absolute_icon %}
+          {% if icon %}
+            <a href="{{ icon }}" target="_blank">
+            <img src="{{ icon }}" alt="{{ category }} icon" />
             </a>
           {% else %}
             <em>No icon available</em>
           {% endif %}
+          {% endwith %}
         </dd>
         <dt>Hero Image</dt><dd>
-          {% if category.image %}
-            <a href="{{ category.image.url }}" target="_blank">
-            <img src="{{ category.image.url }}" alt="{{ category }} image" />
+          {% with image=category.get_absolute_image %}
+          {% if image %}
+            <a href="{{ image }}" target="_blank">
+            <img src="{{ image }}" alt="{{ category }} image" />
             </a>
           {% else %}
             <em>No image available</em>
           {% endif %}
+          {% endwith %}
         </dd>
         <dt>Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>

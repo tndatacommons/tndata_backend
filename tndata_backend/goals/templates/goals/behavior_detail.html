@@ -29,22 +29,26 @@
         <dt>Default Trigger</dt><dd>{{ behavior.default_trigger }}</dd>
         {#<dt>Notification Text</dt><dd>{{ behavior.notification_text }}</dd>#}
         <dt>Icon</dt><dd>
-          {% if behavior.icon %}
-            <a href="{{ behavior.icon.url }}" target="_blank">
-            <img src="{{ behavior.icon.url }}" alt="{{ behavior }} icon" />
+          {% with icon=behavior.get_absolute_icon %}
+          {% if icon %}
+            <a href="{{ icon }}" target="_blank">
+            <img src="{{ icon }}" alt="{{ behavior }} icon" />
             </a>
           {% else %}
             <em>No icon available</em>
           {% endif %}
+          {% endwith %}
         </dd>
         <dt>Image</dt><dd>
-          {% if behavior.image %}
-            <a href="{{ behavior.image.url }}" target="_blank">
-            <img src="{{ behavior.image.url }}" alt="{{ behavior }} image" />
+          {% with image=behavior.get_absolute_image %}
+          {% if image %}
+            <a href="{{ image }}" target="_blank">
+            <img src="{{ image }}" alt="{{ behavior }} image" />
             </a>
           {% else %}
             <em>No image available</em>
           {% endif %}
+          {% endwith %}
         </dd>
       </dl>
       {% modified behavior %}
