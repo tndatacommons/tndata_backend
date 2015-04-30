@@ -168,10 +168,10 @@ class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
 
         if category is not None and category.isnumeric():
             # Filter by Category.id
-            self.queryset = self.queryset.filter(categories__id=category)
+            self.queryset = self.queryset.filter(goals__categories__id=category)
         elif category is not None:
             # Filter by Category.title_slug
-            self.queryset = self.queryset.filter(categories__title_slug=category)
+            self.queryset = self.queryset.filter(goals__categories__title_slug=category)
 
         if goal is not None and goal.isnumeric():
             # Filter by Goal.id
@@ -238,10 +238,14 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
 
         if category is not None and category.isnumeric():
             # Filter by Category.id
-            self.queryset = self.queryset.filter(behavior__categories__id=category)
+            self.queryset = self.queryset.filter(
+                behavior__goals__categories__id=category
+            )
         elif category is not None:
             # Filter by Category.title_slug
-            self.queryset = self.queryset.filter(behavior__categories__title_slug=category)
+            self.queryset = self.queryset.filter(
+                behavior__goals__categories__title_slug=category
+            )
 
         if goal is not None and goal.isnumeric():
             # Filter by Goal.id

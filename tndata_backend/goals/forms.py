@@ -25,16 +25,17 @@ class ActionForm(forms.ModelForm):
 
 class BehaviorForm(forms.ModelForm):
     """A Form for creating/updating behaviors. This form orders related
-    categories and goals alphabetically."""
-    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by("title"))
-    goals = forms.ModelMultipleChoiceField(queryset=Goal.objects.all().order_by("title"))
+    goals alphabetically."""
+    goals = forms.ModelMultipleChoiceField(
+        queryset=Goal.objects.all().order_by("title")
+    )
 
     class Meta:
         model = Behavior
         fields = [
             'title', 'source_link', 'source_notes', 'narrative_block',
             'description', 'outcome', 'external_resource', 'informal_list',
-            'categories', 'goals', 'icon', 'image', 'notes',
+            'goals', 'icon', 'image', 'notes',
         ]
 
 

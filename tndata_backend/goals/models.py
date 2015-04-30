@@ -443,11 +443,6 @@ class Behavior(URLMixin, BaseBehavior):
     urls_image_field = "image"
 
     # Data Fields
-    categories = models.ManyToManyField(
-        Category,
-        blank=True,
-        help_text="Select the Categories in which this should appear."
-    )
     goals = models.ManyToManyField(
         Goal,
         blank=True,
@@ -477,6 +472,12 @@ class Behavior(URLMixin, BaseBehavior):
             ("decline_behavior", "Can Decline Permissions"),
             ("publish_behavior", "Can Publish Permissions"),
         )
+
+    @property
+    def categories(self):
+        """Return a QuerySet of Categories for this object's selected Goals"""
+        cats = self.goals.values_list('categories', flat=True)
+        return Category.objects.filter(pk__in=cats)
 
 
 class Action(URLMixin, BaseBehavior):

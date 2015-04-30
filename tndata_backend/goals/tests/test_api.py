@@ -188,12 +188,12 @@ class TestBehaviorAPI(APITestCase):
             description="A Description",
             outcome="The outcome"
         )
+        self.goal.categories.add(self.category)
         self.behavior = Behavior.objects.create(
             title="Test Behavior",
             description="This is a test",
             informal_list="Do this",
         )
-        self.behavior.categories.add(self.category)
         self.behavior.goals.add(self.goal)
 
     def tearDown(self):
@@ -329,12 +329,13 @@ class TestActionAPI(APITestCase):
             description="A Description",
             outcome="The outcome"
         )
+        self.goal.categories.add(self.category)
+
         self.behavior = Behavior.objects.create(
             title="Test Behavior",
             description="This is a test",
             informal_list="Do this",
         )
-        self.behavior.categories.add(self.category)
         self.behavior.goals.add(self.goal)
 
         self.action = Action.objects.create(

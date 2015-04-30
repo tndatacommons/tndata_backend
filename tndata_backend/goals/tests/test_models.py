@@ -265,10 +265,10 @@ class TestBehavior(TestCase):
             description='Category Description',
         )
         self.goal = Goal.objects.create(title="Test Goal")
+        self.goal.categories.add(self.category)
         self.behavior = Behavior.objects.create(
             title='Test Behavior',
         )
-        self.behavior.categories.add(self.category)
         self.behavior.goals.add(self.goal)
 
     def tearDown(self):

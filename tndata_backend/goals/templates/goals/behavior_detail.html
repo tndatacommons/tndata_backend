@@ -61,15 +61,21 @@
       {% endif %}
       <h2 class="subheader">Categories</h2>
       <ul>
-      {% for cat in behavior.categories.all %}<li>{{ cat }}</li>{% endfor %}
+      {% for cat in behavior.categories %}
+        <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+      {% endfor %}
       </ul>
       <h2 class="subheader">Goals</h2>
       <ul>
-      {% for goal in behavior.goals.all %}<li>{{ goal }}</li>{% endfor %}
+      {% for goal in behavior.goals.all %}
+        <li><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></li>
+      {% endfor %}
       </ul>
       <h2 class="subheader">Actions</h2>
       <ul>
-      {% for ba in behavior.action_set.all %}<li>{{ ba }}</li>{% endfor %}
+      {% for action in behavior.action_set.all %}
+        <li><a href="{{ action.get_absolute_url }}">{{ action }}</a></li>
+      {% endfor %}
       </ul>
     </div>
   </div>
