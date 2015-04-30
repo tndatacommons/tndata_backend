@@ -146,6 +146,7 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
         for profile in resp.data['results']:
             for q in profile['bio']:
                 q['response_url'] = self.request.build_absolute_uri(q['response_url'])
+                q['question_url'] = self.request.build_absolute_uri(q['question_url'])
         return resp
 
     def retrieve(self, request, *args, **kwargs):
@@ -153,6 +154,7 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
         profile = resp.data
         for q in profile['bio']:
             q['response_url'] = self.request.build_absolute_uri(q['response_url'])
+            q['question_url'] = self.request.build_absolute_uri(q['question_url'])
         return resp
 
 

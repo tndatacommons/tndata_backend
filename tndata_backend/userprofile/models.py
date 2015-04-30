@@ -73,11 +73,8 @@ class UserProfile(models.Model):
                     'question_id': question.id,
                     'question_type': question.question_type,
                     'question_text': "{0}".format(question),
-                    'instrument': {
-                        "id": inst.id,
-                        "title": "{0}".format(inst),
-                    },
                     'response_url': question.get_api_response_url(),
+                    'question_url': question.get_survey_question_url(),
                     'response_id': None,
                 }
                 option_types = [
@@ -88,6 +85,7 @@ class UserProfile(models.Model):
                     data['selected_option_text'] = ''
                 elif question.question_type == 'openendedquestion':
                     data['response'] = None
+                    data['question_input_type'] = question.input_type
 
                 # Fill in any of the user's responses.
                 try:
