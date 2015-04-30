@@ -4,6 +4,7 @@ This module contains Mixins.
 """
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 
@@ -103,6 +104,12 @@ class URLMixin:
     * urls_icon_field: An icon field for the model. Defaut is None.
     * urls_image_field: An image field for the model. Defaut is None.
 
+    This mixin also supports a default icon or image as a static file. To use
+    this, just set one of the following:
+
+    * default_icon:  e.g. `default_icon = "img/grow-icon.png"`
+    * default_image
+
     And we make the assumption that we have the following URLs defined, e.g.
     for the Category model:
 
@@ -116,6 +123,10 @@ class URLMixin:
     urls_slug_field = "title_slug"  # e.g. 'name_slug', if different.
     urls_icon_field = None
     urls_image_field = None
+
+    # Support for default icons/images as a static file
+    default_icon = None
+    default_image = None
 
     def _slug_field(self):
         return getattr(self, self.urls_slug_field, None)
@@ -146,8 +157,12 @@ class URLMixin:
         icon_field = getattr(self, self.urls_icon_field, None)
         if self.urls_icon_field and icon_field:
             return icon_field.url
+        elif self.default_icon:
+            return static(self.default_icon)
 
     def get_absolute_image(self):
         image_field = getattr(self, self.urls_image_field, None)
         if self.urls_image_field and image_field:
             return image_field.url
+        elif self.default_image:
+            return static(self.default_image)
