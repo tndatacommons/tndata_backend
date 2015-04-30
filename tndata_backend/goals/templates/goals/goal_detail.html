@@ -16,8 +16,8 @@
       <h1>{{ goal }} {% object_controls goal "goals" %}</h1>
       <dl>
       <dt>State</dt><dd>{{ goal.state|label }}</dd>
-      <dt>Icon</dt><dd>
-        {% with goal=goal.get_absolute_icon %}
+      <dt>Icon</dt><dd class="gray">
+        {% with icon=goal.get_absolute_icon %}
         {% if icon %}
           <a href="{{ icon }}" target="_blank">
           <img src="{{ icon }}" alt="{{ goal }} icon" />

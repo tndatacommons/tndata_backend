@@ -2,11 +2,6 @@
 {% load goal_filters %}
 
 
-{% block head %}
-  {{ block.super }}
-  <style type="text/css">img.icon {width:50px;height:50px;}</style>
-{% endblock %}
-
 {% block content %}
 
   <ul class="breadcrumbs">
@@ -37,12 +32,10 @@
           </td>
           <td>{{ action.state|label }}</td>
           <td>{{ action.behavior }}</td>
-          <td>
+          <td class="gray">
             {% with icon=action.get_absolute_icon %}
               {% if icon %}
-                <img src="{{ icon }}" alt="{{ action }} icon" class="icon" />
-              {% else %}
-                -
+                <img src="{{ icon }}" alt="{{ action }} icon" class="list-icon" />
               {% endif %}
             {% endwith %}
           </td>

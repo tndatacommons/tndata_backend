@@ -35,12 +35,10 @@
           <td>{{ behavior.goals.all|join:", " }}</td>
           <td>{{ behavior.categories.all|join:", " }}</td>
           <td>{{ behavior.informal_list|linebreaksbr }}</td>
-          <td>
+          <td class="gray">
           {% with icon=behavior.get_absolute_icon %}
           {% if icon %}
-            <img src="{{ icon }}" alt="{{ behavior }} icon" />
-          {% else %}
-            -
+            <img src="{{ icon }}" alt="{{ behavior }} icon" class="list-icon"/>
           {% endif %}
           {% endwith %}
           </td>
@@ -52,4 +50,3 @@
   </div> {# end .row #}
   <hr/>
 {% endblock %}
-

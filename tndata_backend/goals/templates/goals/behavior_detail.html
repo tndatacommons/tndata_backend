@@ -28,7 +28,7 @@
 
         <dt>Default Trigger</dt><dd>{{ behavior.default_trigger }}</dd>
         {#<dt>Notification Text</dt><dd>{{ behavior.notification_text }}</dd>#}
-        <dt>Icon</dt><dd>
+        <dt>Icon</dt><dd class="gray">
           {% with icon=behavior.get_absolute_icon %}
           {% if icon %}
             <a href="{{ icon }}" target="_blank">
@@ -39,7 +39,7 @@
           {% endif %}
           {% endwith %}
         </dd>
-        <dt>Image</dt><dd>
+        <dt>Image</dt><dd class="gray">
           {% with image=behavior.get_absolute_image %}
           {% if image %}
             <a href="{{ image }}" target="_blank">

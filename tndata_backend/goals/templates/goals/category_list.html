@@ -20,6 +20,7 @@
         <th>State</th>
         <th>Goals</th>
         <th>Behaviors</th>
+        <th>Icon</th>
       </tr>
       </thead>
       <tbody>
@@ -37,6 +38,13 @@
           <td>{{ category.state|label }}</td>
           <td>{{ category.goals|join:", " }}</td>
           <td>{{ category.behavior_set.all|join:", " }}</td>
+          <td>
+            {% with icon=category.get_absolute_icon %}
+              {% if icon %}
+                <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
+              {% endif %}
+            {% endwith %}
+          </td>
         </tr>
       {% endfor %}
       </tbody>
