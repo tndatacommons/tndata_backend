@@ -41,11 +41,11 @@ class Category(ModifiedMixin, URLMixin, models.Model):
         max_length=128,
         db_index=True,
         unique=True,
-        help_text="A Title for the Category."
+        help_text="A Title for the Category (50 characters)"
     )
     title_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     description = models.TextField(
-        help_text="Short description of this Category."
+        help_text="A short (250 character) description for this Category"
     )
     icon = models.ImageField(
         upload_to="goals/category", null=True, blank=True,
@@ -160,7 +160,7 @@ class Goal(ModifiedMixin, URLMixin, models.Model):
     title_slug = models.SlugField(max_length=256, null=True)
     title = models.CharField(
         max_length=256, db_index=True, unique=True,
-        help_text="A public Title for this goal."
+        help_text="A Title for the Goal (50 characters)"
     )
     subtitle = models.CharField(
         max_length=256,
@@ -169,7 +169,7 @@ class Goal(ModifiedMixin, URLMixin, models.Model):
     )
     description = models.TextField(
         blank=True,
-        help_text="Short description of this Category."
+        help_text="A short (250 character) description for this Goal"
     )
     outcome = models.TextField(
         blank=True,
@@ -183,7 +183,7 @@ class Goal(ModifiedMixin, URLMixin, models.Model):
     )
     icon = models.ImageField(
         upload_to="goals/goal", null=True, blank=True,
-        help_text="Upload an image to be displayed next to the Goal."
+        help_text="Upload an icon (256x256) for this goal"
     )
     state = FSMField(default="draft")
     updated_by = models.ForeignKey(
@@ -346,7 +346,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
         max_length=256,
         db_index=True,
         unique=True,
-        help_text="A unique title for this item. This will be displayed in the app."
+        help_text="A unique title for this item (50 characters)"
     )
     title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
     source_link = models.URLField(
@@ -368,7 +368,10 @@ class BaseBehavior(ModifiedMixin, models.Model):
         blank=True,
         help_text="Persuasive narrative description: Tell the user why this is imporrtant."
     )
-    description = models.TextField(blank=True, help_text="A brief description about this item.")
+    description = models.TextField(
+        blank=True,
+        help_text="A brief (250 characters) description about this item."
+    )
     case = models.TextField(
         blank=True,
         help_text="Brief description of why this is useful."
@@ -392,7 +395,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
     notification_text = models.CharField(
         max_length=256,
         blank=True,
-        help_text="Text message delivered through notification channel"
+        help_text="Text of the notification (50 characters)"
     )
     icon = models.ImageField(
         upload_to=_behavior_icon_path,
@@ -457,7 +460,9 @@ class Behavior(URLMixin, BaseBehavior):
     )
     informal_list = models.TextField(
         blank=True,
-        help_text="A working list of actions for the behavior. Mnemonic only."
+        help_text="Use this section to create a list of specific actions for "
+                  "this behavior. This list will be reproduced as a mnemonic "
+                  "on the Action entry page"
     )
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -499,7 +504,8 @@ class Action(URLMixin, BaseBehavior):
     # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     sequence_order = models.IntegerField(
-        default=0, db_index=True,
+        default=0,
+        db_index=True,
         help_text="Order/number of action in stepwise sequence of behaviors"
     )
     updated_by = models.ForeignKey(
