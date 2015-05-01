@@ -295,14 +295,14 @@ class TestOpenEndedQuestion(TestCase):
         self.question.input_type = "datetime"
         self.question.save()
         self.assertEqual(
-            self.question.convert_to_input_type("04-20-2015"),
+            self.question.convert_to_input_type("2015-04-20"),
             datetime(2015, 4, 20)
         )
 
         self.question.input_type = "datetime"
         self.question.save()
         self.assertEqual(
-            self.question.convert_to_input_type("04-20-2015 12:32:45"),
+            self.question.convert_to_input_type("2015-04-20 12:32:45"),
             datetime(2015, 4, 20, 12, 32, 45)
         )
 
@@ -358,7 +358,8 @@ class TestOpenEndedResponse(TestCase):
 
         q = OpenEndedQuestion.objects.create(text="C", input_type="datetime")
         kwargs['question'] = q
-        kwargs['response'] = "04-20-2015"
+        kwargs['response'] = "2015-04-20"
+
         r = OpenEndedResponse.objects.create(**kwargs)
         self.assertEqual(type(r.get_response_as_input_type()), datetime)
         self.assertEqual(r.get_response_as_input_type(), datetime(2015, 4, 20))
@@ -367,7 +368,7 @@ class TestOpenEndedResponse(TestCase):
 
         q = OpenEndedQuestion.objects.create(text="D", input_type="datetime")
         kwargs['question'] = q
-        kwargs['response'] = "04-20-2015 13:40:56"
+        kwargs['response'] = "2015-04-20 13:40:56"
         r = OpenEndedResponse.objects.create(**kwargs)
         self.assertEqual(type(r.get_response_as_input_type()), datetime)
         self.assertEqual(

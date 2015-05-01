@@ -304,8 +304,8 @@ class OpenEndedQuestion(BaseQuestion):
         f = {
             "text": str,
             "numeric": int,
-            "datetime": lambda t: datetime.strptime(t, "%m-%d-%Y %H:%M:%S"),
-            "date": lambda t: datetime.strptime(t, "%m-%d-%Y"),
+            "datetime": lambda t: datetime.strptime(t, "%Y-%m-%d %H:%M:%S"),
+            "date": lambda t: datetime.strptime(t, "%Y-%m-%d"),
         }
         if self.input_type == "text":
             return f["text"](value)
