@@ -17,13 +17,9 @@
       <dl>
         <dt>State</dt><dd>{{ action.state|label }}</dd>
         <dt>Sequence Order</dt><dd>{{ action.sequence_order }}</dd>
-        <dt>Title</dt><dd>{{ action.title }}</dd>
-        <dt>Source Link</dt><dd>{{ action.source_link}}</dd>
-        <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
 
-        <dt>Narrative Block</dt><dd>{{ action.narrative_block|markdown }}</dd>
         <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
-        <dt>Outcome</dt><dd>{{ action.outcome|markdown }}</dd>
+        <dt>Narrative Block</dt><dd>{{ action.narrative_block|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
         <dt>Default Trigger</dt>
           {% with trigger=action.default_trigger %}
@@ -53,17 +49,8 @@
           {% endif %}
           {% endwith %}
         </dd>
-        <dt>Image</dt><dd class="gray">
-          {% with image=action.get_absolute_image %}
-          {% if image %}
-            <a href="{{ image }}" target="_blank">
-            <img src="{{ image }}" alt="{{ action }} image" />
-            </a>
-          {% else %}
-            <em>No image available</em>
-          {% endif %}
-          {% endwith %}
-        </dd>
+        <dt>Source Link</dt><dd>{{ action.source_link}}</dd>
+        <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
       </dl>
       {% modified action %}
       {% if perms.goals.publish_action %}{% publish_deny_form action %}{% endif %}
@@ -75,10 +62,9 @@
       {% endif %}
 
       <h2 class="subheader">Behavior</h2>
-      <p>This Action is part of the following Behavior:</p>
       {% with behavior=action.behavior%}
+      <p><a href="{{ behavior.get_absolute_url }}">{{ behavior}}</a></p>
       <table>
-        <caption>{{ behavior}}</caption>
         <tbody>
         <tr><th>Sequence Order</th><td>{{ action.sequence_order }}</td></tr>
         <tr><th>Informal List</th><td>{{ behavior.informal_list|markdown }}</td></tr>

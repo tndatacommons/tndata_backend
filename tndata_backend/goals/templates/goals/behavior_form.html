@@ -14,18 +14,18 @@
 <h1>{% if object %}Update Behavior
 : {{object}}{% else %}Create Behavior
 {% endif %}</h1>
+
+ <form
+  data-persist="garlic"
+  action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavior-create' %}{% endif %}"
+  method="post"
+  enctype="multipart/form-data">{% csrf_token %}
 <div class="row">
   <div class="large-6 small-12 columns">
-     <form
-      data-persist="garlic"
-      action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavior-create' %}{% endif %}"
-      method="post"
-      enctype="multipart/form-data">{% csrf_token %}
-    <p>A <strong>Behavior</strong> is the top-level organizational unit for
-    behavior-change Actions, and is the first thing a user will see in the app.</p>
-    {{ form.as_p }}
+
+    {# Render all but the 'notes' field #}
+    {% include "goals/_form_fields_sans_notes.html" %}
     {% form_buttons object "Behavior" %}
-    </form>
   </div>
   <div class="large-6 small-12 columns">
     <p>The structure of our data looks something like the following:</p>
@@ -36,6 +36,10 @@ Category
   --- Action 1
   --- Action 2
     </pre>
+    <p class="panel">
+      {{ form.notes.label_tag }}
+      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
+    </p>
     <table>
       <caption>Existing Behaviors</caption>
       <thead>
@@ -52,4 +56,5 @@ Category
     </table>
   </div>
 </div>
+</form>
 {% endblock %}

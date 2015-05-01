@@ -11,20 +11,20 @@
 </ul>
 
 <h1>{% if object %}Goal: {{object}}{% else %}Create Goal{% endif %}</h1>
-
+<form
+  data-persist="garlic"
+  action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:goal-create' %}{% endif %}"
+  method="post"
+  enctype="multipart/form-data">{% csrf_token %}
 <div class="row">
   <div class="large-6 small-12 columns">
     <p>A <strong>Goal</strong> is consists of Behaviors. We define a goal, and
-    to achieve that goal, users will opt in to Behaviors and Actions.</p>
+    to achieve that goal, users will select the Behaviors they want to
+    achieve and the Actions to take.</p>
 
-    <form
-      data-persist="garlic"
-      action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:goal-create' %}{% endif %}"
-      method="post"
-      enctype="multipart/form-data">{% csrf_token %}
-    {{ form.as_p }}
+    {# Render all but the 'notes' field #}
+    {% include "goals/_form_fields_sans_notes.html" %}
     {% form_buttons object "Goal" %}
-    </form>
   </div>
   <div class="large-6 small-12 columns">
     <p>The structure of our data looks something like the following:</p>
@@ -35,6 +35,10 @@ Category
   --- Action
   --- Action
     </pre>
+    <p class="panel">
+      {{ form.notes.label_tag }}
+      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
+    </p>
     <table>
       <caption>Existing Goals</caption>
       <thead>
@@ -56,4 +60,5 @@ Category
     </table>
   </div>
 </div>
+</form>
 {% endblock %}

@@ -16,6 +16,9 @@
       <h1>{{ category }} {% object_controls category "goals" %}</h1>
       <dl>
         <dt>State</dt><dd>{{ category.state|label }}</dd>
+        <dt>Default Order</dt><dd>{{ category.order }}</dd>
+        <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
+
         <dt>Icon</dt><dd>
           {% with icon=category.get_absolute_icon %}
           {% if icon %}
@@ -38,8 +41,6 @@
           {% endif %}
           {% endwith %}
         </dd>
-        <dt>Order</dt><dd>{{ category.order }}</dd>
-        <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Color</dt><dd>
           <span style="display:inline-block;width:18px;height:18px;background-color:{{category.color}};">
           </span>
@@ -57,16 +58,16 @@
       {% endif %}
       <h2 class="subheader">Content</h2>
       <p><strong>{{ category }}</strong>
-        contains the following goals, sequences, and behaviors:</p>
+        contains the following Goals, Behaviors, and Actions:</p>
       <ul>
       {% for goal in category.goals %}
-        <li>{{ goal }}
+        <li><a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
           <ul>
           {% for bs in goal.behavior_set.all %}
-            <li>{{bs}}
+            <li><a href="{{ bs.get_absolute_url }}">{{bs}}</a>
               <ul>
                 {% for ba in bs.action_set.all %}
-                  <li>{{ ba }}</li>
+                  <li><a href="{{ ba.get_absolute_url }}">{{ ba }}</a></li>
                 {% endfor %}
               </ul>
             </li>

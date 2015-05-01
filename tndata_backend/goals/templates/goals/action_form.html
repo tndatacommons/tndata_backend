@@ -20,18 +20,17 @@
 </ul>
 
 <h1>{% if object %}Update Action: {{object }}{% else %}Create Action{% endif %}</h1>
+<form
+  data-persist="garlic"
+  action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
+  method="post"
+  enctype="multipart/form-data">{% csrf_token %}
 <div class="row">
   <div class="large-6 small-12 columns">
-    <form
-      data-persist="garlic"
-      action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
-      method="post"
-      enctype="multipart/form-data">{% csrf_token %}
     <p>An <strong>Action</strong> is the unit of activity in which
     users will engage.</p>
-    {{ form.as_p }}
+    {% include "goals/_form_fields_sans_notes.html" %}
     {% form_buttons object "Action" %}
-    </form>
   </div>
   <div class="large-6 small-12 columns">
     <div id="behavior-info" class="panel">
@@ -50,6 +49,10 @@ Category
   --- Action 1
   --- Action 2
     </pre>
+    <p class="panel">
+      {{ form.notes.label_tag }}
+      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
+    </p>
     <table>
       <caption>Existing Actions</caption>
       <thead>
@@ -67,6 +70,7 @@ Category
     </table>
   </div>
 </div>
+</form>
 {% endblock %}
 
 {% block bodyjs %}

@@ -11,18 +11,19 @@
 <style type="text/css">
 .breadcrumbs {margin-top:1em;}
 select[multiple] {min-height: 100px;}
-/* Styles for helptext within a <p> tag, e.g. when using form.as_p */
-p span.helptext {color:#777; font-style:italic;}
-/* remove whitespace for helptext */
-form p select,
-form p input[type="text"], form p input[type="date"], form p input[type="password"]
-form p input[type="datetime"], form p input[type="datetime-local"],
-form p input[type="month"], form p input[type="week"], form p input[type="email"],
-form p input[type="number"], form p input[type="search"], form p input[type="tel"],
-form p input[type="time"], form p input[type="url"], form p input[type="color"],
-form p textarea {
+/* Styles for helptext */
+span.helptext {color:#777; font-style:italic;}
+form select,
+form input[type="text"], form p input[type="date"], form p input[type="password"]
+form input[type="datetime"], form p input[type="datetime-local"],
+form input[type="month"], form p input[type="week"], form p input[type="email"],
+form input[type="number"], form p input[type="search"], form p input[type="tel"],
+form input[type="time"], form p input[type="url"], form p input[type="color"],
+form textarea {
   margin-bottom: 0px;
 }
+div.row.field-row {margin-bottom: 1em;}
+
 textarea[rows] {height: 100px;}
 /* customize the color-picker input */
 input.color-picker {float: left; width: 100px; padding:0px; margin-right: 20px;}

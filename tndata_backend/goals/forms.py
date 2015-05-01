@@ -17,10 +17,11 @@ class ActionForm(forms.ModelForm):
     class Meta:
         model = Action
         fields = [
-            'sequence_order', 'behavior', 'title', 'source_link', 'source_notes',
-            'narrative_block', 'description', 'outcome', 'external_resource',
-            'default_trigger', 'notification_text', 'icon', 'image', 'notes',
+            'sequence_order', 'behavior', 'title', 'description',
+            'narrative_block', 'external_resource', 'default_trigger',
+            'notification_text', 'icon', 'source_link', 'source_notes', 'notes',
         ]
+        labels = {"notes": "Scratchpad"}
 
 
 class BehaviorForm(forms.ModelForm):
@@ -33,10 +34,12 @@ class BehaviorForm(forms.ModelForm):
     class Meta:
         model = Behavior
         fields = [
-            'title', 'source_link', 'source_notes', 'narrative_block',
-            'description', 'outcome', 'external_resource', 'informal_list',
-            'goals', 'icon', 'image', 'notes',
+            'title', 'description', 'narrative_block', 'informal_list',
+            'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
+            'notes',
         ]
+        labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
+
 
 
 class CategoryForm(forms.ModelForm):
@@ -48,9 +51,11 @@ class CategoryForm(forms.ModelForm):
         fields = [
             'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
         ]
+        labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {
             "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
         }
+
 
 class GoalForm(forms.ModelForm):
     """A Form for creating/updating goals. This form orders related categories
@@ -60,8 +65,9 @@ class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = [
-            'categories', 'title', 'description', 'outcome', 'icon', 'notes',
+            'categories', 'title', 'description', 'icon', 'notes',
         ]
+        labels = {"notes": "Scratchpad"}
 
 
 class TriggerForm(forms.ModelForm):

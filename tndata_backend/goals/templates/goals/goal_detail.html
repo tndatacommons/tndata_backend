@@ -16,6 +16,7 @@
       <h1>{{ goal }} {% object_controls goal "goals" %}</h1>
       <dl>
       <dt>State</dt><dd>{{ goal.state|label }}</dd>
+      <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
       <dt>Icon</dt><dd class="gray">
         {% with icon=goal.get_absolute_icon %}
         {% if icon %}
@@ -27,9 +28,6 @@
         {% endif %}
         {% endwith %}
       </dd>
-      <dt>Title</dt><dd>{{ goal.title }}</dd>
-      <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
-      <dt>Outcome</dt><dd>{{ goal.outcome|markdown }}</dt>
       </dl>
       {% modified goal %}
       {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}
@@ -49,7 +47,7 @@
       </ul>
 
       <h2 class="subheader">Behavior Content</h2>
-      <p><em>{{goal }}</em> contains the following sequences and actions:</p>
+      <p><em>{{goal }}</em> contains the following behaviors and actions:</p>
       <ul>
       {% for bs in goal.behavior_set.all %}
         <li>{{bs}}
@@ -59,6 +57,8 @@
             {% endfor %}
           </ul>
         </li>
+      {% empty %}
+        <li><em>There are currently no Behaviors listed in this Goal</em></li>
       {% endfor %}
       </ul>
 
