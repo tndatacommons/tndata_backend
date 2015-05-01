@@ -165,6 +165,7 @@ class RandomQuestionViewSet(mixins.ListModelMixin,
             qt, pk = kwargs.get(self.lookup_field, '-').split("-")
             item = self.question_models[qt]['model'].objects.get(pk=pk)
             item = self.question_models[qt]['serializer']().to_representation(item)
+            item['response_url'] = self.request.build_absolute_uri(item['response_url'])
             return Response(item)
         except ObjectDoesNotExist:
             raise exceptions.NotFound
