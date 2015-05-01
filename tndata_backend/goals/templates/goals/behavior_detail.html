@@ -33,7 +33,6 @@
         </dd>
         <dt>Source Link</dt><dd>{{ behavior.source_link}}</dd>
         <dt>Source Notes</dt><dd>{{ behavior.source_notes|markdown}}</dd>
-        <dt>Outcome</dt><dd>{{ action.outcome|markdown }}</dd>
       </dl>
       {% modified behavior %}
       {% if perms.goals.publish_behavior %}{% publish_deny_form behavior %}{% endif %}

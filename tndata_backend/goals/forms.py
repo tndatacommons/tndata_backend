@@ -20,7 +20,7 @@ class ActionForm(forms.ModelForm):
             'sequence_order', 'behavior', 'title', 'description',
             'narrative_block', 'external_resource', 'default_trigger',
             'notification_text', 'icon', 'source_link', 'source_notes', 'notes',
-            'outcome',
+
         ]
         labels = {"notes": "Scratchpad"}
 
@@ -37,7 +37,7 @@ class BehaviorForm(forms.ModelForm):
         fields = [
             'title', 'description', 'narrative_block', 'informal_list',
             'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
-            'notes', 'outcome',
+            'notes',
         ]
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
 
@@ -66,7 +66,7 @@ class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = [
-            'categories', 'title', 'description', 'icon', 'notes', 'outcome',
+            'categories', 'title', 'description', 'icon', 'notes',
         ]
         labels = {"notes": "Scratchpad"}
 
