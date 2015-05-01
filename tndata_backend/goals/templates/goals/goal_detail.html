@@ -28,6 +28,7 @@
         {% endif %}
         {% endwith %}
       </dd>
+      <dt>Outcome</dt><dd>{{ action.outcome|markdown }}</dd>
       </dl>
       {% modified goal %}
       {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}

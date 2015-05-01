@@ -51,6 +51,7 @@
         </dd>
         <dt>Source Link</dt><dd>{{ action.source_link}}</dd>
         <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
+        <dt>Outcome</dt><dd>{{ action.outcome|markdown }}</dd>
       </dl>
       {% modified action %}
       {% if perms.goals.publish_action %}{% publish_deny_form action %}{% endif %}
