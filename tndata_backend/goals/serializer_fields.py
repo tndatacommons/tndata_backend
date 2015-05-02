@@ -57,7 +57,7 @@ class SimpleCategoryField(serializers.RelatedField):
             'order': value.order,
             'description': value.description,
             'icon_url': value.get_absolute_icon(),
-            'image_url': value.get_absolute_icon(),
+            'image_url': value.get_absolute_image(),
             'color': value.color,
         }
 

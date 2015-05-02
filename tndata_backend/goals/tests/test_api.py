@@ -40,6 +40,8 @@ class TestCategoryAPI(APITestCase):
         self.assertEqual(c['description'], self.category.description)
         self.assertEqual(c['title'], self.category.title)
         self.assertEqual(c['title_slug'], self.category.title_slug)
+        self.assertEqual(c['icon_url'], self.category.get_absolute_icon())
+        self.assertEqual(c['image_url'], self.category.get_absolute_image())
 
     def test_post_category_list(self):
         """Ensure this endpoint is read-only."""
@@ -1156,6 +1158,8 @@ class TestUserCategoryAPI(APITestCase):
             title="Test Category",
             order=1
         )
+        # TODO: Figure out how to test icon/image fields and their inclusion
+        # in the api. Maybe useful: http://goo.gl/nh7Vl4
 
         # Assign a Category to the User
         self.uc = UserCategory.objects.create(user=self.user, category=self.category)
@@ -1205,6 +1209,9 @@ class TestUserCategoryAPI(APITestCase):
             response.data['results'][0]['category']['title'],
             self.category.title
         )
+        # TODO: it'd be nice if these fields actually had data.
+        self.assertEqual(response.data['results'][0]['category']['image_url'], None)
+        self.assertEqual(response.data['results'][0]['category']['icon_url'], None)
 
     def test_post_usercategory_list_unauthenticated(self):
         """POST should not be allowed for unauthenticated users"""
