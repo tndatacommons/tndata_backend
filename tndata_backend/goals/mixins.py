@@ -4,6 +4,7 @@ This module contains Mixins.
 """
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import permission_required
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
@@ -12,7 +13,6 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from . permissions import (
-    can_view,
     is_content_author,
     is_content_editor,
     superuser_required,
@@ -64,7 +64,15 @@ class ContentViewerMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentViewerMixin, cls).as_view(**initkwargs)
-        return can_view(view, settings.LOGIN_URL)
+        perms = [
+            'goals.view_action',
+            'goals.view_behavior',
+            'goals.view_category',
+            'goals.view_goal',
+            'goals.view_trigger'
+        ]
+        dec = permission_required(perms, raise_exception=True)
+        return dec(view)
 
 
 class ContentAuthorMixin:

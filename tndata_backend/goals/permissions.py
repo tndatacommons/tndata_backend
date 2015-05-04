@@ -16,6 +16,7 @@ from utils.permissions import _get_group_and_permission
 # Group Names
 CONTENT_AUTHORS = "Content Authors"
 CONTENT_EDITORS = "Content Editors"
+CONTENT_VIEWERS = "Content Viewers"
 
 
 def get_or_create_content_authors(apps=None, schema_editor=None):
@@ -72,6 +73,28 @@ def get_or_create_content_editors(apps=None, schema_editor=None):
     return group
 
 
+def get_or_create_content_viewers(apps=None, schema_editor=None):
+    """Creates the 'Content Viewers' Group, and adds the appropriate
+    permissions.
+
+    This accepts `apps` and `schema_editor` arguments so it can be called
+    from a Migration.
+
+    NOTE that this functions attempts to be idempotent, so new permissions
+    will not be created if the Group already exists.
+    """
+    Group, Permission = _get_group_and_permission(apps)
+    group, created = Group.objects.get_or_create(
+        name=CONTENT_VIEWERS
+    )
+    if created:
+        perms = []
+        for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
+            perms.append("view_{0}".format(obj))
+        group.permissions = Permission.objects.filter(codename__in=perms)
+    return group
+
+
 # Permission Check Functions
 # --------------------------
 
@@ -91,28 +114,6 @@ def _is_superuser_or_in_group(user, group_name):
     return user.is_authenticated() and (
         user.is_superuser or user.groups.filter(name=group_name).exists()
     )
-
-
-def can_view(view, login_url):
-    """This function applies a decorator to a view to determine if a user
-    should be able to view some content. Here's the criteria:
-
-    1. If the view has a model attribute (then it's a generic model view),
-       see if the user has a "view_[model]" permission.
-    2. If the view is not associated with a model, just ensure they
-       are authenticated.
-
-    """
-    if hasattr(view, 'model'):
-        perm = "goals.{0}".format(view.model.__name__.lower())
-        check = lambda u: u.is_authenticated() and u.has_perm(perm)
-    elif hasattr(view, 'queryset'):
-        perm = "goals.{0}".format(view.queryset.model.__name__.lower())
-        check = lambda u: u.is_authenticated() and u.has_perm(perm)
-    else:
-        check = lambda u: u.is_authenticated()
-    dec = user_passes_test(check, login_url=login_url)
-    return dec(view)
 
 
 def is_content_author(user):
