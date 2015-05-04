@@ -19,7 +19,7 @@
         <dt>Sequence Order</dt><dd>{{ action.sequence_order }}</dd>
 
         <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
-        <dt>Narrative Block</dt><dd>{{ action.narrative_block|markdown }}</dd>
+        <dt>More Info</dt><dd>{{ action.more_info|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
         <dt>Default Trigger</dt>
           {% with trigger=action.default_trigger %}

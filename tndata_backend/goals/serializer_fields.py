@@ -74,7 +74,7 @@ class SimpleBehaviorField(serializers.RelatedField):
             'title': value.title,
             'title_slug': value.title_slug,
             'description': value.description,
-            'narrative_block': value.narrative_block,
+            'more_info': value.more_info,
             'icon_url': value.get_absolute_icon(),
             'image_url': value.get_absolute_image(),
         }

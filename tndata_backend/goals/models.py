@@ -364,7 +364,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
         help_text="Misc notes about this item. This is for your use and will "
                   "not be displayed in the app."
     )
-    narrative_block = models.TextField(
+    more_info = models.TextField(
         blank=True,
         help_text="Persuasive narrative description: Tell the user why this is imporrtant."
     )

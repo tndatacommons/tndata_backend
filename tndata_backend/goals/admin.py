@@ -83,7 +83,7 @@ class BehaviorAdmin(ContentWorkflowAdmin):
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = [
-        'title', 'source_notes', 'notes', 'narrative_block', 'description',
+        'title', 'source_notes', 'notes', 'more_info', 'description',
         'case', 'outcome', 'notification_text',
     ]
     list_filter = ('state', )
@@ -104,7 +104,7 @@ class ActionAdmin(ContentWorkflowAdmin):
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = [
-        'title', 'source_notes', 'notes', 'narrative_block', 'description',
+        'title', 'source_notes', 'notes', 'more_info', 'description',
         'case', 'outcome', 'notification_text',
     ]
     list_filter = ('state', )

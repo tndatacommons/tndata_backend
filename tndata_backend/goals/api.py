@@ -130,7 +130,7 @@ class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
     * title: A unique, Formal title. Use this to refer to this item.
     * title_slug: A url-friendly version of title.
     * description: A longer description for the goal. May contain markdown.
-    * narrative_block: Persuasive narrative description, case, outcome of the behavior
+    * more_info: Persuasive narrative description, case, outcome of the behavior
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
         (Trigger)[/api/triggers/] endpoint.
@@ -195,7 +195,7 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
     * title: A unique, Formal title. Use this to refer to this item.
     * title_slug: A url-friendly version of title.
     * description: A longer description for the goal. May contain markdown.
-    * narrative_block: Persuasive narrative description, case, outcome of the behavior
+    * more_info: Persuasive narrative description, case, outcome of the behavior
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
         (Trigger)[/api/triggers/] endpoint.

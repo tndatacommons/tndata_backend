@@ -18,7 +18,7 @@ class ActionForm(forms.ModelForm):
         model = Action
         fields = [
             'sequence_order', 'behavior', 'title', 'description',
-            'narrative_block', 'external_resource', 'default_trigger',
+            'more_info', 'external_resource', 'default_trigger',
             'notification_text', 'icon', 'source_link', 'source_notes', 'notes',
 
         ]
@@ -35,7 +35,7 @@ class BehaviorForm(forms.ModelForm):
     class Meta:
         model = Behavior
         fields = [
-            'title', 'description', 'narrative_block', 'informal_list',
+            'title', 'description', 'more_info', 'informal_list',
             'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
             'notes',
         ]

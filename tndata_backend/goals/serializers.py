@@ -72,7 +72,7 @@ class BehaviorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Behavior
         fields = (
-            'id', 'title', 'title_slug', 'description', 'narrative_block',
+            'id', 'title', 'title_slug', 'description', 'more_info',
             'external_resource', 'default_trigger', 'notification_text',
             'icon_url', 'image_url', 'goals',
         )
@@ -88,7 +88,7 @@ class ActionSerializer(serializers.ModelSerializer):
         model = Action
         fields = (
             'id', 'behavior', 'sequence_order', 'title', 'title_slug',
-            'title', 'description', 'narrative_block', 'external_resource',
+            'title', 'description', 'more_info', 'external_resource',
             'default_trigger', 'notification_text', 'icon_url', 'image_url',
         )
 
