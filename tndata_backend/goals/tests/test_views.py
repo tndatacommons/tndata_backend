@@ -497,241 +497,243 @@ class TestCategoryDeleteView(TestCaseWithGroups):
 
 class TestGoalListView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.admin = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalListView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:goal-list")
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestGoalListView).setUpTestData()
         # Create Goal
-        self.goal = Goal.objects.create(
+        cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
         )
 
-        # The URL for this view
-        self.url = reverse("goals:goal-list")
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Goal.objects.filter(id=self.goal.id).delete()
-
-    def test_get(self):
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_list.html")
         self.assertIn("goals", resp.context)
 
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
 
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
 
 
 class TestGoalDetailView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.admin = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalDetailView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
-        # Create a Goal
-        self.goal = Goal.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestGoalDetailView).setUpTestData()
+        # Create Goal
+        cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
         )
+        cls.url = cls.goal.get_absolute_url()
 
-        # The URL for this view.
-        self.url = self.goal.get_absolute_url()
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Goal.objects.filter(id=self.goal.id).delete()
-
-    def test_get(self):
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_detail.html")
         self.assertContains(resp, self.goal.title)
         self.assertIn("goal", resp.context)
 
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
 
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
 
 
 class TestGoalCreateView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.admin = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalCreateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:goal-create")
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
-        # Create a Goal
-        self.goal = Goal.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestGoalCreateView).setUpTestData()
+        # Create Goal
+        cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
         )
 
-        self.url = reverse("goals:goal-create")
-
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Goal.objects.filter(id=self.goal.id).delete()
-
-    def test_get(self):
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_form.html")
         self.assertContains(resp, self.goal.title)
         self.assertIn("goals", resp.context)
 
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
 
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestGoalPublishView(TestCaseWithGroups):
 
-    def setUp(self):
-        # Create author/editor in appropriate Groups.
-        author_group = Group.objects.get(name=CONTENT_AUTHORS)
-        self.author = User.objects.create_user("author", password="p")
-        self.author.groups.add(author_group)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalPublishView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
 
-        editor_group = Group.objects.get(name=CONTENT_EDITORS)
-        self.editor = User.objects.create_user("editor", password="p")
-        self.editor.groups.add(editor_group)
-
-        # Create a Goal under review
-        self.goal = Goal.objects.create(
-            title='Test Goal',
-            description='Some explanation!',
-            outcome="An Outcome",
-            state="pending-review"
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestGoalPublishView).setUpTestData()
+        # Create Goal
+        cls.goal = Goal.objects.create(
+            title="Title for Test Goal",
+            description="A Description",
+            outcome="An Outcome"
         )
-        self.url = self.goal.get_publish_url()
+        cls.url = cls.goal.get_publish_url()
+
+    def setUp(self):
+        self.goal.review()
+        self.goal.save()
 
     def tearDown(self):
-        User.objects.filter(pk__in=[self.author.id, self.editor.id]).delete()
-        Goal.objects.filter(id=self.goal.id).delete()
-        self.client.logout()
+        self.goal.draft()
+        self.goal.save()
 
-    def test_publish_with_contentauthor(self):
-        self.client.login(username="author", password="p")
+    def test_anon_publish(self):
+        resp = self.ua_client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_publish(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Goal.objects.get(pk=self.goal.pk).state,
-            "pending-review"  # Failed.
-        )
+        state = Goal.objects.get(pk=self.goal.pk).state
+        self.assertEqual(state, 'published')
 
-    def test_decline_with_contentauthor(self):
-        self.client.login(username="author", password="p")
-        resp = self.client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Goal.objects.get(pk=self.goal.pk).state,
-            "pending-review"
-        )
-
-    def test_publish_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+    def test_editor_publish(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Goal.objects.get(pk=self.goal.pk).state,
-            "published"
-        )
+        state = Goal.objects.get(pk=self.goal.pk).state
+        self.assertEqual(state, 'published')
 
-    def test_decline_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+    def test_author_publish(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_publish(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_decline(self):
+        resp = self.ua_client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_decline(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, {"decline": "1"})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Goal.objects.get(pk=self.goal.pk).state,
-            "declined"
-        )
+        state = Goal.objects.get(pk=self.goal.pk).state
+        self.assertEqual(state, "declined")
+
+    def test_editor_decline(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        state = Goal.objects.get(pk=self.goal.pk).state
+        self.assertEqual(state, "declined")
+
+    def test_author_decline(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_decline(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestGoalUpdateView(TestCaseWithGroups):
 
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalUpdateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestGoalUpdateView).setUpTestData()
+        # Create a Category
+        cls.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+        )
+
     def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.admin = User.objects.create_superuser(*user_args)
-
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
-        # Create a Goal
+        # Re-create the goal
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
@@ -740,51 +742,77 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.url = self.goal.get_update_url()
 
     def tearDown(self):
-        User.objects.filter(username="admin").delete()
         Goal.objects.filter(id=self.goal.id).delete()
 
-    def test_get(self):
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_form.html")
         self.assertContains(resp, self.goal.title)
         self.assertIn("goals", resp.context)
 
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
 
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_post(self):
+        data = {'categories': '1', 'title': 'A', 'description':'B', 'notes': ''}
+        resp = self.ua_client.post(self.url, data)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        data = {'categories': '1', 'title': 'A', 'description':'B', 'notes': ''}
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
+
+    def test_editor_post(self):
+        data = {'categories': '1', 'title': 'A', 'description':'B', 'notes': ''}
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
+
+    def test_author_post(self):
+        data = {'categories': '1', 'title': 'A', 'description':'B', 'notes': ''}
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
+
+    def test_viewer_post(self):
+        data = {'categories': '1', 'title': 'A', 'description':'B', 'notes': ''}
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestGoalDeleteView(TestCaseWithGroups):
 
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalDeleteView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
     def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.admin = User.objects.create_superuser(*user_args)
-
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
-        # Create n Goal
+        # Create a Goal
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
@@ -793,41 +821,59 @@ class TestGoalDeleteView(TestCaseWithGroups):
         self.url = self.goal.get_delete_url()
 
     def tearDown(self):
-        User.objects.filter(username="admin").delete()
         Goal.objects.filter(id=self.goal.id).delete()
 
-    def test_get(self):
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_confirm_delete.html")
         self.assertIn("goal", resp.context)
 
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 302)  # Not allowed
-        u.delete()
-
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
 
-    def test_post(self):
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_post(self):
+        resp = self.ua_client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url)
         self.assertRedirects(resp, reverse("goals:index"))
+        self.assertFalse(Goal.objects.filter(id=self.goal.id).exists())
+
+    def test_editor_post(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url)
+        self.assertRedirects(resp, reverse("goals:index"))
+        self.assertFalse(Goal.objects.filter(id=self.goal.id).exists())
+
+    def test_author_post(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_post(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestTriggerListView(TestCaseWithGroups):
@@ -867,9 +913,9 @@ class TestTriggerListView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -877,9 +923,9 @@ class TestTriggerListView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -924,9 +970,9 @@ class TestTriggerDetailView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -934,9 +980,9 @@ class TestTriggerDetailView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -981,9 +1027,9 @@ class TestTriggerCreateView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)  # Not allowed
@@ -991,9 +1037,9 @@ class TestTriggerCreateView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1038,9 +1084,9 @@ class TestTriggerUpdateView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)  # Not allowed
@@ -1048,9 +1094,9 @@ class TestTriggerUpdateView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1094,9 +1140,9 @@ class TestTriggerDeleteView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)  # Not allowed
@@ -1104,9 +1150,9 @@ class TestTriggerDeleteView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1146,9 +1192,9 @@ class TestBehaviorListView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1156,9 +1202,9 @@ class TestBehaviorListView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1195,9 +1241,9 @@ class TestBehaviorDetailView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1205,9 +1251,9 @@ class TestBehaviorDetailView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1244,9 +1290,9 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1254,9 +1300,9 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1268,11 +1314,11 @@ class TestBehaviorPublishView(TestCaseWithGroups):
     def setUp(self):
         # Create author/editor in appropriate Groups.
         author_group = Group.objects.get(name=CONTENT_AUTHORS)
-        self.author = User.objects.create_user("author", password="p")
+        self.author = User.objects.create_user("author", password="pass")
         self.author.groups.add(author_group)
 
         editor_group = Group.objects.get(name=CONTENT_EDITORS)
-        self.editor = User.objects.create_user("editor", password="p")
+        self.editor = User.objects.create_user("editor", password="pass")
         self.editor.groups.add(editor_group)
 
         # Create a Behavior under review
@@ -1288,7 +1334,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         self.client.logout()
 
     def test_publish_with_contentauthor(self):
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1297,7 +1343,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         )
 
     def test_decline_with_contentauthor(self):
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, {"decline": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1306,7 +1352,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         )
 
     def test_publish_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1315,7 +1361,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         )
 
     def test_decline_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, {"decline": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1354,9 +1400,9 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1364,9 +1410,9 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1402,9 +1448,9 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)  # Not allowed
@@ -1412,9 +1458,9 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1460,9 +1506,9 @@ class TestActionListView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1470,9 +1516,9 @@ class TestActionListView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1514,9 +1560,9 @@ class TestActionDetailView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1524,9 +1570,9 @@ class TestActionDetailView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1568,9 +1614,9 @@ class TestActionCreateView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1578,9 +1624,9 @@ class TestActionCreateView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1592,11 +1638,11 @@ class TestActionPublishView(TestCaseWithGroups):
     def setUp(self):
         # Create author/editor in appropriate Groups.
         author_group = Group.objects.get(name=CONTENT_AUTHORS)
-        self.author = User.objects.create_user("author", password="p")
+        self.author = User.objects.create_user("author", password="pass")
         self.author.groups.add(author_group)
 
         editor_group = Group.objects.get(name=CONTENT_EDITORS)
-        self.editor = User.objects.create_user("editor", password="p")
+        self.editor = User.objects.create_user("editor", password="pass")
         self.editor.groups.add(editor_group)
 
         # Create a Action under review
@@ -1614,7 +1660,7 @@ class TestActionPublishView(TestCaseWithGroups):
         self.client.logout()
 
     def test_publish_with_contentauthor(self):
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1623,7 +1669,7 @@ class TestActionPublishView(TestCaseWithGroups):
         )
 
     def test_decline_with_contentauthor(self):
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, {"decline": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1632,7 +1678,7 @@ class TestActionPublishView(TestCaseWithGroups):
         )
 
     def test_publish_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1641,7 +1687,7 @@ class TestActionPublishView(TestCaseWithGroups):
         )
 
     def test_decline_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, {"decline": "1"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -1685,9 +1731,9 @@ class TestActionUpdateView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1695,9 +1741,9 @@ class TestActionUpdateView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
@@ -1738,9 +1784,9 @@ class TestActionDeleteView(TestCaseWithGroups):
 
     def test_get_with_contentauthor(self):
         group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
+        u = User.objects.create_user("author", password="pass")
         u.groups.add(group)
-        self.client.login(username="author", password="p")
+        self.client.login(username="author", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 302)  # Not allowed
@@ -1748,9 +1794,9 @@ class TestActionDeleteView(TestCaseWithGroups):
 
     def test_get_with_contenteditor(self):
         group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
+        u = User.objects.create_user("editor", password="pass")
         u.groups.add(group)
-        self.client.login(username="editor", password="p")
+        self.client.login(username="editor", password="pass")
 
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
