@@ -11,13 +11,57 @@ custom groups for people who create and review content:
    decline content created by authors.
 
 """
-from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import Group, Permission
 
 # Group Names
 CONTENT_AUTHORS = "Content Authors"
 CONTENT_EDITORS = "Content Editors"
 CONTENT_VIEWERS = "Content Viewers"
+
+
+class ContentPermissions:
+    """This class encapsulates a list of permissions for different types
+    of users. The types correspond to:
+
+    * editors
+    * authors
+    * viewers
+
+    """
+    # Objects in the goals app that that have CRUD perms
+    _objects = ['action', 'behavior', 'category', 'goal', 'trigger']
+
+    # Objects that authors have Create/Update permissions
+    _author_objects = ['action', 'behavior', 'goal']
+
+    # Objects with publish/decline permissions
+    _workflow_objects = ['action', 'behavior', 'goal', 'trigger']
+
+    @property
+    def authors(self):
+        """permissions for authors"""
+        # TODO: WE Also need object-level permissions for authors.
+        perms = self.viewers
+        for obj in self._author_objects:
+            perms.append('goals.add_{0}'.format(obj))
+            perms.append('goals.change_{0}'.format(obj))
+        return perms
+
+    @property
+    def editors(self):
+        """permissions for editors"""
+        perms = self.viewers + self.authors
+        for obj in self._workflow_objects:
+            perms.append('goals.publish_{0}'.format(obj))
+            perms.append('goals.decline_{0}'.format(obj))
+        return perms
+
+    @property
+    def viewers(self):
+        """permissions for editors"""
+        return ['goals.view_{0}'.format(obj) for obj in self._objects]
+
+ContentPermissions = ContentPermissions()  # make it act like a monad.
 
 
 def get_or_create_content_authors():

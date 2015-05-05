@@ -12,11 +12,7 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.response import Response
 
-from . permissions import (
-    is_content_author,
-    is_content_editor,
-    superuser_required,
-)
+from . permissions import ContentPermissions, superuser_required
 
 
 # Mixins for Views
@@ -64,32 +60,27 @@ class ContentViewerMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentViewerMixin, cls).as_view(**initkwargs)
-        perms = [
-            'goals.view_action',
-            'goals.view_behavior',
-            'goals.view_category',
-            'goals.view_goal',
-            'goals.view_trigger'
-        ]
-        dec = permission_required(perms, raise_exception=True)
+        dec = permission_required(ContentPermissions.viewers, raise_exception=True)
         return dec(view)
 
 
 class ContentAuthorMixin:
-    """A Mixin that requires the user to be in the 'Content Authors' group."""
+    """A Mixin that requires the user have the 'Authors' set of permissions."""
+
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
-        dec = user_passes_test(is_content_author, login_url=settings.LOGIN_URL)
+        dec = permission_required(ContentPermissions.authors, raise_exception=True)
         return dec(view)
 
 
 class ContentEditorMixin:
-    """A Mixin that requires the user to be in the 'Content Editors' group."""
+    """A Mixin that requires the user to have the 'Editors' set of permissions."""
+
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentEditorMixin, cls).as_view(**initkwargs)
-        dec = user_passes_test(is_content_editor, login_url=settings.LOGIN_URL)
+        dec = permission_required(ContentPermissions.editors, raise_exception=True)
         return dec(view)
 
 
