@@ -15,401 +15,491 @@ from .. permissions import (
     CONTENT_EDITORS,
     get_or_create_content_editors,
     get_or_create_content_authors,
+    get_or_create_content_viewers,
 )
-
-
 User = get_user_model()
 
 
 class TestCaseWithGroups(TestCase):
-    """A TestCase Subclass that ensures we have appropriate Groups."""
+    """A TestCase Subclass that adds additional data and/or features for test
+    subclasses:
+
+    * A `ua_client` attribute; an unauthenticated client.
+    * Creates admin, author, editor, viewer users in the appropriate groups.
+
+    """
+
     @classmethod
-    def setUpClass(cls):
-        super(TestCaseWithGroups, cls).setUpClass()
-        get_or_create_content_editors()
-        get_or_create_content_authors()
+    def setUpTestData(cls):
+        """Set up data for the whole Test Case; this method creates
+        four classes of users by default (admin, editor, author, viewer).
+
+        If you override this in a TestCase, be sure to call the superclass.
+
+        """
+        content_editor_group = get_or_create_content_editors()
+        content_author_group = get_or_create_content_authors()
+        content_viewer_group = get_or_create_content_viewers()
+
+        args = ("admin", "admin@example.com", "pass")
+        cls.admin = User.objects.create_superuser(*args)
+
+        args = ("author", "author@example.com", "pass")
+        cls.author = User.objects.create_user(*args)
+        cls.author.groups.add(content_author_group)
+
+        args = ("editor", "editor@example.com", "pass")
+        cls.editor = User.objects.create_user(*args)
+        cls.editor.groups.add(content_editor_group)
+
+        args = ("viewer", "viewer@example.com", "pass")
+        cls.viewer = User.objects.create_user(*args)
+        cls.viewer.groups.add(content_viewer_group)
 
 
 class TestIndexView(TestCaseWithGroups):
+    # NOTE: tests are named with this convention:
+    # test_[auth-group]_[http-verb]
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestIndexView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:index")
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
+    def test_admin_get(self):
         self.client.login(username="admin", password="pass")
-        self.url = reverse("goals:index")
-
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-
-    def test_get(self):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
+        self.client.logout()
 
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        u.delete()
-
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        u.delete()
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestCategoryListView(TestCaseWithGroups):
+    # NOTE: tests are named with this convention:
+    # test_[auth-group]_[http-verb]
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryListView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:category-list")
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryListView).setUpTestData()
         # Create a Category
-        self.category = Category.objects.create(
+        cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
-        self.url = reverse("goals:category-list")
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Category.objects.filter(id=self.category.id).delete()
-
-    def test_get(self):
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_list.html")
         self.assertIn("categories", resp.context)
 
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/category_list.html")
+        self.assertIn("categories", resp.context)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/category_list.html")
+        self.assertIn("categories", resp.context)
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/category_list.html")
+        self.assertIn("categories", resp.context)
+
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        u.delete()
-
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        u.delete()
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestCategoryDetailView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryDetailView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryDetailView).setUpTestData()
         # Create a Category
-        self.category = Category.objects.create(
+        cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
-        self.url = self.category.get_absolute_url()
+        cls.url = cls.category.get_absolute_url()
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Category.objects.filter(id=self.category.id).delete()
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
 
-    def test_get(self):
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_detail.html")
         self.assertContains(resp, self.category.title)
         self.assertIn("category", resp.context)
 
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+        self.assertTemplateUsed(resp, "goals/category_detail.html")
+        self.assertContains(resp, self.category.title)
+        self.assertIn("category", resp.context)
 
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+        self.assertTemplateUsed(resp, "goals/category_detail.html")
+        self.assertContains(resp, self.category.title)
+        self.assertIn("category", resp.context)
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/category_detail.html")
+        self.assertContains(resp, self.category.title)
+        self.assertIn("category", resp.context)
 
 
 class TestCategoryCreateView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryCreateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:category-create")
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryCreateView).setUpTestData()
         # Create a Category
-        self.category = Category.objects.create(
+        cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
-        self.url = reverse("goals:category-create")
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Category.objects.filter(id=self.category.id).delete()
-
-    def test_get(self):
-
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
         self.assertContains(resp, self.category.title)
         self.assertIn("categories", resp.context)
 
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 302)  # Not allowed
-        u.delete()
-
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+        self.assertTemplateUsed(resp, "goals/category_form.html")
+        self.assertContains(resp, self.category.title)
+        self.assertIn("categories", resp.context)
+
+    def test_author_get(self):
+        """Ensure Authors cannot create Categories."""
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_get(self):
+        """Ensure Authors cannot create Categories."""
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_post(self):
+        payload = {'order': 2, 'title': 'New', 'description': 'Desc', 'color': '#f00'}
+        resp = self.ua_client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        """Ensure Admins can create new Categories"""
+        self.client.login(username="admin", password="pass")
+        payload = {'order': 2, 'title': 'New', 'description': 'Desc', 'color': '#f00'}
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Category.objects.filter(title="New").exists())
+        Category.objects.filter(title="New Category").delete()  # clean up
+
+    def test_editor_post(self):
+        """Ensure Editors can create new Categories"""
+        self.client.login(username="editor", password="pass")
+        payload = {'order': 2, 'title': 'New', 'description': 'Desc', 'color': '#f00'}
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Category.objects.filter(title="New").exists())
+        Category.objects.filter(title="New").delete()  # clean up
+
+    def test_author_post(self):
+        """Ensure Authors cannot create new categories."""
+        self.client.login(username="author", password="pass")
+        payload = {'order': 2, 'title': 'New', 'description': 'Desc', 'color': '#f00'}
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_post(self):
+        """Ensure Viewers cannot create new categories."""
+        self.client.login(username="viewer", password="pass")
+        payload = {'order': 2, 'title': 'New', 'description': 'Desc', 'color': '#f00'}
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestCategoryPublishView(TestCaseWithGroups):
+    # NOTE: tests are named with this convention:
+    # test_[auth-group]_[http-verb]
 
-    def setUp(self):
-        # Create author/editor in appropriate Groups.
-        author_group = Group.objects.get(name=CONTENT_AUTHORS)
-        self.author = User.objects.create_user("author", password="p")
-        self.author.groups.add(author_group)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryPublishView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
 
-        editor_group = Group.objects.get(name=CONTENT_EDITORS)
-        self.editor = User.objects.create_user("editor", password="p")
-        self.editor.groups.add(editor_group)
-
-        # Create a Category under review
-        self.category = Category.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryPublishView).setUpTestData()
+        # Create a Category
+        cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
-            state="pending-review"
         )
-        self.url = self.category.get_publish_url()
+        cls.url = cls.category.get_publish_url()
+
+    def setUp(self):
+        self.category.review()  # Must be pending review.
+        self.category.save()
 
     def tearDown(self):
-        User.objects.filter(pk__in=[self.author.id, self.editor.id]).delete()
-        Category.objects.filter(id=self.category.id).delete()
-        self.client.logout()
+        self.category.draft()  # Revert to draft
+        self.category.save()
 
-    def test_publish_with_contentauthor(self):
-        self.client.login(username="author", password="p")
+    def test_anon_publish(self):
+        self.ua_client.login(username="author", password="pass")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_publish(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Category.objects.get(pk=self.category.pk).state,
-            "pending-review"  # Failed.
-        )
+        state = Category.objects.get(pk=self.category.pk).state
+        self.assertEqual(state, "published")
 
-    def test_decline_with_contentauthor(self):
-        self.client.login(username="author", password="p")
-        resp = self.client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Category.objects.get(pk=self.category.pk).state,
-            "pending-review"
-        )
-
-    def test_publish_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+    def test_editor_publish(self):
+        self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Category.objects.get(pk=self.category.pk).state,
-            "published"
-        )
+        state = Category.objects.get(pk=self.category.pk).state
+        self.assertEqual(state, "published")
 
-    def test_decline_with_contenteditor(self):
-        self.client.login(username="editor", password="p")
+    def test_author_publish(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_publish(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, {"publish": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_decline(self):
+        resp = self.ua_client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_decline(self):
+        self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, {"decline": "1"})
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Category.objects.get(pk=self.category.pk).state,
-            "declined"
-        )
+        state = Category.objects.get(pk=self.category.pk).state
+        self.assertEqual(state, "declined")
+
+    def test_editor_decline(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 302)
+        state = Category.objects.get(pk=self.category.pk).state
+        self.assertEqual(state, "declined")
+
+    def test_author_decline(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_decline(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, {"decline": "1"})
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestCategoryUpdateView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryUpdateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryUpdateView).setUpTestData()
         # Create a Category
-        self.category = Category.objects.create(
+        cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
-        self.url = self.category.get_update_url()
+        cls.url = cls.category.get_update_url()
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Category.objects.filter(id=self.category.id).delete()
-
-    def test_get(self):
-
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
+    def test_admin_get(self):
+        resp = self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
         self.assertContains(resp, self.category.title)
         self.assertIn("categories", resp.context)
 
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 302)  # Not allowed
-        u.delete()
-
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_editor_get(self):
+        resp = self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
+
+    def test_author_get(self):
+        resp = self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_get(self):
+        resp = self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestCategoryDeleteView(TestCaseWithGroups):
 
-    def setUp(self):
-        user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryDeleteView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
 
-        # Create an Authed/Unauthed client
-        self.ua_client = Client()
-        self.client.login(username="admin", password="pass")
-
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryDeleteView).setUpTestData()
         # Create a Category
-        self.category = Category.objects.create(
+        cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
-        self.url = self.category.get_delete_url()
+        cls.url = cls.category.get_delete_url()
 
-    def tearDown(self):
-        User.objects.filter(username="admin").delete()
-        Category.objects.filter(id=self.category.id).delete()
-
-    def test_get(self):
+    def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
+    def test_admin_get(self):
+        resp = self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_confirm_delete.html")
         self.assertIn("category", resp.context)
 
-    def test_get_with_contentauthor(self):
-        group = Group.objects.get(name=CONTENT_AUTHORS)
-        u = User.objects.create_user("author", password="p")
-        u.groups.add(group)
-        self.client.login(username="author", password="p")
-
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 302)  # Not allowed
-        u.delete()
-
-    def test_get_with_contenteditor(self):
-        group = Group.objects.get(name=CONTENT_EDITORS)
-        u = User.objects.create_user("editor", password="p")
-        u.groups.add(group)
-        self.client.login(username="editor", password="p")
-
+    def test_editor_get(self):
+        resp = self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        u.delete()
 
-    def test_post(self):
-        url = self.category.get_delete_url()
-        resp = self.client.post(url)
+    def test_author_get(self):
+        resp = self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_get(self):
+        resp = self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_post(self):
+        resp = self.ua_client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        resp = self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 302)
         self.assertRedirects(resp, reverse("goals:index"))
+
+    def test_editor_post(self):
+        resp = self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertRedirects(resp, reverse("goals:index"))
+
+    def test_author_post(self):
+        resp = self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_post(self):
+        resp = self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestGoalListView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -463,7 +553,7 @@ class TestGoalDetailView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -518,7 +608,7 @@ class TestGoalCreateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -635,7 +725,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -688,7 +778,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -744,7 +834,7 @@ class TestTriggerListView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -800,7 +890,7 @@ class TestTriggerDetailView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -857,7 +947,7 @@ class TestTriggerCreateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -914,7 +1004,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -971,7 +1061,7 @@ class TestTriggerDeleteView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1031,7 +1121,7 @@ class TestBehaviorListView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1079,7 +1169,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1128,7 +1218,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1238,7 +1328,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1287,7 +1377,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1340,7 +1430,7 @@ class TestActionListView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1393,7 +1483,7 @@ class TestActionDetailView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1447,7 +1537,7 @@ class TestActionCreateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1564,7 +1654,7 @@ class TestActionUpdateView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
@@ -1618,7 +1708,7 @@ class TestActionDeleteView(TestCaseWithGroups):
 
     def setUp(self):
         user_args = ("admin", "admin@example.com", "pass")
-        self.user = User.objects.create_superuser(*user_args)
+        self.admin = User.objects.create_superuser(*user_args)
 
         # Create an Authed/Unauthed client
         self.ua_client = Client()
