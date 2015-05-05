@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.models import Group, Permission
 from rest_framework import permissions
-from utils.permissions import _get_group_and_permission
 
 
 SURVEY_ADMINS = "Survey Admins"  # Name of the group containing survey admins.
@@ -17,7 +17,6 @@ def get_or_create_survey_admins_group(apps=None, schema_editor=None):
     NOTE that this functions attempts to be idempotent, so new permissions
     will not be created if the Group already exists.
     """
-    Group, Permission = _get_group_and_permission(apps)
     group, created = Group.objects.get_or_create(name=SURVEY_ADMINS)
     if created:
         # Should have all of the survey-related permissions
