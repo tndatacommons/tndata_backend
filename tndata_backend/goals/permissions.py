@@ -1,17 +1,18 @@
 """
-This module provides permissions and Group-based tools. This app defines two
+This module provides permissions and Group-based tools. This app defines
 custom groups for people who create and review content:
 
-1. Content Authors: Have Read, create, update permissions for content models;
+
+1. Content Viewers: Have read-only permissions for content models: Category,
+   Goals, Behaviors, Actions.
+2. Content Authors: Have Read, create, update permissions for content models;
    (Goals, Behaviors, Actions) and read for Categories.
-2. Content Editors: Have the above plus the ability to delete and publish or
+3. Content Editors: Have the above plus the ability to delete and publish or
    decline content created by authors.
 
 """
-# NOTE: Dont' import any models directly; the functions here are called from
-# a migration, so let's import from an AppConfig if at all possible.
 from django.contrib.auth.decorators import user_passes_test
-from utils.permissions import _get_group_and_permission
+from django.contrib.auth.models import Group, Permission
 
 # Group Names
 CONTENT_AUTHORS = "Content Authors"
@@ -19,82 +20,62 @@ CONTENT_EDITORS = "Content Editors"
 CONTENT_VIEWERS = "Content Viewers"
 
 
-def get_or_create_content_authors(apps=None, schema_editor=None):
-    """Creates the 'Content Authors' Group, and adds the appropriate
-    permissions.
+def get_or_create_content_authors():
+    """Creates the 'Content Authors' Group if it doesn't exist, and assigns
+    the appropriate permissions to that group.
 
-    This accepts `apps` and `schema_editor` arguments so it can be called
-    from a Migration.
-
-    NOTE that this functions attempts to be idempotent, so new permissions
-    will not be created if the Group already exists.
     """
-    Group, Permission = _get_group_and_permission(apps)
-    group, created = Group.objects.get_or_create(
-        name=CONTENT_AUTHORS
-    )
-    if created:
-        perms = [
-            "view_category",
-            "view_trigger",
-        ]
-        for obj in ['goal', 'behavior', 'action']:
-            perms.append("add_{0}".format(obj))
-            perms.append("change_{0}".format(obj))
-            perms.append("view_{0}".format(obj))
-        group.permissions = Permission.objects.filter(codename__in=perms)
+    group, created = Group.objects.get_or_create(name=CONTENT_AUTHORS)
+    perms = [
+        "view_category",
+        "view_trigger",
+    ]
+    for obj in ['goal', 'behavior', 'action']:
+        perms.append("add_{0}".format(obj))
+        perms.append("change_{0}".format(obj))
+        perms.append("view_{0}".format(obj))
+    for p in Permission.objects.filter(codename__in=perms):
+        group.permissions.add(p)
+    group.save()
     return group
 
 
-def get_or_create_content_editors(apps=None, schema_editor=None):
-    """Creates the 'Content Editors' Group, and adds the appropriate
-    permissions.
+def get_or_create_content_editors():
+    """Creates the 'Content Editors' Group if it doesn't exist, and assigns the
+    appropriate permissions.
 
-    This accepts `apps` and `schema_editor` arguments so it can be called
-    from a Migration.
-
-    NOTE that this functions attempts to be idempotent, so new permissions
-    will not be created if the Group already exists.
     """
-    Group, Permission = _get_group_and_permission(apps)
-    group, created = Group.objects.get_or_create(
-        name=CONTENT_EDITORS
-    )
-    if created:
-        perms = []
-        for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
-            perms.append("add_{0}".format(obj))
-            perms.append("change_{0}".format(obj))
-            perms.append("view_{0}".format(obj))
-            perms.append("delete_{0}".format(obj))
-            perms.append("publish_{0}".format(obj))
-            perms.append("decline_{0}".format(obj))
-        group.permissions = Permission.objects.filter(codename__in=perms)
+    group, created = Group.objects.get_or_create(name=CONTENT_EDITORS)
+    perms = []
+    for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
+        perms.append("add_{0}".format(obj))
+        perms.append("change_{0}".format(obj))
+        perms.append("decline_{0}".format(obj))
+        perms.append("delete_{0}".format(obj))
+        perms.append("publish_{0}".format(obj))
+        perms.append("view_{0}".format(obj))
+    for p in Permission.objects.filter(codename__in=perms):
+        group.permissions.add(p)
+    group.save()
     return group
 
 
 def get_or_create_content_viewers(apps=None, schema_editor=None):
-    """Creates the 'Content Viewers' Group, and adds the appropriate
-    permissions.
+    """Creates the 'Content Viewers' Group if it doesn't exist, and assigns the
+    appropriate permissions.
 
-    This accepts `apps` and `schema_editor` arguments so it can be called
-    from a Migration.
-
-    NOTE that this functions attempts to be idempotent, so new permissions
-    will not be created if the Group already exists.
     """
-    Group, Permission = _get_group_and_permission(apps)
-    group, created = Group.objects.get_or_create(
-        name=CONTENT_VIEWERS
-    )
-    if created:
-        perms = []
-        for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
-            perms.append("view_{0}".format(obj))
-        group.permissions = Permission.objects.filter(codename__in=perms)
+    group, created = Group.objects.get_or_create(name=CONTENT_VIEWERS)
+    perms = []
+    for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
+        perms.append("view_{0}".format(obj))
+    for p in Permission.objects.filter(codename__in=perms):
+        group.permissions.add(p)
+    group.save()
     return group
 
 
+# --------------------------
 # Permission Check Functions
 # --------------------------
 
