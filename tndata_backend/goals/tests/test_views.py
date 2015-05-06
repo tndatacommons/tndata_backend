@@ -34,6 +34,8 @@ class TestCaseWithGroups(TestCase):
         If you override this in a TestCase, be sure to call the superclass.
 
         """
+        super(cls, TestCaseWithGroups).setUpTestData()
+
         content_editor_group = get_or_create_content_editors()
         content_author_group = get_or_create_content_authors()
         content_viewer_group = get_or_create_content_viewers()
@@ -1302,13 +1304,13 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_detail.html")
+        self.assertTemplateUsed(resp, "goals/behavior_form.html")
         self.assertIn("behavior", resp.context)
 
     def test_editor_get(self):
@@ -1324,7 +1326,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 403)
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
@@ -1701,7 +1703,7 @@ class TestActionCreateView(TestCaseWithGroups):
         self.client.login(username="admin", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/action_detail.html")
+        self.assertTemplateUsed(resp, "goals/action_form.html")
         self.assertContains(resp, self.action.title)
         self.assertIn("action", resp.context)
 
@@ -1848,7 +1850,7 @@ class TestActionUpdateView(TestCaseWithGroups):
         # Re-create the Action
         self.action = Action.objects.create(
             behavior=self.behavior,
-            title="Test Action",
+            title="Test Action"
         )
         self.url = self.action.get_update_url()
 
@@ -1952,7 +1954,7 @@ class TestActionDeleteView(TestCaseWithGroups):
     def test_author_get(self):
         self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 403)
 
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
@@ -1978,8 +1980,7 @@ class TestActionDeleteView(TestCaseWithGroups):
     def test_author_post(self):
         self.client.login(username="author", password="pass")
         resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(resp, reverse("goals:index"))
+        self.assertEqual(resp.status_code, 403)
 
     def test_viewer_post(self):
         self.client.login(username="viewer", password="pass")
