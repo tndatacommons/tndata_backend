@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db import models
 
 from jsonfield import JSONField
-from pushjack import GCMClient, create_gcm_config
+from pushjack import GCMClient
 
 from . settings import GCM
 
@@ -70,34 +70,25 @@ class GCMMessage(models.Model):
             self._set_message_id()
         super(GCMMessage, self).save(*args, **kwargs)
 
-    def _get_gcm_config(self):
-        return create_gcm_config({
-            'GCM_API_KEY': GCM['API_KEY'],
-            'GCM_URL': GCM['URL'],
-            'GCM_MAX_RECIPIENTS': GCM['MAX_RECIPIENTS'],
-        })
-
     def _get_gcm_client(self):
-        return GCMClient(self._get_gcm_config())
+        return GCMClient(GCM['API_KEY'])
 
-    def send(self, collapse_key=None, delay_while_idle=True, ttl=2419200):
+    def send(self, collapse_key=None, delay_while_idle=True):
         """Deliver this message to Google Cloud Messaging.
 
         * collapse_key: Omitted for messages with a payload (default), specify
             'collapse_key' for a 'send-to-sync' message.
         * delay_while_idle: Default is True. When True, don't send if device is
             unavailable (e.g. turned off).
-        * ttl: Default is 4 weeks. Lifetime of the message; it expires from GCM
-            after this. Use 0 for now-or-never messages.
 
         """
         client = self._get_gcm_client()
         options = {
             'delay_while_idle': delay_while_idle,
-            'ttl': ttl,
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
-        result = client.send(self.registration_id, self.content, **options)
-        # TODO: Inspect result to see if successful; update accordingly.
-        return result
+        resp = client.send([self.registration_id], self.content, **options)
+        # TODO: Inspect the GCMResponse to see if successful; update accordingly.
+        # http://pushjack.readthedocs.org/en/latest/api.html#pushjack.gcm.GCMResponse
+        return resp
