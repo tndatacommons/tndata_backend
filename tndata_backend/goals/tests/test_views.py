@@ -34,8 +34,6 @@ class TestCaseWithGroups(TestCase):
         If you override this in a TestCase, be sure to call the superclass.
 
         """
-        super(cls, TestCaseWithGroups).setUpTestData()
-
         content_editor_group = get_or_create_content_editors()
         content_author_group = get_or_create_content_authors()
         content_viewer_group = get_or_create_content_viewers()
@@ -650,6 +648,7 @@ class TestGoalPublishView(TestCaseWithGroups):
         cls.url = cls.goal.get_publish_url()
 
     def setUp(self):
+        super(TestGoalPublishView, self).setUp()
         self.goal.review()
         self.goal.save()
 
@@ -730,6 +729,13 @@ class TestGoalUpdateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
+        cls.payload = {
+            'categories': cls.category.id,
+            'order': 1,
+            'title': 'A',
+            'description': 'B',
+            'notes': '',
+        }
 
     def setUp(self):
         # Re-create the goal
@@ -771,35 +777,30 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
     def test_anon_post(self):
-        data = {'categories': '1', 'title': 'A', 'description': 'B', 'notes': ''}
-        resp = self.ua_client.post(self.url, data)
+        resp = self.ua_client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_post(self):
-        data = {'categories': '1', 'title': 'A', 'description': 'B', 'notes': ''}
         self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, data)
+        resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
 
     def test_editor_post(self):
-        data = {'categories': '1', 'title': 'A', 'description': 'B', 'notes': ''}
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, data)
+        resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
 
     def test_author_post(self):
-        data = {'categories': '1', 'title': 'A', 'description': 'B', 'notes': ''}
         self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, data)
+        resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
 
     def test_viewer_post(self):
-        data = {'categories': '1', 'title': 'A', 'description': 'B', 'notes': ''}
         self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, data)
+        resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
 
@@ -855,12 +856,14 @@ class TestGoalDeleteView(TestCaseWithGroups):
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 302)
         self.assertRedirects(resp, reverse("goals:index"))
         self.assertFalse(Goal.objects.filter(id=self.goal.id).exists())
 
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 302)
         self.assertRedirects(resp, reverse("goals:index"))
         self.assertFalse(Goal.objects.filter(id=self.goal.id).exists())
 
@@ -930,7 +933,6 @@ class TestTriggerDetailView(TestCaseWithGroups):
     def setUpClass(cls):
         super(cls, TestTriggerDetailView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
-        cls.url = reverse("goals:trigger-detail")
 
     @classmethod
     def setUpTestData(cls):
@@ -1109,7 +1111,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 302)
         self.assertTrue(Trigger.objects.filter(name="Changed").exists())
 
     def test_author_post(self):
@@ -1246,7 +1248,6 @@ class TestBehaviorDetailView(TestCaseWithGroups):
     def setUpClass(cls):
         super(cls, TestBehaviorDetailView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
-        cls.url = reverse("goals:behavior-detail")
 
     @classmethod
     def setUpTestData(cls):
@@ -1257,7 +1258,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.status_code, 403)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1290,7 +1291,6 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         super(cls, TestBehaviorCreateView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
         cls.url = reverse("goals:behavior-create")
-        cls.payload = {'title': 'New', 'goals': '1'}
 
     @classmethod
     def setUpTestData(cls):
@@ -1301,6 +1301,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
             description="A Description",
             outcome="An Outcome"
         )
+        cls.payload = {'title': 'New', 'goals': cls.goal.id}
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -1311,7 +1312,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behavior_form.html")
-        self.assertIn("behavior", resp.context)
+        self.assertIn("behaviors", resp.context)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -1451,7 +1452,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
             description="A Description",
             outcome="An Outcome"
         )
-        cls.payload = {'title': 'U'}
+        cls.payload = {'title': 'U', 'goals': cls.goal.id}
 
     def setUp(self):
         # Re-create the behavior
@@ -1462,7 +1463,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         )
         self.behavior.goals.add(self.goal)
         self.behavior.save()
-        self.url = self.goal.get_update_url()
+        self.url = self.behavior.get_update_url()
 
     def tearDown(self):
         Behavior.objects.filter(id=self.behavior.id).delete()
@@ -1687,13 +1688,17 @@ class TestActionCreateView(TestCaseWithGroups):
         super(cls, TestActionCreateView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
         cls.url = reverse("goals:action-create")
-        cls.payload = {'title': 'New', 'behavior': '1'}
 
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionCreateView).setUpTestData()
         # Create a Behavior to be used as an FK
         cls.behavior = Behavior.objects.create(title="Test Behavior")
+        cls.payload = {
+            'sequence_order': 1,
+            'title': 'New',
+            'behavior': cls.behavior.id,
+        }
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -1704,8 +1709,8 @@ class TestActionCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/action_form.html")
-        self.assertContains(resp, self.action.title)
-        self.assertIn("action", resp.context)
+        self.assertIn("actions", resp.context)
+        self.assertIn("behaviors", resp.context)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -1727,8 +1732,12 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_post(self):
+        from clog.clog import clog
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, self.payload)
+        if resp.status_code == 200:
+            clog(resp.context_data['form'].errors, color="magenta")
+            clog(resp.context_data['form'].data)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Action.objects.filter(title="New").exists())
 
@@ -1844,13 +1853,18 @@ class TestActionUpdateView(TestCaseWithGroups):
     def setUpTestData(cls):
         super(cls, TestActionUpdateView).setUpTestData()
         cls.behavior = Behavior.objects.create(title='Test Behavior')
-        cls.payload = {'title': 'U'}
+        cls.payload = {
+            'sequence_order': 1,
+            'title': 'U',
+            'behavior': cls.behavior.id
+        }
 
     def setUp(self):
         # Re-create the Action
         self.action = Action.objects.create(
             behavior=self.behavior,
-            title="Test Action"
+            title="Test Action",
+            sequence_order=1
         )
         self.url = self.action.get_update_url()
 
