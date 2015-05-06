@@ -16,14 +16,12 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField, transition
 
-from .mixins import ModifiedMixin, URLMixin
+from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
 
 # TODO: Should we reset the state (back to draft?) if something is changed
 # after it's been declined or published?
-
-
-class Category(ModifiedMixin, URLMixin, models.Model):
+class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose."""
 
     # URLMixin attributes
@@ -144,7 +142,7 @@ def get_categories_as_choices():
     return tuple(Category.objects.values_list("title_slug", "title"))
 
 
-class Goal(ModifiedMixin, URLMixin, models.Model):
+class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -442,7 +440,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
         pass
 
 
-class Behavior(URLMixin, BaseBehavior):
+class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
 
@@ -492,7 +490,7 @@ class Behavior(URLMixin, BaseBehavior):
         return Category.objects.filter(pk__in=cats)
 
 
-class Action(URLMixin, BaseBehavior):
+class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
 
     # URLMixin attributes
     urls_app_namespace = "goals"

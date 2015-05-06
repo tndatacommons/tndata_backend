@@ -6,8 +6,9 @@ from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import permission_required
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
+from django.utils.text import slugify
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -104,6 +105,32 @@ class ModifiedMixin:
         if created_by:
             self.created_by = created_by
         return kwargs
+
+
+class UniqueTitleMixin:
+    """Titles should be unique, and their slugs should also be unique. However,
+    since slugs are not displayed in forms, it's possible to have a title that
+    who's slug clashes with another, e.g.:
+
+        "This title" and "this TITLE" would both have a slug of "this-title"
+
+    This mixin overrides the model's `validate_unique` to check the slugified
+    title and raise an exception if that's not unique.
+
+    Requires that the class have both a `title` and a `title_slug` field.
+
+    """
+    def validate_unique(self, *args, **kwargs):
+        super(UniqueTitleMixin, self.__class__).validate_unique(
+            self, *args, **kwargs
+        )
+        if not self.id:
+            slug = slugify(self.title)
+            if self.__class__.objects.filter(title_slug=slug).exists():
+                msg = '{0} with this Title already exists.'
+                raise ValidationError(
+                    {'title': [msg.format(self.__class__.__name__)]}
+                )
 
 
 class URLMixin:
