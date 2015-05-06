@@ -257,7 +257,7 @@ class TriggerDetailView(ContentViewerMixin, DetailView):
     slug_url_kwarg = "name_slug"
 
 
-class TriggerCreateView(ContentEditorMixin, CreatedByView):
+class TriggerCreateView(ContentEditorMixin, CreateView):
     model = Trigger
     form_class = TriggerForm
 
@@ -277,11 +277,6 @@ class TriggerUpdateView(ContentEditorMixin, UpdateView):
         context = super(TriggerUpdateView, self).get_context_data(**kwargs)
         context['triggers'] = Trigger.objects.all()
         return context
-
-    def form_valid(self, form):
-        result = super(TriggerUpdateView, self).form_valid(form)
-        self.object.save(updated_by=self.request.user)
-        return result
 
 
 class TriggerDeleteView(ContentEditorMixin, DeleteView):
