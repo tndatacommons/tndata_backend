@@ -11,8 +11,6 @@ gcm_settings = getattr(project_settings, 'GCM', {})
 
 GCM = {
     'API_KEY': gcm_settings.get('API_KEY', None),
-    'URL': gcm_settings.get('URL', 'https://android.googleapis.com/gcm/send'),
-    'MAX_RECIPIENTS': gcm_settings.get('MAX_RECIPIENTS', 1000),
 }
 
 if GCM['API_KEY'] is None:
