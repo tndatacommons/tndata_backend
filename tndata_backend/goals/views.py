@@ -25,7 +25,9 @@ from utils.db import get_max_order
 
 
 class PublishView(View):
-    """A Simple Base View for subclasses that need to publish content.
+    """A Simple Base View for subclasses that need to publish content. This
+    is overridden by views that specify the model and slug_field for different
+    types of content.
 
     """
     http_method_names = ['post']
@@ -44,9 +46,6 @@ class PublishView(View):
     def post(self, request, *args, **kwargs):
         try:
             obj = self.get_object(kwargs)
-
-            # TODO:explicitely check model's publish_XXX, and decline_XXX perms.
-            # Right now we just assume ContentEditors can do both (and that's safe, right?)
             if request.POST.get('publish', False):
                 obj.publish()
                 obj.save(updated_by=request.user)
