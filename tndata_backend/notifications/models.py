@@ -36,7 +36,10 @@ class GCMMessage(models.Model):
         help_text="Whether or not the message was delivered successfully"
     )
     response_code = models.IntegerField(blank=True, null=True)
-    response_text = models.CharField(max_length=256, blank=True)
+    response_text = models.TextField(
+        blank=True,
+        help_text="text of the response sent to GCM."
+    )
 
     deliver_on = models.DateTimeField(
         db_index=True,
@@ -48,7 +51,6 @@ class GCMMessage(models.Model):
         help_text="Date/Time on which this message should expire (be deleted)"
     )
     created_on = models.DateTimeField(auto_now_add=True)
-
     # TODO: Should a message be set as recurring, here?
 
     def __str__(self):
@@ -89,6 +91,13 @@ class GCMMessage(models.Model):
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
         resp = client.send([self.registration_id], self.content, **options)
-        # TODO: Inspect the GCMResponse to see if successful; update accordingly.
-        # http://pushjack.readthedocs.org/en/latest/api.html#pushjack.gcm.GCMResponse
+        self._save_response(resp)
         return resp
+
+    def _save_response(self, resp):
+        report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
+        report = ""
+        for r in resp.responses:
+            report += report_pattern.format(r.status_code, r.reason, r.url)
+        self.response_text = report
+        self.save()
