@@ -73,20 +73,22 @@ class GCMMessage(models.Model):
         super(GCMMessage, self).save(*args, **kwargs)
 
     def _get_gcm_client(self):
-        return GCMClient(GCM['API_KEY'])
+        return GCMClient(api_key=GCM['API_KEY'])
 
-    def send(self, collapse_key=None, delay_while_idle=True):
+    def send(self, collapse_key=None, delay_while_idle=True, ttl=None):
         """Deliver this message to Google Cloud Messaging.
 
         * collapse_key: Omitted for messages with a payload (default), specify
             'collapse_key' for a 'send-to-sync' message.
-        * delay_while_idle: Default is True. When True, don't send if device is
-            unavailable (e.g. turned off).
+        * delay_while_idle:  If True indicates that the message should not be
+            sent until the device becomes active. (default is True)
+        * ttl: Time to Live. Default is 4 weeks.
 
         """
         client = self._get_gcm_client()
         options = {
             'delay_while_idle': delay_while_idle,
+            'time_to_live': ttl,
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
