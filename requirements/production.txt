@@ -14,6 +14,6 @@ business-rules==0.1.3
 django-extensions==1.4.9
 jsonfield==1.0.0
 tablib==0.10.0
-pushjack==1.0.0
 django-fsm==2.2.0
 django-chosenadmin==0.2.0
+-e git://github.com/bradmontgomery/pushjack.git@develop#egg=pushjack
