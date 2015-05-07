@@ -16,4 +16,4 @@ jsonfield==1.0.0
 tablib==0.10.0
 django-fsm==2.2.0
 django-chosenadmin==0.2.0
--e git://github.com/bradmontgomery/pushjack.git@develop#egg=pushjack
+pushjack==1.0.1
