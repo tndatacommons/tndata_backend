@@ -8,6 +8,7 @@ Actions are the things we want to help people to do.
 
 """
 import os
+from datetime import datetime
 
 from django.conf import settings
 from django.db import models
@@ -244,6 +245,9 @@ class Trigger(URLMixin, models.Model):
     2. Recurrences: How frequently (every day, once a month, etc) should the
        notification be sent.
 
+    This model is heavily based on django-recurrence:
+    https://django-recurrence.readthedocs.org
+
     """
 
     # URLMixin attributes
@@ -301,6 +305,24 @@ class Trigger(URLMixin, models.Model):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         super(Trigger, self).save(*args, **kwargs)
+
+    def recurrences_as_text(self):
+        if self.recurrences:
+            rules = []
+            for rule in self.recurrences.rrules:
+                rules.append(rule.to_text())
+            return ", ".join(rules)
+        return ''
+
+    def next(self):
+        # NOTE: It appears that the date used is the system date/time. not utc.
+        # Get the next occurance of this trigger.
+        todays_occurance = datetime.today()  # use UTC?
+        todays_occurance = todays_occurance.combine(todays_occurance, self.time)
+        return self.recurrences.after(
+            todays_occurance,
+            dtstart=todays_occurance,
+        )
 
 
 def _behavior_icon_path(instance, filename):

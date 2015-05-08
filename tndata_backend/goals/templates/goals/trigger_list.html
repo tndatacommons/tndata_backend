@@ -27,7 +27,7 @@
           </td>
           <td>{{ trigger.get_trigger_type_display }}</td>
           <td>{{ trigger.time|default:"-" }}</td>
-          <td>todo</td>
+          <td>{{ trigger.recurrences_as_text }}</td>
         </tr>
       {% endfor %}
       </tbody>

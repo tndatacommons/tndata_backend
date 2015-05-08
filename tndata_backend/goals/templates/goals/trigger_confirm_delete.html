@@ -15,7 +15,11 @@
 
 <form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
   <h1>{{ object }}</h1>
-  <p>{{object.get_trigger_type_display}}, {{ trigger.time }}.</p>
+  <p>
+    Type: {{object.get_trigger_type_display}},
+    Time: {{ trigger.time }},
+    Recurring on {{ trigger.recurrences_as_text }}
+  </p>
 <hr/>
 <button type="submit" class="button alert">Delete {{object}}</button>
 </form>
