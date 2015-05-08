@@ -61,13 +61,19 @@
         contains the following Goals, Behaviors, and Actions:</p>
       <ul>
       {% for goal in category.goals %}
-        <li><a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
+        <li>
+          {{ goal.state|label }}
+          <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
           <ul>
           {% for bs in goal.behavior_set.all %}
-            <li><a href="{{ bs.get_absolute_url }}">{{bs}}</a>
+            <li>{{ bs.state|label }}
+              <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
               <ul>
                 {% for ba in bs.action_set.all %}
-                  <li><a href="{{ ba.get_absolute_url }}">{{ ba }}</a></li>
+                  <li>
+                    {{ba.state|label}}
+                    <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
+                  </li>
                 {% endfor %}
               </ul>
             </li>

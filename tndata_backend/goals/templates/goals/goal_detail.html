@@ -42,7 +42,10 @@
       <p><em>{{goal}}</em> is listed in the following Categories:</p>
       <ul>
       {% for cat in goal.categories.all %}
-        <li>{{ cat }}</li>
+        <li>
+          {{cat.state|label}}
+          <a href="{{cat.get_absolute_url }}">{{ cat }}</a>
+        </li>
       {% endfor %}
       </ul>
 
@@ -50,10 +53,13 @@
       <p><em>{{goal }}</em> contains the following behaviors and actions:</p>
       <ul>
       {% for bs in goal.behavior_set.all %}
-        <li>{{bs}}
+        <li>{{bs.state|label}} <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
           <ul>
             {% for ba in bs.action_set.all %}
-              <li>{{ ba }}</li>
+              <li>
+                {{ ba.state|label }}
+                <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
+              </li>
             {% endfor %}
           </ul>
         </li>

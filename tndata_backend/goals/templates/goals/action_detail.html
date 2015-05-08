@@ -63,7 +63,10 @@
 
       <h2 class="subheader">Behavior</h2>
       {% with behavior=action.behavior%}
-      <p><a href="{{ behavior.get_absolute_url }}">{{ behavior}}</a></p>
+      <p>
+        {{ behavior.state|label }}
+        <a href="{{ behavior.get_absolute_url }}">{{ behavior}}</a>
+      </p>
       <table>
         <tbody>
         <tr><th>Sequence Order</th><td>{{ action.sequence_order }}</td></tr>
