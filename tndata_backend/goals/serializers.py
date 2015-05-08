@@ -57,10 +57,7 @@ class TriggerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Trigger
-        fields = (
-            'id', 'name', 'name_slug', 'trigger_type', 'frequency', 'time',
-            'date', 'location', 'text', 'instruction',
-        )
+        fields = ('id', 'name', 'name_slug', 'trigger_type', 'time')
 
 
 class BehaviorSerializer(serializers.ModelSerializer):

@@ -91,12 +91,8 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     * name: A unique name for a trigger.
     * name_slug: A web-friendly version of the name.
     * trigger_type: Type of trigger; should be "time" or "place"
-    * frequency: Frequency with which the user gets an alert.
     * time: for "time" trigger types, the time at which an alert is sent.
-    * date: a date on which an alert is sent.
-    * location: Only used when trigger_type is "location"
-    * text: The Trigger text shown to the user
-    * instruction: Additional text for the trigger.
+    * TODO: there's recurring info associated with this; it needs to be displayed here.
 
     ## Trigger Endpoints
 

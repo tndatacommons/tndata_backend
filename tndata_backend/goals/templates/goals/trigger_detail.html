@@ -1,7 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
 {% load goal_filters %}
-{% load util_filters %}
 
 {% block content %}
   <ul class="breadcrumbs">
@@ -15,12 +14,7 @@
       <h1>{{ trigger.name }} {% goal_object_controls trigger %}</h1>
       <dl>
         <dt>Type</dt><dd>{{ trigger.get_trigger_type_display}}</dd>
-        <dt>Frequency</dt><dd>{{ trigger.get_frequency_display }}</dd>
         <dt>Time</dt><dd>{{ trigger.time }}</dd>
-        <dt>Date</dt><dd>{{ trigger.date }}</dd>
-        <dt>Location</dt><dd>{{ trigger.location|default:"none" }}</dd>
-        <dt>Text</dt><dd>{{ trigger.text }}</dd>
-        <dt>Instruction</dt><dd>{{ trigger.instruction|markdown }}</dd>
         <dt>Recurrences</dt><dd>{{ trigger.recurrences }}</dd>
       </dl>
     </div>

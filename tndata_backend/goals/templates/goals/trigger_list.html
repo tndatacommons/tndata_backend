@@ -15,10 +15,8 @@
       <tr>
         <th>Name</th>
         <th>Type</th>
-        <th>Frequency</th>
         <th>Time</th>
-        <th>Date</th>
-        <th>Location</th>
+        <th>Recurrence</th>
       </tr>
       </thead>
       <tbody>
@@ -28,10 +26,8 @@
             <a href="{{ trigger.get_absolute_url }}">{{ trigger.name }}</a>
           </td>
           <td>{{ trigger.get_trigger_type_display }}</td>
-          <td>{{ trigger.get_frequency_display }}</td>
           <td>{{ trigger.time|default:"-" }}</td>
-          <td>{{ trigger.date|default:"-" }}</td>
-          <td>{{ trigger.location|default:"none"}}</td>
+          <td>todo</td>
         </tr>
       {% endfor %}
       </tbody>

@@ -69,9 +69,7 @@ admin.site.register(models.Goal, GoalAdmin)
 
 
 class TriggerAdmin(admin.ModelAdmin):
-    list_display = (
-        'name', 'trigger_type', 'frequency', 'time', 'date', 'location',
-    )
+    list_display = ('name', 'trigger_type', 'time', 'location')
     prepopulated_fields = {"name_slug": ("name", )}
 admin.site.register(models.Trigger, TriggerAdmin)
 

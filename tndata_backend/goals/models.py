@@ -15,6 +15,7 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField, transition
+from recurrence.fields import RecurrenceField
 
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
@@ -234,8 +235,14 @@ class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
 
 
 class Trigger(URLMixin, models.Model):
-    """Information for a Trigger/Notificatin/Reminder. This may include date,
-    time, location and a frequency with which triggers repeat.
+    """This class encapsulates date (and in the future, location) -based triggers
+    for Behaviors and Actions.
+
+    For date or time-based items, a Trigger consists of:
+
+    1. A time (optional); When during the day should the notification be sent.
+    2. Recurrences: How frequently (every day, once a month, etc) should the
+       notification be sent.
 
     """
 
@@ -247,14 +254,6 @@ class Trigger(URLMixin, models.Model):
     # Data Fields
     TRIGGER_TYPES = (
         ('time', 'Time'),
-        ('place', 'Place'),
-    )
-    FREQUENCY_CHOICES = (
-        ('one-time', 'One Time'),
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-        ('yearly', 'Yearly'),
     )
     name = models.CharField(
         max_length=128,
@@ -266,27 +265,15 @@ class Trigger(URLMixin, models.Model):
     )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
     trigger_type = models.CharField(
-        blank=True,
         max_length=10,
         choices=TRIGGER_TYPES,
-        help_text='The type of Trigger used, e.g. Time, Place, etc'
-    )
-    frequency = models.CharField(
-        blank=True,
-        max_length=10,
-        choices=FREQUENCY_CHOICES,
-        help_text="How frequently a trigger is fired"
+        default="time",
+        help_text='The type of Trigger used, e.g. a time-based trigger'
     )
     time = models.TimeField(
         blank=True,
         null=True,
         help_text="Time the trigger/notification will fire, in 24-hour format."
-    )
-    date = models.DateField(
-        blank=True,
-        null=True,
-        help_text="The date of the trigger/notification. If the trigger is "
-                  "recurring, notifications will start on this date."
     )
     location = models.CharField(
         max_length=256,
@@ -294,15 +281,7 @@ class Trigger(URLMixin, models.Model):
         help_text="Only used when Trigger type is location. "
                   "Can be 'home', 'work', or a (lat, long) pair."
     )
-    text = models.CharField(
-        max_length=140,
-        blank=True,
-        help_text="The Trigger text shown to the user."
-    )
-    instruction = models.TextField(
-        blank=True,
-        help_text="Instructions sent to the user."
-    )
+    recurrences = RecurrenceField(null=True)
 
     def __str__(self):
         return "{0}".format(self.name)

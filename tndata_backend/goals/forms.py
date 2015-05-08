@@ -74,18 +74,11 @@ class GoalForm(forms.ModelForm):
 class TriggerForm(forms.ModelForm):
     class Meta:
         model = Trigger
-        fields = [
-            'name', 'trigger_type', 'frequency', 'time', 'date', 'location',
-            'text', 'instruction',
-        ]
+        fields = ['name', 'trigger_type', 'time', 'recurrences']
         widgets = {
             "time": forms.TimeInput(attrs={
                 'class': 'timepicker',
                 'type': 'time'
-            }),
-            "date": forms.DateInput(attrs={
-                'class': 'datepicker',
-                'type': 'date'
             }),
         }
 
