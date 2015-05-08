@@ -1,3 +1,4 @@
+python-dateutil==2.4.2
 requests==2.6.0
 pytz==2015.2
 psycopg2==2.5.4
@@ -17,3 +18,4 @@ tablib==0.10.0
 django-fsm==2.2.0
 django-chosenadmin==0.2.0
 pushjack==1.0.1
+django-recurrence==1.1.0
