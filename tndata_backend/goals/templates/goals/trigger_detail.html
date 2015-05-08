@@ -1,6 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
-{% load util_tags %}
+{% load goal_filters %}
 {% load util_filters %}
 
 {% block content %}
@@ -21,23 +21,31 @@
         <dt>Location</dt><dd>{{ trigger.location|default:"none" }}</dd>
         <dt>Text</dt><dd>{{ trigger.text }}</dd>
         <dt>Instruction</dt><dd>{{ trigger.instruction|markdown }}</dd>
+        <dt>Recurrences</dt><dd>{{ trigger.recurrences }}</dd>
       </dl>
-      {% modified trigger %}
     </div>
     <div class="large-6 small-12 columns">
+      {% if trigger.behavior_set.exists %}
       <h2 class="subheader">Behavior</h2>
       <p><strong>{{ trigger.name }}</strong>
         is attached to the following behavior sequences:</p>
       <ul>
-      {% for b in trigger.behavior_set.all %}<li>{{ b }}</li>{% endfor %}
+      {% for b in trigger.behavior_set.all %}
+        <li>{{ b.state|label }} <a href="{{b.get_absolute_url}}">{{ b }}</a></li>
+      {% endfor %}
       </ul>
+      {% endif %}
 
+      {% if trigger.action_set.exists %}
       <h2 class="subheader">Action</h2>
       <p><strong>{{ trigger.name }}</strong>
         is attached to the following behavior actions:</p>
       <ul>
-      {% for b in trigger.action_set.all %}<li>{{ b }}</li>{% endfor %}
+      {% for a in trigger.action_set.all %}
+        <li>{{ a.state|label }} <a href="{{a.get_absolute_url}}">{{ a }}</a></li>
+      {% endfor %}
       </ul>
+      {% endif %}
     </div>
   </div>
 {% endblock %}
