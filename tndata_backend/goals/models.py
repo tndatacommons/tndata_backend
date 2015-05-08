@@ -254,6 +254,7 @@ class Trigger(URLMixin, models.Model):
     # Data Fields
     TRIGGER_TYPES = (
         ('time', 'Time'),
+        ('place', 'Place'),
     )
     name = models.CharField(
         max_length=128,
