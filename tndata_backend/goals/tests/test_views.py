@@ -742,7 +742,8 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
+            outcome="An Outcome",
+            created_by=self.author
         )
         self.url = self.goal.get_update_url()
 
@@ -767,9 +768,18 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
     def test_author_get(self):
+        """Ensure authors can update their own content."""
         self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
+
+    def test_author_get_other_object(self):
+        """Ensure authors cannot update someone else's content."""
+        g = Goal.objects.create(title="Other", created_by=self.editor)
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(g.get_update_url())
+        self.assertEqual(resp.status_code, 403)
+        g.delete()  # Clean up
 
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
@@ -797,6 +807,14 @@ class TestGoalUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
+
+    def test_author_post_other_object(self):
+        """Ensure authors cannot update someone else's content."""
+        g = Goal.objects.create(title="Other", created_by=self.editor)
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(g.get_update_url(), self.payload)
+        self.assertEqual(resp.status_code, 403)
+        g.delete()  # Clean up
 
     def test_viewer_post(self):
         self.client.login(username="viewer", password="pass")
@@ -1459,7 +1477,8 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         self.behavior = Behavior.objects.create(
             title="Title for Test Behavior",
             description="A Description",
-            outcome="An Outcome"
+            outcome="An Outcome",
+            created_by=self.author
         )
         self.behavior.goals.add(self.goal)
         self.behavior.save()
@@ -1490,6 +1509,14 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_author_get_other_object(self):
+        """Ensure authors cannot update someone else's content."""
+        b = Behavior.objects.create(title="Other", created_by=self.editor)
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(b.get_update_url())
+        self.assertEqual(resp.status_code, 403)
+        b.delete()  # Clean up
+
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
@@ -1516,6 +1543,14 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Behavior.objects.get(id=self.behavior.id).title, "U")
+
+    def test_author_post_other_object(self):
+        """Ensure authors cannot update someone else's content."""
+        b = Behavior.objects.create(title="Other", created_by=self.editor)
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(b.get_update_url(), self.payload)
+        self.assertEqual(resp.status_code, 403)
+        b.delete()  # Clean up
 
     def test_viewer_post(self):
         self.client.login(username="viewer", password="pass")
@@ -1864,7 +1899,8 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.action = Action.objects.create(
             behavior=self.behavior,
             title="Test Action",
-            sequence_order=1
+            sequence_order=1,
+            created_by=self.author
         )
         self.url = self.action.get_update_url()
 
@@ -1893,6 +1929,19 @@ class TestActionUpdateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_author_get_other_object(self):
+        """Ensure authors cannot update someone else's content."""
+        a = Action.objects.create(
+            behavior=self.behavior,
+            title="Other",
+            sequence_order=2,
+            created_by=self.editor
+        )
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(a.get_update_url())
+        self.assertEqual(resp.status_code, 403)
+        a.delete()  # Clean up
+
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
@@ -1919,6 +1968,19 @@ class TestActionUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Action.objects.get(pk=self.action.pk).title, "U")
+
+    def test_author_post_other_object(self):
+        """Ensure authors cannot update someone else's content."""
+        a = Action.objects.create(
+            behavior=self.behavior,
+            title="Other",
+            sequence_order=2,
+            created_by=self.editor
+        )
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(a.get_update_url(), self.payload)
+        self.assertEqual(resp.status_code, 403)
+        a.delete()  # Clean up
 
     def test_viewer_post(self):
         self.client.login(username="viewer", password="pass")

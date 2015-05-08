@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseForbidden
+from django.template.loader import render_to_string
 from django.utils.text import slugify
 
 from rest_framework import status
@@ -18,7 +20,6 @@ from . permissions import ContentPermissions, superuser_required
 
 # Mixins for Views
 # ----------------
-
 class DeleteMultipleMixin:
     """A Mixin that allows deleting multiple objects when a DELETE request is
     sent with a list of modelnames and object IDs.
@@ -45,6 +46,7 @@ class SuperuserRequiredMixin:
     """A Mixin that requires the user to be a superuser in order to access
     the view.
     """
+
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(SuperuserRequiredMixin, cls).as_view(**initkwargs)
@@ -58,6 +60,7 @@ class ContentViewerMixin:
     they be authenticated, otherwise.
 
     """
+
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentViewerMixin, cls).as_view(**initkwargs)
@@ -73,6 +76,53 @@ class ContentAuthorMixin:
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
         dec = permission_required(ContentPermissions.authors, raise_exception=True)
         return dec(view)
+
+    def _object_permissions(self, request):
+        """This method check's a user's permissions for the object on which
+        the view is operating.
+
+        If the user is an Author (doesn't have publish/decline permissions), they
+        should have:
+
+        * view permissions for ALL draft & published content
+        * write permissions ONLY for their own draft/declined content
+        * create permissions for all content
+
+        Returns True if the user has permissions to view/update the object.
+
+        """
+        # This is a bit of a hack, but I need to differentiate if I'm updating
+        # or creating an object (e.g. both also have GET requests for the form)
+        # By convention, views are named [Model]UpdateView and [Model]CreateView
+        updating = 'Update' in self.__class__.__name__
+        creating = 'Create' in self.__class__.__name__
+
+        if creating:  # Authors should be able to create content.
+            return True
+
+        obj = self.get_object()
+        owner = request.user == obj.created_by
+
+        # Content owners are updating their own draft/declined content.
+        if owner and updating and obj.state in ['draft', 'declined']:
+            return True  # OK
+
+        # Read-only for draft-to-published content
+        if not updating and obj.state in ['draft', 'pending-review', 'published']:
+            return True  # OK
+
+        # HACK to test for Editor-like permissions.
+        editor_perm = "goals.publish_{0}".format(obj.__class__.__name__.lower())
+        if request.user.has_perm(editor_perm):
+            return True
+
+        return False
+
+    def dispatch(self, request, *args, **kwargs):
+        # NOTE: This mixin is only used in CreateView and UpdateView subclasses.
+        if hasattr(self, 'get_object') and not self._object_permissions(request):
+            return HttpResponseForbidden(content=render_to_string("403.html"))
+        return super(ContentAuthorMixin, self).dispatch(request, *args, **kwargs)
 
 
 class ContentEditorMixin:
