@@ -28,7 +28,9 @@ class GCMMessage(models.Model):
     )
 
     # TODO: IS THIS Right? From the app's perspective, should we be building a
-    # chunk of JSON or shoule we just push up a message string?
+    # chunk of JSON or should we just push up a message string?
+    # OR, should we separate the bits of the message into separate fields.
+    # e.g. title, message, activity_class, object_id,
     content = JSONField(help_text="JSON content for the message")
 
     # Successful deliver? True/False, Null == message not sent.
