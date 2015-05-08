@@ -13,7 +13,7 @@
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ behavior }} {% object_controls behavior "goals" %}</h1>
+      <h1>{{ behavior }} {% goal_object_controls behavior %}</h1>
       <dl>
         <dt>State</dt><dd>{{ behavior.state|label }}</dd>
         <dt>Description</dt><dd>{{ behavior.description|markdown }}</dd>

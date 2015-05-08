@@ -13,7 +13,7 @@
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ action }} {% object_controls action "goals" %}</h1>
+      <h1>{{ action }} {% goal_object_controls action %}</h1>
       <dl>
         <dt>State</dt><dd>{{ action.state|label }}</dd>
         <dt>Sequence Order</dt><dd>{{ action.sequence_order }}</dd>

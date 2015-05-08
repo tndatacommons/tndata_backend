@@ -27,6 +27,9 @@ class ContentPermissions:
     * authors
     * viewers
 
+    NOTE: object-level permissions for authors are implemented in the
+    ContentAuthorMixin.
+
     """
     # Objects in the goals app that that have CRUD perms
     _objects = ['action', 'behavior', 'category', 'goal', 'trigger']
@@ -40,7 +43,6 @@ class ContentPermissions:
     @property
     def authors(self):
         """permissions for authors"""
-        # TODO: WE Also need object-level permissions for authors.
         perms = self.viewers
         for obj in self._author_objects:
             perms.append('goals.add_{0}'.format(obj))

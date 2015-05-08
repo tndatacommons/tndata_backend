@@ -1,5 +1,19 @@
 from django import template
+from utils.templatetags.util_tags import object_controls
 register = template.Library()
+
+
+@register.inclusion_tag("utils/_object_controls.html", takes_context=True)
+def goal_object_controls(context, obj):
+    result = object_controls(context, obj, "goals")
+    user = context.request.user
+    is_editor = "goals.publish_{0}".format(obj.__class__.__name__.lower())
+
+    # object permissions.
+    if not is_editor and result.get('can_update', False):
+        result['can_update'] = (obj.created_by == user)
+
+    return result
 
 
 @register.inclusion_tag("goals/_modified.html")
