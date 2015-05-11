@@ -286,7 +286,10 @@ class Trigger(URLMixin, models.Model):
         help_text="Only used when Trigger type is location. "
                   "Can be 'home', 'work', or a (lat, long) pair."
     )
-    recurrences = RecurrenceField(null=True)
+    recurrences = RecurrenceField(
+        null=True,
+        help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
+    )
 
     def __str__(self):
         return "{0}".format(self.name)
