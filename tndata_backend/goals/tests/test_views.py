@@ -10,6 +10,7 @@ from .. models import (
     Action,
 )
 from .. permissions import (
+    get_or_create_content_admins,
     get_or_create_content_editors,
     get_or_create_content_authors,
     get_or_create_content_viewers,
@@ -37,9 +38,11 @@ class TestCaseWithGroups(TestCase):
         content_editor_group = get_or_create_content_editors()
         content_author_group = get_or_create_content_authors()
         content_viewer_group = get_or_create_content_viewers()
+        content_admin_group = get_or_create_content_admins()
 
         args = ("admin", "admin@example.com", "pass")
         cls.admin = User.objects.create_superuser(*args)
+        cls.admin.groups.add(content_admin_group)
 
         args = ("author", "author@example.com", "pass")
         cls.author = User.objects.create_user(*args)
@@ -911,11 +914,8 @@ class TestTriggerListView(TestCaseWithGroups):
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            frequency="one-time",
             time="13:30",
-            date="2014-02-01",
-            text="Testing",
-            instruction="Help"
+            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
 
     def test_anon_get(self):
@@ -959,11 +959,8 @@ class TestTriggerDetailView(TestCaseWithGroups):
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            frequency="one-time",
             time="13:30",
-            date="2014-02-01",
-            text="Testing",
-            instruction="Help"
+            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         cls.url = cls.trigger.get_absolute_url()
 
@@ -1002,14 +999,18 @@ class TestTriggerCreateView(TestCaseWithGroups):
         super(cls, TestTriggerCreateView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
         cls.url = reverse("goals:trigger-create")
-        cls.payload = {
+        cls.non_recurring_payload = {
             'name': "Test Trigger",
             'trigger_type': "time",
-            'frequency': "one-time",
+            'time': "",
+            'recurrences': "",
+        }
+
+        cls.recurring_payload = {
+            'name': "Recurring",
+            'trigger_type': "time",
             'time': "13:30",
-            'date': "2014-02-01",
-            'text': "Testing",
-            'instruction': "Help",
+            'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
         }
 
     def test_anon_get(self):
@@ -1039,29 +1040,37 @@ class TestTriggerCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
     def test_anon_post(self):
-        resp = self.ua_client.post(self.url, self.payload)
+        resp = self.ua_client.post(self.url, {})
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, self.non_recurring_payload)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Trigger.objects.filter(name="Test Trigger").exists())
+
+        resp = self.client.post(self.url, self.recurring_payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Trigger.objects.filter(name="Recurring").exists())
 
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, self.non_recurring_payload)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Trigger.objects.filter(name="Test Trigger").exists())
 
+        resp = self.client.post(self.url, self.recurring_payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Trigger.objects.filter(name="Recurring").exists())
+
     def test_author_post(self):
         self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, {})
         self.assertEqual(resp.status_code, 403)
 
     def test_viewer_post(self):
         self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, {})
         self.assertEqual(resp.status_code, 403)
 
 
@@ -1073,21 +1082,24 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         cls.ua_client = Client()  # Create an Unauthenticated client
 
     def setUp(self):
+        """NOTE: needs a new trigger for every test."""
         # Create a Trigger
         self.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            frequency="one-time",
             time="13:30",
-            date="2014-02-01",
-            text="Testing",
-            instruction="Help"
+            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         self.url = self.trigger.get_update_url()
-        self.payload = {'name': "Changed"}
+        self.payload = {
+            "name": "Changed",
+            "trigger_type": self.trigger.trigger_type,
+            "time": "13:30",
+            "recurrences": 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+        }
 
     def tearDown(self):
-        Trigger.objects.filter(id=self.trigger.id).delete()
+        Trigger.objects.filter(pk=self.trigger.id).delete()
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -1151,15 +1163,13 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         cls.ua_client = Client()  # Create an Unauthenticated client
 
     def setUp(self):
+        """NOTE: need a new Trigger so we can delete it."""
         # Create a Trigger
         self.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            frequency="one-time",
             time="13:30",
-            date="2014-02-01",
-            text="Testing",
-            instruction="Help"
+            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         self.url = self.trigger.get_delete_url()
 

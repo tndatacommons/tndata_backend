@@ -1,3 +1,6 @@
+from datetime import datetime, time
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.db.models import QuerySet
@@ -210,19 +213,14 @@ class TestGoal(TestCase):
 class TestTrigger(TestCase):
     """Tests for the `Trigger` model."""
 
-    def setUp(self):
-        self.trigger = Trigger.objects.create(
+    @classmethod
+    def setUpTestData(cls):
+        cls.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            frequency="one-time",
-            time="13:30",
-            date="2014-02-01",
-            text="Testing",
-            instruction="Help"
+            time=time(12, 34),
+            recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
-
-    def tearDown(self):
-        Trigger.objects.filter(id=self.trigger.id).delete()
 
     def test__str__(self):
         expected = "Test Trigger"
@@ -231,11 +229,7 @@ class TestTrigger(TestCase):
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        trigger = Trigger.objects.create(
-            name="New Name",
-            trigger_type="time",
-            frequency="one-time"
-        )
+        trigger = Trigger.objects.create(name="New Name", trigger_type="time")
         trigger.save()
         self.assertEqual(trigger.name_slug, "new-name")
 
@@ -256,6 +250,18 @@ class TestTrigger(TestCase):
             self.trigger.get_delete_url(),
             "/goals/triggers/test-trigger/delete/"
         )
+
+    def test_recurrences_as_text(self):
+        expected = "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
+        self.assertEqual(self.trigger.recurrences_as_text(), expected)
+
+    def test_next(self):
+        """Ensure that next returns the next day's event."""
+        with patch("goals.models.datetime") as dt:
+            dt.today.return_value = datetime(1000, 10, 20, 9, 30, 45)
+            # Expected is in exactly 1 day
+            expected = datetime(1000, 10, 21, 12, 34)
+            self.assertEqual(self.trigger.next(), expected)
 
 
 class TestBehavior(TestCase):
