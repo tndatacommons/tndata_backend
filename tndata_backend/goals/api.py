@@ -96,6 +96,7 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     * recurrences: For "time" triggers, this is an iCalendar (rfc2445) format.
       This field is optional and may be null.
     * recurrences_display: human-readible information for `recurrences`
+    * next: Date/Time for the next occurance of this trigger
 
     ## Trigger Endpoints
 

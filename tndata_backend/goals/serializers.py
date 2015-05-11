@@ -60,7 +60,7 @@ class TriggerSerializer(serializers.ModelSerializer):
         model = Trigger
         fields = (
             'id', 'name', 'name_slug', 'trigger_type', 'time', 'location',
-            'recurrences', 'recurrences_display',
+            'recurrences', 'recurrences_display', 'next',
         )
 
 
