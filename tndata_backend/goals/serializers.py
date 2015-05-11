@@ -54,10 +54,14 @@ class GoalSerializer(serializers.ModelSerializer):
 
 class TriggerSerializer(serializers.ModelSerializer):
     """A Serializer for `Trigger`."""
+    recurrences_display = serializers.ReadOnlyField(source='recurrences_as_text')
 
     class Meta:
         model = Trigger
-        fields = ('id', 'name', 'name_slug', 'trigger_type', 'time')
+        fields = (
+            'id', 'name', 'name_slug', 'trigger_type', 'time', 'location',
+            'recurrences', 'recurrences_display',
+        )
 
 
 class BehaviorSerializer(serializers.ModelSerializer):

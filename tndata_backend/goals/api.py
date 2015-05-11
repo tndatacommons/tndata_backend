@@ -92,22 +92,22 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     * name_slug: A web-friendly version of the name.
     * trigger_type: Type of trigger; should be "time" or "place"
     * time: for "time" trigger types, the time at which an alert is sent.
-    * TODO: there's recurring info associated with this; it needs to be displayed here.
+    * location: Location information (for "place" type triggers)
+    * recurrences: For "time" triggers, this is an iCalendar (rfc2445) format.
+      This field is optional and may be null.
+    * recurrences_display: human-readible information for `recurrences`
 
     ## Trigger Endpoints
 
     Each trigger is available at an endpoint based on it's database ID: `/api/triggers/{id}/`.
 
-    ## TODO: triggers are useless right now.
+    ## TODO: triggers are not very useful right now.
 
-    The data model for this is woefully incomplete. It should also provide:
+    The data model for this is incomplete. It should also provide:
 
-    * A way for a user to create their own triggers (reminders)
-    * The info necessary to implement repeating reminders (e.g. choosing days
-      of the week, etc, in addition to frequency)
+    * A way for a user to create their own triggers (reminders)?
     * a location; for geo-based notifications.
     * endpoints taht are *not* just read-only.
-    * probably other things...
 
     ----
 
