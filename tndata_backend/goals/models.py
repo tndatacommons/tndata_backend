@@ -311,21 +311,29 @@ class Trigger(URLMixin, models.Model):
 
     def recurrences_as_text(self):
         if self.recurrences:
+            result = ''
             rules = []
             for rule in self.recurrences.rrules:
                 rules.append(rule.to_text())
-            return ", ".join(rules)
+            result = ", ".join(rules)
+            if len(self.recurrences.rdates) > 0:
+                result += " on "
+                result += ", ".join(
+                    ["{0}".format(d) for d in self.recurrences.rdates]
+                )
+            return result
         return ''
 
     def next(self):
         # NOTE: It appears that the date used is the system date/time. not utc.
         # Get the next occurance of this trigger.
-        if self.trigger_type == "time" and self.time and self.recurrences:
+        if self.trigger_type == "time" and self.recurrences:
             todays_occurance = datetime.today()  # use UTC?
-            todays_occurance = todays_occurance.combine(
-                todays_occurance,
-                self.time
-            )
+            if self.time:
+                todays_occurance = todays_occurance.combine(
+                    todays_occurance,
+                    self.time
+                )
             return self.recurrences.after(
                 todays_occurance,
                 dtstart=todays_occurance,
