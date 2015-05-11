@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from django.utils.text import slugify
 
+from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
 
 from . models import Action, Behavior, Category, Goal, Trigger
@@ -42,7 +43,6 @@ class BehaviorForm(forms.ModelForm):
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
 
 
-
 class CategoryForm(forms.ModelForm):
     """A Form for creating/updateing Categories. This form customizes the widget
     for the color field."""
@@ -72,6 +72,8 @@ class GoalForm(forms.ModelForm):
 
 
 class TriggerForm(forms.ModelForm):
+    recurrences = RecurrenceField()
+
     class Meta:
         model = Trigger
         fields = ['name', 'trigger_type', 'time', 'recurrences']

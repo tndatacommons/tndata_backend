@@ -5,6 +5,7 @@
   {{ block.super }}
   {# See bodyjs block for the timepicker js and config #}
   <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
+  {{ form.media }}
 {% endblock %}
 
 
@@ -27,6 +28,13 @@
       enctype="multipart/form-data">{% csrf_token %}
     <p>A <strong>Trigger</strong> is the top-level organizational unit for
     behavior-change Actions, and is the first thing a user will see in the app.</p>
+
+    <p  data-alert class="alert-box info">
+    While the form below will let you include or exclude dates in the recurrence,
+    the backend only supports recurring rules and included dates
+    (not excluded dates).
+    </p>
+
     {{ form.as_p }}
     <hr/>
     <p><button type="submit">
