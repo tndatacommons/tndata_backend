@@ -320,12 +320,18 @@ class Trigger(URLMixin, models.Model):
     def next(self):
         # NOTE: It appears that the date used is the system date/time. not utc.
         # Get the next occurance of this trigger.
-        todays_occurance = datetime.today()  # use UTC?
-        todays_occurance = todays_occurance.combine(todays_occurance, self.time)
-        return self.recurrences.after(
-            todays_occurance,
-            dtstart=todays_occurance,
-        )
+        if self.trigger_type == "time" and self.time and self.recurrences:
+            todays_occurance = datetime.today()  # use UTC?
+            todays_occurance = todays_occurance.combine(
+                todays_occurance,
+                self.time
+            )
+            return self.recurrences.after(
+                todays_occurance,
+                dtstart=todays_occurance,
+            )
+        # No recurrence or not a time-pased Trigger.
+        return None
 
 
 def _behavior_icon_path(instance, filename):
