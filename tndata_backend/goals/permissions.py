@@ -14,6 +14,7 @@ custom groups for people who create and review content:
 from django.contrib.auth.models import Group, Permission
 
 # Group Names
+CONTENT_ADMINS = "Content Admins"
 CONTENT_AUTHORS = "Content Authors"
 CONTENT_EDITORS = "Content Editors"
 CONTENT_VIEWERS = "Content Viewers"
@@ -41,6 +42,19 @@ class ContentPermissions:
     _workflow_objects = ['action', 'behavior', 'goal', 'trigger']
 
     @property
+    def admins(self):
+        """permissions for admins"""
+        perms = []
+        for obj in self._objects:
+            perms.append('goals.add_{0}'.format(obj))
+            perms.append('goals.change_{0}'.format(obj))
+            perms.append('goals.delete_{0}'.format(obj))
+            perms.append('goals.view_{0}'.format(obj))
+            perms.append('goals.publish_{0}'.format(obj))
+            perms.append('goals.decline_{0}'.format(obj))
+        return perms
+
+    @property
     def authors(self):
         """permissions for authors"""
         perms = self.viewers
@@ -56,6 +70,7 @@ class ContentPermissions:
         for obj in self._workflow_objects:
             perms.append('goals.publish_{0}'.format(obj))
             perms.append('goals.decline_{0}'.format(obj))
+            perms.append('goals.delete_{0}'.format(obj))
         return perms
 
     @property
@@ -66,23 +81,31 @@ class ContentPermissions:
 ContentPermissions = ContentPermissions()  # make it act like a monad.
 
 
+def _add_perms_to_group(group, perms_list):
+    for perm in perms_list:
+        app, code = perm.split(".")
+        p = Permission.objects.get(content_type__app_label=app, codename=code)
+        group.permissions.add(p)
+    group.save()
+
+
+def get_or_create_content_admins():
+    """Creates the 'Content Admins' Group if it doesn't exist, and assigns
+    the appropriate permissions to that group.
+
+    """
+    group, created = Group.objects.get_or_create(name=CONTENT_ADMINS)
+    _add_perms_to_group(group, ContentPermissions.admins)
+    return group
+
+
 def get_or_create_content_authors():
     """Creates the 'Content Authors' Group if it doesn't exist, and assigns
     the appropriate permissions to that group.
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_AUTHORS)
-    perms = [
-        "view_category",
-        "view_trigger",
-    ]
-    for obj in ['goal', 'behavior', 'action']:
-        perms.append("add_{0}".format(obj))
-        perms.append("change_{0}".format(obj))
-        perms.append("view_{0}".format(obj))
-    for p in Permission.objects.filter(codename__in=perms):
-        group.permissions.add(p)
-    group.save()
+    _add_perms_to_group(group, ContentPermissions.authors)
     return group
 
 
@@ -92,32 +115,17 @@ def get_or_create_content_editors():
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_EDITORS)
-    perms = []
-    for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
-        perms.append("add_{0}".format(obj))
-        perms.append("change_{0}".format(obj))
-        perms.append("decline_{0}".format(obj))
-        perms.append("delete_{0}".format(obj))
-        perms.append("publish_{0}".format(obj))
-        perms.append("view_{0}".format(obj))
-    for p in Permission.objects.filter(codename__in=perms):
-        group.permissions.add(p)
-    group.save()
+    _add_perms_to_group(group, ContentPermissions.editors)
     return group
 
 
-def get_or_create_content_viewers(apps=None, schema_editor=None):
+def get_or_create_content_viewers():
     """Creates the 'Content Viewers' Group if it doesn't exist, and assigns the
     appropriate permissions.
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_VIEWERS)
-    perms = []
-    for obj in ['category', 'goal', 'behavior', 'action', 'trigger']:
-        perms.append("view_{0}".format(obj))
-    for p in Permission.objects.filter(codename__in=perms):
-        group.permissions.add(p)
-    group.save()
+    _add_perms_to_group(group, ContentPermissions.viewers)
     return group
 
 
