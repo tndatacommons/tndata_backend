@@ -260,6 +260,8 @@ class Trigger(URLMixin, models.Model):
         ('time', 'Time'),
         ('place', 'Place'),
     )
+
+    # TODO: User-specified triggers?
     name = models.CharField(
         max_length=128,
         unique=True,
