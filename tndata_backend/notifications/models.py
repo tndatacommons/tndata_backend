@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 from pushjack import GCMClient
+from . managers import GCMMessageManager
 from . settings import GCM
 
 
@@ -46,10 +47,8 @@ class GCMDevice(models.Model):
         return self.device_name or self.registration_id
 
 
-# TODO: Manager command that fails to create a message if a user has no device?
 # TODO: the recurring info is stored in goals.Triggers; We need some way
 #       for that app to create these notifications.
-
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
     user = models.ForeignKey(
@@ -178,3 +177,6 @@ class GCMMessage(models.Model):
 
         self._set_expiration()
         self.save()
+
+    # Use the Custom Manager for GCMMessage objects.
+    objects = GCMMessageManager()

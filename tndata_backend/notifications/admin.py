@@ -30,7 +30,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     send_notification.short_description = "Send Message via GCM"
 
     def expire_messages(self, request, queryset):
-        queryset.filter(expire_on__lte=datetime.utcnow()).delete()
+        queryset.expired().delete()
     expire_messages.short_description = "Remove Expired Messages"
 
 admin.site.register(models.GCMMessage, GCMMessageAdmin)
