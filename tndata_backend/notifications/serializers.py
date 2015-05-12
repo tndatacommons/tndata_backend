@@ -20,17 +20,6 @@ class GCMMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = GCMMessage
         fields = (
-            'id', 'user', 'message_id', 'content',
-            'success', 'response_code', 'response_text', 'deliver_on',
-            'expire_on', 'created_on',
+            'id', 'user', 'message_id', 'content', 'success', 'response_code',
+            'deliver_on', 'created_on',
         )
-        read_only_fields = (
-            "id", "success", "response_code", "response_text", "created_on",
-        )
-
-    def to_representation(self, instance):
-        """Return a JSON-decoded version of the content, because rest framework
-        will re-encode it."""
-        ret = super(GCMMessageSerializer, self).to_representation(instance)
-        ret['content'] = instance.content
-        return ret

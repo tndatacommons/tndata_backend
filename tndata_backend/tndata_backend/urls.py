@@ -62,8 +62,8 @@ router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/goals', UserGoalViewSet)
 
 # ViewSets from the notifications app.
-router.register(r'notifications', GCMMessageViewSet)
 router.register(r'notifications/devices', GCMDeviceViewSet)
+router.register(r'notifications', GCMMessageViewSet)
 
 # ViewSets from the survey app.
 router.register(r'survey/binary/responses', BinaryResponseViewSet)
