@@ -22,7 +22,7 @@
         <dt>More Info</dt><dd>{{ action.more_info|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
         <dt>Default Trigger</dt>
-          {% with trigger=behavior.default_trigger %}
+          {% with trigger=action.default_trigger %}
           <dd>{{ trigger }}
             {% if trigger.recurrences %}
               <br/><em>{{ trigger.recurrences_as_text }}</em>
