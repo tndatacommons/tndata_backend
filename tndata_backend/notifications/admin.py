@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.contrib import admin
 from . import models
 
@@ -16,15 +17,20 @@ admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 
 class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
-        'user', 'message_id', 'deliver_on', 'success', 'response_code',
+        'user', 'message_id', 'deliver_on', 'expire_on',
+        'success', 'response_code',
     )
     list_filter = ('success', 'response_code')
     search_fields = ['message_id', ]
-    actions = ['send_notification']
+    actions = ['send_notification', 'expire_messages']
 
     def send_notification(self, request, queryset):
         for obj in queryset:
             obj.send()
     send_notification.short_description = "Send Message via GCM"
+
+    def expire_messages(self, request, queryset):
+        queryset.filter(expire_on__lte=datetime.utcnow()).delete()
+    expire_messages.short_description = "Remove Expired Messages"
 
 admin.site.register(models.GCMMessage, GCMMessageAdmin)

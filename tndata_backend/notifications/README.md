@@ -6,6 +6,16 @@ This app contains the things required to send Push notifications using
 For more details, see: [Implementing a GCM Server](https://developer.android.com/google/gcm/server.html).
 
 
+Commands
+--------
+
+A few management commands make this app work. These should be scheduled to
+run periodically.
+
+* `send_messages` will send deliver messages. Should run every 5-10 minutes.
+* `expire_messages` will remove previously delivered messages. Should run once a day.
+
+
 Dependencies
 ------------
 

@@ -49,7 +49,6 @@ class GCMDevice(models.Model):
 # TODO: Manager command that fails to create a message if a user has no device?
 # TODO: the recurring info is stored in goals.Triggers; We need some way
 #       for that app to create these notifications.
-# TODO: management command to remove successfully sent (& expired) messages
 
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
@@ -60,6 +59,7 @@ class GCMMessage(models.Model):
     message_id = models.CharField(
         max_length=32,
         db_index=True,
+        blank=True,  # Generated automatcially
         help_text="Unique ID for this message."
     )
     title = models.CharField(max_length=50, default="")
@@ -164,10 +164,17 @@ class GCMMessage(models.Model):
         self._save_response(resp)
         return resp
 
+    def _set_expiration(self):
+        if self.response_code == 200:
+            self.expire_on = datetime.utcnow()
+
     def _save_response(self, resp):
         report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
         report = ""
-        for r in resp.responses:
+        for r in resp.responses:  # Should only be 1 item.
             report += report_pattern.format(r.status_code, r.reason, r.url)
+            self.respones_code = r.status_code
         self.response_text = report
+
+        self._set_expiration()
         self.save()

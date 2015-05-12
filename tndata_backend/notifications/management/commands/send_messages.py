@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.core.management.base import BaseCommand
 
-from notifications import GCMMessage
+from notifications.models import GCMMessage
 
 
 class Command(BaseCommand):
