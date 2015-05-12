@@ -32,12 +32,25 @@ class BehaviorForm(forms.ModelForm):
     goals = forms.ModelMultipleChoiceField(
         queryset=Goal.objects.all().order_by("title")
     )
+    default_trigger = forms.ModelChoiceField(
+        queryset=Trigger.objects.all()
+    )
+
+    def __init__(self, *args, **kwargs):
+        if 'instance' in kwargs and kwargs['instance'].default_trigger is None:
+            kwargs['instance'].default_trigger = Trigger.objects.get(pk=1)
+        elif 'initial' in kwargs and kwargs.get('initial') is None:
+            kwargs['intitial'].update({
+                'default_trigger': Trigger.objects.get(pk=1)
+            })
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Behavior
         fields = [
             'title', 'description', 'more_info', 'informal_list',
-            'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
+            'external_resource', 'goals', 'icon', 'default_trigger',
+            'source_link', 'source_notes',
             'notes',
         ]
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
