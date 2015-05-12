@@ -31,7 +31,15 @@
           {% endif %}
           {% endwith %}
         </dd>
-        <dt>Source Link</dt><dd>{{ behavior.source_link}}</dd>
+        <dt>Default Trigger</dt>
+          {% with trigger=behavior.default_trigger %}
+          <dd>{{ trigger }}
+            {% if trigger.recurrences %}
+              <br/><em>{{ trigger.recurrences_as_text }}</em>
+            {% endif %}
+          </dd>
+          {% endwith %}
+        <dt>Source Link</dt><dd>{{ behavior.source_link|urlize}}</dd>
         <dt>Source Notes</dt><dd>{{ behavior.source_notes|markdown}}</dd>
       </dl>
       {% modified behavior %}

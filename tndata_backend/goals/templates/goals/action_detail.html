@@ -22,18 +22,10 @@
         <dt>More Info</dt><dd>{{ action.more_info|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
         <dt>Default Trigger</dt>
-          {% with trigger=action.default_trigger %}
-          <dd>
-            {% if trigger %}
-              {{ trigger }}: {{ trigger.get_frequency_display }}
-              {% if trigger.trigger_type == "time" %}
-                {{ trigger.time }}
-              {% else %}
-                {{ trigger.location }}
-              {% endif %}
-              <br/>{{ trigger.text }}<br/>{{ trigger.instruction }}
-            {% else %}
-              <em>No trigger defined.</em>
+          {% with trigger=behavior.default_trigger %}
+          <dd>{{ trigger }}
+            {% if trigger.recurrences %}
+              <br/><em>{{ trigger.recurrences_as_text }}</em>
             {% endif %}
           </dd>
           {% endwith %}
@@ -49,7 +41,7 @@
           {% endif %}
           {% endwith %}
         </dd>
-        <dt>Source Link</dt><dd>{{ action.source_link}}</dd>
+        <dt>Source Link</dt><dd>{{ action.source_link|urlize}}</dd>
         <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
       </dl>
       {% modified action %}
