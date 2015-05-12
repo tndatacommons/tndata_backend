@@ -14,6 +14,40 @@ class IsOwner(permissions.BasePermission):
         return obj.user == request.user
 
 
+class GCMDeviceViewSet(mixins.CreateModelMixin,
+                       mixins.ListModelMixin,
+                       viewsets.GenericViewSet):
+    """This endpoint allows an Android client to register a User's device so
+    for notifications via
+    [Google Cloud Messaging](https://developer.android.com/google/gcm).
+
+    To create a message, you must POST the following information to
+    `/api/notifications/devices`:
+
+    * `registration_id`: This is the device's registration ID. For more info,
+      see the [Register for GCM](https://developer.android.com/google/gcm/client.html#sample-register) section in the android developer documentation.
+    * `device_name`: (optional) a name for the device
+    * `is_active`: (optional) Defaults to True; whether or not the device accepts
+      notifications.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.GCMDevice.objects.all()
+    serializer_class = serializers.GCMDeviceSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        # We're creating a single item.
+        request.data['user'] = request.user.id
+        return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
+
+
 class GCMMessageViewSet(mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         viewsets.GenericViewSet):

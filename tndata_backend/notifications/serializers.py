@@ -1,5 +1,17 @@
 from rest_framework import serializers
-from . models import GCMMessage
+from . models import GCMDevice, GCMMessage
+
+
+class GCMDeviceSerializer(serializers.ModelSerializer):
+    """A Serializer for the `GCMDevice` model."""
+
+    class Meta:
+        model = GCMDevice
+        fields = (
+            'id', 'user', 'registration_id', 'device_name', 'is_active',
+            'created_on', 'updated_on',
+        )
+        read_only_fields = ("id", "created_on", "updated_on")
 
 
 class GCMMessageSerializer(serializers.ModelSerializer):
