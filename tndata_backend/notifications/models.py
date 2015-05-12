@@ -1,6 +1,8 @@
+import json
+import pytz
+
 from datetime import datetime
 from hashlib import md5
-import json
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -47,8 +49,6 @@ class GCMDevice(models.Model):
         return self.device_name or self.registration_id
 
 
-# TODO: the recurring info is stored in goals.Triggers; We need some way
-#       for that app to create these notifications.
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
     user = models.ForeignKey(
@@ -80,12 +80,12 @@ class GCMMessage(models.Model):
 
     deliver_on = models.DateTimeField(
         db_index=True,
-        help_text="Date/Time on which the message should be delivered"
+        help_text="Date/Time on which the message should be delivered (UTC)"
     )
     expire_on = models.DateTimeField(
         blank=True,
         null=True,
-        help_text="Date/Time on which this message should expire (be deleted)"
+        help_text="Date/Time when this should expire (UTC)"
     )
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -103,7 +103,15 @@ class GCMMessage(models.Model):
         d = datetime.utcnow().strftime("%c").encode("utf8")
         self.message_id = md5(d).hexdigest()
 
+    def _localize(self):
+        """Ensure times are stored in UTC"""
+        if self.deliver_on and self.deliver_on.tzinfo is None:
+            self.deliver_on = pytz.utc.localize(self.deliver_on)
+        if self.expire_on and self.expire_on.tzinfo is None:
+            self.expire_on = pytz.utc.localize(self.expire_on)
+
     def save(self, *args, **kwargs):
+        self._localize()
         if not self.message_id:
             self._set_message_id()
         super(GCMMessage, self).save(*args, **kwargs)
@@ -114,7 +122,8 @@ class GCMMessage(models.Model):
     @property
     def registration_ids(self):
         """Return the active registration IDs associated with the user."""
-        # TODO: what if the user has no devices?
+        # Note: if the user has no devices, creating a GCMMessage through
+        # the manager (GCMMessage.objects.create) will fail.
         devices = GCMDevice.objects.filter(is_active=True, user=self.user)
         return list(devices.values_list("registration_id", flat=True))
 
