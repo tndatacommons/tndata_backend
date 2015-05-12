@@ -1,12 +1,13 @@
 from datetime import datetime
 from hashlib import md5
+import json
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from jsonfield import JSONField
 from pushjack import GCMClient
-
 from . settings import GCM
 
 
@@ -45,6 +46,11 @@ class GCMDevice(models.Model):
         return self.device_name or self.registration_id
 
 
+# TODO: Manager command that fails to create a message if a user has no device?
+# TODO: the recurring info is stored in goals.Triggers; We need some way
+#       for that app to create these notifications.
+# TODO: management command to remove successfully sent (& expired) messages
+
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
     user = models.ForeignKey(
@@ -56,11 +62,12 @@ class GCMMessage(models.Model):
         db_index=True,
         help_text="Unique ID for this message."
     )
+    title = models.CharField(max_length=50, default="")
+    message = models.CharField(max_length=256, default="")
 
-    # TODO: separate the bits of the message into separate fields.
-    # e.g. title, message, object_type (e.g. behavior), object_id, then create
-    # a `content` property that returns a dict/json
-    content = JSONField(help_text="JSON content for the message")
+    content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    content_object = GenericForeignKey('content_type', 'object_id')
 
     # Successful deliver? True/False, Null == message not sent.
     success = models.NullBooleanField(
@@ -82,14 +89,6 @@ class GCMMessage(models.Model):
         help_text="Date/Time on which this message should expire (be deleted)"
     )
     created_on = models.DateTimeField(auto_now_add=True)
-
-    # TODO: the recurring info is stored in goals.Triggers; We need some way
-    # for that app to create these notifications.
-    #
-    # TODO: associate with a goals model via a Generic Relation?
-    # https://docs.djangoproject.com/en/1.8/ref/contrib/contenttypes/
-    #
-    # TODO: management command to remove successfully sent (& expired) messages
 
     def __str__(self):
         return self.message_id
@@ -116,8 +115,33 @@ class GCMMessage(models.Model):
     @property
     def registration_ids(self):
         """Return the active registration IDs associated with the user."""
+        # TODO: what if the user has no devices?
         devices = GCMDevice.objects.filter(is_active=True, user=self.user)
         return list(devices.values_list("registration_id", flat=True))
+
+    @property
+    def content(self):
+        """The Bundled content that gets sent as the messages payload.
+
+        NOTE: This payload has a limit of 4096 bytes.
+        """
+        object_type = None
+        object_id = None
+        if self.content_type and self.object_id:
+            object_type = self.content_type.name.lower()
+            object_id = self.object_id
+
+        return {
+            "title": self.title,
+            "message": self.message,
+            "object_type": object_type,
+            "object_id": object_id,
+        }
+
+    @property
+    def content_json(self):
+        """JSON-encoded message payload; NOTE: has a limit of 4096 bytes."""
+        return json.dumps(self.content)
 
     def send(self, collapse_key=None, delay_while_idle=True, ttl=None):
         """Deliver this message to Google Cloud Messaging.
@@ -136,7 +160,7 @@ class GCMMessage(models.Model):
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
-        resp = client.send(self.registration_ids, self.content, **options)
+        resp = client.send(self.registration_ids, self.content_json, **options)
         self._save_response(resp)
         return resp
 
