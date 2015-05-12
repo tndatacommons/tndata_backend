@@ -33,16 +33,17 @@ class BehaviorForm(forms.ModelForm):
         queryset=Goal.objects.all().order_by("title")
     )
     default_trigger = forms.ModelChoiceField(
-        queryset=Trigger.objects.all()
+        queryset=Trigger.objects.all(),
+        required=False
     )
 
     def __init__(self, *args, **kwargs):
-        if 'instance' in kwargs and kwargs['instance'].default_trigger is None:
-            kwargs['instance'].default_trigger = Trigger.objects.get(pk=1)
+        default = Trigger.objects.get(name_slug='default-behavior-reminder')
+        instance = kwargs.get('instance', None)
+        if instance and instance.default_trigger is None:
+            kwargs['instance'].default_trigger = default
         elif 'initial' in kwargs and kwargs.get('initial') is None:
-            kwargs['intitial'].update({
-                'default_trigger': Trigger.objects.get(pk=1)
-            })
+            kwargs['intitial'].update({'default_trigger': default})
         super().__init__(*args, **kwargs)
 
     class Meta:

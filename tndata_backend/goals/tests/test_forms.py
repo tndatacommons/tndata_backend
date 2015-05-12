@@ -74,12 +74,19 @@ class TestActionForm(TestCase):
 
 class TestBehaviorForm(TestCase):
 
+    @classmethod
+    def setUpTestData(cls):
+        cls.trigger = Trigger.objects.create(
+            name="Default Behavior Reminder",
+            trigger_type="time"
+        )
+
     def test_unbound(self):
         form = BehaviorForm()
         fields = sorted([
             'title', 'description', 'more_info', 'informal_list',
             'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
-            'notes',
+             'default_trigger', 'notes',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -93,6 +100,7 @@ class TestBehaviorForm(TestCase):
             'external_resource': '',
             'goals': [g.id],
             'icon': '',
+            'default_trigger': '',
             'source_link': '',
             'source_notes': '',
             'notes': '',
@@ -113,6 +121,7 @@ class TestBehaviorForm(TestCase):
             'external_resource': '',
             'goals': [g.id],
             'icon': '',
+            'default_trigger': '',
             'source_link': '',
             'source_notes': '',
             'notes': '',
@@ -146,7 +155,6 @@ class TestCategoryForm(TestCase):
         }
         form = CategoryForm(data)
         self.assertTrue(form.is_valid())
-
 
     def test_duplicate_title(self):
         """Ensure that duplicate titles fail validation."""
@@ -205,6 +213,7 @@ class TestGoalForm(TestCase):
         err = {'title': ['Goal with this Title already exists.']}
         self.assertEqual(form.errors, err)
         c.delete()
+        g.delete()
 
 
 class TestTriggerForm(TestCase):

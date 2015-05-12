@@ -1332,6 +1332,10 @@ class TestBehaviorCreateView(TestCaseWithGroups):
             description="A Description",
             outcome="An Outcome"
         )
+        cls.trigger = Trigger.objects.create(
+            name="Default Behavior Reminder",
+            trigger_type="time"
+        )
         cls.payload = {'title': 'New', 'goals': cls.goal.id}
 
     def test_anon_get(self):
@@ -1482,6 +1486,10 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
             title="Title for Test Goal",
             description="A Description",
             outcome="An Outcome"
+        )
+        cls.trigger = Trigger.objects.create(
+            name="Default Behavior Reminder",
+            trigger_type="time"
         )
         cls.payload = {'title': 'U', 'goals': cls.goal.id}
 
