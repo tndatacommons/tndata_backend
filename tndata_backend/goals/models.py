@@ -291,6 +291,13 @@ class Trigger(URLMixin, models.Model):
         help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
     )
 
+    @classmethod
+    def random(cls, trigger_type="time"):
+        """A classmethod that retrieves a random Trigger object."""
+        sql = """select * from goals_trigger where trigger_type=%s
+                 order by random() limit 1;"""
+        return list(cls.objects.raw(sql, [trigger_type]))[0]
+
     def __str__(self):
         return "{0}".format(self.name)
 
@@ -328,7 +335,7 @@ class Trigger(URLMixin, models.Model):
         # NOTE: It appears that the date used is the system date/time. not utc.
         # Get the next occurance of this trigger.
         if self.trigger_type == "time" and self.recurrences:
-            todays_occurance = datetime.today()  # use UTC?
+            todays_occurance = datetime.utcnow()  # uses UTC
             if self.time:
                 todays_occurance = todays_occurance.combine(
                     todays_occurance,
@@ -457,6 +464,15 @@ class BaseBehavior(ModifiedMixin, models.Model):
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
         pass
+
+    def get_trigger(self, trigger_type="time"):
+        """Returns the default trigger or a random Trigger if there
+        is no default.
+
+        """
+        if self.default_trigger is None:
+            return Trigger.random(trigger_type)
+        return self.default_trigger
 
 
 class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
@@ -596,6 +612,11 @@ class UserGoal(models.Model):
 
 
 class UserBehavior(models.Model):
+    """A Mapping between Users and the Behaviors they've selected.
+
+    NOTE: notifications for this are scheduled by the `create_notifications`
+    management command.
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     behavior = models.ForeignKey(Behavior)
     completed = models.BooleanField(default=False)
@@ -619,6 +640,11 @@ class UserBehavior(models.Model):
 
 
 class UserAction(models.Model):
+    """A Mapping between Users and the Actions they've selected.
+
+    NOTE: notifications for this are scheduled by the `create_notifications`
+    management command.
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     action = models.ForeignKey(Action)
     completed = models.BooleanField(default=False)
