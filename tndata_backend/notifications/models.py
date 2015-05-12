@@ -56,20 +56,11 @@ class GCMMessage(models.Model):
         db_index=True,
         help_text="Unique ID for this message."
     )
-    registration_id = models.CharField(
-        max_length=256,
-        db_index=True,
-        help_text="The Android device ID"
-    )
 
-    # TODO: IS THIS Right? From the app's perspective, should we be building a
-    # chunk of JSON or should we just push up a message string?
-    # OR, should we separate the bits of the message into separate fields.
-    # e.g. title, message, object_type (e.g. behavior), object_id,
+    # TODO: separate the bits of the message into separate fields.
+    # e.g. title, message, object_type (e.g. behavior), object_id, then create
+    # a `content` property that returns a dict/json
     content = JSONField(help_text="JSON content for the message")
-
-    # TODO: associate with a goals model via a Generic Relation?
-    # https://docs.djangoproject.com/en/1.8/ref/contrib/contenttypes/
 
     # Successful deliver? True/False, Null == message not sent.
     success = models.NullBooleanField(
@@ -92,18 +83,20 @@ class GCMMessage(models.Model):
     )
     created_on = models.DateTimeField(auto_now_add=True)
 
-    # TODO: Should a message be set as recurring, here?
-    # --- the recurring info is stored in goals.Triggers; We need some way for
-    # that app to create these notifications.
-
-    # TODO: management command to clean up successfully sent messages.
+    # TODO: the recurring info is stored in goals.Triggers; We need some way
+    # for that app to create these notifications.
+    #
+    # TODO: associate with a goals model via a Generic Relation?
+    # https://docs.djangoproject.com/en/1.8/ref/contrib/contenttypes/
+    #
+    # TODO: management command to remove successfully sent (& expired) messages
 
     def __str__(self):
         return self.message_id
 
     class Meta:
         ordering = ['deliver_on']
-        unique_together = ("registration_id", "message_id")
+        unique_together = ("user", "message_id")
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
 
@@ -119,6 +112,12 @@ class GCMMessage(models.Model):
 
     def _get_gcm_client(self):
         return GCMClient(api_key=GCM['API_KEY'])
+
+    @property
+    def registration_ids(self):
+        """Return the active registration IDs associated with the user."""
+        devices = GCMDevice.objects.filter(is_active=True, user=self.user)
+        return list(devices.values_list("registration_id", flat=True))
 
     def send(self, collapse_key=None, delay_while_idle=True, ttl=None):
         """Deliver this message to Google Cloud Messaging.
@@ -137,7 +136,7 @@ class GCMMessage(models.Model):
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
-        resp = client.send([self.registration_id], self.content, **options)
+        resp = client.send(self.registration_ids, self.content, **options)
         self._save_response(resp)
         return resp
 

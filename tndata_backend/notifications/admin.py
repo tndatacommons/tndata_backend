@@ -16,10 +16,10 @@ admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 
 class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
-        'message_id', 'registration_id', 'deliver_on', 'success', 'response_code',
+        'user', 'message_id', 'deliver_on', 'success', 'response_code',
     )
     list_filter = ('success', 'response_code')
-    search_fields = ['message_id', 'registration_id']
+    search_fields = ['message_id', ]
     actions = ['send_notification']
 
     def send_notification(self, request, queryset):
