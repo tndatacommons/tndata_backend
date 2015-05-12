@@ -10,6 +10,41 @@ from pushjack import GCMClient
 from . settings import GCM
 
 
+class GCMDevice(models.Model):
+    """A User's registered device."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        help_text="The owner of this message."
+    )
+    device_name = models.CharField(
+        max_length=32,
+        blank=True,
+        default="Default Device",
+        help_text="A name for this device"
+    )
+    registration_id = models.CharField(
+        max_length=256,
+        db_index=True,
+        help_text="The Android device ID"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        blank=True,
+        help_text="Does this device accept notifications?"
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['user', 'registration_id']
+        unique_together = ("registration_id", "user")
+        verbose_name = "GCM Device"
+        verbose_name_plural = "GCM Devices"
+
+    def __str__(self):
+        return self.device_name or self.registration_id
+
+
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
     user = models.ForeignKey(
@@ -30,8 +65,11 @@ class GCMMessage(models.Model):
     # TODO: IS THIS Right? From the app's perspective, should we be building a
     # chunk of JSON or should we just push up a message string?
     # OR, should we separate the bits of the message into separate fields.
-    # e.g. title, message, activity_class, object_id,
+    # e.g. title, message, object_type (e.g. behavior), object_id,
     content = JSONField(help_text="JSON content for the message")
+
+    # TODO: associate with a goals model via a Generic Relation?
+    # https://docs.djangoproject.com/en/1.8/ref/contrib/contenttypes/
 
     # Successful deliver? True/False, Null == message not sent.
     success = models.NullBooleanField(
@@ -53,7 +91,12 @@ class GCMMessage(models.Model):
         help_text="Date/Time on which this message should expire (be deleted)"
     )
     created_on = models.DateTimeField(auto_now_add=True)
+
     # TODO: Should a message be set as recurring, here?
+    # --- the recurring info is stored in goals.Triggers; We need some way for
+    # that app to create these notifications.
+
+    # TODO: management command to clean up successfully sent messages.
 
     def __str__(self):
         return self.message_id
