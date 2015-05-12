@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, time
 from unittest.mock import patch
 
@@ -227,6 +228,12 @@ class TestTrigger(TestCase):
         actual = "{}".format(self.trigger)
         self.assertEqual(expected, actual)
 
+    def test__localize_time(self):
+        t = Trigger(name="X", trigger_type="time", time=time(12, 34))
+        self.assertEqual(t.time, time(12, 34))
+        t._localize_time()
+        self.assertEqual(t.time, time(12, 34, tzinfo=pytz.UTC))
+
     def test_save(self):
         """Verify that saving generates a name_slug"""
         trigger = Trigger.objects.create(name="New Name", trigger_type="time")
@@ -257,10 +264,22 @@ class TestTrigger(TestCase):
 
     def test_next(self):
         """Ensure that next returns the next day's event."""
+        # returns none when trigger_type == 'place'
+        self.trigger.trigger_type = "place"
+        self.trigger.save()
+        self.assertIsNone(self.trigger.next())
+
+        # Reset to time triggers
+        self.trigger.trigger_type = "time"
+        self.trigger.save()
+
+        # returns none when there's no recurrence
+        self.assertIsNone(Trigger(trigger_type="time").next())
+
         with patch("goals.models.datetime") as dt:
-            dt.today.return_value = datetime(1000, 10, 20, 9, 30, 45)
+            dt.utcnow.return_value = datetime(1000, 10, 20, 9, 30, 45)
             # Expected is in exactly 1 day
-            expected = datetime(1000, 10, 21, 12, 34)
+            expected = datetime(1000, 10, 21, 12, 34, tzinfo=pytz.UTC)
             self.assertEqual(self.trigger.next(), expected)
 
 

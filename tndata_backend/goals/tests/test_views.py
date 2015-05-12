@@ -1,3 +1,6 @@
+import pytz
+from datetime import time
+
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
@@ -914,7 +917,7 @@ class TestTriggerListView(TestCaseWithGroups):
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            time="13:30",
+            time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
 
@@ -959,7 +962,7 @@ class TestTriggerDetailView(TestCaseWithGroups):
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            time="13:30",
+            time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         cls.url = cls.trigger.get_absolute_url()
@@ -1087,7 +1090,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         self.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            time="13:30",
+            time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         self.url = self.trigger.get_update_url()
@@ -1168,7 +1171,7 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         self.trigger = Trigger.objects.create(
             name="Test Trigger",
             trigger_type="time",
-            time="13:30",
+            time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         self.url = self.trigger.get_delete_url()

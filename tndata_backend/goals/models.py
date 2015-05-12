@@ -8,6 +8,8 @@ Actions are the things we want to help people to do.
 
 """
 import os
+import pytz
+
 from datetime import datetime
 
 from django.conf import settings
@@ -306,16 +308,21 @@ class Trigger(URLMixin, models.Model):
     class Meta:
         verbose_name = "Trigger"
         verbose_name_plural = "Triggers"
-        # add_trigger, change_trigger, delete_trigger are created by default.
         permissions = (
             ("view_trigger", "Can view Triggers"),
             ("decline_trigger", "Can Decline Triggers"),
             ("publish_trigger", "Can Publish Triggers"),
         )
 
+    def _localize_time(self):
+        """Adds the UTC timezone info to self.time."""
+        if self.time and self.time.tzinfo is None:
+            self.time = pytz.utc.localize(self.time)
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
+        self._localize_time()
         super(Trigger, self).save(*args, **kwargs)
 
     def recurrences_as_text(self):
