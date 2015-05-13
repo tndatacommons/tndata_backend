@@ -15,7 +15,7 @@ class GCMMessageManager(models.Manager):
 
     def expired(self, *args, **kwargs):
         """Return a queryset of expired messages."""
-        return self.qet_queryset().filter(expire_on__lte=datetime.utcnow())
+        return self.get_queryset().filter(expire_on__lte=datetime.utcnow())
 
     def ready_for_delivery(self, *args, **kwargs):
         """Return a queryset of messages that are ready to be delivered."""
