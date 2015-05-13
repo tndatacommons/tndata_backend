@@ -15,6 +15,7 @@ from datetime import datetime
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_delete
+from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField, transition
@@ -143,7 +144,29 @@ def get_categories_as_choices():
     tuple of choices (suitable for forms or fields that accept a `choices`
     argument).
     """
-    return tuple(Category.objects.values_list("title_slug", "title"))
+    try:
+        return tuple(Category.objects.values_list("title_slug", "title"))
+    except ProgrammingError:
+        # If we're standing up a brand-new system, the above may fail when
+        # the categories table hasn't been created, yet (e.g. this gets called
+        # from the survey app before syncdb finishes in the goals app).
+        # In that case, just return this hard-coded version of data :(
+        return (
+            ('community', 'Community'),
+            ('education', 'Education'),
+            ('family', 'Family'),
+            ('fun','Fun'),
+            ('happiness', 'Happiness'),
+            ('health', 'Health'),
+            ('home', 'Home'),
+            ('parenting', 'Parenting'),
+            ('prosperity','Prosperity'),
+            ('romance', 'Romance'),
+            ('safety', 'Safety'),
+            ('skills', 'Skills'),
+            ('wellness', 'Wellness'),
+            ('work','Work'),
+        )
 
 
 class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
