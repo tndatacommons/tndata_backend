@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db import models
+from django.db import IntegrityError, models, transaction
 from django.core.exceptions import ObjectDoesNotExist
 
 
@@ -33,7 +33,10 @@ class GCMMessageManager(models.Manager):
         * message: Content of the Message.
         * deliver_on: A datetime object: When the message will be delivered (UTC)
 
-        Note: This command will fail if the user has not registered a GCMDevice
+        Note: This command will fail if the user has not registered a GCMDevice.
+
+        If for some reason the Message could not be created (e.g. you tried
+        to create a duplicate), this method will return `None`.
 
         """
         if not user.gcmdevice_set.exists():
@@ -41,12 +44,16 @@ class GCMMessageManager(models.Manager):
                 "Users must have a registered Device before sending messages"
             )
 
-        msg = self.model(
-            user=user,
-            content_object=obj,
-            title=title,
-            message=message,
-            deliver_on=deliver_on
-        )
-        msg.save()
+        try:
+            with transaction.atomic():
+                msg = self.model(
+                    user=user,
+                    content_object=obj,
+                    title=title,
+                    message=message,
+                    deliver_on=deliver_on
+                )
+                msg.save()
+        except IntegrityError:
+            msg = None  # Most likely a duplicate error.
         return msg

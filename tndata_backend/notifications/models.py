@@ -99,9 +99,14 @@ class GCMMessage(models.Model):
         verbose_name_plural = "GCM Messages"
 
     def _set_message_id(self):
-        """Sets the message id to what should be something unique."""
-        d = datetime.utcnow().strftime("%c").encode("utf8")
-        self.message_id = md5(d).hexdigest()
+        """This is an attempt to ensure we don't send duplicate messages.
+
+        This hashes the content type and the content object's ID, which
+        should always have consistent title/messages.
+
+        """
+        content_info = "{0}-{1}".format(self.content_type.name, self.object_id)
+        self.message_id = md5(content_info.encode("utf8")).hexdigest()
 
     def _localize(self):
         """Ensure times are stored in UTC"""
