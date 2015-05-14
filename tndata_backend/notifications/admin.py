@@ -17,8 +17,8 @@ admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 
 class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
-        'user', 'message_id', 'deliver_on', 'expire_on',
-        'success', 'response_code',
+        'user', 'message_id', 'content_type', 'object_id', 'deliver_on',
+        'expire_on', 'success', 'response_code',
     )
     list_filter = ('success', 'response_code')
     search_fields = ['message_id', ]
