@@ -13,13 +13,20 @@ class Command(BaseCommand):
 
     def create_message(self, user, obj, title, message, delivery_date):
         if delivery_date is None:
-            self.stderr.write("{0} has no trigger date".format(obj))
+            msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
+            self.stderr.write(msg)
         else:
             try:
-                GCMMessage.objects.create(
+                m = GCMMessage.objects.create(
                     user, obj, title, message, delivery_date
                 )
-                self._messages_created += 1
+                if m is not None:
+                    self._messages_created += 1
+                else:
+                    msg = "Failed to create message for {0}/{1}-{2}".format(
+                        user, obj.__class__.__name__, obj.id
+                    )
+                    self.stderr.write(msg)
             except GCMDevice.DoesNotExist:
                 msg = "User {0} has not registered a Device".format(user)
                 self.stderr.write(msg)
