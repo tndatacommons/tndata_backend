@@ -99,13 +99,14 @@ class GCMMessage(models.Model):
         verbose_name_plural = "GCM Messages"
 
     def _set_message_id(self):
-        """This is an attempt to ensure we don't send duplicate messages.
-
-        This hashes the content type and the content object's ID, which
-        should always have consistent title/messages.
+        """This is an attempt to ensure we don't send duplicate messages to
+        a user. This hashes the content type & content object's ID
+        (which should always have consistent title/messages) with the user.
 
         """
-        content_info = "{0}-{1}".format(self.content_type.name, self.object_id)
+        content_info = "{0}-{1}-{2}".format(
+            self.content_type.name, self.object_id, self.user.id
+        )
         self.message_id = md5(content_info.encode("utf8")).hexdigest()
 
     def _localize(self):
