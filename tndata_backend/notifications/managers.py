@@ -33,7 +33,8 @@ class GCMMessageManager(models.Manager):
         * message: Content of the Message.
         * deliver_on: A datetime object: When the message will be delivered (UTC)
 
-        Note: This command will fail if the user has not registered a GCMDevice.
+        Note: This command will fail if the user has not registered a GCMDevice
+        with a `GCMDevice.DoesNotExist` exception.
 
         If for some reason the Message could not be created (e.g. you tried
         to create a duplicate), this method will return `None`.
