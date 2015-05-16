@@ -187,7 +187,7 @@ class GCMMessage(models.Model):
         report = ""
         for r in resp.responses:  # Should only be 1 item.
             report += report_pattern.format(r.status_code, r.reason, r.url)
-            self.respones_code = r.status_code
+            self.response_code = r.status_code
         self.response_text = report
 
         self._set_expiration()

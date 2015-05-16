@@ -1,13 +1,26 @@
+from datetime import datetime
+from hashlib import md5
+from json import dumps
+from unittest.mock import Mock, patch
+
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 
+from pushjack import GCMClient
 from .. models import (
     GCMDevice,
     GCMMessage,
 )
 
 User = get_user_model()
+
+
+def datetime_utc(*args):
+    """Make a UTC dateime object."""
+    return timezone.make_aware(datetime(*args), timezone.utc)
 
 
 class TestGCMDevice(TestCase):
@@ -49,3 +62,156 @@ class TestGCMDevice(TestCase):
                 user=self.user,
                 registration_id='REGISTRATIONID'
             )
+
+
+class TestGCMMessage(TestCase):
+    """Tests for the `GCMMessage` model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
+        cls.device = GCMDevice.objects.create(
+            user=cls.user,
+            registration_id="REGISTRATIONID"
+        )
+        cls.msg = GCMMessage.objects.create(
+            cls.user,
+            cls.device,  # HACK: we need some object.
+            "Test",
+            "A test message",
+            datetime_utc(2000, 1, 1, 1, 0)
+        )
+
+    def test__str__(self):
+        content_info = "{0}-{1}-{2}".format(
+            self.msg.content_type.name, self.msg.object_id, self.user.id
+        )
+        expected = md5(content_info.encode("utf8")).hexdigest()
+        actual = "{}".format(self.msg)
+        self.assertEqual(expected, actual)
+
+    def test__set_message_id(self):
+        content_info = "{0}-{1}-{2}".format(
+            self.msg.content_type.name, self.msg.object_id, self.user.id
+        )
+        expected = md5(content_info.encode("utf8")).hexdigest()
+        self.assertEqual(self.msg.message_id, expected)
+
+    def test__localize(self):
+        _deliver_on = self.msg.deliver_on
+        _expire_on = self.msg.expire_on
+
+        self.msg.deliver_on = datetime.now()
+        self.msg.expire_on = datetime.now()
+        self.assertFalse(timezone.is_aware(self.msg.deliver_on))
+        self.assertFalse(timezone.is_aware(self.msg.expire_on))
+        self.msg._localize()
+        self.assertTrue(timezone.is_aware(self.msg.deliver_on))
+        self.assertTrue(timezone.is_aware(self.msg.expire_on))
+
+        # Reset data
+        self.msg.deliver_on = _deliver_on
+        self.msg.expire_on = _expire_on
+        self.msg.save()
+
+    def test_save(self):
+        """Save should call _localize and _set_message_id."""
+        mock_localize = Mock(return_value=datetime_utc(2000, 1, 2, 3, 30))
+        mock_set_message_id = Mock(return_value="MESSAGEID")
+
+        # HACK: need a new object to associate a mesage with.
+        obj = GCMDevice.objects.create(user=self.user, registration_id="NEW")
+
+        GCMMessage._localize = mock_localize
+        GCMMessage._set_message_id = mock_set_message_id
+        msg = GCMMessage.objects.create(
+            self.user,
+            obj,
+            "ASDF",
+            "A asdf message",
+            datetime_utc(2000, 1, 1, 1, 0)
+        )
+        mock_localize.assert_any_call()
+        mock_set_message_id.assert_any_call()
+
+        # clean up.
+        obj.delete()
+        msg.delete()
+
+    def test__get_gcm_client(self):
+        client = self.msg._get_gcm_client()
+        self.assertIsInstance(client, GCMClient)
+        self.assertEqual(client.api_key, settings.GCM['API_KEY'])
+
+    def test_registration_ids(self):
+        self.assertEqual(
+            self.msg.registration_ids,
+            ['REGISTRATIONID']
+        )
+
+    def test_content(self):
+        self.assertEqual(
+            self.msg.content,
+            {
+                "title": "Test",
+                "message": "A test message",
+                "object_type": "gcm device",
+                "object_id": self.device.id,
+            }
+        )
+
+    def test_content_json(self):
+        self.assertEqual(self.msg.content_json, dumps(self.msg.content))
+
+    def test_send(self):
+        with patch("notifications.models.GCMClient") as mock_client:
+            resp = Mock(responses=[Mock(status_code=200, reason='ok', url='url')])
+            mock_client.return_value = Mock(**{'send.return_value': resp})
+
+            self.assertEqual(self.msg.send(), resp)
+            mock_client.return_value.send.assert_called_once_with(
+                ['REGISTRATIONID'],
+                self.msg.content_json,
+                delay_while_idle=True,
+                time_to_live=None,
+            )
+
+    def test__set_expiration(self):
+        other_device = GCMDevice.objects.create(user=self.user, registration_id="OTHER")
+        msg = GCMMessage.objects.create(
+            self.user,
+            other_device,  # HACK: we need some object.
+            "Other",
+            "Another message",
+            datetime_utc(2000, 1, 1, 1, 0)
+        )
+
+        # When no response code is set:
+        self.assertIsNone(msg.expire_on)
+        msg._set_expiration()
+        self.assertIsNone(msg.expire_on)  # Should be unchanged
+
+        # When there is a resposne code (of 200)
+        msg.response_code = 200
+        msg.save()
+        with patch("notifications.models.datetime") as mock_dt:
+            date = datetime_utc(2015, 5, 16, 15, 30)
+            mock_dt.utcnow.return_value = date
+            msg._set_expiration()
+            self.assertEqual(msg.expire_on, date)
+
+        # Clean up
+        msg.delete()
+        other_device.delete()
+
+    def test__save_response(self):
+        mock_resp = Mock(responses=[Mock(**{
+            'status_code': 200,
+            'reason': 'OK',
+            'url': 'FOO',
+        })])
+        self.msg._save_response(mock_resp)
+
+        expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
+        self.assertEqual(self.msg.response_text, expected_text)
+        self.assertEqual(self.msg.response_code, 200)
