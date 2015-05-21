@@ -20,7 +20,7 @@ class ActionForm(forms.ModelForm):
         fields = [
             'sequence_order', 'behavior', 'title', 'description',
             'more_info', 'external_resource', 'default_trigger',
-            'notification_text', 'icon', 'source_link', 'source_notes', 'notes',
+            'notification_text', 'source_link', 'source_notes', 'notes',
 
         ]
         labels = {"notes": "Scratchpad"}
