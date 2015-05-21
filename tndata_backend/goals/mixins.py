@@ -200,8 +200,8 @@ class URLMixin:
     This mixin also supports a default icon or image as a static file. To use
     this, just set one of the following:
 
-    * default_icon:  e.g. `default_icon = "img/grow-icon.png"`
-    * default_image
+    * default_icon:  e.g. `default_icon = "img/compass-grey.png"`
+    * default_image: e.g. `default_image = "img/compass-icon.png"`
 
     And we make the assumption that we have the following URLs defined, e.g.
     for the Category model:
