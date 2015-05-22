@@ -153,3 +153,18 @@ class UserActionAdmin(UserRelatedModelAdmin):
         'action__id', 'action__title',
     )
 admin.site.register(models.UserAction, UserActionAdmin)
+
+
+class BehaviorProgressAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'behavior', 'status', 'reported_on'
+    )
+admin.site.register(models.BehaviorProgress, BehaviorProgressAdmin)
+
+
+class GoalProgressAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'goal', 'current_total', 'max_total',
+        'current_score', 'text_glyph', 'reported_on'
+    )
+admin.site.register(models.GoalProgress, GoalProgressAdmin)

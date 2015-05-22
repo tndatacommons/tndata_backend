@@ -155,17 +155,17 @@ def get_categories_as_choices():
             ('community', 'Community'),
             ('education', 'Education'),
             ('family', 'Family'),
-            ('fun','Fun'),
+            ('fun', 'Fun'),
             ('happiness', 'Happiness'),
             ('health', 'Health'),
             ('home', 'Home'),
             ('parenting', 'Parenting'),
-            ('prosperity','Prosperity'),
+            ('prosperity', 'Prosperity'),
             ('romance', 'Romance'),
             ('safety', 'Safety'),
             ('skills', 'Skills'),
             ('wellness', 'Wellness'),
-            ('work','Work'),
+            ('work', 'Work'),
         )
 
 
@@ -713,3 +713,120 @@ class UserCategory(models.Model):
         those goals to those which the user has selected."""
         gids = self.user.usergoal_set.values_list('goal__id', flat=True)
         return self.category.goals.filter(id__in=gids)
+
+
+class BehaviorProgress(models.Model):
+    """Encapsulates a user's progress & history toward certain behaviors."""
+    OFF_COURSE = 1
+    WANDERING = 2
+    ON_COURSE = 3
+
+    PROGRESS_CHOICES = (
+        (OFF_COURSE, "Off Course"),
+        (WANDERING, "Wandering"),
+        (ON_COURSE, "On Course"),
+    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user_behavior = models.ForeignKey(UserBehavior)
+    status = models.IntegerField(choices=PROGRESS_CHOICES)
+    reported_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-reported_on']
+        get_latest_by = "reported_on"
+        verbose_name = "Behavior Progress"
+        verbose_name_plural = "Behavior Progression"
+
+    def __str__(self):
+        return self.get_status_display()
+
+    @property
+    def status_display(self):
+        return self.get_status_display()
+
+    @property
+    def behavior(self):
+        return self.user_behavior.behavior
+
+
+class GoalProgressManager(models.Manager):
+    """Custom manager for the `GoalProgress` class that includes a method
+    to generate scores for a User's progress."""
+
+    def generate_scores(self, user):
+        created_objects = []
+        current_time = datetime.utcnow()  # TODO: Check if auto_now_add stores UTC
+
+        # Get all the goals that a user has selected.
+        goal_ids = UserGoal.objects.filter(user=user)
+        goal_ids = goal_ids.values_list('goal', flat=True)
+
+        for goal in Goal.objects.filter(id__in=goal_ids):
+            # Get all the User's selected behaviors that lie within that goal.
+            behaviors = goal.behavior_set.all().values_list("id", flat=True)
+            if behaviors.exists():
+                # All the self-reported scores up to this date for this goal
+                scores = BehaviorProgress.objects.filter(
+                    user_behavior__behavior__id__in=behaviors,
+                    user=user,
+                    reported_on__lte=current_time
+                ).values_list('status', flat=True)
+
+                # Create a goal-progress object for this data
+                gp = self.create(
+                    user=user,
+                    goal=goal,
+                    current_total=sum(scores),
+                    max_total=len(scores) * BehaviorProgress.ON_COURSE,
+                )
+                created_objects.append(gp.id)
+        return self.get_queryset().filter(id__in=created_objects)
+
+
+class GoalProgress(models.Model):
+    """Agregates data from `BehaviorProgression` up to 'today'."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    goal = models.ForeignKey(Goal)
+    current_score = models.FloatField()
+    current_total = models.FloatField()
+    max_total = models.FloatField()
+    reported_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-reported_on']
+        get_latest_by = "reported_on"
+        verbose_name = "Goal Progress"
+        verbose_name_plural = "Goal Progression"
+
+    def __str__(self):
+        return "{}".format(self.value)
+
+    def _calculate_value(self, digits=2):
+        v = 0
+        if self.max_total > 0:
+            v = round(self.current_total / self.max_total, digits)
+        self.current_score = v
+
+    def save(self, *args, **kwargs):
+        self._calculate_value()
+        return super().save(*args, **kwargs)
+
+    @property
+    def text_glyph(self):
+        """show a unicode arrow representing the compass needle; used in admin"""
+        if self.current_score < 0.25:
+            return u"\u2193"  # down (south)
+        elif self.current_score >= 0.25 and self.current_score < 0.4:
+            return u"\u2198"  # down-right (southeast)
+        elif self.current_score >= 0.4 and self.current_score < 0.7:
+            return u"\u2192"  # right (east)
+        elif self.current_score >= 0.7 and self.current_score < 0.9:
+            return u"\u2197"  # right-up (northeast)
+        elif self.current_score >= 0.9:
+            return u"\u2191"  # up (north)
+
+    @property
+    def goal(self):
+        return self.user_goal.goal
+
+    objects = GoalProgressManager()
