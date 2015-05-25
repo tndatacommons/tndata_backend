@@ -10,6 +10,7 @@ from rest_framework import routers
 from goals.api import (
     ActionViewSet,
     BehaviorViewSet,
+    BehaviorProgressViewSet,
     CategoryViewSet,
     GoalViewSet,
     TriggerViewSet,
@@ -57,6 +58,7 @@ router.register(r'triggers', TriggerViewSet)
 router.register(r'behaviors', BehaviorViewSet)
 router.register(r'actions', ActionViewSet)
 router.register(r'users/actions', UserActionViewSet)
+router.register(r'users/behaviors/progress', BehaviorProgressViewSet)
 router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/goals', UserGoalViewSet)

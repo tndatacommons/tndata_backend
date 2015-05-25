@@ -638,3 +638,58 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
             # We're creating a single items.
             request.data['user'] = request.user.id
         return super(UserCategoryViewSet, self).create(request, *args, **kwargs)
+
+
+class BehaviorProgressViewSet(mixins.CreateModelMixin,
+                              mixins.ListModelMixin,
+                              mixins.RetrieveModelMixin,
+                              viewsets.GenericViewSet):
+    """ This endpoint allows a user to record their progress toward a Behavior,
+    and retrieve a history of that progress.
+
+    GET requests will return the following information for an authenticated
+    user:
+
+    * `user`: ID of the authenticated user.
+    * `user_behavior`: ID of the associated `UserBehavior` (User-to-Behavior mapping)
+    * `status`: Value of their progress, in the range of 1-3
+    * `reported_on`: Date on which progress was reported.
+
+    ## Saving Progress
+
+    To record progress toward a behavior, send a POST request containing the
+    following information:
+
+    * `status`: A numerical value, 1 for "Off Course", 2 for "Wandering", and 3
+      for "On Course".
+    * `behavior`: The ID for the Behavior. Optional if `user_behavior` is provided
+    * `user_behavior`: The ID for the `UserBehavior` instance (the mapping
+      between a User and a Behavior). Optional if `behavior` is provided.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.BehaviorProgress.objects.all()
+    serializer_class = serializers.BehaviorProgressSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.data['user'] = request.user.id
+        # If a behavior id provided, attempt to retrieve the UserBehavior object
+        if 'behavior' in request.data and 'user_behavior' not in request.data:
+            try:
+                behavior = request.data.pop('behavior', [])
+                if isinstance(behavior, list):
+                    behavior = behavior[0]
+                request.data['user_behavior'] = models.UserBehavior.objects.filter(
+                    user=request.user,
+                    behavior__id=behavior
+                ).values_list('id', flat=True)[0]
+            except (models.UserBehavior.DoesNotExist, IndexError):
+                pass  # Creating will fail
+        return super().create(request, *args, **kwargs)

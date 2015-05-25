@@ -3,6 +3,7 @@ from rest_framework import serializers
 from . models import (
     Action,
     Behavior,
+    BehaviorProgress,
     Category,
     Goal,
     Trigger,
@@ -79,6 +80,17 @@ class BehaviorSerializer(serializers.ModelSerializer):
         )
 
 
+class BehaviorProgressSerializer(serializers.ModelSerializer):
+    """A Serializer for `BehaviorProgress`."""
+
+    class Meta:
+        model = BehaviorProgress
+        fields = (
+            'id', 'user', 'user_behavior', 'status', 'status_display',
+            'reported_on',
+        )
+
+
 class ActionSerializer(serializers.ModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
@@ -102,6 +114,8 @@ class UserGoalSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     goal = SimpleGoalField(queryset=Goal.objects.none())
+
+    # TODO: Some way to include the current user's progress on this goal?
 
     class Meta:
         model = UserGoal

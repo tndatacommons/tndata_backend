@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from .. models import (
     Action,
     Behavior,
+    BehaviorProgress,
     Category,
     Goal,
     Trigger,
@@ -1371,3 +1372,110 @@ class TestUserCategoryAPI(APITestCase):
 
         # Clean up.
         other_cat.delete()
+
+
+class TestBehaviorProgressAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.behavior = Behavior.objects.create(
+            title="Test Behavior",
+            description="This is a test",
+            informal_list="Do this",
+        )
+        self.ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=self.behavior
+        )
+        self.p = BehaviorProgress.objects.create(
+            user=self.user,
+            user_behavior=self.ub,
+            status=BehaviorProgress.ON_COURSE
+        )
+        self.url = reverse('behaviorprogress-list')
+        self.detail_url = reverse('behaviorprogress-detail', args=[self.p.id])
+
+        self.payload = {
+            'status': BehaviorProgress.OFF_COURSE,
+            'user_behavior': self.ub.id,
+        }
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        UserBehavior.objects.filter(id=self.ub.id).delete()
+
+    def test_get_list_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_post_list_unauthenticated(self):
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_list_authenticated(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        q = BehaviorProgress.objects.filter(user=self.user, user_behavior=self.ub)
+        self.assertEqual(q.count(), 2)  # started with 1, now has 2
+
+    def test_post_list_authenticated_with_behavior(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        self.payload.pop('user_behavior')
+        self.payload['behavior'] = self.behavior.id
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        q = BehaviorProgress.objects.filter(user=self.user, user_behavior=self.ub)
+        self.assertEqual(q.count(), 2)  # started with 1, now has 2
+
+    def test_get_detail_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_detail_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['id'], self.p.id)
+        self.assertEqual(response.data['user'], self.p.user.id)
+        self.assertEqual(response.data['user_behavior'], self.p.user_behavior.id)
+        self.assertEqual(response.data['status'], self.p.status)
+        self.assertEqual(response.data['status_display'], self.p.get_status_display())
+
+    def test_put_detail_not_allowed(self):
+        """Ensure PUTing to the detail endpoint is not allowed."""
+        response = self.client.put(self.detail_url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(self.detail_url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
