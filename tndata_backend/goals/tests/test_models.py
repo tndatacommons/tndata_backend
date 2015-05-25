@@ -1,22 +1,24 @@
 import pytz
 from datetime import datetime, time
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.db.models import QuerySet
 
 from .. models import (
-    get_categories_as_choices,
+    Action,
+    Behavior,
+    BehaviorProgress,
     Category,
     Goal,
+    GoalProgress,
     Trigger,
-    Behavior,
-    Action,
-    UserGoal,
+    UserAction,
     UserBehavior,
     UserCategory,
-    UserAction,
+    UserGoal,
+    get_categories_as_choices,
 )
 
 User = get_user_model()
@@ -568,3 +570,95 @@ class TestUserCategory(TestCase):
         expected = "Test Category"
         actual = "{}".format(self.uc)
         self.assertEqual(expected, actual)
+
+
+class TestBehaviorProgress(TestCase):
+    """Tests for the `BehaviorProgress` model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        cls.behavior = Behavior.objects.create(title='Test Behavior')
+        cls.ub = UserBehavior.objects.create(
+            user=cls.user,
+            behavior=cls.behavior
+        )
+        cls.progress = BehaviorProgress.objects.create(
+            user=cls.user,
+            user_behavior=cls.ub,
+            status=BehaviorProgress.ON_COURSE
+        )
+
+    def test__str__(self):
+        self.assertEqual("On Course", "{}".format(self.progress))
+
+    def test_status_display(self):
+        self.assertEqual(self.progress.status_display, "On Course")
+
+    def test_behavior(self):
+        self.assertEqual(self.progress.behavior, self.behavior)
+
+
+class TestGoalProgress(TestCase):
+    """Tests for the `GoalProgress` model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        cls.goal = Goal.objects.create(title="Test Goal", description="Desc")
+        cls.ug = UserGoal.objects.create(user=cls.user, goal=cls.goal)
+
+        cls.behavior = Behavior.objects.create(title='Test Behavior')
+        cls.behavior.goals.add(cls.goal)
+        cls.ub = UserBehavior.objects.create(
+            user=cls.user,
+            behavior=cls.behavior
+        )
+        # Create some progress items toward this User's Behavior
+        data = {
+            'user': cls.user,
+            'user_behavior': cls.ub,
+            'status': BehaviorProgress.ON_COURSE
+        }
+        BehaviorProgress.objects.create(**data)
+
+        data['status'] = BehaviorProgress.WANDERING
+        BehaviorProgress.objects.create(**data)
+
+        data['status'] = BehaviorProgress.OFF_COURSE
+        BehaviorProgress.objects.create(**data)
+
+        # Create a GoalProgress by generating the scores.
+        cls.gp = GoalProgress.objects.generate_scores(cls.user).latest()
+
+    def test_expected_values(self):
+        """Ensure the score components contain the expected values."""
+        self.assertEqual(self.gp.current_total, 6)  # 3 + 2 + 1
+        self.assertEqual(self.gp.max_total, 9)  # 3 * 3
+        self.assertEqual(self.gp.current_score, 0.67)  # round(6/9, 2)
+
+    def test__str__(self):
+        self.assertEqual("0.67", "{}".format(self.gp))
+
+    def test__calculate_value(self):
+        """Ensure that this method calculates the score."""
+        expected = round(self.gp.current_total / self.gp.max_total, 2)
+        self.gp._calculate_score()
+        self.assertEqual(self.gp.current_score, expected)
+
+    def test_save(self):
+        """Saving an object should calculate it's score"""
+        original = self.gp._calculate_score
+        self.gp._calculate_score = Mock()
+        self.gp.save()
+        self.gp._calculate_score.assert_called_once_with()
+        self.gp._calculate_score = original
+
+    def test_text_glyph(self):
+        self.assertEqual(self.gp.text_glyph, u"\u2192")

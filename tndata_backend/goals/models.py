@@ -799,16 +799,16 @@ class GoalProgress(models.Model):
         verbose_name_plural = "Goal Progression"
 
     def __str__(self):
-        return "{}".format(self.value)
+        return "{}".format(self.current_score)
 
-    def _calculate_value(self, digits=2):
+    def _calculate_score(self, digits=2):
         v = 0
         if self.max_total > 0:
             v = round(self.current_total / self.max_total, digits)
         self.current_score = v
 
     def save(self, *args, **kwargs):
-        self._calculate_value()
+        self._calculate_score()
         return super().save(*args, **kwargs)
 
     @property
@@ -824,9 +824,5 @@ class GoalProgress(models.Model):
             return u"\u2197"  # right-up (northeast)
         elif self.current_score >= 0.9:
             return u"\u2191"  # up (north)
-
-    @property
-    def goal(self):
-        return self.user_goal.goal
 
     objects = GoalProgressManager()
