@@ -642,6 +642,14 @@ class UserGoal(models.Model):
         cids = self.user.usercategory_set.values_list('category__id', flat=True)
         return self.goal.categories.filter(id__in=cids)
 
+    @property
+    def progress_value(self):
+        try:
+            qs = self.goal.goalprogress_set.filter(user=self.user)
+            return qs.latest().current_score
+        except GoalProgress.DoesNotExist:
+            return 0.0
+
 
 class UserBehavior(models.Model):
     """A Mapping between Users and the Behaviors they've selected.
@@ -747,6 +755,9 @@ class BehaviorProgress(models.Model):
     @property
     def behavior(self):
         return self.user_behavior.behavior
+
+# TODO: signal that re-calculates GoalProgress data when a BehaviorProgress
+# instance is saved? OR should that be a once-a-day task?
 
 
 class GoalProgressManager(models.Manager):

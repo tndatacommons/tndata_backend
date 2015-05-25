@@ -488,6 +488,10 @@ class TestUserGoal(TestCase):
         actual = "{}".format(self.ug)
         self.assertEqual(expected, actual)
 
+    def test_progress_value(self):
+        # we haven't created any GoalProgress data, so this should be zero
+        self.assertEqual(self.ug.progress_value, 0.0)
+
 
 class TestUserBehavior(TestCase):
     """Tests for the `UserBehavior` model."""

@@ -115,11 +115,13 @@ class UserGoalSerializer(serializers.ModelSerializer):
     )
     goal = SimpleGoalField(queryset=Goal.objects.none())
 
-    # TODO: Some way to include the current user's progress on this goal?
-
+    # TODO: We have the progress_value field, what about an icon?
     class Meta:
         model = UserGoal
-        fields = ('id', 'user', 'goal', 'user_categories', 'created_on')
+        fields = (
+            'id', 'user', 'goal', 'user_categories', 'created_on',
+            'progress_value',
+        )
         read_only_fields = ("id", "created_on")
 
 
