@@ -14,7 +14,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, post_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.utils.text import slugify
@@ -756,8 +756,21 @@ class BehaviorProgress(models.Model):
     def behavior(self):
         return self.user_behavior.behavior
 
-# TODO: signal that re-calculates GoalProgress data when a BehaviorProgress
-# instance is saved? OR should that be a once-a-day task?
+
+@receiver(post_save, sender=BehaviorProgress, dispatch_uid="recalc_goal_progress")
+def recalculate_goal_progress(sender, instance, created, **kwargs):
+    """This signal handler will re-calculate the most recent GoalProgress
+    instance when a BehaviorProgress is created."""
+    if created:
+        # Get all possible goal ids associated with the user
+        for gid in instance.user_behavior.behavior.goals.values_list("id", flat=True):
+            try:
+                # Recalculate the score from all related BehaviorProgress objects
+                gp = GoalProgress.objects.filter(user=instance.user, goal__id=gid).latest()
+                gp.recalculate_score()
+                gp.save()
+            except GoalProgress.DoesNotExist:
+                pass
 
 
 class GoalProgressManager(models.Manager):
@@ -817,6 +830,21 @@ class GoalProgress(models.Model):
         if self.max_total > 0:
             v = round(self.current_total / self.max_total, digits)
         self.current_score = v
+
+    def recalculate_score(self):
+        """Recalculate all of the BehaviorProgress values for the current date,
+        updating the relevant score-related fields."""
+        behavior_ids = self.user.userbehavior_set.values_list("behavior", flat=True)
+        start = self.reported_on.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = self.reported_on.replace(hour=23, minute=59, second=59, microsecond=999999)
+        scores = BehaviorProgress.objects.filter(
+            user_behavior__behavior_id__in=behavior_ids,
+            user=self.user,
+            reported_on__range=(start, end)
+        ).values_list('status', flat=True)
+        self.current_total = sum(scores)
+        self.max_total = len(scores) * BehaviorProgress.ON_COURSE
+        self._calculate_score()
 
     def save(self, *args, **kwargs):
         self._calculate_score()
