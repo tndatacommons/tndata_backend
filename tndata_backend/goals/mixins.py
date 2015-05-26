@@ -26,7 +26,7 @@ class DeleteMultipleMixin:
 
     """
     def delete(self, request, *args, **kwargs):
-        # TODO: why is auth not getting handled by the authentication_classes, here?
+        # XXX why is auth not handled by the authentication_classes, here?
 
         model = self.get_queryset().model
         model_name = model.__name__.lower()

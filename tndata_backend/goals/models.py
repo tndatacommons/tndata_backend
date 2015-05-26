@@ -274,6 +274,7 @@ class Trigger(URLMixin, models.Model):
     https://django-recurrence.readthedocs.org
 
     """
+    # TODO: User-specified triggers?
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -286,7 +287,6 @@ class Trigger(URLMixin, models.Model):
         ('place', 'Place'),
     )
 
-    # TODO: User-specified triggers?
     name = models.CharField(
         max_length=128,
         unique=True,

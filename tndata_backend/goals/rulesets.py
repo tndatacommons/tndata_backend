@@ -1,3 +1,11 @@
+"""
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+
+NOTICE: This is the glue that ties this app to the venmo/business-rules app.
+We're not even using this at the moment, so all of this module is cruft.
+
+-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+"""
 from business_rules.actions import BaseActions, rule_action
 from business_rules.variables import BaseVariables
 from business_rules.variables import (
@@ -9,7 +17,7 @@ from . import models
 
 # NOTE: After createing a ModelRulset subclass, you need to register it in the
 # AppConfig.ready method.
-# TODO: I'm not sure where to call this, so It's currently not getting called
+# XXX: I'm not sure where to call this, so It's currently not getting called
 # anywhere. We can't do this in the AppConfig.ready, because this will load
 # Models before the app is actually ready.
 def register_rules(app_name):
@@ -19,7 +27,7 @@ def register_rules(app_name):
     ruleset.register(app_name, ActionRuleset)
 
 
-# TODO: Not sure how to really structure all of this; it seems these rules
+# XXX: Not sure how to really structure all of this; it seems these rules
 # should be based on user inputs, so maybe creating Action/Behavior/Goal
 # variables is not the correct approach.
 #
@@ -45,7 +53,7 @@ class GoalActions(BaseActions):
     def __init__(self, goal):
         self.goal = goal
 
-    # TODO: Figure out what *real* actions we need.
+    # XXX: Figure out what *real* actions we need.
     @rule_action()
     def similar_goals(self):
         qs = self.model.objects.exclude(id=self.goal.id)
@@ -78,7 +86,7 @@ class BehaviorActions(BaseActions):
     def __init__(self, behavior):
         self.behavior = behavior
 
-    # TODO: Figure out what *real* actions we need.
+    # XXX: Figure out what *real* actions we need.
     @rule_action()
     def similar_behaviors(self):
         qs = self.model.objects.exclude(id=self.behavior.id)
@@ -111,7 +119,7 @@ class ActionActions(BaseActions):
     def __init__(self, action):
         self.action = action
 
-    # TODO: Figure out what *real* actions we need.
+    # XXX: Figure out what *real* actions we need.
     @rule_action()
     def similar_actions(self):
         qs = self.model.objects.exclude(id=self.action.id)

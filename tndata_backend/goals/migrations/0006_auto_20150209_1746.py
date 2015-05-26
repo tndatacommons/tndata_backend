@@ -16,7 +16,7 @@ def copy_interestgroup_categories_into_interest(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    """TODO: Data migration to Associate Category <-> Interest based on the
+    """Data migration to Associate Category <-> Interest based on the
     existing InterestGroup models.
 
     See https://docs.djangoproject.com/en/1.7/topics/migrations/#data-migrations

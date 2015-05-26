@@ -115,7 +115,6 @@ class UserGoalSerializer(serializers.ModelSerializer):
     )
     goal = SimpleGoalField(queryset=Goal.objects.none())
 
-    # TODO: We have the progress_value field, what about an icon?
     class Meta:
         model = UserGoal
         fields = (
