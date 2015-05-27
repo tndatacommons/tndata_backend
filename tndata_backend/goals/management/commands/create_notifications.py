@@ -17,6 +17,8 @@ class Command(BaseCommand):
             self.stderr.write(msg)
         else:
             try:
+                if len(title) > 256:
+                    title = "{0}...".format(title[:253])
                 m = GCMMessage.objects.create(
                     user, obj, title, message, delivery_date
                 )
