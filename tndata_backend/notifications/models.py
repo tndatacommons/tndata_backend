@@ -61,7 +61,7 @@ class GCMMessage(models.Model):
         blank=True,  # Generated automatcially
         help_text="Unique ID for this message."
     )
-    title = models.CharField(max_length=50, default="")
+    title = models.CharField(max_length=256, default="")
     message = models.CharField(max_length=256, default="")
 
     content_type = models.ForeignKey(ContentType, null=True, blank=True)
