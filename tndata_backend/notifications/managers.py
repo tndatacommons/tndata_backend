@@ -24,14 +24,14 @@ class GCMMessageManager(models.Manager):
             deliver_on__lte=datetime.utcnow()
         )
 
-    def create(self, user, obj, title, message, deliver_on):
+    def create(self, user, title, message, deliver_on, obj=None):
         """Creates an instance of a GCMMessage. Requires the following data:
 
         * user: an auth.User instance.
-        * obj: An object to which this message will be related.
         * title: Title of the Message.
         * message: Content of the Message.
         * deliver_on: A datetime object: When the message will be delivered (UTC)
+        * obj: (optional) An object to which this message will be related.
 
         Note: This command will fail if the user has not registered a GCMDevice
         with a `GCMDevice.DoesNotExist` exception.
@@ -46,14 +46,16 @@ class GCMMessageManager(models.Manager):
             )
 
         try:
+            kwargs = {
+                'user': user,
+                'title': title,
+                'message': message,
+                'deliver_on': deliver_on,
+            }
+            if obj is not None:
+                kwargs['content_object'] = obj
             with transaction.atomic():
-                msg = self.model(
-                    user=user,
-                    content_object=obj,
-                    title=title,
-                    message=message,
-                    deliver_on=deliver_on
-                )
+                msg = self.model(**kwargs)
                 msg.save()
         except IntegrityError:
             msg = None  # Most likely a duplicate error.

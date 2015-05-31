@@ -78,10 +78,10 @@ class TestGCMMessageAPI(APITestCase):
         )
         cls.message = GCMMessage.objects.create(
             cls.user,
-            cls.device,  # Kind of a hack
             "Test Title",
             "Test Message",
-            datetime.utcnow()
+            datetime.utcnow(),
+            obj=cls.device,  # Kind of a hack
         )
         cls.url = reverse('gcmmessage-list')
         cls.detail_url = reverse('gcmmessage-detail', args=[cls.device.id])

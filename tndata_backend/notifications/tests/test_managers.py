@@ -71,10 +71,10 @@ class TestGCMMessageManager(TestCase):
         )
         msg = GCMMessage.objects.create(
             self.user,
-            other_device,  # HACK: we need some object.
             "New",
             "New Message",
-            datetime_utc(2000, 1, 1, 1, 0)
+            datetime_utc(2000, 1, 1, 1, 0),
+            obj=other_device,  # HACK: we need some object.
         )
         self.assertIsNotNone(msg)
         self.assertEqual(GCMMessage.objects.filter(title="New").count(), 1)
@@ -87,7 +87,7 @@ class TestGCMMessageManager(TestCase):
         """Ensure a user without a registered device cannot create a message"""
         u = User.objects.create_user('other', 'other@example.com', 'pass')
         with self.assertRaises(GCMDevice.DoesNotExist):
-            data = (u, Mock(), "T", "M", datetime_utc(2000, 1, 1, 1, 0))
+            data = (u, "T", "M", datetime_utc(2000, 1, 1, 1, 0), Mock())
             GCMMessage.objects.create(*data)
 
         # Clean up.
@@ -103,9 +103,9 @@ class TestGCMMessageManager(TestCase):
         # duplicate message_id
         msg = GCMMessage.objects.create(
             self.user,
-            self.related_obj,
             "READY",
             "This is ready for delivery",
             datetime_utc(1999, 2, 1, 13, 0),
+            self.related_obj,
         )
         self.assertIsNone(msg)

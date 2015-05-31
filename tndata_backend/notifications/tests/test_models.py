@@ -76,10 +76,10 @@ class TestGCMMessage(TestCase):
         )
         cls.msg = GCMMessage.objects.create(
             cls.user,
-            cls.device,  # HACK: we need some object.
             "Test",
             "A test message",
-            datetime_utc(2000, 1, 1, 1, 0)
+            datetime_utc(2000, 1, 1, 1, 0),
+            cls.device,  # HACK: we need some object.
         )
 
     def test__str__(self):
@@ -126,10 +126,10 @@ class TestGCMMessage(TestCase):
         GCMMessage._set_message_id = mock_set_message_id
         msg = GCMMessage.objects.create(
             self.user,
-            obj,
             "ASDF",
             "A asdf message",
-            datetime_utc(2000, 1, 1, 1, 0)
+            datetime_utc(2000, 1, 1, 1, 0),
+            obj,
         )
         mock_localize.assert_any_call()
         mock_set_message_id.assert_any_call()
@@ -180,10 +180,10 @@ class TestGCMMessage(TestCase):
         other_device = GCMDevice.objects.create(user=self.user, registration_id="OTHER")
         msg = GCMMessage.objects.create(
             self.user,
-            other_device,  # HACK: we need some object.
             "Other",
             "Another message",
-            datetime_utc(2000, 1, 1, 1, 0)
+            datetime_utc(2000, 1, 1, 1, 0),
+            other_device,  # HACK: we need some object.
         )
 
         # When no response code is set:
