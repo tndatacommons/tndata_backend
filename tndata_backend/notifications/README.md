@@ -5,6 +5,16 @@ This app contains the things required to send Push notifications using
 [Google Cloud Messaging](https://developer.android.com/google/gcm/index.html).
 For more details, see: [Implementing a GCM Server](https://developer.android.com/google/gcm/server.html).
 
+Settings
+--------
+
+This app exposes the following settings:
+
+* `GCM` (required). A dictionary of Google Cloud Messaging settings. Currently,
+  must contain an `API_KEY` entry.
+* `NOTIFICATIONS` dictionary with any the following:
+  * `DEFAULT_TITLE`: Default notification title
+  * `DEFAULT_TEXT`: Default sub-text for notifications
 
 Commands
 --------
