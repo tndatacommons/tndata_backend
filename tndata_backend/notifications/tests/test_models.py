@@ -79,7 +79,7 @@ class TestGCMMessage(TestCase):
             "Test",
             "A test message",
             datetime_utc(2000, 1, 1, 1, 0),
-            cls.device,  # HACK: we need some object.
+            cls.device  # HACK so we have a related object
         )
 
     def test__str__(self):
@@ -96,6 +96,19 @@ class TestGCMMessage(TestCase):
         )
         expected = md5(content_info.encode("utf8")).hexdigest()
         self.assertEqual(self.msg.message_id, expected)
+
+    def test__set_message_id_when_no_content_object(self):
+        """Ensure this still works if there's no content_object."""
+        with patch("notifications.models.datetime") as mock_dt:
+            date = datetime_utc(2015, 5, 16, 15, 30)
+            mock_dt.utcnow.return_value = date
+
+            alert_date = datetime_utc(2014, 5, 30, 14, 45)
+            msg = GCMMessage.objects.create(
+                self.user, "NEW Test", "another message", alert_date
+            )
+            expected = md5(date.strftime("%c").encode("utf8")).hexdigest()
+            self.assertEqual(msg.message_id, expected)
 
     def test__localize(self):
         _deliver_on = self.msg.deliver_on

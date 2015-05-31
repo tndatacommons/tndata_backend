@@ -100,13 +100,19 @@ class GCMMessage(models.Model):
 
     def _set_message_id(self):
         """This is an attempt to ensure we don't send duplicate messages to
-        a user. This hashes the content type & content object's ID
+        a user. This hashes the content type & content object's ID (if available)
         (which should always have consistent title/messages) with the user.
 
+        If there's no related content object, this will hash the current
+        date & time for the message id.
+
         """
-        content_info = "{0}-{1}-{2}".format(
-            self.content_type.name, self.object_id, self.user.id
-        )
+        if self.content_object:
+            content_info = "{0}-{1}-{2}".format(
+                self.content_type.name, self.object_id, self.user.id
+            )
+        else:
+            content_info = datetime.utcnow().strftime("%c")
         self.message_id = md5(content_info.encode("utf8")).hexdigest()
 
     def _localize(self):
