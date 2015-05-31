@@ -659,7 +659,7 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
     To record progress toward a behavior, send a POST request containing the
     following information:
 
-    * `status`: A numerical value, 1 for "Off Course", 2 for "Wandering", and 3
+    * `status`: A numerical value, 1 for "Off Course", 2 for "Seeking", and 3
       for "On Course".
     * `behavior`: The ID for the Behavior. Optional if `user_behavior` is provided
     * `user_behavior`: The ID for the `UserBehavior` instance (the mapping

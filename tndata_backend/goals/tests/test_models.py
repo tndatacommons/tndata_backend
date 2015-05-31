@@ -632,7 +632,7 @@ class TestGoalProgress(TestCase):
         }
         BehaviorProgress.objects.create(**data)
 
-        data['status'] = BehaviorProgress.WANDERING
+        data['status'] = BehaviorProgress.SEEKING
         BehaviorProgress.objects.create(**data)
 
         data['status'] = BehaviorProgress.OFF_COURSE

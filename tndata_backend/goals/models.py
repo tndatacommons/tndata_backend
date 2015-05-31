@@ -726,12 +726,12 @@ class UserCategory(models.Model):
 class BehaviorProgress(models.Model):
     """Encapsulates a user's progress & history toward certain behaviors."""
     OFF_COURSE = 1
-    WANDERING = 2
+    SEEKING = 2
     ON_COURSE = 3
 
     PROGRESS_CHOICES = (
         (OFF_COURSE, "Off Course"),
-        (WANDERING, "Wandering"),
+        (SEEKING, "Seeking"),
         (ON_COURSE, "On Course"),
     )
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
