@@ -39,7 +39,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    queryset = models.Category.objects.all()
+    queryset = models.Category.objects.published()
     serializer_class = serializers.CategorySerializer
 
 
@@ -68,7 +68,7 @@ class GoalViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    queryset = models.Goal.objects.all()
+    queryset = models.Goal.objects.published()
     serializer_class = serializers.GoalSerializer
 
     def get_queryset(self):
@@ -155,7 +155,7 @@ class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    queryset = models.Behavior.objects.all()
+    queryset = models.Behavior.objects.published()
     serializer_class = serializers.BehaviorSerializer
 
     def get_queryset(self):
@@ -222,7 +222,7 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    queryset = models.Action.objects.all()
+    queryset = models.Action.objects.published()
     serializer_class = serializers.ActionSerializer
 
     def get_queryset(self):

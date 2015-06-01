@@ -26,6 +26,8 @@ class TestCategoryAPI(APITestCase):
             description='Some explanation!',
             notes="Some notes"
         )
+        self.category.publish()
+        self.category.save()
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
@@ -72,6 +74,8 @@ class TestGoalAPI(APITestCase):
             description='Some explanation!',
             notes="Some notes"
         )
+        self.category.publish()
+        self.category.save()
         self.goal = Goal.objects.create(
             title="Test Goal",
             subtitle="A subtitle",
@@ -79,6 +83,8 @@ class TestGoalAPI(APITestCase):
             outcome="The outcome"
         )
         self.goal.categories.add(self.category)
+        self.goal.publish()
+        self.goal.save()
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
@@ -104,6 +110,8 @@ class TestGoalAPI(APITestCase):
         """Ensure we can filter by category."""
         # Create another Goal (not in a catgory)
         g = Goal.objects.create(title="ignore me")
+        g.publish()
+        g.save()
 
         url = reverse('goal-list')
         response = self.client.get(url)
@@ -192,6 +200,9 @@ class TestBehaviorAPI(APITestCase):
             description='Some explanation!',
             notes="Some notes"
         )
+        self.category.publish()
+        self.category.save()
+
         self.goal = Goal.objects.create(
             title="Test Goal",
             subtitle="A subtitle",
@@ -199,12 +210,17 @@ class TestBehaviorAPI(APITestCase):
             outcome="The outcome"
         )
         self.goal.categories.add(self.category)
+        self.goal.publish()
+        self.goal.save()
+
         self.behavior = Behavior.objects.create(
             title="Test Behavior",
             description="This is a test",
             informal_list="Do this",
         )
         self.behavior.goals.add(self.goal)
+        self.behavior.publish()
+        self.behavior.save()
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
@@ -229,6 +245,8 @@ class TestBehaviorAPI(APITestCase):
         """Ensure we can filter by category.id."""
         # Create another Behavior (with no Category)
         b = Behavior.objects.create(title="ignore me")
+        b.publish()
+        b.save()
 
         url = reverse('behavior-list')
         response = self.client.get(url)
@@ -249,6 +267,8 @@ class TestBehaviorAPI(APITestCase):
         """Ensure we can filter by category.title_slug."""
         # Create another Behavior (with no Category)
         b = Behavior.objects.create(title="ignore me")
+        b.publish()
+        b.save()
 
         url = reverse('behavior-list')
         response = self.client.get(url)
@@ -269,6 +289,8 @@ class TestBehaviorAPI(APITestCase):
         """Ensure we can filter by goal.id"""
         # Create another Behavior (with no Goal)
         b = Behavior.objects.create(title="ignore me")
+        b.publish()
+        b.save()
 
         url = reverse('behavior-list')
         response = self.client.get(url)
@@ -289,6 +311,8 @@ class TestBehaviorAPI(APITestCase):
         """Ensure we can filter by goal.title_slug"""
         # Create another Behavior (with no Goal)
         b = Behavior.objects.create(title="ignore me")
+        b.publish()
+        b.save()
 
         url = reverse('behavior-list')
         response = self.client.get(url)
@@ -333,6 +357,9 @@ class TestActionAPI(APITestCase):
             description='Some explanation!',
             notes="Some notes"
         )
+        self.category.publish()
+        self.category.save()
+
         self.goal = Goal.objects.create(
             title="Test Goal",
             subtitle="A subtitle",
@@ -340,6 +367,8 @@ class TestActionAPI(APITestCase):
             outcome="The outcome"
         )
         self.goal.categories.add(self.category)
+        self.goal.publish()
+        self.goal.save()
 
         self.behavior = Behavior.objects.create(
             title="Test Behavior",
@@ -347,6 +376,8 @@ class TestActionAPI(APITestCase):
             informal_list="Do this",
         )
         self.behavior.goals.add(self.goal)
+        self.behavior.publish()
+        self.behavior.save()
 
         self.action = Action.objects.create(
             title="Test Action",
@@ -354,6 +385,8 @@ class TestActionAPI(APITestCase):
             behavior=self.behavior,
             description="This is a test",
         )
+        self.action.publish()
+        self.action.save()
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
@@ -378,7 +411,12 @@ class TestActionAPI(APITestCase):
         """Ensure we can filter by category.id."""
         # Create another Action (with no Category)
         b = Behavior.objects.create(title='ignore me')
+        b.publish()
+        b.save()
+
         a = Action.objects.create(title="ignore me", behavior=b)
+        a.publish()
+        a.save()
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -400,7 +438,12 @@ class TestActionAPI(APITestCase):
         """Ensure we can filter by category.title_slug."""
         # Create another Action (with no Category)
         b = Behavior.objects.create(title='ignore me')
+        b.publish()
+        b.save()
+
         a = Action.objects.create(title="ignore me", behavior=b)
+        a.publish()
+        a.save()
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -422,7 +465,12 @@ class TestActionAPI(APITestCase):
         """Ensure we can filter by goal.id"""
         # Create another Action (with no Goal)
         b = Behavior.objects.create(title='ignore me')
+        b.publish()
+        b.save()
+
         a = Action.objects.create(title="ignore me", behavior=b)
+        a.publish()
+        a.save()
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -444,7 +492,13 @@ class TestActionAPI(APITestCase):
         """Ensure we can filter by goal.title_slug"""
         # Create another Action (with no Goal)
         b = Behavior.objects.create(title='ignore me')
+        b.publish()
+        b.save()
+
         a = Action.objects.create(title="ignore me", behavior=b)
+        a.publish()
+        a.save()
+
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -466,7 +520,12 @@ class TestActionAPI(APITestCase):
         """Ensure we can filter by behavior.id"""
         # Create another Action
         b = Behavior.objects.create(title='ignore me')
+        b.publish()
+        b.save()
+
         a = Action.objects.create(title="ignore me", behavior=b)
+        a.publish()
+        a.save()
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -488,7 +547,12 @@ class TestActionAPI(APITestCase):
         """Ensure we can filter by behavior.title_slug"""
         # Create another Action
         b = Behavior.objects.create(title='ignore me')
+        b.publish()
+        b.save()
+
         a = Action.objects.create(title="ignore me", behavior=b)
+        a.publish()
+        a.save()
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -602,7 +666,12 @@ class TestUserGoalAPI(APITestCase):
     def test_post_usergoal_list_multiple_authenticated(self):
         """POST should be allowed for authenticated users"""
         goal_a = Goal.objects.create(title="A", subtitle="New Goal A")
+        goal_a.publish()
+        goal_a.save()
+
         goal_b = Goal.objects.create(title="B", subtitle="New Goal B")
+        goal_b.publish()
+        goal_b.save()
 
         url = reverse('usergoal-list')
         self.client.credentials(

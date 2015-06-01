@@ -21,6 +21,7 @@ from django.utils.text import slugify
 from django_fsm import FSMField, transition
 from recurrence.fields import RecurrenceField
 
+from .managers import WorkflowManager
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
 
@@ -137,6 +138,8 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
         pass
+
+    objects = WorkflowManager()
 
 
 def get_categories_as_choices():
@@ -258,6 +261,8 @@ class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
         pass
+
+    objects = WorkflowManager()
 
 
 class Trigger(URLMixin, models.Model):
@@ -556,6 +561,8 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
         cats = self.goals.values_list('categories', flat=True)
         return Category.objects.filter(pk__in=cats)
 
+    objects = WorkflowManager()
+
 
 class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
 
@@ -593,6 +600,8 @@ class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
             ("decline_action", "Can Decline Actions"),
             ("publish_action", "Can Publish Actions"),
         )
+
+    objects = WorkflowManager()
 
 
 @receiver(post_delete, sender=Action)
