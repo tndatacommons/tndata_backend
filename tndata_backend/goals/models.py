@@ -480,10 +480,15 @@ class BaseBehavior(ModifiedMixin, models.Model):
     def __str__(self):
         return "{0}".format(self.title)
 
+    def _set_notification_text(self):
+        if not self.notification_text:
+            self.notification_text = self.title
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
+        self._set_notification_text()
         super(BaseBehavior, self).save(*args, **kwargs)
 
     @transition(field=state, source="*", target='draft')
@@ -572,6 +577,7 @@ class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
     urls_icon_field = "icon"
     urls_image_field = "image"
     default_icon = "img/compass-grey.png"
+    notification_title = "I want to..."
 
     # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")

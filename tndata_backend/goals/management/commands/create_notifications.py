@@ -72,7 +72,7 @@ class Command(BaseCommand):
             self.create_message(
                 ua.user,
                 ua.action,
-                ua.action.title,
+                ua.action.notification_title,
                 ua.action.notification_text,
                 ua.action.get_trigger().next()
             )
