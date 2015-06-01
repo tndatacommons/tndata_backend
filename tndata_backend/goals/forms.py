@@ -25,6 +25,12 @@ class ActionForm(forms.ModelForm):
         ]
         labels = {"notes": "Scratchpad"}
 
+    class Media:
+        js = (
+            "foundation/js/vendor/jquery.js",
+            "js/action_form.js",
+        )
+
 
 class BehaviorForm(forms.ModelForm):
     """A Form for creating/updating behaviors. This form orders related
