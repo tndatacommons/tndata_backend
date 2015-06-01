@@ -63,6 +63,11 @@ urlpatterns = patterns('',
         name='action-delete'
     ),
     url(
+        r'^actions/(?P<title_slug>.+)/duplicate/$',
+        views.ActionDuplicateView.as_view(),
+        name='action-duplicate'
+    ),
+    url(
         r'^actions/(?P<title_slug>.+)/$',
         views.ActionDetailView.as_view(),
         name='action-detail'
@@ -90,6 +95,11 @@ urlpatterns = patterns('',
         name='behavior-delete'
     ),
     url(
+        r'^behaviors/(?P<title_slug>.+)/duplicate/$',
+        views.BehaviorDuplicateView.as_view(),
+        name='behavior-duplicate'
+    ),
+    url(
         r'^behaviors/(?P<title_slug>.+)/$',
         views.BehaviorDetailView.as_view(),
         name='behavior-detail'
@@ -112,6 +122,11 @@ urlpatterns = patterns('',
         name='trigger-delete'
     ),
     url(
+        r'^triggers/(?P<name_slug>.+)/duplicate/$',
+        views.TriggerDuplicateView.as_view(),
+        name='trigger-duplicate'
+    ),
+    url(
         r'^triggers/(?P<name_slug>.+)/$',
         views.TriggerDetailView.as_view(),
         name='trigger-detail'
@@ -132,6 +147,11 @@ urlpatterns = patterns('',
         r'^goals/(?P<title_slug>.+)/delete/$',
         views.GoalDeleteView.as_view(),
         name='goal-delete'
+    ),
+    url(
+        r'^goals/(?P<title_slug>.+)/duplicate/$',
+        views.GoalDuplicateView.as_view(),
+        name='goal-duplicate'
     ),
     url(
         r'^goals/(?P<title_slug>.+)/$',
@@ -164,6 +184,11 @@ urlpatterns = patterns('',
         r'^categories/(?P<title_slug>.+)/delete/$',
         views.CategoryDeleteView.as_view(),
         name='category-delete'
+    ),
+    url(
+        r'^categories/(?P<title_slug>.+)/duplicate/$',
+        views.CategoryDuplicateView.as_view(),
+        name='category-duplicate'
     ),
     url(
         r'^categories/(?P<title_slug>.+)/$',

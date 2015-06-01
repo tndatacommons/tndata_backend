@@ -246,6 +246,9 @@ class URLMixin:
     def get_delete_url(self):
         return reverse(self._view('delete'), args=[self._slug_field()])
 
+    def get_duplicate_url(self):
+        return reverse(self._view('duplicate'), args=[self._slug_field()])
+
     def get_absolute_icon(self):
         icon_field = getattr(self, self.urls_icon_field, None)
         if self.urls_icon_field and icon_field:

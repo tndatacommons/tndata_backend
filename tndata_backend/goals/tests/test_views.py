@@ -295,6 +295,38 @@ class TestCategoryCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+class TestCategoryDuplicateView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestCategoryDuplicateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestCategoryDuplicateView).setUpTestData()
+        # Create a Category
+        cls.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+        )
+        cls.url = cls.category.get_duplicate_url()
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/category_form.html")
+        title_copy = "Copy of {0}".format(self.category.title)
+        self.assertContains(resp, title_copy)
+        self.assertIn("categories", resp.context)
+
+
 class TestCategoryPublishView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -633,6 +665,37 @@ class TestGoalCreateView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
+
+
+class TestGoalDuplicateView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestGoalDuplicateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestGoalDuplicateView).setUpTestData()
+        cls.goal = Goal.objects.create(
+            title="Title for Test Goal",
+            description="A Description",
+            outcome="An Outcome"
+        )
+        cls.url = cls.goal.get_duplicate_url()
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/goal_form.html")
+        title_copy = "Copy of {0}".format(self.goal.title)
+        self.assertContains(resp, title_copy)
+        self.assertIn("goals", resp.context)
 
 
 class TestGoalPublishView(TestCaseWithGroups):
@@ -1391,6 +1454,35 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
+class TestBehaviorDuplicateView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestBehaviorDuplicateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestBehaviorDuplicateView).setUpTestData()
+        cls.trigger = Trigger.objects.create(
+            name="Default Behavior Reminder",
+            trigger_type="time"
+        )
+        cls.behavior = Behavior.objects.create(title="Test Behavior")
+        cls.url = cls.behavior.get_duplicate_url()
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/behavior_form.html")
+        title_copy = "Copy of {0}".format(self.behavior.title)
+        self.assertContains(resp, title_copy)
+        self.assertIn("behaviors", resp.context)
 
 class TestBehaviorPublishView(TestCaseWithGroups):
 
@@ -1788,12 +1880,8 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_post(self):
-        from clog.clog import clog
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, self.payload)
-        if resp.status_code == 200:
-            clog(resp.context_data['form'].errors, color="magenta")
-            clog(resp.context_data['form'].data)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Action.objects.filter(title="New").exists())
 
@@ -1813,6 +1901,37 @@ class TestActionCreateView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
+
+
+class TestActionDuplicateView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super(cls, TestActionDuplicateView).setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super(cls, TestActionDuplicateView).setUpTestData()
+        cls.behavior = Behavior.objects.create(title="Test Behavior")
+        cls.action = Action.objects.create(
+            behavior=cls.behavior,
+            title="Test Action",
+        )
+        cls.url = cls.action.get_duplicate_url()
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/action_form.html")
+        title_copy = "Copy of {0}".format(self.action.title)
+        self.assertContains(resp, title_copy)
+        self.assertIn("actions", resp.context)
 
 
 class TestActionPublishView(TestCaseWithGroups):

@@ -161,6 +161,8 @@ class CategoryDetailView(ContentViewerMixin, DetailView):
 class CategoryCreateView(ContentEditorMixin, CreatedByView):
     model = Category
     form_class = CategoryForm
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -174,6 +176,23 @@ class CategoryCreateView(ContentEditorMixin, CreatedByView):
         context = super(CategoryCreateView, self).get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
         return context
+
+
+class CategoryDuplicateView(CategoryCreateView):
+    """Initializes the Create form with a copy of data from another object."""
+    def get_initial(self, *args, **kwargs):
+        initial = super(CategoryDuplicateView, self).get_initial(*args, **kwargs)
+        try:
+            obj = self.get_object()
+            initial.update({
+                "title": "Copy of {0}".format(obj.title),
+                "description": obj.description,
+                "color": obj.color,
+            })
+        except self.model.DoesNotExist:
+            pass
+        initial['order'] = get_max_order(Category)
+        return initial
 
 
 class CategoryPublishView(ContentEditorMixin, PublishView):
@@ -214,11 +233,29 @@ class GoalDetailView(ContentViewerMixin, DetailView):
 class GoalCreateView(ContentAuthorMixin, CreatedByView):
     model = Goal
     form_class = GoalForm
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
     def get_context_data(self, **kwargs):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
         context['goals'] = Goal.objects.all()
         return context
+
+
+class GoalDuplicateView(GoalCreateView):
+    """Initializes the Create form with a copy of data from another object."""
+    def get_initial(self, *args, **kwargs):
+        initial = super(GoalDuplicateView, self).get_initial(*args, **kwargs)
+        try:
+            obj = self.get_object()
+            initial.update({
+                "title": "Copy of {0}".format(obj.title),
+                "categories": obj.categories.values_list("id", flat=True),
+                "description": obj.description,
+            })
+        except self.model.DoesNotExist:
+            pass
+        return initial
 
 
 class GoalPublishView(ContentEditorMixin, PublishView):
@@ -259,11 +296,30 @@ class TriggerDetailView(ContentViewerMixin, DetailView):
 class TriggerCreateView(ContentEditorMixin, CreateView):
     model = Trigger
     form_class = TriggerForm
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
 
     def get_context_data(self, **kwargs):
         context = super(TriggerCreateView, self).get_context_data(**kwargs)
         context['triggers'] = Trigger.objects.all()
         return context
+
+
+class TriggerDuplicateView(TriggerCreateView):
+    """Initializes the Create form with a copy of data from another object."""
+    def get_initial(self, *args, **kwargs):
+        initial = super(TriggerDuplicateView, self).get_initial(*args, **kwargs)
+        try:
+            obj = self.get_object()
+            initial.update({
+                "name": "Copy of {0}".format(obj.name),
+                "trigger_type": obj.trigger_type,
+                "time": obj.time,
+                "recurrences": obj.recurrences,
+            })
+        except self.model.DoesNotExist:
+            pass
+        return initial
 
 
 class TriggerUpdateView(ContentEditorMixin, UpdateView):
@@ -299,11 +355,35 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
 class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
     model = Behavior
     form_class = BehaviorForm
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorCreateView, self).get_context_data(**kwargs)
         context['behaviors'] = Behavior.objects.all()
         return context
+
+
+class BehaviorDuplicateView(BehaviorCreateView):
+    """Initializes the Create form with a copy of data from another object."""
+    def get_initial(self, *args, **kwargs):
+        initial = super(BehaviorDuplicateView, self).get_initial(*args, **kwargs)
+        try:
+            obj = self.get_object()
+            initial.update({
+                "title": "Copy of {0}".format(obj.title),
+                "description": obj.description,
+                "more_info": obj.more_info,
+                "informal_list": obj.informal_list,
+                "external_resoruce": obj.external_resource,
+                "goals": obj.goals.values_list("id", flat=True),
+                "default_trigger": obj.default_trigger.id if obj.default_trigger else None,
+                "source_link": obj.source_link,
+                "source_notes": obj.source_notes,
+            })
+        except self.model.DoesNotExist:
+            pass
+        return initial
 
 
 class BehaviorPublishView(ContentEditorMixin, PublishView):
@@ -344,12 +424,33 @@ class ActionDetailView(ContentViewerMixin, DetailView):
 class ActionCreateView(ContentAuthorMixin, CreatedByView):
     model = Action
     form_class = ActionForm
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
         context['actions'] = Action.objects.all()
         context['behaviors'] = Behavior.objects.all()
         return context
+
+
+class ActionDuplicateView(ActionCreateView):
+    """Initializes the Create form with a copy of data from another object."""
+    def get_initial(self, *args, **kwargs):
+        initial = super(ActionDuplicateView, self).get_initial(*args, **kwargs)
+        try:
+            obj = self.get_object()
+            initial.update({
+                "title": "Copy of {0}".format(obj.title),
+                "sequence_order": obj.sequence_order,
+                "behavior": obj.behavior.id,
+                "description": obj.description,
+                "more_info": obj.more_info,
+                "external_resource": obj.external_resource,
+            })
+        except self.model.DoesNotExist:
+            pass
+        return initial
 
 
 class ActionPublishView(ContentEditorMixin, PublishView):
