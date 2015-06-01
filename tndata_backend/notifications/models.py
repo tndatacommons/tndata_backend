@@ -154,7 +154,7 @@ class GCMMessage(models.Model):
         return {
             "title": self.title,
             "message": self.message,
-            "object_type": object_type,
+            "object_type": object_type,  # What if None?
             "object_id": object_id,
         }
 
@@ -163,20 +163,23 @@ class GCMMessage(models.Model):
         """JSON-encoded message payload; NOTE: has a limit of 4096 bytes."""
         return json.dumps(self.content)
 
-    def send(self, collapse_key=None, delay_while_idle=True, ttl=None):
+    def send(self, collapse_key=None, delay_while_idle=False, time_to_live=None):
         """Deliver this message to Google Cloud Messaging.
+
+        This method accepts the following options as keyword arguments; These
+        are options available thru pushjack and are just passed along.
 
         * collapse_key: Omitted for messages with a payload (default), specify
             'collapse_key' for a 'send-to-sync' message.
         * delay_while_idle:  If True indicates that the message should not be
-            sent until the device becomes active. (default is True)
-        * ttl: Time to Live. Default is 4 weeks.
+            sent until the device becomes active. (default is False)
+        * time_to_live: Time to Live. Default is 4 weeks.
 
         """
         client = self._get_gcm_client()
         options = {
             'delay_while_idle': delay_while_idle,
-            'time_to_live': ttl,
+            'time_to_live': time_to_live,
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key

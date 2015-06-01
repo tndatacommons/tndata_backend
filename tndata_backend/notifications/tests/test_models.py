@@ -173,8 +173,40 @@ class TestGCMMessage(TestCase):
             }
         )
 
+    def test_content_with_no_content_object(self):
+        msg = GCMMessage.objects.create(
+            self.user,
+            "ASDF",
+            "A asdf message",
+            datetime_utc(2000, 1, 1, 1, 0),
+        )
+        self.assertEqual(
+            msg.content,
+            {
+                "title": "ASDF",
+                "message": "A asdf message",
+                "object_type": None,
+                "object_id": None,
+            }
+        )
+
     def test_content_json(self):
         self.assertEqual(self.msg.content_json, dumps(self.msg.content))
+
+    def test_content_json_with_no_content_object(self):
+        msg = GCMMessage.objects.create(
+            self.user,
+            "ASDF",
+            "A asdf message",
+            datetime_utc(2000, 1, 1, 1, 0),
+        )
+        expected = dumps({
+            "title": "ASDF",
+            "message": "A asdf message",
+            "object_type": None,
+            "object_id": None,
+        })
+        self.assertEqual(msg.content_json, expected)
 
     def test_send(self):
         with patch("notifications.models.GCMClient") as mock_client:
@@ -185,7 +217,7 @@ class TestGCMMessage(TestCase):
             mock_client.return_value.send.assert_called_once_with(
                 ['REGISTRATIONID'],
                 self.msg.content_json,
-                delay_while_idle=True,
+                delay_while_idle=False,
                 time_to_live=None,
             )
 
