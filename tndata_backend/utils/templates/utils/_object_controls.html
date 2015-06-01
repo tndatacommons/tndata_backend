@@ -16,6 +16,9 @@
   {% if can_update %}
     <li><a href="{{ object.get_update_url }}">Update</a></li>
   {% endif %}
+  {% if can_duplicate %}
+    <li><a href="{{ object.get_duplicate_url }}">Create a Copy</a></li>
+  {% endif %}
   {% if can_delete %}
     <li><a href="{{ object.get_delete_url }}">Delete</a></li>
   {% endif %}

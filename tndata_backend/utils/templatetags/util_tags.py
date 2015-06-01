@@ -22,9 +22,16 @@ def object_controls(context, obj, app_label, label=None):
         label = model_name
 
     perms = context.get('perms',[])  # Grab the permissions from the context.
+
+    # To duplicate, a user must be able to create an object and the object
+    # must have the appropriate api.
+    create_perm = "{0}.add_{1}".format(app_label, model_name)
+    can_duplicate = create_perm in perms and hasattr(obj, "get_duplicate_url")
+
     return {
         'label': label,
         'object': obj,
         'can_update': change_perm in perms,
         'can_delete': delete_perm in perms,
+        'can_duplicate': can_duplicate,
     }
