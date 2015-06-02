@@ -14,6 +14,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Avg
 from django.db.models.signals import post_delete, post_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
@@ -880,3 +881,89 @@ class GoalProgress(models.Model):
             return u"\u2191"  # up (north)
 
     objects = GoalProgressManager()
+
+
+class CategoryProgressManager(models.Manager):
+    """Custom manager for the `CategoryProgress` class that includes a method
+    to generate scores for a User's progress."""
+
+    def generate_scores(self, user):
+        created_objects = []
+        current_time = datetime.utcnow()
+
+        # Get all the categories that a user has selected.
+        cat_ids = UserCategory.objects.filter(user=user).values_list('id', flat=True)
+
+        start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = current_time.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        for cat in Category.objects.filter(id__in=cat_ids):
+            # Average all latest relevant GoalProgress scores
+            results = GoalProgress.objects.filter(
+                user=user,
+                goal__categories=cat,
+                reported_on__range=(start, end)
+            ).aggregate(Avg("current_score"))
+
+            # Result of averaging the current scores could be None
+            current_score = results.get('current_score__avg', 0) or 0
+
+            # Create a CategoryProgress object for this data
+            cp = self.create(
+                user=user,
+                category=cat,
+                current_score=round(current_score, 2),
+            )
+            created_objects.append(cp.id)
+        return self.get_queryset().filter(id__in=created_objects)
+
+
+class CategoryProgress(models.Model):
+    """Agregates score data from `GoalProgress` up to 'today'."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    category = models.ForeignKey(Category)
+    current_score = models.FloatField(default=0)
+    reported_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-reported_on']
+        get_latest_by = "reported_on"
+        verbose_name = "Category Progress"
+        verbose_name_plural = "Category Progression"
+
+    def __str__(self):
+        return "{}".format(self.current_score)
+
+    def recalculate_score(self, digits=2):
+        """Recalculate all of the Progress values for the current date,
+        updating the relevant score-related fields.
+
+        This method Averages the user's GoalProgress scores for all goals
+        related to this category, for the most recent day.
+
+        """
+        goal_ids = self.category.goals.values_list("id", flat=True)
+        start = self.reported_on.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = self.reported_on.replace(hour=23, minute=59, second=59, microsecond=999999)
+        results = GoalProgress.objects.filter(
+            user=self.user,
+            goal__id__in=goal_ids,
+            reported_on__range=(start, end)
+        ).aggregate(Avg("current_score"))
+        self.current_score = round(results.get('current_score__avg', 0), digits)
+
+    @property
+    def text_glyph(self):
+        """show a unicode arrow representing the compass needle; used in admin"""
+        if self.current_score < 0.25:
+            return u"\u2193"  # down (south)
+        elif self.current_score >= 0.25 and self.current_score < 0.4:
+            return u"\u2198"  # down-right (southeast)
+        elif self.current_score >= 0.4 and self.current_score < 0.7:
+            return u"\u2192"  # right (east)
+        elif self.current_score >= 0.7 and self.current_score < 0.9:
+            return u"\u2197"  # right-up (northeast)
+        elif self.current_score >= 0.9:
+            return u"\u2191"  # up (north)
+
+    objects = CategoryProgressManager()
