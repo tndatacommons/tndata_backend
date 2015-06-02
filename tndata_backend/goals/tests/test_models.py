@@ -679,34 +679,32 @@ class TestCategoryProgress(TestCase):
             email="test@example.com"
         )
         cls.category = Category.objects.create(
-            order=1,
+            order=5,
             title="Test Category",
             description="Desc"
         )
-        cls.goal = Goal.objects.create(title="G", description="G.")
-        cls.goal.categories.add(cls.category)
-
         cls.uc = UserCategory.objects.create(user=cls.user, category=cls.category)
 
-        # Create a fake GoalProgress for this user.
-        cls.gp = GoalProgress(
+        # create a goal and a fake GoalProgress
+        cls.goal = Goal.objects.create(title="G", description="G.")
+        cls.goal.categories.add(cls.category)
+        cls.gp = GoalProgress.objects.create(
             user=cls.user,
             goal=cls.goal,
             current_score=0.33,
             current_total=3.0,
             max_total=9.0,
         )
-        cls.gp.save()
 
         # Create a CategoryProgress by generating the scores.
         cls.cp = CategoryProgress.objects.generate_scores(cls.user).latest()
 
     def test_expected_values(self):
         """Ensure the score components contain the expected values."""
-        self.assertEqual(self.gp.current_score, 0.33)  # round(3/9, 2)
+        self.assertEqual(self.cp.current_score, 0.33)  # round(3/9, 2)
 
     def test__str__(self):
-        self.assertEqual("0.33", "{}".format(self.gp))
+        self.assertEqual("0.33", "{}".format(self.cp))
 
     def test_text_glyph(self):
-        self.assertEqual(self.gp.text_glyph, u"\u2198")
+        self.assertEqual(self.cp.text_glyph, u"\u2198")

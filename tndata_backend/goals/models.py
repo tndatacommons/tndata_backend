@@ -919,7 +919,8 @@ class CategoryProgressManager(models.Manager):
         current_time = datetime.utcnow()
 
         # Get all the categories that a user has selected.
-        cat_ids = UserCategory.objects.filter(user=user).values_list('id', flat=True)
+        cat_ids = UserCategory.objects.filter(user=user)
+        cat_ids = cat_ids.values_list('category__id', flat=True)
 
         start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
         end = current_time.replace(hour=23, minute=59, second=59, microsecond=999999)
