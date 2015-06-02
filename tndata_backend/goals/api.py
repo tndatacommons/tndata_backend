@@ -322,7 +322,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
 
     Each results object also includes a `user_categories` object in addition to
     a `goal` object. The `user_categories` object is a list of Categories in
-    which the goal belongs that have also be selected by the User. Related:
+    which the goal belongs that have also been selected by the User. Related:
     [/api/users/categories/](/api/users/categories/).
 
     ----

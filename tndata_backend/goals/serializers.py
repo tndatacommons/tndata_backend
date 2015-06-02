@@ -156,5 +156,7 @@ class UserCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserCategory
-        fields = ('id', 'user', 'category', 'user_goals', 'created_on')
+        fields = (
+            'id', 'user', 'category', 'user_goals', 'created_on', 'progress_value',
+        )
         read_only_fields = ("id", "created_on", )

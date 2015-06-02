@@ -654,9 +654,28 @@ class UserGoal(models.Model):
 
     def get_user_categories(self):
         """Returns a QuerySet of Categories related to this Goal, but restricts
-        those categories to those which the user has selected."""
+        those categories to those which the user has selected.
+
+        NOTE: This method also looks up the user's `CategoryProgress` for
+        each category, and appends a `progress_value` attribute.
+        """
         cids = self.user.usercategory_set.values_list('category__id', flat=True)
-        return self.goal.categories.filter(id__in=cids)
+
+        # Find all the lastest CategoryProgress objects for each user/category
+        scores = {}
+        for cid in cids:
+            try:
+                scores[cid] = CategoryProgress.objects.filter(
+                    user=self.user,
+                    category__id=cid
+                ).latest().current_score
+            except CategoryProgress.DoesNotExist:
+                scores[cid] = 0.0
+
+        results = self.goal.categories.filter(id__in=cids)
+        for category in results:
+            category.progress_value = scores.get(category.id, 0.0)
+        return results
 
     @property
     def progress_value(self):
@@ -737,6 +756,14 @@ class UserCategory(models.Model):
         those goals to those which the user has selected."""
         gids = self.user.usergoal_set.values_list('goal__id', flat=True)
         return self.category.goals.filter(id__in=gids)
+
+    @property
+    def progress_value(self):
+        try:
+            qs = self.category.categoryprogress_set.filter(user=self.user)
+            return qs.latest().current_score
+        except CategoryProgress.DoesNotExist:
+            return 0.0
 
 
 class BehaviorProgress(models.Model):
