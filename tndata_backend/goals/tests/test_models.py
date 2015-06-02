@@ -11,6 +11,7 @@ from .. models import (
     Behavior,
     BehaviorProgress,
     Category,
+    CategoryProgress,
     Goal,
     GoalProgress,
     Trigger,
@@ -666,3 +667,46 @@ class TestGoalProgress(TestCase):
 
     def test_text_glyph(self):
         self.assertEqual(self.gp.text_glyph, u"\u2192")
+
+
+class TestCategoryProgress(TestCase):
+    """Tests for the `CategoryProgress` model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        cls.category = Category.objects.create(
+            order=1,
+            title="Test Category",
+            description="Desc"
+        )
+        cls.goal = Goal.objects.create(title="G", description="G.")
+        cls.goal.categories.add(cls.category)
+
+        cls.uc = UserCategory.objects.create(user=cls.user, category=cls.category)
+
+        # Create a fake GoalProgress for this user.
+        cls.gp = GoalProgress(
+            user=cls.user,
+            goal=cls.goal,
+            current_score=0.33,
+            current_total=3.0,
+            max_total=9.0,
+        )
+        cls.gp.save()
+
+        # Create a CategoryProgress by generating the scores.
+        cls.cp = CategoryProgress.objects.generate_scores(cls.user).latest()
+
+    def test_expected_values(self):
+        """Ensure the score components contain the expected values."""
+        self.assertEqual(self.gp.current_score, 0.33)  # round(3/9, 2)
+
+    def test__str__(self):
+        self.assertEqual("0.33", "{}".format(self.gp))
+
+    def test_text_glyph(self):
+        self.assertEqual(self.gp.text_glyph, u"\u2198")

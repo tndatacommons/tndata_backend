@@ -168,3 +168,10 @@ class GoalProgressAdmin(UserRelatedModelAdmin):
         'current_score', 'text_glyph', 'reported_on'
     )
 admin.site.register(models.GoalProgress, GoalProgressAdmin)
+
+
+class CategoryProgressAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user', 'category', 'current_score', 'text_glyph', 'reported_on'
+    )
+admin.site.register(models.CategoryProgress, CategoryProgressAdmin)
