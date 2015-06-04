@@ -1,5 +1,6 @@
 """
-This app has no models, but some utility functions for views are defined here.
+This app has no models, but some utility classes & functions for views are
+defined here.
 
 """
 from datetime import datetime
@@ -57,7 +58,9 @@ class ResetToken:
         """Send an email with a link to the password reset form."""
 
         # Pull the FQDN from the referer
-        url = self.request.META['HTTP_REFERER']
+        url = self.request.META.get('HTTP_REFERER', None)
+        if url is None:
+            url = self.request.META['SERVER_NAME']
         path = reverse_lazy("utils:set_new_password", args=[self.token])
         base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
         url = "{0}{1}".format(base_url, path)

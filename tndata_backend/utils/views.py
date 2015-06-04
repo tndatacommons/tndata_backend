@@ -13,8 +13,17 @@ class PasswordResetRequestView(FormView):
     template_name = "utils/password_reset_request.html"
     success_url = reverse_lazy('utils:password_reset_notification')
 
+    def form_invalid(self, form):
+        ctx = self.get_context_data(form=form)
+        ctx['invalid_email'] = True
+        return self.render_to_response(ctx)
+
     def form_valid(self, form):
-        u = get_user_model().objects.get(email=form.cleaned_data['email_address'])
+        User = get_user_model()
+        try:
+            u = User.objects.get(email=form.cleaned_data['email_address'])
+        except User.DoesNotExist:
+            return self.form_invalid(form)
 
         # Set unusuable password and disable account
         u.set_unusable_password()
