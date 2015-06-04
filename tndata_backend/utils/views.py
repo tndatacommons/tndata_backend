@@ -1,6 +1,6 @@
+from django import http
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse_lazy
-from django import http
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, FormView
 
