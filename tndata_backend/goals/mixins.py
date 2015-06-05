@@ -71,6 +71,8 @@ class ContentViewerMixin:
 class ContentAuthorMixin:
     """A Mixin that requires the user have the 'Authors' set of permissions."""
 
+    _denied_message = None
+
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
@@ -106,6 +108,12 @@ class ContentAuthorMixin:
         # Content owners are updating their own draft/declined content.
         if owner and updating and obj.state in ['draft', 'declined']:
             return True  # OK
+        elif owner:
+            self._denied_message = (
+                "Your content has either been Published already or is Pending "
+                "Review. To continue editing this content, you will need to "
+                "request that it be reset to a Draft state."
+            )
 
         # Read-only for draft-to-published content
         if not updating and obj.state in ['draft', 'pending-review', 'published']:
@@ -121,7 +129,9 @@ class ContentAuthorMixin:
     def dispatch(self, request, *args, **kwargs):
         # NOTE: This mixin is only used in CreateView and UpdateView subclasses.
         if hasattr(self, 'get_object') and not self._object_permissions(request):
-            return HttpResponseForbidden(content=render_to_string("403.html"))
+            ctx = {"message": self._denied_message}
+            content = render_to_string("403.html", ctx)
+            return HttpResponseForbidden(content=content)
         return super(ContentAuthorMixin, self).dispatch(request, *args, **kwargs)
 
 

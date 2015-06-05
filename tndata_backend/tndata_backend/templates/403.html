@@ -1,11 +1,16 @@
 {% extends "base_error.html" %}
 
 {% block heading_content %}
-Yikes! You don't have permissions for this.
+  Insufficient Permissions
 {% endblock %}
 
 {% block message_content %}
-  <p>Unfortunately, you don't have permission to view this page. If this seems
-  wrong, please get in touch with us:
-  <a href="mailto:admin@tndata.org">admin@tndata.org</a>.</p>
+
+  {% if message %}
+    <p>{{ message }}</p>
+  {% else %}
+    <p>Unfortunately, you don't have permission to view this page. If this seems
+    wrong, please get in touch with us:
+    <a href="mailto:admin@tndata.org">admin@tndata.org</a>.</p>
+  {% endif %}
 {% endblock %}
