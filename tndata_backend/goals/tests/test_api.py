@@ -828,7 +828,7 @@ class TestUserBehaviorAPI(APITestCase):
         Behavior.objects.filter(id=self.behavior.id).delete()
         UserBehavior.objects.filter(id=self.ub.id).delete()
 
-    def test_userbehavior_list(self):
+    def test_userbehavior_list_unauthenticated(self):
         """Ensure un-authenticated requests don't expose any results."""
         url = reverse('userbehavior-list')
         response = self.client.get(url)
@@ -853,6 +853,28 @@ class TestUserBehaviorAPI(APITestCase):
             response.data['results'][0]['behavior']['title'],
             self.behavior.title
         )
+
+    def test_get_userbehavior_list_with_filters(self):
+        # Test with goal id
+        url = "{0}?goal={1}".format(reverse('userbehavior-list'), self.goal.id)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with goal title_slug
+        url = "{0}?goal={1}".format(
+            reverse('userbehavior-list'),
+            self.goal.title_slug
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
 
     def test_post_userbehavior_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post"""
@@ -1044,7 +1066,7 @@ class TestUserActionAPI(APITestCase):
         Action.objects.filter(id=self.action.id).delete()
         UserAction.objects.filter(id=self.ua.id).delete()
 
-    def test_get_useraction_list(self):
+    def test_get_useraction_list_unauthenticated(self):
         """Ensure un-authenticated requests don't expose any results."""
         url = reverse('useraction-list')
         response = self.client.get(url)
@@ -1069,6 +1091,52 @@ class TestUserActionAPI(APITestCase):
             response.data['results'][0]['action']['title'],
             self.action.title
         )
+
+    def test_get_useraction_list_with_filters(self):
+        # Test with goal id
+        url = "{0}?goal={1}".format(reverse('useraction-list'), self.goal.id)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with goal title_slug
+        url = "{0}?goal={1}".format(
+            reverse('useraction-list'),
+            self.goal.title_slug
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with Behavior id
+        url = "{0}?behavior={1}".format(
+            reverse('useraction-list'),
+            self.behavior.id
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with Behavior title_slug
+        url = "{0}?behavior={1}".format(
+            reverse('useraction-list'),
+            self.behavior.title_slug
+        )
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
 
     def test_post_useraction_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post"""

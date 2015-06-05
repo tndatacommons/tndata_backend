@@ -412,6 +412,17 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
 
     Updating a behavior mapping is currently not supported.
 
+    ## Filtering
+
+    UserBehaviors can be filtered using a querystring parameter. Currently,
+    filtering is availble for Goals. You can filter by an ID or a slug.
+
+    To retrieve all *UserBehavior*s that belong to a particular goal, use
+    one of the following:
+
+    * `/api/behaviors/?goal={goal_id}` or by slug
+    * `/api/behaviors/?goal={goal_title_slug}`
+
     ## Additional information
 
     The Behaviors that a User has selected are also available through the
@@ -431,7 +442,14 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     permission_classes = [IsOwner]
 
     def get_queryset(self):
-        return self.queryset.filter(user__id=self.request.user.id)
+        goal = self.request.GET.get('goal', None)
+        self.queryset = self.queryset.filter(user__id=self.request.user.id)
+
+        if goal is not None and goal.isnumeric():
+            self.queryset = self.queryset.filter(behavior__goals__id=goal)
+        elif goal is not None:
+            self.queryset = self.queryset.filter(behavior__goals__title_slug=goal)
+        return self.queryset
 
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
@@ -508,6 +526,24 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     Updating a action mapping is currently not supported.
 
+    ## Filtering
+
+    UserActions can be filtered using a querystring parameter. Currently,
+    filtering is availble for Goals or Behaviors. You can filter by an ID or
+    a slug.
+
+    To retrieve all *UserAction*s that belong to a particular Goal, use
+    one of the following:
+
+    * `/api/actions/?goal={goal_id}` or by slug
+    * `/api/actions/?goal={goal_title_slug}`
+
+    To retrieve all *UserAction*s that belong to a particular Behavior, use
+    one of the following:
+
+    * `/api/actions/?behavior={behavior_id}` or by slug
+    * `/api/actions/?behavior={behavior_title_slug}`
+
     ## Additional information
 
     The Actions that a User has selected are also available through the
@@ -522,7 +558,20 @@ class UserActionViewSet(mixins.CreateModelMixin,
     permission_classes = [IsOwner]
 
     def get_queryset(self):
-        return self.queryset.filter(user__id=self.request.user.id)
+        goal = self.request.GET.get('goal', None)
+        behavior = self.request.GET.get('behavior', None)
+        self.queryset = self.queryset.filter(user__id=self.request.user.id)
+
+        if goal is not None and goal.isnumeric():
+            self.queryset = self.queryset.filter(action__behavior__goals__id=goal)
+        elif goal is not None:
+            self.queryset = self.queryset.filter(action__behavior__goals__title_slug=goal)
+
+        if behavior is not None and behavior.isnumeric():
+            self.queryset = self.queryset.filter(action__behavior__id=behavior)
+        elif behavior is not None:
+            self.queryset = self.queryset.filter(action__behavior__title_slug=behavior)
+        return self.queryset
 
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing with
