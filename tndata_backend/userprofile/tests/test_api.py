@@ -9,6 +9,7 @@ from rest_framework.test import APITestCase
 
 from .. models import UserProfile
 from .. serializers import UserSerializer
+from .. import utils
 
 
 class TestUserSerializer(TestCase):
@@ -124,6 +125,31 @@ class TestUsersAPI(APITestCase):
 
         # Clean up.
         u.delete()
+
+    def test_post_user_list_with_existing_account(self):
+        """POSTing to the user-list with username/email for an existing account
+        should fail to create a new user, but should return an http 400 response.
+
+        """
+        # Generate an existing user.
+        user = {"email": "foo@example.com", "first_name": "F", "last_name": "L"}
+        user['username'] = utils.username_hash(user['email'])
+        user = self.User.objects.create(**user)
+
+        url = reverse('user-list')
+        expected_error = "This user account already exists."
+
+        # First try to create with an existing email
+        data = {'email': user.email, 'password': 'xxx'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, expected_error, status_code=400)
+
+        # Then with an existing username
+        data = {'username': user.username, 'password': 'xxx'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, expected_error, status_code=400)
 
     def test_get_user_detail(self):
         """Ensure authenticated users can access their data."""

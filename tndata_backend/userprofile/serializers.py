@@ -1,6 +1,6 @@
-import hashlib
-
 from django.contrib.auth import authenticate, get_user_model
+from django.core import validators
+from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
@@ -11,6 +11,7 @@ from goals.serializers import (
     UserGoalSerializer,
 )
 from . import models
+from . import utils
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,6 +46,27 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "date_joined", )
 
+    def validate_username(self, value):
+        User = get_user_model()
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("This user account already exists.")
+        return value
+
+    def validate_email(self, value):
+        """Validate several things, given a user's email:
+
+        * this is a valid email address
+        * there are no existing users with this email
+        * there are no users with a username hashed from this email
+
+        """
+        User = get_user_model()
+        username = utils.username_hash(value)
+        if User.objects.filter(Q(email=value) | Q(username=username)).exists():
+            raise serializers.ValidationError("This user account already exists.")
+        validators.validate_email(value)
+        return value
+
     def _set_user_password(self, instance, password=None):
         """Ensure that the User password gets set correctly."""
         if password:
@@ -58,9 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
         email address (the first 30 chars from an md5 hex digest).
         """
         if not data.get('username', False) and 'email' in data:
-            m = hashlib.md5()
-            m.update(data['email'].encode("utf8"))
-            data['username'] = m.hexdigest()[:30]
+            data['username'] = utils.username_hash(data['email'])
         return data
 
     def update(self, instance, validated_data):
