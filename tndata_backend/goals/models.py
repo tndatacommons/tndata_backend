@@ -20,6 +20,7 @@ from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField, transition
+from markdown import markdown
 from recurrence.fields import RecurrenceField
 
 from .managers import WorkflowManager
@@ -99,6 +100,11 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
             ("decline_category", "Can Decline Categories"),
             ("publish_category", "Can Publish Categories"),
         )
+
+    @property
+    def rendered_description(self):
+        """Render the description markdown"""
+        return markdown(self.description)
 
     @property
     def goals(self):
@@ -240,6 +246,11 @@ class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
             ("decline_goal", "Can Decline Goals"),
             ("publish_goal", "Can Publish Goals"),
         )
+
+    @property
+    def rendered_description(self):
+        """Render the description markdown"""
+        return markdown(self.description)
 
     def save(self, *args, **kwargs):
         """Always slugify the title prior to saving the model."""
@@ -484,6 +495,16 @@ class BaseBehavior(ModifiedMixin, models.Model):
     def _set_notification_text(self):
         if not self.notification_text:
             self.notification_text = self.title
+
+    @property
+    def rendered_description(self):
+        """Render the description markdown"""
+        return markdown(self.description)
+
+    @property
+    def rendered_more_info(self):
+        """Render the more_info markdown"""
+        return markdown(self.more_info)
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""

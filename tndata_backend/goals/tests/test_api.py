@@ -41,6 +41,7 @@ class TestCategoryAPI(APITestCase):
         c = response.data['results'][0]
         self.assertEqual(c['id'], self.category.id)
         self.assertEqual(c['description'], self.category.description)
+        self.assertEqual(c['html_description'], self.category.rendered_description)
         self.assertEqual(c['title'], self.category.title)
         self.assertEqual(c['title_slug'], self.category.title_slug)
         self.assertEqual(c['icon_url'], self.category.get_absolute_icon())
@@ -101,6 +102,7 @@ class TestGoalAPI(APITestCase):
         self.assertEqual(obj['title'], self.goal.title)
         self.assertEqual(obj['title_slug'], self.goal.title_slug)
         self.assertEqual(obj['description'], self.goal.description)
+        self.assertEqual(obj['html_description'], self.goal.rendered_description)
         # Check the SimpleCategorySerializer used with goals
         self.assertIn('categories', obj)
         self.assertIn("image_url", obj['categories'][0])
@@ -217,6 +219,7 @@ class TestBehaviorAPI(APITestCase):
             title="Test Behavior",
             description="This is a test",
             informal_list="Do this",
+            more_info="* a bullet"
         )
         self.behavior.goals.add(self.goal)
         self.behavior.publish()
@@ -238,6 +241,9 @@ class TestBehaviorAPI(APITestCase):
         self.assertEqual(obj['title'], self.behavior.title)
         self.assertEqual(obj['title_slug'], self.behavior.title_slug)
         self.assertEqual(obj['description'], self.behavior.description)
+        self.assertEqual(obj['html_description'], self.behavior.rendered_description)
+        self.assertEqual(obj['more_info'], self.behavior.more_info)
+        self.assertEqual(obj['html_more_info'], self.behavior.rendered_more_info)
         self.assertEqual(len(obj['goals']), 1)  # Should have 1 goal
         self.assertEqual(obj['goals'][0]['title'], self.goal.title)
 
@@ -384,6 +390,7 @@ class TestActionAPI(APITestCase):
             sequence_order=1,
             behavior=self.behavior,
             description="This is a test",
+            more_info="* a bullet"
         )
         self.action.publish()
         self.action.save()
@@ -405,6 +412,9 @@ class TestActionAPI(APITestCase):
         self.assertEqual(obj['title'], self.action.title)
         self.assertEqual(obj['title_slug'], self.action.title_slug)
         self.assertEqual(obj['description'], self.action.description)
+        self.assertEqual(obj['html_description'], self.action.rendered_description)
+        self.assertEqual(obj['more_info'], self.action.more_info)
+        self.assertEqual(obj['html_more_info'], self.action.rendered_more_info)
         self.assertEqual(obj['behavior']['id'], self.behavior.id)
 
     def test_action_list_by_category_id(self):

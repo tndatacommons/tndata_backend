@@ -29,6 +29,7 @@ User = get_user_model()
 class CategorySerializer(serializers.ModelSerializer):
     """A Serializer for `Category`."""
     goals = GoalListField(many=True, read_only=True)
+    html_description = serializers.ReadOnlyField(source="rendered_description")
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
 
@@ -36,7 +37,7 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = (
             'id', 'order', 'title', 'title_slug', 'description',
-            'goals', 'icon_url', 'image_url', 'color',
+            'html_description', 'goals', 'icon_url', 'image_url', 'color',
         )
 
 
@@ -44,12 +45,13 @@ class GoalSerializer(serializers.ModelSerializer):
     """A Serializer for `Goal`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     categories = CategoryListField(many=True, read_only=True)
+    html_description = serializers.ReadOnlyField(source="rendered_description")
 
     class Meta:
         model = Goal
         fields = (
-            'id', 'title', 'title_slug', 'description', 'outcome',
-            'icon_url', 'categories',
+            'id', 'title', 'title_slug', 'description', 'html_description',
+            'outcome', 'icon_url', 'categories',
         )
 
 
@@ -70,13 +72,15 @@ class BehaviorSerializer(serializers.ModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
     goals = GoalListField(many=True, read_only=True)
+    html_description = serializers.ReadOnlyField(source="rendered_description")
+    html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
 
     class Meta:
         model = Behavior
         fields = (
-            'id', 'title', 'title_slug', 'description', 'more_info',
-            'external_resource', 'default_trigger', 'notification_text',
-            'icon_url', 'image_url', 'goals',
+            'id', 'title', 'title_slug', 'description', 'html_description',
+            'more_info', 'html_more_info', 'external_resource', 'default_trigger',
+            'notification_text', 'icon_url', 'image_url', 'goals',
         )
 
 
@@ -96,13 +100,16 @@ class ActionSerializer(serializers.ModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
     behavior = SimpleBehaviorField(read_only=True)
+    html_description = serializers.ReadOnlyField(source="rendered_description")
+    html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
 
     class Meta:
         model = Action
         fields = (
             'id', 'behavior', 'sequence_order', 'title', 'title_slug',
-            'title', 'description', 'more_info', 'external_resource',
-            'default_trigger', 'notification_text', 'icon_url', 'image_url',
+            'title', 'description', 'html_description', 'more_info',
+            'html_more_info', 'external_resource', 'default_trigger',
+            'notification_text', 'icon_url', 'image_url',
         )
 
 
