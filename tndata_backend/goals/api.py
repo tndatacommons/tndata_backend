@@ -25,7 +25,8 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     * order: Controls the order in which Categories are displayed.
     * title: The unique Title (or name) of the Category
     * title_slug: A url-friendly version of the title.
-    * description: A short description of this Category. Contains HTML.
+    * description: A short description of this Category. Plain text (possibly markdown)
+    * html_description: HTML version of the description.
     * icon_url: A URL for a square image. This is the category's Icon.
     * image_url: A URL for a larger image associated with the category. Use as the
       category's _hero_ image above each tab.
@@ -49,7 +50,8 @@ class GoalViewSet(viewsets.ReadOnlyModelViewSet):
     * id: The unique database identifier for the goal
     * title: A unique Title (or name) for the goal.
     * title_slug: A url-friendly version of the title.
-    * description: A short description for the goal. Contains HTML.
+    * description: A short description for the goal. Plain text (possibly markdown)
+    * html_description: HTML version of the description.
     * outcome: Additional (optional) text that may describe an expected outcome
       of pursing this Goal.
     * icon_url: A URL for an image associated with the category
@@ -125,9 +127,11 @@ class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
     * id: The unique database identifier for the behavior
     * title: A unique, Formal title. Use this to refer to this item.
     * title_slug: A url-friendly version of title.
-    * description: A short description of the Behavior. Contains HTML.
+    * description: A short description of the Behavior. Plain text (possibly markdown)
+    * html_description: HTML version of the description.
     * more_info: Additional information displayed when the user drills down
-      into the content. Contains HTML.
+      into the content. Contains markdown.
+    * html_more_info: HTML version of the `more_info` field.
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
         (Trigger)[/api/triggers/] endpoint.
@@ -191,9 +195,11 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
     * sequence_order: The order in which actions should be displayed/performed (if any)
     * title: A unique, Formal title. Use this to refer to this item.
     * title_slug: A url-friendly version of title.
-    * description: A short description of the Action. Contains HTML.
+    * description: A short description of the Action. Plain text (possibly markdown)
+    * html_description: HTML version of the description.
     * more_info: Additional information displayed when the user drills down
-      into the content. Contains HTML.
+      into the content. Contains markdown.
+    * html_more_info: HTML version of the `more_info` field.
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
         (Trigger)[/api/triggers/] endpoint.
