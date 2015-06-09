@@ -38,6 +38,8 @@ class TestUserSerializer(TestCase):
         self.assertEqual(s.data['id'], self.user.id)
 
     def test_deserialize_partial(self):
+        """Ensure that partial serialization works: this is needed for updates
+        for models, which may exclude some required fields."""
         data = {
             'id': self.user.id,
             'username': self.user.username,

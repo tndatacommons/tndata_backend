@@ -48,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         User = get_user_model()
-        if User.objects.filter(username=value).exists():
+        if not self.partial and User.objects.filter(username=value).exists():
             raise serializers.ValidationError("This user account already exists.")
         return value
 
@@ -61,8 +61,8 @@ class UserSerializer(serializers.ModelSerializer):
 
         """
         User = get_user_model()
-        username = utils.username_hash(value)
-        if User.objects.filter(Q(email=value) | Q(username=username)).exists():
+        criteria = (Q(email=value) | Q(username=utils.username_hash(value)))
+        if not self.partial and User.objects.filter(criteria).exists():
             raise serializers.ValidationError("This user account already exists.")
         validators.validate_email(value)
         return value
