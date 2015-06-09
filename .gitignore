@@ -1,3 +1,6 @@
+.coverage
+.coveragerc
+dump.sql
 *.sqlite3
 env/
 tndata_backend/tndata_backend/uploads
