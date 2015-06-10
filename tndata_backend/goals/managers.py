@@ -32,6 +32,14 @@ class TriggerManager(models.Manager):
         """
         return self.get_queryset().filter(user=user)
 
+    def create_for_user(self, user, name, time, rrule):
+        """Creates a time-type trigger based on the given RRule data."""
+        return self.create(
+            user=user,
+            name=name,
+            trigger_type="time",
+            recurrences=rrule,
+        )
 
 class WorkflowManager(models.Manager):
     """A simple model manager for those models that include a workflow

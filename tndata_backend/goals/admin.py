@@ -68,9 +68,13 @@ class GoalAdmin(ContentWorkflowAdmin):
 admin.site.register(models.Goal, GoalAdmin)
 
 
-class TriggerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'trigger_type', 'time', 'location')
+class TriggerAdmin(UserRelatedModelAdmin):
+    list_display = ('name', 'trigger_type', 'time', 'location', 'user')
     prepopulated_fields = {"name_slug": ("name", )}
+    search_fields = [
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'name', 'location',
+    ]
 admin.site.register(models.Trigger, TriggerAdmin)
 
 
