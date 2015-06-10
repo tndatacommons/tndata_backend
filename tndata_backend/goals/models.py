@@ -304,6 +304,12 @@ class Trigger(URLMixin, models.Model):
         ('place', 'Place'),
     )
 
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        help_text="A Custom trigger, created by a user."
+    )
     name = models.CharField(
         max_length=128,
         unique=True,
@@ -535,7 +541,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
 
         """
         if self.default_trigger is None:
-            return Trigger.random(trigger_type)
+            return Trigger.random(trigger_type)  # TODO: this is a bad idea.
         return self.default_trigger
 
 
