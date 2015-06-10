@@ -1113,21 +1113,21 @@ class TestTriggerCreateView(TestCaseWithGroups):
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, self.non_recurring_payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.filter(name="Test Trigger").exists())
+        self.assertTrue(Trigger.objects.default(name="Test Trigger").exists())
 
         resp = self.client.post(self.url, self.recurring_payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.filter(name="Recurring").exists())
+        self.assertTrue(Trigger.objects.default(name="Recurring").exists())
 
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, self.non_recurring_payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.filter(name="Test Trigger").exists())
+        self.assertTrue(Trigger.objects.default(name="Test Trigger").exists())
 
         resp = self.client.post(self.url, self.recurring_payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.filter(name="Recurring").exists())
+        self.assertTrue(Trigger.objects.default(name="Recurring").exists())
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
@@ -1165,7 +1165,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         }
 
     def tearDown(self):
-        Trigger.objects.filter(pk=self.trigger.id).delete()
+        Trigger.objects.default(pk=self.trigger.id).delete()
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -1202,13 +1202,13 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.filter(name="Changed").exists())
+        self.assertTrue(Trigger.objects.default(name="Changed").exists())
 
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.filter(name="Changed").exists())
+        self.assertTrue(Trigger.objects.default(name="Changed").exists())
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
@@ -1240,7 +1240,7 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         self.url = self.trigger.get_delete_url()
 
     def tearDown(self):
-        Trigger.objects.filter(id=self.trigger.id).delete()
+        Trigger.objects.default(id=self.trigger.id).delete()
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)

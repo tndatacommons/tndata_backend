@@ -23,7 +23,7 @@ from django_fsm import FSMField, transition
 from markdown import markdown
 from recurrence.fields import RecurrenceField
 
-from .managers import WorkflowManager
+from .managers import TriggerManager, WorkflowManager
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
 
@@ -402,6 +402,8 @@ class Trigger(URLMixin, models.Model):
             )
         # No recurrence or not a time-pased Trigger.
         return None
+
+    objects = TriggerManager()
 
 
 def _behavior_icon_path(instance, filename):

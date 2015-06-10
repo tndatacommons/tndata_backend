@@ -107,14 +107,7 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     ----
 
     """
-    # NOTE: Triggers are not very useful right now.
-    #
-    # The data model for this is incomplete. It should also provide:
-    # - A way for a user to create their own triggers (reminders)?
-    # - a location; for geo-based notifications.
-    # - endpoints taht are *not* just read-only.
-
-    queryset = models.Trigger.objects.all()
+    queryset = models.Trigger.objects.default()
     serializer_class = serializers.TriggerSerializer
 
 

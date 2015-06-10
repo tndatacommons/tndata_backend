@@ -288,7 +288,7 @@ class TriggerListView(ContentViewerMixin, ListView):
 
 
 class TriggerDetailView(ContentViewerMixin, DetailView):
-    queryset = Trigger.objects.all()
+    queryset = Trigger.objects.default()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
 
@@ -301,7 +301,7 @@ class TriggerCreateView(ContentEditorMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(TriggerCreateView, self).get_context_data(**kwargs)
-        context['triggers'] = Trigger.objects.all()
+        context['triggers'] = Trigger.objects.default()
         return context
 
 
@@ -330,7 +330,7 @@ class TriggerUpdateView(ContentEditorMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(TriggerUpdateView, self).get_context_data(**kwargs)
-        context['triggers'] = Trigger.objects.all()
+        context['triggers'] = Trigger.objects.default()
         return context
 
 
