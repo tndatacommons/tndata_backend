@@ -111,6 +111,56 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = serializers.TriggerSerializer
 
 
+class CustomTriggerViewSet(mixins.CreateModelMixin,
+                           mixins.ListModelMixin,
+                           mixins.RetrieveModelMixin,
+                           mixins.DestroyModelMixin,
+                           viewsets.GenericViewSet):
+    """This endpoint represents the Triggers created by a User.
+
+    GET requests to this endpoint will list the authenticated user's triggers.
+
+    ## Adding a Trigger
+
+    To associate a Trigger with a User, POST to `/api/users/triggers/` with the
+    following data:
+
+        {'name': 'a trigger name',
+         'time': 'time for the trigger to fire',
+         'rrule': 'the RRULE data for recurring triggers'}
+
+    ## Viewing the Trigger data
+
+    Additional information for the Trigger is available at
+    `/api/users/triggers/{trigger_id}/`, where `{trigger_id}` is the
+    database id for the Trigger.
+
+    ## Removing a Trigger from the user's list.
+
+    Send a DELETE request to the endpoint: `/api/users/triggers/{trigger_id}/`.
+
+    ## Update a Trigger.
+
+    Updating a goal mapping is currently not supported.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.Trigger.objects.custom()
+    serializer_class = serializers.CustomTriggerSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user_id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.data['user'] = request.user.id
+        result = super(CustomTriggerViewSet, self).create(request, *args, **kwargs)
+        return result
+
+
 class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
     """A Behavior Sequence (aka a *Behavior*) is an abstract
     behavior as well as a potential container for concrete actions.

@@ -291,8 +291,6 @@ class Trigger(URLMixin, models.Model):
     https://django-recurrence.readthedocs.org
 
     """
-    # TODO: User-specified triggers?
-
     # URLMixin attributes
     urls_app_namespace = "goals"
     urls_model_name = "trigger"

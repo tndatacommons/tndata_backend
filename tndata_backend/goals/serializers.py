@@ -67,6 +67,22 @@ class TriggerSerializer(serializers.ModelSerializer):
         )
 
 
+class CustomTriggerSerializer(serializers.ModelSerializer):
+    """A serializer for a custom, user-created `Trigger`. ONLY supports
+    time-based triggers.
+
+    """
+    recurrences_display = serializers.ReadOnlyField(source='recurrences_as_text')
+
+    class Meta:
+        model = Trigger
+        fields = (
+            'id', 'user', 'name', 'name_slug', 'trigger_type', 'time',
+            'recurrences', 'recurrences_display', 'next',
+        )
+        read_only_fields = ("id", "name_slug", "trigger_type", "next")
+
+
 class BehaviorSerializer(serializers.ModelSerializer):
     """A Serializer for `Behavior`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
