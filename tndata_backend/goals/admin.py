@@ -49,6 +49,7 @@ class CategoryAdmin(ContentWorkflowAdmin):
     search_fields = ['title', 'description', 'notes']
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
+    raw_id_fields = ('updated_by', 'created_by')
 
 admin.site.register(models.Category, CategoryAdmin)
 
@@ -61,6 +62,8 @@ class GoalAdmin(ContentWorkflowAdmin):
     search_fields = ['title', 'subtitle', 'description', 'outcome']
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
+    filter_horizontal = ('categories', )
+    raw_id_fields = ('updated_by', 'created_by')
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
@@ -75,6 +78,8 @@ class TriggerAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'name', 'location',
     ]
+    raw_id_fields = ('user', )
+
 admin.site.register(models.Trigger, TriggerAdmin)
 
 
@@ -90,6 +95,8 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     ]
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
+    raw_id_fields = ('updated_by', 'created_by')
+    filter_horizontal = ('goals', )
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
@@ -111,6 +118,7 @@ class ActionAdmin(ContentWorkflowAdmin):
     ]
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
+    raw_id_fields = ('behavior', 'updated_by', 'created_by')
 admin.site.register(models.Action, ActionAdmin)
 
 
@@ -122,6 +130,7 @@ class UserCategoryAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'category__title', 'category__id'
     )
+    raw_id_fields = ("user", "category")
 
 admin.site.register(models.UserCategory, UserCategoryAdmin)
 
@@ -134,6 +143,8 @@ class UserGoalAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'goal__title', 'goal__id',
     )
+    raw_id_fields = ("user", "goal")
+
 admin.site.register(models.UserGoal, UserGoalAdmin)
 
 
@@ -145,6 +156,8 @@ class UserBehaviorAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'behavior__id', 'behavior__title',
     )
+    raw_id_fields = ("user", "behavior")
+
 admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 
@@ -156,6 +169,8 @@ class UserActionAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title',
     )
+    raw_id_fields = ("user", "action")
+
 admin.site.register(models.UserAction, UserActionAdmin)
 
 
@@ -163,6 +178,8 @@ class BehaviorProgressAdmin(UserRelatedModelAdmin):
     list_display = (
         'user', 'behavior', 'status', 'reported_on'
     )
+    raw_id_fields = ("user", "user_behavior")
+
 admin.site.register(models.BehaviorProgress, BehaviorProgressAdmin)
 
 
@@ -171,6 +188,8 @@ class GoalProgressAdmin(UserRelatedModelAdmin):
         'user', 'goal', 'current_total', 'max_total',
         'current_score', 'text_glyph', 'reported_on'
     )
+    raw_id_fields = ("user", "goal")
+
 admin.site.register(models.GoalProgress, GoalProgressAdmin)
 
 
@@ -178,4 +197,6 @@ class CategoryProgressAdmin(UserRelatedModelAdmin):
     list_display = (
         'user', 'category', 'current_score', 'text_glyph', 'reported_on'
     )
+    raw_id_fields = ("user", 'category')
+
 admin.site.register(models.CategoryProgress, CategoryProgressAdmin)
