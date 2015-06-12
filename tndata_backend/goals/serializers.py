@@ -56,31 +56,77 @@ class GoalSerializer(serializers.ModelSerializer):
 
 
 class TriggerSerializer(serializers.ModelSerializer):
-    """A Serializer for `Trigger`."""
+    """A Serializer for `Trigger`s.  Includes user information, though
+    that may be null for the set of defulat (non-custom) triggers."""
     recurrences_display = serializers.ReadOnlyField(source='recurrences_as_text')
 
     class Meta:
         model = Trigger
         fields = (
-            'id', 'name', 'name_slug', 'trigger_type', 'time', 'location',
+            'id', 'user', 'name', 'name_slug', 'trigger_type', 'time', 'location',
             'recurrences', 'recurrences_display', 'next',
         )
+        read_only_fields = ("id", "name_slug", "next")
 
 
-class CustomTriggerSerializer(serializers.ModelSerializer):
-    """A serializer for a custom, user-created `Trigger`. ONLY supports
-    time-based triggers.
+class CustomTriggerSerializer(serializers.Serializer):
+    """This serializer is used to create custom triggers that are associated
+    with other models (e.g. UserBehaviors and UserActions). It accepts input
+    that differs from a trigger:
+
+    * user_id: An integer representing the ID of the user who *owns* the trigger
+    * name: The name of the trigger; This must be unique and it's up to you
+      to make sure that happens.
+    * time: A string representing a time (naive; will be saved at UTC when
+      creating the trigger)
+    * rrule: An RFC2445 formatted unicode string describing the recurrence.
+
+    Calling this serializer's `save` method will either update or create
+    a `Trigger` instance.
+
+    Usage:
+
+    To create a trigger from a dict of data:
+
+        CustomTriggerSerializer(data={...})
+
+    To update a trigger from a dict of data:
+
+        CustomTriggerSerializer(trigger_instance, data={...})
 
     """
-    recurrences_display = serializers.ReadOnlyField(source='recurrences_as_text')
+    user_id = serializers.IntegerField()
+    name = serializers.CharField()
+    time = serializers.TimeField()
+    rrule = serializers.CharField()
 
-    class Meta:
-        model = Trigger
-        fields = (
-            'id', 'user', 'name', 'name_slug', 'trigger_type', 'time',
-            'recurrences', 'recurrences_display', 'next',
+    def is_valid(self, *args, **kwargs):
+        """Ensure that the user for the given user_id actually exists."""
+        valid = super().is_valid(*args, **kwargs)
+        if valid:
+            # Check to see if the user exists, and if so, keep a private
+            # instance for them.
+            try:
+                self._user = User.objects.get(pk=self.validated_data['user_id'])
+            except User.DoesNotExist:
+                valid = False
+                self._user = None
+        return valid
+
+    def create(self, validated_data):
+        clog(validated_data, title="validated_data in CTSerializer.create")
+        return Trigger.objects.create_for_user(
+            user=self._user,
+            name=validated_data['name'],
+            time=validated_data['time'],
+            rrule=validated_data['rrule']
         )
-        read_only_fields = ("id", "name_slug", "trigger_type", "next")
+
+    def update(self, instance, validated_data):
+        instance.time = self.validated_data.get('time', instance.time)
+        instance.recurrences = self.validated_data.get('rrule', instance.recurrences)
+        instance.save()
+        return instance
 
 
 class BehaviorSerializer(serializers.ModelSerializer):
@@ -158,7 +204,10 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserBehavior
-        fields = ('id', 'user', 'behavior', 'user_goals', 'created_on')
+        fields = (
+            'id', 'user', 'behavior', 'user_goals',
+            'created_on',
+        )
         read_only_fields = ("id", "created_on", )
 
 
