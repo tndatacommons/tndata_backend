@@ -85,11 +85,14 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     """A Trigger represents information we send to a user (via a push
     notification) to remind them to take an action or think about a behavior.
 
-    **NOTE**: This is still a work in progress and subject to change.
+    **NOTE**: This is still a work in progress and subject to change; This
+    endpoint currently only displayes the set of _default_ triggers; i.e. those
+    that don't belong to a particular user.
 
     Triggers contain the following:
 
     * id: The unique database identifier for the trigger
+    * user: User to which the trigger belongs (will be `null` for this endpoint)
     * name: A unique name for a trigger.
     * name_slug: A web-friendly version of the name.
     * trigger_type: Type of trigger; should be "time" or "place"
@@ -109,56 +112,6 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Trigger.objects.default()
     serializer_class = serializers.TriggerSerializer
-
-
-class CustomTriggerViewSet(mixins.CreateModelMixin,
-                           mixins.ListModelMixin,
-                           mixins.RetrieveModelMixin,
-                           mixins.DestroyModelMixin,
-                           viewsets.GenericViewSet):
-    """This endpoint represents the Triggers created by a User.
-
-    GET requests to this endpoint will list the authenticated user's triggers.
-
-    ## Adding a Trigger
-
-    To associate a Trigger with a User, POST to `/api/users/triggers/` with the
-    following data:
-
-        {'name': 'a trigger name',
-         'time': 'time for the trigger to fire',
-         'rrule': 'the RRULE data for recurring triggers'}
-
-    ## Viewing the Trigger data
-
-    Additional information for the Trigger is available at
-    `/api/users/triggers/{trigger_id}/`, where `{trigger_id}` is the
-    database id for the Trigger.
-
-    ## Removing a Trigger from the user's list.
-
-    Send a DELETE request to the endpoint: `/api/users/triggers/{trigger_id}/`.
-
-    ## Update a Trigger.
-
-    Updating a goal mapping is currently not supported.
-
-    ----
-
-    """
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.Trigger.objects.custom()
-    serializer_class = serializers.CustomTriggerSerializer
-    permission_classes = [IsOwner]
-
-    def get_queryset(self):
-        return self.queryset.filter(user_id=self.request.user.id)
-
-    def create(self, request, *args, **kwargs):
-        """Only create objects for the authenticated user."""
-        request.data['user'] = request.user.id
-        result = super(CustomTriggerViewSet, self).create(request, *args, **kwargs)
-        return result
 
 
 class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
