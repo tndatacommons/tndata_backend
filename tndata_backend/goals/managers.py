@@ -38,6 +38,7 @@ class TriggerManager(models.Manager):
             user=user,
             name=name,
             trigger_type="time",
+            time=time,
             recurrences=rrule,
         )
 
