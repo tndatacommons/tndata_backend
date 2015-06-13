@@ -15,6 +15,7 @@ from . models import (
 
 from . serializer_fields import (
     CategoryListField,
+    CustomTriggerField,
     GoalListField,
     SimpleActionField,
     SimpleBehaviorField,
@@ -114,7 +115,6 @@ class CustomTriggerSerializer(serializers.Serializer):
         return valid
 
     def create(self, validated_data):
-        clog(validated_data, title="validated_data in CTSerializer.create")
         return Trigger.objects.create_for_user(
             user=self._user,
             name=validated_data['name'],
@@ -201,11 +201,12 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
+    custom_trigger = CustomTriggerField(queryset=Trigger.objects.custom())
 
     class Meta:
         model = UserBehavior
         fields = (
-            'id', 'user', 'behavior', 'user_goals',
+            'id', 'user', 'behavior', 'custom_trigger', 'user_goals',
             'created_on',
         )
         read_only_fields = ("id", "created_on", )
@@ -214,10 +215,11 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
 class UserActionSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
+    custom_trigger = CustomTriggerField(queryset=Trigger.objects.custom(), required=False)
 
     class Meta:
         model = UserAction
-        fields = ('id', 'user', 'action', 'created_on')
+        fields = ('id', 'user', 'action', 'custom_trigger', 'created_on')
         read_only_fields = ("id", "created_on", )
 
 

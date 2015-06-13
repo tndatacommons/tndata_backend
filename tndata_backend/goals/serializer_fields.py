@@ -12,6 +12,28 @@ def _get_object(model, pk):
         raise serializers.ValidationError(msg.format(model.__name__, pk))
 
 
+class CustomTriggerField(serializers.RelatedField):
+    """A field that lets us create/update a custom trigger, whenever a user
+    updates a UserBehavior/UserAction."""
+
+    def to_internal_value(self, data):
+        # This is only called by by the CustomTriggerSerializer, which will
+        # have already created a Trigger object (data).
+        return data
+
+    def to_representation(self, value):
+        return {
+            'id': value.id,
+            'name': value.name,
+            'name_slug': value.name_slug,
+            'trigger_type': value.trigger_type,
+            'time': value.time.isoformat(),
+            'location': value.location,
+            'recurrences': value.serialized_recurrences(),
+            'recurrences_display': value.recurrences_as_text(),
+        }
+
+
 class GoalListField(serializers.RelatedField):
     """A Custom Relational Serializer field that lists a subset of Goal
     information on a Category."""
