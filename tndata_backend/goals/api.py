@@ -363,6 +363,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.DestroyModelMixin,
+                          mixins.UpdateModelMixin,
                           DeleteMultipleMixin,
                           viewsets.GenericViewSet):
     """This endpoint represents a mapping between [Users](/api/users/) and
@@ -415,6 +416,19 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     ## Update a Behavior Mapping.
 
     Updating a behavior mapping is currently not supported.
+
+    ## Update a Behavior Mapping / Custom Triggers
+
+    Behavior Mappings may be updated in order to set custom Triggers (aka
+    reminders) for the associated behavior.
+
+    To do this, send a PUT request to the detail url
+    (`api/users/behaviors/{userbehavior_id}`) with the following information:
+
+    * `custom_trigger_time`: The time at which the reminder should fire, in
+      `hh:mm` format.
+    * `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &
+      frequencies at which the reminder should occur.
 
     ## Filtering
 
@@ -471,6 +485,59 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
         else:
             request.data['user'] = request.user.id
         return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
+
+    def _insert_trigger(self, request, rrule, time):
+        """Inserts a Trigger object into the request's payload"""
+        if rrule and time:
+            # Apparently these will always be lists, but for some reason the
+            # rest framework plumbing doesn't actually convert them to their
+            # primary values; And I can't override this in the Serializer subclass
+            # because it fails before field-level validation is called
+            # (e.g. validate_time or validate_rrule)
+            if isinstance(rrule, list) and len(rrule) > 0:
+                rrule = rrule[0]
+            if isinstance(time, list) and len(time) > 0:
+                time = time[0]
+
+            obj = self.get_object()
+            request.data['user'] = obj.user.id
+            request.data['behavior'] = obj.behavior.id
+
+            # Generate a name for the Trigger. MUST be unique.
+            tname = "custom trigger for userbehavior-{0}".format(obj.id)
+            try:
+                trigger = models.Trigger.objects.get(user=obj.user, name=tname)
+            except models.Trigger.DoesNotExist:
+                trigger = None
+
+            trigger_data = {
+                'user_id': obj.user.id,
+                'time': time,
+                'name': tname,
+                'rrule': rrule
+            }
+            trigger_serializer = serializers.CustomTriggerSerializer(
+                instance=trigger,
+                data=trigger_data
+            )
+            if trigger_serializer.is_valid(raise_exception=True):
+                trigger = trigger_serializer.save()
+            request.data['custom_trigger'] = trigger
+        return request
+
+    def update(self, request, *args, **kwargs):
+        """Allow setting/creating a custom trigger using only two pieces of
+        information:
+
+        * custom_trigger_rrule
+        * custom_trigger_time
+
+        """
+        rrule = request.data.pop("custom_trigger_rrule", None)
+        time = request.data.pop("custom_trigger_time", None)
+        request = self._insert_trigger(request, rrule, time)
+        result = super(UserBehaviorViewSet, self).update(request, *args, **kwargs)
+        return result
 
 
 class UserActionViewSet(mixins.CreateModelMixin,
