@@ -201,7 +201,10 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
-    custom_trigger = CustomTriggerField(queryset=Trigger.objects.custom())
+    custom_trigger = CustomTriggerField(
+        queryset=Trigger.objects.custom(),
+        required=False
+    )
 
     class Meta:
         model = UserBehavior
@@ -215,7 +218,10 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
 class UserActionSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
-    custom_trigger = CustomTriggerField(queryset=Trigger.objects.custom(), required=False)
+    custom_trigger = CustomTriggerField(
+        queryset=Trigger.objects.custom(),
+        required=False
+    )
 
     class Meta:
         model = UserAction

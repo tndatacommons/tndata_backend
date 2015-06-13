@@ -1,3 +1,5 @@
+from datetime import time
+
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from rest_framework import status
@@ -508,7 +510,6 @@ class TestActionAPI(APITestCase):
         a = Action.objects.create(title="ignore me", behavior=b)
         a.publish()
         a.save()
-
 
         url = reverse('action-list')
         response = self.client.get(url)
@@ -1226,18 +1227,58 @@ class TestUserActionAPI(APITestCase):
         response = self.client.post(url, {'action': 1})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_put_useraction_detail_not_allowed(self):
-        """Ensure PUTing to the detail endpoint is not allowed."""
+    def test_put_useraction_detail_unauthenticated_not_allowed(self):
+        """Ensure PUTing to the detail endpoint is not allowed for
+        unauthenticated users."""
         url = reverse('useraction-detail', args=[self.ua.id])
         response = self.client.put(url, {'action': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-        # Even if you're authenticated
+    def test_put_useraction_detail_authenticated(self):
+        """PUT requests should update a UserAction (sorta). While this is
+        technically allowed, it doesn't really do much without providing
+        a custom trigger information.
+
+        Essentially, PUTing {user: <id>, action: <id>} should update, but
+        wouldn't change any information.
+
+        """
+        url = reverse('useraction-detail', args=[self.ua.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.put(url, {'action': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        # NOTE: user & action are required fields
+        payload = {
+            'user': self.user.id,
+            'action': self.action.id,
+        }
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_put_useraction_detail_authenticated_with_custom_trigger(self):
+        """PUT requests containting custom trigger details, should create
+        a custom trigger (if that field was previously null) for the UserAction.
+
+        """
+        url = reverse('useraction-detail', args=[self.ua.id])
+        payload = {
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        # NOTE: user & action are required fields
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure the user action was created.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        expected_name = "custom trigger for useraction-{0}".format(ua.id)
+        self.assertEqual(ua.custom_trigger.name, expected_name)
+        self.assertEqual(ua.custom_trigger.recurrences_as_text(), "weekly, each Monday")
+        self.assertEqual(ua.custom_trigger.time, time(9, 30))
 
     def test_delete_useraction_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot delete."""
