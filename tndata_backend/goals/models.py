@@ -21,6 +21,7 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django_fsm import FSMField, transition
 from markdown import markdown
+from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 
 from .managers import TriggerManager, WorkflowManager
@@ -368,6 +369,10 @@ class Trigger(URLMixin, models.Model):
         self.name_slug = slugify(self.name)
         self._localize_time()
         super(Trigger, self).save(*args, **kwargs)
+
+    def serialized_recurrences(self):
+        """Return a rfc2445 formatted unicode string."""
+        return serialize_recurrences(self.recurrences)
 
     def recurrences_as_text(self):
         if self.recurrences:
@@ -721,6 +726,12 @@ class UserBehavior(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     behavior = models.ForeignKey(Behavior)
+    custom_trigger = models.ForeignKey(
+        Trigger,
+        blank=True,
+        null=True,
+        help_text="A User-defined trigger for this behavior"
+    )
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -749,6 +760,12 @@ class UserAction(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     action = models.ForeignKey(Action)
+    custom_trigger = models.ForeignKey(
+        Trigger,
+        blank=True,
+        null=True,
+        help_text="A User-defined trigger for this behavior"
+    )
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
