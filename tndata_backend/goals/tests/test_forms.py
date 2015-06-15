@@ -14,6 +14,8 @@ from .. models import (
     Trigger,
 )
 
+from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
+
 
 class TestActionForm(TestCase):
 
@@ -76,7 +78,7 @@ class TestBehaviorForm(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.trigger = Trigger.objects.create(
-            name="Default Behavior Reminder",
+            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
             trigger_type="time"
         )
 

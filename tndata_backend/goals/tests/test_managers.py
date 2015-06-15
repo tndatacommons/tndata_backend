@@ -2,6 +2,11 @@ from datetime import time
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from .. models import Trigger
+from .. settings import (
+    DEFAULT_BEHAVIOR_TRIGGER_NAME,
+    DEFAULT_BEHAVIOR_TRIGGER_TIME,
+    DEFAULT_BEHAVIOR_TRIGGER_RRULE,
+)
 
 User = get_user_model()
 
@@ -27,6 +32,18 @@ class TestTriggerManager(TestCase):
             time=time(12, 34),
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
+
+    def test_get_default_behavior_trigger(self):
+        # There is not default trigger at the moment, so calling this should
+        # create one.
+        t = Trigger.objects.get_default_behavior_trigger()
+        self.assertEqual(t.name, DEFAULT_BEHAVIOR_TRIGGER_NAME)
+        self.assertEqual(t.serialized_recurrences(), DEFAULT_BEHAVIOR_TRIGGER_RRULE)
+        self.assertEqual(t.time.strftime("%H:%M"), DEFAULT_BEHAVIOR_TRIGGER_TIME)
+
+        # Calling this again should return the original.
+        obj = Trigger.objects.get_default_behavior_trigger()
+        self.assertEqual(obj.id, t.id)
 
     def test_custom(self):
         """Ensure the custom method only returns custom triggers."""

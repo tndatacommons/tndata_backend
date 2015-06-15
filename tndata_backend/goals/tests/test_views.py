@@ -18,6 +18,9 @@ from .. permissions import (
     get_or_create_content_authors,
     get_or_create_content_viewers,
 )
+from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
+
+
 User = get_user_model()
 
 
@@ -1396,7 +1399,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
             outcome="An Outcome"
         )
         cls.trigger = Trigger.objects.create(
-            name="Default Behavior Reminder",
+            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
             trigger_type="time"
         )
         cls.payload = {'title': 'New', 'goals': cls.goal.id}
@@ -1465,7 +1468,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
     def setUpTestData(cls):
         super(cls, TestBehaviorDuplicateView).setUpTestData()
         cls.trigger = Trigger.objects.create(
-            name="Default Behavior Reminder",
+            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
             trigger_type="time"
         )
         cls.behavior = Behavior.objects.create(title="Test Behavior")
@@ -1580,7 +1583,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
             outcome="An Outcome"
         )
         cls.trigger = Trigger.objects.create(
-            name="Default Behavior Reminder",
+            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
             trigger_type="time"
         )
         cls.payload = {'title': 'U', 'goals': cls.goal.id}
