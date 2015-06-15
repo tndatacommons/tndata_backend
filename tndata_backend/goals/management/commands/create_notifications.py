@@ -1,11 +1,14 @@
-from datetime import datetime, timedelta
+import logging
+
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from random import randint
 
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -33,14 +36,17 @@ class Command(BaseCommand):
                 self._messages_created += 1
             else:
                 msg = "Failed to create Behavior Message for {0}".format(user)
+                logger.warning(msg)
                 self.stderr.write(msg)
         except GCMDevice.DoesNotExist:
             msg = "User {0} has not registered a Device".format(user)
+            logger.error(msg, exc_info=1)
             self.stderr.write(msg)
 
     def create_message(self, user, obj, title, message, delivery_date):
         if delivery_date is None:
             msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
+            logger.error(msg)
             self.stderr.write(msg)
         else:
             try:
@@ -55,9 +61,11 @@ class Command(BaseCommand):
                     msg = "Failed to create message for {0}/{1}-{2}".format(
                         user, obj.__class__.__name__, obj.id
                     )
+                    logger.warning(msg)
                     self.stderr.write(msg)
             except GCMDevice.DoesNotExist:
                 msg = "User {0} has not registered a Device".format(user)
+                logger.error(msg, exc_info=1)
                 self.stderr.write(msg)
 
     def handle(self, *args, **options):
@@ -82,4 +90,5 @@ class Command(BaseCommand):
 
         # Finish with a confirmation message
         m = "Created {0} notification messages.".format(self._messages_created)
+        logger.info(m)
         self.stdout.write(m)

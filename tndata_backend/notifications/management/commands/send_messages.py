@@ -1,5 +1,10 @@
+import logging
+
 from django.core.management.base import BaseCommand
 from notifications.models import GCMMessage
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -7,5 +12,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Look for all the undelivered/non-errored messages.
-        for message in GCMMessage.objects.ready_for_delivery():
-            message.send()
+        messages = GCMMessage.objects.ready_for_delivery()
+        logger.info("Sending {0} GCMMessages".format(messages.count()))
+        for message in messages:
+            try:
+                message.send()
+            except Exception:
+                logger.error("Failed to send GCMMEssage id = {0}".format(message.id))
