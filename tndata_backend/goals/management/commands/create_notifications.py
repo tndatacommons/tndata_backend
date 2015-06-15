@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from random import randint
 
-from goals.models import UserAction
+from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
 
@@ -14,18 +14,20 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._messages_created = 0
+        self._behavior_trigger = Trigger.objects.get_default_behavior_trigger()
 
-    def create_behavior_message(self, user, delivery_date=None):
+    def create_behavior_message(self, user):
         """We create a single notification for ALL of a user's selected Behaviors."""
-        if delivery_date is None:
-            delivery_date = datetime.utcnow() + timedelta(hours=randint(3, 6))
 
+        # TODO: Give users a way to specify a single, priority (behavior)
+        # custom reminder instead of using the default.
         try:
+            # create(self, user, title, message, deliver_on, obj=None)
             m = GCMMessage.objects.create(
                 user,
                 DEFAULTS['DEFAULT_TITLE'],
                 DEFAULTS['DEFAULT_TEXT'],
-                delivery_date
+                self._behavior_trigger.next(),
             )
             if m is not None:
                 self._messages_created += 1
@@ -62,10 +64,11 @@ class Command(BaseCommand):
         # Make sure everything is ok before we run this.
         self.check()
 
-        # Schedule notifications for Behaviors (1 per user)
+        # Schedule notifications for Behaviors (1 per user) IFF the user has
+        # selected any Behaviors.
         User = get_user_model()
         for user in User.objects.filter(userbehavior__isnull=False).distinct():
-            self.create_behavior_message(user)  # TODO: which trigger/date?
+            self.create_behavior_message(user)
 
         # Schedule notifications for Actions
         for ua in UserAction.objects.all():
