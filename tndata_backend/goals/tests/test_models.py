@@ -226,6 +226,25 @@ class TestTrigger(TestCase):
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
 
+    def test_recurrences_formats(self):
+        """Test various recurrences formats"""
+        payload = {
+            "name": "A",
+            "trigger_type": "time",
+            "time": time(12, 34),
+            "recurrences": "RRULE:FREQ=DAILY"
+        }
+        t = Trigger.objects.create(**payload)
+        self.assertEqual(t.serialized_recurrences(), "RRULE:FREQ=DAILY")
+
+        payload["name"] = "B"
+        payload["recurrences"] = "RRULE:FREQ=WEEKLY;WKST=SU;BYDAY=MO,TU,WE,TH,FR"
+        t = Trigger.objects.create(**payload)
+        self.assertEqual(
+            t.serialized_recurrences(),
+            "RRULE:FREQ=WEEKLY;WKST=SU;BYDAY=MO,TU,WE,TH,FR"
+        )
+
     def test__str__(self):
         expected = "Test Trigger"
         actual = "{}".format(self.trigger)
