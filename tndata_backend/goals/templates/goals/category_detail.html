@@ -59,20 +59,21 @@
       <h2 class="subheader">Content</h2>
       <p><strong>{{ category }}</strong>
         contains the following Goals, Behaviors, and Actions:</p>
-      <ul>
+      <ul class="nested">
       {% for goal in category.goals %}
-        <li>
-          {{ goal.state|label }}
+        <li><span class="label secondary" title="Goal">G</span>
           <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
+          {{ goal.state|label }}
           <ul>
           {% for bs in goal.behavior_set.all %}
-            <li>{{ bs.state|label }}
+            <li><span class="label secondary" title="Behavior">B</span>
               <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
+              {{ bs.state|label }}
               <ul>
                 {% for ba in bs.action_set.all %}
-                  <li>
-                    {{ba.state|label}}
+                  <li><span class="label secondary" title="Action">A</span>
                     <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
+                    {{ba.state|label}}
                   </li>
                 {% endfor %}
               </ul>

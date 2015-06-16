@@ -58,6 +58,8 @@
           {{ cat.state|label }}
           <a href="{{ cat.get_absolute_url }}">{{ cat }}</a>
         </li>
+      {% empty %}
+        <li><em>This behavior is not associated with any Categories.</em></li>
       {% endfor %}
       </ul>
       <h2 class="subheader">Goals</h2>
@@ -67,6 +69,8 @@
           {{ goal.state|label }}
           <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
         </li>
+      {% empty %}
+        <li><em>This behavior is not associated with any Goals.</em></li>
       {% endfor %}
       </ul>
       <h2 class="subheader">Actions</h2>
@@ -76,6 +80,8 @@
           {{ action.state|label }}
           <a href="{{ action.get_absolute_url }}">{{ action }}</a>
         </li>
+      {% empty %}
+        <li><em>This behavior does not contain any actions.</em></li>
       {% endfor %}
       </ul>
     </div>
