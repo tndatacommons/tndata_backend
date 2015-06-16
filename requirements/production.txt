@@ -18,4 +18,4 @@ tablib==0.10.0
 django-fsm==2.2.0
 django-chosenadmin==0.2.0
 pushjack==1.0.1
--e git+https://github.com/bradmontgomery/django-recurrence.git@master#egg=recurrence --install-option="-I"
+-e git+https://github.com/bradmontgomery/django-recurrence.git@master#egg=recurrence
