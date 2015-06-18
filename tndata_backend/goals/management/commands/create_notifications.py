@@ -8,7 +8,7 @@ from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("loggly_logs")
 
 
 class Command(BaseCommand):

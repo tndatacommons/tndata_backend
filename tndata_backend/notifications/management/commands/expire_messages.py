@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from notifications.models import GCMMessage
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("loggly_logs")
 
 
 class Command(BaseCommand):

@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from goals.models import GoalProgress, CategoryProgress
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("loggly_logs")
 
 
 class Command(BaseCommand):
