@@ -1,10 +1,11 @@
 import pytz
-from datetime import datetime, time
+from datetime import datetime, date, time
 from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from .. models import (
     Action,
@@ -295,7 +296,7 @@ class TestTrigger(TestCase):
         self.trigger.trigger_type = "time"
         self.trigger.save()
 
-        # returns none when there's no recurrence
+        # returns none when there's no recurrence & no date
         self.assertIsNone(Trigger(trigger_type="time").next())
 
         with patch("goals.models.datetime") as dt:
@@ -303,6 +304,18 @@ class TestTrigger(TestCase):
             # Expected is in exactly 1 day
             expected = datetime(1000, 10, 21, 12, 34, tzinfo=pytz.UTC)
             self.assertEqual(self.trigger.next(), expected)
+
+    def test_next_when_no_recurrence(self):
+        trigger = Trigger.objects.create(
+            name="Date-Trigger",
+            trigger_type="time",
+            time=time(12, 34),
+            trigger_date=date(2222, 3, 15),
+        )
+
+        expected = datetime.combine(date(2222, 3, 15), time(12, 34))
+        expected = timezone.make_aware(expected, timezone=timezone.utc)
+        self.assertEqual(trigger.next(), expected)
 
 
 class TestBehavior(TestCase):

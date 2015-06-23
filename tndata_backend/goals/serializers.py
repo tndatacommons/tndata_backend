@@ -103,9 +103,9 @@ class CustomTriggerSerializer(serializers.Serializer):
     """
     user_id = serializers.IntegerField()
     name = serializers.CharField()
-    time = serializers.TimeField(required=False)
-    date = serializers.DateField(format="%Y-%m-%d", required=False)
-    rrule = serializers.CharField(required=False)
+    time = serializers.TimeField(allow_null=True, required=False)
+    date = serializers.DateField(format="%Y-%m-%d", allow_null=True, required=False)
+    rrule = serializers.CharField(allow_null=True, required=False)
 
     def is_valid(self, *args, **kwargs):
         """Ensure that the user for the given user_id actually exists."""

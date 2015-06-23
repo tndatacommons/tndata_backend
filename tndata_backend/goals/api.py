@@ -603,7 +603,10 @@ class UserActionViewSet(mixins.CreateModelMixin,
     with the following information:
 
     * `custom_trigger_time`: The time at which the reminder should fire, in
-      `hh:mm` format.
+      `hh:mm` format. TZ should be UTC.
+    * `custom_trigger_date`: (optional). For a one-time reminder, the this can
+      include a date string (yyyy-mm-dd) to define the date at which a reminder
+      should next fire. (Date + Time should be UTC)
     * `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &
       frequencies at which the reminder should occur.
 
@@ -672,43 +675,52 @@ class UserActionViewSet(mixins.CreateModelMixin,
             request.data['user'] = request.user.id
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
 
-    def _insert_trigger(self, request, rrule, time):
-        """Inserts a Trigger object into the request's payload"""
-        if rrule and time:
-            # Apparently these will always be lists, but for some reason the
-            # rest framework plumbing doesn't actually convert them to their
-            # primary values; And I can't override this in the Serializer subclass
-            # because it fails before field-level validation is called
-            # (e.g. validate_time or validate_rrule)
-            if isinstance(rrule, list) and len(rrule) > 0:
-                rrule = rrule[0]
-            if isinstance(time, list) and len(time) > 0:
-                time = time[0]
+    def _insert_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
+        """Inserts a Trigger object into the request's payload.
 
-            ua = self.get_object()
-            request.data['user'] = ua.user.id
-            request.data['action'] = ua.action.id
+        This method looks for an existing Trigger object, and creates one if
+        it doesn't exist.
 
-            # Generate a name for the Trigger. MUST be unique.
-            tname = "custom trigger for useraction-{0}".format(ua.id)
-            try:
-                trigger = models.Trigger.objects.get(user=ua.user, name=tname)
-            except models.Trigger.DoesNotExist:
-                trigger = None
+        """
+        # It's OK if the rrule, time, date are empty/none.
 
-            trigger_data = {
-                'user_id': ua.user.id,
-                'time': time,
-                'name': tname,
-                'rrule': rrule
-            }
-            trigger_serializer = serializers.CustomTriggerSerializer(
-                instance=trigger,
-                data=trigger_data
-            )
-            if trigger_serializer.is_valid(raise_exception=True):
-                trigger = trigger_serializer.save()
-            request.data['custom_trigger'] = trigger
+        # Apparently these will always be lists, but for some reason the
+        # rest framework plumbing doesn't actually convert them to their
+        # primary values; And I can't override this in the Serializer subclass
+        # because it fails before field-level validation is called
+        # (e.g. validate_trigger_time or validate_trigger_rrule)
+        if isinstance(trigger_rrule, list) and len(trigger_rrule) > 0:
+            trigger_rrule = trigger_rrule[0]
+        if isinstance(trigger_time, list) and len(trigger_time) > 0:
+            trigger_time = trigger_time[0]
+        if isinstance(trigger_date, list) and len(trigger_date) > 0:
+            trigger_date = trigger_date[0]
+
+        ua = self.get_object()
+        request.data['user'] = ua.user.id
+        request.data['action'] = ua.action.id
+
+        # Generate a name for the Trigger. MUST be unique.
+        tname = "custom trigger for useraction-{0}".format(ua.id)
+        try:
+            trigger = models.Trigger.objects.get(user=ua.user, name=tname)
+        except models.Trigger.DoesNotExist:
+            trigger = None
+
+        trigger_data = {
+            'user_id': ua.user.id,
+            'time': trigger_time,
+            'name': tname,
+            'rrule': trigger_rrule,
+            'trigger_date': trigger_date
+        }
+        trigger_serializer = serializers.CustomTriggerSerializer(
+            instance=trigger,
+            data=trigger_data
+        )
+        if trigger_serializer.is_valid(raise_exception=True):
+            trigger = trigger_serializer.save()
+        request.data['custom_trigger'] = trigger
         return request
 
     def update(self, request, *args, **kwargs):
@@ -719,9 +731,12 @@ class UserActionViewSet(mixins.CreateModelMixin,
         * custom_trigger_time
 
         """
-        rrule = request.data.pop("custom_trigger_rrule", None)
-        time = request.data.pop("custom_trigger_time", None)
-        request = self._insert_trigger(request, rrule, time)
+        request = self._insert_trigger(
+            request,
+            trigger_rrule=request.data.pop("custom_trigger_rrule", None),
+            trigger_time=request.data.pop("custom_trigger_time", None),
+            trigger_date=request.data.pop("custom_trigger_date", None)
+        )
         result = super(UserActionViewSet, self).update(request, *args, **kwargs)
         return result
 

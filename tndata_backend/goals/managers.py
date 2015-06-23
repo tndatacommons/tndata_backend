@@ -58,13 +58,14 @@ class TriggerManager(models.Manager):
         """
         return self.get_queryset().filter(user=user)
 
-    def create_for_user(self, user, name, time, rrule):
+    def create_for_user(self, user, name, time, date, rrule):
         """Creates a time-type trigger based on the given RRule data."""
         return self.create(
             user=user,
             name=name,
             trigger_type="time",
             time=time,
+            trigger_date=date,
             recurrences=rrule,
         )
 

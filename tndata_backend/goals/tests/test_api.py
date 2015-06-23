@@ -1276,7 +1276,7 @@ class TestUserActionAPI(APITestCase):
         response = self.client.put(url, {'action': 1})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_put_useraction_detail_authenticated(self):
+    def test_put_useraction_detail_authenticated_with_empty_data(self):
         """PUT requests should update a UserAction (sorta). While this is
         technically allowed, it doesn't really do much without providing
         a custom trigger information.

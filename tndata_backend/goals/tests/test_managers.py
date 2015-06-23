@@ -1,6 +1,8 @@
-from datetime import time
+from datetime import datetime, date, time
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
+
 from .. models import Trigger
 from .. settings import (
     DEFAULT_BEHAVIOR_TRIGGER_NAME,
@@ -29,6 +31,7 @@ class TestTriggerManager(TestCase):
             user=cls.user,
             name="A Custom Trigger",
             trigger_type="time",
+            trigger_date=date(2243, 7, 4),
             time=time(12, 34),
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
@@ -67,13 +70,27 @@ class TestTriggerManager(TestCase):
         )
 
     def test_create_for_user(self):
+        # When there's a time & recurrence
         trigger = Trigger.objects.create_for_user(
             self.user,
             "New Trigger",
             time(8, 30),
+            None,
             "RRULE:FREQ=WEEKLY;BYDAY=MO",
         )
         self.assertEqual(
             trigger.recurrences_as_text(),
             "weekly, each Monday"
         )
+
+        # when there's a time & a date
+        trigger = Trigger.objects.create_for_user(
+            self.user,
+            "Other New Trigger",
+            time(9, 30),
+            date(2025, 3, 14),
+            None
+        )
+        expected = datetime.combine(date(2025, 3, 14), time(9, 30))
+        expected = timezone.make_aware(expected, timezone=timezone.utc)
+        self.assertEqual(trigger.next(), expected)

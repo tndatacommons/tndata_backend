@@ -27,7 +27,7 @@ class CustomTriggerField(serializers.RelatedField):
             'name': value.name,
             'name_slug': value.name_slug,
             'trigger_type': value.trigger_type,
-            'time': value.time.isoformat(),
+            'time': value.time.isoformat() if value.time else None,
             'location': value.location,
             'recurrences': value.serialized_recurrences(),
             'recurrences_display': value.recurrences_as_text(),

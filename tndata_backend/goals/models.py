@@ -414,7 +414,7 @@ class Trigger(URLMixin, models.Model):
             )
         elif self.trigger_type == "time" and self.trigger_date is not None:
             # Assume self.trigger_date / self.time is UTC
-            return datetime.utcnow().combine(self.trigger_date, self.time)
+            return datetime.combine(self.trigger_date, self.time)
 
         # No recurrence or not a time-pased Trigger.
         return None
