@@ -78,14 +78,24 @@ class Command(BaseCommand):
         for user in User.objects.filter(userbehavior__isnull=False).distinct():
             self.create_behavior_message(user)
 
-        # Schedule notifications for Actions
-        for ua in UserAction.objects.all():
+        # Schedule notifications for UserAction's Custom Trigger
+        for ua in UserAction.objects.with_custom_triggers():
             self.create_message(
                 ua.user,
                 ua.action,
                 ua.action.notification_title,
                 ua.action.notification_text,
-                ua.action.get_trigger().next()
+                ua.custom_trigger.next()
+            )
+
+        # Schedule notifications for UserAction's with just the default trigger
+        for ua in UserAction.objects.with_only_default_triggers():
+            self.create_message(
+                ua.user,
+                ua.action,
+                ua.action.notification_title,
+                ua.action.notification_text,
+                ua.action.default_trigger.next()
             )
 
         # Finish with a confirmation message
