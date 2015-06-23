@@ -77,10 +77,14 @@ class CustomTriggerSerializer(serializers.Serializer):
     that differs from a trigger:
 
     * user_id: An integer representing the ID of the user who *owns* the trigger
+
+    Optional fields:
+
     * name: The name of the trigger; This must be unique and it's up to you
       to make sure that happens.
     * time: A string representing a time (naive; will be saved at UTC when
       creating the trigger)
+    * date: A string representing a date (yyyy-mm-dd)
     * rrule: An RFC2445 formatted unicode string describing the recurrence.
 
     Calling this serializer's `save` method will either update or create
@@ -99,8 +103,9 @@ class CustomTriggerSerializer(serializers.Serializer):
     """
     user_id = serializers.IntegerField()
     name = serializers.CharField()
-    time = serializers.TimeField()
-    rrule = serializers.CharField()
+    time = serializers.TimeField(required=False)
+    date = serializers.DateField(format="%Y-%m-%d", required=False)
+    rrule = serializers.CharField(required=False)
 
     def is_valid(self, *args, **kwargs):
         """Ensure that the user for the given user_id actually exists."""
@@ -119,13 +124,19 @@ class CustomTriggerSerializer(serializers.Serializer):
         return Trigger.objects.create_for_user(
             user=self._user,
             name=validated_data['name'],
-            time=validated_data['time'],
-            rrule=validated_data['rrule']
+            time=validated_data.get('time'),
+            date=validated_data.get('date'),
+            rrule=validated_data.get('rrule')
         )
 
     def update(self, instance, validated_data):
         instance.time = self.validated_data.get('time', instance.time)
-        instance.recurrences = self.validated_data.get('rrule', instance.recurrences)
+        instance.trigger_date = self.validated_data.get(
+            'date', instance.trigger_date
+        )
+        instance.recurrences = self.validated_data.get(
+            'rrule', instance.recurrences
+        )
         instance.save()
         return instance
 
