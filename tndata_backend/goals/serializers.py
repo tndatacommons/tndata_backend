@@ -21,6 +21,7 @@ from . serializer_fields import (
     SimpleBehaviorField,
     SimpleCategoryField,
     SimpleGoalField,
+    SimpleTriggerField,
 )
 
 
@@ -164,6 +165,7 @@ class ActionSerializer(serializers.ModelSerializer):
     behavior = SimpleBehaviorField(read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
+    default_trigger = SimpleTriggerField(read_only=True)
 
     class Meta:
         model = Action

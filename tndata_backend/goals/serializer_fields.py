@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Action, Behavior, Category, Goal
+from .models import Action, Behavior, Category, Goal, Trigger
 
 
 def _get_object(model, pk):
@@ -133,6 +133,13 @@ class SimpleActionField(serializers.RelatedField):
         return _get_object(Action, data)
 
     def to_representation(self, value):
+        default_trigger = None
+        if value.default_trigger:
+            default_trigger = SimpleTriggerField.to_representation(
+                None,
+                value.default_trigger
+            )
+
         return {
             'id': value.id,
             'title': value.title,
@@ -145,4 +152,29 @@ class SimpleActionField(serializers.RelatedField):
             'icon_url': value.get_absolute_icon(),
             'image_url': value.get_absolute_image(),
             'behavior_id': value.behavior.id,
+            'default_trigger': default_trigger,
+        }
+
+
+class SimpleTriggerField(serializers.RelatedField):
+    """A Simple field for the `default_trigger` data on Actions.
+
+    This is mean to be a read-only field.
+
+    """
+
+    def to_internal_value(self, data):
+        return _get_object(Trigger, data)
+
+    def to_representation(self, value):
+        return {
+            'id': value.id,
+            'name': value.name,
+            'name_slug': value.name_slug,
+            'trigger_type': value.trigger_type,
+            'trigger_type_display': value.get_trigger_type_display(),
+            'time': value.time,
+            'location': value.location,
+            'recurrences': value.serialized_recurrences(),
+            'recurrences_display': value.recurrences_as_text(),
         }
