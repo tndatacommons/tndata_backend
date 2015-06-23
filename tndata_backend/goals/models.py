@@ -24,7 +24,7 @@ from markdown import markdown
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 
-from .managers import TriggerManager, WorkflowManager
+from .managers import TriggerManager, UserActionManager, WorkflowManager
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
 
@@ -346,13 +346,6 @@ class Trigger(URLMixin, models.Model):
         help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
     )
 
-    @classmethod
-    def random(cls, trigger_type="time"):
-        """A classmethod that retrieves a random Trigger object."""
-        sql = """select * from goals_trigger where trigger_type=%s
-                 order by random() limit 1;"""
-        return list(cls.objects.raw(sql, [trigger_type]))[0]
-
     def __str__(self):
         return "{0}".format(self.name)
 
@@ -552,15 +545,6 @@ class BaseBehavior(ModifiedMixin, models.Model):
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
         pass
-
-    def get_trigger(self, trigger_type="time"):
-        """Returns the default trigger or a random Trigger if there
-        is no default.
-
-        """
-        if self.default_trigger is None:
-            return Trigger.random(trigger_type)  # TODO: this is a bad idea.
-        return self.default_trigger
 
 
 class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
@@ -795,6 +779,8 @@ class UserAction(models.Model):
     @property
     def default_trigger(self):
         return self.action.default_trigger
+
+    objects = UserActionManager()
 
 
 class UserCategory(models.Model):

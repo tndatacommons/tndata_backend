@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from .settings import (
@@ -7,6 +8,37 @@ from .settings import (
     DEFAULT_BEHAVIOR_TRIGGER_TIME,
     DEFAULT_BEHAVIOR_TRIGGER_RRULE,
 )
+
+
+class UserActionManager(models.Manager):
+
+    def with_custom_triggers(self):
+        """Returns a queryset of UserAction objets whose custom_trigger field
+        meets the followign criteria:
+
+        1. Is not null
+        2. It's members (trigger_date/time/recurrences) are not all null
+
+        """
+        qs = self.get_queryset()
+        return qs.filter(
+            Q(custom_trigger__isnull=False) &
+            Q(custom_trigger__time__isnull=False) &
+            (
+                Q(custom_trigger__recurrences__isnull=False) |
+                Q(custom_trigger__trigger_date__isnull=False)
+            )
+        )
+
+    def with_only_default_triggers(self):
+        """Returns a queryset of UserAction objects that do NOT have a custom
+        trigger, but whose Action does include a default (time) trigger."""
+        qs = self.get_queryset()
+        return qs.filter(
+            custom_trigger__isnull=True,
+            action__default_trigger__isnull=False,
+            action__default_trigger__trigger_type="time"
+        )
 
 
 class TriggerManager(models.Manager):
