@@ -324,19 +324,25 @@ class Trigger(URLMixin, models.Model):
         default="time",
         help_text='The type of Trigger used, e.g. a time-based trigger'
     )
-    time = models.TimeField(
-        blank=True,
-        null=True,
-        help_text="Time the trigger/notification will fire, in 24-hour format."
-    )
     location = models.CharField(
         max_length=256,
         blank=True,
         help_text="Only used when Trigger type is location. "
                   "Can be 'home', 'work', or a (lat, long) pair."
     )
+    time = models.TimeField(
+        blank=True,
+        null=True,
+        help_text="Time the trigger/notification will fire, in 24-hour format."
+    )
+    trigger_date = models.DateField(
+        blank=True,
+        null=True,
+        help_text="A date for a one-time trigger"
+    )
     recurrences = RecurrenceField(
         null=True,
+        blank=True,
         help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
     )
 
@@ -372,7 +378,10 @@ class Trigger(URLMixin, models.Model):
 
     def serialized_recurrences(self):
         """Return a rfc2445 formatted unicode string."""
-        return serialize_recurrences(self.recurrences)
+        if self.recurrences:
+            return serialize_recurrences(self.recurrences)
+        else:
+            return None
 
     def recurrences_as_text(self):
         if self.recurrences:
@@ -403,6 +412,10 @@ class Trigger(URLMixin, models.Model):
                 todays_occurance,
                 dtstart=todays_occurance,
             )
+        elif self.trigger_type == "time" and self.trigger_date is not None:
+            # Assume self.trigger_date / self.time is UTC
+            return datetime.utcnow().combine(self.trigger_date, self.time)
+
         # No recurrence or not a time-pased Trigger.
         return None
 
@@ -778,6 +791,10 @@ class UserAction(models.Model):
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
+
+    @property
+    def default_trigger(self):
+        return self.action.default_trigger
 
 
 class UserCategory(models.Model):
