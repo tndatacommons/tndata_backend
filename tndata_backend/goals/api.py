@@ -723,20 +723,31 @@ class UserActionViewSet(mixins.CreateModelMixin,
         request.data['custom_trigger'] = trigger
         return request
 
+    def _has_custom_trigger_params(self, params):
+        """Before we update/create a custom trigger, let's check to see if
+        the request actually includes any of the trigger parameters."""
+        return any([
+            'custom_trigger_rrule' in params,
+            'custom_trigger_time' in params,
+            'custom_trigger_date' in params]
+        )
+
     def update(self, request, *args, **kwargs):
         """Allow setting/creating a custom trigger using only two pieces of
         information:
 
         * custom_trigger_rrule
         * custom_trigger_time
+        * custom_trigger_date
 
         """
-        request = self._insert_trigger(
-            request,
-            trigger_rrule=request.data.pop("custom_trigger_rrule", None),
-            trigger_time=request.data.pop("custom_trigger_time", None),
-            trigger_date=request.data.pop("custom_trigger_date", None)
-        )
+        if self._has_custom_trigger_params(request.data.keys()):
+            request = self._insert_trigger(
+                request,
+                trigger_rrule=request.data.pop("custom_trigger_rrule", None),
+                trigger_time=request.data.pop("custom_trigger_time", None),
+                trigger_date=request.data.pop("custom_trigger_date", None)
+            )
         result = super(UserActionViewSet, self).update(request, *args, **kwargs)
         return result
 

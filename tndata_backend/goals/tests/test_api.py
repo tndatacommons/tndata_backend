@@ -1276,7 +1276,7 @@ class TestUserActionAPI(APITestCase):
         response = self.client.put(url, {'action': 1})
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_put_useraction_detail_authenticated_with_empty_data(self):
+    def test_put_useraction_detail_authenticated_with_no_data(self):
         """PUT requests should update a UserAction (sorta). While this is
         technically allowed, it doesn't really do much without providing
         a custom trigger information.
@@ -1290,12 +1290,47 @@ class TestUserActionAPI(APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         # NOTE: user & action are required fields
+        payload = {'user': self.user.id, 'action': self.action.id}
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure the trigger was created/updated.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        self.assertIsNone(ua.custom_trigger)
+        #expected_name = "custom trigger for useraction-{0}".format(ua.id)
+        #self.assertEqual(ua.custom_trigger.name, expected_name)
+        #self.assertIsNone(ua.custom_trigger.trigger_date)
+        #self.assertIsNone(ua.custom_trigger.time)
+        #self.assertIsNone(ua.custom_trigger.recurrences)
+
+    def test_put_useraction_detail_authenticated_with_empty_data(self):
+        """PUT requests should update a UserAction when blank data is provided
+        for the custom trigger; Doing this will essentially deactivate the
+        trigger.
+
+        """
+        url = reverse('useraction-detail', args=[self.ua.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # NOTE: user & action are required fields
         payload = {
             'user': self.user.id,
             'action': self.action.id,
+            'custom_trigger_time': '',
+            'custom_trigger_date': '',
+            'custom_trigger_rrule': '',
         }
         response = self.client.put(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure the trigger was created/updated.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        expected_name = "custom trigger for useraction-{0}".format(ua.id)
+        self.assertEqual(ua.custom_trigger.name, expected_name)
+        self.assertIsNone(ua.custom_trigger.trigger_date)
+        self.assertIsNone(ua.custom_trigger.time)
+        self.assertIsNone(ua.custom_trigger.recurrences)
 
     def test_put_useraction_detail_authenticated_with_custom_trigger(self):
         """PUT requests containting custom trigger details, should create
