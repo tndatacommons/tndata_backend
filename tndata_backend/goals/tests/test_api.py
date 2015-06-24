@@ -1297,11 +1297,6 @@ class TestUserActionAPI(APITestCase):
         # Ensure the trigger was created/updated.
         ua = UserAction.objects.get(pk=self.ua.id)
         self.assertIsNone(ua.custom_trigger)
-        #expected_name = "custom trigger for useraction-{0}".format(ua.id)
-        #self.assertEqual(ua.custom_trigger.name, expected_name)
-        #self.assertIsNone(ua.custom_trigger.trigger_date)
-        #self.assertIsNone(ua.custom_trigger.time)
-        #self.assertIsNone(ua.custom_trigger.recurrences)
 
     def test_put_useraction_detail_authenticated_with_empty_data(self):
         """PUT requests should update a UserAction when blank data is provided
@@ -1361,6 +1356,87 @@ class TestUserActionAPI(APITestCase):
         )
         self.assertEqual(ua.custom_trigger.time, time(9, 30))
         self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
+
+    def test_put_useraction_custom_trigger_udpates(self):
+        """When we have an existing custom trigger, putting new values should
+        update it."""
+
+        # Create a Custom trigger for our UserAction
+        custom_trigger = Trigger.objects.create_for_user(
+            user=self.ua.user,
+            name="custom trigger for useraction-{0}".format(self.ua.id),
+            time=time(11, 30),
+            date=date(2000, 1, 2),
+            rrule="RRULE:FREQ=DAILY"
+        )
+
+        url = reverse('useraction-detail', args=[self.ua.id])
+        payload = {
+            'custom_trigger_date': '2222-12-25',
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        # NOTE: user & action are required fields
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the Trigger got updated.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        self.assertEqual(ua.custom_trigger.id, custom_trigger.id)
+        expected_name = "custom trigger for useraction-{0}".format(ua.id)
+        self.assertEqual(ua.custom_trigger.name, expected_name)
+        self.assertEqual(
+            ua.custom_trigger.recurrences_as_text(),
+            "weekly, each Monday"
+        )
+        self.assertEqual(ua.custom_trigger.time, time(9, 30))
+        self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
+
+        # clean up
+        custom_trigger.delete()
+
+    def test_put_useraction_custom_trigger_disable(self):
+        """When we have an existing custom trigger, PUTing blank values for the
+        trigger details should disable it."""
+
+        # Create a Custom trigger for our UserAction
+        custom_trigger = Trigger.objects.create_for_user(
+            user=self.ua.user,
+            name="custom trigger for useraction-{0}".format(self.ua.id),
+            time=time(11, 30),
+            date=date(2000, 1, 2),
+            rrule="RRULE:FREQ=DAILY"
+        )
+
+        url = reverse('useraction-detail', args=[self.ua.id])
+        payload = {
+            'custom_trigger_date': '',
+            'custom_trigger_time': '',
+            'custom_trigger_rrule': '',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        # NOTE: user & action are required fields
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the Trigger got updated.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        self.assertEqual(ua.custom_trigger.id, custom_trigger.id)
+        expected_name = "custom trigger for useraction-{0}".format(ua.id)
+        self.assertEqual(ua.custom_trigger.name, expected_name)
+        self.assertIsNone(ua.custom_trigger.recurrences)
+        self.assertIsNone(ua.custom_trigger.time)
+        self.assertIsNone(ua.custom_trigger.trigger_date)
+
+        # clean up
+        custom_trigger.delete()
 
     def test_delete_useraction_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot delete."""
