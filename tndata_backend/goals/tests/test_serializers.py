@@ -16,18 +16,24 @@ class TestCustomTriggerSerializer(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user("test", "test@example.com", "pass")
-        cls.trigger = Trigger.objects.create_for_user(
-            cls.user,
+
+    def setUp(self):
+        self.trigger = Trigger.objects.create_for_user(
+            self.user,
             "Test Trigger for User",
             time(9, 0, tzinfo=pytz.utc),
             None,
             'RRULE:FREQ=WEEKLY;BYDAY=MO'
         )
 
+    def tearDown(self):
+        Trigger.objects.filter(id=self.trigger.id).delete()
+
     def test_create(self):
         # create a serializer, and ensure .save() gives us a *new* Trigger
         data = {
             'user_id': self.user.id,
+            'date': '',
             'time': '14:30',
             'name': "Friday reminder",
             'rrule': 'RRULE:FREQ=WEEKLY;BYDAY=FR',
@@ -85,9 +91,9 @@ class TestCustomTriggerSerializer(TestCase):
         self.assertEqual(self.trigger.name, "Test Trigger for User")
         self.assertEqual(self.trigger.time,  time(9, 0, tzinfo=pytz.utc))
 
-        # NOTE: all fields are required.
         data = {
             'user_id': self.user.id,
+            'date': '',
             'name': self.trigger.name,
             'time': '15:00',  # Changed
             'rrule': 'RRULE:FREQ=WEEKLY;BYDAY=TU',  # Changed
@@ -106,3 +112,47 @@ class TestCustomTriggerSerializer(TestCase):
         self.assertEqual(trigger.time, time(15, 0, tzinfo=pytz.utc))
         self.assertEqual(self.trigger.name, "Test Trigger for User")
         self.assertEqual(trigger.recurrences_as_text(), "weekly, each Tuesday")
+
+    def test_empty_trigger_data(self):
+        """ensure the serializer works with empty trigger data (which sould
+        essentially disable the trigger)."""
+
+        data = {
+            'user_id': self.user.id,
+            'name': self.trigger.name,
+            'date': '',
+            'time': '',
+            'rrule': '',
+        }
+        serializer = CustomTriggerSerializer(self.trigger, data=data)
+        self.assertTrue(serializer.is_valid())
+
+        # verify validated data
+        self.assertIsNone(serializer.validated_data['date'])
+        self.assertIsNone(serializer.validated_data['time'])
+        self.assertIsNone(serializer.validated_data['rrule'])
+
+        # ensure it updated the trigger
+        trigger = serializer.save()
+        self.assertIsInstance(trigger, Trigger)
+        self.assertEqual(self.trigger.name, "Test Trigger for User")
+        self.assertEqual(trigger.user, self.user)
+        self.assertIsNone(trigger.recurrences)
+        self.assertIsNone(trigger.trigger_date)
+        self.assertIsNone(trigger.time)
+
+        # ALLOW None values
+        data = {
+            'user_id': self.user.id,
+            'name': self.trigger.name,
+            'date': None,
+            'time': None,
+            'rrule': None,
+        }
+        serializer = CustomTriggerSerializer(self.trigger, data=data)
+        self.assertTrue(serializer.is_valid())
+
+        # verify validated data
+        self.assertIsNone(serializer.validated_data['date'])
+        self.assertIsNone(serializer.validated_data['time'])
+        self.assertIsNone(serializer.validated_data['rrule'])
