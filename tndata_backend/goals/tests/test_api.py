@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import date, time
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
@@ -992,7 +992,7 @@ class TestUserBehaviorAPI(APITestCase):
         response = self.client.put(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_put_useraction_detail_authenticated_with_custom_trigger(self):
+    def test_put_userbehavior_detail_authenticated_with_custom_trigger(self):
         """PUT requests containting custom trigger details, should create
         a custom trigger (if that field was previously null) for the
         UserBehavior.
@@ -1339,6 +1339,7 @@ class TestUserActionAPI(APITestCase):
         """
         url = reverse('useraction-detail', args=[self.ua.id])
         payload = {
+            'custom_trigger_date': '2222-12-25',
             'custom_trigger_time': '9:30',
             'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
         }
@@ -1359,6 +1360,7 @@ class TestUserActionAPI(APITestCase):
             "weekly, each Monday"
         )
         self.assertEqual(ua.custom_trigger.time, time(9, 30))
+        self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
 
     def test_delete_useraction_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot delete."""

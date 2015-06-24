@@ -486,7 +486,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
             request.data['user'] = request.user.id
         return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
 
-    def _insert_trigger(self, request, rrule, time):
+    def _include_trigger(self, request, rrule, time):
         """Inserts a Trigger object into the request's payload"""
         if rrule and time:
             # Apparently these will always be lists, but for some reason the
@@ -535,7 +535,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
         """
         rrule = request.data.pop("custom_trigger_rrule", None)
         time = request.data.pop("custom_trigger_time", None)
-        request = self._insert_trigger(request, rrule, time)
+        request = self._include_trigger(request, rrule, time)
         result = super(UserBehaviorViewSet, self).update(request, *args, **kwargs)
         return result
 
@@ -675,8 +675,11 @@ class UserActionViewSet(mixins.CreateModelMixin,
             request.data['user'] = request.user.id
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
 
-    def _insert_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
-        """Inserts a Trigger object into the request's payload.
+    def _include_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
+        """Includes a Trigger object into the request's payload; That means,
+        if we're updating a UserAction, but the Custom Trigger is getting
+        created or updated, we'll make that change, here, then include the
+        Trigger in as part of the request.
 
         This method looks for an existing Trigger object, and creates one if
         it doesn't exist.
@@ -712,7 +715,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
             'time': trigger_time,
             'name': tname,
             'rrule': trigger_rrule,
-            'trigger_date': trigger_date
+            'date': trigger_date
         }
         trigger_serializer = serializers.CustomTriggerSerializer(
             instance=trigger,
@@ -742,7 +745,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
         """
         if self._has_custom_trigger_params(request.data.keys()):
-            request = self._insert_trigger(
+            request = self._include_trigger(
                 request,
                 trigger_rrule=request.data.pop("custom_trigger_rrule", None),
                 trigger_time=request.data.pop("custom_trigger_time", None),
