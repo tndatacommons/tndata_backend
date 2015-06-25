@@ -2,7 +2,7 @@ import logging
 
 from django.core.management.base import BaseCommand
 from notifications.models import GCMMessage
-
+from utils import slack
 
 logger = logging.getLogger("loggly_logs")
 
@@ -19,6 +19,10 @@ class Command(BaseCommand):
         for message in messages:
             try:
                 message.send()
+                m = "Sending GCM Message ({0}): {1}".format(
+                    message.id, message.title
+                )
+                slack.post_message("#tech", m)
             except Exception:
                 log_msg = "Failed to send GCMMEssage id = {0}".format(message.id)
                 logger.error(log_msg)

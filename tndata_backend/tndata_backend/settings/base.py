@@ -143,3 +143,10 @@ CORS_ORIGIN_WHITELIST = (
     'localhost',
     '127.0.0.1'
 )
+
+
+# This is just the test Web/api token.
+# https://api.slack.com/web
+SLACK_API_TOKEN = 'xoxp-4823219390-6288403475-6868819906-193c4a'
+SLACK_CHANNEL = "#tech"
+SLACK_USERNAME = "app.tndata.org"
