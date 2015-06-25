@@ -1,4 +1,5 @@
 import json
+import logging
 import pytz
 
 from datetime import datetime
@@ -12,6 +13,9 @@ from django.db import models
 from pushjack import GCMClient
 from . managers import GCMMessageManager
 from . settings import GCM
+
+
+logger = logging.getLogger("loggly_logs")
 
 
 class GCMDevice(models.Model):
@@ -176,6 +180,7 @@ class GCMMessage(models.Model):
         * time_to_live: Time to Live. Default is 4 weeks.
 
         """
+        logging.info("Sending GCMMessage, id = %s", self.id)
         client = self._get_gcm_client()
         options = {
             'delay_while_idle': delay_while_idle,
