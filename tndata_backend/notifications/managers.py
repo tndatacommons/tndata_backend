@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from django.db import IntegrityError, models, transaction
+from django.utils import timezone
 
 
 logger = logging.getLogger("loggly_logs")
@@ -17,13 +18,13 @@ class GCMMessageManager(models.Manager):
 
     def expired(self, *args, **kwargs):
         """Return a queryset of expired messages."""
-        return self.get_queryset().filter(expire_on__lte=datetime.utcnow())
+        return self.get_queryset().filter(expire_on__lte=timezone.now())
 
     def ready_for_delivery(self, *args, **kwargs):
         """Return a queryset of messages that are ready to be delivered."""
         return self.get_queryset().exclude(success=True).filter(
             success=None,  # doen't re-send failed messages
-            deliver_on__lte=datetime.utcnow()
+            deliver_on__lte=timezone.now()
         )
 
     def create(self, user, title, message, deliver_on, obj=None):
@@ -50,6 +51,10 @@ class GCMMessageManager(models.Manager):
             )
 
         try:
+            # Convert any times to UTC
+            if timezone.is_naive(deliver_on):
+                deliver_on = timezone.make_aware(deliver_on, timezone.utc)
+
             kwargs = {
                 'user': user,
                 'title': title,

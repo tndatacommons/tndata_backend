@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.utils import timezone
 
 from pushjack import GCMClient
 from . managers import GCMMessageManager
@@ -194,7 +195,8 @@ class GCMMessage(models.Model):
 
     def _set_expiration(self):
         if self.response_code == 200:
-            self.expire_on = datetime.utcnow()
+            self.expire_on = timezone.now()
+            self.success = True
 
     def _save_response(self, resp):
         report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
