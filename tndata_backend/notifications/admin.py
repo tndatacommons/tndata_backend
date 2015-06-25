@@ -17,11 +17,14 @@ admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 
 class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
-        'user', 'message_id', 'content_type', 'object_id', 'deliver_on',
+        'user', 'message_id', 'title', 'content_type', 'object_id', 'deliver_on',
         'expire_on', 'success', 'response_code',
     )
     list_filter = ('success', 'response_code')
-    search_fields = ['message_id', ]
+    search_fields = [
+        'user__username', 'user__first_name', 'user__last_name', 'user__email',
+        'message_id', 'title', 'message'
+    ]
     actions = ['send_notification', 'expire_messages']
 
     def send_notification(self, request, queryset):

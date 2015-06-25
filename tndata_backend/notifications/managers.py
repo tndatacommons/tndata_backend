@@ -65,5 +65,10 @@ class GCMMessageManager(models.Manager):
             log_msg = "Created GCMMessage (id = %s) for delivery on: %s"
             logger.info(log_msg, msg.id, deliver_on)
         except IntegrityError:
+            log_msg = (
+                "Could not create GCMMessage for user (id = %s) and "
+                "obj = %s. Possibly Duplicate."
+            )
+            logger.info(log_msg, user, obj)
             msg = None  # Most likely a duplicate error.
         return msg
