@@ -60,6 +60,15 @@ class TestGCMDeviceAPI(APITestCase):
         qs = GCMDevice.objects.filter(user=self.user, registration_id='NEWREGID')
         self.assertTrue(qs.exists())
 
+    def test_post_device_list_duplicate(self):
+        """Test POSTing a Device with unchanged data."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {'registration_id': 'REGISTRATIONID'}  # unchanged
+        response = self.client.post(self.url, data)
+        self.assertEqual(response.status_code, status.HTTP_304_NOT_MODIFIED)
+
     def test_get_device_detail(self):
         """There is no device detail endpoint."""
         url = "{0}{1}".format(reverse('gcmdevice-list'), self.device.id)

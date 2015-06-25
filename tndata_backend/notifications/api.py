@@ -1,7 +1,8 @@
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
+from rest_framework.response import Response
 
 from . import models
 from . import serializers
@@ -43,8 +44,17 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
-        # We're creating a single item.
-        request.data['user'] = request.user.id
+
+        if request.user.is_authenticated():
+            qs = models.GCMDevice.objects.filter(
+                user=request.user,
+                registration_id=request.data.get('registration_id')
+            )
+            if qs.exists():
+                # No need to do anything.
+                return Response(None, status=status.HTTP_304_NOT_MODIFIED)
+
+            request.data['user'] = request.user.id
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
 
 

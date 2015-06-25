@@ -239,9 +239,9 @@ class TestGCMMessage(TestCase):
         # When there is a resposne code (of 200)
         msg.response_code = 200
         msg.save()
-        with patch("notifications.models.datetime") as mock_dt:
+        with patch("notifications.models.timezone") as mock_tz:
             date = datetime_utc(2015, 5, 16, 15, 30)
-            mock_dt.utcnow.return_value = date
+            mock_tz.now.return_value = date
             msg._set_expiration()
             self.assertEqual(msg.expire_on, date)
 
