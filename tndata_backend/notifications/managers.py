@@ -1,7 +1,9 @@
+import logging
 from datetime import datetime
-
 from django.db import IntegrityError, models, transaction
-from django.core.exceptions import ObjectDoesNotExist
+
+
+logger = logging.getLogger("loggly_logs")
 
 
 class QuestionManager(models.Manager):
@@ -40,6 +42,8 @@ class GCMMessageManager(models.Manager):
         to create a duplicate), this method will return `None`.
 
         """
+        msg = None  # Our new GCMMessage object
+
         if not user.gcmdevice_set.exists():
             raise user.gcmdevice_set.model.DoesNotExist(
                 "Users must have a registered Device before sending messages"
@@ -57,6 +61,9 @@ class GCMMessageManager(models.Manager):
             with transaction.atomic():
                 msg = self.model(**kwargs)
                 msg.save()
+
+            log_msg = "Created GCMMessage (id = %s) for delivery on: %s"
+            logger.info(log_msg, msg.id, deliver_on)
         except IntegrityError:
             msg = None  # Most likely a duplicate error.
         return msg

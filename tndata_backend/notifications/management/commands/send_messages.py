@@ -18,4 +18,4 @@ class Command(BaseCommand):
             try:
                 message.send()
             except Exception:
-                logger.error("Failed to send GCMMEssage id = {0}".format(message.id))
+                logger.error("Failed to send GCMMEssage id = %s", message.id)

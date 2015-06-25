@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         qs = GCMMessage.objects.expired()
-        msg = "Expiring {0} GCM Messages".format(qs.count())
+        msg = "Expired {0} GCM Messages".format(qs.count())
         qs.delete()
 
         logger.info(msg)
