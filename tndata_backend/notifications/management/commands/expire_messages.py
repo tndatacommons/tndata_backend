@@ -15,4 +15,4 @@ class Command(BaseCommand):
         qs.delete()
 
         logger.info(msg)
-        slack.post_messag("#tech", msg)
+        slack.post_message("#tech", msg)
