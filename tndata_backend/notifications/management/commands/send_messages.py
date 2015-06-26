@@ -31,6 +31,6 @@ class Command(BaseCommand):
                 logger.error(log_msg)
                 self.stdout.write("{0}\n".format(log_msg))
 
-        logger.error("Finished Sending GCM Notifications")
+        logger.info("Finished Sending GCM Notifications")
         self.stdout.write("Finished Sending GCM Notifications")
         slack.post_message("#tech", "Finished Sending GCM Notifications")
