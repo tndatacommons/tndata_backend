@@ -16,6 +16,7 @@
         <dt>Type</dt><dd>{{ trigger.get_trigger_type_display}}</dd>
         <dt>Time</dt><dd>{{ trigger.time }}</dd>
         <dt>Recurrences</dt><dd>{{ trigger.recurrences_as_text }}</dd>
+        <dt>RRULE data</dt><dd><code>{{ trigger.serialized_recurrences}}</code></dd>
         <dt>Next Occurance</dt><dd>{{ trigger.next }}</dd>
       </dl>
     </div>

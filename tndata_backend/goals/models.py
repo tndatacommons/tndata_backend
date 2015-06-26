@@ -363,10 +363,21 @@ class Trigger(URLMixin, models.Model):
         if self.time and self.time.tzinfo is None:
             self.time = pytz.utc.localize(self.time)
 
+    def _strip_rdate_data(self):
+        """Our android recurrence dialog doesn't like RDATE rules as part of
+        the recurrence; Additionally, we've saved that information as a separate
+        field within this model, so let's strip out any RDATE rules.
+
+        """
+        rrule = self.serialized_recurrences()
+        if 'RDATE:' in rrule:
+            self.recurrences = rrule.split('RDATE:')[0].strip()
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         self._localize_time()
+        self._strip_rdate_data()
         super(Trigger, self).save(*args, **kwargs)
 
     def serialized_recurrences(self):
