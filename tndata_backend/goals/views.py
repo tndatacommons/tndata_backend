@@ -284,6 +284,7 @@ class GoalDeleteView(ContentEditorMixin, DeleteView):
 
 class TriggerListView(ContentViewerMixin, ListView):
     model = Trigger
+    queryset = Trigger.objects.default()
     context_object_name = 'triggers'
 
 
