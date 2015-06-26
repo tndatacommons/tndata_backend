@@ -4,8 +4,17 @@
 {% block head %}
   {{ block.super }}
   {# See bodyjs block for the timepicker js and config #}
+  {{ form.media }}  {# load the recurrences widget #}
+  <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' %}"></script>
   <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
-  {{ form.media }}
+  {# Custom CSS for the recurrences widget #}
+  <style type="text/css">
+  div.recurrence-widget {margin-bottom: 1em;}
+  div.panels > div.panel {
+    border-width: 0px; margin:0px; padding:.5em;
+    border-bottom: 1px solid #ddd;
+  }
+  </style>
 {% endblock %}
 
 
@@ -34,8 +43,7 @@
     the backend only supports recurring rules and included dates
     (not excluded dates).
     </p>
-
-    {{ form.as_p }}
+    {{ form.as_p}}
     <hr/>
     <p><button type="submit">
         {% if object %}Save{% else %}Create{% endif %} Trigger
