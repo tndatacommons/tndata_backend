@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import login, logout
 from django.views.generic import TemplateView
+from django.views.i18n import javascript_catalog
 
 from rest_framework import routers
 
@@ -101,6 +102,7 @@ urlpatterns = patterns('',
     url(r'^login/$', login, name="login"),
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),
     url(r'^utils/', include('utils.urls', namespace='utils')),
+    url(r'^jsi18n/$', javascript_catalog, {'packages': ('recurrences')}),
     url(r'^$', IndexView.as_view())
 )
 
