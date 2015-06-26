@@ -11,8 +11,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         qs = GCMMessage.objects.expired()
-        msg = "Expired {0} GCM Messages".format(qs.count())
-        qs.delete()
-
-        logger.info(msg)
-        slack.post_message("#tech", msg)
+        if qs.exists():
+            msg = "Expired {0} GCM Messages".format(qs.count())
+            # Delete those expired messages.
+            qs.delete()
+            logger.info(msg)
+            slack.post_message("#tech", msg)
