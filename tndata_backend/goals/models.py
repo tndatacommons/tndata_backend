@@ -370,7 +370,7 @@ class Trigger(URLMixin, models.Model):
 
         """
         rrule = self.serialized_recurrences()
-        if 'RDATE:' in rrule:
+        if rrule and 'RDATE:' in rrule:
             self.recurrences = rrule.split('RDATE:')[0].strip()
 
     def save(self, *args, **kwargs):
