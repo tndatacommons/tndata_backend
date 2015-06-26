@@ -13,9 +13,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Look for all the undelivered/non-errored messages.
         messages = GCMMessage.objects.ready_for_delivery()
+
         log_msg = "Sending {0} GCMMessages".format(messages.count())
         logger.info(log_msg)
+        slack.post_message("#tech", log_msg)
         self.stdout.write("{0}\n".format(log_msg))
+
         for message in messages:
             try:
                 message.send()
@@ -30,3 +33,4 @@ class Command(BaseCommand):
 
         logger.error("Finished Sending GCM Notifications")
         self.stdout.write("Finished Sending GCM Notifications")
+        slack.post_message("#tech", "Finished Sending GCM Notifications")

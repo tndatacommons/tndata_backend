@@ -1,8 +1,7 @@
 import logging
-
 from django.core.management.base import BaseCommand
 from notifications.models import GCMMessage
-
+from utils import slack
 
 logger = logging.getLogger("loggly_logs")
 
@@ -16,3 +15,4 @@ class Command(BaseCommand):
         qs.delete()
 
         logger.info(msg)
+        slack.post_messag("#tech", msg)
