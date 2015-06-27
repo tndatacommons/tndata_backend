@@ -1,7 +1,7 @@
 import logging
 from django.core.management.base import BaseCommand
 from notifications.models import GCMMessage
-from utils import slack
+#from utils import slack
 
 logger = logging.getLogger("loggly_logs")
 
@@ -16,4 +16,4 @@ class Command(BaseCommand):
             # Delete those expired messages.
             qs.delete()
             logger.info(msg)
-            slack.post_message("#tech", msg)
+            #slack.post_message("#tech", msg)
