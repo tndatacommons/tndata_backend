@@ -19,6 +19,8 @@ from django.db.models.signals import post_delete, post_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
 from django.utils.text import slugify
+from django.utils import timezone
+
 from django_fsm import FSMField, transition
 from markdown import markdown
 from recurrence import serialize as serialize_recurrences
@@ -402,23 +404,30 @@ class Trigger(URLMixin, models.Model):
             return result
         return ''
 
+    def _combine(self, a_date=None, a_time=None, tz=timezone.utc):
+        """Combine a date & a time into an tz-aware datetime with the given
+        timezone. If the date is None, the current date (utc) will be used."""
+        if a_date is None:
+            a_date = timezone.now()
+        combined = datetime.combine(a_date, a_time)
+        if timezone.is_naive(combined):
+            combined = timezone.make_aware(combined, timezone=tz)
+        return combined
+
     def next(self):
         # NOTE: It appears that the date used is the system date/time. not utc.
         # Get the next occurance of this trigger.
         if self.trigger_type == "time" and self.recurrences:
-            todays_occurance = datetime.utcnow()  # uses UTC
+            todays_occurance = timezone.now()
             if self.time:
-                todays_occurance = todays_occurance.combine(
-                    todays_occurance,
-                    self.time
-                )
+                todays_occurance = self._combine(todays_occurance, self.time)
             return self.recurrences.after(
                 todays_occurance,
                 dtstart=todays_occurance,
             )
         elif self.trigger_type == "time" and self.trigger_date is not None:
             # Assume self.trigger_date / self.time is UTC
-            return datetime.combine(self.trigger_date, self.time)
+            return self._combine(self.trigger_date, self.time)
 
         # No recurrence or not a time-pased Trigger.
         return None
@@ -876,11 +885,16 @@ def recalculate_goal_progress(sender, instance, created, **kwargs):
 
 class GoalProgressManager(models.Manager):
     """Custom manager for the `GoalProgress` class that includes a method
-    to generate scores for a User's progress."""
+    to generate scores for a User's progress.
+
+    NOTE: This is defined here (in models.py) instead of in managers.py, so
+    we have access to the Goal & BehaviorProgress models.
+
+    """
 
     def generate_scores(self, user):
         created_objects = []
-        current_time = datetime.utcnow()  # TODO: Check if auto_now_add stores UTC
+        current_time = timezone.now()
 
         # Get all the goals that a user has selected.
         goal_ids = UserGoal.objects.filter(user=user)
@@ -974,7 +988,7 @@ class CategoryProgressManager(models.Manager):
 
     def generate_scores(self, user):
         created_objects = []
-        current_time = datetime.utcnow()
+        current_time = timezone.now()
 
         # Get all the categories that a user has selected.
         cat_ids = UserCategory.objects.filter(user=user)

@@ -1,4 +1,3 @@
-import pytz
 from datetime import datetime, date, time
 from unittest.mock import Mock, patch
 
@@ -255,7 +254,7 @@ class TestTrigger(TestCase):
         t = Trigger(name="X", trigger_type="time", time=time(12, 34))
         self.assertEqual(t.time, time(12, 34))
         t._localize_time()
-        self.assertEqual(t.time, time(12, 34, tzinfo=pytz.UTC))
+        self.assertEqual(t.time, time(12, 34, tzinfo=timezone.utc))
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
@@ -299,10 +298,12 @@ class TestTrigger(TestCase):
         # returns none when there's no recurrence & no date
         self.assertIsNone(Trigger(trigger_type="time").next())
 
-        with patch("goals.models.datetime") as dt:
-            dt.utcnow.return_value = datetime(1000, 10, 20, 9, 30, 45)
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = datetime(
+                1000, 10, 20, 9, 30, 45, tzinfo=timezone.utc
+            )
             # Expected is in exactly 1 day
-            expected = datetime(1000, 10, 21, 12, 34, tzinfo=pytz.UTC)
+            expected = datetime(1000, 10, 21, 12, 34, tzinfo=timezone.utc)
             self.assertEqual(self.trigger.next(), expected)
 
     def test_next_when_no_recurrence(self):
