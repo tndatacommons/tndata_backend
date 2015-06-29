@@ -885,24 +885,63 @@ def recalculate_goal_progress(sender, instance, created, **kwargs):
 
 class GoalProgressManager(models.Manager):
     """Custom manager for the `GoalProgress` class that includes a method
-    to generate scores for a User's progress.
+    to generate scores for a User's progress toward a Goal.
 
     NOTE: This is defined here (in models.py) instead of in managers.py, so
     we have access to the Goal & BehaviorProgress models.
 
     """
 
+    def _get_or_update(self, user, goal, scores, current_time):
+        # check to see if we've already got a GoalProgress object for this date
+        start = current_time.combine(current_time, time.min)
+        start = timezone.make_aware(start, timezone=timezone.utc)
+        end = current_time.combine(current_time, time.max)
+        end = timezone.make_aware(end, timezone=timezone.utc)
+
+        # do the aggregation
+        score_total = sum(scores)
+        score_max = len(scores) * BehaviorProgress.ON_COURSE
+
+        try:
+            gp = self.filter(user=user, reported_on__range=(start, end))
+            gp = gp.latest()
+            gp.current_total = score_total
+            gp.max_total = score_max
+            gp.save()
+        except self.model.DoesNotExist:
+            gp = self.create(
+                user=user,
+                goal=goal,
+                current_total=score_total,
+                max_total=score_max
+            )
+        return gp
+
     def generate_scores(self, user):
         created_objects = []
         current_time = timezone.now()
 
-        # Get all the goals that a user has selected.
+        # Get all the goals that a user has selected IFF that user has also
+        # selected some Behaviors.
+        #
+        # This is the intersection of:
+        # - the set of goal ids that contain behavior's i've selected
+        # - the set of goals i've selected, and
+        ubgs = UserBehavior.objects.filter(user=user)
+        ubgs = set(ubgs.values_list('behavior__goals__id', flat=True))
+
         goal_ids = UserGoal.objects.filter(user=user)
-        goal_ids = goal_ids.values_list('goal', flat=True)
+        goal_ids = set(goal_ids.values_list('goal', flat=True))
+        goal_ids = goal_ids.intersection(ubgs)
 
         for goal in Goal.objects.filter(id__in=goal_ids):
-            # Get all the User's selected behaviors that lie within that goal.
-            behaviors = goal.behavior_set.all().values_list("id", flat=True)
+            # Get all the User's selected behavior (ids) within that goal.
+            behaviors = UserBehavior.objects.filter(
+                user=user,
+                behavior__goals=goal
+            ).values_list('behavior', flat=True)
+
             if behaviors.exists():
                 # All the self-reported scores up to this date for this goal
                 scores = BehaviorProgress.objects.filter(
@@ -911,13 +950,8 @@ class GoalProgressManager(models.Manager):
                     reported_on__lte=current_time
                 ).values_list('status', flat=True)
 
-                # Create a goal-progress object for this data
-                gp = self.create(
-                    user=user,
-                    goal=goal,
-                    current_total=sum(scores),
-                    max_total=len(scores) * BehaviorProgress.ON_COURSE,
-                )
+                # Create a GoalProgress object for this data
+                gp = self._get_or_update(user, goal, scores, current_time)
                 created_objects.append(gp.id)
         return self.get_queryset().filter(id__in=created_objects)
 
