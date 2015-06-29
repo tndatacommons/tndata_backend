@@ -14,17 +14,22 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
 
-        # Generate scores for progress toward goals...
+        err_msg = "Failed to generate scores for {0}"
+
         try:
+            # Generate scores for goal progress for all users that have
+            # selected one or more Goals.
             for user in User.objects.filter(usergoal__isnull=False).distinct():
                 GoalProgress.objects.generate_scores(user)
             logger.info("Generated scores for GoalProgress")
         except Exception:
-            logger.error("Failed to generate scores for GoalProgress", exc_info=1)
-        # ...and toward categories.
+            logger.error(err_msg.format("GoalProgress"), exc_info=1)
+
         try:
+            # Generate scores for category progress for all users that have
+            # selected one or more categories.
             for user in User.objects.filter(usercategory__isnull=False).distinct():
                 CategoryProgress.objects.generate_scores(user)
             logger.info("Generated scores for CategoryProgress")
         except Exception:
-            logger.error("Failed to generate scores for CategoryProgress", exc_info=1)
+            logger.error(err_msg.format("CategoryProgress"), exc_info=1)
