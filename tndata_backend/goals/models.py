@@ -10,7 +10,7 @@ Actions are the things we want to help people to do.
 import os
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db import models
@@ -25,6 +25,7 @@ from django_fsm import FSMField, transition
 from markdown import markdown
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
+from utils import dateutils
 
 from .managers import TriggerManager, UserActionManager, WorkflowManager
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
@@ -894,18 +895,18 @@ class GoalProgressManager(models.Manager):
 
     def _get_or_update(self, user, goal, scores, current_time):
         # check to see if we've already got a GoalProgress object for this date
-        start = current_time.combine(current_time, time.min)
-        start = timezone.make_aware(start, timezone=timezone.utc)
-        end = current_time.combine(current_time, time.max)
-        end = timezone.make_aware(end, timezone=timezone.utc)
+        start, end = dateutils.date_range(current_time)
 
         # do the aggregation
         score_total = sum(scores)
         score_max = len(scores) * BehaviorProgress.ON_COURSE
 
         try:
-            gp = self.filter(user=user, reported_on__range=(start, end))
-            gp = gp.latest()
+            gp = self.filter(
+                user=user,
+                goal=goal,
+                reported_on__range=(start, end)
+            ).latest()
             gp.current_total = score_total
             gp.max_total = score_max
             gp.save()
@@ -927,7 +928,7 @@ class GoalProgressManager(models.Manager):
         #
         # This is the intersection of:
         # - the set of goal ids that contain behavior's i've selected
-        # - the set of goals i've selected, and
+        # - the set of goals i've selected
         ubgs = UserBehavior.objects.filter(user=user)
         ubgs = set(ubgs.values_list('behavior__goals__id', flat=True))
 
@@ -1020,16 +1021,48 @@ class CategoryProgressManager(models.Manager):
     """Custom manager for the `CategoryProgress` class that includes a method
     to generate scores for a User's progress."""
 
+    def _get_or_update(self, user, category, current_score, current_time):
+        # check to see if we've already got a CategoryProgress object for
+        # the current date
+        start, end = dateutils.date_range(current_time)
+        current_score = round(current_score, 2)
+
+        try:
+            cp = self.filter(
+                user=user,
+                category=category,
+                reported_on__range=(start, end)
+            ).latest()
+            cp.current_score = current_score
+            cp.save()
+        except self.model.DoesNotExist:
+            # Create a CategoryProgress object for this data
+            cp = self.create(
+                user=user,
+                category=category,
+                current_score=round(current_score, 2),
+            )
+        return cp
+
     def generate_scores(self, user):
         created_objects = []
         current_time = timezone.now()
 
-        # Get all the categories that a user has selected.
+        # Get all the categories that a user has selected IFF there are also
+        # some goalprogress objects for that category
+        #
+        # This is the intersection of:
+        # - the set of categories that contain goals that i've selected
+        # - the set of categories i've selected
+        ug_cats = UserGoal.objects.filter(user=user)
+        ug_cats = set(ug_cats.values_list('goal__categories__id', flat=True))
         cat_ids = UserCategory.objects.filter(user=user)
-        cat_ids = cat_ids.values_list('category__id', flat=True)
+        cat_ids = set(cat_ids.values_list('category__id', flat=True))
+        cat_ids = cat_ids.intersection(ug_cats)
 
-        start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = current_time.replace(hour=23, minute=59, second=59, microsecond=999999)
+        # NOTE: Average GoalProgress for the last 7 days
+        start, end = dateutils.date_range(current_time)
+        start = start - timedelta(days=7)
 
         for cat in Category.objects.filter(id__in=cat_ids):
             # Average all latest relevant GoalProgress scores
@@ -1039,15 +1072,11 @@ class CategoryProgressManager(models.Manager):
                 reported_on__range=(start, end)
             ).aggregate(Avg("current_score"))
 
-            # Result of averaging the current scores could be None
+            # NOTE: Result of averaging the current scores could be None
             current_score = results.get('current_score__avg', 0) or 0
 
             # Create a CategoryProgress object for this data
-            cp = self.create(
-                user=user,
-                category=cat,
-                current_score=round(current_score, 2),
-            )
+            cp = self._get_or_update(user, cat, current_score, current_time)
             created_objects.append(cp.id)
         return self.get_queryset().filter(id__in=created_objects)
 
