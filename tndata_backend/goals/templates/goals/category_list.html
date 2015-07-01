@@ -41,8 +41,16 @@
               <a href="{{ category.get_absolute_url }}">{{ category }}</a>
           </td>
           <td>{{ category.state|label }}</td>
-          <td>{{ category.goals|join:", " }}</td>
-          <td>{{ category.behaviors|join:", " }}</td>
+          <td>
+          {% for c in category.goals %}
+            <span class="label secondary radius">{{ c }}</span>
+          {% endfor %}
+          </td>
+          <td>
+          {% for b in category.behaviors %}
+            <span class="label secondary radius">{{ b }}</span>
+          {% endfor %}
+          </td>
           <td>
             {% with icon=category.get_absolute_icon %}
               {% if icon %}
