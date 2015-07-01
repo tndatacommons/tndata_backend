@@ -5,6 +5,7 @@ from django.utils.text import slugify
 
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
+from utils import colors
 
 from . models import Action, Behavior, Category, Goal, Trigger
 from . utils import read_uploaded_csv
@@ -72,12 +73,24 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = [
-            'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
+            'order', 'title', 'description', 'icon', 'image', 'color',
+            'secondary_color', 'notes',
         ]
         labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {
             "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
+            "secondary_color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.get('initial', {})
+        instance = kwargs.get('instance')
+        initial_color = getattr(instance, 'color', '#2ECC71')
+        secondary = getattr(instance, 'secondary_color', None)
+        if 'secondary_color' not in initial and secondary is None:
+            initial['secondary_color'] = colors.lighten(initial_color)
+        kwargs['initial'] = initial
+        super().__init__(*args, **kwargs)
 
 
 class GoalForm(forms.ModelForm):

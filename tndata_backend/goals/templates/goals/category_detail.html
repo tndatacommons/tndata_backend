@@ -42,9 +42,14 @@
           {% endwith %}
         </dd>
         <dt>Color</dt><dd>
-          <span style="display:inline-block;width:18px;height:18px;background-color:{{category.color}};">
+          <span style="display:inline-block;width:22px;height:22px;background-color:{{category.color}};">
           </span>
           {{ category.color }}
+         </dd>
+        <dt>Secondary Color</dt><dd>
+          <span style="display:inline-block;width:22px;height:22px;background-color:{{category.secondary_color|default:'#ccc'}};">
+          </span>
+          {{ category.secondary_color|default:"not set" }}
          </dd>
       </dl>
       {% modified category %}

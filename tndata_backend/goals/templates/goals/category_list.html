@@ -15,7 +15,7 @@
       <thead>
       <tr>
         <th>Order</th>
-        <th>Color</th>
+        <th>Colors</th>
         <th>Title</th>
         <th>State</th>
         <th>Goals</th>
@@ -31,6 +31,11 @@
             <div class="color"
                  style="height:25px;width:25px;background-color:{{ category.color}};">
             </div>
+            {% if category.secondary_color %}
+            <div class="color"
+                 style="height:25px;width:25px;background-color:{{ category.secondary_color}};">
+            </div>
+            {% endif %}
           </td>
           <td>
               <a href="{{ category.get_absolute_url }}">{{ category }}</a>
