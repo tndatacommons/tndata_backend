@@ -25,7 +25,7 @@ from django_fsm import FSMField, transition
 from markdown import markdown
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
-from utils import dateutils
+from utils import colors, dateutils
 
 from .managers import TriggerManager, UserActionManager, WorkflowManager
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
@@ -75,7 +75,13 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     color = models.CharField(
         max_length=7,
         default="#2ECC71",
-        help_text="Select the Color for this Category"
+        help_text="Select the color for this Category"
+    )
+    secondary_color = models.CharField(
+        max_length=7,
+        blank=True,
+        help_text="Select a secondary color for this Category. If omitted, a "
+                  "complementary color will be generated."
     )
     state = FSMField(default="draft")
     updated_by = models.ForeignKey(
@@ -126,11 +132,18 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
         """Ensure that colors include a # symbol at the beginning."""
         return color if color.startswith("#") else "#{0}".format(color)
 
+    def _generate_secondary_color(self):
+        if self.secondary_color:
+            return self.secondary_color
+        else:
+            return colors.lighten(self.color)
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model and set
         created_by or updated_by fields if specified."""
         self.title_slug = slugify(self.title)
         self.color = self._format_color(self.color)
+        self.secondary_color = self._generate_secondary_color()
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Category, self).save(*args, **kwargs)
 
