@@ -39,6 +39,17 @@ Category
       {{ form.notes.label_tag }}
       {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
     </p>
+
+    {% with icon=object.get_absolute_icon %}
+      {% if icon %}
+        <p class="panel" style="text-align: center;">
+          Current Icon:<br/>
+          <a href="{{ icon }}" target="_blank">
+          <img src="{{ icon }}" alt="{{ object}} icon" /></a>
+        </p>
+      {% endif %}
+    {% endwith %}
+
     <table>
       <caption>Existing Goals</caption>
       <thead>
