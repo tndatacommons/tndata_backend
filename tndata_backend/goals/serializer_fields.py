@@ -133,6 +133,7 @@ class CategoryListField(serializers.RelatedField):
             'icon_url': value.get_absolute_icon(),
             'image_url': value.get_absolute_image(),
             'color': value.color,
+            'secondary_color': value.secondary_color,
         }
 
 
@@ -153,6 +154,7 @@ class SimpleCategoryField(serializers.RelatedField):
             'icon_url': value.get_absolute_icon(),
             'image_url': value.get_absolute_image(),
             'color': value.color,
+            'secondary_color': value.secondary_color,
             'progress_value': getattr(value, 'progress_value', 0.0),
         }
 
