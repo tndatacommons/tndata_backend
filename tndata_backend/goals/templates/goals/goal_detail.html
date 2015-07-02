@@ -17,6 +17,7 @@
       <dl>
       <dt>State</dt><dd>{{ goal.state|label }}</dd>
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
+      <dt>More Info</dt><dd>{{ goal.more_info|markdown }}</dt>
       <dt>Icon</dt><dd class="gray">
         {% with icon=goal.get_absolute_icon %}
         {% if icon %}
@@ -31,7 +32,6 @@
       </dl>
       {% modified goal %}
       {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}
-
     </div>
     <div class="large-6 small-12 columns">
       {% if goal.notes %}

@@ -101,7 +101,7 @@ class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = [
-            'categories', 'title', 'description', 'icon', 'notes',
+            'categories', 'title', 'description', 'more_info', 'icon', 'notes',
         ]
         labels = {"notes": "Scratchpad"}
 
