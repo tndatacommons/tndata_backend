@@ -233,6 +233,10 @@ class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
         help_text="Misc notes about this item. This is for your use and will "
                   "not be displayed in the app."
     )
+    more_info = models.TextField(
+        blank=True,
+        help_text="Persuasive narrative description: Tell the user why this is important."
+    )
     icon = models.ImageField(
         upload_to="goals/goal", null=True, blank=True,
         help_text="Upload an icon (256x256) for this goal"
@@ -490,7 +494,7 @@ class BaseBehavior(ModifiedMixin, models.Model):
     )
     more_info = models.TextField(
         blank=True,
-        help_text="Persuasive narrative description: Tell the user why this is imporrtant."
+        help_text="Persuasive narrative description: Tell the user why this is important."
     )
     description = models.TextField(
         blank=True,
