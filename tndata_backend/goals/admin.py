@@ -145,8 +145,10 @@ class BehaviorAdmin(ContentWorkflowAdmin):
                         goal.categories.add(cat)
                     goal.save()
 
-                    # delete the behavior
-                    behavior.delete()
+            # When the goals have been created, delete the set of Behaviors.
+            with transaction.atomic():
+                queryset.delete()
+
             msg = "Converted {0} Behaviors into Goals".format(num_objects)
             self.message_user(request, msg)
         except IntegrityError:
@@ -214,8 +216,10 @@ class ActionAdmin(ContentWorkflowAdmin):
                         behavior.goals.add(g)
                     behavior.save()
 
-                    # delete the action
-                    action.delete()
+            # Once all behavior's have been created, delete the Actions.
+            with transaction.atomic():
+                queryset.delete()
+
             msg = "Converted {0} Actions into Behaviors".format(num_actions)
             self.message_user(request, msg)
         except IntegrityError:
