@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.messages import ERROR
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from django_fsm import TransitionNotAllowed
 
@@ -88,7 +88,7 @@ admin.site.register(models.Trigger, TriggerAdmin)
 
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'in_categories', 'in_goals',
+        'title', 'state', 'num_actions', 'in_categories', 'in_goals',
         'get_absolute_icon', 'get_absolute_image',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
@@ -100,12 +100,59 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
+    actions = ['convert_to_goal']
+
+    def num_actions(self, obj):
+        return obj.action_set.count()
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
 
     def in_goals(self, obj):
         return ", ".join(sorted([g.title for g in obj.goals.all()]))
+
+    def convert_to_goal(self, request, queryset):
+        """Converts the Behavior into a Goal. The categories that were associated
+        with the Behavior's Parent Goal and now associated with the new Goal
+        created from the behavior."""
+
+        try:
+            with transaction.atomic():
+                num_objects = queryset.count()
+                for behavior in queryset:
+                    # get the parent goals's list of categories
+                    categories = list(behavior.categories)
+
+                    # create the new goal
+                    goal = models.Goal.objects.create(
+                        title=behavior.title,
+                        title_slug=behavior.title_slug,
+                        subtitle='',
+                        notes=behavior.notes,
+                        more_info=behavior.more_info,
+                        description=behavior.description,
+                        outcome=behavior.outcome,
+                        icon=behavior.icon,
+                        state=behavior.state,
+                        created_by=request.user,
+                        updated_by=request.user,
+                    )
+                    # add in the goals
+                    for cat in categories:
+                        goal.categories.add(cat)
+                    goal.save()
+
+                    # delete the behavior
+                    behavior.delete()
+            msg = "Converted {0} Behaviors into Goals".format(num_objects)
+            self.message_user(request, msg)
+        except IntegrityError:
+            msg = (
+                "There was an error converting Behaviors. All changes have been "
+                "rolled back."
+            )
+            self.message_user(request, msg, level=ERROR)
+
 admin.site.register(models.Behavior, BehaviorAdmin)
 
 
@@ -122,6 +169,56 @@ class ActionAdmin(ContentWorkflowAdmin):
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('behavior', 'updated_by', 'created_by')
+    actions = ['convert_to_behavior']
+
+    def convert_to_behavior(self, request, queryset):
+        """Converts the Action into a Behavior. The goals that were associated
+        with the Action's Parent behavior and now associated with the Behavior
+        created from the action."""
+
+        try:
+            with transaction.atomic():
+                num_actions = queryset.count()
+                for action in queryset:
+                    # get the parent behavior's list of goals
+                    goals = list(action.behavior.goals.all())
+
+                    # create the new behavior
+                    behavior = models.Behavior.objects.create(
+                        title=action.title,
+                        title_slug=action.title_slug,
+                        source_link=action.source_link,
+                        source_notes=action.source_notes,
+                        notes=action.notes,
+                        more_info=action.more_info,
+                        description=action.description,
+                        case=action.case,
+                        outcome=action.outcome,
+                        external_resource=action.external_resource,
+                        default_trigger=action.default_trigger,
+                        notification_text=action.notification_text,
+                        icon=action.icon,
+                        image=action.image,
+                        state=action.state,
+                        created_by=request.user,
+                        updated_by=request.user,
+                    )
+                    # add in the goals
+                    for g in goals:
+                        behavior.goals.add(g)
+                    behavior.save()
+
+                    # delete the action
+                    action.delete()
+            msg = "Converted {0} Actions into Behaviors".format(num_actions)
+            self.message_user(request, msg)
+        except IntegrityError:
+            msg = (
+                "There was an error converting Actions. All changes have been "
+                "rolled back."
+            )
+            self.message_user(request, msg, level=ERROR)
+
 admin.site.register(models.Action, ActionAdmin)
 
 
