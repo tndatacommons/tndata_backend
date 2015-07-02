@@ -721,6 +721,7 @@ class TestCategoryProgress(TestCase):
         # create a goal and a fake GoalProgress
         cls.goal = Goal.objects.create(title="G", description="G.")
         cls.goal.categories.add(cls.category)
+        cls.ug = UserGoal.objects.create(user=cls.user, goal=cls.goal)
         cls.gp = GoalProgress.objects.create(
             user=cls.user,
             goal=cls.goal,
@@ -730,7 +731,8 @@ class TestCategoryProgress(TestCase):
         )
 
         # Create a CategoryProgress by generating the scores.
-        cls.cp = CategoryProgress.objects.generate_scores(cls.user).latest()
+        progress = CategoryProgress.objects.generate_scores(cls.user)
+        cls.cp = progress.latest()
 
     def test_expected_values(self):
         """Ensure the score components contain the expected values."""
