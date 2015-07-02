@@ -141,6 +141,7 @@ class TestCategoryForm(TestCase):
         form = CategoryForm()
         fields = sorted([
             'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
+            'secondary_color',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -152,6 +153,7 @@ class TestCategoryForm(TestCase):
             'icon': '',
             'image': '',
             'color': '#eee',
+            'secondary_color': '',
             'notes': '',
         }
         form = CategoryForm(data)
@@ -181,7 +183,7 @@ class TestGoalForm(TestCase):
     def test_unbound(self):
         form = GoalForm()
         fields = sorted([
-            'categories', 'title', 'description', 'icon', 'notes',
+            'categories', 'title', 'description', 'icon', 'more_info', 'notes',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -193,6 +195,7 @@ class TestGoalForm(TestCase):
             'description': 'asdf',
             'icon': '',
             'notes': '',
+            'more_info': '',
         }
         form = GoalForm(data)
         self.assertTrue(form.is_valid())
