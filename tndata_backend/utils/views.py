@@ -66,7 +66,11 @@ class SetNewPasswordView(FormView):
 
     def form_valid(self, form):
         # Update the user's password an re-enable their account
-        email = ResetToken.get_email(self.request) or self.request.user.email
+        email = ResetToken.get_email(self.request)
+        if email is None and self.request.user.is_authenticated():
+            email = self.request.user.email
+        else:
+            return redirect(reverse_lazy('utils:password_reset'))
 
         u = get_user_model().objects.get(email=email)
         u.set_password(form.cleaned_data['password'])
