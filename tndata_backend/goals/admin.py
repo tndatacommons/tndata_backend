@@ -88,8 +88,8 @@ admin.site.register(models.Trigger, TriggerAdmin)
 
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'num_actions', 'in_categories', 'in_goals',
-        'get_absolute_icon', 'get_absolute_image',
+        'title', 'state', 'num_actions', 'selected_by_users', 'in_categories',
+        'in_goals', 'get_absolute_icon', 'get_absolute_image',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = [
@@ -101,6 +101,9 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
     actions = ['convert_to_goal']
+
+    def selected_by_users(self, obj):
+        return models.UserBehavior.objects.filter(behavior=obj).count()
 
     def num_actions(self, obj):
         return obj.action_set.count()
@@ -158,7 +161,7 @@ admin.site.register(models.Behavior, BehaviorAdmin)
 
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'behavior', 'sequence_order',
+        'title', 'state', 'selected_by_users', 'behavior', 'sequence_order',
         'get_absolute_icon', 'get_absolute_image',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
@@ -170,6 +173,9 @@ class ActionAdmin(ContentWorkflowAdmin):
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('behavior', 'updated_by', 'created_by')
     actions = ['convert_to_behavior']
+
+    def selected_by_users(self, obj):
+        return models.UserAction.objects.filter(action=obj).count()
 
     def convert_to_behavior(self, request, queryset):
         """Converts the Action into a Behavior. The goals that were associated
