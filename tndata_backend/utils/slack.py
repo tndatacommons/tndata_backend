@@ -24,3 +24,23 @@ def post_message(channel, message):
             message,
             username=settings.SLACK_USERNAME
         )
+
+
+def log_message(gcm_message, event, tfmt="%Y-%m-%d %H:%I:%S%z"):
+    """Log some details about a GCM Message.  This is some
+    temporary code to let me track the lifespace of messages
+    for a specific user."""
+
+    if gcm_message.user.email == "brad@brad.tips":
+        message = (
+            "{event}\nID: {id}\nCreated: {created}\n"
+            "Deliver On: {deliver}\nTitle: {title}\n"
+        )
+        message = message.format(
+            event=event,
+            id=gcm_message.message_id,
+            created=gcm_message.created_on.strftime(tfmt),
+            deliver=gcm_message.deliver_on.strftime(tfmt),
+            title=gcm_message.title
+        )
+        post_message("#tech", message)

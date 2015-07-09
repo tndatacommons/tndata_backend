@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
+from utils import slack
 
 
 logger = logging.getLogger("loggly_logs")
@@ -34,6 +35,7 @@ class Command(BaseCommand):
             )
             if m is not None:
                 self._messages_created += 1
+                slack.log_message(m, "Behavior Message Created")
             else:
                 msg = "Failed to create Behavior Message for {0}".format(user)
                 logger.warning(msg)
@@ -57,6 +59,7 @@ class Command(BaseCommand):
                 )
                 if m is not None:
                     self._messages_created += 1
+                    slack.log_message(m, "Message Created")
                 else:
                     msg = "Failed to create message for {0}/{1}-{2}".format(
                         user, obj.__class__.__name__, obj.id
