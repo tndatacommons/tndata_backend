@@ -234,7 +234,7 @@ admin.site.register(models.Action, ActionAdmin)
 
 class UserCategoryAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user', 'user_email', 'user_first', 'user_last', 'category', 'created_on'
+        'user_email', 'user_first', 'user_last', 'user', 'category', 'created_on'
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -247,7 +247,7 @@ admin.site.register(models.UserCategory, UserCategoryAdmin)
 
 class UserGoalAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user', 'user_email', 'user_first', 'user_last', 'goal', 'created_on'
+        'user_email', 'user_first', 'user_last', 'user', 'goal', 'created_on'
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -260,7 +260,7 @@ admin.site.register(models.UserGoal, UserGoalAdmin)
 
 class UserBehaviorAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user', 'user_email', 'user_first', 'user_last', 'behavior', 'created_on'
+        'user_email', 'user_first', 'user_last', 'user', 'behavior', 'created_on'
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -273,7 +273,7 @@ admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user', 'user_email', 'user_first', 'user_last', 'action', 'created_on'
+        'user_email', 'user_first', 'user_last', 'user', 'action', 'created_on'
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
