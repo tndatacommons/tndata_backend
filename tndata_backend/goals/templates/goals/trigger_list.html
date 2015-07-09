@@ -10,6 +10,7 @@
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Triggers</h2>
+
       <table class="object-list">
       <thead>
       <tr>
@@ -17,6 +18,7 @@
         <th>Type</th>
         <th>Time</th>
         <th>Recurrence</th>
+        <th>Next</th>
         <th>Num Behaviors</th>
         <th>Num Actions</th>
       </tr>
@@ -30,6 +32,7 @@
           <td>{{ trigger.get_trigger_type_display }}</td>
           <td>{{ trigger.time|default:"-" }}</td>
           <td>{{ trigger.recurrences_as_text }}</td>
+          <td>{{ trigger.next }}</td>
           <td>{{ trigger.behavior_set.count }}</td>
           <td>{{ trigger.action_set.count }}</td>
         </tr>

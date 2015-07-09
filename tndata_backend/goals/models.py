@@ -422,9 +422,12 @@ class Trigger(URLMixin, models.Model):
             return result
         return ''
 
-    def _combine(self, a_date=None, a_time=None, tz=timezone.utc):
+    def _combine(self, a_date=None, a_time=None, tz=None):
         """Combine a date & a time into an tz-aware datetime with the given
         timezone. If the date is None, the current date (utc) will be used."""
+        if tz is None:
+            tz = timezone.utc
+
         if a_date is None:
             a_date = timezone.now()
         combined = datetime.combine(a_date, a_time)
@@ -432,13 +435,18 @@ class Trigger(URLMixin, models.Model):
             combined = timezone.make_aware(combined, timezone=tz)
         return combined
 
-    def next(self):
-        # NOTE: It appears that the date used is the system date/time. not utc.
-        # Get the next occurance of this trigger.
+    def next(self, tz=None):
+        if tz is None and self.user is not None:
+            tz = pytz.timezone(self.user.userprofile.timezone)
+
         if self.trigger_type == "time" and self.recurrences:
             todays_occurance = timezone.now()
+            # See if we need to convert this to local time.
+            if tz is not None:
+                todays_occurance = timezone.localtime(todays_occurance, tz)
+
             if self.time:
-                todays_occurance = self._combine(todays_occurance, self.time)
+                todays_occurance = self._combine(todays_occurance, self.time, tz)
             return self.recurrences.after(
                 todays_occurance,
                 dtstart=todays_occurance,
