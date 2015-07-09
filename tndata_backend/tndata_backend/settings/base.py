@@ -74,6 +74,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'utils.middleware.TimezoneMiddleware',
 )
 
 ROOT_URLCONF = 'tndata_backend.urls'
@@ -92,6 +93,15 @@ DATABASES = {
     }
 }
 
+# Caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
+
 # django.contrib.auth settings.
 LOGIN_URL = 'login'  # Named url patter for the built-in auth
 LOGOUT_URL = 'logout'
@@ -101,7 +111,13 @@ LOGIN_REDIRECT_URL = '/'
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'America/Chicago'  # default was UTC
+TIME_ZONE = 'UTC'
+TIME_FORMAT = "g:ia e"  # 5:30pm CDT
+DATE_FORMAT = "N j, Y"  # Jan 3, 2015
+DATETIME_FORMAT = "N j, Y g:iaO e"  # Jan. 3, 2015 5:30pm+200 CDT
+SHORT_DATE_FORMAT = "m/d/Y"  # 01/03/2015
+SHORT_DATETIME_FORMAT = "H:iO"  # 17:30+200
+
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
