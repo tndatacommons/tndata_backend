@@ -1,0 +1,27 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+
+<h1>Your Account / Profile</h1>
+
+<form data-persist="garlic" action="{{ profile.get_update_url }}" method="post">
+{% csrf_token %}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <fieldset>
+      <legend>Personal Details</legend>
+      {% if user_form.errors %}{{ user_form.errors }}{% endif %}
+      {{ user_form }}
+    </fieldset>
+    <fieldset>
+      <legend>Profile</legend>
+      {% if form.errors %}{{ form.errors }}{% endif %}
+      {{ form }}
+    </fieldset>
+
+    <hr/>
+    <p><button type="submit" class="button">Update Profile</button></p>
+  </div>
+</div>
+</form>
+{% endblock %}
