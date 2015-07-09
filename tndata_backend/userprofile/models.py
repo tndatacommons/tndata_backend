@@ -1,5 +1,8 @@
+import pytz
+
 from collections import defaultdict
 from django.conf import settings
+from django.core.urlresolvers import reverse_lazy
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models import ObjectDoesNotExist
@@ -22,6 +25,13 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL,
         help_text="The user to whom this profile belongs"
     )
+    timezone = models.CharField(
+        max_length=64,
+        default="America/Chicago",
+        blank=True,
+        choices=[(tz, tz) for tz in pytz.common_timezones]
+    )
+
     # TODO: REMOVE the following profile-like fields; we get those from surveys.
     birthdate = models.DateField(blank=True, null=True, db_index=True)
     race = models.CharField(max_length=128, blank=True, db_index=True)
@@ -49,6 +59,12 @@ class UserProfile(models.Model):
         order_with_respect_to = "user"
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
+
+    def get_absolute_url(self):
+        return reverse_lazy("userprofile:detail", args=[self.pk])
+
+    def get_update_url(self):
+        return reverse_lazy("userprofile:update", args=[self.pk])
 
     def _response(self, question):
         m = {
