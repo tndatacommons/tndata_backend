@@ -23,7 +23,7 @@ class TestActionForm(TestCase):
         form = ActionForm()
         fields = sorted([
             'sequence_order', 'behavior', 'title', 'description',
-            'more_info', 'external_resource', 'default_trigger',
+            'more_info', 'external_resource', 'default_trigger', 'icon',
             'notification_text', 'source_link', 'source_notes', 'notes',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
