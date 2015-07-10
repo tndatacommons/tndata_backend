@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -109,12 +109,21 @@ class UserViewSet(viewsets.ModelViewSet):
         return resp
 
 
-class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
-    """This defines methods for viewing a User's _Profile_. User Profiles are
-    created automatically after a user account is created.
+class UserProfileViewSet(mixins.ListModelMixin,
+                         mixins.RetrieveModelMixin,
+                         mixins.UpdateModelMixin,
+                         viewsets.GenericViewSet):
+    """This defines methods for viewing and updating a User's _Profile_. User
+    Profiles are created automatically after a user account is created.
 
-    This endpoint is read-only, requires authorization, and requests must
-    include an Auth Token.
+    ## Updating
+
+    Currently the only portion of a UserProfile that can be updated is the
+    `timezone`. To set a user's timezone, send a PUT request to the
+    UserProfile's detail endpoint, `/api/userprofiles/{userprofile_id}/`,
+    including the string for the desired timezone.
+
+        {'timezone': 'America/Chicago'}
 
     ## Retrieving a User Profile
 
@@ -156,6 +165,15 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
             q['response_url'] = self.request.build_absolute_uri(q['response_url'])
             q['question_url'] = self.request.build_absolute_uri(q['question_url'])
         return resp
+
+    def update(self, request, *args, **kwargs):
+        """Allow setting timezone.
+
+        * timezone: A timezone string, e.g. "America/Chicago"
+
+        """
+        request.data['user'] = request.user.id
+        return super(UserProfileViewSet, self).update(request, *args, **kwargs)
 
 
 class ObtainAuthorization(ObtainAuthToken):

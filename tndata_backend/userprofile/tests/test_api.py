@@ -255,15 +255,18 @@ class TestUserProfilesAPI(APITestCase):
         response = self.client.post(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_put_userprofile_detail_not_allowed(self):
-        """Ensure users cannot PUT to this endpoint."""
+    def test_put_userprofile_detail(self):
+        """Test updating userprofiles (e.g. timezones)"""
         url = reverse('userprofile-detail', args=[self.p.id])
-        response = self.client.put(url, {'race': "Don't ask"})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        data = {'timezone': "America/New_York"}
 
-        # Even when authenticated
+        # Not without authentication
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # OK when authenticated
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.put(url, {'birthdate': '1900-01-31'})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

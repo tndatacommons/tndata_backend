@@ -18,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     username = serializers.CharField(required=False)
+    timezone = serializers.ReadOnlyField(source='userprofile.timezone')
     goals = UserGoalSerializer(many=True, source='usergoal_set', read_only=True)
     behaviors = UserBehaviorSerializer(
         many=True,
@@ -41,7 +42,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
-            "full_name", 'date_joined', 'userprofile_id', "password",
+            "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             "goals", "behaviors", "actions", "categories", 'token',
         )
         read_only_fields = ("id", "date_joined", )
@@ -101,7 +102,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.UserProfile
-        fields = ('id', 'user', 'bio')
+        fields = ('id', 'user', 'timezone', 'bio')
 
 
 class AuthTokenSerializer(serializers.Serializer):
