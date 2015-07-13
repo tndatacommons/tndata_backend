@@ -73,8 +73,8 @@ admin.site.register(models.Goal, GoalAdmin)
 
 class TriggerAdmin(UserRelatedModelAdmin):
     list_display = (
-        'name', 'trigger_type', 'time', 'trigger_date', 'next',
-        'serialized_recurrences', 'recurrences_as_text', 'location', 'user',
+        'combined', 'email', 'trigger_type', 'next', 'serialized_recurrences',
+        'location',
     )
     prepopulated_fields = {"name_slug": ("name", )}
     search_fields = [
@@ -82,6 +82,14 @@ class TriggerAdmin(UserRelatedModelAdmin):
         'name', 'location',
     ]
     raw_id_fields = ('user', )
+
+    def email(self, obj):
+        if obj.user:
+            return obj.user.email
+        return ''
+
+    def combined(self, obj):
+        return str(obj)
 
 admin.site.register(models.Trigger, TriggerAdmin)
 
