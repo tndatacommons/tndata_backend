@@ -1,7 +1,9 @@
 import logging
+import pytz
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
@@ -20,9 +22,24 @@ class Command(BaseCommand):
         self._messages_created = 0
         self._behavior_trigger = Trigger.objects.get_default_behavior_trigger()
 
-    def create_behavior_message(self, user):
-        """We create a single notification for ALL of a user's selected Behaviors."""
+    def _to_localtime(self, t, user):
+        """given a time, convert it to the user's localtime."""
+        if user.userprofile.timezone:
+            tz = pytz.timezone(user.userprofile.timzone)
+            t = timezone.make_naive(t)
+            t = timezone.make_aware(t, timezone=tz)
+        return t
 
+    def _get_behavior_trigger_localtime(self, user):
+        # We need to convert this into the user's local timzone.
+        # To do that, we make it naive, then make it aware using the user's
+        # timezone.
+        t = self._behavior_trigger.next()
+        t = self._to_localtime(t, user)
+        return t
+
+    def create_behavior_message(self, user):
+        """Create a single notification for ALL of a user's selected Behaviors."""
         # TODO: Give users a way to specify a single, priority (behavior)
         # custom reminder instead of using the default.
         try:
@@ -31,7 +48,7 @@ class Command(BaseCommand):
                 user,
                 DEFAULTS['DEFAULT_TITLE'],
                 DEFAULTS['DEFAULT_TEXT'],
-                self._behavior_trigger.next(),
+                self._get_behavior_trigger_localtime(user)
             )
             if m is not None:
                 self._messages_created += 1
@@ -98,7 +115,7 @@ class Command(BaseCommand):
                 ua.action,
                 ua.action.notification_title,
                 ua.action.notification_text,
-                ua.action.default_trigger.next()
+                self._to_localtime(ua.action.default_trigger.next(), ua.user)
             )
 
         # Finish with a confirmation message

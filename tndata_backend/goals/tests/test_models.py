@@ -246,7 +246,7 @@ class TestTrigger(TestCase):
         )
 
     def test__str__(self):
-        expected = "Test Trigger"
+        expected = "Test Trigger  12:34 weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
         actual = "{}".format(self.trigger)
         self.assertEqual(expected, actual)
 
