@@ -25,13 +25,13 @@ class Command(BaseCommand):
     def _to_localtime(self, t, user):
         """given a time, convert it to the user's localtime."""
         if user.userprofile.timezone:
-            tz = pytz.timezone(user.userprofile.timzone)
+            tz = pytz.timezone(user.userprofile.timezone)
             t = timezone.make_naive(t)
             t = timezone.make_aware(t, timezone=tz)
         return t
 
     def _get_behavior_trigger_localtime(self, user):
-        # We need to convert this into the user's local timzone.
+        # We need to convert this into the user's local timezone.
         # To do that, we make it naive, then make it aware using the user's
         # timezone.
         t = self._behavior_trigger.next()
