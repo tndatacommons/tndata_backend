@@ -653,7 +653,7 @@ class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
     urls_icon_field = "icon"
     urls_image_field = "image"
     default_icon = "img/compass-grey.png"
-    notification_title = "I want to..."
+    notification_title = "Time for me to..."
 
     # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
