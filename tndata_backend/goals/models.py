@@ -367,7 +367,11 @@ class Trigger(URLMixin, models.Model):
     )
 
     def __str__(self):
-        return "{0}".format(self.name)
+        df = "%Y-%m-%d"
+        d = '' if self.trigger_date is None else self.trigger_date.strftime(df)
+        t = '' if self.time is None else self.time.strftime("%H:%M")
+        r = self.recurrences_as_text()
+        return "{0} {1} {2} {3}".format(self.name, d, t, r)
 
     class Meta:
         verbose_name = "Trigger"
@@ -377,6 +381,14 @@ class Trigger(URLMixin, models.Model):
             ("decline_trigger", "Can Decline Triggers"),
             ("publish_trigger", "Can Publish Triggers"),
         )
+
+    @property
+    def is_time_trigger(self):
+        return self.trigger_type == "time"
+
+    @property
+    def is_place_trigger(self):
+        return self.trigger_type == "place"
 
     def _localize_time(self):
         """Adds the UTC timezone info to self.time."""
@@ -422,38 +434,50 @@ class Trigger(URLMixin, models.Model):
             return result
         return ''
 
-    def _combine(self, a_date=None, a_time=None, tz=None):
-        """Combine a date & a time into an tz-aware datetime with the given
-        timezone. If the date is None, the current date (utc) will be used."""
+    def _combine(self, a_time, a_date=None, tz=None):
+        """Combine a date & time into an timezone-aware datetime object.
+        If the date is None, the current date (in either utc or the user's
+        local time) will be used."""
         if tz is None:
-            tz = timezone.utc
+            tz = self.get_tz()
 
         if a_date is None:
-            a_date = timezone.now()
-        combined = datetime.combine(a_date, a_time)
-        if timezone.is_naive(combined):
-            combined = timezone.make_aware(combined, timezone=tz)
-        return combined
+            a_date = timezone.now().astimezone(tz)
 
-    def next(self, tz=None):
-        if tz is None and self.user is not None:
-            tz = pytz.timezone(self.user.userprofile.timezone)
+        # Ensure our combined date/time has the appropriate timezone
+        dt = datetime.combine(a_date, a_time)
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt, timezone=tz)
+
+        return dt
+
+    def get_tz(self):
+        """Return a Timezone object for the user; defaults to UTC if no user."""
+        if self.user:
+            return pytz.timezone(self.user.userprofile.timezone)
+        return timezone.utc
+
+    def next(self):
+        """Generate the next date for this Trigger. For recurring triggers,
+        this will return a datetime object for the next time the trigger should
+        fire in the user's local time if, this object is associated with a
+        user; otherwise, the date will be in UTC.
+
+        """
+        tz = self.get_tz()
+        now = timezone.now().astimezone(tz)
 
         if self.trigger_type == "time" and self.recurrences:
-            todays_occurance = timezone.now()
-            # See if we need to convert this to local time.
-            if tz is not None:
-                todays_occurance = timezone.localtime(todays_occurance, tz)
-
+            # Get the current date/time in the user's local time
             if self.time:
-                todays_occurance = self._combine(todays_occurance, self.time, tz)
-            return self.recurrences.after(
-                todays_occurance,
-                dtstart=todays_occurance,
-            )
+                now = self._combine(self.time, now, tz)
+            return self.recurrences.after(now, dtstart=now)
+
         elif self.trigger_type == "time" and self.trigger_date is not None:
-            # Assume self.trigger_date / self.time is UTC
-            return self._combine(self.trigger_date, self.time)
+            # No recurrences.
+            dt = self._combine(self.time, self.trigger_date, tz)
+            if dt > now:  # Return only if a future date.
+                return dt
 
         # No recurrence or not a time-pased Trigger.
         return None
