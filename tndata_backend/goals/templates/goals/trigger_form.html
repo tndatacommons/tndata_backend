@@ -30,15 +30,27 @@
 <h1>{% if object %}Update Trigger: {{object.name}}{% else %}Create Trigger{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
+
+    <div data-alert class="alert-box info">
+      <i class="fa fa-warning"></i> <strong>NOTE on Timzones</strong><br/>
+      Trigger notifications will always be sent in a user's local
+      timezone.
+      <a href="#" class="close">&times;</a>
+    </div>
+
     <form
       data-persist="garlic"
       action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:trigger-create' %}{% endif %}"
       method="post"
       enctype="multipart/form-data">{% csrf_token %}
-    <p>A <strong>Trigger</strong> is the top-level organizational unit for
-    behavior-change Actions, and is the first thing a user will see in the app.</p>
+    <p>A <strong>Trigger</strong> defines when notifications will be sent to
+    the user. Triggers can be associated with Action, and these will be
+    presented to the user as a default time/date/recurrence for an Action,
+    however, users have the ability to define their own Trigger objects
+    (aka reminders).</p>
 
     <p  data-alert class="alert-box info">
+    <i class="fa fa-warning"></i>
     While the form below will let you include or exclude dates in the recurrence,
     the backend only supports recurring rules and included dates
     (not excluded dates).
@@ -51,37 +63,23 @@
     </form>
   </div>
   <div class="large-6 small-12 columns">
-    <p>The structure of our data looks something like the following:</p>
-    <pre class="panel">
-Category
-  - Goal
-  -- Behavior
-  --- Action 1 (contains a Trigger)
-  --- Action 2 (contains a Trigger)
-    </pre>
     <table>
       <caption>Existing Triggers</caption>
       <thead>
         <tr>
           <th>Name</th>
           <th>Type</th>
-          <th>Frequency</th>
-          <th>Date</th>
-          <th>Time</th>
           <th>Location</th>
-          <th>Text</th>
         </tr>
       </thead>
       <tbody>
       {% for trigger in triggers%}
         <tr>
-          <td><a href="{{ trigger.get_absolute_url }}">{{ trigger.name }}</a></td>
+          <td><a href="{{ trigger.get_absolute_url }}">{{ trigger }}</a></td>
           <td>{{ trigger.get_trigger_type_display }}</td>
-          <td>{{ trigger.get_frequency_display }}</td>
-          <td>{{ trigger.date }}</td>
-          <td>{{ trigger.time }}</td>
-          <td>{{ trigger.location }}</td>
-          <td>{{ trigger.text }}</td>
+          <td>
+            {% if trigger.is_time_trigger %}N/A{% else %}
+              {{ trigger.location }}{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

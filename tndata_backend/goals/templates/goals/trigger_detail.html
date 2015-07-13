@@ -1,6 +1,7 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
 {% load goal_filters %}
+{% load tz %}
 
 {% block content %}
   <ul class="breadcrumbs">
@@ -12,12 +13,19 @@
   <div class="row">
     <div class="large-6 small-12 columns">
       <h1>{{ trigger.name }} {% goal_object_controls trigger %}</h1>
+
+      <div data-alert class="alert-box info">
+        <i class="fa fa-warning"></i> <strong>NOTE on Timzones</strong><br/>
+        Trigger notifications will always be sent in a user's local
+        timezone.
+        <a href="#" class="close">&times;</a>
+      </div>
+
       <dl>
         <dt>Type</dt><dd>{{ trigger.get_trigger_type_display}}</dd>
         <dt>Time</dt><dd>{{ trigger.time }}</dd>
         <dt>Recurrences</dt><dd>{{ trigger.recurrences_as_text }}</dd>
         <dt>RRULE data</dt><dd><code>{{ trigger.serialized_recurrences}}</code></dd>
-        <dt>Next Occurance</dt><dd>{{ trigger.next }}</dd>
       </dl>
     </div>
     <div class="large-6 small-12 columns">
