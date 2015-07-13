@@ -130,7 +130,9 @@ class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
     * html_more_info: HTML version of the `more_info` field.
     * external_resource = A link or reference to an outside resource necessary for adoption
     * default_trigger: A trigger/reminder for this behavior. See the
-        (Trigger)[/api/triggers/] endpoint.
+        [Trigger](/api/triggers/) endpoint for more details. The time included
+        in this trigger contains no timezone information, so it's safe to assume
+        it's always in the user's local time.
     * notification_text: Text of the message delivered through notifications
     * icon_url: A URL for an icon associated with the category
     * image_url: (optional) Possibly larger image for this item.
@@ -197,8 +199,10 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
       into the content. Contains markdown.
     * html_more_info: HTML version of the `more_info` field.
     * external_resource = A link or reference to an outside resource necessary for adoption
-    * default_trigger: A trigger/reminder for this behavior. See the
-        (Trigger)[/api/triggers/] endpoint.
+    * default_trigger: A trigger/reminder for this action. See the
+        [Trigger](/api/triggers/) endpoint for more details. The time included
+        in this trigger contains no timezone information, so it's safe to assume
+        it's always in the user's local time.
     * notification_text: Text of the message delivered through notifications
     * icon_url: A URL for an icon associated with the category
     * image_url: (optional) Possibly larger image for this item.
