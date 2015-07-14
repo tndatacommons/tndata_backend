@@ -181,6 +181,14 @@ class TestUsersAPI(APITestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.data['token'], self.user.auth_token.key)
 
+        # Check for some values
+        self.assertIn('username', response.data)
+        self.assertIn('email', response.data)
+        self.assertIn('user_id', response.data)
+        self.assertIn('userprofile_id', response.data)
+        self.assertIn('first_name', response.data)
+        self.assertIn('last_name', response.data)
+
     def test_auth_token_retrieval_with_email(self):
         """Ensure a user can retrieve their auth token by providing their
         email/password."""
@@ -188,6 +196,14 @@ class TestUsersAPI(APITestCase):
         data = {'email': 'me@example.com', 'password': 'secret'}
         response = self.client.post(url, data)
         self.assertEqual(response.data['token'], self.user.auth_token.key)
+
+        # Check for some values
+        self.assertIn('username', response.data)
+        self.assertIn('email', response.data)
+        self.assertIn('user_id', response.data)
+        self.assertIn('userprofile_id', response.data)
+        self.assertIn('first_name', response.data)
+        self.assertIn('last_name', response.data)
 
 
 class TestUserProfilesAPI(APITestCase):

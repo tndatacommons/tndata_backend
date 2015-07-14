@@ -177,12 +177,13 @@ class UserProfileViewSet(mixins.ListModelMixin,
 
 
 class ObtainAuthorization(ObtainAuthToken):
-    """Custom Authorization view that, in addition to the user's auth token (default
-    for the superclass), returns some additional user information:
+    """Custom Authorization view that, in addition to the user's auth token
+    (default for the superclass), returns some additional user information:
 
     * token
     * username
     * user_id
+    * userprofile_id
     * first_name
     * last_name
     * full_name
@@ -203,6 +204,7 @@ class ObtainAuthorization(ObtainAuthToken):
                 'token': token.key,
                 'username': user.username,
                 'user_id': user.id,
+                'userprofile_id': user.userprofile.id,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'full_name': user.get_full_name(),
