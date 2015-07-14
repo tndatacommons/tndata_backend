@@ -27,7 +27,8 @@ TEMPLATE_DEBUG = False
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
     '.tndata.org', '.tndata.org.', '104.236.244.232',
-    'brad.ngrok.io', 'tndata.ngrok.io',
+    'brad.ngrok.io', 'tndata.ngrok.io',  # TODO: leave in staging (when we
+                                         # have one), but remove from Prod.
 ]
 
 TEMPLATES = [
