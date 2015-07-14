@@ -27,7 +27,7 @@ TEMPLATE_DEBUG = False
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
     '.tndata.org', '.tndata.org.', '104.236.244.232',
-    'brad.ngrok.io',
+    'brad.ngrok.io', 'tndata.ngrok.io',
 ]
 
 TEMPLATES = [
