@@ -13,6 +13,7 @@ import pytz
 from datetime import datetime, timedelta
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import Avg
 from django.db.models.signals import post_delete, post_save
@@ -851,6 +852,32 @@ class UserAction(models.Model):
         return self.action.default_trigger
 
     objects = UserActionManager()
+
+
+@receiver(post_delete, sender=UserAction)
+def remove_action_reminders(sender, instance, using, **kwargs):
+    """If a user deletes one of their UserAction instances, we should also
+    remove the GCMMessage associated with it, so they don't get a
+    notification.
+
+    NOTE: GCMMessages have a generic relationship to the Action
+    """
+    # Remove any custom triggers.
+    # Triggers don't have an explicit relationship to UserActions :(
+    trigger_slug = "custom-trigger-for-useraction-{0}".format(instance.id)
+    Trigger.objects.filter(name_slug=trigger_slug).delete()
+
+    try:
+        from notifications.models import GCMMessage
+        action_type = ContentType.objects.get_for_model(Action)
+        messages = GCMMessage.objects.filter(
+            content_type=action_type,
+            object_id=instance.action.id,
+            user=instance.user
+        )
+        messages.delete()
+    except (ImportError, ContentType.DoesNotExist):
+        pass
 
 
 class UserCategory(models.Model):
