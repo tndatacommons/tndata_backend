@@ -95,7 +95,12 @@ class Command(BaseCommand):
         # Schedule notifications for Behaviors (1 per user) IFF the user has
         # selected any Behaviors.
         User = get_user_model()
-        for user in User.objects.filter(userbehavior__isnull=False).distinct():
+
+        # Only those users with devices, who have not messages scheduled
+        users = User.objects.filter(gcmdevice__isnull=False)
+
+        # Those with UserBehaviors selected
+        for user in users.filter(userbehavior__isnull=False).distinct():
             self.create_behavior_message(user)
 
         # Schedule notifications for UserAction's Custom Trigger
