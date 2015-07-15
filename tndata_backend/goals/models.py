@@ -820,6 +820,29 @@ class UserBehavior(models.Model):
         return self.behavior.goals.filter(id__in=gids)
 
 
+@receiver(post_delete, sender=UserBehavior)
+def remove_behavior_reminders(sender, instance, using, **kwargs):
+    """If a user deletes ALL of their UserBehavior instances, we should also
+    remove the currently-queued GCMMessage for the Behavior/Priority reminder.
+
+    """
+    # NOTE: All behavior reminders use the default trigger, and we're not
+    # actually connecting them to any content types, so that's null.
+
+    if not UserBehavior.objects.filter(user=instance.user).exists():
+        try:
+            from notifications.models import GCMMessage
+            from notifications.settings import DEFAULTS
+            messages = GCMMessage.objects.filter(
+                user=instance.user,
+                content_type=None,
+                title=DEFAULTS['DEFAULT_TITLE']
+            )
+            messages.delete()
+        except (ImportError, ContentType.DoesNotExist):
+            pass
+
+
 class UserAction(models.Model):
     """A Mapping between Users and the Actions they've selected.
 
