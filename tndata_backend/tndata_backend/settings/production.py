@@ -47,3 +47,15 @@ LOGGING = {
        },
     }
 }
+
+# -----------------------------------------------------------------------------
+# Amazon S3 & django-storages config
+# -----------------------------------------------------------------------------
+
+AWS_STORAGE_BUCKET_NAME = "tndata-production"
+AWS_BUCKET_NAME = AWS_STORAGE_BUCKET_NAME  # for sync_s3
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
+MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+
+# -----------------------------------------------------------------------------
