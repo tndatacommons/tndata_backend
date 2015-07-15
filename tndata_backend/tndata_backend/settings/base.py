@@ -209,6 +209,7 @@ AWS_STORAGE_BUCKET_NAME = "tndata-staging"
 AWS_BUCKET_NAME = AWS_STORAGE_BUCKET_NAME  # for sync_s3
 AWS_ACCESS_KEY_ID = "AKIAIXQUJ3HCC6GMN74Q"
 AWS_SECRET_ACCESS_KEY = "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"
+SYNC_S3_PREFIX = 'media'  # only include our media files when using sync_s3
 
 # Tell django-storages that when coming up with the URL for an item in S3
 # storage, keep it simple - just use this domain plus the path. (If this isn't
