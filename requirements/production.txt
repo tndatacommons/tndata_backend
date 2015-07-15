@@ -20,3 +20,5 @@ django-chosenadmin==0.2.0
 pushjack==1.0.1
 -e git+https://github.com/bradmontgomery/django-recurrence.git@master#egg=recurrence
 pyslack==0.1.3
+boto==2.38.0
+django-storages-redux==1.2.3
