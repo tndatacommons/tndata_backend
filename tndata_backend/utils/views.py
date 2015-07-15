@@ -68,8 +68,10 @@ class SetNewPasswordView(FormView):
         # Update the user's password an re-enable their account
         email = ResetToken.get_email(self.request)
         if email is None and self.request.user.is_authenticated():
+            # No email, but the user is logged in, so use theirs
             email = self.request.user.email
-        else:
+        elif email is None:
+            # Otherwise, we need to ask them again.
             return redirect(reverse_lazy('utils:password_reset'))
 
         u = get_user_model().objects.get(email=email)
@@ -77,7 +79,7 @@ class SetNewPasswordView(FormView):
         u.is_active = True
         u.save()
 
-        return redirect(self.success_url)
+        return redirect(self.get_success_url())
 
 
 class PasswordResetCompleteView(TemplateView):
