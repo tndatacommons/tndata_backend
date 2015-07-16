@@ -12,15 +12,19 @@
 
 {% for field in form %}
   {% if field.name != "notes" %}
-    <div class="row field-row">
-      <div class="small-2 columns{% if field.errors %} error{% endif %}">
-        {{ field.label_tag }}
+    {% if field.is_hidden %}
+      {{ field }}
+    {% else %}
+      <div class="row field-row">
+        <div class="small-2 columns{% if field.errors %} error{% endif %}">
+          {{ field.label_tag }}
+        </div>
+        <div class="small-10 columns{% if field.errors %} error{% endif %}">
+          {{ field }}
+          {% if field.errors %}{{ field.errors }}{% endif %}
+          <span class="helptext">{{ field.help_text }}</span>
+        </div>
       </div>
-      <div class="small-10 columns{% if field.errors %} error{% endif %}">
-        {{ field }}
-        {% if field.errors %}{{ field.errors }}{% endif %}
-        <span class="helptext">{{ field.help_text }}</span>
-      </div>
-    </div>
+    {% endif %}
   {% endif %}
 {% endfor %}
