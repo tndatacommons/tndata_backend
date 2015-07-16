@@ -204,6 +204,9 @@ class URLMixin:
     * (required) urls_app_namespace: The url namespace used for the app
     * (required) urls_model_name: The model name used for the url
     * urls_slug_field: The unique slug used for the model. Default is `title_slug`
+    * urls_fields: A list of field names used to reverse the model's urls. This
+      takes precendence over `urls_slug_field`, and is used when a Model requires
+      more than one field for it's urls: e.g. [`pk`, `title_slug`]
     * urls_icon_field: An icon field for the model. Defaut is None.
     * urls_image_field: An image field for the model. Defaut is None.
 
@@ -224,12 +227,21 @@ class URLMixin:
     urls_app_namespace = None  # e.g. 'goals'
     urls_model_name = None  # e.g. 'category'
     urls_slug_field = "title_slug"  # e.g. 'name_slug', if different.
+    urls_fields = None  # Allow mutiple fields for urls e.g. [pk, title_slug]
     urls_icon_field = None
     urls_image_field = None
 
     # Support for default icons/images as a static file
     default_icon = None
     default_image = None
+
+    def _url_args(self):
+        if self.urls_fields:
+            return [
+                getattr(self, field, None) for field in self.urls_fields
+            ]
+        else:
+            return [self._slug_field()]
 
     def _slug_field(self):
         return getattr(self, self.urls_slug_field, None)
@@ -245,19 +257,19 @@ class URLMixin:
         )
 
     def get_absolute_url(self):
-        return reverse(self._view('detail'), args=[self._slug_field()])
+        return reverse(self._view('detail'), args=self._url_args())
 
     def get_publish_url(self):
-        return reverse(self._view('publish'), args=[self._slug_field()])
+        return reverse(self._view('publish'), args=self._url_args())
 
     def get_update_url(self):
-        return reverse(self._view('update'), args=[self._slug_field()])
+        return reverse(self._view('update'), args=self._url_args())
 
     def get_delete_url(self):
-        return reverse(self._view('delete'), args=[self._slug_field()])
+        return reverse(self._view('delete'), args=self._url_args())
 
     def get_duplicate_url(self):
-        return reverse(self._view('duplicate'), args=[self._slug_field()])
+        return reverse(self._view('duplicate'), args=self._url_args())
 
     def get_absolute_icon(self):
         icon_field = getattr(self, self.urls_icon_field, None)
