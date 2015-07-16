@@ -18,7 +18,14 @@
   </li>
 </ul>
 
-<h1>{% if object %}Update Action: {{object }}{% else %}Create Action{% endif %}</h1>
+<h1>
+{% if object %}
+  Update {{acton_type|title}} Action: {{object }}
+{% else %}
+  Create {{action_type|title}} Action
+{% endif %}
+</h1>
+
 <form
   data-persist="garlic"
   action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
