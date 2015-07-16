@@ -25,6 +25,12 @@
             <a href="{{ icon }}" target="_blank">
             <img src="{{ icon }}" alt="{{ category }} icon" />
             </a>
+            <p class="panel callout">
+              {% if category.icon %}
+              Image details: {{ category.icon|details }}<br/>
+              {% endif %}
+              Location: <small><a href="{{ icon }}">{{ icon }}</a></small>
+            </p>
           {% else %}
             <em>No icon available</em>
           {% endif %}
@@ -36,6 +42,10 @@
             <a href="{{ image }}" target="_blank">
             <img src="{{ image }}" alt="{{ category }} image" />
             </a>
+            <p class="panel callout">
+              Image details: {{ category.image|details }}<br/>
+              Location: <small><a href="{{ image }}">{{ image }}</a></small>
+            </p>
           {% else %}
             <em>No image available</em>
           {% endif %}

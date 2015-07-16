@@ -26,6 +26,12 @@
             <a href="{{ icon }}" target="_blank">
             <img src="{{ icon }}" alt="{{ behavior }} icon" />
             </a>
+            <p class="panel callout">
+              {% if behavior.icon %}
+              Image details: {{ behavior.icon|details }}<br/>
+              {% endif %}
+              Location: <small><a href="{{ icon }}">{{ icon }}</a></small>
+            </p>
           {% else %}
             <em>No icon available</em>
           {% endif %}

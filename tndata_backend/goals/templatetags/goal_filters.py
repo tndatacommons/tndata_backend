@@ -1,5 +1,5 @@
 from django import template
-from django.template.defaultfilters import stringfilter
+from django.template.defaultfilters import filesizeformat, stringfilter
 from django.utils.safestring import mark_safe
 
 register = template.Library()
@@ -25,3 +25,23 @@ def label_state(object_state):
     title = " ".join(object_state.title().split("-"))
     label = state_labels.get(object_state, "info")
     return mark_safe(markup.format(label, title))
+
+
+@register.filter("details", is_safe=True)
+def image_details(img_file):
+    """Display some details for a given ImageFieldFile object. This should
+    print the images width x height and filesize (friendly-formatted).
+
+    Usage:  <p>Image Info: {{ category.icon|details }}</p>
+    Result: <p>Image Info: 800x600, 45Kb</p>
+
+    """
+    try:
+        w = img_file.width
+        h = img_file.height
+        size = filesizeformat(img_file.size)
+    except (ValueError, AttributeError):
+        w = ""
+        h = ""
+        size = ""
+    return mark_safe("{0}x{1}, {2}".format(w, h, size))

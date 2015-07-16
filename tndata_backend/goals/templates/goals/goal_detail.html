@@ -24,6 +24,10 @@
           <a href="{{ icon }}" target="_blank">
           <img src="{{ icon }}" alt="{{ goal }} icon" />
           </a>
+          <p class="panel callout">
+            Image details: {{ goal.icon|details }}<br/>
+            Location: <small><a href="{{ icon }}">{{ icon }}</a></small>
+          </p>
         {% else %}
           <em>No icon available</em>
         {% endif %}
