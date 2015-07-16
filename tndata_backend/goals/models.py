@@ -504,13 +504,6 @@ class BaseBehavior(ModifiedMixin, models.Model):
     `Behavior` and `Action` models.
 
     """
-    title = models.CharField(
-        max_length=256,
-        db_index=True,
-        unique=True,
-        help_text="A unique title for this item (50 characters)"
-    )
-    title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
     source_link = models.URLField(
         max_length=256,
         blank=True,
@@ -632,6 +625,13 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
     urls_image_field = "image"
 
     # Data Fields
+    title = models.CharField(
+        max_length=256,
+        db_index=True,
+        unique=True,
+        help_text="A unique title for this Behavior (50 characters)"
+    )
+    title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
     goals = models.ManyToManyField(
         Goal,
         blank=True,
@@ -673,7 +673,7 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
     objects = WorkflowManager()
 
 
-class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
+class Action(URLMixin, BaseBehavior):
     """Actions are things that people do, and are typically the bit of
     information to which a user will set a reminder (e.g. a Trigger).
 
@@ -711,6 +711,13 @@ class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
     notification_title = "Time for me to..."
 
     # Data Fields
+    title = models.CharField(
+        max_length=256,
+        db_index=True,
+        help_text="A short (50 character) title for this Action"
+    )
+    title_slug = models.SlugField(max_length=256, db_index=True)
+
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     action_type = models.CharField(
         max_length="32",
