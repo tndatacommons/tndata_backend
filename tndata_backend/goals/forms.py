@@ -14,7 +14,83 @@ from . utils import read_uploaded_csv
 class ActionForm(forms.ModelForm):
     """A Form for creating/updating actions. This form orders related behaviors
     alphabetically."""
-    behavior = forms.ModelChoiceField(queryset=Behavior.objects.all().order_by("title"))
+
+    # Initial content for differnt types of Actions
+    INITIAL = {
+        Action.TINY: {
+            'title': 'Try a tiny version',
+            'notification_text': 'Try a tiny version',
+            'description': (
+                "Large tasks can seem intimidating and difficult. Instead of "
+                "trying to tackle them all at once, try starting with a "
+                "“tiny action.”"
+            ),
+            'more_info': (
+                "A tiny action is simply a tinier version of your target task. "
+                "Tiny versions will make you feel successful and motivated to "
+                "take on your larger goal. So try whittling your goal down to "
+                "its smallest parts, and start celebrating tiny victories on "
+                "your path to achievement!"
+            ),
+            'action_type': Action.TINY,
+        },
+        Action.STARTER: {
+            'title': 'Try a starter step',
+            'notification_text': 'Try a starter step',
+            'description': (
+                "Sometimes we let the little things prevent us from starting "
+                "the tasks we want to do. Make activities more manageable by "
+                "taking a “starter step.”"
+            ),
+            'more_info': (
+                "A starter step is the first small action in a sequence of "
+                "actions that lead to your ultimate goal. When you perform "
+                "these small steps, you make your task more manageable and "
+                "prepare yourself for success."
+            ),
+            'action_type': Action.STARTER,
+        },
+        Action.RESOURCE: {
+            'title': 'Try a helpful tool',
+            'notification_text': 'Try a helpful tool',
+            'description': (
+                "We’ve picked some of the best tools and resources to help "
+                "you succeed. Give them a try."
+            ),
+            'action_type': Action.RESOURCE,
+        },
+        Action.NOW: {
+            'title': 'Do it now',
+            'notification_text': 'Do it now',
+            'description': (
+                "When it comes to achieving your goals, there’s no time like "
+                "the present. Consider performing this action right now, while "
+                "it’s fresh on your mind."
+            ),
+            'action_type': Action.NOW,
+        },
+        Action.LATER: {
+            'title': 'Do it later',
+            'notification_text': 'Do it later',
+            'description': (
+                "Life is demanding. If you can’t do this right now, don’t "
+                "worry! Set a reminder to do it later."
+            ),
+            'action_type': Action.LATER,
+        },
+        Action.CUSTOM: {
+            'action_type': Action.CUSTOM,
+        },
+    }
+
+    behavior = forms.ModelChoiceField(
+        queryset=Behavior.objects.all().order_by("title")
+    )
+    # Note: this field's value should always get in the initial data
+    action_type = forms.ChoiceField(
+        choices=Action.ACTION_TYPE_CHOICES,
+        widget=forms.HiddenInput()
+    )
 
     class Meta:
         model = Action
@@ -22,7 +98,7 @@ class ActionForm(forms.ModelForm):
             'sequence_order', 'behavior', 'title', 'description',
             'more_info', 'external_resource', 'default_trigger',
             'notification_text', 'source_link', 'source_notes', 'notes',
-            'icon',
+            'icon', 'action_type',
         ]
         labels = {"notes": "Scratchpad"}
 
