@@ -36,12 +36,16 @@ def image_details(img_file):
     Result: <p>Image Info: 800x600, 45Kb</p>
 
     """
+    w = ""
+    h = ""
+    size = ""
+
     try:
-        w = img_file.width
-        h = img_file.height
-        size = filesizeformat(img_file.size)
-    except (ValueError, AttributeError):
-        w = ""
-        h = ""
-        size = ""
+        # Make sure we have a file
+        if img_file:
+            w = img_file.width
+            h = img_file.height
+            size = filesizeformat(img_file.size)
+    except (OSError, ValueError, AttributeError):
+        pass
     return mark_safe("{0}x{1}, {2}".format(w, h, size))
