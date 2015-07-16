@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core.urlresolvers import reverse_lazy
 from django.db import models
 from django.db.models import Avg
 from django.db.models.signals import post_delete, post_save
@@ -545,7 +546,9 @@ class BaseBehavior(ModifiedMixin, models.Model):
     external_resource = models.CharField(
         blank=True,
         max_length=256,
-        help_text="A link or reference to an outside resource necessary for adoption"
+        help_text=("An external resource is something that will help a user "
+                   "accomplish a task. It could be a phone number, link to a "
+                   "website, link to another app, or GPS coordinates. ")
     )
     default_trigger = models.ForeignKey(
         Trigger,
@@ -671,6 +674,33 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
 
 
 class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
+    """Actions are things that people do, and are typically the bit of
+    information to which a user will set a reminder (e.g. a Trigger).
+
+    Actions can be of different types, i.e.:
+
+    * Starter Step
+    * Tiny Version
+    * Resource
+    * Right now
+    * Custom
+
+    """
+    STARTER = "starter"
+    TINY = "tiny"
+    RESOURCE = "resource"
+    NOW = "now"
+    LATER = "later"
+    CUSTOM = "custom"
+
+    ACTION_TYPE_CHOICES = (
+        (STARTER, 'Starter Step'),
+        (TINY, 'Tiny Version'),
+        (RESOURCE, 'Resource'),
+        (NOW, 'Do it now'),
+        (LATER, 'Do it later'),
+        (CUSTOM, 'Custom'),
+    )
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -682,6 +712,12 @@ class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
 
     # Data Fields
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
+    action_type = models.CharField(
+        max_length="32",
+        default=CUSTOM,
+        choices=ACTION_TYPE_CHOICES,
+        db_index=True,
+    )
     sequence_order = models.IntegerField(
         default=0,
         db_index=True,
@@ -697,6 +733,36 @@ class Action(URLMixin, UniqueTitleMixin, BaseBehavior):
         related_name="actions_created",
         null=True
     )
+
+    @classmethod
+    def get_create_starter_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse_lazy("goals:action-create"), cls.STARTER)
+
+    @classmethod
+    def get_create_tiny_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse_lazy("goals:action-create"), cls.TINY)
+
+    @classmethod
+    def get_create_resource_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse_lazy("goals:action-create"), cls.RESOURCE)
+
+    @classmethod
+    def get_create_now_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse_lazy("goals:action-create"), cls.NOW)
+
+    @classmethod
+    def get_create_later_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse_lazy("goals:action-create"), cls.LATER)
+
+    @classmethod
+    def get_create_custom_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse_lazy("goals:action-create"), cls.CUSTOM)
 
     class Meta(BaseBehavior.Meta):
         verbose_name = "Action"
