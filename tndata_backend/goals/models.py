@@ -721,7 +721,7 @@ class Action(URLMixin, BaseBehavior):
 
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     action_type = models.CharField(
-        max_length="32",
+        max_length=32,
         default=CUSTOM,
         choices=ACTION_TYPE_CHOICES,
         db_index=True,
