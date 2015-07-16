@@ -703,6 +703,7 @@ class Action(URLMixin, BaseBehavior):
     )
 
     # URLMixin attributes
+    urls_fields = ['pk', 'title_slug']
     urls_app_namespace = "goals"
     urls_model_name = "action"
     urls_icon_field = "icon"

@@ -420,6 +420,8 @@ class ActionDetailView(ContentViewerMixin, DetailView):
     queryset = Action.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+    pk_url_kwarg = 'pk'
+    query_pk_and_slug = True  # Use pk and slug together to identify object.
 
 
 class ActionCreateView(ContentAuthorMixin, CreatedByView):
@@ -427,11 +429,14 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     form_class = ActionForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+    pk_url_kwarg = 'pk'
+    query_pk_and_slug = True  # Use pk and slug together to identify object.
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
         context['actions'] = Action.objects.all()
         context['behaviors'] = Behavior.objects.all()
+        context['action_type'] = self.action_type
         return context
 
 
@@ -457,12 +462,16 @@ class ActionDuplicateView(ActionCreateView):
 class ActionPublishView(ContentEditorMixin, PublishView):
     model = Action
     slug_field = 'title_slug'
+    pk_url_kwarg = 'pk'
+    query_pk_and_slug = True  # Use pk and slug together to identify object.
 
 
 class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+    pk_url_kwarg = 'pk'
+    query_pk_and_slug = True  # Use pk and slug together to identify object.
     form_class = ActionForm
 
     def get_context_data(self, **kwargs):
@@ -476,4 +485,6 @@ class ActionDeleteView(ContentEditorMixin, DeleteView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+    pk_url_kwarg = 'pk'
+    query_pk_and_slug = True  # Use pk and slug together to identify object.
     success_url = reverse_lazy('goals:index')

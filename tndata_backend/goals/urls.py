@@ -48,27 +48,27 @@ urlpatterns = patterns('',
         name='action-list'
     ),
     url(
-        r'^actions/(?P<title_slug>.+)/publish/$',
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.ActionPublishView.as_view(),
         name='action-publish'
     ),
     url(
-        r'^actions/(?P<title_slug>.+)/update/$',
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
         views.ActionUpdateView.as_view(),
         name='action-update'
     ),
     url(
-        r'^actions/(?P<title_slug>.+)/delete/$',
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/delete/$',
         views.ActionDeleteView.as_view(),
         name='action-delete'
     ),
     url(
-        r'^actions/(?P<title_slug>.+)/duplicate/$',
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate/$',
         views.ActionDuplicateView.as_view(),
         name='action-duplicate'
     ),
     url(
-        r'^actions/(?P<title_slug>.+)/$',
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/$',
         views.ActionDetailView.as_view(),
         name='action-detail'
     ),
