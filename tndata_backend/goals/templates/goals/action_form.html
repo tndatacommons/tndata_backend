@@ -43,7 +43,17 @@
       <h2>Behavior</h2>
       {% for behavior in behaviors %}
         <div class="behaviors" id="behavior-{{behavior.id}}">
-          {{behavior.informal_list|linebreaks}}
+          {% if behavior.description or behavior.informal_list %}
+            {% if behavior.description %}
+              <em>{{behavior.description}}</em>
+            {% endif %}
+            {% if behavior.informal_list %}
+              <hr/><strong>Informal List</strong><br/>
+              {{behavior.informal_list|linebreaks}}
+            {% endif %}
+          {% else %}
+            <em>No description available.</em>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
@@ -88,30 +98,4 @@ Category
   </div>
 </div>
 </form>
-{% endblock %}
-
-{% block bodyjs %}
-  {{ block.super }}
-  <script>
-  var toggle_behavior_details = function(selector) {
-      $("#behavior-info").show();
-      $(".behaviors").hide(); // hide all other behaviors.
-      $(selector).show(); // show the selected one.
-      $("#behavior-info h2").text($("#id_behavior option:selected").text());
-  }
-
-  $(document).ready(function() {
-    $("#id_behavior").change(function() {
-      var selected_id = "#behavior-" + $(this).val();
-      toggle_behavior_details(selected_id);
-    });
-
-    // Show any pre-selected behaviors.
-    var selected_id = $("#id_behavior").val();
-    if(selected_id) {
-      selected_id = "#behavior-" + selected_id;
-      toggle_behavior_details(selected_id);
-    };
-  });
-  </script>
 {% endblock %}
