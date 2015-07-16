@@ -431,6 +431,23 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
     query_pk_and_slug = True  # Use pk and slug together to identify object.
+    action_type = Action.CUSTOM
+
+    def _set_action_type(self, action_type):
+        """Ensure the provided action type is valid."""
+        if action_type in [at[0] for at in Action.ACTION_TYPE_CHOICES]:
+            self.action_type = action_type
+
+    def get_initial(self):
+        data = self.initial.copy()
+        data.update(self.form_class.INITIAL[self.action_type])
+        return data
+
+    def get(self, request, *args, **kwargs):
+        # See if we're creating a specific Action type, and if so,
+        # prepopulate the form with some initial data.
+        self._set_action_type(request.GET.get("actiontype", self.action_type))
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)

@@ -87,9 +87,9 @@ class ActionForm(forms.ModelForm):
         queryset=Behavior.objects.all().order_by("title")
     )
     # Note: this field's value should always get in the initial data
-    action_type = forms.ChoiceField(
-        choices=Action.ACTION_TYPE_CHOICES,
-        widget=forms.HiddenInput()
+    action_type = forms.CharField(
+        max_length=32,
+        widget=forms.HiddenInput(),
     )
 
     class Meta:
