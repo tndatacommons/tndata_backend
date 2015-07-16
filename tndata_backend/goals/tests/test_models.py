@@ -470,6 +470,42 @@ class TestAction(TestCase):
             "/goals/actions/test-action/delete/"
         )
 
+    def test_get_create_starter_action_url(self):
+        self.assertEqual(
+            Action.get_create_starter_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.STARTER)
+        )
+
+    def test_get_create_tiny_action_url(self):
+        self.assertEqual(
+            Action.get_create_tiny_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.TINY)
+        )
+
+    def test_get_create_resource_action_url(self):
+        self.assertEqual(
+            Action.get_create_resource_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.RESOURCE)
+        )
+
+    def test_get_create_now_action_url(self):
+        self.assertEqual(
+            Action.get_create_now_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.NOW)
+        )
+
+    def test_get_create_later_action_url(self):
+        self.assertEqual(
+            Action.get_create_later_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.LATER)
+        )
+
+    def test_get_create_custom_action_url(self):
+        self.assertEqual(
+            Action.get_create_custom_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.CUSTOM)
+        )
+
     def test_default_state(self):
         """Ensure that the default state is 'draft'."""
         self.assertEqual(self.action.state, "draft")
