@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static from staticfiles %}
+{% load goal_tags %}
 
 
 {% block title %}Goals{% endblock %}
@@ -120,7 +121,12 @@ a.ui-datepicker-next { float:right; }
           <li><a href="{% url 'goals:behavior-create' %}">Behavior</a></li>
         {% endif %}
         {% if perms.goals.add_action %}
-          <li><a href="{% url 'goals:action-create' %}">Action</a></li>
+          <li class="has-dropdown">
+            <a href="#">Action</a>
+            <ul class="dropdown">
+              {% action_creation_menu %}
+            </ul>
+          </li>
         {% endif %}
         </ul>
       </li>

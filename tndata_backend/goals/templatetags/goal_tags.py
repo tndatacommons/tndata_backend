@@ -1,6 +1,13 @@
 from django import template
+from goals.models import Action
 from utils.templatetags.util_tags import object_controls
+
 register = template.Library()
+
+
+@register.inclusion_tag("goals/_action_creation_menu_items.html")
+def action_creation_menu():
+    return {'action_model': Action}
 
 
 @register.inclusion_tag("utils/_object_controls.html", takes_context=True)
