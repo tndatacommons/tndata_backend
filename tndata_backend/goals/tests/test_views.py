@@ -1849,6 +1849,7 @@ class TestActionCreateView(TestCaseWithGroups):
             'sequence_order': 1,
             'title': 'New',
             'behavior': cls.behavior.id,
+            'action_type': Action.CUSTOM,
         }
 
     def test_anon_get(self):
@@ -2034,7 +2035,8 @@ class TestActionUpdateView(TestCaseWithGroups):
         cls.payload = {
             'sequence_order': 1,
             'title': 'U',
-            'behavior': cls.behavior.id
+            'behavior': cls.behavior.id,
+            'action_type': Action.CUSTOM,
         }
 
     def setUp(self):

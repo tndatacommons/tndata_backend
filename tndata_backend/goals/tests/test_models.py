@@ -455,19 +455,19 @@ class TestAction(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.action.get_absolute_url(),
-            "/goals/actions/test-action/"
+            "/goals/actions/{0}-test-action/".format(self.action.id)
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.action.get_update_url(),
-            "/goals/actions/test-action/update/"
+            "/goals/actions/{0}-test-action/update/".format(self.action.id)
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.action.get_delete_url(),
-            "/goals/actions/test-action/delete/"
+            "/goals/actions/{0}-test-action/delete/".format(self.action.id)
         )
 
     def test_get_create_starter_action_url(self):

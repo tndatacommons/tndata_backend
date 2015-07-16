@@ -22,7 +22,7 @@ class TestActionForm(TestCase):
     def test_unbound(self):
         form = ActionForm()
         fields = sorted([
-            'sequence_order', 'behavior', 'title', 'description',
+            'sequence_order', 'behavior', 'title', 'description', 'action_type',
             'more_info', 'external_resource', 'default_trigger', 'icon',
             'notification_text', 'source_link', 'source_notes', 'notes',
         ])
@@ -42,13 +42,14 @@ class TestActionForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
+            'action_type': 'custom',
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())
         b.delete()
 
     def test_duplicate_title(self):
-        """Ensure that duplicate titles fail validation."""
+        """Ensure that duplicate titles are OK."""
         b = Behavior.objects.create(title="B")
         a = Action.objects.create(sequence_order=1, behavior=b, title="title")
         data = {
@@ -64,11 +65,10 @@ class TestActionForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
+            'action_type': 'custom',
         }
         form = ActionForm(data)
-        self.assertFalse(form.is_valid())
-        err = {'title': ['Action with this Title already exists.']}
-        self.assertEqual(form.errors, err)
+        self.assertTrue(form.is_valid())
         b.delete()
         a.delete()
 
