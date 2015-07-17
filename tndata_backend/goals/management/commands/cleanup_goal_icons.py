@@ -21,7 +21,7 @@ class Command(BaseCommand):
                 getattr(obj, attr_name).file
 
         except OSError as e:
-            msg = "\n{0}) {1}\nError: {3}\n...deleting".format(obj.id, obj, e)
+            msg = "\n{0}) {1}\nError: {2}\n...deleting".format(obj.id, obj, e)
             self.stdout.write(msg)
 
             # delete the icon & save the object.
