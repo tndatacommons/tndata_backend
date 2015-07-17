@@ -143,7 +143,6 @@ class BehaviorAdmin(ContentWorkflowAdmin):
                         more_info=behavior.more_info,
                         description=behavior.description,
                         outcome=behavior.outcome,
-                        icon=behavior.icon,
                         state=behavior.state,
                         created_by=request.user,
                         updated_by=request.user,
@@ -155,7 +154,10 @@ class BehaviorAdmin(ContentWorkflowAdmin):
 
             # When the goals have been created, delete the set of Behaviors.
             with transaction.atomic():
-                queryset.delete()
+                # Call each item's .delete() method so the post_delete
+                # signal gets sent... which will remove the icon/image
+                for obj in queryset:
+                    obj.delete()
 
             msg = "Converted {0} Behaviors into Goals".format(num_objects)
             self.message_user(request, msg)
@@ -213,8 +215,6 @@ class ActionAdmin(ContentWorkflowAdmin):
                         external_resource=action.external_resource,
                         default_trigger=action.default_trigger,
                         notification_text=action.notification_text,
-                        icon=action.icon,
-                        image=action.image,
                         state=action.state,
                         created_by=request.user,
                         updated_by=request.user,
@@ -226,7 +226,10 @@ class ActionAdmin(ContentWorkflowAdmin):
 
             # Once all behavior's have been created, delete the Actions.
             with transaction.atomic():
-                queryset.delete()
+                # Call each item's .delete() method so the post_delete
+                # signal gets sent... which will remove the icon/image
+                for obj in queryset:
+                    obj.delete()
 
             msg = "Converted {0} Actions into Behaviors".format(num_actions)
             self.message_user(request, msg)
