@@ -27,7 +27,8 @@
 </h1>
 
 <form
-  data-persist="garlic"
+  {# Disable Garlic for custom types, otherwise we have stuff in the wrong place #}
+  {% if action_type == "custom" %}data-persist="garlic"{% endif %}
   action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
   method="post"
   enctype="multipart/form-data">{% csrf_token %}
