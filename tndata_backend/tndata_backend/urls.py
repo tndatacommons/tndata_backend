@@ -34,6 +34,7 @@ from survey.api import (
     RandomQuestionViewSet,
 )
 from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
+from utils import views as utils_views
 
 
 class IndexView(TemplateView):
@@ -104,6 +105,9 @@ urlpatterns = patterns('',
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),
     url(r'^utils/', include('utils.urls', namespace='utils')),
     url(r'^jsi18n/$', javascript_catalog, {'packages': ('recurrences')}),
+    url(r'^403/$', utils_views.FourOhThree.as_view()),
+    url(r'^404/$', utils_views.FourOhFour.as_view()),
+    url(r'^500/$', utils_views.FiveHundred.as_view()),
     url(r'^$', IndexView.as_view())
 )
 

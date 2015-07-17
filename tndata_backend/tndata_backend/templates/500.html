@@ -1,7 +1,12 @@
 {% extends "base_error.html" %}
+{% load static from staticfiles %}
 
 {% block heading_content %}Oops.{% endblock %}
 {% block message_content %}
-  <p>We're sorry, but something went wrong. Our site administrators have
+  <img src="{% static 'img/disapproval-cat.png' %}"
+       style="margin:0px; margin-right: 2em; float:left;">
+
+  <p style="min-height: 200px; padding-top: 50px;">
+  We're sorry, but something went wrong. Our site administrators have
   been notified, and we'll get it corrected as soon as possible.</p>
 {% endblock %}

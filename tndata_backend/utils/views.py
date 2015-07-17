@@ -84,3 +84,15 @@ class SetNewPasswordView(FormView):
 
 class PasswordResetCompleteView(TemplateView):
     template_name = "utils/password_reset_complete.html"
+
+
+class FiveHundred(TemplateView):
+    template_name = "500.html"
+
+
+class FourOhFour(TemplateView):
+    template_name = "404.html"
+
+
+class FourOhThree(TemplateView):
+    template_name = "403.html"
