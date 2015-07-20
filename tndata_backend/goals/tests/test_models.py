@@ -412,6 +412,7 @@ class TestBehavior(TestCase):
 class TestAction(TestCase):
     """Tests for the `Action` model."""
 
+    # TODO: need to include a test case for actions with duplicate titles/slugs
     def setUp(self):
         self.behavior = Behavior.objects.create(
             title='Test Behavior'

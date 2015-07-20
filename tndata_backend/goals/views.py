@@ -482,6 +482,15 @@ class ActionPublishView(ContentEditorMixin, PublishView):
     pk_url_kwarg = 'pk'
     query_pk_and_slug = True  # Use pk and slug together to identify object.
 
+    def get_object(self, kwargs):
+        """Actions may have have duplicates title_slug values, so we need to
+        explicitly construct the lookup values."""
+        params = {
+            self.slug_field: kwargs.get(self.slug_field, None),
+            self.pk_url_kwarg: kwargs.get(self.pk_url_kwarg, None),
+        }
+        return self.model.objects.get(**params)
+
 
 class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     model = Action
