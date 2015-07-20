@@ -901,6 +901,14 @@ class UserBehavior(models.Model):
         gids = self.user.usergoal_set.values_list('goal__id', flat=True)
         return self.behavior.goals.filter(id__in=gids)
 
+    def get_user_actions(self):
+        """Returns a QuerySet of Actions related to this Behavior, but
+        restricts the results to those which the user has selected.
+
+        """
+        uids = self.user.useraction_set.values_list('action_id', flat=True)
+        return self.behavior.action_set.filter(id__in=uids)
+
 
 @receiver(post_delete, sender=UserBehavior)
 def remove_behavior_reminders(sender, instance, using, **kwargs):

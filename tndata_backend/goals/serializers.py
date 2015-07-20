@@ -222,6 +222,11 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    user_actions = SimpleActionField(
+        source="get_user_actions",
+        many=True,
+        read_only=True,
+    )
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
     custom_trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
@@ -232,7 +237,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         model = UserBehavior
         fields = (
             'id', 'user', 'behavior', 'custom_trigger', 'user_goals',
-            'created_on',
+            'user_actions', 'created_on',
         )
         read_only_fields = ("id", "created_on", )
 
