@@ -199,13 +199,18 @@ class UserGoalSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    user_behaviors = SimpleBehaviorField(
+        source="get_user_behaviors",
+        many=True,
+        read_only=True,
+    )
     goal = SimpleGoalField(queryset=Goal.objects.none())
 
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'user_categories', 'created_on',
-            'progress_value',
+            'id', 'user', 'goal', 'user_categories', 'user_behaviors',
+            'created_on', 'progress_value',
         )
         read_only_fields = ("id", "created_on")
 

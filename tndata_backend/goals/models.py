@@ -826,6 +826,14 @@ class UserGoal(models.Model):
         verbose_name = "User Goal"
         verbose_name_plural = "User Goals"
 
+    def get_user_behaviors(self):
+        """Returns a QuerySet of Behaviors related to this Goal, but restricts
+        those behaviors to those which the user has selected.
+
+        """
+        bids = self.user.userbehavior_set.values_list('behavior_id', flat=True)
+        return self.goal.behavior_set.filter(id__in=bids)
+
     def get_user_categories(self):
         """Returns a QuerySet of Categories related to this Goal, but restricts
         those categories to those which the user has selected.
