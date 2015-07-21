@@ -893,6 +893,11 @@ class UserBehavior(models.Model):
         gids = self.user.usergoal_set.values_list('goal__id', flat=True)
         return self.behavior.goals.filter(id__in=gids)
 
+    def get_custom_trigger_name(self):
+        """This should generate a unique name for this object's custom
+        trigger."""
+        return "custom trigger for userbehavior-{0}".format(self.id)
+
 
 @receiver(post_delete, sender=UserBehavior)
 def remove_behavior_reminders(sender, instance, using, **kwargs):
@@ -947,6 +952,11 @@ class UserAction(models.Model):
     @property
     def default_trigger(self):
         return self.action.default_trigger
+
+    def get_custom_trigger_name(self):
+        """This should generate a unique name for this object's custom
+        trigger."""
+        return "custom trigger for useraction-{0}".format(self.id)
 
     objects = UserActionManager()
 
