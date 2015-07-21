@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
-from .. models import Trigger
+from .. models import Action, Behavior, Trigger, UserAction, UserBehavior
 from .. settings import (
     DEFAULT_BEHAVIOR_TRIGGER_NAME,
     DEFAULT_BEHAVIOR_TRIGGER_TIME,
@@ -94,3 +94,46 @@ class TestTriggerManager(TestCase):
         expected = datetime.combine(date(2025, 3, 14), time(9, 30))
         expected = timezone.make_aware(expected, timezone=timezone.utc)
         self.assertEqual(trigger.next(), expected)
+
+    def test_create_for_userbehavior(self):
+        b = Behavior.objects.create(title='Test Behavior')
+        ub = UserBehavior.objects.create(user=self.user, behavior=b)
+
+        trigger = Trigger.objects.create_for_user(
+            self.user,
+            ub.get_custom_trigger_name(),
+            time(8, 30),
+            None,
+            "RRULE:FREQ=WEEKLY;BYDAY=MO",
+            ub
+        )
+
+        ub = UserBehavior.objects.get(pk=ub.id)
+        self.assertEqual(trigger.userbehavior_set.count(), 1)
+        self.assertEqual(ub.custom_trigger, trigger)
+
+        # Clean up
+        ub.delete()
+        b.delete()
+
+    def test_create_for_useraction(self):
+        b = Behavior.objects.create(title='Test Behavior')
+        a = Action.objects.create(title='Test Action', behavior=b)
+        ua = UserAction.objects.create(user=self.user, action=a)
+
+        trigger = Trigger.objects.create_for_user(
+            self.user,
+            ua.get_custom_trigger_name(),
+            time(8, 30),
+            None,
+            "RRULE:FREQ=WEEKLY;BYDAY=MO",
+            ua
+        )
+
+        ua = UserAction.objects.get(pk=ua.id)
+        self.assertEqual(trigger.useraction_set.count(), 1)
+        self.assertEqual(ua.custom_trigger, trigger)
+
+        # Clean up
+        ua.delete()
+        a.delete()
