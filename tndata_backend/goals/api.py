@@ -508,7 +508,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
             request.data['behavior'] = obj.behavior.id
 
             # Generate a name for the Trigger. MUST be unique.
-            tname = "custom trigger for userbehavior-{0}".format(obj.id)
+            tname = obj.get_custom_trigger_name()
             try:
                 trigger = models.Trigger.objects.get(user=obj.user, name=tname)
             except models.Trigger.DoesNotExist:
@@ -526,6 +526,10 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
             )
             if trigger_serializer.is_valid(raise_exception=True):
                 trigger = trigger_serializer.save()
+
+            if hasattr(obj, 'custom_trigger'):
+                obj.custom_trigger = trigger
+                obj.save(update_fields=['custom_trigger'])
             request.data['custom_trigger'] = trigger
         return request
 
@@ -708,7 +712,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
         request.data['action'] = ua.action.id
 
         # Generate a name for the Trigger. MUST be unique.
-        tname = "custom trigger for useraction-{0}".format(ua.id)
+        tname = ua.get_custom_trigger_name()
         try:
             trigger = models.Trigger.objects.get(user=ua.user, name=tname)
         except models.Trigger.DoesNotExist:
@@ -727,6 +731,9 @@ class UserActionViewSet(mixins.CreateModelMixin,
         )
         if trigger_serializer.is_valid(raise_exception=True):
             trigger = trigger_serializer.save()
+        if hasattr(ua, 'custom_trigger'):
+            ua.custom_trigger = trigger
+            ua.save(update_fields=['custom_trigger'])
         request.data['custom_trigger'] = trigger
         return request
 
