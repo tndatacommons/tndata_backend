@@ -90,9 +90,12 @@ class TriggerManager(models.Manager):
         """
         return self.get_queryset().filter(user=user)
 
-    def create_for_user(self, user, name, time, date, rrule):
+    def create_for_user(self, user, name, time, date, rrule, obj=None):
         """Creates a time-type trigger based on the given RRule data."""
-        return self.create(
+        # Ensure that we associate any new Triggers with a related object
+        # (e.g. UserAction.custom_trigger?)
+
+        trigger = self.create(
             user=user,
             name=name,
             trigger_type="time",
@@ -100,6 +103,12 @@ class TriggerManager(models.Manager):
             trigger_date=date,
             recurrences=rrule,
         )
+
+        if obj is not None and hasattr(obj, 'custom_trigger'):
+            obj.custom_trigger = trigger
+            obj.save(update_fields=['custom_trigger'])
+            obj.save()
+        return trigger
 
 
 class WorkflowManager(models.Manager):
