@@ -199,13 +199,18 @@ class UserGoalSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    user_behaviors = SimpleBehaviorField(
+        source="get_user_behaviors",
+        many=True,
+        read_only=True,
+    )
     goal = SimpleGoalField(queryset=Goal.objects.none())
 
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'user_categories', 'created_on',
-            'progress_value',
+            'id', 'user', 'goal', 'user_categories', 'user_behaviors',
+            'created_on', 'progress_value',
         )
         read_only_fields = ("id", "created_on")
 
@@ -214,6 +219,11 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserBehavior` model."""
     user_goals = SimpleGoalField(
         source="get_user_goals",
+        many=True,
+        read_only=True,
+    )
+    user_actions = SimpleActionField(
+        source="get_user_actions",
         many=True,
         read_only=True,
     )
@@ -227,7 +237,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         model = UserBehavior
         fields = (
             'id', 'user', 'behavior', 'custom_trigger', 'user_goals',
-            'created_on',
+            'user_actions', 'created_on',
         )
         read_only_fields = ("id", "created_on", )
 
