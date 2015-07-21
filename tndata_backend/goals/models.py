@@ -969,12 +969,12 @@ def remove_action_reminders(sender, instance, using, **kwargs):
 
     NOTE: GCMMessages have a generic relationship to the Action
     """
-    # Remove any custom triggers.
-    # Triggers don't have an explicit relationship to UserActions :(
-    trigger_slug = "custom-trigger-for-useraction-{0}".format(instance.id)
-    Trigger.objects.filter(name_slug=trigger_slug).delete()
+    # Remove any custom triggers associated with this object.
+    if instance.custom_trigger:
+        instance.custom_trigger.delete()
 
     try:
+        # Remove any pending notifications
         from notifications.models import GCMMessage
         action_type = ContentType.objects.get_for_model(Action)
         messages = GCMMessage.objects.filter(

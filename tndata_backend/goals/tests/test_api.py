@@ -1011,10 +1011,10 @@ class TestUserBehaviorAPI(APITestCase):
         response = self.client.put(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Ensure the user action was created.
+        # Ensure the custom trigger was created.
         ub = UserBehavior.objects.get(pk=self.ub.id)
-        expected_name = "custom trigger for userbehavior-{0}".format(ub.id)
-        self.assertEqual(ub.custom_trigger.name, expected_name)
+        self.assertIsNotNone(ub.custom_trigger)
+        self.assertEqual(ub.get_custom_trigger_name(), ub.custom_trigger.name)
         self.assertEqual(
             ub.custom_trigger.recurrences_as_text(),
             "weekly, each Monday"
@@ -1321,7 +1321,7 @@ class TestUserActionAPI(APITestCase):
 
         # Ensure the trigger was created/updated.
         ua = UserAction.objects.get(pk=self.ua.id)
-        expected_name = "custom trigger for useraction-{0}".format(ua.id)
+        expected_name = ua.get_custom_trigger_name()
         self.assertEqual(ua.custom_trigger.name, expected_name)
         self.assertIsNone(ua.custom_trigger.trigger_date)
         self.assertIsNone(ua.custom_trigger.time)
@@ -1348,8 +1348,8 @@ class TestUserActionAPI(APITestCase):
 
         # Ensure the user action was created.
         ua = UserAction.objects.get(pk=self.ua.id)
-        expected_name = "custom trigger for useraction-{0}".format(ua.id)
-        self.assertEqual(ua.custom_trigger.name, expected_name)
+        self.assertIsNotNone(ua.custom_trigger)
+        self.assertEqual(ua.get_custom_trigger_name(), ua.custom_trigger.name)
         self.assertEqual(
             ua.custom_trigger.recurrences_as_text(),
             "weekly, each Monday"
