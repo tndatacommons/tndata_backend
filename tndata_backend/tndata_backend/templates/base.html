@@ -20,6 +20,23 @@
     {% block head %}{% endblock %}
   </head>
   <body>
+    {% block topnav %}{% endblock %}
+
+    {% block messages %}
+      {# django.contrib.messages #}
+      <div class="row">
+        <div class="large-12 small-12 columns">
+        {% if messages %}
+          {% for message in messages %}
+            <div data-alert class="alert-box {{message.tags}}">
+              {{ message }} <a href="#" class="close">&times;</a>
+            </div>
+          {% endfor %}
+        {% endif %}
+        </div>
+      </div>
+    {% endblock %}
+
     {% block body %}{% endblock %}
 
     {% block bodyjs %}

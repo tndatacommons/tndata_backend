@@ -51,7 +51,7 @@ a.ui-datepicker-next { float:right; }
 {% endblock %}
 
 
-{% block body %}
+{% block topnav %}
   <div class="sticky">
   <nav class="top-bar" data-topbar role="navigation">
   <ul class="title-area">
@@ -136,23 +136,14 @@ a.ui-datepicker-next { float:right; }
   </section>
   </nav>
   </div>
+{% endblock %}
 
+{% block body %}
   <div class="row">
     <div class="large-12 small-12 columns">
-
-    {# django.contrib.messages #}
-    {% if messages %}
-      {% for message in messages %}
-        <div data-alert class="alert-box {{message.tags}}">
-          {{ message }} <a href="#" class="close">&times;</a>
-        </div>
-      {% endfor %}
-    {% endif %}
-
     {% block content %}{% endblock %}
     </div>
   </div>
-
 {% endblock %}
 
 {% block bodyjs %}
