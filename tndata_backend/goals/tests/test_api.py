@@ -248,6 +248,7 @@ class TestBehaviorAPI(APITestCase):
         self.assertEqual(obj['html_more_info'], self.behavior.rendered_more_info)
         self.assertEqual(len(obj['goals']), 1)  # Should have 1 goal
         self.assertEqual(obj['goals'][0]['title'], self.goal.title)
+        self.assertEqual(obj['actions_count'], self.behavior.action_set.count())
 
     def test_behavior_list_by_category_id(self):
         """Ensure we can filter by category.id."""

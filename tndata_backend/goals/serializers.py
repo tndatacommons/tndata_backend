@@ -152,6 +152,7 @@ class BehaviorSerializer(serializers.ModelSerializer):
     goals = GoalListField(many=True, read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
+    actions_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Behavior
@@ -159,7 +160,13 @@ class BehaviorSerializer(serializers.ModelSerializer):
             'id', 'title', 'title_slug', 'description', 'html_description',
             'more_info', 'html_more_info', 'external_resource', 'default_trigger',
             'notification_text', 'icon_url', 'image_url', 'goals',
+            'actions_count',
         )
+        read_only_fields = ("actions_count", )
+
+    def get_actions_count(self, obj):
+        """Return the number of child Actions for the given Behavior (obj)."""
+        return obj.action_set.count()
 
 
 class BehaviorProgressSerializer(serializers.ModelSerializer):
