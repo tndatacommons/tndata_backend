@@ -48,6 +48,7 @@ class TestCategoryAPI(APITestCase):
         self.assertEqual(c['title_slug'], self.category.title_slug)
         self.assertEqual(c['icon_url'], self.category.get_absolute_icon())
         self.assertEqual(c['image_url'], self.category.get_absolute_image())
+        self.assertEqual(c['goals_count'], self.category.goals.count())
 
     def test_post_category_list(self):
         """Ensure this endpoint is read-only."""
@@ -105,6 +106,7 @@ class TestGoalAPI(APITestCase):
         self.assertEqual(obj['title_slug'], self.goal.title_slug)
         self.assertEqual(obj['description'], self.goal.description)
         self.assertEqual(obj['html_description'], self.goal.rendered_description)
+        self.assertEqual(obj['behaviors_count'], self.goal.behavior_set.count())
         # Check the SimpleCategorySerializer used with goals
         self.assertIn('categories', obj)
         self.assertIn("image_url", obj['categories'][0])

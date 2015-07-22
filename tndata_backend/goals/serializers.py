@@ -37,14 +37,19 @@ class CategorySerializer(serializers.ModelSerializer):
     html_description = serializers.ReadOnlyField(source="rendered_description")
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
+    goals_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
         fields = (
             'id', 'order', 'title', 'title_slug', 'description',
-            'html_description', 'goals', 'icon_url', 'image_url', 'color',
-            'secondary_color',
+            'html_description', 'goals_count', 'goals',
+            'icon_url', 'image_url', 'color', 'secondary_color',
         )
+
+    def get_goals_count(self, obj):
+        """Return the number of child Goals for the given Category (obj)."""
+        return obj.goals.count()
 
 
 class GoalSerializer(serializers.ModelSerializer):
@@ -52,13 +57,18 @@ class GoalSerializer(serializers.ModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     categories = CategoryListField(many=True, read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
+    behaviors_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Goal
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
-            'outcome', 'icon_url', 'categories',
+            'outcome', 'icon_url', 'categories', 'behaviors_count',
         )
+
+    def get_behaviors_count(self, obj):
+        """Return the number of child Behaivors for the given Goal (obj)."""
+        return obj.behavior_set.count()
 
 
 class TriggerSerializer(serializers.ModelSerializer):
