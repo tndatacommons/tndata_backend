@@ -1,11 +1,60 @@
 from django import http
+from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import redirect
+from django.core.mail import mail_admins
+from django.core.urlresolvers import reverse, reverse_lazy
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, FormView
 
+from userprofile.forms import UserForm
 from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
+
+
+def signup(request):
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        password_form = SetNewPasswordForm(request.POST, prefix="pw")
+        if form.is_valid() and password_form.is_valid():
+            User = get_user_model()
+            try:
+                # Ensure the email isn't already tied to an account
+                u = User.objects.get(email=form.cleaned_data['email'])
+                messages.success(request, "It looks like you already have an "
+                                          "account! Either log in, or reset "
+                                          "your password to continue.")
+                return redirect(reverse("login"))
+            except User.DoesNotExist:
+                u = form.save(commit=False)
+                u.username = u.email
+                u.is_active = False
+                u.set_password(password_form.cleaned_data['password'])
+                u.save()
+
+                # Email admins about the new user.
+                message = (
+                    "We have a request for a new user account from the "
+                    "following:\n\nName: {0}\nEmail: {1}\n\nTo activate this "
+                    "account, visit:\n"
+                    "https://app.tndata.org/admin/auth/user/{2}/\n\n"
+                )
+                message = message.format(u.get_full_name(), u.email, u.id)
+                mail_admins("New User Request", message)
+
+                return redirect(reverse("utils:signup") + "?c=1")
+        else:
+            messages.error(request, "We could not process your request. "
+                                    "Please see the details, below.")
+    else:
+        form = UserForm()
+        password_form = SetNewPasswordForm(prefix='pw')
+
+    context = {
+        'form': form,
+        'password_form': password_form,
+        'completed': bool(request.GET.get("c", False)),
+    }
+    return render(request, "utils/signup.html", context)
 
 
 class PasswordResetRequestView(FormView):
