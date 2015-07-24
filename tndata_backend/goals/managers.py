@@ -120,3 +120,12 @@ class WorkflowManager(models.Manager):
 
     def published(self, *args, **kwargs):
         return self.get_queryset().filter(state='published')
+
+
+class CategoryManager(WorkflowManager):
+    """Updated WorkflowManager for Categories; we want to exclude packaged
+    content from the list of published Categories."""
+
+    def published(self, *args, **kwargs):
+        qs = super().published()
+        return qs.filter(packaged_content=False)

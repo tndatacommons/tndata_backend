@@ -29,7 +29,12 @@ from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from utils import colors, dateutils
 
-from .managers import TriggerManager, UserActionManager, WorkflowManager
+from .managers import (
+    CategoryManager,
+    TriggerManager,
+    UserActionManager,
+    WorkflowManager
+)
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
 
@@ -48,6 +53,10 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     order = models.PositiveIntegerField(
         unique=True,
         help_text="Controls the order in which Categories are displayed."
+    )
+    packaged_content = models.BooleanField(
+        default=False,
+        help_text="Is this Category for a collection of Packaged Content?"
     )
     title = models.CharField(
         max_length=128,
@@ -114,6 +123,10 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
         )
 
     @property
+    def is_packaged(self):
+        return self.packaged_content
+
+    @property
     def rendered_description(self):
         """Render the description markdown"""
         return markdown(self.description)
@@ -165,7 +178,7 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     def publish(self):
         pass
 
-    objects = WorkflowManager()
+    objects = CategoryManager()
 
 
 def get_categories_as_choices():
