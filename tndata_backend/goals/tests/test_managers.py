@@ -3,7 +3,14 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
-from .. models import Action, Behavior, Trigger, UserAction, UserBehavior
+from .. models import (
+    Action,
+    Behavior,
+    Category,
+    Trigger,
+    UserAction,
+    UserBehavior
+)
 from .. settings import (
     DEFAULT_BEHAVIOR_TRIGGER_NAME,
     DEFAULT_BEHAVIOR_TRIGGER_TIME,
@@ -11,6 +18,34 @@ from .. settings import (
 )
 
 User = get_user_model()
+
+
+class TestCategoryManager(TestCase):
+    """Tests for the `CategoryManager` manager."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.draft_category = Category.objects.create(
+            order=1,
+            title="Draft Category",
+        )
+        cls.published_category = Category.objects.create(
+            order=2,
+            title="Published Category",
+            state="published"
+        )
+        cls.packaged_category = Category.objects.create(
+            order=3,
+            title="Packaged Category",
+            state="published",
+            packaged_content=True
+        )
+
+    def test_published(self):
+        results = Category.objects.published()
+        self.assertIn(self.published_category, results)
+        self.assertNotIn(self.packaged_category, results)
+        self.assertNotIn(self.draft_category, results)
 
 
 class TestTriggerManager(TestCase):

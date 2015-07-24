@@ -124,6 +124,19 @@ class TestCategory(TestCase):
         self.category.publish()  # then publish
         self.assertEqual(self.category.state, "published")
 
+    def test_is_packaged(self):
+        # Our default category
+        self.assertFalse(self.category.is_packaged)
+
+        # An actual package
+        c = Category.objects.create(
+            order=3,
+            title="Some Package",
+            packaged_content=True
+        )
+        self.assertTrue(c.is_packaged)
+        c.delete()
+
 
 class TestGoal(TestCase):
     """Tests for the `Goal` model."""

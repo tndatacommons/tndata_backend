@@ -141,13 +141,14 @@ class TestCategoryForm(TestCase):
         form = CategoryForm()
         fields = sorted([
             'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
-            'secondary_color',
+            'secondary_color', 'packaged_content',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):
         data = {
             'order': '1',
+            'packaged_content': False,
             'title': 'New Category',
             'description': 'asdf',
             'icon': '',
@@ -164,6 +165,7 @@ class TestCategoryForm(TestCase):
         c = Category.objects.create(order=1, title="C")  # Existing object
         data = {
             'order': '2',
+            'packaged_content': False,
             'title': 'c',  # Should be a Duplicate
             'description': 'asdf',
             'icon': '',
