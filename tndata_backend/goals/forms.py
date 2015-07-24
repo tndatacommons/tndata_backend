@@ -95,10 +95,9 @@ class ActionForm(forms.ModelForm):
     class Meta:
         model = Action
         fields = [
-            'sequence_order', 'behavior', 'title', 'description',
-            'more_info', 'external_resource', 'default_trigger',
-            'notification_text', 'source_link', 'source_notes', 'notes',
-            'icon', 'action_type',
+            'notification_text', 'sequence_order', 'behavior', 'title',
+            'description', 'more_info', 'external_resource', 'default_trigger',
+            'source_link', 'source_notes', 'notes', 'icon', 'action_type',
         ]
         labels = {"notes": "Scratchpad"}
 
