@@ -216,6 +216,7 @@ class UserGoalSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    user_behaviors_count = serializers.SerializerMethodField()
     user_behaviors = SimpleBehaviorField(
         source="get_user_behaviors",
         many=True,
@@ -226,10 +227,16 @@ class UserGoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'user_categories', 'user_behaviors',
-            'created_on', 'progress_value',
+            'id', 'user', 'goal', 'user_categories',
+            'user_behaviors_count', 'user_behaviors', 'created_on',
+            'progress_value',
         )
         read_only_fields = ("id", "created_on")
+
+    def get_user_behaviors_count(self, obj):
+        """Return the number of user-selected Behaviors that are children of
+        this Goal."""
+        return obj.get_user_behaviors().count()
 
 
 class UserBehaviorSerializer(serializers.ModelSerializer):
@@ -239,6 +246,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         many=True,
         read_only=True,
     )
+    user_actions_count = serializers.SerializerMethodField()
     user_actions = SimpleActionField(
         source="get_user_actions",
         many=True,
@@ -254,9 +262,14 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         model = UserBehavior
         fields = (
             'id', 'user', 'behavior', 'custom_trigger', 'user_goals',
-            'user_actions', 'created_on',
+            'user_actions_count', 'user_actions', 'created_on',
         )
         read_only_fields = ("id", "created_on", )
+
+    def get_user_actions_count(self, obj):
+        """Return the number of user-selected actions that are children of
+        this Behavior."""
+        return obj.get_user_actions().count()
 
 
 class UserActionSerializer(serializers.ModelSerializer):
@@ -277,10 +290,17 @@ class UserCategorySerializer(serializers.ModelSerializer):
     """A serializer for `UserCategory` model(s)."""
     category = SimpleCategoryField(queryset=Category.objects.all())
     user_goals = SimpleGoalField(source="get_user_goals", many=True, read_only=True)
+    user_goals_count = serializers.SerializerMethodField()
 
     class Meta:
         model = UserCategory
         fields = (
-            'id', 'user', 'category', 'user_goals', 'created_on', 'progress_value',
+            'id', 'user', 'category', 'user_goals_count', 'user_goals',
+            'created_on', 'progress_value',
         )
         read_only_fields = ("id", "created_on", )
+
+    def get_user_goals_count(self, obj):
+        """Return the number of user-selected goals that are children of this
+        Category."""
+        return obj.get_user_goals().count()

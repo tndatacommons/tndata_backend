@@ -278,6 +278,22 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     GET requests to this page will simply list this mapping for the authenticated
     user.
 
+    ## Fields
+
+    This endpoint returns resources with the following fields.
+
+    * `id`: A unique identifier for the `UserGoal` mapping.
+    * `user`: A unique identifier for the `User`
+    * `goal`: An object that represents the `Goal` selected by the user
+    * `user_categories`: An array of `Category` objects selected by the user,
+      that are also parents of this goal.
+    * `user_behaviors_count`: the number of child Behaviors that the user has
+      selected that are contained in this goal.
+    * `user_behaviors`: An array of `Behavior` objects selected by the user.
+    * `created_on`: Time at which the user selected this item.
+    * `progress_value`: The user's self-reported progress toward behaviors in
+      this goal.
+
     ## Adding a Goal
 
     To associate a Goal with a User, POST to `/api/users/goals/` with the
@@ -375,6 +391,21 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
 
     GET requests to this page will simply list this mapping for the authenticated
     user.
+
+    ## Fields
+
+    This endpoint returns resources with the following fields.
+
+    * `id`: A unique identifier for the `UserBehavior` mapping.
+    * `user`: A unique identifier for the `User`
+    * `behavior`: An object that represents the `Behavior` selected by the user
+    * `custom_trigger`: (will be `null`). This is currently not implemented.
+    * `user_goals`: An array of `Goal` objects that have been selected by the
+      user, and that are also parents of this behavior.
+    * `user_actions_count`: the number of child Actions that the user has
+      selected that are contained in this behavior.
+    * `user_actions`: An array of `Action` objects selected by the user.
+    * `created_on`: Time at which the user selected this item.
 
     ## Adding a Behavior
 
@@ -560,6 +591,17 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     GET requests to this page will simply list this mapping for the authenticated
     user.
+
+    ## Fields
+
+    This endpoint returns resources with the following fields.
+
+    * `id`: A unique identifier for the `UserAction` mapping.
+    * `user`: A unique identifier for the `User`
+    * `action`: An object that represents the `Action` selected by the user
+    * `custom_trigger`: An object that represent's the user's created `Trigger`,
+      i.e. information about when notifications for this action should be sent.
+    * `created_on`: Time at which the user selected this item.
 
     ## Adding a Action
 
@@ -777,6 +819,20 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
 
     GET requests to this page will simply list this mapping for the authenticated
     user.
+
+    ## Fields
+
+    This endpoint returns resources with the following fields.
+
+    * `id`: A unique identifier for the `UserCategory` mapping.
+    * `user`: A unique identifier for the `User`
+    * `category`: An object that represents the `Category` selected by the user
+    * `user_goals_count`: the number of child Goals that the user has selected
+      that are contained in this category.
+    * `user_goals`: An array of `Goal` objects selected by the user.
+    * `created_on`: Time at which the user selected the Category.
+    * `progress_value`: The user's self-reported progress toward goals in this
+      category.
 
     ## Adding a Category
 
