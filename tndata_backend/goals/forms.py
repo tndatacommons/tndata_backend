@@ -148,8 +148,8 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = [
-            'order', 'title', 'description', 'icon', 'image', 'color',
-            'secondary_color', 'notes',
+            'order', 'packaged_content', 'title', 'description',
+            'icon', 'image', 'color', 'secondary_color', 'notes',
         ]
         labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {

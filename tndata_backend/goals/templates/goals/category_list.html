@@ -40,7 +40,12 @@
           <td>
               <a href="{{ category.get_absolute_url }}">{{ category }}</a>
           </td>
-          <td>{{ category.state|label }}</td>
+          <td>
+            {{ category.state|label }}
+            {% if category.is_packaged %}
+              <span class="label info">Package</span>
+            {% endif %}
+          </td>
           <td>
           {% for c in category.goals %}
             <span class="label secondary radius">{{ c }}</span>

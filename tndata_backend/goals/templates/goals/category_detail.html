@@ -13,9 +13,16 @@
 
   <div class="row">
     <div class="large-6 small-12 columns">
-      <h1>{{ category }} {% goal_object_controls category %}</h1>
+      <h1>
+        {% if category.is_packaged %}Package: {% endif %}
+        {{ category }} {% goal_object_controls category %}</h1>
       <dl>
-        <dt>State</dt><dd>{{ category.state|label }}</dd>
+        <dt>State</dt><dd>
+          {{ category.state|label }}
+          {% if category.is_packaged %}
+            <span class="label info">Package</span>
+          {% endif %}
+        </dd>
         <dt>Default Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
 
