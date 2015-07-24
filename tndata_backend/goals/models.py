@@ -999,8 +999,13 @@ def remove_action_reminders(sender, instance, using, **kwargs):
     NOTE: GCMMessages have a generic relationship to the Action
     """
     # Remove any custom triggers associated with this object.
-    if instance.custom_trigger:
-        instance.custom_trigger.delete()
+    try:
+        if instance.custom_trigger:
+            instance.custom_trigger.delete()
+    except ContentType.DoesNotExist:
+        # This really shouldn't happen, but sometimes it does when cleaning
+        # up generated objects in our test suite
+        pass
 
     try:
         # Remove any pending notifications

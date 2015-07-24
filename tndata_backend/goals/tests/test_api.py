@@ -1116,11 +1116,12 @@ class TestUserActionAPI(APITestCase):
 
     def tearDown(self):
         User = get_user_model()
+        UserAction.objects.filter(id=self.ua.id).delete()
         User.objects.filter(id=self.user.id).delete()
+
         Goal.objects.filter(id=self.goal.id).delete()
         Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
-        UserAction.objects.filter(id=self.ua.id).delete()
 
     def test_get_useraction_list_unauthenticated(self):
         """Ensure un-authenticated requests don't expose any results."""
