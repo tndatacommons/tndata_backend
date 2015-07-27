@@ -1401,7 +1401,7 @@ class TestUserActionAPI(APITestCase):
         self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
 
         # clean up
-        custom_trigger.delete()
+        Trigger.objects.filter(id=custom_trigger.id).delete()
 
     def test_put_useraction_custom_trigger_disable(self):
         """When we have an existing custom trigger, PUTing blank values for the
@@ -1440,7 +1440,7 @@ class TestUserActionAPI(APITestCase):
         self.assertIsNone(ua.custom_trigger.trigger_date)
 
         # clean up
-        custom_trigger.delete()
+        Trigger.objects.filter(id=custom_trigger.id).delete()
 
     def test_delete_useraction_detail_unauthenticated(self):
         """Ensure unauthenticated users cannot delete."""
