@@ -980,8 +980,6 @@ class UserAction(models.Model):
         null=True,
         help_text="A User-defined trigger for this behavior"
     )
-    completed = models.BooleanField(default=False)
-    completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -1017,7 +1015,7 @@ def remove_action_reminders(sender, instance, using, **kwargs):
     try:
         if instance.custom_trigger:
             instance.custom_trigger.delete()
-    except ContentType.DoesNotExist:
+    except Trigger.DoesNotExist:
         # This really shouldn't happen, but sometimes it does when cleaning
         # up generated objects in our test suite
         pass
@@ -1034,6 +1032,30 @@ def remove_action_reminders(sender, instance, using, **kwargs):
         messages.delete()
     except (ImportError, ContentType.DoesNotExist):
         pass
+
+
+class UserCompletedAction(models.Model):
+    """Users can tell us they "completed" an Action. This is represented in
+    the mobile app by a 'I did it' button.
+
+    Note that there may be many instances of this model for a user/action, and
+    that an aggregate of these tells us how often a user performs (or says they
+    perform) this action.
+
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    useraction = models.ForeignKey(UserAction)
+    action = models.ForeignKey(Action)
+    updated_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{0}".format(self.category.title)
+
+    class Meta:
+        ordering = ['user', 'action']
+        verbose_name = "User Completed Action"
+        verbose_name_plural = "User Completed Action"
 
 
 class UserCategory(models.Model):
