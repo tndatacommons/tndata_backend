@@ -3,10 +3,8 @@
 
 {% block head %}
   {{ block.super }}
-  {# See bodyjs block for the timepicker js and config #}
   {{ form.media }}  {# load the recurrences widget #}
   <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' %}"></script>
-  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}" />
   {# Custom CSS for the recurrences widget #}
   <style type="text/css">
   div.recurrence-widget {margin-bottom: 1em;}
@@ -92,10 +90,8 @@
 {% block bodyjs %}
   {{ block.super }}
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-  <script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
   <script>
   $(document).ready(function() {
-    $('.timepicker').timepicker({timeFormat: "G:i", minTime: '5:00'});
     $('.datepicker').datepicker({'format': 'yyyy/mm/dd'});
   });
   </script>

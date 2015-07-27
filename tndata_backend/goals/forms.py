@@ -9,6 +9,7 @@ from utils import colors
 
 from . models import Action, Behavior, Category, Goal, Trigger
 from . utils import read_uploaded_csv
+from . widgets import TimeSelectWidget
 
 
 class ActionForm(forms.ModelForm):
@@ -191,12 +192,7 @@ class TriggerForm(forms.ModelForm):
     class Meta:
         model = Trigger
         fields = ['name', 'trigger_type', 'time', 'recurrences']
-        widgets = {
-            "time": forms.TimeInput(attrs={
-                'class': 'timepicker',
-                'type': 'time'
-            }),
-        }
+        widgets = {"time": TimeSelectWidget()}
 
 
 class InvalidFormatException(Exception):
