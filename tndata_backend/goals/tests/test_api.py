@@ -16,6 +16,7 @@ from .. models import (
     UserBehavior,
     UserCategory,
     UserAction,
+    UserCompletedAction,
 )
 
 
@@ -1502,6 +1503,20 @@ class TestUserActionAPI(APITestCase):
 
         # Clean up.
         other_action.delete()
+
+    def test_user_completed_action(self):
+        url = reverse('useraction-complete', args=[self.ua.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        completed = UserCompletedAction.objects.filter(
+            user=self.user,
+            useraction=self.ua
+        ).exists()
+        self.assertTrue(completed)
 
 
 class TestUserCategoryAPI(APITestCase):
