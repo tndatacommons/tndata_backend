@@ -297,6 +297,20 @@ class UserActionAdmin(UserRelatedModelAdmin):
 admin.site.register(models.UserAction, UserActionAdmin)
 
 
+class UserCompletedActionAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user_email', 'user_first', 'user_last',
+        'useraction', 'action', 'created_on', 'updated_on',
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'action__id', 'action__title',
+    )
+    raw_id_fields = ("user", "action", "useraction")
+
+admin.site.register(models.UserCompletedAction, UserCompletedActionAdmin)
+
+
 class BehaviorProgressAdmin(UserRelatedModelAdmin):
     list_display = (
         'user', 'behavior', 'status', 'reported_on'
