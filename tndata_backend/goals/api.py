@@ -663,8 +663,8 @@ class UserActionViewSet(mixins.CreateModelMixin,
     ## Filtering
 
     UserActions can be filtered using a querystring parameter. Currently,
-    filtering is availble for Goals or Behaviors. You can filter by an ID or
-    a slug.
+    filtering is availble for Goals, Behaviors, and Actions. You can filter by
+    an ID or a slug.
 
     To retrieve all *UserAction*s that belong to a particular Goal, use
     one of the following:
@@ -677,6 +677,15 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     * `/api/actions/?behavior={behavior_id}` or by slug
     * `/api/actions/?behavior={behavior_title_slug}`
+
+    To retrive all *UserActions*s that belong to a particular Action, use one
+    of the following:
+
+    * `/api/actions/?behavior={action_id}` or by slug
+    * `/api/actions/?behavior={action_title_slug}`
+
+    **NOTE**: Action titles are not unique, so filtering by the `title_slug`
+    may return a number of results.
 
     ## Additional information
 
@@ -694,6 +703,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         goal = self.request.GET.get('goal', None)
         behavior = self.request.GET.get('behavior', None)
+        action = self.request.GET.get('action', None)
         self.queryset = self.queryset.filter(user__id=self.request.user.id)
 
         if goal is not None and goal.isnumeric():
@@ -705,6 +715,11 @@ class UserActionViewSet(mixins.CreateModelMixin,
             self.queryset = self.queryset.filter(action__behavior__id=behavior)
         elif behavior is not None:
             self.queryset = self.queryset.filter(action__behavior__title_slug=behavior)
+        if action is not None and action.isnumeric():
+            self.queryset = self.queryset.filter(action__id=action)
+        elif action is not None:
+            self.queryset = self.queryset.filter(action__title_slug=action)
+
         return self.queryset
 
     def get_serializer(self, *args, **kwargs):
