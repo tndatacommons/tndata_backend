@@ -3,11 +3,29 @@ from django.conf import settings
 try:
     import slack
     import slack.chat
-
+    import slack.users
     slack.api_token = settings.SLACK_API_TOKEN
-
 except ImportError:
     slack = None
+
+
+def post_private_message(slack_user, message):
+    """Post a private message to a slack user (their slack username).
+
+    Apears to arrive from Slackbot.
+
+    """
+    user_id = None
+    if slack:
+
+        users = slack.users.list()
+        if users['ok']:
+            for u in users['members']:
+                if u['name'] == slack_user:
+                    user_id = u['id']
+
+    if user_id is not None:
+        post_message(user_id, message)
 
 
 def post_message(channel, message):
