@@ -483,9 +483,18 @@ class Trigger(URLMixin, models.Model):
         now = timezone.now().astimezone(tz)
 
         if self.trigger_type == "time" and self.recurrences:
-            # Get the current date/time in the user's local time
+            alert_on = now  # Start to build a date on which the alert is sent
+
             if self.time:
-                now = self._combine(self.time, now, tz)
+                # Get the current date/time in the user's local time
+                alert_on = self._combine(self.time, now, tz)
+
+            # The alert date is later today, so return this value.
+            if alert_on > now:
+                return alert_on
+
+            # Otherwise, return the next value in the recurrence; this always
+            # starts with "tomorrow's" date.
             return self.recurrences.after(now, dtstart=now)
 
         elif self.trigger_type == "time" and self.trigger_date is not None:
@@ -496,6 +505,12 @@ class Trigger(URLMixin, models.Model):
 
         # No recurrence or not a time-pased Trigger.
         return None
+
+    def formatted_next(self):
+        n = self.next()
+        if n is not None:
+            return n.strftime("%c")
+        return "N/A"
 
     objects = TriggerManager()
 
