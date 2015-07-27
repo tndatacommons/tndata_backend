@@ -297,8 +297,6 @@ class TestTrigger(TestCase):
         expected = "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
         self.assertEqual(self.trigger.recurrences_as_text(), expected)
 
-    # TODO: test next when it should be 'tomorrow', and when it should be
-    # later 'today'
     def test_next(self):
         """Ensure that next returns the next day's event."""
         # returns none when trigger_type == 'place'
@@ -317,7 +315,7 @@ class TestTrigger(TestCase):
         with patch("goals.models.timezone.now") as mock_now:
             # now is 9:30 am, trigger is for 12:34pm
             mock_now.return_value = datetime(
-                1000, 10, 20, 9, 30, 45, tzinfo=timezone.utc
+                1000, 10, 20, 9, 30, tzinfo=timezone.utc
             )
             expected = datetime(1000, 10, 20, 12, 34, tzinfo=timezone.utc)
             self.assertEqual(self.trigger.next(), expected)
@@ -326,7 +324,7 @@ class TestTrigger(TestCase):
         with patch("goals.models.timezone.now") as mock_now:
             # now is 1:30am, trigger is for 12:34pm
             mock_now.return_value = datetime(
-                1000, 10, 20, 13, 30, 45, tzinfo=timezone.utc
+                1000, 10, 20, 13, 30, tzinfo=timezone.utc
             )
             expected = datetime(1000, 10, 21, 12, 34, tzinfo=timezone.utc)
             self.assertEqual(self.trigger.next(), expected)

@@ -495,7 +495,7 @@ class Trigger(URLMixin, models.Model):
 
             # Otherwise, return the next value in the recurrence; this always
             # starts with "tomorrow's" date.
-            return self.recurrences.after(now, dtstart=now)
+            return self.recurrences.after(alert_on, dtstart=alert_on)
 
         elif self.trigger_type == "time" and self.trigger_date is not None:
             # No recurrences.
