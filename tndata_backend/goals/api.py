@@ -1,7 +1,9 @@
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 
 from . mixins import DeleteMultipleMixin
 from . import models
@@ -669,20 +671,20 @@ class UserActionViewSet(mixins.CreateModelMixin,
     To retrieve all *UserAction*s that belong to a particular Goal, use
     one of the following:
 
-    * `/api/actions/?goal={goal_id}` or by slug
-    * `/api/actions/?goal={goal_title_slug}`
+    * `/api/users/actions/?goal={goal_id}` or by slug
+    * `/api/users/actions/?goal={goal_title_slug}`
 
     To retrieve all *UserAction*s that belong to a particular Behavior, use
     one of the following:
 
-    * `/api/actions/?behavior={behavior_id}` or by slug
-    * `/api/actions/?behavior={behavior_title_slug}`
+    * `/api/users/actions/?behavior={behavior_id}` or by slug
+    * `/api/users/actions/?behavior={behavior_title_slug}`
 
     To retrive all *UserActions*s that belong to a particular Action, use one
     of the following:
 
-    * `/api/actions/?behavior={action_id}` or by slug
-    * `/api/actions/?behavior={action_title_slug}`
+    * `/api/users/actions/?behavior={action_id}` or by slug
+    * `/api/users/actions/?behavior={action_title_slug}`
 
     **NOTE**: Action titles are not unique, so filtering by the `title_slug`
     may return a number of results.
@@ -691,6 +693,14 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     The Actions that a User has selected are also available through the
     `/api/users/` endpoint as a `actions` object on the user.
+
+    ## Completing Actions
+
+    A User may wish to indicate that they've performed (or completed) an action.
+    To do that:
+
+    * send a POST request to `/api/users/actions/{useraction_id}/complete/`
+    * A 200 response indicates that the action has been marked as complete.
 
     ----
 
@@ -821,6 +831,23 @@ class UserActionViewSet(mixins.CreateModelMixin,
             )
         result = super(UserActionViewSet, self).update(request, *args, **kwargs)
         return result
+
+    @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='complete')
+    def complete(self, request, pk=None):
+        """"Allow a user to complete their action."""
+        try:
+            useraction = self.get_object()
+            uca = models.UserCompletedAction.objects.create(
+                user=useraction.user,
+                action=useraction.action,
+                useraction=useraction
+            )
+            return Response({'created': uca.id})
+        except Exception as e:
+            return Response(
+                {'error': "Invalid Request"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserCategoryViewSet(mixins.CreateModelMixin,
