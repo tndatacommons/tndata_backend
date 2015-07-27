@@ -86,6 +86,10 @@ class ActionForm(forms.ModelForm):
     behavior = forms.ModelChoiceField(
         queryset=Behavior.objects.all().order_by("title")
     )
+    default_trigger = forms.ModelChoiceField(
+        queryset=Trigger.objects.default(),
+        required=False
+    )
     # Note: this field's value should always get in the initial data
     action_type = forms.CharField(
         max_length=32,
