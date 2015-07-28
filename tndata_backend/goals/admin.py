@@ -337,3 +337,13 @@ class CategoryProgressAdmin(UserRelatedModelAdmin):
     raw_id_fields = ("user", 'category')
 
 admin.site.register(models.CategoryProgress, CategoryProgressAdmin)
+
+
+class PackageEnrollmentAdmin(UserRelatedModelAdmin):
+    list_display = (
+        'user_email', 'user_first', 'user_last', 'accepted', 'enrolled_by',
+        'enrolled_on'
+    )
+    raw_id_fields = ("user", 'enrolled_by', 'categories')
+
+admin.site.register(models.PackageEnrollment, PackageEnrollmentAdmin)
