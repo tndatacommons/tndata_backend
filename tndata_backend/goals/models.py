@@ -31,6 +31,7 @@ from utils import colors, dateutils
 
 from .managers import (
     CategoryManager,
+    PackageEnrollmentManager,
     TriggerManager,
     UserActionManager,
     WorkflowManager
@@ -1395,3 +1396,32 @@ class CategoryProgress(models.Model):
             return u"\u2191"  # up (north)
 
     objects = CategoryProgressManager()
+
+
+class PackageEnrollment(models.Model):
+    """A mapping of users who've been enrolled in various *Packaged Content*
+    e.g. Categories. This model tracks when they were enrolled, which categories
+    they were enrolled in, and who enrolled them.
+
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    categories = models.ManyToManyField(Category)
+    accepted = models.BooleanField(default=False)
+    enrolled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='enrolled'
+    )
+    enrolled_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['enrolled_on']
+        verbose_name = "Package Enrollment"
+        verbose_name_plural = "Package Enrollments"
+
+    def __str__(self):
+        return "{0} enrolled on {1}".format(
+            self.user.get_full_name(),
+            self.enrolled_on
+        )
+
+    objects = PackageEnrollmentManager()

@@ -129,3 +129,26 @@ class CategoryManager(WorkflowManager):
     def published(self, *args, **kwargs):
         qs = super().published()
         return qs.filter(packaged_content=False)
+
+    def packages(self, *args, **kwargs):
+        """Return only Categories that have been marked as packages.
+
+        By default this returns only published categories; pass in
+        `published=False` to return all packaged content.
+
+            Category.objects.packages(published=False)
+
+        """
+        published = kwargs.pop("published", True)
+        qs = super().get_queryset()
+        if published:
+            return qs.filter(packaged_content=True, state="published")
+        else:
+            return qs.filter(packaged_content=True)
+
+
+class PackageEnrollmentManager(models.Manager):
+
+    def enroll_by_email(self, email, categories):
+        """Create enrollments for the given email address."""
+        pass
