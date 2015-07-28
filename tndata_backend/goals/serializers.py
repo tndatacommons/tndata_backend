@@ -49,7 +49,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     def get_goals_count(self, obj):
         """Return the number of child Goals for the given Category (obj)."""
-        return obj.goals.count()
+        return obj.goals.filter(state="published").count()
 
 
 class GoalSerializer(serializers.ModelSerializer):
@@ -68,7 +68,7 @@ class GoalSerializer(serializers.ModelSerializer):
 
     def get_behaviors_count(self, obj):
         """Return the number of child Behaivors for the given Goal (obj)."""
-        return obj.behavior_set.count()
+        return obj.behavior_set.filter(state="published").count()
 
 
 class TriggerSerializer(serializers.ModelSerializer):
@@ -176,7 +176,7 @@ class BehaviorSerializer(serializers.ModelSerializer):
 
     def get_actions_count(self, obj):
         """Return the number of child Actions for the given Behavior (obj)."""
-        return obj.action_set.count()
+        return obj.action_set.filter(state="published").count()
 
 
 class BehaviorProgressSerializer(serializers.ModelSerializer):

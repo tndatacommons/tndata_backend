@@ -156,7 +156,7 @@ class SimpleCategoryField(serializers.RelatedField):
             'color': value.color,
             'secondary_color': value.secondary_color,
             'progress_value': getattr(value, 'progress_value', 0.0),
-            'goals_count': value.goals.count(),
+            'goals_count': value.goals.filter(state="published").count(),
         }
 
 
@@ -177,7 +177,7 @@ class SimpleBehaviorField(serializers.RelatedField):
             'html_more_info': value.rendered_more_info,
             'icon_url': value.get_absolute_icon(),
             'image_url': value.get_absolute_image(),
-            'actions_count': value.action_set.count(),
+            'actions_count': value.action_set.filter(state="published").count(),
         }
 
 
@@ -196,7 +196,7 @@ class SimpleGoalField(serializers.RelatedField):
             'html_description': value.rendered_description,
             'outcome': value.outcome,
             'icon_url': value.get_absolute_icon(),
-            'behaviors_count': value.behavior_set.count(),
+            'behaviors_count': value.behavior_set.filter(state="published").count(),
         }
 
 
