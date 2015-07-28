@@ -1,0 +1,44 @@
+{% extends "goals/base.html" %}
+{% load goal_filters %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
+    <li class="current">Packages</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Packages</h2>
+
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>Category</th>
+        <th>State</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>
+          <a href="{% url 'goals:package-enrollments' %}">All Packages</a>
+        </td>
+        <td>n/a</td>
+      </tr>
+
+      {% for package in packages %}
+      <tr>
+        <td>
+        <a href="{% url 'goals:package-enrollments' %}?category={{package.id}}">
+          {{ package }}</a></td>
+        <td>{{ package.state|label }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

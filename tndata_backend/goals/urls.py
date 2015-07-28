@@ -9,6 +9,23 @@ urlpatterns = patterns('',
         name='index'
     ),
 
+    # Custom Packages
+    url(
+        r'^packages/enrollments/$',
+        views.PackageEnrollmentListView.as_view(),
+        name='package-enrollments'
+    ),
+    url(
+        r'^packages/enroll/$',
+        views.PackageEnrollmentView.as_view(),
+        name='package-enroll'
+    ),
+    url(
+        r'^packages/$',
+        views.PackageListView.as_view(),
+        name='package-list'
+    ),
+
     # Create views
     url(
         r'^new/categories/$',

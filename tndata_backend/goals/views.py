@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse_lazy
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from django.views.generic import DetailView, ListView, TemplateView, View
+from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from django_fsm import TransitionNotAllowed
@@ -14,11 +14,12 @@ from . forms import (
     CategoryForm,
     CSVUploadForm,
     GoalForm,
+    PackageEnrollmentForm,
     TriggerForm,
 )
 from . mixins import ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin
 from . models import (
-    Action, Behavior, Category, Goal, Trigger
+    Action, Behavior, Category, Goal, PackageEnrollment, Trigger
 )
 from . permissions import is_content_editor, superuser_required
 from utils.db import get_max_order
@@ -514,3 +515,56 @@ class ActionDeleteView(ContentEditorMixin, DeleteView):
     pk_url_kwarg = 'pk'
     query_pk_and_slug = True  # Use pk and slug together to identify object.
     success_url = reverse_lazy('goals:index')
+
+
+class PackageListView(ContentViewerMixin, ListView):
+    queryset = Category.objects.packages(published=False)
+    context_object_name = 'packages'
+    template_name = "goals/package_list.html"
+
+
+class PackageEnrollmentListView(ContentViewerMixin, ListView):
+    model = PackageEnrollment
+    context_object_name = 'package_enrollments'
+
+    def get(self, request, *args, **kwargs):
+        self._category_id = request.GET.get("category", None)
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self._category_id:
+            qs = qs.filter(categories=self._category_id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            category = Category.objects.get(pk=self._category_id)
+        except Category.DoesNotExist:
+            category = None
+        context['category'] = category
+        return context
+
+
+class PackageEnrollmentView(ContentAuthorMixin, FormView):
+    """Allow a user with *Author* permissions to automatically enroll users
+    in a *package* of content. This will do the following:
+
+    1. Create user accounts if they don't already exist.
+    2. Assign users to all of the content in the package (i.e. create the
+       intermediary UserAction, UserBehavior, UserGoal, and UserCategory objects)
+       as if the user navigated through the app and selected them.
+    3. Send the user an email letting them know they've been enrolled.
+
+    TODO: ^^ Email needs to include link to the app in the play store; how to
+    auto-enroll users in our alpha/beta test group?
+
+    """
+    template_name = "goals/package_enroll.html"
+    form_class = PackageEnrollmentForm
+    success_url = "TODO"
+
+    def form_valid(self, form):
+        # TODO: create user enrollment objects.
+        return super().form_valid(form)

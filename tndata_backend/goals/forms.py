@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
@@ -193,6 +195,28 @@ class TriggerForm(forms.ModelForm):
         model = Trigger
         fields = ['name', 'trigger_type', 'time', 'recurrences']
         widgets = {"time": TimeSelectWidget()}
+
+
+class PackageEnrollmentForm(forms.Form):
+    """Allows input of email addresses (in a text box) and the selection of
+    one or more Categories--those of which have been designated as packaged
+    content.
+
+    """
+    email_addresses = forms.CharField(
+        widget=forms.Textarea(),
+        help_text=("Paste in email addresses for people who should be enrolled "
+                   ", either one per line or separated by a comma")
+    )
+    packages = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.packages(),
+        help_text="Select the packages in which to enroll each person"
+    )
+
+    def clean_email_addresses(self):
+        """Returns a list of email addresses."""
+        content = self.cleaned_data['email_addresses']
+        return [email for email in re.split(r"\s|,", content) if email.strip()]
 
 
 class InvalidFormatException(Exception):

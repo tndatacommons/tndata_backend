@@ -1,0 +1,25 @@
+{% extends "goals/base.html" %}
+
+{% block content %}
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
+    <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+    <li class="current">Enroll</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+    <h1>Enroll</h1>
+    <form
+      data-persist="garlic"
+      action="{% url 'goals:package-enroll' %}"
+      method="post">{% csrf_token %}
+
+    {{ form.as_p}}
+    <hr/>
+    <p><button type="submit">Enroll</button></p>
+    </form>
+
+    </div> {# end .row #}
+  </div> {# end .row #}
+{% endblock %}

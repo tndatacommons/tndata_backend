@@ -1,0 +1,49 @@
+{% extends "goals/base.html" %}
+{% load goal_filters %}
+
+{% block content %}
+
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'goals:index' %}">Home</a></li>
+    <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+    <li class="current">Enrollments</li>
+  </ul>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Package Enrollments{% if category %}: {{ category }}{% endif %}</h2>
+
+      <table class="object-list">
+      <thead>
+      <tr>
+        <th>User</th>
+        <th>Packages/Categories</th>
+        <th>Accepted</th>
+        <th>Enrolled By</th>
+        <th>Enrolled On</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for enrollment in package_enrollments %}
+        <tr>
+          <td>{{ enrollment.user.email }}</td>
+          <td>
+          {% for cat in enrollment.categories.all %}
+            {% if cat == category %}
+              <strong>{{ cat }}</strong>{% if not forloop.last %},{% endif %}
+            {% else %}
+              {{ cat }}{% if not forloop.last %},{% endif %}
+            {% endif %}
+          {% endfor %}
+          </td>
+          <td>{{ enrollment.accepted|yesno }}</td>
+          <td>{{ enrollment.enrolled_by.get_full_name }}</td>
+          <td>{{ enrollment.enrolled_on }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
