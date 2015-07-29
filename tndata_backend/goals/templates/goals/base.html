@@ -82,7 +82,13 @@ a.ui-datepicker-next { float:right; }
         <i class="fa fa-info-circle"></i></a></li>
       {% if perms.goals.view_category %}
         <li class="divider"></li>
-        <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
+        <li class="has-dropdown">
+          <a href="{% url 'goals:category-list' %}">Categories</a>
+          <ul class="dropdown">
+          <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+          <li><a href="{% url 'goals:package-enroll' %}">Enroll</a></li>
+          </ul>
+        </li>
       {% endif %}
       {% if perms.goals.view_goal %}
         <li class="divider"></li>
