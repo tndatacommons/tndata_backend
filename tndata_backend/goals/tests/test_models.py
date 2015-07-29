@@ -18,6 +18,7 @@ from .. models import (
     UserAction,
     UserBehavior,
     UserCategory,
+    UserCompletedAction,
     UserGoal,
     get_categories_as_choices,
 )
@@ -639,6 +640,42 @@ class TestUserAction(TestCase):
     def test__str__(self):
         expected = "Test Action"
         actual = "{}".format(self.ua)
+        self.assertEqual(expected, actual)
+
+
+class TestUserCompletedAction(TestCase):
+    """Tests for the `UserCompletedAction` model."""
+
+    def setUp(self):
+        self.user, created = User.objects.get_or_create(
+            username="test",
+            email="test@example.com"
+        )
+        self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.action = Action.objects.create(
+            title='Test Action',
+            behavior=self.behavior
+        )
+        self.ua = UserAction.objects.create(
+            user=self.user,
+            action=self.action
+        )
+        self.uca = UserCompletedAction.objects.create(
+            user=self.user,
+            useraction=self.ua,
+            action=self.action
+        )
+
+    def tearDown(self):
+        User.objects.filter(id=self.user.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        UserAction.objects.filter(id=self.ua.id).delete()
+        UserCompletedAction.objects.filter(id=self.uca.id).delete()
+
+    def test__str__(self):
+        expected = "{}".format(self.action.title)
+        actual = "{}".format(self.uca)
         self.assertEqual(expected, actual)
 
 
