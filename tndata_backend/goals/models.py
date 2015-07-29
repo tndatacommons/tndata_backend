@@ -1424,4 +1424,18 @@ class PackageEnrollment(models.Model):
             self.enrolled_on
         )
 
+    def create_user_mappings(self):
+        """Creates all of the User* mappings for the associated categories and
+        all child content."""
+        # TODO: this is terribly inefficient, because we'll likely be doing
+        # this for a number of users at once.
+        for cat in self.categories.all():
+            UserCategory.objects.create(user=self.user, category=cat)
+            for goal in cat.goal_set.published():
+                UserGoal.objects.create(user=self.user, goal=goal)
+                for b in goal.behavior_set.published():
+                    UserBehavior.objects.create(user=self.user, behavior=b)
+                    for a in b.action_set.published():
+                        UserAction.objects.create(user=self.user, action=a)
+
     objects = PackageEnrollmentManager()

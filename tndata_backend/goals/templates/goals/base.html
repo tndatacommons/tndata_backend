@@ -82,62 +82,76 @@ a.ui-datepicker-next { float:right; }
         <i class="fa fa-info-circle"></i></a></li>
       {% if perms.goals.view_category %}
         <li class="divider"></li>
+        {% with addobj=perms.goals.add_category %}
         <li class="has-dropdown">
           <a href="{% url 'goals:category-list' %}">Categories</a>
           <ul class="dropdown">
           <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
           <li><a href="{% url 'goals:package-enroll' %}">Enroll</a></li>
+          {% if addobj %}
+          <li><a href="{% url 'goals:category-create' %}">
+            <i class="fa fa-plus-circle"></i> Category</a></li>
+          {% endif %}
           </ul>
         </li>
+        {% endwith %}
       {% endif %}
       {% if perms.goals.view_goal %}
         <li class="divider"></li>
-        <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
+        {% with addobj=perms.goals.add_goal %}
+        <li{% if addobj %} class="has-dropdown"{% endif %}>
+          <a href="{% url 'goals:goal-list' %}">Goals</a>
+          {% if addobj %}
+          <ul class="dropdown">
+            <li><a href="{% url 'goals:goal-create' %}">
+            <i class="fa fa-plus-circle"></i> Goal</a></li>
+          </ul>
+          {% endif %}
+        </li>
+        {% endwith %}
       {% endif %}
       {% if perms.goals.view_trigger %}
         <li class="divider"></li>
-        <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
+        {% with addobj=perms.goals.add_trigger %}
+        <li{% if addobj %} class="has-dropdown"{% endif %}>
+          <a href="{% url 'goals:trigger-list' %}">Triggers</a>
+          {% if addobj %}
+          <ul class="dropdown">
+            <li><a href="{% url 'goals:trigger-create' %}">
+            <i class="fa fa-plus-circle"></i> Trigger</a></li>
+          </ul>
+          {% endif %}
+        </li>
+        {% endwith %}
       {% endif %}
       {% if perms.goals.view_behavior %}
         <li class="divider"></li>
-        <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
+        {% with addobj=perms.goals.add_goal %}
+        <li{% if addobj %} class="has-dropdown"{% endif %}>
+          <a href="{% url 'goals:behavior-list' %}">Behaviors</a>
+          {% if addobj %}
+          <ul class="dropdown">
+            <li><a href="{% url 'goals:behavior-create' %}">
+            <i class="fa fa-plus-circle"></i> Behavior</a></li>
+          </ul>
+          {% endif %}
+        </li>
+        {% endwith %}
       {% endif %}
       {% if perms.goals.view_action %}
         <li class="divider"></li>
-        <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+        {% with addobj=perms.goals.add_action %}
+        <li{% if addobj %} class="has-dropdown"{% endif %}>
+          <a href="{% url 'goals:action-list' %}">Actions</a>
+          {% if addobj %}
+            <ul class="dropdown">
+            {% action_creation_menu %}
+            </ul>
+          {% endif %}
+        </li>
+        {% endwith %}
       {% endif %}
       <li class="divider"></li>
-
-      {# Check all of the 'add' permissions before including the drop-down #}
-      {% if perms.goals.add_category or goals.add_goal or perms.goals.add_trigger or perms.goals.add_behavior or perms.goals.add_action %}
-
-      <li class="has-dropdown">
-        <a href="#"><i class="fa fa-plus-circle"></i> New</a>
-        <ul class="dropdown">
-        {% if perms.goals.add_category %}
-          <li><a href="{% url 'goals:category-create' %}">Category</a></li>
-        {% endif %}
-        {% if perms.goals.add_goal %}
-          <li><a href="{% url 'goals:goal-create' %}">Goal</a></li>
-        {% endif %}
-        {% if perms.goals.add_trigger %}
-          <li><a href="{% url 'goals:trigger-create' %}">Trigger</a></li>
-        {% endif %}
-        {% if perms.goals.add_behavior %}
-          <li><a href="{% url 'goals:behavior-create' %}">Behavior</a></li>
-        {% endif %}
-        {% if perms.goals.add_action %}
-          <li class="has-dropdown">
-            <a href="#">Action</a>
-            <ul class="dropdown">
-              {% action_creation_menu %}
-            </ul>
-          </li>
-        {% endif %}
-        </ul>
-      </li>
-      <li class="divider"></li>
-      {% endif %} {# end check for all perms #}
     </ul>
   </section>
   </nav>
