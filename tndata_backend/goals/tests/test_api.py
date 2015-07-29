@@ -858,7 +858,12 @@ class TestUserBehaviorAPI(APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(response.data['count'], 1)
+        self.assertIn("user_categories", response.data['results'][0])
+        self.assertIn("user_goals", response.data['results'][0])
+        self.assertIn("user_actions", response.data['results'][0])
+        self.assertIn("user_actions_count", response.data['results'][0])
         self.assertEqual(response.data['results'][0]['user'], self.user.id)
         self.assertEqual(
             response.data['results'][0]['behavior']['id'],
