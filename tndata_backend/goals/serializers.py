@@ -241,6 +241,11 @@ class UserGoalSerializer(serializers.ModelSerializer):
 
 class UserBehaviorSerializer(serializers.ModelSerializer):
     """A Serializer for the `UserBehavior` model."""
+    user_categories = SimpleCategoryField(
+        source="get_user_categories",
+        many=True,
+        read_only=True
+    )
     user_goals = SimpleGoalField(
         source="get_user_goals",
         many=True,
@@ -261,8 +266,8 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserBehavior
         fields = (
-            'id', 'user', 'behavior', 'custom_trigger', 'user_goals',
-            'user_actions_count', 'user_actions', 'created_on',
+            'id', 'user', 'behavior', 'custom_trigger', 'user_categories',
+            'user_goals', 'user_actions_count', 'user_actions', 'created_on',
         )
         read_only_fields = ("id", "created_on", )
 

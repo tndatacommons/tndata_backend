@@ -402,6 +402,8 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     * `user`: A unique identifier for the `User`
     * `behavior`: An object that represents the `Behavior` selected by the user
     * `custom_trigger`: (will be `null`). This is currently not implemented.
+    * `user_categories`: An array of `Category` objects that have been selected
+      by the user, and that are also parents of this behavior (through Goals)
     * `user_goals`: An array of `Goal` objects that have been selected by the
       user, and that are also parents of this behavior.
     * `user_actions_count`: the number of child Actions that the user has

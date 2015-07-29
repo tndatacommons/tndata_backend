@@ -923,6 +923,17 @@ class UserBehavior(models.Model):
         verbose_name = "User Behavior"
         verbose_name_plural = "User Behaviors"
 
+    def get_user_categories(self):
+        """Returns a QuerySet of Categories related to this Behavior, but
+        restricts the result to those Categories which the user has selected."""
+        # User-selected categories
+        a = set(self.user.usercategory_set.values_list('category__id', flat=True))
+        # Parent categories (through goals)
+        b = set(self.behavior.goals.values_list("categories", flat=True))
+        # The overlap
+        ids = a.intersection(b)
+        return Category.objects.filter(id__in=ids)
+
     def get_user_goals(self):
         """Returns a QuerySet of Goals related to this Behavior, but restricts
         those goals to those which the user has selected."""
