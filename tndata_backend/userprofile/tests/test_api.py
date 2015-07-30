@@ -221,12 +221,26 @@ class TestUserProfilesAPI(APITestCase):
         self.User.objects.all().delete()
         UserProfile.objects.all().delete()
 
-    def test_get_userprofile_list(self):
+    def test_get_userprofile_list_unauthed(self):
         """Ensure unauthenticated requests don't return any data."""
         url = reverse('userprofile-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
+
+    def test_get_userprofile_list(self):
+        """Ensure authenticated requests return the user's data."""
+        url = reverse('userprofile-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.p.id)
+        self.assertEqual(response.data['results'][0]['user'], self.user.id)
+        self.assertEqual(response.data['results'][0]['timezone'], self.p.timezone)
+        self.assertFalse(response.data['results'][0]['needs_onboarding'])
 
     def test_post_userprofile_list_not_allowed(self):
         """POSTing to the userprofile-list should not be allowed."""
@@ -257,6 +271,8 @@ class TestUserProfilesAPI(APITestCase):
         self.assertEqual(response.data['id'], self.user.userprofile.id)
         self.assertEqual(response.data['user'], self.user.id)
         self.assertEqual(response.data['bio'], [])
+        self.assertEqual(response.data['timezone'], self.p.timezone)
+        self.assertEqual(response.data['needs_onboarding'], self.p.needs_onboarding)
 
     def test_post_userprofile_detail_not_allowed(self):
         """Ensure we cannot post to userprofile-detail"""
@@ -271,8 +287,8 @@ class TestUserProfilesAPI(APITestCase):
         response = self.client.post(url, {'race': "Don't ask"})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_put_userprofile_detail(self):
-        """Test updating userprofiles (e.g. timezones)"""
+    def test_put_userprofile_detail_timezone(self):
+        """Test updating userprofiles; timezone-only"""
         url = reverse('userprofile-detail', args=[self.p.id])
         data = {'timezone': "America/New_York"}
 
@@ -286,3 +302,41 @@ class TestUserProfilesAPI(APITestCase):
         )
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_put_userprofile_detail_needs_onboarding(self):
+        """Test updating userprofiles; needs_onboarding-only"""
+        url = reverse('userprofile-detail', args=[self.p.id])
+        data = {'needs_onboarding': True}
+
+        # Not without authentication
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # OK when authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['needs_onboarding'])
+
+    def test_put_userprofile_detail_all(self):
+        """Test updating userprofiles; needs_onboarding-only"""
+        url = reverse('userprofile-detail', args=[self.p.id])
+        data = {
+            'timezone': "America/New_York",
+            'needs_onboarding': True,
+        }
+
+        # Not without authentication
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # OK when authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['timezone'], "America/New_York")
+        self.assertTrue(response.data['needs_onboarding'])

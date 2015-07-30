@@ -23,6 +23,9 @@ class TestUserProfile(TestCase):
         actual = "{}".format(self.user)
         self.assertEqual(expected, actual)
 
+    def test_default_needs_onboarding(self):
+        self.assertFalse(self.user.userprofile.needs_onboarding)
+
     def test_bio(self):
         self.assertEqual(self.user.userprofile.bio, [])
 
