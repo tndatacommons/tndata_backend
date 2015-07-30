@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from .. models import UserProfile
 from .. serializers import UserSerializer
-from .. import utils
+from utils import user_utils
 
 
 class TestUserSerializer(TestCase):
@@ -135,7 +135,7 @@ class TestUsersAPI(APITestCase):
         """
         # Generate an existing user.
         user = {"email": "foo@example.com", "first_name": "F", "last_name": "L"}
-        user['username'] = utils.username_hash(user['email'])
+        user['username'] = user_utils.username_hash(user['email'])
         user = self.User.objects.create(**user)
 
         url = reverse('user-list')

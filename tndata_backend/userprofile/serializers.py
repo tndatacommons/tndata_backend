@@ -11,7 +11,7 @@ from goals.serializers import (
     UserGoalSerializer,
 )
 from . import models
-from . import utils
+from utils import user_utils
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -62,7 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         """
         User = get_user_model()
-        criteria = (Q(email=value) | Q(username=utils.username_hash(value)))
+        criteria = (Q(email=value) | Q(username=user_utils.username_hash(value)))
         if not self.partial and User.objects.filter(criteria).exists():
             raise serializers.ValidationError("This user account already exists.")
         validators.validate_email(value)
@@ -81,7 +81,7 @@ class UserSerializer(serializers.ModelSerializer):
         email address (the first 30 chars from an md5 hex digest).
         """
         if not data.get('username', False) and 'email' in data:
-            data['username'] = utils.username_hash(data['email'])
+            data['username'] = user_utils.username_hash(data['email'])
         return data
 
     def update(self, instance, validated_data):
