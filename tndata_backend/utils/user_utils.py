@@ -18,6 +18,7 @@ def create_inactive_user(email):
 
     username = username_hash(email)
     user = User.objects.create_user(username, email)
+    user.is_active = False
     user.set_unusable_password()
     user.save()
     try:
