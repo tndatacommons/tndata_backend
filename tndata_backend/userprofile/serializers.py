@@ -102,7 +102,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.UserProfile
-        fields = ('id', 'user', 'timezone', 'bio')
+        fields = ('id', 'user', 'timezone', 'needs_onboarding', 'bio')
 
 
 class AuthTokenSerializer(serializers.Serializer):

@@ -118,12 +118,17 @@ class UserProfileViewSet(mixins.ListModelMixin,
 
     ## Updating
 
-    Currently the only portion of a UserProfile that can be updated is the
-    `timezone`. To set a user's timezone, send a PUT request to the
-    UserProfile's detail endpoint, `/api/userprofiles/{userprofile_id}/`,
-    including the string for the desired timezone.
+    Currently the only portion of a UserProfile that can be updated is their
+    `timezone` and the `needs_onboarding` fields. To set a user's timezone,
+    send a PUT request to the UserProfile's detail endpoint,
+    `/api/userprofiles/{userprofile_id}/`, including the string for the
+    desired timezone.
 
         {'timezone': 'America/Chicago'}
+
+    Or to update both fields:
+
+        {'timezone': 'America/Chicago', 'needs_onboarding': false}
 
     ## Retrieving a User Profile
 
@@ -167,8 +172,9 @@ class UserProfileViewSet(mixins.ListModelMixin,
         return resp
 
     def update(self, request, *args, **kwargs):
-        """Allow setting timezone.
+        """Allow setting `timezone` or `needs_onboarding`.
 
+        * timezone: A timezone string, e.g. "America/Chicago"
         * timezone: A timezone string, e.g. "America/Chicago"
 
         """
