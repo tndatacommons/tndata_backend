@@ -11,6 +11,16 @@ urlpatterns = patterns('',
 
     # Custom Packages
     url(
+        r'^accept-enrollment/complete/$',
+        views.AcceptEnrollmentCompleteView.as_view(),
+        name='accept-enrollment-complete'
+    ),
+    url(
+        r'^accept-enrollment/(?P<username_hash>.+)/$',
+        views.accept_enrollment,
+        name='accept-enrollment'
+    ),
+    url(
         r'^packages/enrollments/$',
         views.PackageEnrollmentListView.as_view(),
         name='package-enrollments'

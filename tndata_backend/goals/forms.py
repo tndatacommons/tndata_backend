@@ -219,6 +219,18 @@ class PackageEnrollmentForm(forms.Form):
         return [email for email in re.split(r"\s|,", content) if email.strip()]
 
 
+class AcceptEnrollmentForm(forms.Form):
+    """forces the user to accept some terms."""
+
+    i_accept = forms.BooleanField(
+        required=True,
+        help_text=(
+            "Compass will share your information with the Package's author(s). "
+            "This may include your progress toward goals within the package, "
+            "as well as the periodic updates that you make within the app."
+        )
+    )
+
 class InvalidFormatException(Exception):
     """Custom exception that gets raised when the CSVUploadForm fails."""
     pass

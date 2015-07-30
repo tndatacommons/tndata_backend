@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Accept Enrollment{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="large-8 large-offset-2 medium-8 medium-offset-2 small-12 columns end">
+
+  {% if user %}
+    <h1>Welcome</h1>
+
+    <p>You've been enrolled in custom packages for Compass. Please set up your
+    account below, and accept the terms to create an account and recive a link
+    to the app.</p>
+
+    <form action="{% url 'goals:accept-enrollment' user.username %}" method="post">
+      {% csrf_token %}
+
+      <fieldset>
+        <legend>Your Details</legend>
+        {{ user_form.as_p }}
+      </fieldset>
+      <fieldset>
+        <legend>Your Password</legend>
+        {{ password_form.as_p }}
+      </fieldset>
+      <fieldset>
+        <legend>Your Privacy</legend>
+        {# manually render this form #}
+        <p>
+        {{ accept_form.i_accept }}
+        <label for="{{ accept_form.i_accept.auto_id }}">
+          {{ accept_form.i_accept.label }}</label>
+        </p>
+        <p class="helptext">{{ accept_form.i_accept.help_text }}</p>
+      </fieldset>
+
+      <hr>
+      <input type="submit" class="button" value="Continue"/>
+    </form>
+  {% else %}
+
+    <h1>Sorry.</h1>
+    <p>That link is no longer valid. Please download the Compass app.</p>
+  {% endif %}
+  </div>
+</div> {# end .row #}
+{% endblock %}

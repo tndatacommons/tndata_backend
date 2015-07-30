@@ -1,16 +1,21 @@
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
 from django.shortcuts import redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from django_fsm import TransitionNotAllowed
+from userprofile.forms import UserForm
+from utils.db import get_max_order
+from utils.forms import SetNewPasswordForm
 
 from . email import send_package_enrollment_batch
 from . forms import (
     ActionForm,
+    AcceptEnrollmentForm,
     BehaviorForm,
     CategoryForm,
     CSVUploadForm,
@@ -23,7 +28,6 @@ from . models import (
     Action, Behavior, Category, Goal, PackageEnrollment, Trigger
 )
 from . permissions import is_content_editor, superuser_required
-from utils.db import get_max_order
 
 
 class PublishView(View):
@@ -578,3 +582,44 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
             )
         send_package_enrollment_batch(emails, categories)
         return super().form_valid(form)
+
+
+def accept_enrollment(request, username_hash):
+    """This view lets app-users "claim" their account, set a password, & agree
+    to some terms/conditions for testing. It should then enroll them in our
+    Alphal/Beta-testing google group, and provide a link to the app in the app
+    store, upon success.
+
+    """
+    User = get_user_model()
+    try:
+        user = User.objects.get(username=username_hash, is_active=False)
+    except User.DoesNotExist:
+        user = None
+
+    if request.method == "POST":
+        user_form = UserForm(request.POST, instance=user, prefix="uf")
+        password_form = SetNewPasswordForm(request.POST, prefix="pf")
+        accept_form = AcceptEnrollmentForm(request.POST, prefix="aef")
+        forms_valid = [
+            user_form.is_valid(), password_form.is_valid(), accept_form.is_valid()
+        ]
+        if all(forms_valid):
+            return redirect(reverse("goals:accept-enrollment-complete"))
+
+    else:
+        user_form = UserForm(instance=user, prefix="uf")
+        password_form = SetNewPasswordForm(prefix="pf")
+        accept_form = AcceptEnrollmentForm(prefix="aef")
+
+    context = {
+        'user': user,
+        'user_form': user_form,
+        'password_form': password_form,
+        'accept_form': accept_form,
+    }
+    return render(request, 'goals/accept_enrollment.html', context)
+
+
+class AcceptEnrollmentCompleteView(TemplateView):
+    template_name = "goals/accept_enrollment_complete.html"
