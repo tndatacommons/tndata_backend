@@ -43,6 +43,11 @@ class UserProfile(models.Model):
         verbose_name = "User Profile"
         verbose_name_plural = "User Profiles"
 
+    def set_needs_onboarding(self, save=True):
+        self.needs_onboarding = True
+        if save:
+            self.save()
+
     def get_absolute_url(self):
         return reverse_lazy("userprofile:detail", args=[self.pk])
 
