@@ -18,9 +18,12 @@ MANAGERS = ADMINS
 DEFAULT_FROM_EMAIL = 'webmaster@tndata.org'
 SERVER_EMAIL = 'webmaster@tndata.org'
 
+# Site's FQDN and URL. For building links in email.
+SITE_DOMAIN = "app.tndata.org"
+SITE_URL = "https://{0}".format(SITE_DOMAIN)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
-
 SECRET_KEY = 'xt67918srm3f=0$#k%7quk+&pdtwy7#n=pfn%4kzyae$kxmw%j'
 DEBUG = False
 TEMPLATE_DEBUG = False
