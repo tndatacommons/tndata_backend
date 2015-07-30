@@ -8,6 +8,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
 from django_fsm import TransitionNotAllowed
 
+from . email import send_package_enrollment_batch
 from . forms import (
     ActionForm,
     BehaviorForm,
@@ -563,8 +564,17 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
     """
     template_name = "goals/package_enroll.html"
     form_class = PackageEnrollmentForm
-    success_url = "TODO"
+    success_url = reverse_lazy("goals:package-enrollments")
 
     def form_valid(self, form):
-        # TODO: create user enrollment objects.
+        # create user enrollment objects.
+        categories = form.cleaned_data['packages']
+        emails = form.cleaned_data['email_addresses']
+        for email in emails:
+            PackageEnrollment.objects.enroll_by_email(
+                email,
+                categories,
+                by=self.request.user
+            )
+        send_package_enrollment_batch(emails, categories)
         return super().form_valid(form)

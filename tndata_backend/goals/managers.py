@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -8,6 +10,8 @@ from .settings import (
     DEFAULT_BEHAVIOR_TRIGGER_TIME,
     DEFAULT_BEHAVIOR_TRIGGER_RRULE,
 )
+
+from utils import user_utils
 
 
 class UserActionManager(models.Manager):
@@ -149,6 +153,27 @@ class CategoryManager(WorkflowManager):
 
 class PackageEnrollmentManager(models.Manager):
 
-    def enroll_by_email(self, email, categories):
-        """Create enrollments for the given email address."""
-        pass
+    def enroll_by_email(self, email, categories, by):
+        """Create enrollments for the given email address. Returns a
+        QuerySet of PackageEnrollment objects."""
+        created_objects = list()
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Create an inactive user. This will:
+            #
+            # - Ensure they still go thru onboarding in the app.
+            # - Allow them to later set their password and user fields.
+            user = user_utils.create_inactive_user(email)
+
+        obj = self.create(user=user, enrolled_by=by)
+        for cat in categories:
+            obj.categories.add(cat)
+        obj.save()
+        created_objects.append(obj.id)
+
+        # Now, build associates for all the User<Content> objects?
+        obj.create_user_mappings()
+
+        return self.get_queryset().filter(pk__in=created_objects)
