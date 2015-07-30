@@ -13,10 +13,11 @@ from survey.models import Instrument
 
 
 class UserProfile(models.Model):
-    """A *profile* for a single user.
+    """A *profile* for a single user; This model contains additional info
+    about a user or their account. It also serves as a way to aggregate and
+    expose some data for a user.
 
-    This profile contains information about a user, such as demographic and
-    biographical data, that doesn't change frequently.
+    For example:
 
     Bio-8: Storing answers to 8 biographical questions: http://goo.gl/CSzRZp
 
@@ -31,25 +32,7 @@ class UserProfile(models.Model):
         blank=True,
         choices=[(tz, tz) for tz in pytz.common_timezones]
     )
-
-    # TODO: REMOVE the following profile-like fields; we get those from surveys.
-    birthdate = models.DateField(blank=True, null=True, db_index=True)
-    race = models.CharField(max_length=128, blank=True, db_index=True)
-    gender = models.CharField(max_length=128, blank=True, db_index=True)
-
-    relationship_status = models.CharField(max_length=128, blank=True)
-    educational_level = models.CharField(max_length=128, blank=True)
-    employment_status = models.CharField(max_length=128, blank=True)
-    children = models.CharField(max_length=128, blank=True)
-    economic_aspiration = models.CharField(max_length=128, blank=True)
-
-    mobile_phone = models.CharField(max_length=32, blank=True)
-    home_phone = models.CharField(max_length=32, blank=True)
-    home_address = models.CharField(max_length=32, blank=True)
-    home_city = models.CharField(max_length=32, blank=True)
-    home_state = models.CharField(max_length=32, blank=True)
-    home_zip = models.CharField(max_length=32, blank=True)
-
+    needs_onboarding = models.BooleanField(default=False, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
