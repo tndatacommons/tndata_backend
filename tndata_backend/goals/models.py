@@ -1393,7 +1393,7 @@ class PackageEnrollment(models.Model):
             self.user.get_full_name(),
             self.enrolled_on
         )
-
+# NEEDS TESTS.
     def create_user_mappings(self):
         """Creates all of the User* mappings for the associated categories and
         all child content."""

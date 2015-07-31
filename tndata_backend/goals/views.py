@@ -678,6 +678,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         return super().form_valid(form)
 
 
+# TODO: NEEDS TESTS.
 def accept_enrollment(request, username_hash):
     """This view lets app-users "claim" their account, set a password, & agree
     to some terms/conditions for testing. It should then enroll them in our
@@ -699,6 +700,9 @@ def accept_enrollment(request, username_hash):
             user_form.is_valid(), password_form.is_valid(), accept_form.is_valid()
         ]
         if all(forms_valid):
+            # --------------------------------------------------
+            # TODO: ENROLL in Google group for App Alpha testers
+            # --------------------------------------------------
             return redirect(reverse("goals:accept-enrollment-complete"))
 
     else:
@@ -715,5 +719,6 @@ def accept_enrollment(request, username_hash):
     return render(request, 'goals/accept_enrollment.html', context)
 
 
+# TODO: NEEDS TESTS.
 class AcceptEnrollmentCompleteView(TemplateView):
     template_name = "goals/accept_enrollment_complete.html"
