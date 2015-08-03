@@ -9,7 +9,7 @@ from django.views.generic import TemplateView, FormView
 from userprofile.forms import UserForm
 from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
-
+from . user_utils import username_hash
 
 def signup(request):
     if request.method == "POST":
@@ -26,7 +26,7 @@ def signup(request):
                 return redirect(reverse("login"))
             except User.DoesNotExist:
                 u = form.save(commit=False)
-                u.username = u.email
+                u.username = username_hash(u.email)
                 u.is_active = False
                 u.set_password(password_form.cleaned_data['password'])
                 u.save()
