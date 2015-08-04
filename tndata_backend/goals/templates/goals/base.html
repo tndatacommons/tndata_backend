@@ -115,20 +115,6 @@ a.ui-datepicker-next { float:right; }
         </li>
         {% endwith %}
       {% endif %}
-      {% if perms.goals.view_trigger %}
-        <li class="divider"></li>
-        {% with addobj=perms.goals.add_trigger %}
-        <li{% if addobj %} class="has-dropdown"{% endif %}>
-          <a href="{% url 'goals:trigger-list' %}">Triggers</a>
-          {% if addobj %}
-          <ul class="dropdown">
-            <li><a href="{% url 'goals:trigger-create' %}">
-            <i class="fa fa-plus-circle"></i> Trigger</a></li>
-          </ul>
-          {% endif %}
-        </li>
-        {% endwith %}
-      {% endif %}
       {% if perms.goals.view_behavior %}
         <li class="divider"></li>
         {% with addobj=perms.goals.add_goal %}
@@ -152,6 +138,20 @@ a.ui-datepicker-next { float:right; }
             <ul class="dropdown">
             {% action_creation_menu %}
             </ul>
+          {% endif %}
+        </li>
+        {% endwith %}
+      {% endif %}
+      {% if perms.goals.view_trigger and user.is_staff %}
+        <li class="divider"></li>
+        {% with addobj=perms.goals.add_trigger %}
+        <li{% if addobj %} class="has-dropdown"{% endif %}>
+          <a href="{% url 'goals:trigger-list' %}">Triggers</a>
+          {% if addobj %}
+          <ul class="dropdown">
+            <li><a href="{% url 'goals:trigger-create' %}">
+            <i class="fa fa-plus-circle"></i> Trigger</a></li>
+          </ul>
           {% endif %}
         </li>
         {% endwith %}
