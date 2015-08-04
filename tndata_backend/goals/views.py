@@ -157,6 +157,10 @@ class CategoryListView(ContentViewerMixin, ListView):
     context_object_name = 'categories'
     template_name = "goals/category_list.html"
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.prefetch_related("goal_set", "goal_set__behavior_set")
+
 
 class CategoryDetailView(ContentViewerMixin, DetailView):
     queryset = Category.objects.all()
@@ -229,6 +233,10 @@ class GoalListView(ContentViewerMixin, ListView):
     model = Goal
     context_object_name = 'goals'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.prefetch_related("behavior_set", "categories")
+
 
 class GoalDetailView(ContentViewerMixin, DetailView):
     queryset = Goal.objects.all()
@@ -244,7 +252,7 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
 
     def get_context_data(self, **kwargs):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
-        context['goals'] = Goal.objects.all()
+        context['goals'] = Goal.objects.all().prefetch_related("categories")
         return context
 
 
@@ -277,7 +285,10 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
-        context['goals'] = Goal.objects.all()
+        context['goals'] = Goal.objects.all().prefetch_related(
+            "categories",
+            "behavior_set"
+        )
         return context
 
 
@@ -352,6 +363,12 @@ class BehaviorListView(ContentViewerMixin, ListView):
     model = Behavior
     context_object_name = 'behaviors'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.prefetch_related(
+            "goals", "goals__categories", "action_set"
+        )
+
 
 class BehaviorDetailView(ContentViewerMixin, DetailView):
     queryset = Behavior.objects.all()
@@ -421,6 +438,10 @@ class ActionListView(ContentViewerMixin, ListView):
     model = Action
     context_object_name = 'actions'
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.select_related("behavior__title")
+
 
 class ActionDetailView(ContentViewerMixin, DetailView):
     queryset = Action.objects.all()
@@ -457,9 +478,16 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
-        context['actions'] = Action.objects.all()
-        context['behaviors'] = Behavior.objects.all()
         context['action_type'] = self.action_type
+
+        # We also list all existing actions & link to them.
+        context['actions'] = Action.objects.all().select_related("behavior__title")
+
+        # pre-populate some dynamic content displayed to the user regarding
+        # an action's parent behavior.
+        context['behaviors'] = Behavior.objects.values(
+            "id", "description", "informal_list"
+        )
         return context
 
 
@@ -508,8 +536,14 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)
-        context['actions'] = Action.objects.all()
-        context['behaviors'] = Behavior.objects.all()
+        # We also list all existing actions & link to them.
+        context['actions'] = Action.objects.all().select_related("behavior__title")
+
+        # pre-populate some dynamic content displayed to the user regarding
+        # an action's parent behavior.
+        context['behaviors'] = Behavior.objects.values(
+            "id", "description", "informal_list"
+        )
         return context
 
 
