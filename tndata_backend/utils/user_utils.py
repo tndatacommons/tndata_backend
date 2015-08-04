@@ -1,6 +1,12 @@
 import hashlib
+from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.db.models import ObjectDoesNotExist
+
+
+def date_hash():
+    """Generate an MD5 hash based on the current time."""
+    return hashlib.md5(datetime.now().strftime("%c").encode("utf8")).hexdigest()
 
 
 def username_hash(email, max_length=30):
