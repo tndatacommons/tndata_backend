@@ -16,6 +16,7 @@ from . email import send_package_enrollment_batch
 from . forms import (
     ActionForm,
     AcceptEnrollmentForm,
+    ActionTriggerForm,
     BehaviorForm,
     CategoryForm,
     CSVUploadForm,
@@ -476,6 +477,28 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         self._set_action_type(request.GET.get("actiontype", self.action_type))
         return super().get(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        # Handle dealing with 2 forms.
+        form = self.get_form()
+        trigger_form = ActionTriggerForm(request.POST, prefix="trigger")
+        if form.is_valid() and trigger_form.is_valid():
+            return self.form_valid(form, trigger_form)
+        else:
+            return self.form_invalid(form, trigger_form)
+
+    def form_valid(self, form, trigger_form):
+        self.object = form.save()
+        default_trigger = trigger_form.save(commit=False)
+        default_trigger.name = "Default: {0}-{1}".format(self.object, self.object.id)
+        default_trigger.save()
+        self.object.default_trigger = default_trigger
+        self.object.save()
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form, trigger_form):
+        ctx = self.get_context_data(form=form, trigger_form=trigger_form)
+        return self.render_to_response(ctx)
+
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
         context['action_type'] = self.action_type
@@ -488,6 +511,8 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         context['behaviors'] = Behavior.objects.values(
             "id", "description", "informal_list"
         )
+        if 'trigger_form' not in context:
+            context['trigger_form'] = ActionTriggerForm(prefix="trigger")
         return context
 
 
@@ -534,6 +559,33 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
     query_pk_and_slug = True  # Use pk and slug together to identify object.
     form_class = ActionForm
 
+    def post(self, request, *args, **kwargs):
+        # Handle dealing with 2 forms.
+        self.object = self.get_object()
+        form = self.get_form()
+        trigger_form = ActionTriggerForm(
+            request.POST,
+            instance=self.object.default_trigger,
+            prefix="trigger"
+        )
+        if form.is_valid() and trigger_form.is_valid():
+            return self.form_valid(form, trigger_form)
+        else:
+            return self.form_invalid(form, trigger_form)
+
+    def form_valid(self, form, trigger_form):
+        self.object = form.save()
+        default_trigger = trigger_form.save(commit=False)
+        default_trigger.name = "Default: {0}-{1}".format(self.object, self.object.id)
+        default_trigger.save()
+        self.object.default_trigger = default_trigger
+        self.object.save()
+        return redirect(self.get_success_url())
+
+    def form_invalid(self, form, trigger_form):
+        ctx = self.get_context_data(form=form, trigger_form=trigger_form)
+        return self.render_to_response(ctx)
+
     def get_context_data(self, **kwargs):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)
         # We also list all existing actions & link to them.
@@ -544,6 +596,13 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
         context['behaviors'] = Behavior.objects.values(
             "id", "description", "informal_list"
         )
+
+        # Include a form for the default trigger
+        if 'trigger_form' not in context:
+            context['trigger_form'] = ActionTriggerForm(
+                instance=self.object.default_trigger,
+                prefix="trigger"
+            )
         return context
 
 

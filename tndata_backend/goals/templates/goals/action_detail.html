@@ -24,7 +24,9 @@
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
         <dt>Default Trigger</dt>
           {% with trigger=action.default_trigger %}
-          <dd>{{ trigger }}
+          <dd>
+            {% if trigger.time %}{{ trigger.time }}{% endif %}
+            {% if trigger.trigger_date %}{{ trigger.trigger_date }}{% endif %}
             {% if trigger.recurrences %}
               <br/><em>{{ trigger.recurrences_as_text }}</em>
             {% endif %}

@@ -6,6 +6,22 @@
   {# Custom CSS for behavior lists in the side panel #}
   <style type="text/css">#behavior-info{display: none;}</style>
   {{ form.media }}
+  {{ trigger_form.media }}  {# load the recurrences widget #}
+  <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' %}"></script>
+  {# Custom CSS for the recurrences widget #}
+  <style type="text/css">
+  div.recurrence-widget {
+    margin-bottom: 1em;
+    float:none;
+    max-width:400px;
+    overflow:auto;
+  }
+  div.panels > div.panel {
+    border-width: 0px; margin:0px; padding:.5em;
+    border-bottom: 1px solid #ddd;
+  }
+  div.recurrence-widget a.add-date {display:none;}
+  </style>
 {% endblock %}
 
 
@@ -37,6 +53,10 @@
     <p>An <strong>Action</strong> is the unit of activity in which
     users will engage.</p>
     {% include "goals/_form_fields_sans_notes.html" %}
+    <fieldset>
+      <legend>Reminder Details</legend>
+      {{ trigger_form.as_p }}
+    </fieldset>
     {% form_buttons object "Action" %}
   </div>
   <div class="large-6 small-12 columns">
@@ -99,4 +119,16 @@ Category
   </div>
 </div>
 </form>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+  <script>
+  $(document).ready(function() {
+    $('.datepicker').datepicker({'format': 'yyyy/mm/dd'});
+    $("div.recurrence-widget").find(".add-date").attr("href", "#").hide();
+  });
+  </script>
 {% endblock %}

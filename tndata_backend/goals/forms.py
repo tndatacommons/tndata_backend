@@ -8,6 +8,7 @@ from django.utils.text import slugify
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
 from utils import colors
+from utils.user_utils import date_hash
 
 from . models import Action, Behavior, Category, Goal, Trigger
 from . utils import read_uploaded_csv
@@ -89,10 +90,7 @@ class ActionForm(forms.ModelForm):
     behavior = forms.ModelChoiceField(
         queryset=Behavior.objects.all().order_by("title")
     )
-    default_trigger = forms.ModelChoiceField(
-        queryset=Trigger.objects.default(),
-        required=False
-    )
+
     # Note: this field's value should always get in the initial data
     action_type = forms.CharField(
         max_length=32,
@@ -103,7 +101,7 @@ class ActionForm(forms.ModelForm):
         model = Action
         fields = [
             'notification_text', 'sequence_order', 'behavior', 'title',
-            'description', 'more_info', 'external_resource', 'default_trigger',
+            'description', 'more_info', 'external_resource',
             'source_link', 'source_notes', 'notes', 'icon', 'action_type',
         ]
         labels = {"notes": "Scratchpad"}
@@ -171,13 +169,45 @@ class GoalForm(forms.ModelForm):
         labels = {"notes": "Scratchpad"}
 
 
-class TriggerForm(forms.ModelForm):
-    recurrences = RecurrenceField()
+class ActionTriggerForm(forms.ModelForm):
+    """A form for creating a default trigger while creating an action. The
+    Trigger object returned by this form (e.g. when calling .save()) will:
+
+    - have trigger_type = 'time'
+    - an auto-generated hash as a name.
+
+    """
+    recurrences = RecurrenceField(
+        help_text="Select the rules to define how this reminder should repeat."
+    )
 
     class Meta:
         model = Trigger
-        fields = ['name', 'trigger_type', 'time', 'recurrences']
-        widgets = {"time": TimeSelectWidget()}
+        fields = ['time', 'trigger_date', 'recurrences']
+        widgets = {
+            "time": TimeSelectWidget(include_empty=True),
+            "trigger_date": forms.TextInput(attrs={'class': 'datepicker', 'type': 'date'}),
+        }
+
+    def save(self, *args, **kwargs):
+        obj = super().save(*args, **kwargs)
+        obj.trigger_type = "time"
+        obj.name = date_hash()
+        return obj
+
+
+class TriggerForm(forms.ModelForm):
+    recurrences = RecurrenceField(
+        help_text="Select the rules to define how this reminder should repeat."
+    )
+
+    class Meta:
+        model = Trigger
+        fields = ['name', 'trigger_type', 'time', 'trigger_date', 'recurrences']
+        widgets = {
+            "time": TimeSelectWidget(),
+            "trigger_date": forms.TextInput(attrs={'class': 'datepicker', 'type': 'date'}),
+        }
 
 
 class PackageEnrollmentForm(forms.Form):
@@ -213,6 +243,7 @@ class AcceptEnrollmentForm(forms.Form):
             "as well as the periodic updates that you make within the app."
         )
     )
+
 
 class InvalidFormatException(Exception):
     """Custom exception that gets raised when the CSVUploadForm fails."""
