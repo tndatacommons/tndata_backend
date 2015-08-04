@@ -17,11 +17,13 @@ class TimeSelectWidget(forms.widgets.Select):
             for t in times
         ]
 
-    def __init__(self, attrs=None, choices=()):
+    def __init__(self, attrs=None, choices=(), include_empty=False):
         super().__init__(attrs, choices)
         # Set the default choices if none are provided.
         if len(self.choices) == 0:
             self.choices = self._time_choices()
+            if include_empty:
+                self.choices = [("", "--------")] + self.choices
 
     def render(self, name, value, attrs=None, choices=()):
         # Set choices if none are provided.
