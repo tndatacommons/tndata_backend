@@ -7,7 +7,7 @@
   <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' %}"></script>
   {# Custom CSS for the recurrences widget #}
   <style type="text/css">
-  div.recurrence-widget {margin-bottom: 1em;}
+  div.recurrence-widget {margin-bottom: 1em;float:none;}
   div.panels > div.panel {
     border-width: 0px; margin:0px; padding:.5em;
     border-bottom: 1px solid #ddd;
@@ -93,6 +93,7 @@
   <script>
   $(document).ready(function() {
     $('.datepicker').datepicker({'format': 'yyyy/mm/dd'});
+    $("div.recurrence-widget").find(".add-date").attr("href", "#").hide();
   });
   </script>
 {% endblock %}
