@@ -42,6 +42,14 @@ class ContentPermissions:
     _workflow_objects = ['action', 'behavior', 'goal', 'trigger']
 
     @property
+    def all(self):
+        return list(set(self.admins + self.authors + self.editors + self.viewers))
+
+    @property
+    def all_codenames(self):
+        return [p.split(".")[-1] for p in self.all]
+
+    @property
     def admins(self):
         """permissions for admins"""
         perms = []
