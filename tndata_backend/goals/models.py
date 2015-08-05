@@ -39,10 +39,15 @@ from .managers import (
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
 
 
-# TODO: Should we reset the state (back to draft?) if something is changed
-# after it's been declined or published?
 class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
-    """A Broad grouping of possible Goals from which users can choose."""
+    """A Broad grouping of possible Goals from which users can choose.
+
+    We also have content (goals, behaviors, actions) that is associated with
+    a single organization. We've been referring to this scenario as "packaged
+    content", and in this case a Category serves as the Organization's content
+    "container".
+
+    """
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -51,13 +56,19 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     urls_image_field = "image"
 
     # Data Fields
+    packaged_content = models.BooleanField(
+        default=False,
+        help_text="Is this Category for a collection of packaged content?"
+    )
+    package_contributors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        help_text="The group of users that will contribute to content in "
+                  "this category."
+    )
     order = models.PositiveIntegerField(
         unique=True,
         help_text="Controls the order in which Categories are displayed."
-    )
-    packaged_content = models.BooleanField(
-        default=False,
-        help_text="Is this Category for a collection of Packaged Content?"
     )
     title = models.CharField(
         max_length=128,
@@ -1393,7 +1404,8 @@ class PackageEnrollment(models.Model):
             self.user.get_full_name(),
             self.enrolled_on
         )
-# NEEDS TESTS.
+
+    # TODO: NEEDS TESTS.
     def create_user_mappings(self):
         """Creates all of the User* mappings for the associated categories and
         all child content."""
