@@ -86,13 +86,7 @@ a.ui-datepicker-next { float:right; }
         <li class="has-dropdown">
           <a href="{% url 'goals:category-list' %}">Categories</a>
           <ul class="dropdown">
-          {% comment %}
-            TODO: RE-enable these ...
-
           <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
-          <li><a href="{% url 'goals:package-enroll' %}">Enroll</a></li>
-          {% endcomment %}
-
           {% if addobj %}
           <li><a href="{% url 'goals:category-create' %}">
             <i class="fa fa-plus-circle"></i> Category</a></li>

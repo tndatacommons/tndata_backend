@@ -6,17 +6,18 @@ from django.template.loader import render_to_string
 from utils.email import send_mass_html_mail
 
 
-def send_package_enrollment_batch(emails, categories, subject=None):
+def send_package_enrollment_batch(emails, category, goals, subject=None):
     """Send the notification email to those users who have been enrolled.
 
     * emails is a list of email addresses (but their accounts should be created
       at this point).
-    * categories is a queryset of Category objects.
+    * category is the parent Category object
+    * goals is a queryset of Goal objects.
     * subject: optional; subject to use for the email.
 
     """
     if subject is None:
-        subject = "Welcome to {0}".format(", ".join([c.title for c in categories]))
+        subject = "Welcome to {0}".format(category)
 
     User = get_user_model()
     users = User.objects.filter(email__in=emails)
@@ -34,7 +35,8 @@ def send_package_enrollment_batch(emails, categories, subject=None):
             "email": email,
             "username": username,
             "new_user": not is_active,  # User was just created, needs to activate.
-            "categories": categories,
+            "category": category,
+            "goals": goals,
             "cta_link": cta_link,
             "cta_text": "Get Started",
         }

@@ -1,12 +1,12 @@
 {% extends 'email/base_email.html' %}
 
 {% block title %}
-Welcome to {{ categories|join:", "}}
+Welcome to {{ category }}
 {% endblock %}
 
 
 {% block content %}
-  <h1>Welcome to {{ categories|join:", "}}</h1>
+  <h1>Welcome to {{ category }}</h1>
   <p>Hi,</p>
   <p>We're letting you know that you've been enrolled in some new
   packages within Compass.</p>

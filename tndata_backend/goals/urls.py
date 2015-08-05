@@ -20,15 +20,20 @@ urlpatterns = patterns('',
         views.accept_enrollment,
         name='accept-enrollment'
     ),
+    #url(
+        #r'^packages/enrollments/$',
+        #views.PackageEnrollmentListView.as_view(),
+        #name='package-enrollments'
+    #),
     url(
-        r'^packages/enrollments/$',
-        views.PackageEnrollmentListView.as_view(),
-        name='package-enrollments'
-    ),
-    url(
-        r'^packages/enroll/$',
+        r'^packages/(?P<pk>\d+)/enroll/$',
         views.PackageEnrollmentView.as_view(),
         name='package-enroll'
+    ),
+    url(
+        r'^packages/(?P<pk>\d+)/$',
+        views.PackageDetailView.as_view(),
+        name='package-detail'
     ),
     url(
         r'^packages/$',

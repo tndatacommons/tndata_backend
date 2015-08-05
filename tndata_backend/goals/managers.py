@@ -153,7 +153,7 @@ class CategoryManager(WorkflowManager):
 
 class PackageEnrollmentManager(models.Manager):
 
-    def enroll_by_email(self, email, categories, by):
+    def enroll_by_email(self, email, category, goals, by):
         """Create enrollments for the given email address. Returns a
         QuerySet of PackageEnrollment objects."""
         created_objects = list()
@@ -167,13 +167,13 @@ class PackageEnrollmentManager(models.Manager):
             # - Allow them to later set their password and user fields.
             user = user_utils.create_inactive_user(email)
 
-        obj = self.create(user=user, enrolled_by=by)
-        for cat in categories:
-            obj.categories.add(cat)
+        obj = self.create(user=user, category=category, enrolled_by=by)
+        for goal in goals:
+            obj.goals.add(goal)
         obj.save()
         created_objects.append(obj.id)
 
-        # Now, build associates for all the User<Content> objects?
+        # Now, create the User<Content> objects.
         obj.create_user_mappings()
 
         return self.get_queryset().filter(pk__in=created_objects)

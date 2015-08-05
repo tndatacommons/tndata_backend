@@ -17,22 +17,29 @@
       <tr>
         <th>Category</th>
         <th>State</th>
+        <th>Actions</th>
       </tr>
       </thead>
       <tbody>
+      {% for category in categories %}
       <tr>
         <td>
-          <a href="{% url 'goals:package-enrollments' %}">All Packages</a>
+        <a href="{{ category.get_absolute_url }}">{{ category }}</a></td>
+        <td>{{ category.state|label }}</td>
+        <td>
+          {% if user.is_staff or user in category.package_contributors %}
+          <ul class="stack-for-small button-group">
+            <li><a href="{{ category.get_view_enrollment_url }}"
+                   class="button small secondary">
+                   View Enrollment</a></li>
+            <li><a href="{{ category.get_enroll_url }}"
+                   class="button small secondary">
+                   Enroll Users</a></li>
+          </ul>
+          {% else %}
+            -
+          {% endif %}
         </td>
-        <td>n/a</td>
-      </tr>
-
-      {% for package in packages %}
-      <tr>
-        <td>
-        <a href="{% url 'goals:package-enrollments' %}?category={{package.id}}">
-          {{ package }}</a></td>
-        <td>{{ package.state|label }}</td>
       </tr>
       {% endfor %}
       </tbody>

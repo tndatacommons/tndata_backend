@@ -238,16 +238,26 @@ class PackageEnrollmentForm(forms.Form):
     one or more Categories--those of which have been designated as packaged
     content.
 
+    Requires that it's first argument is a Category, the parent (or package)
+    of the goals to be selected.
+
     """
     email_addresses = forms.CharField(
         widget=forms.Textarea(),
-        help_text=("Paste in email addresses for people who should be enrolled "
-                   ", either one per line or separated by a comma")
+        help_text=("Paste in email addresses for people who should be enrolled, "
+                   "either one per line or separated by a comma")
     )
-    packages = forms.ModelMultipleChoiceField(
-        queryset=Category.objects.packages(),
+    packaged_goals = forms.ModelMultipleChoiceField(
+        queryset=Goal.objects.none(),
         help_text="Select the packages in which to enroll each person"
     )
+
+    def __init__(self, category, *args, **kwargs):
+        """Provice a specific category for this for in order to enroll users
+        in it's set of Goals."""
+        super().__init__(*args, **kwargs)
+        qs = Goal.objects.published().filter(categories=category)
+        self.fields['packaged_goals'].queryset = qs
 
     def clean_email_addresses(self):
         """Returns a list of email addresses."""

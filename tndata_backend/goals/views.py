@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 
@@ -618,34 +618,26 @@ class ActionDeleteView(ContentEditorMixin, DeleteView):
 
 class PackageListView(ContentViewerMixin, ListView):
     queryset = Category.objects.packages(published=False)
-    context_object_name = 'packages'
+    context_object_name = 'categories'
     template_name = "goals/package_list.html"
-
-
-class PackageEnrollmentListView(ContentViewerMixin, ListView):
-    model = PackageEnrollment
-    context_object_name = 'package_enrollments'
-
-    def get(self, request, *args, **kwargs):
-        self._category_id = request.GET.get("category", None)
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        if self._category_id:
-            qs = qs.filter(categories=self._category_id)
-        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        try:
-            category = Category.objects.get(pk=self._category_id)
-        except Category.DoesNotExist:
-            category = None
-        context['category'] = category
         return context
 
 
+class PackageDetailView(ContentViewerMixin, DetailView):
+    queryset = Category.objects.packages(published=False)
+    context_object_name = 'category'
+    template_name = "goals/package_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['enrollments'] = self.object.packageenrollment_set.all()
+        return context
+
+
+# TODO: NEEDS TESTS.
 class PackageEnrollmentView(ContentAuthorMixin, FormView):
     """Allow a user with *Author* permissions to automatically enroll users
     in a *package* of content. This will do the following:
@@ -662,20 +654,42 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
     """
     template_name = "goals/package_enroll.html"
     form_class = PackageEnrollmentForm
-    success_url = reverse_lazy("goals:package-enrollments")
+
+    def get_success_url(self):
+        return self.category.get_view_enrollment_url()
+
+    def get_form(self, form_class=None):
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(self.category, **self.get_form_kwargs())
+
+    def get(self, request, *args, **kwargs):
+        self.category = get_object_or_404(Category, pk=kwargs.get('pk'))
+        form = self.get_form()
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def post(self, request, *args, **kwargs):
+        self.category = get_object_or_404(Category, pk=kwargs.pop('pk', None))
+        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         # create user enrollment objects.
-        categories = form.cleaned_data['packages']
+        goals = form.cleaned_data['packaged_goals']
         emails = form.cleaned_data['email_addresses']
         for email in emails:
             PackageEnrollment.objects.enroll_by_email(
                 email,
-                categories,
+                self.category,
+                goals,
                 by=self.request.user
             )
-        send_package_enrollment_batch(emails, categories)
+        send_package_enrollment_batch(emails, self.category, goals)
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
 
 
 # TODO: NEEDS TESTS.
