@@ -1,8 +1,10 @@
 import re
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.utils.text import slugify
 
 from recurrence.forms import RecurrenceField
@@ -11,6 +13,7 @@ from utils import colors
 from utils.user_utils import date_hash
 
 from . models import Action, Behavior, Category, Goal, Trigger
+from . permissions import ContentPermissions
 from . utils import read_uploaded_csv
 from . widgets import TimeSelectWidget
 
@@ -129,15 +132,35 @@ class BehaviorForm(forms.ModelForm):
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
 
 
+def _contributors():
+    """Returns a QuerySet of Users that can be Package Contributors.
+
+    Those users are either staff or have ContentPermissions.
+
+    """
+    User = get_user_model()
+    return User.objects.filter(
+        Q(user_permissions__codename__in=ContentPermissions.all_codenames) |
+        Q(is_staff=True)
+    ).distinct()
+
+
+class ContributorChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+            return obj.get_full_name()
+
+
 class CategoryForm(forms.ModelForm):
     """A Form for creating/updateing Categories. This form customizes the widget
     for the color field."""
 
+    package_contributors = ContributorChoiceField(queryset=_contributors())
+
     class Meta:
         model = Category
         fields = [
-            'order', 'packaged_content', 'title', 'description',
-            'icon', 'image', 'color', 'secondary_color', 'notes',
+            'packaged_content', 'package_contributors', 'order', 'title',
+            'description', 'icon', 'image', 'color', 'secondary_color', 'notes',
         ]
         labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {
