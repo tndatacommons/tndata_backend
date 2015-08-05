@@ -340,10 +340,14 @@ admin.site.register(models.CategoryProgress, CategoryProgressAdmin)
 
 
 class PackageEnrollmentAdmin(UserRelatedModelAdmin):
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'category__title', 'goals__title',
+    )
     list_display = (
         'user_email', 'user_first', 'user_last', 'accepted', 'enrolled_by',
-        'enrolled_on'
+        'enrolled_on', 'category',
     )
-    raw_id_fields = ("user", 'enrolled_by', 'categories')
+    raw_id_fields = ("user", 'enrolled_by', 'goals')
 
 admin.site.register(models.PackageEnrollment, PackageEnrollmentAdmin)
