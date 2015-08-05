@@ -1886,6 +1886,21 @@ class TestActionCreateView(TestCaseWithGroups):
         resp = self.ua_client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
+    def test_admin_post_empty_form(self):
+        """This is an edge case, but it shouldn't cause a 500"""
+        data = {
+            'sequence_order': 0,
+            'title': '',
+            'behavior': '',
+            'action_type': '',
+            'trigger-time': '',
+            'trigger-trigger_date': '',
+            'trigger-recurrences': '',
+        }
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, data)
+        self.assertEqual(resp.status_code, 200)
+
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, self.payload)

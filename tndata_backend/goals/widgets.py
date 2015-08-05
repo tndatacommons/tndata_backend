@@ -32,7 +32,7 @@ class TimeSelectWidget(forms.widgets.Select):
         # Since this is used for a TimeField, any existing value will be
         # a datetime.time object, so we need to convert it back to a string
         # format (because that's what's expected in our <option>'s)
-        if value is not None:
+        if value:
             value = value.strftime("%H:%M")
 
         return super().render(name, value, attrs, choices)

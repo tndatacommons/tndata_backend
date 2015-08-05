@@ -479,6 +479,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
 
     def post(self, request, *args, **kwargs):
         # Handle dealing with 2 forms.
+        self.object = None
         form = self.get_form()
         trigger_form = ActionTriggerForm(request.POST, prefix="trigger")
         if form.is_valid() and trigger_form.is_valid():
