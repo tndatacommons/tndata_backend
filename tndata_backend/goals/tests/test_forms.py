@@ -1,6 +1,7 @@
 from django.test import TestCase
 from .. forms import (
     ActionForm,
+    ActionTriggerForm,
     BehaviorForm,
     CategoryForm,
     GoalForm,
@@ -17,13 +18,48 @@ from .. models import (
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
+class TestActionTriggerForm(TestCase):
+
+    def test_unbound(self):
+        form = ActionTriggerForm()
+        fields = sorted(['time', 'trigger_date', 'recurrences'])
+        self.assertEqual(fields, sorted(list(form.fields.keys())))
+
+    def test_bound_all(self):
+        data = {
+            'time': '6:30',
+            'trigger_date': '08/20/2015',
+            'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+    def test_bound_recurrence(self):
+        data = {
+            'time': '15:30',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+    def test_bound_once(self):
+        data = {
+            'time': '7:00',
+            'trigger_date': '02/01/2010',
+            'recurrences': 'RRULE:FREQ=DAILY',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+
 class TestActionForm(TestCase):
 
     def test_unbound(self):
         form = ActionForm()
         fields = sorted([
             'sequence_order', 'behavior', 'title', 'description', 'action_type',
-            'more_info', 'external_resource', 'default_trigger', 'icon',
+            'more_info', 'external_resource', 'icon',
             'notification_text', 'source_link', 'source_notes', 'notes',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
@@ -37,7 +73,6 @@ class TestActionForm(TestCase):
             'description': 'ASDF',
             'more_info': '',
             'external_resource': '',
-            'default_trigger': '',
             'notification_text': '',
             'source_link': '',
             'source_notes': '',
@@ -59,7 +94,6 @@ class TestActionForm(TestCase):
             'description': '',
             'more_info': '',
             'external_resource': '',
-            'default_trigger': '',
             'notification_text': '',
             'icon': '',
             'source_link': '',
@@ -85,9 +119,8 @@ class TestBehaviorForm(TestCase):
     def test_unbound(self):
         form = BehaviorForm()
         fields = sorted([
-            'title', 'description', 'more_info', 'informal_list',
+            'title', 'description', 'more_info', 'informal_list', 'notes',
             'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
-             'default_trigger', 'notes',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -101,7 +134,6 @@ class TestBehaviorForm(TestCase):
             'external_resource': '',
             'goals': [g.id],
             'icon': '',
-            'default_trigger': '',
             'source_link': '',
             'source_notes': '',
             'notes': '',
@@ -122,7 +154,6 @@ class TestBehaviorForm(TestCase):
             'external_resource': '',
             'goals': [g.id],
             'icon': '',
-            'default_trigger': '',
             'source_link': '',
             'source_notes': '',
             'notes': '',
@@ -226,7 +257,9 @@ class TestTriggerForm(TestCase):
 
     def test_unbound(self):
         form = TriggerForm()
-        fields = sorted(['name', 'trigger_type', 'time', 'recurrences'])
+        fields = sorted([
+            'name', 'trigger_date', 'trigger_type', 'time', 'recurrences'
+        ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):

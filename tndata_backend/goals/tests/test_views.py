@@ -1850,6 +1850,9 @@ class TestActionCreateView(TestCaseWithGroups):
             'title': 'New',
             'behavior': cls.behavior.id,
             'action_type': Action.CUSTOM,
+            'trigger-time': '22:00',
+            'trigger-trigger_date': '08/20/2015',
+            'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
         }
 
     def test_anon_get(self):
@@ -2038,6 +2041,9 @@ class TestActionUpdateView(TestCaseWithGroups):
             'title': 'U',
             'behavior': cls.behavior.id,
             'action_type': Action.CUSTOM,
+            'trigger-time': '22:00',
+            'trigger-trigger_date': '08/20/2015',
+            'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
         }
 
     def setUp(self):

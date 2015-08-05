@@ -228,6 +228,7 @@ class TestGoal(TestCase):
         self.assertEqual(self.goal.state, "published")
 
 
+# TODO: Run tests & update trigger stuff for this adn forms
 class TestTrigger(TestCase):
     """Tests for the `Trigger` model."""
 
