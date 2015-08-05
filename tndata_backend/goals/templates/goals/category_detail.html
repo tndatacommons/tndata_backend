@@ -23,6 +23,12 @@
             <span class="label info">Package</span>
           {% endif %}
         </dd>
+        {% if category.is_packaged %}
+          <dt>Package Contributors</dt>
+          <dd>{% for contributor in category.package_contributors.all %}
+            {{ contributor.get_full_name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}</dd>
+        {% endif %}
         <dt>Default Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
 
