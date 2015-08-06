@@ -227,6 +227,14 @@ class TestCategoryCreateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
+        cls.payload = {
+            'packaged_content': False,
+            'package_contributors': '',
+            'order': 2,
+            'title': 'New',
+            'description': 'Desc',
+            'color': '#f00',
+        }
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -2417,6 +2425,6 @@ class TestAcceptEnrollmentCompleteView(TestCase):
     """Simple, publicly-available template."""
 
     def test_get(self):
-        resp = self.client.get(reverse("accept-enrollment-complete"))
+        resp = self.client.get(reverse("goals:accept-enrollment-complete"))
         self.assertEqual(resp.status_code, 200)
         self.client.logout()

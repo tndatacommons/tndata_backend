@@ -664,7 +664,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         # REQUIRES self.category.
         return any([
             self.request.user.is_staff,
-            self.request.user.has_perm('goals.publish_category'),
+            self.request.user.has_perm('goals.publish_goal'),
             self.request.user in self.category.package_contributors.all()
         ])
 
