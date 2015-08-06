@@ -731,6 +731,9 @@ def accept_enrollment(request, username_hash):
             user_form.is_valid(), password_form.is_valid(), accept_form.is_valid()
         ]
         if all(forms_valid):
+            # Be sure to activate their account.
+            user.is_active = True
+            user.save()
             return redirect(reverse("goals:accept-enrollment-complete"))
 
     else:
