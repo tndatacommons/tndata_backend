@@ -2290,6 +2290,129 @@ class TestActionDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+class TestPackageEnrollmentView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        # Create a contributor for the class.
+        content_author_group = get_or_create_content_authors()
+        args = ("contributor", "contributor@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(content_author_group)
+
+        # Create the Category and the content hierarchy
+        cls.category = Category.objects.create(
+            packaged_content=True,
+            order=25,
+            title="Test Package Category",
+            state="published",
+            created_by=cls.editor,
+        )
+        cls.category.package_contributors.add(cls.contributor)
+        cls.category.save()
+
+        cls.goal_a = Goal.objects.create(title="Pkg Goal A", state="published")
+        cls.goal_b = Goal.objects.create(title="Pkg Goal B", state="published")
+        cls.goal_a.categories.add(cls.category)
+        cls.goal_b.categories.add(cls.category)
+
+        cls.behavior_a = Behavior.objects.create(title='BA', state="published")
+        cls.behavior_a.goals.add(cls.goal_a)
+        cls.behavior_b = Behavior.objects.create(title='BB', state="published")
+        cls.behavior_b.goals.add(cls.goal_b)
+
+        cls.action_a = Action.objects.create(
+            behavior=cls.behavior_a,
+            title="Pkg Action A",
+            state="published"
+        )
+        cls.action_b = Action.objects.create(
+            behavior=cls.behavior_b,
+            title="Pkg Action B",
+            state="published"
+        )
+
+        # URL and POST payload
+        cls.payload = {
+            'email_addresses': 'new-user@example.com',
+            'packaged_goals': [cls.goal_a.id],
+        }
+        cls.url = cls.category.get_enroll_url()
+        cls.success_url = cls.category.get_view_enrollment_url()
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/package_enroll.html")
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_contributor_get(self):
+        self.client.login(username="contributor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+        self.assertIsNone(resp.context['form'])
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_post(self):
+        resp = self.ua_client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertRedirects(resp, self.success_url)
+
+    def test_editor_post(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertRedirects(resp, self.success_url)
+
+    def test_author_post(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_post(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+
 class TestAcceptEnrollmentCompleteView(TestCase):
     """Simple, publicly-available template."""
 

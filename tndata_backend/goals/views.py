@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -644,7 +645,6 @@ class PackageDetailView(ContentViewerMixin, DetailView):
         return context
 
 
-# TODO: NEEDS TESTS.
 class PackageEnrollmentView(ContentAuthorMixin, FormView):
     """Allow a user with *Author* permissions to automatically enroll users
     in a *package* of content. This will do the following:
@@ -655,12 +655,18 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
        as if the user navigated through the app and selected them.
     3. Send the user an email letting them know they've been enrolled.
 
-    TODO: ^^ Email needs to include link to the app in the play store; how to
-    auto-enroll users in our alpha/beta test group?
-
     """
     template_name = "goals/package_enroll.html"
     form_class = PackageEnrollmentForm
+
+    def _can_access(self):
+        # Determine if a user should be able to access this view.
+        # REQUIRES self.category.
+        return any([
+            self.request.user.is_staff,
+            self.request.user.has_perm('goals.publish_category'),
+            self.request.user in self.category.package_contributors.all()
+        ])
 
     def get_success_url(self):
         return self.category.get_view_enrollment_url()
@@ -677,6 +683,8 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
 
     def post(self, request, *args, **kwargs):
         self.category = get_object_or_404(Category, pk=kwargs.pop('pk', None))
+        if not self._can_access():
+            return HttpResponseForbidden()
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -696,12 +704,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
-        editor = any([
-            self.request.user.is_staff,
-            self.request.user.has_perm('goals.publish_category'),
-            self.request.user in self.category.package_contributors.all()
-        ])
-        if not editor:
+        if not self._can_access():
            context['form'] = None
         return context
 
