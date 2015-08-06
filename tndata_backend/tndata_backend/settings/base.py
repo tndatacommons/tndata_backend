@@ -185,6 +185,10 @@ REST_FRAMEWORK = {
 }
 
 
+# Play Store Details
+# https://developers.google.com/api-client-library/python/start/get_started
+PLAY_APP_URL = "https://play.google.com/apps/testing/org.tndata.android.compass"
+
 # django-cors-headers
 # https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
