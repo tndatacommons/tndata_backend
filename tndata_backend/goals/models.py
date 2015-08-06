@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import models, IntegrityError
 from django.db.models import Avg
 from django.db.models.signals import post_delete, post_save
 from django.db.utils import ProgrammingError
@@ -1419,22 +1419,34 @@ class PackageEnrollment(models.Model):
         all child content."""
         # TODO: this is terribly inefficient, because we'll likely be doing
         # this for a number of users at once.
-        UserCategory.objects.create(user=self.user, category=self.category)
+        try:
+            UserCategory.objects.create(user=self.user, category=self.category)
+        except IntegrityError:
+            pass
 
         # Enroll the user in the goals.
         goals = self.goals.all()
         for goal in goals:
-            UserGoal.objects.create(user=self.user, goal=goal)
+            try:
+                UserGoal.objects.create(user=self.user, goal=goal)
+            except IntegrityError:
+                pass
 
         # Enroll the User in the Behaviors
         behaviors = Behavior.objects.published().filter(goals=goals).distinct()
         for behavior in behaviors:
-            UserBehavior.objects.create(user=self.user, behavior=behavior)
+            try:
+                UserBehavior.objects.create(user=self.user, behavior=behavior)
+            except IntegrityError:
+                pass
 
         # Enroll the User in the Actions
         actions = Action.objects.published().filter(behavior__in=behaviors)
         actions = actions.distinct()
         for action in actions:
-            UserAction.objects.create(user=self.user, action=action)
+            try:
+                UserAction.objects.create(user=self.user, action=action)
+            except IntegrityError:
+                pass
 
     objects = PackageEnrollmentManager()
