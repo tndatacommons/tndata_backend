@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Avg
 from django.db.models.signals import post_delete, post_save
@@ -192,10 +192,10 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     def get_view_enrollment_url(self):
         """Essentially a Detail view for a Category Package."""
-        return reverse_lazy("goals:package-detail", args=[self.id])
+        return reverse("goals:package-detail", args=[self.id])
 
     def get_enroll_url(self):
-        return reverse_lazy("goals:package-enroll", args=[self.id])
+        return reverse("goals:package-enroll", args=[self.id])
 
     objects = CategoryManager()
 
@@ -762,32 +762,32 @@ class Action(URLMixin, BaseBehavior):
     @classmethod
     def get_create_starter_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse_lazy("goals:action-create"), cls.STARTER)
+            reverse("goals:action-create"), cls.STARTER)
 
     @classmethod
     def get_create_tiny_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse_lazy("goals:action-create"), cls.TINY)
+            reverse("goals:action-create"), cls.TINY)
 
     @classmethod
     def get_create_resource_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse_lazy("goals:action-create"), cls.RESOURCE)
+            reverse("goals:action-create"), cls.RESOURCE)
 
     @classmethod
     def get_create_now_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse_lazy("goals:action-create"), cls.NOW)
+            reverse("goals:action-create"), cls.NOW)
 
     @classmethod
     def get_create_later_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse_lazy("goals:action-create"), cls.LATER)
+            reverse("goals:action-create"), cls.LATER)
 
     @classmethod
     def get_create_custom_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse_lazy("goals:action-create"), cls.CUSTOM)
+            reverse("goals:action-create"), cls.CUSTOM)
 
     class Meta(BaseBehavior.Meta):
         verbose_name = "Action"
