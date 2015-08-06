@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.datastructures import MultiValueDict
-from goals.models import get_categories_as_choices
 
+from . labels import get_label_choices
 from . models import (
     BinaryQuestion,
     BinaryResponse,
@@ -50,7 +50,7 @@ class BaseQuestionForm(forms.ModelForm):
     class Meta:
         widgets = {
             "labels": ArrayFieldSelectMultiple(
-                choices=get_categories_as_choices(), attrs={'class': 'chosen'}),
+                choices=get_label_choices(), attrs={'class': 'chosen'}),
         }
 
     class Media:
