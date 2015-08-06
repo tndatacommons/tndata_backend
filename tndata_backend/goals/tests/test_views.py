@@ -874,6 +874,33 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
 
+    def test_editor_post_duplicate_title(self):
+        """If you change the title of an existing object to somethign that
+        would be a duplicate, the form should warn you (200 response) instead
+        of throwing a 500 IntegrityError."""
+
+        existing_title = "Title for Test Goal"  # A pre-existing title.
+        goal = Goal.objects.create(
+            title="Some Goal to Edit",
+            created_by=self.editor
+        )
+        goal.categories.add(self.category)
+        goal.save()
+
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(goal.get_update_url(), {
+            'title': existing_title,
+            'categories': self.category.id,
+        })
+
+        # Ensure that there's an error warning in the returned HTML content
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode("utf-8")
+        self.assertIn("Goal with this Title already exists.", content)
+
+        # Clean up.
+        goal.delete()
+
     def test_author_post(self):
         self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, self.payload)
@@ -1457,6 +1484,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
+
 class TestBehaviorDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -1486,6 +1514,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
         title_copy = "Copy of {0}".format(self.behavior.title)
         self.assertContains(resp, title_copy)
         self.assertIn("behaviors", resp.context)
+
 
 class TestBehaviorPublishView(TestCaseWithGroups):
 
@@ -1653,6 +1682,36 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Behavior.objects.get(id=self.behavior.id).title, "U")
+
+    def test_editor_post_duplicate_title(self):
+        """If you change the title of an existing object to somethign that
+        would be a duplicate, the form should warn you (200 response) instead
+        of throwing a 500 IntegrityError."""
+
+        existing_title = "Title for Test Behavior"  # A pre-existing title.
+        behavior = Behavior.objects.create(
+            title="Some Behavior to Edit",
+            created_by=self.editor
+        )
+        behavior.goals.add(self.goal)
+        behavior.save()
+
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(behavior.get_update_url(), {
+            'title': existing_title,
+            'goals': self.goal.id,
+        })
+
+        # Ensure that we can an error warning in the returned HTML content
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode("utf-8")
+        self.assertIn("Behavior with this Title already exists.", content)
+
+        qs = Behavior.objects.filter(title=existing_title)
+        self.assertEqual(qs.count(), 1)
+
+        # Clean up.
+        behavior.delete()
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
