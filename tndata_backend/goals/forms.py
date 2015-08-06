@@ -156,7 +156,10 @@ class CategoryForm(forms.ModelForm):
     """A Form for creating/updateing Categories. This form customizes the widget
     for the color field."""
 
-    package_contributors = ContributorChoiceField(queryset=_contributors())
+    package_contributors = ContributorChoiceField(
+        queryset=_contributors(),
+        required=False
+    )
 
     class Meta:
         model = Category

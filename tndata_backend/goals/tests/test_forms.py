@@ -172,7 +172,7 @@ class TestCategoryForm(TestCase):
         form = CategoryForm()
         fields = sorted([
             'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
-            'secondary_color', 'packaged_content',
+            'secondary_color', 'packaged_content', 'package_contributors',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -180,6 +180,7 @@ class TestCategoryForm(TestCase):
         data = {
             'order': '1',
             'packaged_content': False,
+            'package_contributors': '',
             'title': 'New Category',
             'description': 'asdf',
             'icon': '',
@@ -197,6 +198,7 @@ class TestCategoryForm(TestCase):
         data = {
             'order': '2',
             'packaged_content': False,
+            'package_contributors': '',
             'title': 'c',  # Should be a Duplicate
             'description': 'asdf',
             'icon': '',
