@@ -732,8 +732,13 @@ def accept_enrollment(request, username_hash):
         ]
         if all(forms_valid):
             # Be sure to activate their account.
+            user = user_form.save()
             user.is_active = True
+            user.set_password(password_form.cleaned_data['password'])
             user.save()
+
+            # TODO: there's gotta be a cleaner way to do this.
+            PackageEnrollment.objects.filter(user=user).update(accepted=True)
             return redirect(reverse("goals:accept-enrollment-complete"))
 
     else:
