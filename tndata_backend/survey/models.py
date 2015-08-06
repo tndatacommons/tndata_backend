@@ -5,8 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from goals.models import get_categories_as_choices
-
+from . labels import get_label_choices
 from . managers import QuestionManager, SurveyResultManager
 from . likert import LIKERT_SCALES
 
@@ -84,7 +83,7 @@ class BaseQuestion(models.Model):
         help_text="Optional: Select a Subscale for this question"
     )
     labels = ArrayField(
-        models.CharField(max_length=32, blank=True, choices=get_categories_as_choices()),
+        models.CharField(max_length=32, blank=True, choices=get_label_choices()),
         default=[],
         blank=True,
         help_text="You can apply any number of labels to this question"
@@ -160,10 +159,6 @@ class BinaryQuestion(BaseQuestion):
 
     def get_delete_url(self):
         return reverse('survey:binary-delete', args=[self.id])
-
-    def get_survey_question_url(self):
-        pk = "{0}-{1}".format(self.question_type, self.id)
-        return reverse("surveyrandom-detail", args=[pk])
 
     def get_survey_question_url(self):
         pk = "{0}-{1}".format(self.question_type, self.id)
@@ -447,7 +442,7 @@ class SurveyResult(models.Model):
         models.CharField(
             max_length=32,
             blank=True,
-            choices=get_categories_as_choices()
+            choices=get_label_choices()
         ),
         default=[],
         blank=True,

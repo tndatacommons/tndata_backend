@@ -182,36 +182,6 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     objects = CategoryManager()
 
 
-def get_categories_as_choices():
-    """This is a convenience function that returns all Category data as a
-    tuple of choices (suitable for forms or fields that accept a `choices`
-    argument).
-    """
-    try:
-        return tuple(Category.objects.values_list("title_slug", "title"))
-    except ProgrammingError:
-        # If we're standing up a brand-new system, the above may fail when
-        # the categories table hasn't been created, yet (e.g. this gets called
-        # from the survey app before syncdb finishes in the goals app).
-        # In that case, just return this hard-coded version of data :(
-        return (
-            ('community', 'Community'),
-            ('education', 'Education'),
-            ('family', 'Family'),
-            ('fun', 'Fun'),
-            ('happiness', 'Happiness'),
-            ('health', 'Health'),
-            ('home', 'Home'),
-            ('parenting', 'Parenting'),
-            ('prosperity', 'Prosperity'),
-            ('romance', 'Romance'),
-            ('safety', 'Safety'),
-            ('skills', 'Skills'),
-            ('wellness', 'Wellness'),
-            ('work', 'Work'),
-        )
-
-
 class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     # URLMixin attributes
