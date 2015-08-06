@@ -135,12 +135,14 @@ class BehaviorForm(forms.ModelForm):
 def _contributors():
     """Returns a QuerySet of Users that can be Package Contributors.
 
-    Those users are either staff or have ContentPermissions.
+    Those users are either staff or have ContentPermissions (either permissions
+    directory or through a Group membership).
 
     """
     User = get_user_model()
     return User.objects.filter(
         Q(user_permissions__codename__in=ContentPermissions.all_codenames) |
+        Q(groups__permissions__codename__in=ContentPermissions.all_codenames) |
         Q(is_staff=True)
     ).distinct()
 
