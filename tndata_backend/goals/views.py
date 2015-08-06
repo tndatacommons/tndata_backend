@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
@@ -633,7 +634,13 @@ class PackageDetailView(ContentViewerMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['enrollments'] = self.object.packageenrollment_set.all()
+        editor = any([
+            self.request.user.is_staff,
+            self.request.user.has_perm('goals.publish_category'),
+            self.request.user in self.object.package_contributors.all()
+        ])
+        if editor:
+            context['enrollments'] = self.object.packageenrollment_set.all()
         return context
 
 
@@ -689,6 +696,13 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
+        editor = any([
+            self.request.user.is_staff,
+            self.request.user.has_perm('goals.publish_category'),
+            self.request.user in self.category.package_contributors.all()
+        ])
+        if not editor:
+           context['form'] = None
         return context
 
 
@@ -714,9 +728,6 @@ def accept_enrollment(request, username_hash):
             user_form.is_valid(), password_form.is_valid(), accept_form.is_valid()
         ]
         if all(forms_valid):
-            # --------------------------------------------------
-            # TODO: ENROLL in Google group for App Alpha testers
-            # --------------------------------------------------
             return redirect(reverse("goals:accept-enrollment-complete"))
 
     else:
@@ -733,6 +744,10 @@ def accept_enrollment(request, username_hash):
     return render(request, 'goals/accept_enrollment.html', context)
 
 
-# TODO: NEEDS TESTS.
 class AcceptEnrollmentCompleteView(TemplateView):
     template_name = "goals/accept_enrollment_complete.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['app_url'] = settings.PLAY_APP_URL
+        return context

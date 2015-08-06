@@ -3,30 +3,21 @@
 {% block title %}Complete{% endblock %}
 
 {% block body %}
-<div class="row">
+<div class="row" style="margin-top:3em">
   <div class="large-8 large-offset-2 medium-8 medium-offset-2 small-12 columns end">
 
-  <h1>Complete!</h1>
+  <div class="panel">
+  <h1>You are enrolled</h1>
 
   <p>You've completed the Compass enrollment! Now, all you need to do is
   download the app and log in.</p>
 
-  {% comment %}
-  # --------------------------------------------------
-  # TODO: Link to app in play store below!
-  # --------------------------------------------------
-  {% endcomment %}
-
-
-  <div data-alert class="alert-box alert">
-    <strong><i class="fa fa-ban"></i> NOTE:</strong> This button doesn't work
-    yet. The app is not yet available. <a href="#" class="close">&times;</a>
-  </div>
-
   <p>
-    <a href="#" class="button large success">Get the app!</a>
+    <a href="{{ app_url }}" class="button large success">
+      <i class="fa fa-cloud-download"></i> Get the app!</a>
   </p>
 
+  </div>
   </div>
 </div> {# end .row #}
 {% endblock %}

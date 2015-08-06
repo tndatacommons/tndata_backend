@@ -10,6 +10,7 @@
   <div class="row">
     <div class="large-12 small-12 columns">
     <h1>{{ category }} Enrollment</h1>
+    {% if form %}
     <form
       data-persist="garlic"
       action="{{ category.get_enroll_url }}"
@@ -19,6 +20,10 @@
     <hr/>
     <p><button type="submit">Enroll</button></p>
     </form>
+    {% else %}
+        <p class="alert-box warning">You do not have permission to enroll
+        users in this package.</p>
+    {% endif %}
 
     </div> {# end .row #}
   </div> {# end .row #}
