@@ -2288,3 +2288,12 @@ class TestActionDeleteView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url)
         self.assertEqual(resp.status_code, 403)
+
+
+class TestAcceptEnrollmentCompleteView(TestCase):
+    """Simple, publicly-available template."""
+
+    def test_get(self):
+        resp = self.client.get(reverse("accept-enrollment-complete"))
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
