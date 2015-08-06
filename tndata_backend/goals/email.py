@@ -37,7 +37,7 @@ def send_package_enrollment_batch(emails, category, goals, subject=None):
             "new_user": not is_active,  # User was just created, needs to activate.
             "category": category,
             "goals": goals,
-            "cta_link": cta_link,
+            "cta_link": cta_link if not is_active else '',
             "cta_text": "Get Started",
         }
         email_data.append((
