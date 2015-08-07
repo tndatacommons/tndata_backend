@@ -23,4 +23,4 @@ DEFAULTS = getattr(project_settings, 'NOTIFICATIONS', {})
 if DEFAULTS.get('DEFAULT_TITLE') is None:
     DEFAULTS['DEFAULT_TITLE'] = "Stay On Course"
 if DEFAULTS.get('DEFAULT_TEXT') is None:
-    DEFAULTS['DEFAULT_TEXT'] = "Check in with Compass to stay on track toward your Goals"
+    DEFAULTS['DEFAULT_TEXT'] = "Check in with Compass to stay on track toward your goals"
