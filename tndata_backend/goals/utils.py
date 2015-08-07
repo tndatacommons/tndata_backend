@@ -5,7 +5,7 @@ from django.conf import settings
 
 # Import clog if we're in debug otherwise make it a noop
 if settings.DEBUG:
-    from clog import clog
+    from clog.clog import clog
 else:
     def clog(*args, **kwargs):
         pass
