@@ -17,8 +17,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
 from django.db.models import Avg
-from django.db.models.signals import post_delete, post_save
-from django.db.utils import ProgrammingError
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils import timezone
@@ -37,6 +36,7 @@ from .managers import (
     WorkflowManager
 )
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
+from .utils import clog
 
 
 class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
@@ -885,6 +885,25 @@ class UserGoal(models.Model):
             return 0.0
 
 
+@receiver(pre_delete, sender=UserGoal, dispatch_uid="del_goal_behaviors")
+def delete_goal_child_behaviors(sender, instance, using, **kwargs):
+    """If a user is removing a goal, delete all of the user's selected
+    behaviors that have *no other* parent goal."""
+    # Get a list of all goals selected by the user, excluding the one
+    # we're about to remove.
+    user_goals = UserGoal.objects.filter(user=instance.user)
+    user_goals = user_goals.exclude(id=instance.id)
+    user_goals = user_goals.values_list('goal', flat=True)
+
+    # Delete all the user's behaviors that lie ONLY in the goal we're
+    # about to remove
+    user_behaviors = instance.user.userbehavior_set.all()
+    user_behaviors = user_behaviors.exclude(behavior__goals__in=user_goals)
+    clog("Deleting Goal: {0}. Removing Behaviors: {1}".format(
+        instance.goal, user_behaviors))
+    user_behaviors.delete()
+
+
 class UserBehavior(models.Model):
     """A Mapping between Users and the Behaviors they've selected.
 
@@ -941,6 +960,19 @@ class UserBehavior(models.Model):
         """
         uids = self.user.useraction_set.values_list('action_id', flat=True)
         return self.behavior.action_set.filter(id__in=uids)
+
+
+@receiver(pre_delete, sender=UserBehavior, dispatch_uid="del_behavior_actions")
+def delete_behavior_child_actions(sender, instance, using, **kwargs):
+    """If a user is removing a behavior, delete all of the user's selected
+    actions that are a child of this behavior."""
+
+    user_actions = instance.user.useraction_set.filter(
+        action__behavior=instance.behavior
+    )
+    clog("Deleting Behavior: {0}. Removing Actions: {1}".format(
+        instance.behavior, user_actions))
+    user_actions.delete()
 
 
 @receiver(post_delete, sender=UserBehavior)
@@ -1086,6 +1118,25 @@ class UserCategory(models.Model):
             return qs.latest().current_score
         except CategoryProgress.DoesNotExist:
             return 0.0
+
+
+@receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")
+def delete_category_child_goals(sender, instance, using, **kwargs):
+    """If a user is removing a category, delete all of the user's selected
+    goals that have *no other* parent category."""
+    # Get a list of all categories selected by the user, excluding the one
+    # we're about to remove.
+    user_categories = UserCategory.objects.filter(user=instance.user)
+    user_categories = user_categories.exclude(id=instance.id)
+    user_categories = user_categories.values_list('category', flat=True)
+
+    # Delete all the user's goals that lie ONLY in the category we're
+    # about to remove
+    user_goals = instance.user.usergoal_set.all()
+    user_goals = user_goals.exclude(goal__categories__in=user_categories)
+    clog("Deleting Category: {0}. Removing Goals: {1}".format(
+        instance.category, user_goals))
+    user_goals.delete()
 
 
 class BehaviorProgress(models.Model):
