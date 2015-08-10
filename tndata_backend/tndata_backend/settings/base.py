@@ -15,8 +15,8 @@ ADMINS = (
     ('Brad Montgomery', 'bkmontgomery@tndata.org'),
 )
 MANAGERS = ADMINS
-DEFAULT_FROM_EMAIL = 'webmaster@tndata.org'
-SERVER_EMAIL = 'webmaster@tndata.org'
+DEFAULT_FROM_EMAIL = 'Compass Team <webmaster@tndata.org>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Site's FQDN and URL. For building links in email.
 SITE_DOMAIN = "app.tndata.org"
