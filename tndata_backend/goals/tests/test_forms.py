@@ -14,6 +14,7 @@ from .. models import (
     Goal,
     Trigger,
 )
+from .. widgets import TimeSelectWidget
 
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
@@ -273,3 +274,21 @@ class TestTriggerForm(TestCase):
         }
         form = TriggerForm(data)
         self.assertTrue(form.is_valid())
+
+
+class TestTimeSelectWidget(TestCase):
+
+    def test_choices(self):
+        widget = TimeSelectWidget()
+        self.assertEqual(len(widget.choices), 48)  # 2 per hour
+
+    def test_choices_include_empty(self):
+        widget = TimeSelectWidget(include_empty=True)
+        self.assertEqual(len(widget.choices), 49)  # 2 per hour + 1
+
+    def test_rendered(self):
+        widget = TimeSelectWidget()
+        rendered = widget.render("test-widget", "")
+        rendered_parts = rendered.split("\n")
+        # An <option> for every time (48) + 2 (<select> and </select>)
+        self.assertEqual(len(rendered_parts), 50)

@@ -26,9 +26,8 @@ class TimeSelectWidget(forms.widgets.Select):
                 self.choices = [("", "--------")] + self.choices
 
     def render(self, name, value, attrs=None, choices=()):
-        # Set choices if none are provided.
-        if len(choices) == 0:
-            choices = self.choices
+        # NOTE: don't set any choices here, since the super will use those
+        #       defined on the class.
         # Since this is used for a TimeField, any existing value will be
         # a datetime.time object, so we need to convert it back to a string
         # format (because that's what's expected in our <option>'s)
