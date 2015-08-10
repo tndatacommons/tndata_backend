@@ -576,10 +576,21 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
         else:
             return self.form_invalid(form, trigger_form)
 
+    def _generate_trigger_name(self):
+        # I've shot myself in the foot by required unique names for triggers,
+        # and then de-normalizing by requiring all actions get their own trigger
+        # data. So, I have to check for this name before I create it.
+        trigger_name = "Default: {0}-{1}".format(self.object, self.object.id)
+        i = 0
+        while Trigger.objects.filter(name=trigger_name).exists():
+            i += 1
+            trigger_name = "{0}-{1}".format(i, trigger_name)
+        return trigger_name
+
     def form_valid(self, form, trigger_form):
         self.object = form.save()
         default_trigger = trigger_form.save(commit=False)
-        default_trigger.name = "Default: {0}-{1}".format(self.object, self.object.id)
+        default_trigger.name = self._generate_trigger_name()
         default_trigger.save()
         self.object.default_trigger = default_trigger
         self.object.save()
