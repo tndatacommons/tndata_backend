@@ -560,12 +560,6 @@ class BaseBehavior(ModifiedMixin, models.Model):
                    "accomplish a task. It could be a phone number, link to a "
                    "website, link to another app, or GPS coordinates. ")
     )
-    default_trigger = models.ForeignKey(
-        Trigger,
-        blank=True,
-        null=True,
-        help_text="A trigger/reminder for this behavior"
-    )
     notification_text = models.CharField(
         max_length=256,
         blank=True,
@@ -660,6 +654,12 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
                   "this behavior. This list will be reproduced as a mnemonic "
                   "on the Action entry page"
     )
+    default_trigger = models.ForeignKey(
+        Trigger,
+        blank=True,
+        null=True,
+        help_text="A trigger/reminder for this behavior"
+    )
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="behaviors_updated",
@@ -747,6 +747,13 @@ class Action(URLMixin, BaseBehavior):
         default=0,
         db_index=True,
         help_text="Order/number of action in stepwise sequence of behaviors"
+    )
+    default_trigger = models.OneToOneField(
+        Trigger,
+        blank=True,
+        null=True,
+        help_text="A trigger/reminder for this behavior",
+        related_name="action_default"
     )
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
