@@ -25,8 +25,8 @@
         <th>Type</th>
         <th>Time</th>
         <th>Recurrence</th>
-        <th>Num Behaviors</th>
-        <th>Num Actions</th>
+        <th>Action</th>
+        <th>Behaviors</th>
       </tr>
       </thead>
       <tbody>
@@ -38,8 +38,8 @@
           <td>{{ trigger.get_trigger_type_display }}</td>
           <td>{{ trigger.time|default:"-" }}</td>
           <td>{{ trigger.recurrences_as_text }}</td>
+          <td>{{ trigger.action_default.title|default:"-" }}</td>
           <td>{{ trigger.behavior_set.count }}</td>
-          <td>{{ trigger.action_set.count }}</td>
         </tr>
       {% endfor %}
       </tbody>
