@@ -15,18 +15,27 @@
       <thead>
       <tr>
         <th>Order</th>
+        <th>Icon</th>
         <th>Colors</th>
         <th>Title</th>
         <th>State</th>
-        <th>Goals</th>
-        <th>Behaviors</th>
-        <th>Icon</th>
+        <th>Child Content</th>
       </tr>
       </thead>
       <tbody>
       {% for category in categories %}
+        {% with category_url=category.get_absolute_url %}
         <tr>
           <td>{{ category.order }}</td>
+          <td>
+            {% with icon=category.get_absolute_icon %}
+              {% if icon %}
+                <a href="{{ category_url }}">
+                <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
+                </a>
+              {% endif %}
+            {% endwith %}
+          </td>
           <td>
             <div class="color"
                  style="height:25px;width:25px;background-color:{{ category.color}};">
@@ -38,7 +47,7 @@
             {% endif %}
           </td>
           <td>
-              <a href="{{ category.get_absolute_url }}">{{ category }}</a>
+              <a href="{{ category_url }}">{{ category }}</a>
           </td>
           <td>
             {{ category.state|label }}
@@ -47,23 +56,31 @@
             {% endif %}
           </td>
           <td>
-          {% for c in category.goals %}
-            <span class="label secondary radius">{{ c }}</span>
-          {% endfor %}
-          </td>
-          <td>
-          {% for b in category.behaviors %}
-            <span class="label secondary radius">{{ b }}</span>
-          {% endfor %}
-          </td>
-          <td>
-            {% with icon=category.get_absolute_icon %}
-              {% if icon %}
-                <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
-              {% endif %}
-            {% endwith %}
+            <ul class="accordion" data-accordion>
+              <li class="accordion-navigation">
+                <a href="#category-{{category.id}}-goals">Goals</a>
+                <div id="category-{{category.id}}-goals" class="content">
+                {% for c in category.goals %}
+                  <a href="{{ c.get_absolute_url }}">
+                    <span class="label secondary radius">{{ c }}</span>
+                  </a>
+                {% endfor %}
+                </div>
+              </li>
+              <li class="accordion-navigation">
+                <a href="#category-{{category.id}}-behaviors">Behaviors</a>
+                <div id="category-{{category.id}}-behaviors" class="content">
+                {% for b in category.behaviors %}
+                  <a href="{{ b.get_absolute_url }}">
+                    <span class="label secondary radius">{{ b }}</span>
+                  </a>
+                {% endfor %}
+                </div>
+              </li>
+            </ul>
           </td>
         </tr>
+        {% endwith %}
       {% endfor %}
       </tbody>
       </table>
