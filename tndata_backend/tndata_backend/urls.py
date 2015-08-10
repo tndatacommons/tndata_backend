@@ -46,7 +46,9 @@ class IndexView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
         if not self.request.user.is_authenticated():
-            context['login_form'] = AuthenticationForm()
+            form = AuthenticationForm()
+            form.fields['username'].label = "Username or Email"
+            context['login_form'] = form
         return context
 
 
