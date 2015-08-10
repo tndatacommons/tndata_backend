@@ -728,6 +728,7 @@ def accept_enrollment(request, username_hash):
     store, upon success.
 
     """
+    has_form_errors = False
     User = get_user_model()
     try:
         user = User.objects.get(username=username_hash, is_active=False)
@@ -751,7 +752,8 @@ def accept_enrollment(request, username_hash):
             # TODO: there's gotta be a cleaner way to do this.
             PackageEnrollment.objects.filter(user=user).update(accepted=True)
             return redirect(reverse("goals:accept-enrollment-complete"))
-
+        else:
+            has_form_errors = True
     else:
         user_form = UserForm(instance=user, prefix="uf")
         password_form = SetNewPasswordForm(prefix="pf")
@@ -762,6 +764,7 @@ def accept_enrollment(request, username_hash):
         'user_form': user_form,
         'password_form': password_form,
         'accept_form': accept_form,
+        'has_form_errors': has_form_errors,
     }
     return render(request, 'goals/accept_enrollment.html', context)
 

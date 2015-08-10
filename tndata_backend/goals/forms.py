@@ -289,6 +289,10 @@ class AcceptEnrollmentForm(forms.Form):
             "as well as the periodic updates that you make within the app."
         )
     )
+    age_restriction = forms.BooleanField(
+        required=True,
+        help_text=("I am at least 13 years old.")
+    )
 
 
 class InvalidFormatException(Exception):

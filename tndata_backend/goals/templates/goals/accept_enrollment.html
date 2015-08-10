@@ -10,8 +10,15 @@
     <h1>Welcome</h1>
 
     <p>You've been enrolled in custom packages for Compass. Please set up your
-    account below, and accept the terms to create an account and recive a link
+    account below, and accept the terms to create an account and recieve a link
     to the app.</p>
+
+    {% if has_form_errors %}
+      <div data-alert class="alert-box alert">
+        <i class="fa fa-warning"></i> Your information has not been saved. Please
+        see the additional information, below.
+      </div>
+    {% endif %}
 
     <form action="{% url 'goals:accept-enrollment' user.username %}" method="post">
       {% csrf_token %}
@@ -27,10 +34,26 @@
       <fieldset>
         <legend>Your Privacy</legend>
         {# manually render this form #}
+        {% if accept_form.errors %}
+          <div data-alert class="alert-box alert">
+            <i class="fa fa-warning"></i>
+            {% if accept_form.i_accept.errors %}
+            You must accept the Terms &amp; Conditions to continue.
+            {% endif %}
+            {% if accept_form.age_restriction.errors %}
+            You must be at least 13 years old to use this app.
+            {% endif %}
+          </div>
+        {% endif %}
+        <p>
+        {{ accept_form.age_restriction }}
+        <label for="{{ accept_form.age_restriction.auto_id }}">
+          {{ accept_form.age_restriction.help_text }}</label>
+        </p>
         <p>
         {{ accept_form.i_accept }}
         <label for="{{ accept_form.i_accept.auto_id }}">
-          {{ accept_form.i_accept.label }}</label>
+          I accept the Compass Terms &amp; Conditions.</label>
         </p>
         <p class="helptext">{{ accept_form.i_accept.help_text }}</p>
       </fieldset>
