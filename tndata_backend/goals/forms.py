@@ -214,7 +214,11 @@ class ActionTriggerForm(forms.ModelForm):
         fields = ['time', 'trigger_date', 'recurrences']
         widgets = {
             "time": TimeSelectWidget(include_empty=True),
-            "trigger_date": forms.TextInput(attrs={'class': 'datepicker', 'type': 'date'}),
+            "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),
+        }
+        labels = {
+            "time": "Reminder Time",
+            "trigger_date": "Reminder Date",
         }
 
     def save(self, *args, **kwargs):
@@ -234,7 +238,11 @@ class TriggerForm(forms.ModelForm):
         fields = ['name', 'trigger_type', 'time', 'trigger_date', 'recurrences']
         widgets = {
             "time": TimeSelectWidget(),
-            "trigger_date": forms.TextInput(attrs={'class': 'datepicker', 'type': 'date'}),
+            "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),
+        }
+        labels = {
+            "time": "Reminder Time",
+            "trigger_date": "Reminder Date",
         }
 
 
