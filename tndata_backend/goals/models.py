@@ -263,6 +263,7 @@ class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
         return "{0}".format(self.title)
 
     class Meta:
+        ordering = ['title']
         verbose_name = "Goal"
         verbose_name_plural = "Goals"
         # add_goal, change_goal, delete_goal are created by default.
@@ -672,6 +673,7 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
     )
 
     class Meta(BaseBehavior.Meta):
+        ordering = ['title']
         verbose_name = "Behavior"
         verbose_name_plural = "Behaviors"
         # add_behavior, change_behavior, delete_behavior are created by default.
@@ -797,6 +799,7 @@ class Action(URLMixin, BaseBehavior):
             reverse("goals:action-create"), cls.CUSTOM)
 
     class Meta(BaseBehavior.Meta):
+        ordering = ['sequence_order', 'title']
         verbose_name = "Action"
         verbose_name_plural = "Actions"
         # add_action, change_action, delete_action are created by default.
