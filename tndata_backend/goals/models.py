@@ -479,13 +479,15 @@ class Trigger(URLMixin, models.Model):
                 # Get the current date/time in the user's local time
                 alert_on = self._combine(self.time, now, tz)
 
-            # The alert date is later today, so return this value.
-            if alert_on > now:
+            # Return the next value in the recurrence; this always starts with
+            # "tomorrow's" date.
+            next_value = self.recurrences.after(alert_on, dtstart=alert_on)
+
+            # If the alert date is later today, so return this value.
+            if alert_on > now and next_value is not None:
                 return alert_on
 
-            # Otherwise, return the next value in the recurrence; this always
-            # starts with "tomorrow's" date.
-            return self.recurrences.after(alert_on, dtstart=alert_on)
+            return next_value
 
         elif self.trigger_type == "time" and self.trigger_date is not None:
             # No recurrences.

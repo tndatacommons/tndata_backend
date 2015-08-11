@@ -335,6 +335,44 @@ class TestTrigger(TestCase):
         expected = timezone.make_aware(expected, timezone=timezone.utc)
         self.assertEqual(trigger.next(), expected)
 
+    def test_next_with_until_date(self):
+        """Test the value of `next`, when the recurrence has a stop date."""
+        # daily, until 2015-08-31 at 12:30pm
+        rrule = 'RRULE:FREQ=DAILY;UNTIL=20150831T050000Z'
+        t = Trigger.objects.create(
+            name="x",
+            time=time(12, 30),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # now: 2015-08-15 at 11:00am
+            # expected: same day, at appointed time
+            mock_now.return_value = datetime(
+                2015, 8, 15, 11, 0, tzinfo=timezone.utc
+            )
+            expected = datetime(2015, 8, 15, 12, 30, tzinfo=timezone.utc)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-08-15 at 2:00pm
+            # expected: next day, at appointed time
+            mock_now.return_value = datetime(
+                2015, 8, 15, 14, 0, tzinfo=timezone.utc
+            )
+            expected = datetime(2015, 8, 16, 12, 30, tzinfo=timezone.utc)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-09-01 at 11:00am
+            # expected: None because we're past the "until date"
+            mock_now.return_value = datetime(
+                2015, 9, 1, 11, 0, tzinfo=timezone.utc
+            )
+            self.assertIsNone(t.next())
+
+        # Clean up
+        t.delete()
+
 
 class TestBehavior(TestCase):
     """Tests for the `Behavior` model."""
