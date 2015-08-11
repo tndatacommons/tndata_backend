@@ -77,6 +77,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'storages',
+    'staticflatpages',
     # custom apps
     'goals',
     'notifications',
@@ -107,6 +108,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'utils.middleware.TimezoneMiddleware',
+    'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
 )
 
 ROOT_URLCONF = 'tndata_backend.urls'
