@@ -5,8 +5,10 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.forms import ValidationError
 from django.utils.text import slugify
 
+from recurrence import serialize as serialize_recurrences
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
 from utils import colors
@@ -227,6 +229,20 @@ class ActionTriggerForm(forms.ModelForm):
         obj.name = date_hash()
         return obj
 
+    def clean(self):
+        data = super().clean()
+        recurrences = data.get('recurrences')
+        date = data.get('trigger_date')
+
+        # Intervals (e.g. every other day) need a starting date.
+        if recurrences and 'INTERVAL' in serialize_recurrences(recurrences) and not date:
+            self.add_error('trigger_date', ValidationError(
+                "A Trigger Date is required for recurrences that contain an "
+                "interval (such as every 2 days)", code="required_for_intervals"
+            ))
+
+        return data
+
 
 class TriggerForm(forms.ModelForm):
     recurrences = RecurrenceField(
@@ -244,6 +260,20 @@ class TriggerForm(forms.ModelForm):
             "time": "Reminder Time",
             "trigger_date": "Reminder Date",
         }
+
+    def clean(self):
+        data = super().clean()
+        recurrences = data.get('recurrences')
+        date = data.get('trigger_date')
+
+        # Intervals (e.g. every other day) need a starting date.
+        if recurrences and 'INTERVAL' in serialize_recurrences(recurrences) and not date:
+            self.add_error('trigger_date', ValidationError(
+                "A Trigger Date is required for recurrences that contain an "
+                "interval (such as every 2 days)", code="required_for_intervals"
+            ))
+
+        return data
 
 
 class PackageEnrollmentForm(forms.Form):
