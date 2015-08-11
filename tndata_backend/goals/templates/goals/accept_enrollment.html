@@ -9,9 +9,22 @@
   {% if user %}
     <h1>Welcome</h1>
 
-    <p>You've been enrolled in custom packages for Compass. Please set up your
-    account below, and accept the terms to create an account and recieve a link
-    to the app.</p>
+    <p>You've been enrolled in the following custom packages for Compass. Please
+    set up your account below, and accept the terms to create an account and
+    recieve a link to the app.</p>
+
+    {% if packages %}
+      {% for package in packages %}
+        <div class="panel">
+          <h2>{{ package.category.title }}</h2>
+          <ul>
+          {% for goal in package.goals.all %}
+            <li>{{ goal }}</li>
+          {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    {% endif %}
 
     {% if has_form_errors %}
       <div data-alert class="alert-box alert">

@@ -716,7 +716,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         if not self._can_access():
-           context['form'] = None
+            context['form'] = None
         return context
 
 
@@ -732,8 +732,10 @@ def accept_enrollment(request, username_hash):
     User = get_user_model()
     try:
         user = User.objects.get(username=username_hash, is_active=False)
+        packages = PackageEnrollment.objects.filter(user=user)
     except User.DoesNotExist:
         user = None
+        packages = None
 
     if request.method == "POST":
         user_form = UserForm(request.POST, instance=user, prefix="uf")
@@ -749,8 +751,12 @@ def accept_enrollment(request, username_hash):
             user.set_password(password_form.cleaned_data['password'])
             user.save()
 
-            # TODO: there's gotta be a cleaner way to do this.
-            PackageEnrollment.objects.filter(user=user).update(accepted=True)
+            # there's gotta be a cleaner way to do this.
+            packages.update(accepted=True)
+            request.session['user_id'] = user.id
+            request.session['package_ids'] = list(
+                packages.values_list("id", flat=True)
+            )
             return redirect(reverse("goals:accept-enrollment-complete"))
         else:
             has_form_errors = True
@@ -765,6 +771,7 @@ def accept_enrollment(request, username_hash):
         'password_form': password_form,
         'accept_form': accept_form,
         'has_form_errors': has_form_errors,
+        'packages': packages,
     }
     return render(request, 'goals/accept_enrollment.html', context)
 
@@ -775,4 +782,7 @@ class AcceptEnrollmentCompleteView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['app_url'] = settings.PLAY_APP_URL
+        context['packages'] = PackageEnrollment.objects.filter(
+            id__in=self.request.session.get("package_ids")
+        )
         return context

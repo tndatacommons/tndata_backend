@@ -7,10 +7,22 @@
   <div class="large-8 large-offset-2 medium-8 medium-offset-2 small-12 columns end">
 
   <div class="panel">
-  <h1>You are enrolled</h1>
+  <h1>You are enrolled!</h1>
 
   <p>You've completed the Compass enrollment! Now, all you need to do is
   download the app and log in.</p>
+
+  {% if packages %}
+    {% for package in packages %}
+      <h2>{{ package.category.title }}</h2>
+      <p>You've been enrolled in: </p>
+      <ul>
+      {% for goal in package.goals.all %}
+        <li>{{ goal }}</li>
+      {% endfor %}
+      </ul>
+    {% endfor %}
+  {% endif %}
 
   <p>
     <a href="{{ app_url }}" class="button large success">
