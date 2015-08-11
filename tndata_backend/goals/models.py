@@ -36,7 +36,6 @@ from .managers import (
     WorkflowManager
 )
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
-from .utils import clog
 
 
 class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
@@ -911,8 +910,6 @@ def delete_goal_child_behaviors(sender, instance, using, **kwargs):
     # about to remove
     user_behaviors = instance.user.userbehavior_set.all()
     user_behaviors = user_behaviors.exclude(behavior__goals__in=user_goals)
-    clog("Deleting Goal: {0}. Removing Behaviors: {1}".format(
-        instance.goal, user_behaviors))
     user_behaviors.delete()
 
 
@@ -982,8 +979,6 @@ def delete_behavior_child_actions(sender, instance, using, **kwargs):
     user_actions = instance.user.useraction_set.filter(
         action__behavior=instance.behavior
     )
-    clog("Deleting Behavior: {0}. Removing Actions: {1}".format(
-        instance.behavior, user_actions))
     user_actions.delete()
 
 
@@ -1146,8 +1141,6 @@ def delete_category_child_goals(sender, instance, using, **kwargs):
     # about to remove
     user_goals = instance.user.usergoal_set.all()
     user_goals = user_goals.exclude(goal__categories__in=user_categories)
-    clog("Deleting Category: {0}. Removing Goals: {1}".format(
-        instance.category, user_goals))
     user_goals.delete()
 
 
