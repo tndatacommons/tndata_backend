@@ -39,6 +39,10 @@
 
     {% block body %}{% endblock %}
 
+    <p style="text-align: center; border-top:1px solid #ddd;padding:1em 0;margin-top:3em;">
+      <a href="/terms/" style="color:#aaa;">Terms of Service</a> |
+      <a href="/privacy/" style="color:#aaa;">Privacy Notice</a>
+    </p>
     {% block bodyjs %}
     <script src="{% static 'foundation/js/vendor/jquery.js' %}"></script>
     <script src="{% static 'foundation/js/foundation.min.js' %}"></script>
