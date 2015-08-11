@@ -28,10 +28,10 @@ class TimeSelectWidget(forms.widgets.Select):
     def render(self, name, value, attrs=None, choices=()):
         # NOTE: don't set any choices here, since the super will use those
         #       defined on the class.
-        # Since this is used for a TimeField, any existing value will be
+        # Since this is used for a TimeField, any existing value will likely be
         # a datetime.time object, so we need to convert it back to a string
         # format (because that's what's expected in our <option>'s)
-        if value:
+        if value and not isinstance(value, str):
             value = value.strftime("%H:%M")
 
         return super().render(name, value, attrs, choices)
