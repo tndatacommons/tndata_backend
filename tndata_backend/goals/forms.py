@@ -292,7 +292,7 @@ class AcceptEnrollmentForm(forms.Form):
         required=True,
         help_text=(
             'I accept the Data Commons/Compass '
-            '<a href="/terms/" target="_blank">Terms of Service</a>'
+            '<a href="/terms/" target="_blank">Terms of Service</a> '
             'and <a href="/privacy/">Privacy Notice</a>.'
         )
     )
