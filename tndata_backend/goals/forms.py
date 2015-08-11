@@ -280,18 +280,21 @@ class PackageEnrollmentForm(forms.Form):
 
 class AcceptEnrollmentForm(forms.Form):
     """forces the user to accept some terms."""
-
     i_accept = forms.BooleanField(
         required=True,
-        help_text=(
-            "Compass will share your information with the Package's author(s). "
-            "This may include your progress toward goals within the package, "
-            "as well as the periodic updates that you make within the app."
-        )
+        help_text="I wish to participate"
     )
     age_restriction = forms.BooleanField(
         required=True,
-        help_text=("I am at least 13 years old.")
+        help_text="I am at least 14 years old."
+    )
+    accept_terms = forms.BooleanField(
+        required=True,
+        help_text=(
+            'I accept the Data Commons/Compass '
+            '<a href="/terms/" target="_blank">Terms of Service</a>'
+            'and <a href="/privacy/">Privacy Notice</a>.'
+        )
     )
 
 

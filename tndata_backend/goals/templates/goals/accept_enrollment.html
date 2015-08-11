@@ -45,7 +45,44 @@
         {{ password_form.as_p }}
       </fieldset>
       <fieldset>
-        <legend>Your Privacy</legend>
+        <legend>Your Consent</legend>
+
+        <p>You are being invited to take part in a pilot study for a new mobile
+        application. If you volunteer to take part in this study, you will be
+        one of about 5-10 people to do so. The person in charge of this study
+        is Kevin Newton of Tennessee Data Commons. There may be other people
+        on the research team assisting at different times during the study.
+        However, no one outside of the Tennessee Data Commons organization
+        will have access to any information or data collected without your
+        explicit approval.</p>
+
+        <p>By doing this study, we hope to learn more about how individuals
+        interact with and utilize this new application. If you are under the
+        age of 14, you should not participate in this study. You will be asked
+        to download the application to your mobile device and use it in your
+        daily life as naturally as possible. This will be accompanied by brief
+        interviews and surveys over the next 5 months.</p>
+
+        <p>To the best of our knowledge, the things you will be doing have no
+        more risk of harm than you would experience in everyday life. You will
+        not get any direct personal benefit from taking part in this study.
+        However, the application is meant to increase your productivity, which
+        you may find beneficial. If you decide to take part in the study, it
+        should be because you really want to volunteer.  You will not lose any
+        benefits or rights you would normally have if you choose not to volunteer.
+        You can stop at any time during the study and still keep the benefits
+        and rights you had before volunteering. As a student, if you decide not
+        to take part in this study, your choice will have no effect on your
+        academic status, treatment or outcome in the program. There are no costs
+        associated with taking part in the study. You will not receive any
+        compensation for participating in this study. If you decide to take
+        part in the study, you still have the right to decide at any time that
+        you no longer want to continue. You will not be treated differently if
+        you decide to stop taking part in the study.</p>
+
+        <p>By indicating below, you are agreeing to everything stated above,
+        including the agreement to participate.</p>
+
         {# manually render this form #}
         {% if accept_form.errors %}
           <div data-alert class="alert-box alert">
@@ -54,21 +91,28 @@
             You must accept the Terms &amp; Conditions to continue.
             {% endif %}
             {% if accept_form.age_restriction.errors %}
-            You must be at least 13 years old to use this app.
+            You must be at least 14 years old to use this app.
+            {% endif %}
+            {% if accept_form.accept_terms.errors %}
+            You must accept the Terms of Service and Privacy Notice.
             {% endif %}
           </div>
         {% endif %}
+        <p>
+        {{ accept_form.i_accept }}
+        <label for="{{ accept_form.i_accept.auto_id }}">
+          {{ accept_form.i_accept.help_text }}</label>
+        </p>
         <p>
         {{ accept_form.age_restriction }}
         <label for="{{ accept_form.age_restriction.auto_id }}">
           {{ accept_form.age_restriction.help_text }}</label>
         </p>
         <p>
-        {{ accept_form.i_accept }}
-        <label for="{{ accept_form.i_accept.auto_id }}">
-          I accept the Compass Terms &amp; Conditions.</label>
+        {{ accept_form.accept_terms }}
+        <label for="{{ accept_form.accept_terms.auto_id }}">
+          {{ accept_form.accept_terms.help_text|safe }}</label>
         </p>
-        <p class="helptext">{{ accept_form.i_accept.help_text }}</p>
       </fieldset>
 
       <hr>
