@@ -452,6 +452,8 @@ class Trigger(URLMixin, models.Model):
         dt = datetime.combine(a_date, a_time)
         if timezone.is_naive(dt):
             dt = timezone.make_aware(dt, timezone=tz)
+        elif timezone.is_aware(dt) and tz is not None:
+            dt = dt.astimezone(tz)
 
         return dt
 
@@ -461,6 +463,19 @@ class Trigger(URLMixin, models.Model):
             return pytz.timezone(self.user.userprofile.timezone)
         return timezone.utc
 
+    def get_alert_time(self, tz=None):
+        """Return a datetime object (with appropriate timezone) for the
+        starting date/time for this trigger."""
+        if tz is None:
+            tz = self.get_tz()
+        alert_time = None
+        if self.trigger_date and self.time:
+            alert_time = self._combine(self.time, self.trigger_date, tz)
+        elif self.time:
+            now = timezone.now().astimezone(tz)
+            alert_time = self._combine(self.time, now, tz)
+        return alert_time
+
     def next(self):
         """Generate the next date for this Trigger. For recurring triggers,
         this will return a datetime object for the next time the trigger should
@@ -469,30 +484,21 @@ class Trigger(URLMixin, models.Model):
 
         """
         tz = self.get_tz()
+        alert_on = self.get_alert_time(tz)
         now = timezone.now().astimezone(tz)
+        recurrences = self.serialized_recurrences()
 
-        if self.trigger_type == "time" and self.recurrences:
-            alert_on = now  # Start to build a date on which the alert is sent
+        # No recurrences, alert is in the future
+        if recurrences is None and alert_on > now:
+            return alert_on
 
-            if self.time:
-                # Get the current date/time in the user's local time
-                alert_on = self._combine(self.time, now, tz)
-
-            # Return the next value in the recurrence; this always starts with
-            # "tomorrow's" date.
-            next_value = self.recurrences.after(alert_on, dtstart=alert_on)
-
-            # If the alert date is later today, so return this value.
-            if alert_on > now and next_value is not None:
-                return alert_on
-
-            return next_value
-
-        elif self.trigger_type == "time" and self.trigger_date is not None:
-            # No recurrences.
-            dt = self._combine(self.time, self.trigger_date, tz)
-            if dt > now:  # Return only if a future date.
-                return dt
+        # Return the next value in the recurrence
+        elif recurrences:
+            return self.recurrences.after(
+                now,  # The next recurrence after the current time.
+                inc=True,  # return the current time if it matches the recurrence.
+                dtstart=alert_on  # The alert time.
+            )
 
         # No recurrence or not a time-pased Trigger.
         return None
