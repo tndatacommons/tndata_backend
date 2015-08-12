@@ -356,37 +356,48 @@ class TestTrigger(TestCase):
             # No date or time should return None
             self.assertIsNone(Trigger().get_alert_time())
 
-    def test_next(self):
+    def test_next_for_place_triggers_is_none(self):
         """Ensure that next returns the next day's event."""
         # returns none when trigger_type == 'place'
-        self.trigger.trigger_type = "place"
-        self.trigger.save()
-        self.assertIsNone(self.trigger.next())
+        trigger = Trigger.objects.create(
+            name="Place Test Trigger",
+            trigger_type="place",
+        )
+        self.assertIsNone(trigger.next())
+        trigger.delete()
 
-        # Reset to time triggers
-        self.trigger.trigger_type = "time"
-        self.trigger.save()
-
-        # returns none when there's no recurrence & no date
+    def test_next_when_no_time_or_date(self):
+        """Ensure that next none when there's no time, recurrence, or date"""
         self.assertIsNone(Trigger(trigger_type="time").next())
 
-        # Ensure we get the trigger *today* if it's scheduled later than *now*
+    def test_next(self):
+        trigger = Trigger.objects.create(
+            name="Daily Test Trigger",
+            trigger_type="time",
+            time=time(12, 34),
+            recurrences="RRULE:FREQ=DAILY",
+        )
         with patch("goals.models.timezone.now") as mock_now:
+            # Ensure we get the *today* if it's scheduled later in the day
             # now is 9:30 am, trigger is for 12:34pm
-            mock_now.return_value = datetime(
-                1000, 10, 20, 9, 30, tzinfo=timezone.utc
-            )
-            expected = datetime(1000, 10, 20, 12, 34, tzinfo=timezone.utc)
-            self.assertEqual(self.trigger.next(), expected)
+            mock_now.return_value = tzdt(1000, 10, 20, 9, 30)
+            expected = tzdt(1000, 10, 20, 12, 34)
+            self.assertEqual(trigger.next(), expected)
 
-        # Ensure we get the next day's trigger if the time is later than *now*
-        with patch("goals.models.timezone.now") as mock_now:
-            # now is 1:30am, trigger is for 12:34pm
-            mock_now.return_value = datetime(
-                1000, 10, 20, 13, 30, tzinfo=timezone.utc
-            )
-            expected = datetime(1000, 10, 21, 12, 34, tzinfo=timezone.utc)
-            self.assertEqual(self.trigger.next(), expected)
+            # Ensure we get the next day's trigger if later than *now*
+            # now is 1:30pm, trigger is for 12:34pm
+            mock_now.return_value = tzdt(1000, 10, 20, 13, 30)
+            expected = tzdt(1000, 10, 21, 12, 34)
+            self.assertEqual(trigger.next(), expected)
+
+            # Ensure we get the same day's trigger if the times matche
+            # now is 12:34pm, trigger is for 12:34pm
+            mock_now.return_value = tzdt(1000, 10, 20, 12, 34)
+            expected = tzdt(1000, 10, 20, 12, 34)
+            self.assertEqual(trigger.next(), expected)
+
+        # Clean up
+        trigger.delete()
 
     def test_next_when_no_recurrence(self):
         trigger = Trigger.objects.create(
