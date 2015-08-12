@@ -30,5 +30,6 @@ def create_inactive_user(email):
     try:
         user.userprofile.set_needs_onboarding()
     except ObjectDoesNotExist:
-        pass
+        from userprofile.models import UserProfile
+        UserProfile.objects.create(user=user, needs_onboarding=True)
     return user
