@@ -188,6 +188,9 @@ class TestUsersAPI(APITestCase):
         self.assertIn('userprofile_id', response.data)
         self.assertIn('first_name', response.data)
         self.assertIn('last_name', response.data)
+        self.assertIn('full_name', response.data)
+        self.assertIn('token', response.data)
+        self.assertIn('needs_onboarding', response.data)
 
     def test_auth_token_retrieval_with_email(self):
         """Ensure a user can retrieve their auth token by providing their
@@ -204,6 +207,9 @@ class TestUsersAPI(APITestCase):
         self.assertIn('userprofile_id', response.data)
         self.assertIn('first_name', response.data)
         self.assertIn('last_name', response.data)
+        self.assertIn('full_name', response.data)
+        self.assertIn('token', response.data)
+        self.assertIn('needs_onboarding', response.data)
 
 
 class TestUserProfilesAPI(APITestCase):
