@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, date, time
 from unittest.mock import Mock, patch
 
@@ -23,6 +24,13 @@ from .. models import (
 )
 
 User = get_user_model()
+
+
+def tzdt(*args, **kwargs):
+    """Return a timezone-aware datetime object."""
+    tz = kwargs.pop("tz", timezone.utc)
+    dt = datetime(*args)
+    return timezone.make_aware(dt, timezone=tz)
 
 
 class TestCategory(TestCase):
@@ -220,7 +228,6 @@ class TestGoal(TestCase):
         self.assertEqual(self.goal.state, "published")
 
 
-# TODO: Run tests & update trigger stuff for this adn forms
 class TestTrigger(TestCase):
     """Tests for the `Trigger` model."""
 
@@ -290,6 +297,64 @@ class TestTrigger(TestCase):
     def test_recurrences_as_text(self):
         expected = "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
         self.assertEqual(self.trigger.recurrences_as_text(), expected)
+
+    def test__combine(self):
+        """Ensure the Trigger.__combine wrapper works as expected."""
+
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 2)
+            t = self.trigger._combine(time(13, 30))
+            self.assertEqual(t, tzdt(2015, 1, 2, 13, 30))
+
+            t = self.trigger._combine(time(13, 30), date(2015, 2, 3))
+            self.assertEqual(t, tzdt(2015, 2, 3, 13, 30))
+
+            tz = pytz.timezone("America/Chicago")
+            t = self.trigger._combine(time(13, 30), date(2010, 12, 30), tz)
+            self.assertEqual(t, tzdt(2010, 12, 30, 13, 30, tz=tz))
+
+    def test_get_tz_without_user(self):
+        """Ensure this returns the appropriate timezone."""
+        self.assertIsNone(self.trigger.user)
+        self.assertEqual(self.trigger.get_tz(), timezone.utc)
+
+    def test_get_tz_with_user(self):
+        """Ensure this returns the user's selected timezone."""
+        u = User.objects.create_user("get_tz_uer", "get_tz_user@example.com", "s")
+        u.userprofile.timezone = "America/Chicago"
+        t = Trigger.objects.create(
+            user=u,
+            name="User's test Trigger",
+            trigger_type="time",
+            time=time(12, 34),
+        )
+
+        self.assertEqual(t.get_tz(), pytz.timezone("America/Chicago"))
+
+        # clean up
+        u.delete()
+        t.delete()
+
+    def test_get_alert_time(self):
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 2)
+
+            # No date, should combine "now" + time
+            self.assertEqual(
+                self.trigger.get_alert_time(),
+                tzdt(2015, 1, 2, 12, 34)
+            )
+
+            # Date + time should get combined.
+            self.trigger.trigger_date = date(2015, 3, 15)
+            self.trigger.save()
+            self.assertEqual(
+                self.trigger.get_alert_time(),
+                tzdt(2015, 3, 15, 12, 34)
+            )
+
+            # No date or time should return None
+            self.assertIsNone(Trigger().get_alert_time())
 
     def test_next(self):
         """Ensure that next returns the next day's event."""
@@ -372,6 +437,89 @@ class TestTrigger(TestCase):
 
         # Clean up
         t.delete()
+
+    def test_next_with_occurs_once(self):
+        """Test the value of `next`, when the recurrence is set to occur once."""
+        # daily, occuring once
+        rrule = 'RRULE:FREQ=DAILY;COUNT=1'
+        t = Trigger.objects.create(
+            name="x",
+            time=time(12, 30),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # now: 2015-08-15 at 11:00am
+            # expected: same day, at 12:30pm
+            mock_now.return_value = datetime(
+                2015, 8, 15, 11, 0, tzinfo=timezone.utc
+            )
+            expected = datetime(2015, 8, 15, 12, 30, tzinfo=timezone.utc)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-08-15 at 2:00pm (later in the day)
+            # expected: None because it's already fired once.
+            mock_now.return_value = datetime(
+                2015, 8, 15, 14, 0, tzinfo=timezone.utc
+            )
+            self.assertIsNone(t.next())
+
+            # the next day: 2015-08-16 at 11:00am
+            # expected: None because it's already fired once.
+            mock_now.return_value = datetime(
+                2015, 8, 16, 11, 0, tzinfo=timezone.utc
+            )
+            self.assertIsNone(t.next())
+
+        # Clean up
+        t.delete()
+
+    def test_next_with_daily_interval(self):
+        """Test the value of `next`, when the recurrence is for every other day."""
+        # every other day
+        rrule = 'RRULE:FREQ=DAILY;INTERVAL=2'
+        t = Trigger.objects.create(
+            name="x",
+            time=time(12, 30),
+            trigger_date=date(2015, 8, 1),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # now: 2015-08-01 at 11:00am
+            # expected: same day, at 12:30pm
+            mock_now.return_value = datetime(
+                2015, 8, 1, 11, 0, tzinfo=timezone.utc
+            )
+            expected = datetime(2015, 8, 1, 12, 30, tzinfo=timezone.utc)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-08-02 at 11:00am
+            # expected: Tomorrow (8/3) at 12:30
+            mock_now.return_value = datetime(
+                2015, 8, 2, 11, 0, tzinfo=timezone.utc
+            )
+            expected = datetime(2015, 8, 3, 12, 30, tzinfo=timezone.utc)
+            self.assertEqual(t.next(), expected)
+
+            # the next day: 2015-08-03 at 5:00pm
+            # expected: the next day (8/5) at 12:30 (becase it's past today's)
+            mock_now.return_value = datetime(
+                2015, 8, 3, 17, 0, tzinfo=timezone.utc
+            )
+            expected = datetime(2015, 8, 5, 12, 30, tzinfo=timezone.utc)
+            self.assertEqual(t.next(), expected)
+
+        # Clean up
+        t.delete()
+
+    def test_next_with_exclusion(self):
+        """Test the value of `next`, when the recurrence excludes some days."""
+        # recurrs weekly, except for saturday & sunday
+        rrule = 'EXRULE:FREQ=WEEKLY;BYDAY=SA,SU'
+        self.assertTrue(False)
 
 
 class TestBehavior(TestCase):
