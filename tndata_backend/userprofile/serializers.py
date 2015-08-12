@@ -17,6 +17,7 @@ from utils import user_utils
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
+    needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
     username = serializers.CharField(required=False)
     timezone = serializers.ReadOnlyField(source='userprofile.timezone')
     goals = UserGoalSerializer(many=True, source='usergoal_set', read_only=True)
@@ -44,6 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             "goals", "behaviors", "actions", "categories", 'token',
+            'needs_onboarding',
         )
         read_only_fields = ("id", "date_joined", )
 
