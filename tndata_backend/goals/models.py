@@ -489,7 +489,7 @@ class Trigger(URLMixin, models.Model):
         recurrences = self.serialized_recurrences()
 
         # No recurrences, alert is in the future
-        if recurrences is None and alert_on > now:
+        if recurrences is None and alert_on and alert_on > now:
             return alert_on
 
         # Return the next value in the recurrence
