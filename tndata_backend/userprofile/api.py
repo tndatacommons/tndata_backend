@@ -194,6 +194,7 @@ class ObtainAuthorization(ObtainAuthToken):
     * last_name
     * full_name
     * email
+    * needs_onboarding
 
     USAGE: Send a POST request to this view containing username/password
     data and receive a JSON-encoded response.
@@ -215,6 +216,7 @@ class ObtainAuthorization(ObtainAuthToken):
                 'last_name': user.last_name,
                 'full_name': user.get_full_name(),
                 'email': user.email,
+                'needs_onboarding': user.userprofile.needs_onboarding,
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
