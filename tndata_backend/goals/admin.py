@@ -315,6 +315,10 @@ class BehaviorProgressAdmin(UserRelatedModelAdmin):
     list_display = (
         'user', 'behavior', 'status', 'reported_on'
     )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'behavior__id', 'behavior__title',
+    )
     raw_id_fields = ("user", "user_behavior")
 
 admin.site.register(models.BehaviorProgress, BehaviorProgressAdmin)
@@ -325,6 +329,10 @@ class GoalProgressAdmin(UserRelatedModelAdmin):
         'user', 'goal', 'current_total', 'max_total',
         'current_score', 'text_glyph', 'reported_on'
     )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'goal__id', 'goal__title',
+    )
     raw_id_fields = ("user", "goal")
 
 admin.site.register(models.GoalProgress, GoalProgressAdmin)
@@ -333,6 +341,10 @@ admin.site.register(models.GoalProgress, GoalProgressAdmin)
 class CategoryProgressAdmin(UserRelatedModelAdmin):
     list_display = (
         'user', 'category', 'current_score', 'text_glyph', 'reported_on'
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'category__id', 'category__title',
     )
     raw_id_fields = ("user", 'category')
 
@@ -347,6 +359,10 @@ class PackageEnrollmentAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'user_first', 'user_last', 'accepted', 'enrolled_by',
         'enrolled_on', 'category',
+    )
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'category__id', 'category__title',
     )
     raw_id_fields = ("user", 'enrolled_by', 'goals')
 
