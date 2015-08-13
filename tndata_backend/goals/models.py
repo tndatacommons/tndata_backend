@@ -496,6 +496,17 @@ class Trigger(URLMixin, models.Model):
         if recurrences is None and alert_on and alert_on > now:
             return alert_on
 
+        # HACK to make sure the UNTIL recurrences don't sometime keep returning
+        # dates after their specified ending.
+        elif recurrences and "UNTIL" in recurrences:
+            yesterday = alert_on - timedelta(days=1)  # yesterday's alert
+            tomorrow = now + timedelta(days=1)  # this time tomorrow
+            dates = self.recurrences.between(now, tomorrow, dtstart=yesterday)
+            if len(dates) > 0:
+                return dates[0]
+            else:
+                return None
+
         # Return the next value in the recurrence
         elif recurrences:
             return self.recurrences.after(

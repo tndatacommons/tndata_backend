@@ -567,8 +567,8 @@ class TestTrigger(TestCase):
 
     def test_next_with_exclusion(self):
         """Test the value of `next`, when the recurrence excludes some days."""
-        # recurrs weekly, except for saturday & sunday
-        # XXX: i should get it every day except for Sat/Sun?
+        # recurrs weekly, except for saturday & sunday, that is:
+        # we should get the notification every day except for Sat/Sun.
         rrule = 'EXRULE:FREQ=WEEKLY;BYDAY=SA,SU'
         t = Trigger.objects.create(
             name="x",
