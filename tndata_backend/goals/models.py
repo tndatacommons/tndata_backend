@@ -427,8 +427,12 @@ class Trigger(URLMixin, models.Model):
         if self.recurrences:
             result = ''
             rules = []
+            # check all the recurrence rules
             for rule in self.recurrences.rrules:
                 rules.append(rule.to_text())
+            # also check for exclusion rules
+            for exrule in self.recurrences.exrules:
+                rules.append(exrule.to_text())
             result = ", ".join(rules)
             if len(self.recurrences.rdates) > 0:
                 result += " on "
