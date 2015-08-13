@@ -400,6 +400,8 @@ class TestTrigger(TestCase):
         trigger.delete()
 
     def test_next_when_no_recurrence(self):
+        """Ensure that a trigger without a recurrence, but with a time & date
+        yields the correct value via it's `next` method."""
         trigger = Trigger.objects.create(
             name="Date-Trigger",
             trigger_type="time",
@@ -407,9 +409,17 @@ class TestTrigger(TestCase):
             trigger_date=date(2222, 3, 15),
         )
 
+        # When the date is far in the future, we should get that future date.
         expected = datetime.combine(date(2222, 3, 15), time(12, 34))
         expected = timezone.make_aware(expected, timezone=timezone.utc)
         self.assertEqual(trigger.next(), expected)
+
+        # When the set date is in the past, we should not get a value.
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = datetime(
+                2222, 3, 16, 6, 0, tzinfo=timezone.utc
+            )
+            self.assertIsNone(trigger.next())
 
     def test_next_with_until_date(self):
         """Test the value of `next`, when the recurrence has a stop date."""
@@ -526,11 +536,85 @@ class TestTrigger(TestCase):
         # Clean up
         t.delete()
 
+    def test_next_with_future_date(self):
+        """Test the value of `next`, when the recurrence has a trigger_date,
+        that's set in the future."""
+
+        # Repeat daily at 9:00am, starting Oct 1, 2015
+        rrule = 'RRULE:FREQ=DAILY'
+        t = Trigger.objects.create(
+            name="x",
+            time=time(9, 0),
+            trigger_date=date(2015, 10, 1),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # now: 2015-08-15 at 11:00am, expected: next is 10/1
+            mock_now.return_value = tzdt(2015, 8, 15, 11, 0)
+            expected = tzdt(2015, 10, 1, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Should work as normal after the start date.
+            # now: 2015-10-2 at 11:00am, expected next is 10/3 9am
+            mock_now.return_value = tzdt(2015, 10, 2, 11, 0)
+            expected = tzdt(2015, 10, 3, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+        # Clean up
+        t.delete()
+
     def test_next_with_exclusion(self):
         """Test the value of `next`, when the recurrence excludes some days."""
         # recurrs weekly, except for saturday & sunday
+        # XXX: i should get it every day except for Sat/Sun?
         rrule = 'EXRULE:FREQ=WEEKLY;BYDAY=SA,SU'
-        self.assertTrue(False)
+        t = Trigger.objects.create(
+            name="x",
+            time=time(9, 0),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # Thurs, 8/6/2015 at 11am, next should be Friday at 9am
+            mock_now.return_value = tzdt(2015, 8, 6, 11, 0)
+            expected = tzdt(2015, 8, 7, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Friday 8/7/2015 at 6am, next should be Friday at 9am
+            mock_now.return_value = tzdt(2015, 8, 7, 6, 0)
+            expected = tzdt(2015, 8, 7, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Friday 8/7/2015 at 1pm, next should be Monday at 9am
+            mock_now.return_value = tzdt(2015, 8, 7, 13, 0)
+            expected = tzdt(2015, 8, 10, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Saturday 8/8/2015 at 1pm, next should be Monday at 9am
+            mock_now.return_value = tzdt(2015, 8, 8, 13, 0)
+            expected = tzdt(2015, 8, 10, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Sunday 8/9/2015 at 7am, next should be Monday at 9am
+            mock_now.return_value = tzdt(2015, 8, 9, 7, 0)
+            expected = tzdt(2015, 8, 10, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Monday 8/10/2015, at 7am, next should be Monday at 9am
+            mock_now.return_value = tzdt(2015, 8, 10, 7, 0)
+            expected = tzdt(2015, 8, 10, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Monday 8/10/2015, at noon, next should be Tuesday at 9am
+            mock_now.return_value = tzdt(2015, 8, 10, 12, 0)
+            expected = tzdt(2015, 8, 11, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+        # Clean up
+        t.delete()
 
 
 class TestBehavior(TestCase):
