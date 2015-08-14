@@ -430,6 +430,12 @@ class TestCategoryUpdateView(TestCaseWithGroups):
     def setUpClass(cls):
         super(cls, TestCategoryUpdateView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.payload = {
+            'order': 1,
+            'title': 'Test Category',
+            'description': 'Some explanation!',
+            'color': '#ff0000',
+        }
 
     @classmethod
     def setUpTestData(cls):
@@ -467,6 +473,40 @@ class TestCategoryUpdateView(TestCaseWithGroups):
     def test_viewer_get(self):
         resp = self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_submit_for_review(self):
+        """Ensure viewers cannot submit for review."""
+        self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_submit_for_review(self):
+        """Ensure editors can submit for review."""
+        self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Category.objects.get(pk=self.category.pk).state, "pending-review")
+
+    def test_admin_submit_for_review(self):
+        """Ensure admins can submit for review."""
+        self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Category.objects.get(pk=self.category.pk).state, "pending-review")
+
+    def test_author_submit_for_review(self):
+        """Ensure authors CANNOT submit for review (not on Categories)"""
+        self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
 
@@ -927,6 +967,41 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_submit_for_review(self):
+        """Ensure viewers cannot submit for review."""
+        self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_submit_for_review(self):
+        """Ensure editors can submit for review."""
+        self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.pk).state, "pending-review")
+
+    def test_admin_submit_for_review(self):
+        """Ensure admins can submit for review."""
+        self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.pk).state, "pending-review")
+
+    def test_author_submit_for_review(self):
+        """Ensure authors can submit for review."""
+        self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.pk).state, "pending-review")
 
 
 class TestGoalDeleteView(TestCaseWithGroups):
@@ -1740,6 +1815,41 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
 
+    def test_viewer_submit_for_review(self):
+        """Ensure viewers cannot submit for review."""
+        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_submit_for_review(self):
+        """Ensure editors can submit for review."""
+        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
+
+    def test_admin_submit_for_review(self):
+        """Ensure admins can submit for review."""
+        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
+
+    def test_author_submit_for_review(self):
+        """Ensure authors can submit for review."""
+        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
+
 
 class TestBehaviorDeleteView(TestCaseWithGroups):
 
@@ -2220,6 +2330,41 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
+
+    def test_viewer_submit_for_review(self):
+        """Ensure viewers cannot submit for review."""
+        self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_editor_submit_for_review(self):
+        """Ensure editors can submit for review."""
+        self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="editor", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
+
+    def test_admin_submit_for_review(self):
+        """Ensure admins can submit for review."""
+        self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
+
+    def test_author_submit_for_review(self):
+        """Ensure authors can submit for review."""
+        self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
+        self.payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
 
 
 class TestActionDeleteView(TestCaseWithGroups):
