@@ -432,7 +432,7 @@ class Trigger(URLMixin, models.Model):
                 rules.append(rule.to_text())
             # also check for exclusion rules
             for exrule in self.recurrences.exrules:
-                rules.append(exrule.to_text())
+                rules.append("Exclusions: {0}".format(exrule.to_text()))
             result = ", ".join(rules)
             if len(self.recurrences.rdates) > 0:
                 result += " on "
@@ -480,6 +480,20 @@ class Trigger(URLMixin, models.Model):
             alert_time = self._combine(self.time, now, tz)
         return alert_time
 
+    def get_occurences(self, days=30):
+        """Get some dates in this series of reminders."""
+        tz = self.get_tz()
+        begin = self.get_alert_time(tz)  # "today's" alert time.
+        end = begin + timedelta(days=30)  # alerts a month in the future
+        dates = list(self.recurrences.occurrences(
+            dtstart=begin,
+            dtend=end
+        ))
+
+        # Return only dates in the future.
+        now = timezone.now().astimezone(tz)
+        return list(filter(lambda d: d > now, dates))
+
     def next(self):
         """Generate the next date for this Trigger. For recurring triggers,
         this will return a datetime object for the next time the trigger should
@@ -495,6 +509,24 @@ class Trigger(URLMixin, models.Model):
         # No recurrences, alert is in the future
         if recurrences is None and alert_on and alert_on > now:
             return alert_on
+
+        # HACK to get the next date for EXCLUDE rules
+        # XXX EXclusion rules are just broken.
+#        elif recurrences and 'EXRULE' in recurrences:
+#            yesterday = alert_on - timedelta(days=1)  # yesterday's alert
+#            end = alert_on + timedelta(days=30)  # tomorrow's alert
+#            dates = list(self.recurrences.between(
+#                now,
+#                end,
+#                dtstart=yesterday,
+#            ))
+#            # Filter out any dates prior to now
+#            dates = list(filter(lambda d: d > now, dates))
+#            clog(dates)
+#            if len(dates) > 0:
+#                return dates[0]
+#            else:
+#                return None
 
         # HACK to make sure the UNTIL recurrences don't sometime keep returning
         # dates after their specified ending.
