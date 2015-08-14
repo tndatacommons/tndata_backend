@@ -1,3 +1,9 @@
+"""
+This is a sandbox for generateing dates and testing the results of
+triggers; it's faster than running unit tests and lets me see a chunk of
+dates all at once.
+
+"""
 from unittest.mock import patch
 from goals.models import Trigger
 from datetime import date, datetime, time
