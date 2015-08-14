@@ -19,13 +19,22 @@ def print_triggers():
     #rule = 'RRULE:FREQ=DAILY;UNTIL=20150815T050000Z'  # Daily until 8/15
     #rule = 'EXRULE:FREQ=WEEKLY;BYDAY=SA,SU'  # Weekly except Sat/Sun
     #rule = 'RRULE:FREQ=WEEKLY;BYDAY=SA,SU;COUNT=4'
-    rule = 'EXRULE:FREQ=WEEKLY;BYDAY=FR'  # every day but friday?
+    #rule = 'EXRULE:FREQ=WEEKLY;BYDAY=FR'  # every day but friday?
+
+    # M, W, Th on Aug 17, 19, 20
+    rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
+
+    # Every Monday, Every Tuesday until 8/15/2015 (sat)
+    rule = (
+        'RRULE:FREQ=WEEKLY;BYDAY=MO '
+        'RRULE:FREQ=WEEKLY;UNTIL=20150815T050000Z;BYDAY=TU'
+    )
 
     Trigger.objects.filter(name="---testing this---").delete()
     t = Trigger.objects.create(
         name="---testing this---",
         trigger_type="time",
-        #trigger_date=date(2015, 8, 1),
+        trigger_date=date(2015, 8, 10),
         time=time(13, 0),
         recurrences=rule
     )
@@ -50,7 +59,7 @@ def print_triggers():
     # 31
 
     for i in range(7):
-        day = 13 + i
+        day = 10 + i
         with patch("goals.models.timezone.now") as now:
             # Early morning
             now.return_value = tzdt(2015, 8, day, 6, 0)

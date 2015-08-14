@@ -568,6 +568,102 @@ class TestTrigger(TestCase):
         # Clean up
         t.delete()
 
+    def test_next_for_three_days(self):
+        """Test the value of `next` for recurrences that specify a distinct
+        set of days."""
+
+        # 7pm on M, W, Th on Aug 17, 19, 20
+        rrule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
+        t = Trigger.objects.create(
+            name="x",
+            time=time(19, 0),
+            trigger_date=date(2015, 8, 17),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # now: 08/15 at 11:00am, expected: next is Mon 8/17
+            mock_now.return_value = tzdt(2015, 8, 15, 11, 0)
+            expected = tzdt(2015, 8, 17, 19, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: 8/17 at 11:00pm, expected next is 8/19 at 7pm
+            mock_now.return_value = tzdt(2015, 8, 17, 23, 0)
+            expected = tzdt(2015, 8, 19, 19, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: 8/18 at 9am, expected next is 8/19 at 7pm
+            mock_now.return_value = tzdt(2015, 8, 18, 9, 0)
+            expected = tzdt(2015, 8, 19, 19, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: 8/19 at 9am, expected next is 8/19 at 7pm
+            mock_now.return_value = tzdt(2015, 8, 19, 9, 0)
+            expected = tzdt(2015, 8, 19, 19, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-8-19 at 10pm, expected next is 8/20 at 7pm
+            mock_now.return_value = tzdt(2015, 8, 19, 22, 0)
+            expected = tzdt(2015, 8, 20, 19, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-8-20 at 10am, expected next is 8/20 at 7pm
+            mock_now.return_value = tzdt(2015, 8, 20, 10, 0)
+            expected = tzdt(2015, 8, 20, 19, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: 2015-8-20 at 10pm, we're done
+            mock_now.return_value = tzdt(2015, 8, 20, 22, 0)
+            self.assertIsNone(t.next())
+
+        # Clean up
+        t.delete()
+
+    def test_next_with_multiple_rules(self):
+        """Test `next` when we have multiple RRULE requirements."""
+
+        # Every Monday, Every Tuesday until 8/15/2015 (sat)
+        rrule = (
+            'RRULE:FREQ=WEEKLY;BYDAY=MO '
+            'RRULE:FREQ=WEEKLY;UNTIL=20150815T050000Z;BYDAY=TU'
+        )
+        t = Trigger.objects.create(
+            name="x",
+            time=time(9, 0),  # 9am
+            trigger_date=date(2015, 8, 1),
+            trigger_type="time",
+            recurrences=rrule
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # now: Sat 08/8 at 11:00am, expected: next is Mon 8/10
+            mock_now.return_value = tzdt(2015, 8, 8, 11, 0)
+            expected = tzdt(2015, 8, 10, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: Mon 8/10 at 11:00am, expected next is Tues 8/11
+            mock_now.return_value = tzdt(2015, 8, 10, 11, 0)
+            expected = tzdt(2015, 8, 11, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: Wed 8/12 at 11:00am, expected next is Mon 8/18
+            mock_now.return_value = tzdt(2015, 8, 12, 11, 0)
+            expected = tzdt(2015, 8, 18, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: Mon 8/18 at 8am, expected next, is same day
+            mock_now.return_value = tzdt(2015, 8, 18, 8, 0)
+            expected = tzdt(2015, 8, 18, 9, 0)
+            self.assertEqual(t.next(), expected)
+
+            # now: Mon 8/18 at 11am, expected next is Mon 25 (skipped Tues)
+            mock_now.return_value = tzdt(2015, 8, 18, 11, 0)
+            expected = tzdt(2015, 8, 25, 9, 0)
+
+        # Clean up
+        t.delete()
+
 #    def test_next_with_exclusion(self):
 #        """Test the value of `next`, when the recurrence excludes some days."""
 #        # recurrs weekly, except for saturday & sunday, that is:
