@@ -1,6 +1,9 @@
 {% extends "goals/base.html" %}
 {% load static from staticfiles %}
 
+{% block title %}Trigger Form{% endblock %}
+
+
 {% block head %}
   {{ block.super }}
   {{ form.media }}  {# load the recurrences widget #}

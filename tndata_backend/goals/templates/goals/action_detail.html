@@ -4,6 +4,8 @@
 {% load util_tags %}
 {% load util_filters %}
 
+{% block title %}A: {{ action.title }}{% endblock %}
+
 {% block content %}
   <ul class="breadcrumbs">
     <li><a href="{% url 'goals:index' %}">Home</a></li>
