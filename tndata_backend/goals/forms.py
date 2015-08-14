@@ -240,6 +240,11 @@ class ActionTriggerForm(forms.ModelForm):
                 "A Trigger Date is required for recurrences that contain an "
                 "interval (such as every 2 days)", code="required_for_intervals"
             ))
+        elif recurrences and 'COUNT' in serialize_recurrences(recurrences) and not date:
+            self.add_error('trigger_date', ValidationError(
+                "A Trigger Date is required for recurrences that occur a set "
+                "number of times", code="required_for_count"
+            ))
 
         return data
 
@@ -271,6 +276,11 @@ class TriggerForm(forms.ModelForm):
             self.add_error('trigger_date', ValidationError(
                 "A Trigger Date is required for recurrences that contain an "
                 "interval (such as every 2 days)", code="required_for_intervals"
+            ))
+        elif recurrences and 'COUNT' in serialize_recurrences(recurrences) and not date:
+            self.add_error('trigger_date', ValidationError(
+                "A Trigger Date is required for recurrences that occur a set "
+                "number of times", code="required_for_count"
             ))
 
         return data
