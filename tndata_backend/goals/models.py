@@ -362,7 +362,8 @@ class Trigger(URLMixin, models.Model):
     trigger_date = models.DateField(
         blank=True,
         null=True,
-        help_text="A date for a one-time trigger"
+        help_text="A starting date for a recurrence, or a single date for a "
+                  "one-time trigger."
     )
     recurrences = RecurrenceField(
         null=True,
