@@ -443,7 +443,12 @@ class ActionListView(ContentViewerMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        return queryset.select_related("behavior__title")
+        return queryset.select_related(
+            "behavior__title",
+            'default_trigger__time',
+            'default_trigger__trigger_date',
+            'default_trigger__recurrences'
+        )
 
 
 class ActionDetailView(ContentViewerMixin, DetailView):
