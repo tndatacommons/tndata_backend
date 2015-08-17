@@ -530,8 +530,10 @@ class Trigger(URLMixin, models.Model):
 #                return None
 
         # HACK to make sure the UNTIL recurrences don't sometime keep returning
-        # dates after their specified ending.
-        elif recurrences and "UNTIL" in recurrences:
+        # dates after their specified ending (but don't clobber rules that
+        # specify a weekly recurrence for set days; these need to use
+        # `recurrences.after`
+        elif recurrences and "UNTIL" in recurrences and 'BYDAY' not in recurrences:
             yesterday = alert_on - timedelta(days=1)  # yesterday's alert
             tomorrow = now + timedelta(days=1)  # this time tomorrow
             dates = self.recurrences.between(now, tomorrow, dtstart=yesterday)
