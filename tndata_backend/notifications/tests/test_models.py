@@ -83,19 +83,35 @@ class TestGCMMessage(TestCase):
         )
 
     def test__str__(self):
-        content_info = "{0}-{1}-{2}".format(
-            self.msg.content_type.name, self.msg.object_id, self.user.id
-        )
-        expected = md5(content_info.encode("utf8")).hexdigest()
-        actual = "{}".format(self.msg)
-        self.assertEqual(expected, actual)
+        with patch("notifications.models.datetime") as mock_dt:
+            now = datetime_utc(1234, 1, 2, 11, 30)
+            nowstring = now.strftime("%c")
+            mock_dt.utcnow.return_value = now
+            content_info = "{0}-{1}-{2}-{3}".format(
+                nowstring,
+                self.msg.content_type.name,
+                self.msg.object_id,
+                self.user.id
+            )
+            expected = md5(content_info.encode("utf8")).hexdigest()
+            self.msg._set_message_id()  # ensure it's set correctly
+            actual = "{}".format(self.msg)
+            self.assertEqual(expected, actual)
 
     def test__set_message_id(self):
-        content_info = "{0}-{1}-{2}".format(
-            self.msg.content_type.name, self.msg.object_id, self.user.id
-        )
-        expected = md5(content_info.encode("utf8")).hexdigest()
-        self.assertEqual(self.msg.message_id, expected)
+        with patch("notifications.models.datetime") as mock_dt:
+            now = datetime_utc(1234, 1, 2, 11, 30)
+            nowstring = now.strftime("%c")
+            mock_dt.utcnow.return_value = now
+            content_info = "{0}-{1}-{2}-{3}".format(
+                nowstring,
+                self.msg.content_type.name,
+                self.msg.object_id,
+                self.user.id
+            )
+            expected = md5(content_info.encode("utf8")).hexdigest()
+            self.msg._set_message_id()  # Call the method.
+            self.assertEqual(self.msg.message_id, expected)  # check result
 
     def test__set_message_id_when_no_content_object(self):
         """Ensure this still works if there's no content_object."""
@@ -217,6 +233,7 @@ class TestGCMMessage(TestCase):
             mock_client.return_value.send.assert_called_once_with(
                 ['REGISTRATIONID'],
                 self.msg.content_json,
+                priority="high",
                 delay_while_idle=False,
                 time_to_live=None,
             )

@@ -112,12 +112,15 @@ class GCMMessage(models.Model):
         date & time for the message id.
 
         """
+        content_info = datetime.utcnow().strftime("%c")
         if self.content_object:
-            content_info = "{0}-{1}-{2}".format(
-                self.content_type.name, self.object_id, self.user.id
+            # If we have additional content, use taht as well.
+            content_info = "{0}-{1}-{2}-{3}".format(
+                content_info,
+                self.content_type.name,
+                self.object_id,
+                self.user.id
             )
-        else:
-            content_info = datetime.utcnow().strftime("%c")
         self.message_id = md5(content_info.encode("utf8")).hexdigest()
 
     def _localize(self):
