@@ -9,6 +9,7 @@ Actions are the things we want to help people to do.
 """
 import os
 import pytz
+import re
 
 from datetime import datetime, timedelta
 
@@ -17,7 +18,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
 from django.db.models import Avg
-from django.db.models.signals import post_delete, post_save, pre_delete
+from django.db.models.signals import (
+    pre_delete, pre_save, post_delete, post_save
+)
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils import timezone
@@ -860,6 +863,43 @@ class Action(URLMixin, BaseBehavior):
         )
 
     objects = WorkflowManager()
+
+
+# ----------------------------------
+# Signals for public content models.
+# ----------------------------------
+
+# Clean Titles.
+def _clean_title(text):
+    text = re.sub(r'\s+', ' ', text).strip()  # collapse whitespace
+    if text.endswith("."):
+        text = text[:-1]
+    return text
+
+
+# Clean Notifications.
+def _clean_notif(text):
+    text = re.sub(r'\s+', ' ', text).strip()  # collapse whitespace
+    if text[-1] not in ['.', '?', '!']:
+        text += "."
+    return text
+
+
+@receiver(pre_save, sender=Action)
+@receiver(pre_save, sender=Behavior)
+@receiver(pre_save, sender=Goal)
+@receiver(pre_save, sender=Category)
+def clean_content(sender, instance, raw, using, **kwargs):
+    if hasattr(instance, 'title'):
+        instance.title = _clean_title(instance.title)
+    if hasattr(instance, 'subtitle'):
+        instance.subtitle = _clean_title(instance.subtitle)
+    if hasattr(instance, 'description'):
+        instance.description = instance.description.strip()
+    if hasattr(instance, 'more_info'):
+        instance.more_info = instance.more_info.strip()
+    if hasattr(instance, 'notification_text'):
+        instance.notification_text = _clean_notif(instance.notification_text)
 
 
 @receiver(post_delete, sender=Action)

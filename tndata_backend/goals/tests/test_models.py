@@ -138,6 +138,16 @@ class TestCategory(TestCase):
         self.assertTrue(c.is_packaged)
         c.delete()
 
+    def test_clean_title_on_save(self):
+        self.category.title = "    A NEW title."
+        self.category.save()
+        self.assertEqual(self.category.title, "A NEW title")
+
+    def test_clean_description_on_save(self):
+        self.category.description = "  more descriptions.   "
+        self.category.save()
+        self.assertEqual(self.category.description, "more descriptions.")
+
 
 class TestGoal(TestCase):
     """Tests for the `Goal` model."""
@@ -226,6 +236,16 @@ class TestGoal(TestCase):
         self.assertEqual(self.goal.state, "draft")
         self.goal.publish()  # then publish
         self.assertEqual(self.goal.state, "published")
+
+    def test_clean_title_on_save(self):
+        self.goal.title = "    A NEW title."
+        self.goal.save()
+        self.assertEqual(self.goal.title, "A NEW title")
+
+    def test_clean_description_on_save(self):
+        self.goal.description = "  more descriptions.   "
+        self.goal.save()
+        self.assertEqual(self.goal.description, "more descriptions.")
 
 
 class TestTrigger(TestCase):
@@ -749,6 +769,21 @@ class TestBehavior(TestCase):
         self.behavior.publish()  # then publish
         self.assertEqual(self.behavior.state, "published")
 
+    def test_clean_title_on_save(self):
+        self.behavior.title = "    A NEW title."
+        self.behavior.save()
+        self.assertEqual(self.behavior.title, "A NEW title")
+
+    def test_clean_more_info_on_save(self):
+        self.behavior.more_info = "    more.   "
+        self.behavior.save()
+        self.assertEqual(self.behavior.more_info, "more.")
+
+    def test_clean_description_on_save(self):
+        self.behavior.description = "  more descriptions.   "
+        self.behavior.save()
+        self.assertEqual(self.behavior.description, "more descriptions.")
+
 
 class TestAction(TestCase):
     """Tests for the `Action` model."""
@@ -870,6 +905,29 @@ class TestAction(TestCase):
         self.assertEqual(self.action.state, "draft")
         self.action.publish()  # then publish
         self.assertEqual(self.action.state, "published")
+
+    def test_clean_title_on_save(self):
+        self.action.title = "    A NEW title."
+        self.action.save()
+        self.assertEqual(self.action.title, "A NEW title")
+
+    def test_clean_more_info_on_save(self):
+        self.action.more_info = "    more.   "
+        self.action.save()
+        self.assertEqual(self.action.more_info, "more.")
+
+    def test_clean_description_on_save(self):
+        self.action.description = "  more descriptions.   "
+        self.action.save()
+        self.assertEqual(self.action.description, "more descriptions.")
+
+    def test_clean_notification_on_save(self):
+        self.action.notification_text = " Here's a\nnotification   "
+        self.action.save()
+        self.assertEqual(
+            self.action.notification_text,
+            "Here's a notification."
+        )
 
 
 class TestUserGoal(TestCase):
