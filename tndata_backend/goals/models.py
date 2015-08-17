@@ -481,10 +481,11 @@ class Trigger(URLMixin, models.Model):
             alert_time = self._combine(self.time, now, tz)
         return alert_time
 
-    def get_occurences(self, days=30):
+    def get_occurences(self, begin=None, days=30):
         """Get some dates in this series of reminders."""
         tz = self.get_tz()
-        begin = self.get_alert_time(tz)  # "today's" alert time.
+        if begin is None:
+            begin = self.get_alert_time(tz)  # "today's" alert time.
         end = begin + timedelta(days=30)  # alerts a month in the future
         dates = list(self.recurrences.occurrences(
             dtstart=begin,
@@ -511,23 +512,15 @@ class Trigger(URLMixin, models.Model):
         if recurrences is None and alert_on and alert_on > now:
             return alert_on
 
-        # HACK to get the next date for EXCLUDE rules
-        # XXX EXclusion rules are just broken.
-#        elif recurrences and 'EXRULE' in recurrences:
-#            yesterday = alert_on - timedelta(days=1)  # yesterday's alert
-#            end = alert_on + timedelta(days=30)  # tomorrow's alert
-#            dates = list(self.recurrences.between(
-#                now,
-#                end,
-#                dtstart=yesterday,
-#            ))
-#            # Filter out any dates prior to now
-#            dates = list(filter(lambda d: d > now, dates))
-#            clog(dates)
-#            if len(dates) > 0:
-#                return dates[0]
-#            else:
-#                return None
+        # HACK: If we've stacked a number of RRULEs, let's generate a list of
+        # dates in the recurrence (30 days out & starting with the current
+        # time), then pick the earliest one.
+        elif recurrences and "\n" in recurrences:
+            dates = self.get_occurences(begin=now)  # Generate some dates.
+            # Then recombine them all with the trigger time. ugh. :(
+            dates = [self._combine(self.time, date) for date in dates]
+            if len(dates) > 0:
+                return dates[0]
 
         # HACK to make sure the UNTIL recurrences don't sometime keep returning
         # dates after their specified ending (but don't clobber rules that
