@@ -22,20 +22,36 @@ def print_triggers():
     #rule = 'EXRULE:FREQ=WEEKLY;BYDAY=FR'  # every day but friday?
 
     # M, W, Th on Aug 17, 19, 20
-    rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
+    #rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
+    #rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150821T050000Z;BYDAY=MO,WE,TH'
 
-    # Every Monday, Every Tuesday until 8/15/2015 (sat)
+    # Stacked:
+    # Every Monday.
+    # Every Tuesday until 8/15/2015 (sat)
     rule = (
-        'RRULE:FREQ=WEEKLY;BYDAY=MO '
+        'RRULE:FREQ=WEEKLY;BYDAY=MO\n'
         'RRULE:FREQ=WEEKLY;UNTIL=20150815T050000Z;BYDAY=TU'
     )
 
+    #     August 2015
+    # Mo Tu We Th Fr Sa Su
+    #                 1  2
+    #  3  4  5  6  7  8  9
+    # 10 11 12 13 14 15 16
+    # 17 18 19 20 21 22 23
+    # 24 25 26 27 28 29 30
+    # 31
+
+    START_DAY = 1  # Day of month to start on.
+    NUM_DAYS = 20  # Number of days to test.
     Trigger.objects.filter(name="---testing this---").delete()
     t = Trigger.objects.create(
         name="---testing this---",
         trigger_type="time",
-        trigger_date=date(2015, 8, 10),
-        time=time(13, 0),
+        time=time(9, 0),  # 9am
+        #trigger_date=date(2015, 8, 1),
+        #time=time(13, 0),  # 1pm
+        #trigger_date=date(2015, 8, 10),  # 8/17/2015
         recurrences=rule
     )
     print("Trigger Info:")
@@ -49,17 +65,8 @@ def print_triggers():
     tf = "%a %x %X %Z"
     tf = "%c %Z"
 
-    #     August 2015
-    # Mo Tu We Th Fr Sa Su
-    #                 1  2
-    #  3  4  5  6  7  8  9
-    # 10 11 12 13 14 15 16
-    # 17 18 19 20 21 22 23
-    # 24 25 26 27 28 29 30
-    # 31
-
-    for i in range(7):
-        day = 10 + i
+    for i in range(NUM_DAYS):
+        day = START_DAY + i
         with patch("goals.models.timezone.now") as now:
             # Early morning
             now.return_value = tzdt(2015, 8, day, 6, 0)
