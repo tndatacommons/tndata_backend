@@ -572,8 +572,8 @@ class TestTrigger(TestCase):
         """Test the value of `next` for recurrences that specify a distinct
         set of days."""
 
-        # 7pm on M, W, Th on Aug 17, 19, 20
-        rrule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
+        # 7pm on M, W, Th on Aug 17, 19, 20  (repeat until 8/21/2015)
+        rrule = 'RRULE:FREQ=WEEKLY;UNTIL=20150821T050000Z;BYDAY=MO,WE,TH'
         t = Trigger.objects.create(
             name="x",
             time=time(19, 0),
@@ -620,6 +620,7 @@ class TestTrigger(TestCase):
         # Clean up
         t.delete()
 
+# >>>>>> TODO: this is failing.
     def test_next_with_multiple_rules(self):
         """Test `next` when we have multiple RRULE requirements."""
 
