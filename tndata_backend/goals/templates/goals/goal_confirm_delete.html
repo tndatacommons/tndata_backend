@@ -7,16 +7,24 @@
   <li class="current">{{ object }}</li>
 </ul>
 
-<div data-alert class="alert-box warning">
-  Are you sure you want to <em>permanently</em> delete this item?
-  <a href="#" class="close">&times;</a>
-</div>
+{% if num_user_selections %}
+  <div data-alert class="alert-box alert">
+    <i class="fa fa-warning"></i>
+    There are currently {{ num_user_selections }} users who have
+    selected this item. Deletion is not currently supported.
+    <a href="#" class="close">&times;</a>
+  </div>
+{% else %}
+  <div data-alert class="alert-box warning">
+    Are you sure you want to <em>permanently</em> delete this item?
+    <a href="#" class="close">&times;</a>
+  </div>
 
-<form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
-  <h1>{{ object }}</h1>
-  {{ object.description|linebreaks }}
-<hr/>
-<button type="submit" class="button alert">Delete {{object}}</button>
-</form>
-
+  <form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
+    <h1>{{ object }}</h1>
+    {{ object.description|linebreaks }}
+  <hr/>
+  <button type="submit" class="button alert">Delete {{object}}</button>
+  </form>
+{% endif %}
 {% endblock %}

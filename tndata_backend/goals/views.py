@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -74,6 +74,33 @@ class PublishView(View):
         except TransitionNotAllowed:
             messages.error(request, "Unable to process transition.")
         return redirect("goals:index")
+
+
+class ContentDeleteView(DeleteView):
+    """This is a Base DeleteView for our Content models.It doesn't allow for
+    deletion if users have selected the object (e.g. Content or Goal).
+
+    Works with: Category, Goal, Behavior, Action
+
+    """
+    def _num_user_selections(self):
+        """Return a count of this object's UserXXXX instances (where XXXX is
+        the name of the selected model). This will tell how many users
+        have selected this item."""
+        obj = self.get_object()
+        method = "user{0}_set".format(obj._meta.model_name)
+        return getattr(obj, method).count()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['num_user_selections'] = self._num_user_selections()
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        if self._num_user_selections() > 0:
+            msg = "You cannot remove objects that have been selected by users"
+            return HttpResponseForbidden(msg)
+        return super().delete(request, *args, **kwargs)
 
 
 class ReviewableUpdateView(UpdateView):
@@ -225,7 +252,7 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateView):
         return context
 
 
-class CategoryDeleteView(ContentEditorMixin, DeleteView):
+class CategoryDeleteView(ContentEditorMixin, ContentDeleteView):
     model = Category
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -295,7 +322,7 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateView):
         return context
 
 
-class GoalDeleteView(ContentEditorMixin, DeleteView):
+class GoalDeleteView(ContentEditorMixin, ContentDeleteView):
     model = Goal
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -430,7 +457,7 @@ class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateView):
         return context
 
 
-class BehaviorDeleteView(ContentEditorMixin, DeleteView):
+class BehaviorDeleteView(ContentEditorMixin, ContentDeleteView):
     model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -626,7 +653,7 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
         return context
 
 
-class ActionDeleteView(ContentEditorMixin, DeleteView):
+class ActionDeleteView(ContentEditorMixin, ContentDeleteView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
