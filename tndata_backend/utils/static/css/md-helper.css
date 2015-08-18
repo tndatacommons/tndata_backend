@@ -1,0 +1,17 @@
+/* wrapper for the markdown helpers */
+div.md-support {
+  color: #aaa;
+  background-color: #eee;
+  font-size: .8em;
+  line-height: 1em;
+  overflow: hidden;
+  margin:0;
+  padding:.5em;
+}
+
+/* link to open more info */
+a.md-guide {font-size: .6em;}
+
+/* text in the dropdown */
+div.md-support p { font-size: .8em; color:#888;}
+div.md-support pre { font-size: .8em; color:#888;}
