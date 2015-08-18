@@ -1,4 +1,6 @@
 import csv
+import re
+
 from io import TextIOWrapper
 from django.conf import settings
 
@@ -9,6 +11,38 @@ if settings.DEBUG:
 else:
     def clog(*args, **kwargs):
         pass
+
+
+# ------------------------------------------
+#
+# Helper functions for cleaning text content
+#
+# ------------------------------------------
+def clean_title(text):
+    """Titles: collapse all whitespace, remove ending periods, strip."""
+    if text:
+        text = re.sub(r'\s+', ' ', text).strip()  # collapse whitespace
+        if text.endswith("."):
+            text = text[:-1]
+    return text
+
+
+def clean_notification(text):
+    """Notification text: collapse all whitespace, strip, include an ending
+    period (if not a ? or a !).
+    """
+    if text:
+        text = re.sub(r'\s+', ' ', text).strip()  # collapse whitespace
+        if text[-1] not in ['.', '?', '!']:
+            text += "."
+    return text
+
+
+def strip(text):
+    """Conditially call text.strip() if the input text is truthy."""
+    if text:
+        text = text.strip()
+    return text
 
 
 def read_uploaded_csv(uploaded_file, encoding='utf-8', errors='ignore'):

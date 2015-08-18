@@ -9,7 +9,6 @@ Actions are the things we want to help people to do.
 """
 import os
 import pytz
-import re
 
 from datetime import datetime, timedelta
 
@@ -39,6 +38,7 @@ from .managers import (
     WorkflowManager
 )
 from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
+from .utils import clean_title, clean_notification, strip
 
 
 class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
@@ -868,38 +868,22 @@ class Action(URLMixin, BaseBehavior):
 # ----------------------------------
 # Signals for public content models.
 # ----------------------------------
-
-# Clean Titles.
-def _clean_title(text):
-    text = re.sub(r'\s+', ' ', text).strip()  # collapse whitespace
-    if text.endswith("."):
-        text = text[:-1]
-    return text
-
-
-# Clean Notifications.
-def _clean_notif(text):
-    text = re.sub(r'\s+', ' ', text).strip()  # collapse whitespace
-    if text[-1] not in ['.', '?', '!']:
-        text += "."
-    return text
-
-
 @receiver(pre_save, sender=Action)
 @receiver(pre_save, sender=Behavior)
 @receiver(pre_save, sender=Goal)
 @receiver(pre_save, sender=Category)
 def clean_content(sender, instance, raw, using, **kwargs):
-    if hasattr(instance, 'title'):
-        instance.title = _clean_title(instance.title)
-    if hasattr(instance, 'subtitle'):
-        instance.subtitle = _clean_title(instance.subtitle)
-    if hasattr(instance, 'description'):
-        instance.description = instance.description.strip()
-    if hasattr(instance, 'more_info'):
-        instance.more_info = instance.more_info.strip()
-    if hasattr(instance, 'notification_text'):
-        instance.notification_text = _clean_notif(instance.notification_text)
+    # A mapping of model field names and the function that cleans them.
+    clean_functions = {
+        "title": clean_title,
+        "subtitle": clean_title,
+        "description": strip,
+        "more_info": strip,
+        "notification_text": clean_notification,
+    }
+    for field, func in clean_functions.items():
+        if hasattr(instance, field):
+            setattr(instance, field, func(getattr(instance, field)))
 
 
 @receiver(post_delete, sender=Action)
