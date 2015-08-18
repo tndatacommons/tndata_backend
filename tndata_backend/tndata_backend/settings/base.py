@@ -108,6 +108,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'utils.middleware.TimezoneMiddleware',
+    'utils.middleware.ResponseForbiddenMiddleware',
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
 )
 

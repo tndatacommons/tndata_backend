@@ -1,5 +1,5 @@
 import pytz
-
+from django.shortcuts import render
 from django.utils import timezone
 
 TZ_SESSION_KEY = "django_timezone"
@@ -27,3 +27,27 @@ class TimezoneMiddleware(object):
             timezone.activate(pytz.timezone(tzname))
         else:
             timezone.deactivate()
+
+
+class ResponseForbiddenMiddleware(object):
+    """Renders the 403.html template for all explicitely returned 403 responses.
+
+    e.g. when a view returns HttpResponseForbidden()
+
+    This middleware excludes the response from django's built-in
+    'permission_denied' view.
+
+    """
+    def process_response(self, request, response):
+        # Only check if there's a 404 for the original response
+        if response.status_code != 403:
+            return response
+
+        if '<html' in response.content.decode("utf8"):
+            # This is the result of the 'permission_denied' view, which has
+            # alread rendered the 403.html template, so just return it.
+            return response
+
+        # all other explicit 403s
+        ctx = {"message": response.content}
+        return render(request, "403.html", ctx, status=response.status_code)
