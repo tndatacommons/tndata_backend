@@ -2,6 +2,13 @@
 {% load goal_tags %}
 {% block title %}Category Form{% endblock %}
 
+
+{% block head %}
+  {{ block.super }}
+  {{ form.media }}
+{% endblock %}
+
+
 {% block content %}
 <ul class="breadcrumbs">
   <li><a href="{% url 'goals:index' %}">Home</a></li>

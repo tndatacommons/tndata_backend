@@ -13,6 +13,7 @@ from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
 from utils import colors
 from utils.user_utils import date_hash
+from utils.widgets import TextareaWithMarkdownHelperWidget
 
 from . models import Action, Behavior, Category, Goal, Trigger
 from . permissions import ContentPermissions
@@ -110,6 +111,10 @@ class ActionForm(forms.ModelForm):
             'source_link', 'source_notes', 'notes', 'icon', 'action_type',
         ]
         labels = {"notes": "Scratchpad"}
+        widgets = {
+            "description": TextareaWithMarkdownHelperWidget(),
+            "more_info": TextareaWithMarkdownHelperWidget(),
+        }
 
     class Media:
         js = (
@@ -132,6 +137,10 @@ class BehaviorForm(forms.ModelForm):
             'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
         ]
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
+        widgets = {
+            "description": TextareaWithMarkdownHelperWidget(),
+            "more_info": TextareaWithMarkdownHelperWidget(),
+        }
 
 
 def _contributors():
@@ -171,6 +180,7 @@ class CategoryForm(forms.ModelForm):
         ]
         labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {
+            "description": TextareaWithMarkdownHelperWidget(),
             "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
             "secondary_color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
         }
@@ -197,6 +207,10 @@ class GoalForm(forms.ModelForm):
             'categories', 'title', 'description', 'more_info', 'icon', 'notes',
         ]
         labels = {"notes": "Scratchpad"}
+        widgets = {
+            "description": TextareaWithMarkdownHelperWidget(),
+            "more_info": TextareaWithMarkdownHelperWidget(),
+        }
 
 
 class ActionTriggerForm(forms.ModelForm):
