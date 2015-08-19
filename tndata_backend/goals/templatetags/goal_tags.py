@@ -78,6 +78,6 @@ def publish_deny_form(obj):
     """Given an object, render Publish / Deny buttons."""
     return {
         "obj": obj,
-        "publishable": obj.state in ['draft', 'pending-review'],
-        "declineable": obj.state in ['pending-review'],
+        "publishable": any([obj.is_draft, obj.is_pending]),
+        "declineable": any([obj.is_pending]),
     }
