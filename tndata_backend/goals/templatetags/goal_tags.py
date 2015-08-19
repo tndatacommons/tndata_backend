@@ -14,11 +14,27 @@ def action_creation_menu():
 def goal_object_controls(context, obj):
     result = object_controls(context, obj, "goals")
     user = context.request.user
-    is_editor = "goals.publish_{0}".format(obj.__class__.__name__.lower())
 
-    # object permissions.
-    if not is_editor and result.get('can_update', False):
+    # Kind of a hack. only editors have publish_* permissions.
+    editor_perm = "goals.publish_{0}".format(obj.__class__.__name__.lower())
+    is_editor = user.has_perm(editor_perm)
+
+    # Determine if the user should have certain object permissions, such as:
+    # - can_update
+    # - can_delete
+    # - can_duplicate
+
+    if not is_editor and (obj.is_pending or obj.is_published):
+        result['can_update'] = False
+        result['can_delete'] = False
+    elif not is_editor and result.get('can_update', False):
         result['can_update'] = (obj.created_by == user)
+        result['can_delete'] = (obj.created_by == user)
+
+    if obj.is_pending or obj.is_draft or obj.is_declined:
+        result['can_duplicate'] = False
+    else:
+        result['can_duplicate'] = True
 
     return result
 
