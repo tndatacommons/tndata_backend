@@ -31,7 +31,7 @@ def goal_object_controls(context, obj):
         result['can_update'] = (obj.created_by == user)
         result['can_delete'] = (obj.created_by == user)
 
-    if obj.is_pending or obj.is_draft or obj.is_declined:
+    if hasattr(obj, "is_pending") and (obj.is_pending or obj.is_draft or obj.is_declined):
         result['can_duplicate'] = False
     else:
         result['can_duplicate'] = True
