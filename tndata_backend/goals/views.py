@@ -93,14 +93,19 @@ class ContentDeleteView(DeleteView):
     Works with: Category, Goal, Behavior, Action
 
     """
+    def get_num_user_selections(self):
+        if not hasattr(self, "_num_user_selections"):
+            obj = self.get_object()
+            self._num_user_selections = num_user_selections(obj)
+        return self._num_user_selections
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        obj = self.get_object()
-        context['num_user_selections'] = num_user_selections(obj)
+        context['num_user_selections'] = self.get_num_user_selections()
         return context
 
     def delete(self, request, *args, **kwargs):
-        if self._num_user_selections() > 0:
+        if self.get_num_user_selections() > 0:
             msg = "You cannot remove objects that have been selected by users"
             return HttpResponseForbidden(msg)
         return super().delete(request, *args, **kwargs)
