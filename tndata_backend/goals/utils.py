@@ -13,6 +13,21 @@ else:
         pass
 
 
+def num_user_selections(obj):
+    """Return a count of the given object's UserXXXX instances (where XXXX is
+    the name of one of our content models). This will tell how many users
+    have selected this item.
+
+    Valid for Category, Goal, Behavior, Action instances.
+
+    """
+    model = obj._meta.model_name
+    if model not in ['category', 'goal', 'behavior', 'action']:
+        raise ValueError("{0} is not a supported object type".format(model))
+    method = "user{0}_set".format(model)
+    return getattr(obj, method).count()
+
+
 # ------------------------------------------
 #
 # Helper functions for cleaning text content

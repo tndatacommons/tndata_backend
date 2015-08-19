@@ -31,6 +31,7 @@ from . models import (
     Action, Behavior, Category, Goal, PackageEnrollment, Trigger
 )
 from . permissions import is_content_editor, superuser_required
+from . utils import num_user_selections
 
 
 class PublishView(View):
@@ -64,9 +65,18 @@ class PublishView(View):
                 obj.save(updated_by=request.user)
                 messages.success(request, "{0} has been declined".format(obj))
             elif request.POST.get('draft', False):
-                obj.draft()
-                obj.save(updated_by=request.user)
-                messages.success(request, "{0} is now in Draft".format(obj))
+                selections = num_user_selections(obj)
+                if selections > 0:
+                    msg = (
+                        "{0} cannot be reverted to Draft, since {1} users "
+                        "have selected it in the app."
+                    )
+                    messages.warning(request, msg.format(obj, selections))
+                    return redirect(obj.get_absolute_url())
+                else:
+                    obj.draft()
+                    obj.save(updated_by=request.user)
+                    messages.success(request, "{0} is now in Draft".format(obj))
         except self.model.DoesNotExist:
             messages.error(
                 request, "Could not find the specified {0}".format(self.model)
@@ -83,17 +93,10 @@ class ContentDeleteView(DeleteView):
     Works with: Category, Goal, Behavior, Action
 
     """
-    def _num_user_selections(self):
-        """Return a count of this object's UserXXXX instances (where XXXX is
-        the name of the selected model). This will tell how many users
-        have selected this item."""
-        obj = self.get_object()
-        method = "user{0}_set".format(obj._meta.model_name)
-        return getattr(obj, method).count()
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['num_user_selections'] = self._num_user_selections()
+        obj = self.get_object()
+        context['num_user_selections'] = num_user_selections(obj)
         return context
 
     def delete(self, request, *args, **kwargs):
