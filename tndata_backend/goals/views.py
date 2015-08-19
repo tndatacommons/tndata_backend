@@ -548,10 +548,22 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     def form_valid(self, form, trigger_form):
         self.object = form.save()
         default_trigger = trigger_form.save(commit=False)
-        default_trigger.name = "Default: {0}-{1}".format(self.object, self.object.id)
+        trigger_name = "Default: {0}-{1}".format(self.object, self.object.id)
+        default_trigger.name = trigger_name
         default_trigger.save()
         self.object.default_trigger = default_trigger
-        self.object.save(created_by=self.request.user)
+
+        # If the POSTed data contains a True 'review' value, the user clicked
+        # the "Submit for Review" button.
+        if self.request.POST.get('review', False):
+            self.object.review()  # Transition to the new state
+            msg = "{0} has been submitted for review".format(self.object)
+            messages.success(self.request, msg)
+
+        self.object.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
         return redirect(self.get_success_url())
 
     def form_invalid(self, form, trigger_form):
