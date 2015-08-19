@@ -171,16 +171,12 @@ class GCMMessage(models.Model):
         """JSON-encoded message payload; NOTE: has a limit of 4096 bytes."""
         return json.dumps(self.content)
 
-    def send(self, priority="high", collapse_key=None, delay_while_idle=False, time_to_live=None):
+    def send(self, collapse_key=None, delay_while_idle=False, time_to_live=None):
         """Deliver this message to Google Cloud Messaging.
 
         This method accepts the following options as keyword arguments; These
         are options available thru pushjack and are just passed along.
 
-        * priority: Either "high" (the default) or "normal". Normal priority
-          messages may wait on the device to wake or may wait for other reasons.
-          High priority gets sent faster. See:
-          https://developers.google.com/cloud-messaging/downstream#setting-the-priority-of-a-message
         * collapse_key: Omitted for messages with a payload (default), specify
             'collapse_key' for a 'send-to-sync' message.
         * delay_while_idle:  If True indicates that the message should not be
@@ -191,7 +187,6 @@ class GCMMessage(models.Model):
         logging.info("Sending GCMMessage, id = %s", self.id)
         client = self._get_gcm_client()
         options = {
-            'priority': priority,
             'delay_while_idle': delay_while_idle,
             'time_to_live': time_to_live,
         }
