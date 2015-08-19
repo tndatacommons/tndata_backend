@@ -2,17 +2,9 @@ import logging
 
 from django.core.management.base import BaseCommand
 from notifications.models import GCMMessage
-#from utils import slack
 
 
 logger = logging.getLogger("loggly_logs")
-
-# user.email -> slack username
-#slack_users = {
-    #'brad@brad.tips': 'bkmontgomery',
-    #'ringram@tndata.org': 'ringram',
-    #'ismaha91@gmail.com': 'ialonso',
-#}
 
 
 class Command(BaseCommand):
@@ -33,18 +25,6 @@ class Command(BaseCommand):
                         message.user.id, message.message
                     )
                     logger.info(log_message)
-
-                    # --- Temporary debegging via Slack -----------------------
-                    # For some of our messages, we want to send a PM to the
-                    # user that their message was sent up to GCM.
-                    #slack_user = slack_users.get(message.user.email)
-                    #if slack_user is not None:
-                        #slack_message = "Queued Notification on GCM: {0}".format(
-                            #message.message
-                        #)
-                        #slack.post_private_message(slack_user, slack_message)
-                    ## ---------------------------------------------------------
-
                 except Exception:
                     log_msg = "Failed to send GCMMEssage id = {0}".format(message.id)
                     logger.error(log_msg)
