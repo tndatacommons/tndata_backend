@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView
 from django.views.generic.base import RedirectView
-from django.views.generic.edit import UpdateView
 
 from utils.mixins import LoginRequiredMixin
 from . forms import UserForm, UserProfileForm
@@ -23,6 +22,15 @@ class UserProfileDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         """Ensure the queryset only includes the user's profile."""
         return super().get_queryset().filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        permissions = list(self.request.user.user_permissions.all())
+        for group in self.request.user.groups.all():
+            for perm in group.permissions.all():
+                permissions.append(perm)
+        context['permissions'] = sorted(permissions, key=lambda p: p.name)
+        return context
 
 
 @login_required

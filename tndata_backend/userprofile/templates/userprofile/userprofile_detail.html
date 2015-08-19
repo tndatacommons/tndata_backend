@@ -2,7 +2,7 @@
 
 {% block content %}
   <div class="row">
-    <div class="large-12 small-12 columns">
+    <div class="large-6 small-12 columns">
       <h1>{{ profile.user.get_full_name }}</h1>
       <dl>
         <dt>First Name:</dt><dd>{{ profile.user.first_name }}</dd>
@@ -14,6 +14,17 @@
         class="button">Update Profile</a></p>
       <p>Need to
         <a href="{% url 'utils:password_reset' %}">reset your password</a>?</p>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2>Permissions</h2>
+      <p>You have been assigned the following permissions.</p>
+      <ul>
+      {% for perm in permissions %}
+        <li>{{ perm.name }}</li>
+      {% empty %}
+        <li><em>You do not have any permissions.</em></li>
+      {% endfor %}
+      </ul>
     </div>
   </div>
 {% endblock %}
