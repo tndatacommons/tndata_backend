@@ -1163,12 +1163,12 @@ class TestTriggerDetailView(TestCaseWithGroups):
     def test_author_get(self):
         self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 403)
 
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 403)
 
 
 class TestTriggerCreateView(TestCaseWithGroups):
