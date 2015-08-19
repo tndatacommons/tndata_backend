@@ -23,6 +23,7 @@
 
         <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
         <dt>More Info</dt><dd>{{ action.more_info|markdown }}</dd>
+        <dt>Resource Name</dt><dd>{{ action.external_resource_name }}</dd>
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
         <dt>Default Trigger</dt>
           {% with trigger=action.default_trigger %}

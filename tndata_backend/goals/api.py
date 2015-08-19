@@ -131,6 +131,7 @@ class BehaviorViewSet(viewsets.ReadOnlyModelViewSet):
       into the content. Contains markdown.
     * html_more_info: HTML version of the `more_info` field.
     * external_resource = A link or reference to an outside resource necessary for adoption
+    * external_resource_name = A human-friendly name for the external resource
     * default_trigger: A trigger/reminder for this behavior. See the
         [Trigger](/api/triggers/) endpoint for more details. The time included
         in this trigger contains no timezone information, so it's safe to assume
@@ -201,6 +202,7 @@ class ActionViewSet(viewsets.ReadOnlyModelViewSet):
       into the content. Contains markdown.
     * html_more_info: HTML version of the `more_info` field.
     * external_resource = A link or reference to an outside resource necessary for adoption
+    * external_resource_name = A human-friendly name for the external resource
     * default_trigger: A trigger/reminder for this action. See the
         [Trigger](/api/triggers/) endpoint for more details. The time included
         in this trigger contains no timezone information, so it's safe to assume

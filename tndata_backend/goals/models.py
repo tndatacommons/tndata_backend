@@ -616,6 +616,12 @@ class BaseBehavior(ModifiedMixin, StateMixin, models.Model):
                    "accomplish a task. It could be a phone number, link to a "
                    "website, link to another app, or GPS coordinates. ")
     )
+    external_resource_name = models.CharField(
+        blank=True,
+        max_length=256,
+        help_text=("A human-friendly name for your external resource. This is "
+                   "especially helpful for web links.")
+    )
     notification_text = models.CharField(
         max_length=256,
         blank=True,

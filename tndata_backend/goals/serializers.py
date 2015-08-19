@@ -204,8 +204,8 @@ class ActionSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'behavior', 'sequence_order', 'title', 'title_slug',
             'title', 'description', 'html_description', 'more_info',
-            'html_more_info', 'external_resource', 'default_trigger',
-            'notification_text', 'icon_url', 'image_url',
+            'html_more_info', 'external_resource', 'external_resource_name',
+            'default_trigger', 'notification_text', 'icon_url', 'image_url',
         )
 
 

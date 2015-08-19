@@ -108,7 +108,8 @@ class ActionForm(forms.ModelForm):
         fields = [
             'notification_text', 'sequence_order', 'behavior', 'title',
             'description', 'more_info', 'external_resource',
-            'source_link', 'source_notes', 'notes', 'icon', 'action_type',
+            'external_resource_name', 'source_link', 'source_notes',
+            'notes', 'icon', 'action_type',
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {
