@@ -157,6 +157,25 @@ class ContentEditorMixin:
 
 # Mixins for Models
 # -----------------
+class StateMixin:
+    """Convenience methods for models that use a `state` FSMField."""
+
+    @property
+    def is_draft(self):
+        return self.state == "draft"
+
+    @property
+    def is_pending(self):
+        return self.state == "pending-review"
+
+    @property
+    def is_declined(self):
+        return self.state == "declined"
+
+    @property
+    def is_published(self):
+        return self.state == "published"
+
 
 class ModifiedMixin:
     def _check_updated_or_created_by(self, **kwargs):

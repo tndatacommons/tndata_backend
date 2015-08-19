@@ -37,11 +37,11 @@ from .managers import (
     UserActionManager,
     WorkflowManager
 )
-from .mixins import ModifiedMixin, UniqueTitleMixin, URLMixin
+from .mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
 from .utils import clean_title, clean_notification, strip
 
 
-class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
+class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose.
 
     We also have content (goals, behaviors, actions) that is associated with
@@ -202,7 +202,7 @@ class Category(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
     objects = CategoryManager()
 
 
-class Goal(ModifiedMixin, UniqueTitleMixin, URLMixin, models.Model):
+class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -570,7 +570,7 @@ def _behavior_img_path(instance, filename):
     return os.path.join(p, filename)
 
 
-class BaseBehavior(ModifiedMixin, models.Model):
+class BaseBehavior(ModifiedMixin, StateMixin, models.Model):
     """This abstract base class contains fields that are common to both
     `Behavior` and `Action` models.
 
