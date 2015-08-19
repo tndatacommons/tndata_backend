@@ -21,6 +21,14 @@
 : {{object}}{% else %}Create Behavior
 {% endif %}</h1>
 
+{% if num_user_selections %}
+  <div data-alert class="alert-box">
+    <i class="fa fa-hand-o-right"></i>
+    {{ num_user_selections }} users have selected this item. Please keep
+    this in mind when making changes. <a href="#" class="close">&times;</a>
+  </div>
+{% endif %}
+
  <form
   data-persist="garlic"
   action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:behavior-create' %}{% endif %}"

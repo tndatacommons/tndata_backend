@@ -112,6 +112,15 @@ class ReviewableUpdateView(UpdateView):
     has been saved.
 
     """
+    def get_context_data(self, **kwargs):
+        """Include some information regarding the number of users that have
+        selected the object, but only if it's published."""
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        if obj.is_published:
+            context['num_user_selections'] = num_user_selections(obj)
+        return context
+
     def form_valid(self, form):
         result = super(ReviewableUpdateView, self).form_valid(form)
 
