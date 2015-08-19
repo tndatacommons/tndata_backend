@@ -5,6 +5,7 @@ from django.views.generic import DetailView
 from django.views.generic.base import RedirectView
 
 from utils.mixins import LoginRequiredMixin
+from utils.user_utils import get_all_permissions
 from . forms import UserForm, UserProfileForm
 from . models import UserProfile
 
@@ -25,11 +26,7 @@ class UserProfileDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        permissions = list(self.request.user.user_permissions.all())
-        for group in self.request.user.groups.all():
-            for perm in group.permissions.all():
-                permissions.append(perm)
-        context['permissions'] = sorted(permissions, key=lambda p: p.name)
+        context['permissions'] = get_all_permissions(self.request.user, sort=True)
         return context
 
 

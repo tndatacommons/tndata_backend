@@ -4,6 +4,23 @@ from django.contrib.auth import get_user_model
 from django.db.models import ObjectDoesNotExist
 
 
+def get_all_permissions(user, sort=False):
+    """Given a user, this returns a list of all Permission objects, that are
+    either assigned to the user or assigned to one of the user's Groups.
+
+    * user: a User instance
+    * sort: Sort the list (default is False)
+
+    """
+    permissions = list(user.user_permissions.all())
+    for group in user.groups.all():
+        for perm in group.permissions.all():
+            permissions.append(perm)
+    if sort:
+        permissions = sorted(permissions, key=lambda p: p.name)
+    return permissions
+
+
 def date_hash():
     """Generate an MD5 hash based on the current time."""
     return hashlib.md5(datetime.now().strftime("%c").encode("utf8")).hexdigest()
