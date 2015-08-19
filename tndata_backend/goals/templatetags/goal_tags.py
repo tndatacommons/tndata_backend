@@ -23,18 +23,23 @@ def goal_object_controls(context, obj):
     # - can_update
     # - can_delete
     # - can_duplicate
-
-    if not is_editor and (obj.is_pending or obj.is_published):
-        result['can_update'] = False
-        result['can_delete'] = False
-    elif not is_editor and result.get('can_update', False):
-        result['can_update'] = (obj.created_by == user)
-        result['can_delete'] = (obj.created_by == user)
-
-    if hasattr(obj, "is_pending") and (obj.is_pending or obj.is_draft or obj.is_declined):
-        result['can_duplicate'] = False
+    if not hasattr(obj, "is_pending"):
+        if is_editor:  # assume no other attrs
+            result['can_update'] = True
+            result['can_delete'] = True
+            result['can_duplicate'] = True
     else:
-        result['can_duplicate'] = True
+        if not is_editor and (obj.is_pending or obj.is_published):
+            result['can_update'] = False
+            result['can_delete'] = False
+        elif not is_editor and result.get('can_update', False):
+            result['can_update'] = (obj.created_by == user)
+            result['can_delete'] = (obj.created_by == user)
+
+        if obj.is_pending or obj.is_draft or obj.is_declined:
+            result['can_duplicate'] = False
+        else:
+            result['can_duplicate'] = True
 
     return result
 
