@@ -233,7 +233,6 @@ class TestGCMMessage(TestCase):
             mock_client.return_value.send.assert_called_once_with(
                 ['REGISTRATIONID'],
                 self.msg.content_json,
-                priority="high",
                 delay_while_idle=False,
                 time_to_live=None,
             )

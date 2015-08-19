@@ -115,13 +115,17 @@ class Command(BaseCommand):
 
         # Schedule notifications for UserAction's with just the default trigger
         for ua in UserAction.objects.with_only_default_triggers():
-            self.create_message(
-                ua.user,
-                ua.action,
-                ua.action.notification_title,
-                ua.action.notification_text,
-                self._to_localtime(ua.action.default_trigger.next(), ua.user)
-            )
+            # Only create the message if the action's default trigger gives us
+            # a result.
+            trigger_time = ua.action.default_trigger.next()
+            if trigger_time:
+                self.create_message(
+                    ua.user,
+                    ua.action,
+                    ua.action.notification_title,
+                    ua.action.notification_text,
+                    self._to_localtime(trigger_time, ua.user)
+                )
 
         # Finish with a confirmation message
         m = "Created {0} notification messages.".format(self._messages_created)
