@@ -241,7 +241,8 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     )
     more_info = models.TextField(
         blank=True,
-        help_text="Persuasive narrative description: Tell the user why this is important."
+        help_text="Optional tips and tricks or other small, associated ideas. "
+                  "Consider using bullets."
     )
     icon = models.ImageField(
         upload_to="goals/goal", null=True, blank=True,
@@ -592,7 +593,8 @@ class BaseBehavior(ModifiedMixin, StateMixin, models.Model):
     )
     more_info = models.TextField(
         blank=True,
-        help_text="Persuasive narrative description: Tell the user why this is important."
+        help_text="Optional tips and tricks or other small, associated ideas. "
+                  "Consider using bullets."
     )
     description = models.TextField(
         blank=True,
