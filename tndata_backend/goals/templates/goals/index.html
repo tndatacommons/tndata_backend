@@ -12,8 +12,8 @@
     </div>
     <div class="large-6 medium-6 small-12 columns">
       {% if is_editor %}
-        <table>
-        <caption>Content for Review</caption>
+        <h2>Content for Review</h2>
+        <table class="object-list">
         <thead>
           <tr>
           <th>Type</th>
@@ -64,8 +64,10 @@
         </table>
       {% endif %}
 
-      <table summary="Content you've either created or recently updated">
-      <caption>My Content</caption>
+      <h2>My Content</h2>
+      {% if has_my_content %}
+      <table class="object-list"
+        summary="Content you've either created or recently updated">
       <thead>
         <tr>
         <th>Type</th>
@@ -109,6 +111,9 @@
         {% endfor %}
       </tbody>
       </table>
+      {% else %}
+        <p>You haven't yet created any content.</p>
+      {% endif %}
     </div>
   </div> {# end .row #}
   <hr/>

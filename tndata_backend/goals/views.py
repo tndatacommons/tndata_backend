@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.http import HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -179,6 +179,13 @@ class IndexView(ContentViewerMixin, TemplateView):
         context['my_goals'] = Goal.objects.filter(conditions)
         context['my_behaviors'] = Behavior.objects.filter(conditions)
         context['my_actions'] = Action.objects.filter(conditions)
+
+        context['has_my_content'] = any([
+            context['my_categories'].exists(),
+            context['my_goals'].exists(),
+            context['my_behaviors'].exists(),
+            context['my_actions'].exists(),
+        ])
         return self.render_to_response(context)
 
 
