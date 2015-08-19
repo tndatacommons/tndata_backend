@@ -1,5 +1,6 @@
-from datetime import datetime
 from django.contrib import admin
+from django.utils import timezone
+
 from . import models
 
 
@@ -45,7 +46,8 @@ class GCMMessageAdmin(admin.ModelAdmin):
     send_notification.short_description = "Send Message via GCM"
 
     def expire_messages(self, request, queryset):
-        queryset.expired().delete()
+        queryset = queryset.filter(expire_on__lte=timezone.now())
+        queryset.delete()
     expire_messages.short_description = "Remove Expired Messages"
 
 admin.site.register(models.GCMMessage, GCMMessageAdmin)
