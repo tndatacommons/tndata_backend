@@ -551,7 +551,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         default_trigger.name = "Default: {0}-{1}".format(self.object, self.object.id)
         default_trigger.save()
         self.object.default_trigger = default_trigger
-        self.object.save()
+        self.object.save(created_by=self.request.user)
         return redirect(self.get_success_url())
 
     def form_invalid(self, form, trigger_form):
@@ -649,6 +649,7 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
         default_trigger.name = self._generate_trigger_name()
         default_trigger.save()
         self.object.default_trigger = default_trigger
+        self.object.save(updated_by=self.request.user)
         # call up to the superclass's method to handle state transitions
         super().form_valid(form)
         return redirect(self.get_success_url())
