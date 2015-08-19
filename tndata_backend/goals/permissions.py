@@ -35,11 +35,14 @@ class ContentPermissions:
     # Objects in the goals app that that have CRUD perms
     _objects = ['action', 'behavior', 'category', 'goal', 'trigger']
 
+    # Objects that should have view-only permissions
+    _viewer_objects = ['action', 'behavior', 'category', 'goal']
+
     # Objects that authors have Create/Update permissions
     _author_objects = ['action', 'behavior', 'goal']
 
     # Objects with publish/decline permissions
-    _workflow_objects = ['action', 'behavior', 'goal', 'trigger']
+    _workflow_objects = ['action', 'behavior', 'goal']
 
     @property
     def all(self):
@@ -83,8 +86,8 @@ class ContentPermissions:
 
     @property
     def viewers(self):
-        """permissions for editors"""
-        return ['goals.view_{0}'.format(obj) for obj in self._objects]
+        """permissions for viewers"""
+        return ['goals.view_{0}'.format(obj) for obj in self._viewer_objects]
 
 ContentPermissions = ContentPermissions()  # make it act like a monad.
 

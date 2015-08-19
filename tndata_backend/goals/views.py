@@ -342,7 +342,7 @@ class TriggerListView(ContentViewerMixin, ListView):
     context_object_name = 'triggers'
 
 
-class TriggerDetailView(ContentViewerMixin, DetailView):
+class TriggerDetailView(ContentEditorMixin, DetailView):
     queryset = Trigger.objects.default()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"

@@ -59,6 +59,8 @@ class ContentViewerMixin:
     with `model` or `queryset` attributes (e.g. ListView/DetailView) or that
     they be authenticated, otherwise.
 
+    NOTE that the user must have ALL of the permissions specified.
+
     """
 
     @classmethod
@@ -69,7 +71,11 @@ class ContentViewerMixin:
 
 
 class ContentAuthorMixin:
-    """A Mixin that requires the user have the 'Authors' set of permissions."""
+    """A Mixin that requires the user have the 'Authors' set of permissions.
+
+    NOTE that the user must have ALL of the permissions specified.
+
+    """
 
     _denied_message = None
 
@@ -136,7 +142,11 @@ class ContentAuthorMixin:
 
 
 class ContentEditorMixin:
-    """A Mixin that requires the user to have the 'Editors' set of permissions."""
+    """A Mixin that requires the user to have the 'Editors' set of permissions.
+
+    NOTE that the user must have ALL of the permissions specified.
+
+    """
 
     @classmethod
     def as_view(cls, **initkwargs):
