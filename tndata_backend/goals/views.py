@@ -111,8 +111,8 @@ class ContentDeleteView(DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class ReviewableUpdateView(UpdateView):
-    """A subclass of UpdateView; This allows users to submit content for
+class ReviewableUpdateMixin:
+    """This allows users to submit content for
     review. On POST, we simply check for a True `review` value once the object
     has been saved.
 
@@ -126,18 +126,45 @@ class ReviewableUpdateView(UpdateView):
             context['num_user_selections'] = num_user_selections(obj)
         return context
 
+    def _goal_has_behaviors_in_review(self, obj):
+        """Ensure this scenario is true:
+
+        > No goal can be submitted for review until at least one child
+        > behavior has been submitted for review.
+
+        Returns True (the goes DOES have child behaviors in review) or False,
+        (the goal DOES NOT have child behaviors in review).
+
+        """
+        if isinstance(obj, Goal):
+            status = set(obj.behavior_set.values_list("state", flat=True))
+            return ('pending-review' in status) or ('published' in status)
+        raise TypeError("{0} is not a Goal".format(obj))
+
     def form_valid(self, form):
-        result = super(ReviewableUpdateView, self).form_valid(form)
+        result = super().form_valid(form)
+        obj = self.object
 
         # If the POSTed data contains a True 'review' value, the user clicked
         # the "Submit for Review" button.
-        if self.request.POST.get('review', False):
-            self.object.review()  # Transition to the new state
-            msg = "{0} has been submitted for review".format(self.object)
+        if self.request.POST.get('review', False) and isinstance(obj, Goal):
+            # Ensure goals have published or pending children.
+            if self._goal_has_behaviors_in_review(obj):
+                obj.review()  # Transition to the new state
+                msg = "{0} has been submitted for review".format(obj)
+                messages.success(self.request, msg)
+            else:
+                msg = ("This goal must have child behaviors that are either "
+                       "published or in review before it can be reviewed.")
+                messages.warning(self.request, msg)
+
+        elif self.request.POST.get('review', False):
+            obj.review()  # Transition to the new state
+            msg = "{0} has been submitted for review".format(obj)
             messages.success(self.request, msg)
 
         # Record who saved the item.
-        self.object.save(updated_by=self.request.user)
+        obj.save(updated_by=self.request.user)
         return result
 
 
@@ -264,7 +291,7 @@ class CategoryPublishView(ContentEditorMixin, PublishView):
     slug_field = 'title_slug'
 
 
-class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateView):
+class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     model = Category
     form_class = CategoryForm
     slug_field = "title_slug"
@@ -331,7 +358,7 @@ class GoalPublishView(ContentEditorMixin, PublishView):
     slug_field = 'title_slug'
 
 
-class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateView):
+class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     model = Goal
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -469,7 +496,7 @@ class BehaviorPublishView(ContentEditorMixin, PublishView):
     slug_field = 'title_slug'
 
 
-class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateView):
+class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     model = Behavior
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
@@ -622,7 +649,7 @@ class ActionPublishView(ContentEditorMixin, PublishView):
         return self.model.objects.get(**params)
 
 
-class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateView):
+class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     model = Action
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"

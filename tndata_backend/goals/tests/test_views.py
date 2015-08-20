@@ -950,6 +950,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         goal.delete()
 
     def test_author_post(self):
+        """Ensure Authors can POST updates."""
         self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
@@ -964,6 +965,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         g.delete()  # Clean up
 
     def test_viewer_post(self):
+        """Ensure VIEWers cannot post updates."""
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
@@ -983,16 +985,45 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Goal.objects.get(pk=self.goal.pk).state, "pending-review")
+
+        # NOTE: This should still be draft, because this goal doesn't have any
+        # child behaviors that are in pending/published states.,
+        updated_goal = Goal.objects.get(pk=self.goal.pk)
+        self.assertEqual(updated_goal.state, "draft")
+
+        # Add a child behavior (that's pending/published) and request again.
+        behavior = Behavior.objects.create(title="B", state="pending-review")
+        behavior.goals.add(self.goal)
+        resp = self.client.post(updated_goal.get_update_url(), self.payload)
+        self.assertEqual(resp.status_code, 302)
+
+        updated_goal = Goal.objects.get(pk=self.goal.pk)
+        self.assertEqual(updated_goal.state, "pending-review")
+        behavior.delete()
 
     def test_admin_submit_for_review(self):
         """Ensure admins can submit for review."""
+
         self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
         self.payload['review'] = 1  # Include the review in the payload
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Goal.objects.get(pk=self.goal.pk).state, "pending-review")
+
+        # NOTE: This should still be draft, because this goal doesn't have any
+        # child behaviors that are in pending/published states.,
+        updated_goal = Goal.objects.get(pk=self.goal.pk)
+        self.assertEqual(updated_goal.state, "draft")
+
+        # Add a child behavior (that's pending/published) and request again.
+        behavior = Behavior.objects.create(title="B", state="pending-review")
+        behavior.goals.add(updated_goal)
+
+        resp = self.client.post(updated_goal.get_update_url(), self.payload)
+        self.assertEqual(resp.status_code, 302)
+        updated_goal = Goal.objects.get(pk=self.goal.pk)
+        self.assertEqual(updated_goal.state, "pending-review")
+        behavior.delete()
 
     def test_author_submit_for_review(self):
         """Ensure authors can submit for review."""
@@ -1001,7 +1032,22 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.client.login(username="author", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Goal.objects.get(pk=self.goal.pk).state, "pending-review")
+
+        # NOTE: This should still be draft, because this goal doesn't have any
+        # child behaviors that are in pending/published states.,
+        updated_goal = Goal.objects.get(pk=self.goal.pk)
+        self.assertEqual(updated_goal.state, "draft")
+
+        # Add a child behavior (that's pending/published) and request again.
+        behavior = Behavior.objects.create(title="B", state="pending-review")
+        behavior.goals.add(self.goal)
+        behavior.save()
+
+        resp = self.client.post(updated_goal.get_update_url(), self.payload)
+        self.assertEqual(resp.status_code, 302)
+        updated_goal = Goal.objects.get(pk=self.goal.pk)
+        self.assertEqual(updated_goal.state, "pending-review")
+        behavior.delete()
 
 
 class TestGoalDeleteView(TestCaseWithGroups):
