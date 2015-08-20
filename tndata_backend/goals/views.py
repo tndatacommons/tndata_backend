@@ -282,6 +282,15 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
         context['goals'] = Goal.objects.all().prefetch_related("categories")
         return context
 
+    def form_valid(self, form):
+        """Upons saving, also check if this was submitted for review."""
+        result = super().form_valid(form)
+        if self.request.POST.get('review', False):
+            msg = ("This goal must have child behaviors that are either "
+                   "published or in review before it can be reviewed.")
+            messages.warning(self.request, msg)
+        return result
+
 
 class GoalDuplicateView(GoalCreateView):
     """Initializes the Create form with a copy of data from another object."""
@@ -413,6 +422,20 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
         context = super(BehaviorCreateView, self).get_context_data(**kwargs)
         context['behaviors'] = Behavior.objects.all()
         return context
+
+    def form_valid(self, form):
+        """Submitting for review on creation should to the appropriate state
+        transition. """
+        result = super().form_valid(form)
+        if self.request.POST.get('review', False):
+            self.object.review()  # Transition to the new state
+            msg = "{0} has been submitted for review".format(self.object)
+            messages.success(self.request, msg)
+        self.object.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+        return result
 
 
 class BehaviorDuplicateView(BehaviorCreateView):
