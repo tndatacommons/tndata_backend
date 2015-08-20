@@ -26,7 +26,10 @@ from . forms import (
     PackageEnrollmentForm,
     TriggerForm,
 )
-from . mixins import ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin
+from . mixins import (
+    ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
+    ReviewableUpdateMixin,
+)
 from . models import (
     Action, Behavior, Category, Goal, PackageEnrollment, Trigger
 )
@@ -109,63 +112,6 @@ class ContentDeleteView(DeleteView):
             msg = "You cannot remove objects that have been selected by users"
             return HttpResponseForbidden(msg)
         return super().delete(request, *args, **kwargs)
-
-
-class ReviewableUpdateMixin:
-    """This allows users to submit content for
-    review. On POST, we simply check for a True `review` value once the object
-    has been saved.
-
-    """
-    def get_context_data(self, **kwargs):
-        """Include some information regarding the number of users that have
-        selected the object, but only if it's published."""
-        context = super().get_context_data(**kwargs)
-        obj = self.get_object()
-        if obj.is_published:
-            context['num_user_selections'] = num_user_selections(obj)
-        return context
-
-    def _goal_has_behaviors_in_review(self, obj):
-        """Ensure this scenario is true:
-
-        > No goal can be submitted for review until at least one child
-        > behavior has been submitted for review.
-
-        Returns True (the goes DOES have child behaviors in review) or False,
-        (the goal DOES NOT have child behaviors in review).
-
-        """
-        if isinstance(obj, Goal):
-            status = set(obj.behavior_set.values_list("state", flat=True))
-            return ('pending-review' in status) or ('published' in status)
-        raise TypeError("{0} is not a Goal".format(obj))
-
-    def form_valid(self, form):
-        result = super().form_valid(form)
-        obj = self.object
-
-        # If the POSTed data contains a True 'review' value, the user clicked
-        # the "Submit for Review" button.
-        if self.request.POST.get('review', False) and isinstance(obj, Goal):
-            # Ensure goals have published or pending children.
-            if self._goal_has_behaviors_in_review(obj):
-                obj.review()  # Transition to the new state
-                msg = "{0} has been submitted for review".format(obj)
-                messages.success(self.request, msg)
-            else:
-                msg = ("This goal must have child behaviors that are either "
-                       "published or in review before it can be reviewed.")
-                messages.warning(self.request, msg)
-
-        elif self.request.POST.get('review', False):
-            obj.review()  # Transition to the new state
-            msg = "{0} has been submitted for review".format(obj)
-            messages.success(self.request, msg)
-
-        # Record who saved the item.
-        obj.save(updated_by=self.request.user)
-        return result
 
 
 class CreatedByView(CreateView):

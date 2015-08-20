@@ -3,6 +3,7 @@ This module contains Mixins.
 
 """
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.decorators import permission_required
 from django.contrib.staticfiles.templatetags.staticfiles import static
@@ -16,6 +17,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from . permissions import ContentPermissions, superuser_required
+from . utils import num_user_selections
 
 
 # Mixins for Views
@@ -153,6 +155,69 @@ class ContentEditorMixin:
         view = super(ContentEditorMixin, cls).as_view(**initkwargs)
         dec = permission_required(ContentPermissions.editors, raise_exception=True)
         return dec(view)
+
+
+class ReviewableUpdateMixin:
+    """This allows users to submit content for
+    review. On POST, we simply check for a True `review` value once the object
+    has been saved.
+
+    """
+    def get_context_data(self, **kwargs):
+        """Include some information regarding the number of users that have
+        selected the object, but only if it's published."""
+        context = super().get_context_data(**kwargs)
+        obj = self.get_object()
+        if obj.is_published:
+            context['num_user_selections'] = num_user_selections(obj)
+        return context
+
+    def _is_goal(self, obj):
+        """Check if an object is a Goal. This method imports the goal model
+        so we can still import from the models module from mixins."""
+        from goals.models import Goal
+        return isinstance(obj, Goal)
+
+    def _goal_has_behaviors_in_review(self, obj):
+        """Ensure this scenario is true:
+
+        > No goal can be submitted for review until at least one child
+        > behavior has been submitted for review.
+
+        Returns True (the goes DOES have child behaviors in review) or False,
+        (the goal DOES NOT have child behaviors in review).
+
+        """
+        if self._is_goal(obj):
+            status = set(obj.behavior_set.values_list("state", flat=True))
+            return ('pending-review' in status) or ('published' in status)
+        raise TypeError("{0} is not a Goal".format(obj))
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        obj = self.object
+
+        # If the POSTed data contains a True 'review' value, the user clicked
+        # the "Submit for Review" button.
+        if self.request.POST.get('review', False) and self._is_goal(obj):
+            # Ensure goals have published or pending children.
+            if self._goal_has_behaviors_in_review(obj):
+                obj.review()  # Transition to the new state
+                msg = "{0} has been submitted for review".format(obj)
+                messages.success(self.request, msg)
+            else:
+                msg = ("This goal must have child behaviors that are either "
+                       "published or in review before it can be reviewed.")
+                messages.warning(self.request, msg)
+
+        elif self.request.POST.get('review', False):
+            obj.review()  # Transition to the new state
+            msg = "{0} has been submitted for review".format(obj)
+            messages.success(self.request, msg)
+
+        # Record who saved the item.
+        obj.save(updated_by=self.request.user)
+        return result
 
 
 # Mixins for Models
