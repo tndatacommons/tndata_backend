@@ -58,17 +58,37 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
 
 
-class GCMMessageViewSet(viewsets.ReadOnlyModelViewSet):
-    """This endpoint allows an Android client to list notifications scheduled
-    to be delivered through
-    [Google Cloud Messaging](https://developer.android.com/google/gcm).
+class GCMMessageViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        viewsets.GenericViewSet):
+    """This endpoint allows an Android client to list a user's scheduled
+    notifications (which will be delivered through
+    [Google Cloud Messaging](https://developer.android.com/google/gcm)).
 
-    NOTE: This payload has a limit of 4096 bytes.
+    NOTE: the GCM message payload has a limit of 4096 bytes.
 
     ## Registration
 
     Devices should be registered at the
     [/api/notifications/devices/](/api/notifications/devices/) endpoint.
+
+    ## Message Details
+
+    You can retrieve the details for an individual message by accessing it's
+    unique resource, e.g. `/api/notifications/<id>/`
+
+    ## Updating / Snoozing notifications
+
+    A client may be able to snooze a notification, by sending a PUT request
+    to the notifications's detail resource containing the number of hours to
+    wait before re-sending the notification.
+
+    For example, send a PUT request to `/api/notifications/42/` with the
+    following data in order to re-deliver the message in 24 hours.
+
+        {snooze: 24}
+
 
     ----
 
@@ -80,3 +100,10 @@ class GCMMessageViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
+
+    def update(self, request, *args, **kwargs):
+        """Allow users to snooze their notifications."""
+        obj = self.get_object()
+        obj.snooze(hours=request.data.pop("snooze", 0))
+        ser = self.serializer_class(obj)
+        return Response(ser.data)

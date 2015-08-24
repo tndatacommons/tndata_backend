@@ -2,7 +2,7 @@ import json
 import logging
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from hashlib import md5
 
 from django.conf import settings
@@ -103,6 +103,22 @@ class GCMMessage(models.Model):
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
 
+    def snooze(self, hours=None, save=True):
+        """Reset the message's deliver_on date."""
+        if hours is not None and isinstance(hours, list) and len(hours) > 0:
+            hours = hours[0]  # if it's a list, pluck the first element
+
+        if hours is not None and isinstance(hours, str):
+            try:
+                hours = int(hours)  # convert to an int
+            except ValueError:
+                hours = None
+
+        if hours:
+            self.deliver_on = timezone.now() + timedelta(hours=hours)
+            if save:
+                self.save()
+
     def _set_message_id(self):
         """This is an attempt to ensure we don't send duplicate messages to
         a user. This hashes the content type & content object's ID (if available)
@@ -160,6 +176,7 @@ class GCMMessage(models.Model):
             object_id = self.object_id
 
         return {
+            "id": self.id,
             "title": self.title,
             "message": self.message,
             "object_type": object_type,  # What if None?

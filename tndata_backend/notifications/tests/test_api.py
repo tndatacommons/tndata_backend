@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
@@ -93,10 +94,8 @@ class TestGCMMessageAPI(APITestCase):
             obj=cls.device,  # Kind of a hack
         )
         cls.url = reverse('gcmmessage-list')
-        cls.detail_url = reverse('gcmmessage-detail', args=[cls.device.id])
-        cls.payload = {
-
-        }
+        cls.detail_url = reverse('gcmmessage-detail', args=[cls.message.id])
+        cls.payload = {'snooze': 24}  # The only payload allowed is for snoozing.
 
     def test_get_message_list_unauthenticated(self):
         response = self.client.get(self.url)
@@ -131,4 +130,15 @@ class TestGCMMessageAPI(APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.get(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_put_message_snooze(self):
+        """Ensure the api allows us to snooze a notification."""
+        with patch('notifications.models.timezone') as mock_tz:
+            mock_tz.now.return_value = datetime(2015, 9, 1, 12, 34)
+            self.client.credentials(
+                HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+            )
+            response = self.client.put(self.detail_url, self.payload)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data['deliver_on'], '2015-09-02T12:34:00Z')
