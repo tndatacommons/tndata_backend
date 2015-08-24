@@ -196,9 +196,18 @@ class GCMMessage(models.Model):
         self._save_response(resp)
         return resp
 
-    def _set_expiration(self):
+    def _set_expiration(self, days=7):
+        """Set the date/time at which this message should be expired (i.e.
+        deleted) from our database. We want to set an expiration for some point
+        in the future, so that users can receive these messages, but then snooze
+        them for some time.
+
+        The script that does the deletion runs nightly.
+
+        """
         if self.response_code == 200:
-            self.expire_on = timezone.now()
+            # Expire at some point in the future.
+            self.expire_on = timezone.now() + timedelta(days=days)
             self.success = True
 
     def _save_response(self, resp):
