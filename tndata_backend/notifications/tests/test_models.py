@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from hashlib import md5
 from json import dumps
 from unittest.mock import Mock, patch
@@ -182,6 +182,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             self.msg.content,
             {
+                "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
                 "object_type": "gcm device",
@@ -199,6 +200,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             msg.content,
             {
+                "id": msg.id,
                 "title": "ASDF",
                 "message": "A asdf message",
                 "object_type": None,
@@ -217,6 +219,7 @@ class TestGCMMessage(TestCase):
             datetime_utc(2000, 1, 1, 1, 0),
         )
         expected = dumps({
+            "id": msg.id,
             "title": "ASDF",
             "message": "A asdf message",
             "object_type": None,
@@ -259,7 +262,7 @@ class TestGCMMessage(TestCase):
             date = datetime_utc(2015, 5, 16, 15, 30)
             mock_tz.now.return_value = date
             msg._set_expiration()
-            self.assertEqual(msg.expire_on, date)
+            self.assertEqual(msg.expire_on, date + timedelta(days=7))
 
         # Clean up
         msg.delete()
