@@ -870,6 +870,17 @@ class Action(URLMixin, BaseBehavior):
             ("publish_action", "Can Publish Actions"),
         )
 
+    def get_user_mapping(self, user):
+        """Return the first UserAction object that matches this Action and the
+        given user. There _should_ only be one of these. Returns None if the
+        object is not found.
+
+        Note: This method can be used by other apps that may have a generic
+        relationships (e.g. notifications).
+
+        """
+        return self.useraction_set.filter(user=user, action=self).first()
+
     objects = WorkflowManager()
 
 
