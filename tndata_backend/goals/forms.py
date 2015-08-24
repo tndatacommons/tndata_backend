@@ -30,12 +30,11 @@ class ActionForm(forms.ModelForm):
         Action.TINY: {
             'title': 'Try a tiny version',
             'notification_text': 'Try a tiny version',
-            'description': (
+            'description': "",
+            'more_info': (
                 "Large tasks can seem intimidating and difficult. Instead of "
                 "trying to tackle them all at once, try starting with a "
-                "“tiny action.”"
-            ),
-            'more_info': (
+                "“tiny action.”\n"
                 "A tiny action is simply a tinier version of your target task. "
                 "Tiny versions will make you feel successful and motivated to "
                 "take on your larger goal. So try whittling your goal down to "
@@ -47,12 +46,11 @@ class ActionForm(forms.ModelForm):
         Action.STARTER: {
             'title': 'Try a starter step',
             'notification_text': 'Try a starter step',
-            'description': (
+            'description': "",
+            'more_info': (
                 "Sometimes we let the little things prevent us from starting "
                 "the tasks we want to do. Make activities more manageable by "
-                "taking a “starter step.”"
-            ),
-            'more_info': (
+                "taking a “starter step.”\n"
                 "A starter step is the first small action in a sequence of "
                 "actions that lead to your ultimate goal. When you perform "
                 "these small steps, you make your task more manageable and "
@@ -63,7 +61,8 @@ class ActionForm(forms.ModelForm):
         Action.RESOURCE: {
             'title': 'Try a helpful tool',
             'notification_text': 'Try a helpful tool',
-            'description': (
+            'description': "",
+            'more_info': (
                 "We’ve picked some of the best tools and resources to help "
                 "you succeed. Give them a try."
             ),
@@ -72,7 +71,8 @@ class ActionForm(forms.ModelForm):
         Action.NOW: {
             'title': 'Do it now',
             'notification_text': 'Do it now',
-            'description': (
+            'description': "",
+            'more_info': (
                 "When it comes to achieving your goals, there’s no time like "
                 "the present. Consider performing this action right now, while "
                 "it’s fresh on your mind."
@@ -82,7 +82,8 @@ class ActionForm(forms.ModelForm):
         Action.LATER: {
             'title': 'Do it later',
             'notification_text': 'Do it later',
-            'description': (
+            'description': "",
+            'more_info': (
                 "Life is demanding. If you can’t do this right now, don’t "
                 "worry! Set a reminder to do it later."
             ),
