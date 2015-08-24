@@ -187,6 +187,7 @@ class TestGCMMessage(TestCase):
                 "message": "A test message",
                 "object_type": "gcm device",
                 "object_id": self.device.id,
+                "user_mapping_id": None,
             }
         )
 
@@ -205,6 +206,7 @@ class TestGCMMessage(TestCase):
                 "message": "A asdf message",
                 "object_type": None,
                 "object_id": None,
+                "user_mapping_id": None,
             }
         )
 
@@ -224,6 +226,7 @@ class TestGCMMessage(TestCase):
             "message": "A asdf message",
             "object_type": None,
             "object_id": None,
+            "user_mapping_id": None,
         })
         self.assertEqual(msg.content_json, expected)
 

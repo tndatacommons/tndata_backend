@@ -175,12 +175,18 @@ class GCMMessage(models.Model):
             object_type = self.content_type.name.lower()
             object_id = self.object_id
 
+        user_mapping_id = None
+        if self.content_object and hasattr(self.content_object, "get_user_mappign"):
+            user_mapping = self.content_object.get_user_mapping(self.user)
+            user_mapping_id = user_mapping.id if user_mapping else None
+
         return {
             "id": self.id,
             "title": self.title,
             "message": self.message,
             "object_type": object_type,  # What if None?
             "object_id": object_id,
+            "user_mapping_id": user_mapping_id,
         }
 
     @property
