@@ -215,6 +215,11 @@ class ReviewableUpdateMixin:
             msg = "{0} has been submitted for review".format(obj)
             messages.success(self.request, msg)
 
+        # The user is updating an item that was previously rejected, so revert
+        # it to draft.
+        if obj.created_by == self.request.user and obj.is_declined:
+            obj.draft()
+
         # Record who saved the item.
         obj.save(updated_by=self.request.user)
         return result
