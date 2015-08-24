@@ -157,19 +157,30 @@ class IndexView(ContentViewerMixin, TemplateView):
         """Include info on pending and declined content items."""
         context = self.get_context_data(**kwargs)
         if is_content_editor(request.user):
-            # Show content pending review.
             context['is_editor'] = True
-            context['categories'] = Category.objects.filter(state='pending-review')
-            context['goals'] = Goal.objects.filter(state='pending-review')
-            context['behaviors'] = Behavior.objects.filter(state='pending-review')
-            context['actions'] = Action.objects.filter(state='pending-review')
+
+            # Show content pending review.
+            mapping = {
+                'categories': Category.objects.filter,
+                'goals': Goal.objects.filter,
+                'behaviors': Behavior.objects.filter,
+                'actions': Action.objects.filter,
+            }
+            for key, func in mapping.items():
+                context[key] = func(state='pending-review').order_by("-updated_on")
+
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
-        context['my_categories'] = Category.objects.filter(conditions)
-        context['my_goals'] = Goal.objects.filter(conditions)
-        context['my_behaviors'] = Behavior.objects.filter(conditions)
-        context['my_actions'] = Action.objects.filter(conditions)
+        mapping = {
+            'my_categories': Category.objects.filter,
+            'my_goals': Goal.objects.filter,
+            'my_behaviors': Behavior.objects.filter,
+            'my_actions': Action.objects.filter,
+        }
+        for key, func in mapping.items():
+            context[key] = func(conditions)
 
+        # Evaluate to see if the curent user has any content available
         context['has_my_content'] = any([
             context['my_categories'].exists(),
             context['my_goals'].exists(),
