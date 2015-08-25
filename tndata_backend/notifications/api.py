@@ -61,7 +61,6 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
 
 
-
 @receiver(user_logged_out, dispatch_uid='remove_gcm_device_on_logout')
 def remove_gcm_device_on_logout(sender, request, user, **kwargs):
     """When a user logs out, see if they sent a request to remove their
@@ -74,7 +73,7 @@ def remove_gcm_device_on_logout(sender, request, user, **kwargs):
     # NOTE: request may be a rest_framework.request.Request object.
     registration_id = request.data.get('registration_id', None)
     if registration_id:
-        GCMDevice.objects.filter(registration_id=registration_id).delete()
+        models.GCMDevice.objects.filter(registration_id=registration_id).delete()
 
 
 class GCMMessageViewSet(mixins.ListModelMixin,
