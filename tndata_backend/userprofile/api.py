@@ -1,8 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth import logout
 from rest_framework import mixins, status, viewsets
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.authentication import (
+    SessionAuthentication,
+    TokenAuthentication
+)
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from . import models
@@ -70,6 +75,13 @@ class UserViewSet(viewsets.ModelViewSet):
     You can use curl to test authenticated reqeusts, e.g.:
 
         curl -X GET http://app.tndata.org/api/users/ -H 'Authorization: Token <YOUR-TOKEN>'
+
+    ## Logging out.
+
+    A client of the api can log out of the api by sending a POST request to
+    `/api/auth/logout/`. Include additional details in that request to trigger
+    side effects (e.g. POST a `{registration_id: 'YOUR-REGISTRATION-ID'}` payload
+    to remove your device's GCM registration on logout.
 
     ## Retrieving a User's Info
 
@@ -180,6 +192,27 @@ class UserProfileViewSet(mixins.ListModelMixin,
         """
         request.data['user'] = request.user.id
         return super(UserProfileViewSet, self).update(request, *args, **kwargs)
+
+
+@api_view(['POST'])
+def api_logout(request):
+    """This view allows a user to log out via the api (note that this returns
+    rest_framework Response instances), and send additional details with the
+    logout request. Here's an example scenario:
+
+        A user logs out of their device, and sends their registration_id for
+        GCM along with the logout request. That request data gets bundled with
+        the logout signal, to which the notifications app is subscribed, so
+        that app knows to remove the user's device & queued messages.
+
+    Returns a 404 if the request does not contain an authenticated user. Returns
+    a 200 request upon success.
+
+    """
+    if hasattr(request, "user") and request.user:
+        logout(request)  # Sends the user_logged_out signal
+        return Response(None, status=status.HTTP_200_OK)
+    return Response(None, status=status.HTTP_404_NOT_FOUND)
 
 
 class ObtainAuthorization(ObtainAuthToken):

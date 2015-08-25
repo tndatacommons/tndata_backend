@@ -33,7 +33,9 @@ from survey.api import (
     OpenEndedResponseViewSet,
     RandomQuestionViewSet,
 )
-from userprofile.api import UserViewSet, UserProfileViewSet, obtain_auth_token
+from userprofile.api import (
+    UserViewSet, UserProfileViewSet, api_logout, obtain_auth_token
+)
 from utils import views as utils_views
 
 
@@ -89,6 +91,7 @@ router.register(r'userprofiles', UserProfileViewSet)
 
 
 urlpatterns = patterns('',
+    url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(r'^api/', include(router.urls)),
     url(
