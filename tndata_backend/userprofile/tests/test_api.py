@@ -1,4 +1,5 @@
 import hashlib
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
@@ -210,6 +211,23 @@ class TestUsersAPI(APITestCase):
         self.assertIn('full_name', response.data)
         self.assertIn('token', response.data)
         self.assertIn('needs_onboarding', response.data)
+
+    def test_get_api_logout_not_allowed(self):
+        """Ensure GET requests to the api_logout endpoint are not allowed."""
+        url = reverse("auth-logout")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_post_api_logout(self):
+        """Ensure POST requests to the api_logout endpoint or OK."""
+        url = reverse("auth-logout")
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        with patch("userprofile.api.logout") as mock_logout:
+            response = self.client.post(url, {'foo': 'bar'})
+            self.assertTrue(mock_logout.called)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestUserProfilesAPI(APITestCase):
