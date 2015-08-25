@@ -176,7 +176,7 @@ class GCMMessage(models.Model):
             object_id = self.object_id
 
         user_mapping_id = None
-        if self.content_object and hasattr(self.content_object, "get_user_mappign"):
+        if self.content_object and hasattr(self.content_object, "get_user_mapping"):
             user_mapping = self.content_object.get_user_mapping(self.user)
             user_mapping_id = user_mapping.id if user_mapping else None
 
