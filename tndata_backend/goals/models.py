@@ -750,6 +750,17 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
         cats = self.goals.values_list('categories', flat=True)
         return Category.objects.filter(pk__in=cats)
 
+    def get_user_mapping(self, user):
+        """Return the first UserBehavior object that matches this Behavior and
+        the given user. There _should_ only be one of these. Returns None if
+        the object is not found.
+
+        Note: This method can be used by other apps that may have a generic
+        relationships (e.g. notifications).
+
+        """
+        return self.userbehavior_set.filter(user=user, behavior=self).first()
+
     objects = WorkflowManager()
 
 
