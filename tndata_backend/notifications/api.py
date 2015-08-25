@@ -1,3 +1,6 @@
+from django.contrib.auth.signals import user_logged_out
+from django.dispatch import receiver
+
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
@@ -56,6 +59,22 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
 
             request.data['user'] = request.user.id
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
+
+
+
+@receiver(user_logged_out, dispatch_uid='remove_gcm_device_on_logout')
+def remove_gcm_device_on_logout(sender, request, user, **kwargs):
+    """When a user logs out, see if they sent a request to remove their
+    GCM registration_id, as well.
+
+    Since this signal fires AFTER logout, the user is None, and request.user
+    is an AnonymousUser object.
+
+    """
+    # NOTE: request may be a rest_framework.request.Request object.
+    registration_id = request.data.get('registration_id', None)
+    if registration_id:
+        GCMDevice.objects.filter(registration_id=registration_id).delete()
 
 
 class GCMMessageViewSet(mixins.ListModelMixin,
