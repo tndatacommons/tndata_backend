@@ -26,7 +26,6 @@ SITE_URL = "https://{0}".format(SITE_DOMAIN)
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 SECRET_KEY = 'xt67918srm3f=0$#k%7quk+&pdtwy7#n=pfn%4kzyae$kxmw%j'
 DEBUG = False
-TEMPLATE_DEBUG = False
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
     '.tndata.org', '.tndata.org.', '104.236.244.232',
@@ -41,6 +40,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'templates')
         ],
         'OPTIONS': {
+            'debug': DEBUG,
             'loaders': [
                 ('django.template.loaders.cached.Loader', [
                     'django.template.loaders.filesystem.Loader',
