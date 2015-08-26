@@ -284,10 +284,14 @@ class UserActionSerializer(serializers.ModelSerializer):
         queryset=Trigger.objects.custom(),
         required=False
     )
+    custom_triggers_allowed = serializers.ReadOnlyField()
 
     class Meta:
         model = UserAction
-        fields = ('id', 'user', 'action', 'custom_trigger', 'created_on')
+        fields = (
+            'id', 'user', 'action', 'custom_trigger',
+            'custom_triggers_allowed', 'created_on',
+        )
         read_only_fields = ("id", "created_on", )
 
 

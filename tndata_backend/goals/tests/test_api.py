@@ -1146,14 +1146,18 @@ class TestUserActionAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['user'], self.user.id)
-        self.assertEqual(
-            response.data['results'][0]['action']['id'],
-            self.action.id
-        )
-        self.assertEqual(
-            response.data['results'][0]['action']['title'],
-            self.action.title
-        )
+
+        # Make some assertions about the data returned
+        ua = response.data['results'][0]
+        self.assertIn('id', ua)
+        self.assertIn('user', ua)
+        self.assertIn('action', ua)
+        self.assertIn('custom_trigger', ua)
+        self.assertIn('created_on', ua)
+        self.assertEqual(ua['user'], self.user.id)
+        self.assertEqual(ua['action']['id'], self.action.id)
+        self.assertEqual(ua['action']['title'], self.action.title)
+        self.assertTrue(ua['custom_triggers_allowed'])
 
     def test_get_useraction_list_with_filters(self):
         # Test with goal id

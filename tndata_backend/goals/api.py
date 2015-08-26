@@ -607,6 +607,8 @@ class UserActionViewSet(mixins.CreateModelMixin,
     * `action`: An object that represents the `Action` selected by the user
     * `custom_trigger`: An object that represent's the user's created `Trigger`,
       i.e. information about when notifications for this action should be sent.
+    * `custom_triggers_allowed`: A boolean that indicates whether or not a user
+      should be able to customize the reminders for this action.
     * `created_on`: Time at which the user selected this item.
 
     ## Adding a Action
