@@ -1554,6 +1554,11 @@ class PackageEnrollment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     category = models.ForeignKey(Category)
     goals = models.ManyToManyField(Goal)
+    prevent_custom_triggers = models.BooleanField(
+        default=False,
+        help_text="Setting this option will prevent users from overriding the "
+                  "default reminder times for actions within the selected goals."
+    )
     accepted = models.BooleanField(default=False)
     enrolled_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

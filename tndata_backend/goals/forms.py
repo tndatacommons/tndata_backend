@@ -320,6 +320,15 @@ class PackageEnrollmentForm(forms.Form):
         queryset=Goal.objects.none(),
         help_text="Select the packages in which to enroll each person"
     )
+    prevent_custom_triggers = forms.BooleanField(
+        label="Prevent custom reminders",
+        required=False,
+        help_text=(
+            "Setting this option will prevent users from overriding the "
+            "default reminder times for actions within the selected goals."
+        )
+    )
+
 
     def __init__(self, category, *args, **kwargs):
         """Provice a specific category for this for in order to enroll users
