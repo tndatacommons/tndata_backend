@@ -15,6 +15,7 @@ from .. models import (
     CategoryProgress,
     Goal,
     GoalProgress,
+    PackageEnrollment,
     Trigger,
     UserAction,
     UserBehavior,
@@ -962,6 +963,30 @@ class TestUserGoal(TestCase):
         # we haven't created any GoalProgress data, so this should be zero
         self.assertEqual(self.ug.progress_value, 0.0)
 
+    def test_custom_triggers_allowed(self):
+        """Ensure that custom triggers are allowed when the user is not
+        enrolled in any packages (the default)."""
+        self.assertEqual(self.user.packageenrollment_set.count(), 0)
+        self.assertTrue(self.ug.custom_triggers_allowed)
+
+    def test_custom_triggers_not_allowed(self):
+        """Ensure that custom triggers are not allowed when the user is
+        enrolled in a package that restricts this feature."""
+        cat = Category.objects.create(order=1, title="PE Cat")
+        admin = User.objects.create_superuser('x', 'x@y.z', '-')
+        pe = PackageEnrollment.objects.create(
+            user=self.user,
+            category=cat,
+            prevent_custom_triggers=True,
+            enrolled_by=admin
+        )
+        pe.goals.add(self.goal)
+
+        self.assertEqual(self.user.packageenrollment_set.count(), 1)
+        self.assertFalse(self.ug.custom_triggers_allowed)
+        cat.delete()
+        admin.delete()
+
 
 class TestUserBehavior(TestCase):
     """Tests for the `UserBehavior` model."""
@@ -971,7 +996,9 @@ class TestUserBehavior(TestCase):
             username="test",
             email="test@example.com"
         )
+        self.goal = Goal.objects.create(title="Goal for Behavior")
         self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.behavior.goals.add(self.goal)
         self.ub = UserBehavior.objects.create(
             user=self.user,
             behavior=self.behavior
@@ -987,6 +1014,30 @@ class TestUserBehavior(TestCase):
         actual = "{}".format(self.ub)
         self.assertEqual(expected, actual)
 
+    def test_custom_triggers_allowed(self):
+        """Ensure that custom triggers are allowed when the user is not
+        enrolled in any packages (the default)."""
+        self.assertEqual(self.user.packageenrollment_set.count(), 0)
+        self.assertTrue(self.ub.custom_triggers_allowed)
+
+    def test_custom_triggers_not_allowed(self):
+        """Ensure that custom triggers are not allowed when the user is
+        enrolled in a package that restricts this feature."""
+        cat = Category.objects.create(order=1, title="PE Cat")
+        admin = User.objects.create_superuser('x', 'x@y.z', '-')
+        pe = PackageEnrollment.objects.create(
+            user=self.user,
+            category=cat,
+            prevent_custom_triggers=True,
+            enrolled_by=admin
+        )
+        pe.goals.add(self.goal)
+
+        self.assertEqual(self.user.packageenrollment_set.count(), 1)
+        self.assertFalse(self.ub.custom_triggers_allowed)
+        cat.delete()
+        admin.delete()
+
 
 class TestUserAction(TestCase):
     """Tests for the `UserAction` model."""
@@ -996,7 +1047,9 @@ class TestUserAction(TestCase):
             username="test",
             email="test@example.com"
         )
+        self.goal = Goal.objects.create(title="Goal for Behavior")
         self.behavior = Behavior.objects.create(title='Test Behavior')
+        self.behavior.goals.add(self.goal)
         self.action = Action.objects.create(
             title='Test Action',
             behavior=self.behavior
@@ -1016,6 +1069,30 @@ class TestUserAction(TestCase):
         expected = "Test Action"
         actual = "{}".format(self.ua)
         self.assertEqual(expected, actual)
+
+    def test_custom_triggers_allowed(self):
+        """Ensure that custom triggers are allowed when the user is not
+        enrolled in any packages (the default)."""
+        self.assertEqual(self.user.packageenrollment_set.count(), 0)
+        self.assertTrue(self.ua.custom_triggers_allowed)
+
+    def test_custom_triggers_not_allowed(self):
+        """Ensure that custom triggers are not allowed when the user is
+        enrolled in a package that restricts this feature."""
+        cat = Category.objects.create(order=1, title="PE Cat")
+        admin = User.objects.create_superuser('x', 'x@y.z', '-')
+        pe = PackageEnrollment.objects.create(
+            user=self.user,
+            category=cat,
+            prevent_custom_triggers=True,
+            enrolled_by=admin
+        )
+        pe.goals.add(self.goal)
+
+        self.assertEqual(self.user.packageenrollment_set.count(), 1)
+        self.assertFalse(self.ua.custom_triggers_allowed)
+        cat.delete()
+        admin.delete()
 
 
 class TestUserCompletedAction(TestCase):

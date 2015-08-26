@@ -957,6 +957,20 @@ class UserGoal(models.Model):
         verbose_name = "User Goal"
         verbose_name_plural = "User Goals"
 
+    @property
+    def custom_triggers_allowed(self):
+        """Check to see if the user/goal is in a Package where custom triggers
+        are restricted. """
+
+        # See if the user is restricted from creating triggers for this goal.
+        restricted = self.goal.packageenrollment_set.filter(
+            user=self.user,
+            prevent_custom_triggers=True
+        ).exists()
+
+        # Negate the restriction so our api is positive.
+        return not restricted
+
     def get_user_behaviors(self):
         """Returns a QuerySet of Behaviors related to this Goal, but restricts
         those behaviors to those which the user has selected.
@@ -1042,6 +1056,22 @@ class UserBehavior(models.Model):
         unique_together = ("user", "behavior")
         verbose_name = "User Behavior"
         verbose_name_plural = "User Behaviors"
+
+    @property
+    def custom_triggers_allowed(self):
+        """Check to see if the user/behavior is the child of a goal within a
+        Package where custom triggers are restricted. """
+
+        # See if the user is restricted from creating triggers for this goal.
+        goals = self.behavior.goals.values_list("pk", flat=True)
+        restricted = PackageEnrollment.objects.filter(
+            goals__pk__in=goals,
+            user=self.user,
+            prevent_custom_triggers=True
+        ).exists()
+
+        # Negate the restriction so our api is positive.
+        return not restricted
 
     def get_user_categories(self):
         """Returns a QuerySet of Categories related to this Behavior, but
@@ -1132,6 +1162,22 @@ class UserAction(models.Model):
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
+
+    @property
+    def custom_triggers_allowed(self):
+        """Check to see if the user/behavior is the child of a goal within a
+        Package where custom triggers are restricted. """
+
+        # See if the user is restricted from creating triggers for this goal.
+        goals = self.action.behavior.goals.values_list("pk", flat=True)
+        restricted = PackageEnrollment.objects.filter(
+            goals__pk__in=goals,
+            user=self.user,
+            prevent_custom_triggers=True
+        ).exists()
+
+        # Negate the restriction so our api is positive.
+        return not restricted
 
     @property
     def default_trigger(self):
