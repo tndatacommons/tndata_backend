@@ -1,5 +1,7 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
+{% load util_filters %}
+
 {% block title %}{{category}}{% endblock %}
 {% block content %}
 
@@ -19,6 +21,7 @@
       <tr>
         <th>User</th>
         <th>Goals</th>
+        <th>Custom Reminders Allowed</th>
         <th>Accepted</th>
         <th>Enrolled By</th>
         <th>Enrolled On</th>
@@ -30,7 +33,11 @@
           <td>{{ enrollment.user.email }}</td>
           <td>{% for goal in enrollment.goals.all %}
             <span class="label secondary">{{ goal }}</span>{% endfor %}</td>
-          <td>{{ enrollment.accepted|yesno }}</td>
+          <td>
+            {# Are custom reminders allowed? #}
+            {{ enrollment.prevent_custom_triggers|iconbool:"True" }}
+          </td>
+          <td>{{ enrollment.accepted|iconbool }}</td>
           <td>{{ enrollment.enrolled_by.get_full_name }}</td>
           <td>{{ enrollment.enrolled_on }}</td>
         </tr>
