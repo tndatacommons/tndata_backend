@@ -208,7 +208,7 @@ def api_logout(request):
     To implement the above scenario, the client would a POST request containing
     the following information:
 
-        {registratin_id: 'YOUR-REGISTRATION-ID'}
+        {registration_id: 'YOUR-REGISTRATION-ID'}
 
     Returns a 404 if the request does not contain an authenticated user. Returns
     a 200 request upon success.
