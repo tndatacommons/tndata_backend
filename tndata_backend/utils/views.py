@@ -11,6 +11,7 @@ from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
 from . user_utils import username_hash
 
+
 def signup(request):
     if request.method == "POST":
         form = UserForm(request.POST)

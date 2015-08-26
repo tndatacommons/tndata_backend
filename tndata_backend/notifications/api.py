@@ -71,9 +71,10 @@ def remove_gcm_device_on_logout(sender, request, user, **kwargs):
 
     """
     # NOTE: request may be a rest_framework.request.Request object.
-    registration_id = request.data.get('registration_id', None)
-    if registration_id:
-        models.GCMDevice.objects.filter(registration_id=registration_id).delete()
+    if request.method == "POST" and hasattr(request, "data"):
+        registration_id = request.data.get('registration_id', None)
+        if registration_id:
+            models.GCMDevice.objects.filter(registration_id=registration_id).delete()
 
 
 class GCMMessageViewSet(mixins.ListModelMixin,
