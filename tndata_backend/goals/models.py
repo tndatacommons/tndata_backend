@@ -119,6 +119,13 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         related_name="categories_created",
         null=True
     )
+
+    # Packaged content has a consent form (for now anyway). These are only
+    # used if a category is marked as a package, and are only available for
+    # editing in packages. Both of these should allow markdown.
+    consent_summary = models.TextField(blank=True)
+    consent_more = models.TextField(blank=True)
+
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -144,6 +151,16 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     def rendered_description(self):
         """Render the description markdown"""
         return markdown(self.description)
+
+    @property
+    def rendered_consent_summary(self):
+        """Render the consent_summary markdown"""
+        return markdown(self.consent_summary)
+
+    @property
+    def rendered_consent_more(self):
+        """Render the consent_more markdown"""
+        return markdown(self.consent_more)
 
     @property
     def goals(self):
@@ -1622,6 +1639,14 @@ class PackageEnrollment(models.Model):
             self.user.get_full_name(),
             self.enrolled_on
         )
+
+    @property
+    def rendered_consent_summary(self):
+        return self.category.rendered_consent_summary
+
+    @property
+    def rendered_consent_more(self):
+        return self.category.rendered_consent_more
 
     # TODO: NEEDS TESTS.
     def create_user_mappings(self):
