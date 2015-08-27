@@ -1,43 +1,32 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
 from django.template.loader import render_to_string
 
 from utils.email import send_mass_html_mail
 
 
-def send_package_enrollment_batch(emails, category, goals, subject=None):
+def send_package_enrollment_batch(request, enrollments):
     """Send the notification email to those users who have been enrolled.
 
-    * emails is a list of email addresses (but their accounts should be created
-      at this point).
-    * category is the parent Category object
-    * goals is a queryset of Goal objects.
-    * subject: optional; subject to use for the email.
+    * request: an HttpRequest instance.
+    * enrollments: A QuerySet of the newly created PackageEnrollment objects.
 
     """
-    if subject is None:
-        subject = "Welcome to {0}".format(category)
 
-    User = get_user_model()
-    users = User.objects.filter(email__in=emails)
-    users = users.values_list("email", "username", "is_active")
     email_data = []
-    for email, username, is_active in users:
+    for pe in enrollments:
         # datatuple for send_mass_html_mail is:
         # (subject, message, html_message, from_email, recipient_list)
-        cta_link = "{0}{1}".format(
-            settings.SITE_URL,
-            reverse("goals:accept-enrollment", args=[username])
-        )
+
+        subject = "Welcome to {0}".format(pe.category)
+        cta_link = request.build_absolute_uri(pe.get_absolute_url())
         context = {
             "alert": "You're enrolled!",
-            "email": email,
-            "username": username,
-            "new_user": not is_active,  # User was just created, needs to activate.
-            "category": category,
-            "goals": goals,
-            "cta_link": cta_link if not is_active else '',
+            "email": pe.user.email,
+            "username": pe.user.username,
+            "new_user": not pe.user.is_active,
+            "category": pe.category,
+            "goals": pe.goals.all(),
+            "cta_link": cta_link,
             "cta_text": "Get Started",
         }
         email_data.append((
@@ -45,7 +34,7 @@ def send_package_enrollment_batch(emails, category, goals, subject=None):
             render_to_string("goals/email/package_enrollment.txt", context),
             render_to_string("goals/email/package_enrollment.html", context),
             settings.DEFAULT_FROM_EMAIL,
-            [email],
+            [pe.user.email],
         ))
 
     return send_mass_html_mail(email_data, fail_silently=False)
