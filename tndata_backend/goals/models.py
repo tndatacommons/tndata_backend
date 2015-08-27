@@ -1644,6 +1644,7 @@ class PackageEnrollment(models.Model):
         settings.AUTH_USER_MODEL,
         related_name='enrolled'
     )
+    updated_on = models.DateTimeField(auto_now=True)
     enrolled_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
