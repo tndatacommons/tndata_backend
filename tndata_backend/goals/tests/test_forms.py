@@ -174,6 +174,7 @@ class TestCategoryForm(TestCase):
         fields = sorted([
             'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'package_contributors',
+            'consent_summary', 'consent_more',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
