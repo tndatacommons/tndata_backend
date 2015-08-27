@@ -1278,6 +1278,20 @@ class UserCategory(models.Model):
         verbose_name = "User Category"
         verbose_name_plural = "User Categories"
 
+    @property
+    def custom_triggers_allowed(self):
+        """Check to see if the user/category is a Package where custom triggers
+        are restricted."""
+
+        # See if the user is restricted from creating triggers for this goal.
+        restricted = self.category.packageenrollment_set.filter(
+            user=self.user,
+            prevent_custom_triggers=True
+        ).exists()
+
+        # Negate the restriction so our api is positive.
+        return not restricted
+
     def get_user_goals(self):
         """Returns a QuerySet of Goals related to this Category, but restricts
         those goals to those which the user has selected."""
