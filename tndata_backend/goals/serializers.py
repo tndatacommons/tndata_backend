@@ -303,13 +303,13 @@ class UserCategorySerializer(serializers.ModelSerializer):
     category = SimpleCategoryField(queryset=Category.objects.all())
     user_goals = SimpleGoalField(source="get_user_goals", many=True, read_only=True)
     user_goals_count = serializers.SerializerMethodField()
-    custom_triggers_allowed = serializers.ReadOnlyField()
+    #custom_triggers_allowed = serializers.ReadOnlyField()
 
     class Meta:
         model = UserCategory
         fields = (
             'id', 'user', 'category', 'user_goals_count', 'user_goals',
-            'custom_triggers_allowed ', 'created_on', 'progress_value',
+            'created_on', 'progress_value',
         )
         read_only_fields = ("id", "created_on")
 

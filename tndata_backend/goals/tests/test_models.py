@@ -1158,6 +1158,24 @@ class TestUserCategory(TestCase):
         actual = "{}".format(self.uc)
         self.assertEqual(expected, actual)
 
+    def test_custom_triggers_allowed(self):
+        """Ensure custom triggers are allowed by default."""
+        self.assertTrue(self.uc.custom_triggers_allowed)
+
+    def test_custom_triggers_not_allowed(self):
+        """Ensure that custom triggers are not allowed when the user is
+        enrolled in a package that restricts this feature."""
+        admin = User.objects.create_superuser('x', 'x@y.z', '-')
+        pe = PackageEnrollment.objects.create(
+            user=self.user,
+            category=self.category,
+            prevent_custom_triggers=True,
+            enrolled_by=admin
+        )
+        self.assertEqual(self.user.packageenrollment_set.count(), 1)
+        self.assertFalse(self.uc.custom_triggers_allowed)
+        pe.delete()
+
 
 class TestBehaviorProgress(TestCase):
     """Tests for the `BehaviorProgress` model."""
