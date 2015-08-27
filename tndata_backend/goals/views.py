@@ -807,14 +807,25 @@ def accept_enrollment(request, username_hash):
     store, upon success.
 
     """
+    # -------------------------------------------------------------------------
+    # TODO: This is current a user-focused flow, while it should be a
+    # category-focused (or package-enrollment-focused) flow. Currently the
+    # intention is that only a new user will encounter this, and have a blanket
+    # acceptance; however we'll have a scenario where an existing user
+    # may be enrolled in content and need to accept a new "package consent".
+    # -------------------------------------------------------------------------
+
     has_form_errors = False
     User = get_user_model()
     try:
         user = User.objects.get(username=username_hash, is_active=False)
         packages = PackageEnrollment.objects.filter(user=user)
+        catids = set(packages.values_list("category", flat=True).distinct())
+        categories = Category.objects.filter(pk__in=catids)
     except User.DoesNotExist:
         user = None
         packages = None
+        categories = []
 
     if request.method == "POST":
         user_form = UserForm(request.POST, instance=user, prefix="uf")
@@ -851,6 +862,7 @@ def accept_enrollment(request, username_hash):
         'accept_form': accept_form,
         'has_form_errors': has_form_errors,
         'packages': packages,
+        'categories': categories,
     }
     return render(request, 'goals/accept_enrollment.html', context)
 

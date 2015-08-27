@@ -44,51 +44,21 @@
         <legend>Your Password</legend>
         {{ password_form.as_p }}
       </fieldset>
+
       <fieldset>
         <legend>Your Consent</legend>
-
-        <h3>SUMMARY</h3>
-        <p>You are being invited to take part in a pilot study for a new mobile
-        application. This application, called COMPASS, allows you to set goals
-        and receive smartphone notifications that will help you reach those goals.
-        Your LITE program will use the software to send you notifications to
-        help you succeed in your community project. When you accept the terms
-        below, you will be automatically enrolled in LITE notifications. More
-        LITE notifications may be added over the course of the pilot. You can
-        edit or delete these notifications as you see fit.</p>
-
-        <h3>MORE INFO</h3>
-        <p>If you volunteer to take part in this study, you will be
-        one of about 5-10 people to do so. The person in charge of this study
-        is Kevin Newton of Tennessee Data Commons. There may be other people
-        on the research team assisting at different times during the study.
-        However, no one outside of the Tennessee Data Commons organization
-        will have access to any information or data collected without your
-        explicit approval.</p>
-
-        <p>By doing this study, we hope to learn more about how individuals
-        interact with and utilize this new application. If you are under the
-        age of 14, you should not participate in this study. You will be asked
-        to download the application to your mobile device and use it in your
-        daily life as naturally as possible. This will be accompanied by brief
-        interviews and surveys over the next 5 months.</p>
-
-        <p>To the best of our knowledge, the things you will be doing have no
-        more risk of harm than you would experience in everyday life. You will
-        not get any direct personal benefit from taking part in this study.
-        However, the application is meant to increase your productivity, which
-        you may find beneficial. If you decide to take part in the study, it
-        should be because you really want to volunteer.  You will not lose any
-        benefits or rights you would normally have if you choose not to volunteer.
-        You can stop at any time during the study and still keep the benefits
-        and rights you had before volunteering. As a student, if you decide not
-        to take part in this study, your choice will have no effect on your
-        academic status, treatment or outcome in the program. There are no costs
-        associated with taking part in the study. You will not receive any
-        compensation for participating in this study. If you decide to take
-        part in the study, you still have the right to decide at any time that
-        you no longer want to continue. You will not be treated differently if
-        you decide to stop taking part in the study.</p>
+        {% for category in categories %}
+          {% if category.consent_summary or category.consent_more %}
+            <h3>{{ category }}</h3>
+            {% if category.consent_summary %}
+              <h4>SUMMARY</h4> {{ category.rendered_consent_summary|safe }}
+            {% endif %}
+            {% if category.consent_more %}
+              <h4>MORE INFO</h4> {{ category.rendered_consent_more|safe }}
+            {% endif %}
+            <hr/>
+          {% endif %}
+        {% endfor %}
 
         <p>By indicating below, you are agreeing to everything stated above,
         including the agreement to participate.</p>
