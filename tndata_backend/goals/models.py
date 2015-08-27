@@ -1665,6 +1665,11 @@ class PackageEnrollment(models.Model):
     def rendered_consent_more(self):
         return self.category.rendered_consent_more
 
+    def accept(self):
+        self.accepted = True
+        self.save()
+        self.create_user_mappings()
+
     # TODO: NEEDS TESTS.
     def create_user_mappings(self):
         """Creates all of the User* mappings for the associated categories and

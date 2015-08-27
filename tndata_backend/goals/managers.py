@@ -178,7 +178,4 @@ class PackageEnrollmentManager(models.Manager):
         obj.save()
         created_objects.append(obj.id)
 
-        # Now, create the User<Content> objects.
-        obj.create_user_mappings()
-
         return self.get_queryset().filter(pk__in=created_objects)

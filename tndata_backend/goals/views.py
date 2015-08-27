@@ -788,6 +788,8 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
                 by=self.request.user,
                 prevent_triggers=prevent_triggers
             )
+
+        # TODO: send a link to the package enrollment not the user.
         send_package_enrollment_batch(emails, self.category, goals)
         return super().form_valid(form)
 
@@ -824,7 +826,7 @@ def accept_enrollment(request, username_hash):
         categories = Category.objects.filter(pk__in=catids)
     except User.DoesNotExist:
         user = None
-        packages = None
+        packages = []
         categories = []
 
     if request.method == "POST":
@@ -842,7 +844,8 @@ def accept_enrollment(request, username_hash):
             user.save()
 
             # there's gotta be a cleaner way to do this.
-            packages.update(accepted=True)
+            for package in packages:
+                package.accept()
             request.session['user_id'] = user.id
             request.session['package_ids'] = list(
                 packages.values_list("id", flat=True)
