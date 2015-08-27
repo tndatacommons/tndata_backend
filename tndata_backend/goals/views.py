@@ -780,17 +780,18 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         goals = form.cleaned_data['packaged_goals']
         emails = form.cleaned_data['email_addresses']
         prevent_triggers = form.cleaned_data.get('prevent_custom_triggers', False)
-        for email in emails:
-            PackageEnrollment.objects.enroll_by_email(
-                email,
-                self.category,
-                goals,
-                by=self.request.user,
-                prevent_triggers=prevent_triggers
-            )
 
-        # TODO: send a link to the package enrollment not the user.
-        send_package_enrollment_batch(emails, self.category, goals)
+        # Create enrollments if necessary.
+        enrollments = PackageEnrollment.objects.batch_enroll(
+            emails,
+            self.category,
+            goals,
+            by=self.request.user,
+            prevent_triggers=prevent_triggers
+        )
+
+        # send a link to the package enrollment not the user.
+        send_package_enrollment_batch(request, enrollments)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
