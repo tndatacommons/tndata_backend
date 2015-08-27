@@ -179,13 +179,22 @@ class CategoryForm(forms.ModelForm):
         fields = [
             'packaged_content', 'package_contributors', 'order', 'title',
             'description', 'icon', 'image', 'color', 'secondary_color', 'notes',
+            'consent_summary', 'consent_more',
         ]
         labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {
             "description": TextareaWithMarkdownHelperWidget(),
             "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
             "secondary_color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
+            "consent_summary": TextareaWithMarkdownHelperWidget(),
+            "consent_more": TextareaWithMarkdownHelperWidget(),
         }
+
+    class Media:
+        js = (
+            "foundation/js/vendor/jquery.js",
+            "js/category_form.js",
+        )
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get('initial', {})

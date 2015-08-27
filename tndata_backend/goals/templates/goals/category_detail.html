@@ -76,6 +76,12 @@
           </span>
           {{ category.secondary_color|default:"not set" }}
          </dd>
+        <dt>Consent Summary</dt><dd>
+          <div class="panel">{{ category.rendered_consent_summary|safe }}</div>
+        </dd>
+        <dt>Consent More Info</dt><dd>
+          <div class="panel">{{ category.rendered_consent_more|safe }}</div>
+        </dd>
       </dl>
       {% modified category %}
       {% if perms.goals.publish_category %}{% publish_deny_form category %}{% endif %}
