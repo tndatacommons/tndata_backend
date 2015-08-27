@@ -655,6 +655,7 @@ class TestUserGoalAPI(APITestCase):
             response.data['results'][0]['goal']['title'],
             self.goal.title
         )
+        self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
 
     def test_post_usergoal_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post new UserGoals"""
@@ -860,6 +861,7 @@ class TestUserBehaviorAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(response.data['count'], 1)
+        self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
         self.assertIn("user_categories", response.data['results'][0])
         self.assertIn("user_goals", response.data['results'][0])
         self.assertIn("user_actions", response.data['results'][0])
@@ -1572,6 +1574,7 @@ class TestUserCategoryAPI(APITestCase):
         # check the fields of a result object.
         self.assertIn("id", response.data['results'][0])
         self.assertIn("category", response.data['results'][0])
+        self.assertIn("custom_triggers_allowed", response.data['results'][0])
         self.assertIn("order", response.data['results'][0]['category'])
         self.assertIn("title", response.data['results'][0]['category'])
         self.assertIn("title_slug", response.data['results'][0]['category'])
@@ -1591,6 +1594,7 @@ class TestUserCategoryAPI(APITestCase):
             response.data['results'][0]['category']['title'],
             self.category.title
         )
+        self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
         # TODO: it'd be nice if these fields actually had data.
         self.assertEqual(response.data['results'][0]['category']['image_url'], None)
         self.assertEqual(response.data['results'][0]['category']['icon_url'], None)

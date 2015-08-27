@@ -297,6 +297,8 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     * `created_on`: Time at which the user selected this item.
     * `progress_value`: The user's self-reported progress toward behaviors in
       this goal.
+    * `custom_triggers_allowed`: A boolean that indicates whether or not a user
+      should be able to customize the reminders beneath this content
 
     ## Adding a Goal
 
@@ -404,6 +406,8 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     * `user`: A unique identifier for the `User`
     * `behavior`: An object that represents the `Behavior` selected by the user
     * `custom_trigger`: (will be `null`). This is currently not implemented.
+    * `custom_triggers_allowed`: A boolean that indicates whether or not a user
+      should be able to customize the reminders beneath this content
     * `user_categories`: An array of `Category` objects that have been selected
       by the user, and that are also parents of this behavior (through Goals)
     * `user_goals`: An array of `Goal` objects that have been selected by the
@@ -881,6 +885,8 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     * `created_on`: Time at which the user selected the Category.
     * `progress_value`: The user's self-reported progress toward goals in this
       category.
+    * `custom_triggers_allowed`: A boolean that indicates whether or not a user
+      should be able to customize the reminders beneath this content
 
     ## Adding a Category
 

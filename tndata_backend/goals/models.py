@@ -1284,9 +1284,8 @@ class UserCategory(models.Model):
         are restricted."""
 
         # See if the user is restricted from creating triggers for this goal.
-        restricted = self.goal.packageenrollment_set.filter(
+        restricted = self.category.packageenrollment_set.filter(
             user=self.user,
-            category=self.category,
             prevent_custom_triggers=True
         ).exists()
 

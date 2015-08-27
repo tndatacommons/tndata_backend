@@ -223,13 +223,14 @@ class UserGoalSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     goal = SimpleGoalField(queryset=Goal.objects.none())
+    custom_triggers_allowed = serializers.ReadOnlyField()
 
     class Meta:
         model = UserGoal
         fields = (
             'id', 'user', 'goal', 'user_categories',
             'user_behaviors_count', 'user_behaviors', 'created_on',
-            'progress_value',
+            'progress_value', 'custom_triggers_allowed',
         )
         read_only_fields = ("id", "created_on")
 
@@ -262,12 +263,14 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         queryset=Trigger.objects.custom(),
         required=False
     )
+    custom_triggers_allowed = serializers.ReadOnlyField()
 
     class Meta:
         model = UserBehavior
         fields = (
             'id', 'user', 'behavior', 'custom_trigger', 'user_categories',
             'user_goals', 'user_actions_count', 'user_actions', 'created_on',
+            'custom_triggers_allowed',
         )
         read_only_fields = ("id", "created_on", )
 
@@ -308,7 +311,7 @@ class UserCategorySerializer(serializers.ModelSerializer):
             'id', 'user', 'category', 'user_goals_count', 'user_goals',
             'custom_triggers_allowed ', 'created_on', 'progress_value',
         )
-        read_only_fields = ("id", "created_on", 'custom_triggers_allowed')
+        read_only_fields = ("id", "created_on")
 
     def get_user_goals_count(self, obj):
         """Return the number of user-selected goals that are children of this
