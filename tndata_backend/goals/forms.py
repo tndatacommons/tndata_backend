@@ -338,7 +338,6 @@ class PackageEnrollmentForm(forms.Form):
         )
     )
 
-
     def __init__(self, category, *args, **kwargs):
         """Provice a specific category for this for in order to enroll users
         in it's set of Goals."""
@@ -370,6 +369,16 @@ class AcceptEnrollmentForm(forms.Form):
             'and <a href="/privacy/">Privacy Notice</a>.'
         )
     )
+
+    def __init__(self, *args, **kwargs):
+        package = kwargs.pop("package", None)
+        if package and package.accepted:
+            kwargs['initial'] = {
+                'i_accept': True,
+                'age_restriction': True,
+                'accept_terms': True
+            }
+        super().__init__(*args, **kwargs)
 
 
 class InvalidFormatException(Exception):
