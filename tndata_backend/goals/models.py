@@ -1666,6 +1666,9 @@ class PackageEnrollment(models.Model):
     def rendered_consent_more(self):
         return self.category.rendered_consent_more
 
+    def get_absolute_url(self):
+        return reverse()  # TODO <----------------------
+
     def accept(self):
         self.accepted = True
         self.save()
