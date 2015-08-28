@@ -26,15 +26,14 @@
 {% endblock %}
 
 
-{% block content %}
-<ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
   <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
   <li class="current">
     {% if object %}{{ action }}{% else %}New Action {% endif %}
   </li>
-</ul>
+{% endblock %}
 
+{% block content %}
 <h1>
 {% if object %}
   Update {{acton_type|title}} Action: {{object }}

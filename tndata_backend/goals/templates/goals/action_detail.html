@@ -6,13 +6,12 @@
 
 {% block title %}A: {{ action.title }}{% endblock %}
 
-{% block content %}
-  <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
     <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
     <li class="current">{{ action }}</li>
-  </ul>
+{% endblock %}
 
+{% block content %}
   <div class="row">
     <div class="large-6 small-12 columns">
       <h1>{{ action }} {% goal_object_controls action %}</h1>

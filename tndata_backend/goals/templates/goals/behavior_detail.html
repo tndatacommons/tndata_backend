@@ -6,13 +6,12 @@
 
 {% block title %}B: {{ behavior.title }}{% endblock %}
 
-{% block content %}
-  <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Home</a></li>
-    <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
-    <li class="current">{{ behavior }}</li>
-  </ul>
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
+  <li class="current">{{ behavior }}</li>
+{% endblock %}
 
+{% block content %}
   <div class="row">
     <div class="large-6 small-12 columns">
       <h1>{{ behavior }} {% goal_object_controls behavior %}</h1>

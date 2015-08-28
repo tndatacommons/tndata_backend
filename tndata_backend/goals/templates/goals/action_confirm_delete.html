@@ -3,11 +3,10 @@
 
 {% block content %}
 
-<ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
   <li><a href="{% url 'goals:behavior-list' %}">Actions</a></li>
   <li class="current">{{ object }}</li>
-</ul>
+{% endblock %}
 
 {% if num_user_selections %}
   <div data-alert class="alert-box alert">

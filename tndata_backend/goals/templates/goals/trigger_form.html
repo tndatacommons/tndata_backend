@@ -19,15 +19,14 @@
 {% endblock %}
 
 
-{% block content %}
-<ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
   <li><a href="{% url 'goals:trigger-list' %}">Trigger</a></li>
   <li class="current">
     {% if object %}{{ object.name }}{% else %}New Trigger{% endif %}
   </li>
-</ul>
+{% endblock %}
 
+{% block content %}
 <h1>{% if object %}Update Trigger: {{object.name}}{% else %}Create Trigger{% endif %}</h1>
 <div class="row">
   <div class="large-6 small-12 columns">

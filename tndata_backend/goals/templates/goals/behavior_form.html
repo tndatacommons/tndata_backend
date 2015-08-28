@@ -7,16 +7,14 @@
   {{ form.media }}
 {% endblock %}
 
-{% block content %}
-<ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
   <li><a href="{% url 'goals:behavior-list' %}">Behaviors</a></li>
   <li class="current">
-    {% if object %}{{ behavior }}{% else %}New Behavior
- {% endif %}
+    {% if object %}{{ behavior }}{% else %}New Behavior{% endif %}
   </li>
-</ul>
+{% endblock %}
 
+{% block content %}
 <h1>{% if object %}Update Behavior
 : {{object}}{% else %}Create Behavior
 {% endif %}</h1>
@@ -73,7 +71,7 @@ Category
       <tbody>
       {% for bs in behaviors %}
         <tr>
-          <td><a href="{{ cat.get_absolute_url }}">{{ bs }}</a></td>
+          <td><a href="{{ bs.get_absolute_url }}">{{ bs }}</a></td>
           <td>{{ bs.informal_list|linebreaksbr }}</td>
         </tr>
       {% endfor %}

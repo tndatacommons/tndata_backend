@@ -1,14 +1,12 @@
 {% extends "goals/base.html" %}
 {% block title %}Delete Category{% endblock %}
 
-{% block content %}
-
-<ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
   <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
   <li class="current">{{ category }}</li>
-</ul>
+{% endblock %}
 
+{% block content %}
 {% if num_user_selections %}
   <div data-alert class="alert-box alert">
     <i class="fa fa-warning"></i>

@@ -2,13 +2,12 @@
 {% load goal_filters %}
 {% block title %}Behaviors{% endblock %}
 
-{% block content %}
-
-  <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
     <li class="current">Behaviors</li>
-  </ul>
+{% endblock %}
 
+
+{% block content %}
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Behavior</h2>

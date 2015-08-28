@@ -6,13 +6,12 @@
 
 {% block title %}G: {{ goal.title }}{% endblock %}
 
-{% block content %}
-  <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Home</a></li>
-    <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
-    <li class="current">{{ goal }}</li>
-  </ul>
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:goal-list' %}">Goals</a></li>
+  <li class="current">{{ goal }}</li>
+{% endblock %}
 
+{% block content %}
   <div class="row">
     <div class="large-6 small-12 columns">
       <h1>{{ goal }} {% goal_object_controls goal %}</h1>

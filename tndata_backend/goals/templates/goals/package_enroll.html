@@ -3,13 +3,12 @@
 {% block title %}Enroll{% endblock %}
 
 
-{% block content %}
-  <ul class="breadcrumbs">
-    <li><a href="{% url 'goals:index' %}">Home</a></li>
-    <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
-    <li class="current">{{ category }}</li>
-  </ul>
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+  <li class="current">{{ category }}</li>
+{% endblock %}
 
+{% block content %}
   <div class="row">
     <div class="large-12 small-12 columns">
     <h1>{{ category }} Enrollment</h1>

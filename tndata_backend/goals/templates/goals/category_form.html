@@ -9,15 +9,15 @@
 {% endblock %}
 
 
-{% block content %}
-<ul class="breadcrumbs">
-  <li><a href="{% url 'goals:index' %}">Home</a></li>
+{% block breadcrumbs %}
   <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
   <li class="current">
     {% if object %}{{ category }}{% else %}New Category {% endif %}
   </li>
-</ul>
+{% endblock %}
 
+
+{% block content %}
 <h1>{% if object %}Update Category: {{object}}{% else %}Create Category{% endif %}</h1>
 <form
   data-persist="garlic"
