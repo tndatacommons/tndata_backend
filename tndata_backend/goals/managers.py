@@ -159,7 +159,7 @@ class PackageEnrollmentManager(models.Manager):
 
         """
         # NOTE: don't create duplicate PackageEnrollments; just udpate goals.
-        created_enrollments = []
+        created_objects = []
         User = get_user_model()
 
         for email in emails:
@@ -172,9 +172,18 @@ class PackageEnrollmentManager(models.Manager):
                 # - Allow them to later set their password and user fields.
                 user = user_utils.create_inactive_user(email)
 
-            obj, created = self.get_or_create(user=user, category=category)
-            obj.enrolled_by = by
-            obj.prevent_triggers = prevent_triggers
+            try:
+                obj = self.get(user=user, category=category)
+                obj.enrolled_by = by
+                obj.prevent_custom_triggers = prevent_triggers
+                obj.save()
+            except self.model.DoesNotExist:
+                obj = self.create(
+                    user=user,
+                    category=category,
+                    enrolled_by=by,
+                    prevent_custom_triggers=prevent_triggers
+                )
             for goal in goals:
                 obj.goals.add(goal)
             obj.save()
