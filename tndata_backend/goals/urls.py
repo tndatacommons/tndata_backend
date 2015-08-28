@@ -107,27 +107,27 @@ urlpatterns = patterns('',
         name='behavior-list'
     ),
     url(
-        r'^behaviors/(?P<title_slug>.+)/publish/$',
+        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.BehaviorPublishView.as_view(),
         name='behavior-publish'
     ),
     url(
-        r'^behaviors/(?P<title_slug>.+)/update/$',
+        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
         views.BehaviorUpdateView.as_view(),
         name='behavior-update'
     ),
     url(
-        r'^behaviors/(?P<title_slug>.+)/delete/$',
+        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/delete/$',
         views.BehaviorDeleteView.as_view(),
         name='behavior-delete'
     ),
     url(
-        r'^behaviors/(?P<title_slug>.+)/duplicate/$',
+        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate/$',
         views.BehaviorDuplicateView.as_view(),
         name='behavior-duplicate'
     ),
     url(
-        r'^behaviors/(?P<title_slug>.+)/$',
+        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/$',
         views.BehaviorDetailView.as_view(),
         name='behavior-detail'
     ),
@@ -139,49 +139,49 @@ urlpatterns = patterns('',
         name='trigger-list'
     ),
     url(
-        r'^triggers/(?P<name_slug>.+)/update/$',
+        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/update/$',
         views.TriggerUpdateView.as_view(),
         name='trigger-update'
     ),
     url(
-        r'^triggers/(?P<name_slug>.+)/delete/$',
+        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/delete/$',
         views.TriggerDeleteView.as_view(),
         name='trigger-delete'
     ),
     url(
-        r'^triggers/(?P<name_slug>.+)/duplicate/$',
+        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/duplicate/$',
         views.TriggerDuplicateView.as_view(),
         name='trigger-duplicate'
     ),
     url(
-        r'^triggers/(?P<name_slug>.+)/$',
+        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/$',
         views.TriggerDetailView.as_view(),
         name='trigger-detail'
     ),
 
     # Goals
     url(
-        r'^goals/(?P<title_slug>.+)/publish/$',
+        r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.GoalPublishView.as_view(),
         name='goal-publish'
     ),
     url(
-        r'^goals/(?P<title_slug>.+)/update/$',
+        r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
         views.GoalUpdateView.as_view(),
         name='goal-update'
     ),
     url(
-        r'^goals/(?P<title_slug>.+)/delete/$',
+        r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/delete/$',
         views.GoalDeleteView.as_view(),
         name='goal-delete'
     ),
     url(
-        r'^goals/(?P<title_slug>.+)/duplicate/$',
+        r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate/$',
         views.GoalDuplicateView.as_view(),
         name='goal-duplicate'
     ),
     url(
-        r'^goals/(?P<title_slug>.+)/$',
+        r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/$',
         views.GoalDetailView.as_view(),
         name='goal-detail'
     ),
@@ -198,27 +198,27 @@ urlpatterns = patterns('',
         name='category-list'
     ),
     url(
-        r'^categories/(?P<title_slug>.+)/publish/$',
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.CategoryPublishView.as_view(),
         name='category-publish'
     ),
     url(
-        r'^categories/(?P<title_slug>.+)/update/$',
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
         views.CategoryUpdateView.as_view(),
         name='category-update'
     ),
     url(
-        r'^categories/(?P<title_slug>.+)/delete/$',
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/delete/$',
         views.CategoryDeleteView.as_view(),
         name='category-delete'
     ),
     url(
-        r'^categories/(?P<title_slug>.+)/duplicate/$',
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate/$',
         views.CategoryDuplicateView.as_view(),
         name='category-duplicate'
     ),
     url(
-        r'^categories/(?P<title_slug>.+)/$',
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/$',
         views.CategoryDetailView.as_view(),
         name='category-detail'
     ),

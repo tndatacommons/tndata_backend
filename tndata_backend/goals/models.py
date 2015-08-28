@@ -53,6 +53,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
 
     # URLMixin attributes
     urls_app_namespace = "goals"
+    urls_fields = ['pk', 'title_slug']
     urls_model_name = "category"
     urls_icon_field = "icon"
     urls_image_field = "image"
@@ -223,6 +224,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     # URLMixin attributes
     urls_app_namespace = "goals"
+    urls_fields = ['pk', 'title_slug']
     urls_model_name = "goal"
     urls_icon_field = "icon"
 
@@ -340,7 +342,7 @@ class Trigger(URLMixin, models.Model):
     # URLMixin attributes
     urls_app_namespace = "goals"
     urls_model_name = "trigger"
-    urls_slug_field = "name_slug"
+    urls_fields = ['pk', 'name_slug']
 
     # Data Fields
     TRIGGER_TYPES = (
@@ -711,6 +713,7 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
     # URLMixin attributes
     urls_app_namespace = "goals"
     urls_model_name = "behavior"
+    urls_fields = ["pk", "title_slug"]
     urls_icon_field = "icon"
     urls_image_field = "image"
 

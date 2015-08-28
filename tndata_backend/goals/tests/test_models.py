@@ -88,19 +88,19 @@ class TestCategory(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.category.get_absolute_url(),
-            "/goals/categories/test-category/"
+            "/goals/categories/{0}-test-category/".format(self.category.id)
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.category.get_update_url(),
-            "/goals/categories/test-category/update/"
+            "/goals/categories/{0}-test-category/update/".format(self.category.id)
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.category.get_delete_url(),
-            "/goals/categories/test-category/delete/"
+            "/goals/categories/{0}-test-category/delete/".format(self.category.id)
         )
 
     def test_default_state(self):
@@ -200,19 +200,21 @@ class TestGoal(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.goal.get_absolute_url(),
-            "/goals/goals/title-for-test-goal/"
+            "/goals/goals/{0}-title-for-test-goal/".format(self.goal.id)
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.goal.get_update_url(),
-            "/goals/goals/title-for-test-goal/update/"
+            "/goals/goals/{0}-title-for-test-goal/update/".format(self.goal.id)
+
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.goal.get_delete_url(),
-            "/goals/goals/title-for-test-goal/delete/"
+            "/goals/goals/{0}-title-for-test-goal/delete/".format(self.goal.id)
+
         )
 
     def test_default_state(self):
@@ -300,19 +302,22 @@ class TestTrigger(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.trigger.get_absolute_url(),
-            "/goals/triggers/test-trigger/"
+            "/goals/triggers/{0}-test-trigger/".format(self.trigger.id)
+
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.trigger.get_update_url(),
-            "/goals/triggers/test-trigger/update/"
+            "/goals/triggers/{0}-test-trigger/update/".format(self.trigger.id)
+
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.trigger.get_delete_url(),
-            "/goals/triggers/test-trigger/delete/"
+            "/goals/triggers/{0}-test-trigger/delete/".format(self.trigger.id)
+
         )
 
     def test_recurrences_as_text(self):
@@ -732,19 +737,23 @@ class TestBehavior(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.behavior.get_absolute_url(),
-            "/goals/behaviors/test-behavior/"
+            "/goals/behaviors/{0}-test-behavior/".format(self.behavior.id)
+
+
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.behavior.get_update_url(),
-            "/goals/behaviors/test-behavior/update/"
+            "/goals/behaviors/{0}-test-behavior/update/".format(self.behavior.id)
+
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.behavior.get_delete_url(),
-            "/goals/behaviors/test-behavior/delete/"
+            "/goals/behaviors/{0}-test-behavior/delete/".format(self.behavior.id)
+
         )
 
     def test_default_state(self):
