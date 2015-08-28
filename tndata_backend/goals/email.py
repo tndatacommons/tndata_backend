@@ -11,6 +11,8 @@ def send_package_enrollment_batch(request, enrollments):
     * enrollments: A QuerySet of the newly created PackageEnrollment objects.
 
     """
+    cta_link = None
+    cta_text = None
 
     email_data = []
     for pe in enrollments:
@@ -18,16 +20,21 @@ def send_package_enrollment_batch(request, enrollments):
         # (subject, message, html_message, from_email, recipient_list)
 
         subject = "Welcome to {0}".format(pe.category)
-        cta_link = request.build_absolute_uri(pe.get_absolute_url())
+
+        if not pe.accepted:
+            cta_link = request.build_absolute_uri(pe.get_accept_url())
+            cta_text = "Get Started"
+
         context = {
             "alert": "You're enrolled!",
             "email": pe.user.email,
             "username": pe.user.username,
-            "new_user": not pe.user.is_active,
+            "accepted": pe.accepted,  # They need to accept the consent.
+            "new_user": not pe.user.is_active,  # They need the app.
             "category": pe.category,
             "goals": pe.goals.all(),
             "cta_link": cta_link,
-            "cta_text": "Get Started",
+            "cta_text": cta_text,
         }
         email_data.append((
             subject,

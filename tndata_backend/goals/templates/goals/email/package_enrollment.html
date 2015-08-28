@@ -11,15 +11,23 @@ Welcome to {{ category }}
   <p>We're letting you know that you've been enrolled in some new
   packages within Compass.</p>
 
-  {% if not new_user %} {# may need to revise this based on whether or not the ser has accepted #}
+  {% if not new_user and accepted %}
     <p>Since you've already got the Compass app, there's nothing else for you
     to do. Simply open the app and enjoy.</p>
+  {% elif not accepted %}
+
   {% endif %}
 {% endblock %}
 
 {% block post_cta %}
-  {% if new_user %}
-    <p>Simply click the button above to set up your new account.</p>
+  {% if not accepted %}
+    <p>Simply click the button above to
+    {% if new_user %}
+      set up your new account. After that you'll get a link to download the app.
+    {% elif not accepted %}
+      accept the the terms of this content, and then you'll see them in the app.
+    {% endif %}
+    </p>
   {% endif %}
   <p>Thank you!<br/><br/>-- The Compass Team</p>
 {% endblock %}

@@ -1,13 +1,18 @@
 Hi,
 
 We're letting you know that you've been enrolled in some new
-packages within Compass. {% if not new_user %}Since you've already got the
-Compass app, there's nothing else for you to do. Simply open the app and enjoy.{% endif %}
+packages within Compass. {% if not new_user and accepted %}Since you've already
+got the Compass app, there's nothing else for you to do. Simply open the app and enjoy.{% endif %}
 
 {% if new_user %}
 Simply follow the link below to set up your new account.
+{% elif not accepted %}
+Simply click the button below to accept the the terms of this content,
+and then you'll see them in the app.
+{% endif %}
 
-{{ cta_link }}
+{% if cta_link %}
+{{ cta_text }}: {{ cta_link }}
 {% endif %}
 
 
