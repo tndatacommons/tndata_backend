@@ -1,3 +1,5 @@
+{% load static from staticfiles %}
+
 {# Inclusion template for the `object_controls` tag. #}
 {% if can_update or can_delete or can_duplicate %}
 <button
@@ -14,13 +16,40 @@
   tabindex="-1">
 
   {% if can_update %}
-    <li><a href="{{ object.get_update_url }}">Update</a></li>
+    <li><a href="{{ object.get_update_url }}">
+      <i class="fa fa-pencil-square-o"></i> Update</a></li>
   {% endif %}
   {% if can_duplicate %}
-    <li><a href="{{ object.get_duplicate_url }}">Create a Copy</a></li>
+    <li><a href="{{ object.get_duplicate_url }}">
+      <i class="fa fa-files-o"></i> Create a Copy</a></li>
   {% endif %}
   {% if can_delete %}
-    <li><a href="{{ object.get_delete_url }}">Delete</a></li>
+    <li>
+      <a href="{{ object.get_delete_url }}">
+      <i class="fa fa-trash-o"></i> Delete</a></li>
   {% endif %}
+  <li>
+    <a href="#" data-reveal-id="shareModal">
+      <i class="fa fa-share-alt"></i> Share</a>
+  </li>
 </ul>
+
+{# Modal for share content #}
+<div id="shareModal" class="reveal-modal"
+     data-reveal aria-labelledby="modalTitle"
+     aria-hidden="true" role="dialog">
+  <h2 id="modalTitle">Sharing</h2>
+  <p class="lead">Copy &amp; Paste the following URL to share it with someone.</p>
+  <p>
+    <input type="text"
+      id="clipboard_text"
+      readonly="readonly"
+      value="{{object.get_absolute_url}}">
+    <script>document.getElementById("clipboard_text").value = window.location.toString();</script>
+  </p>
+  <p>Keep in mind, they may not be able to see this page if they don't have the
+  appropriate permissions.</p>
+  <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
 {% endif %}
