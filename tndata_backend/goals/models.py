@@ -1667,7 +1667,12 @@ class PackageEnrollment(models.Model):
         return self.category.rendered_consent_more
 
     def get_absolute_url(self):
-        return reverse()  # TODO <----------------------
+        """Currently, this is the PackageDetailView, which provides a list of
+        enrollments."""
+        return reverse("goals:pacage-detail")
+
+    def get_accept_url(self):
+        return reverse("goals:accept-enrollment", args=[self.pk])
 
     def accept(self):
         self.accepted = True

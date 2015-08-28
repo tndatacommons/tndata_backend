@@ -9,22 +9,24 @@
   {% if user %}
     <h1>Welcome</h1>
 
+    {% if user_form %} {# Intro for new users #}
     <p>You've been enrolled in the following custom packages for Compass. Please
     set up your account below, and accept the terms to create an account and
     recieve a link to the app.</p>
-
-    {% if packages %}
-      {% for package in packages %}
-        <div class="panel">
-          <h2>{{ package.category.title }}</h2>
-          <ul>
-          {% for goal in package.goals.all %}
-            <li>{{ goal }}</li>
-          {% endfor %}
-          </ul>
-        </div>
-      {% endfor %}
+    {% else %}  {# Intro for existing users #}
+    <p>You've been enrolled in the following custom packages for Compass. Please
+    review the terms of service and accept the consent form to get started.</p>
     {% endif %}
+
+    {# Package info #}
+    <div class="panel">
+      <h2>{{ package.category.title }}</h2>
+      <ul>
+      {% for goal in package.goals.all %}
+        <li>{{ goal }}</li>
+      {% endfor %}
+      </ul>
+    </div>
 
     {% if has_form_errors %}
       <div data-alert class="alert-box alert">
@@ -33,32 +35,68 @@
       </div>
     {% endif %}
 
-    <form action="{% url 'goals:accept-enrollment' user.username %}" method="post">
+    <form action="{{ package.get_accept_url }}" method="post">
       {% csrf_token %}
 
+      {% if user_form %}
       <fieldset>
         <legend>Your Details</legend>
         {{ user_form.as_p }}
       </fieldset>
+      {% endif %}
+
+      {% if password_form %}
       <fieldset>
         <legend>Your Password</legend>
+        <div data-alert class="alert-box warning">
+          <strong>Save This!</strong> You'll need this password to log into
+          the app, later.
+          <a href="#" class="close">&times;</a>
+        </div>
         {{ password_form.as_p }}
       </fieldset>
+      {% endif %}
 
+      {% if accept_form %}
       <fieldset>
         <legend>Your Consent</legend>
-        {% for category in categories %}
-          {% if category.consent_summary or category.consent_more %}
-            <h3>{{ category }}</h3>
-            {% if category.consent_summary %}
-              <h4>SUMMARY</h4> {{ category.rendered_consent_summary|safe }}
-            {% endif %}
-            {% if category.consent_more %}
-              <h4>MORE INFO</h4> {{ category.rendered_consent_more|safe }}
-            {% endif %}
-            <hr/>
+        {# CATEGORY-specific consent form #}
+        {% if category.consent_summary or category.consent_more %}
+          <h3>{{ category }}</h3>
+          {% if category.consent_summary %}
+            <h4>SUMMARY</h4> {{ category.rendered_consent_summary|safe }}
           {% endif %}
-        {% endfor %}
+          {% if category.consent_more %}
+            <h4>MORE INFO</h4> {{ category.rendered_consent_more|safe }}
+          {% endif %}
+        {% else %}
+          {# if there's no consent for the category, we use a default #}
+          <h3>SUMMARY</h3>
+          <p>You are being invited to take part in a pilot study for COMPASS,
+          a new mobile application. This application allows you to set goals
+          and receive smartphone notifications that will help you reach those
+          goals. This software will be used by your current program to send
+          you notifications that will help you succeed. When you accept the
+          terms below, you will be automatically enrolled in your program's
+          notifications. Additional notifications may be added over the course
+          of the pilot.</p>
+          <h4>MORE INFO</h4>
+          <p><strong>Important Information:</strong></p>
+          <ul>
+          <li>You cannot participate if you are under 14 years old</li>
+          <li>You can refuse to participate or stop participating at any time</li>
+          <li>If you refuse or stop, your choice will have no effect on your
+          academic status, treatment or outcome in the program.</li>
+          <li>Participation may include interviews and/or surveys</li>
+          <li>No one outside of the TN Data Commons organization will have
+          access to any data collected without your explicit approval.</li>
+          <li>There is no risk and no direct benefit from participating in
+          this study</li>
+          <li>You will not be treated differently if you choose to stop
+          participating.</li>
+          </ul>
+          <hr/>
+        {% endif %}
 
         <p>By indicating below, you are agreeing to everything stated above,
         including the agreement to participate.</p>
@@ -94,6 +132,7 @@
           {{ accept_form.accept_terms.help_text|safe }}</label>
         </p>
       </fieldset>
+      {% endif %}
 
       <hr>
       <input type="submit" class="button" value="Continue"/>

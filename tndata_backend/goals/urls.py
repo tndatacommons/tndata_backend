@@ -16,7 +16,7 @@ urlpatterns = patterns('',
         name='accept-enrollment-complete'
     ),
     url(
-        r'^accept-enrollment/(?P<username_hash>.+)/$',
+        r'^accept-enrollment/(?P<pk>\d+)/$',
         views.accept_enrollment,
         name='accept-enrollment'
     ),

@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
@@ -791,7 +790,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         )
 
         # send a link to the package enrollment not the user.
-        send_package_enrollment_batch(request, enrollments)
+        send_package_enrollment_batch(self.request, enrollments)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -803,35 +802,37 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
 
 
 # TODO: NEEDS TESTS.
-def accept_enrollment(request, username_hash):
-    """This view lets app-users "claim" their account, set a password, & agree
-    to some terms/conditions for testing. It should then enroll them in our
-    Alphal/Beta-testing google group, and provide a link to the app in the app
-    store, upon success.
+def accept_enrollment(request, pk):
+    """This view lets new users "claim" their account, set a password, & agree
+    to some terms/conditions and a consent form for each Package/Category,
+    before giving them a link to the app.
+
+    Existing users who are being enrolled in a new Package/Category will have
+    the option to just accept the consent form.
 
     """
-    # -------------------------------------------------------------------------
-    # TODO: This is current a user-focused flow, while it should be a
-    # category-focused (or package-enrollment-focused) flow. Currently the
-    # intention is that only a new user will encounter this, and have a blanket
-    # acceptance; however we'll have a scenario where an existing user
-    # may be enrolled in content and need to accept a new "package consent".
-    # -------------------------------------------------------------------------
-
+    accept_form = None
     has_form_errors = False
-    User = get_user_model()
-    try:
-        user = User.objects.get(username=username_hash, is_active=False)
-        packages = PackageEnrollment.objects.filter(user=user)
-        catids = set(packages.values_list("category", flat=True).distinct())
-        categories = Category.objects.filter(pk__in=catids)
-    except User.DoesNotExist:
-        user = None
-        packages = []
-        categories = []
+    password_form = None
+    user_form = None
 
-    if request.method == "POST":
-        user_form = UserForm(request.POST, instance=user, prefix="uf")
+    package = get_object_or_404(PackageEnrollment, pk=pk)
+
+    if request.method == "POST" and package.user.is_active:
+        # An existing user is being enrolled in a new package.
+        accept_form = AcceptEnrollmentForm(request.POST, prefix="aef")
+        if accept_form.is_valid():
+            # Indicate their acceptance of the consent (The form isn't
+            # valid without doing this)
+            package.accept()
+            request.session['user_id'] = package.user.id
+            request.session['package_ids'] = [package.id]
+            return redirect(reverse("goals:accept-enrollment-complete"))
+        else:
+            has_form_errors = True
+    elif request.method == "POST":
+        # This is for a new user
+        user_form = UserForm(request.POST, instance=package.user, prefix="uf")
         password_form = SetNewPasswordForm(request.POST, prefix="pf")
         accept_form = AcceptEnrollmentForm(request.POST, prefix="aef")
         forms_valid = [
@@ -844,29 +845,32 @@ def accept_enrollment(request, username_hash):
             user.set_password(password_form.cleaned_data['password'])
             user.save()
 
-            # there's gotta be a cleaner way to do this.
-            for package in packages:
-                package.accept()
-            request.session['user_id'] = user.id
-            request.session['package_ids'] = list(
-                packages.values_list("id", flat=True)
-            )
+            # Now, indicate their acceptance of the consent (The form isn't
+            # valid without doing this)
+            package.accept()
+            request.session['user_id'] = package.user.id
+            request.session['package_ids'] = [package.id]
             return redirect(reverse("goals:accept-enrollment-complete"))
         else:
             has_form_errors = True
+
+    elif package.user.is_active:
+        # they only need the Accept form, not the user-creation stuff.
+        accept_form = AcceptEnrollmentForm(prefix="aef", package=package)
+
     else:
-        user_form = UserForm(instance=user, prefix="uf")
+        user_form = UserForm(instance=package.user, prefix="uf")
         password_form = SetNewPasswordForm(prefix="pf")
-        accept_form = AcceptEnrollmentForm(prefix="aef")
+        accept_form = AcceptEnrollmentForm(prefix="aef", package=package)
 
     context = {
-        'user': user,
+        'user': package.user,
         'user_form': user_form,
         'password_form': password_form,
         'accept_form': accept_form,
         'has_form_errors': has_form_errors,
-        'packages': packages,
-        'categories': categories,
+        'package': package,
+        'category': package.category,
     }
     return render(request, 'goals/accept_enrollment.html', context)
 
