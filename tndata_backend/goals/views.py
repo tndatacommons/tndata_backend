@@ -20,6 +20,7 @@ from . forms import (
     ActionTriggerForm,
     BehaviorForm,
     CategoryForm,
+    ContentAuthorForm,
     CSVUploadForm,
     GoalForm,
     PackageEnrollmentForm,
@@ -34,6 +35,80 @@ from . models import (
 )
 from . permissions import is_content_editor, superuser_required
 from . utils import num_user_selections
+
+
+class BaseTransferView(FormView):
+    """A base view that should be subclassed for models where we want to enable
+    transferring "ownership". The model must have some FK field to a User, and
+    be written in a way that assumes that user is the owner.
+
+    To use this, you must define the following:
+
+    * model: The Model class
+    * pk_field: The Primary Key field name (typically "pk" or "id")
+    * owner_field: The name of the FK to User. (e.g. "user" or "created_by")
+
+    This class also assumes that existing users, superusers, and staff users
+    have the ability to transfer owndership.
+
+    """
+    # Custom attributes
+    model = None
+    pk_field = None
+    owner_field = None
+
+    # FormView attributes
+    form_class = ContentAuthorForm
+    http_method_names = ['get', 'post']
+    template_name = "goals/transfer.html"
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['object'] = self.object
+        ctx['owner'] = getattr(self.object, self.owner_field)
+        return ctx
+
+    def get_object(self, kwargs):
+        if None in [self.model, self.pk_field, self.owner_field]:
+            raise RuntimeError(
+                "BaseTransferView subclasses must define the following: "
+                "model, pk_field, and owner_field."
+            )
+        params = {self.pk_field: kwargs.get(self.pk_field, None)}
+        return get_object_or_404(self.model, **params)
+
+    def _can_transfer(self, user):
+        return any([
+            getattr(self.object, self.owner_field) == user,
+            user.is_staff,
+            user.is_superuser,
+        ])
+
+    def _http_method(self, request, *args, **kwargs):
+        if not self._can_transfer(request.user):
+            messages.warning(request, "You are not the owner of that object.")
+            return redirect(self.object.get_absolute_url())
+        elif request.method == "GET":
+            return super().get(request, *args, **kwargs)
+        elif request.method == "POST":
+            return super().post(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object(kwargs)
+        return self._http_method(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object(kwargs)
+        return self._http_method(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        # Set the new owner and carry on.
+        setattr(self.object, self.owner_field, form.cleaned_data['user'])
+        self.object.save()
+        return super().form_valid(form)
 
 
 class PublishView(View):
@@ -247,6 +322,12 @@ class CategoryPublishView(ContentEditorMixin, PublishView):
     slug_field = 'title_slug'
 
 
+class CategoryTransferView(BaseTransferView):
+    model = Category
+    pk_field = "pk"
+    owner_field = "created_by"
+
+
 class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     model = Category
     form_class = CategoryForm
@@ -321,6 +402,12 @@ class GoalDuplicateView(GoalCreateView):
 class GoalPublishView(ContentEditorMixin, PublishView):
     model = Goal
     slug_field = 'title_slug'
+
+
+class GoalTransferView(BaseTransferView):
+    model = Goal
+    pk_field = "pk"
+    owner_field = "created_by"
 
 
 class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
@@ -475,6 +562,12 @@ class BehaviorPublishView(ContentEditorMixin, PublishView):
     slug_field = 'title_slug'
 
 
+class BehaviorTransferView(BaseTransferView):
+    model = Behavior
+    pk_field = "pk"
+    owner_field = "created_by"
+
+
 class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     model = Behavior
     slug_field = "title_slug"
@@ -610,6 +703,12 @@ class ActionDuplicateView(ActionCreateView):
         except self.model.DoesNotExist:
             pass
         return initial
+
+
+class ActionTransferView(BaseTransferView):
+    model = Action
+    pk_field = "pk"
+    owner_field = "created_by"
 
 
 class ActionPublishView(ContentEditorMixin, PublishView):

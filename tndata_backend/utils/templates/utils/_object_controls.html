@@ -28,6 +28,10 @@
       <a href="{{ object.get_delete_url }}">
       <i class="fa fa-trash-o"></i> Delete</a></li>
   {% endif %}
+  {% if can_transfer %}
+    <li><a href="{{ object.get_transfer_url }}">
+      <i class="fa fa-exchange"></i> Transfer</a></li>
+  {% endif %}
   <li>
     <a href="#" data-reveal-id="shareModal">
       <i class="fa fa-share-alt"></i> Share</a>

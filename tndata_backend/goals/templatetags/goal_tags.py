@@ -23,6 +23,7 @@ def goal_object_controls(context, obj):
     # - can_update
     # - can_delete
     # - can_duplicate
+    # - can_transfer
     if not hasattr(obj, "is_pending"):
         if is_editor:  # assume no other attrs
             result['can_update'] = True
@@ -41,6 +42,12 @@ def goal_object_controls(context, obj):
         else:
             result['can_duplicate'] = True
 
+    # Transfer permissions.
+    result['can_transfer'] = any([
+        user.is_staff,
+        user.is_superuser,
+        obj.created_by == user,
+    ])
     return result
 
 

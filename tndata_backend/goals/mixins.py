@@ -358,6 +358,9 @@ class URLMixin:
     def get_absolute_url(self):
         return reverse(self._view('detail'), args=self._url_args())
 
+    def get_transfer_url(self):
+        return reverse(self._view('transfer'), args=self._url_args())
+
     def get_publish_url(self):
         return reverse(self._view('publish'), args=self._url_args())
 

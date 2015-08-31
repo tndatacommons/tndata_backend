@@ -80,6 +80,11 @@ urlpatterns = patterns('',
         name='action-publish'
     ),
     url(
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/transfer/$',
+        views.ActionTransferView.as_view(),
+        name='action-transfer'
+    ),
+    url(
         r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
         views.ActionUpdateView.as_view(),
         name='action-update'
@@ -110,6 +115,11 @@ urlpatterns = patterns('',
         r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.BehaviorPublishView.as_view(),
         name='behavior-publish'
+    ),
+    url(
+        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/transfer/$',
+        views.BehaviorTransferView.as_view(),
+        name='behavior-transfer'
     ),
     url(
         r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
@@ -166,6 +176,11 @@ urlpatterns = patterns('',
         name='goal-publish'
     ),
     url(
+        r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/transfer/$',
+        views.GoalTransferView.as_view(),
+        name='goal-transfer'
+    ),
+    url(
         r'^goals/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
         views.GoalUpdateView.as_view(),
         name='goal-update'
@@ -201,6 +216,11 @@ urlpatterns = patterns('',
         r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.CategoryPublishView.as_view(),
         name='category-publish'
+    ),
+    url(
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/transfer/$',
+        views.CategoryTransferView.as_view(),
+        name='category-transfer'
     ),
     url(
         r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',

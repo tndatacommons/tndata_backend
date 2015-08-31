@@ -1,0 +1,37 @@
+{% extends "goals/base.html" %}
+{% load goal_tags %}
+{% load goal_filters %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block title %}Transfer {{ object }}{% endblock %}
+
+
+{% block content %}
+<div class="row">
+  <div class="large-8 large-offset-2 small-12 columns">
+    <h1>Transfer {{ object }}</h1>
+
+    <p><strong>Current Owner</strong>: {{ owner }}</p>
+    <form action="{{ object.get_transfer_url }}" method="post">
+      {% csrf_token %}
+      {{ form }}
+
+      <hr/>
+      <ul class="button-group">
+        <li><button class="button secondary" type="reset">Cancel</button></li>
+        <li><button type="submit">Transfer</button></li>
+      </ul>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript">
+  $("button[type=reset]").click(function() {
+    window.location="{{object.get_absolute_url}}";
+  });
+  </script>
+{% endblock %}
