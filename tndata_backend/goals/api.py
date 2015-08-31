@@ -726,10 +726,14 @@ class UserActionViewSet(mixins.CreateModelMixin,
     permission_classes = [IsOwner]
 
     def get_queryset(self):
+        # First, only expose content in Categories/Packages that are either
+        # public or in which we've accepted the terms/consent form.
+        self.queryset = models.UserAction.objects.accepted_or_public(self.request.user)
+
+        # Now, filter on category or goal if necessary
         goal = self.request.GET.get('goal', None)
         behavior = self.request.GET.get('behavior', None)
         action = self.request.GET.get('action', None)
-        self.queryset = self.queryset.filter(user__id=self.request.user.id)
 
         if goal is not None and goal.isnumeric():
             self.queryset = self.queryset.filter(action__behavior__goals__id=goal)

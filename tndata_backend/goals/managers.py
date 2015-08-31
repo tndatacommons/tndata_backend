@@ -54,7 +54,7 @@ class UserGoalManager(models.Manager):
 class UserBehaviorManager(models.Manager):
 
     def accepted_or_public(self, user):
-        """Return UserBehavior instances for goals that are in public or
+        """Return UserBehavior instances for behaviors that are in public or
         accepted categories/packages.
 
         """
@@ -70,6 +70,21 @@ class UserBehaviorManager(models.Manager):
 
 
 class UserActionManager(models.Manager):
+
+    def accepted_or_public(self, user):
+        """Return UserAction instances for actions that are in public or
+        accepted categories/packages.
+
+        """
+        # The user's selected Action instances
+        qs = self.filter(user=user)
+
+        # Category IDs that have NOT been accepted by the user
+        ids = user.packageenrollment_set.filter(accepted=False)
+        ids = ids.values_list("category", flat=True)
+
+        # Result: Exclude those un-accepted categories
+        return qs.exclude(action__behavior__goals__categories__in=ids)
 
     def with_custom_triggers(self):
         """Returns a queryset of UserAction objets whose custom_trigger field

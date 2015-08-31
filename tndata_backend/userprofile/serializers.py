@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from goals.models import (
+    UserAction,
     UserBehavior,
     UserCategory,
     UserGoal,
@@ -29,11 +30,8 @@ class UserSerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField(read_only=True)
     goals = serializers.SerializerMethodField(read_only=True)
     behaviors = serializers.SerializerMethodField(read_only=True)
-    actions = UserActionSerializer(
-        many=True,
-        source="useraction_set",
-        read_only=True,
-    )
+    actions = serializers.SerializerMethodField(read_only=True)
+
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
 
@@ -60,6 +58,11 @@ class UserSerializer(serializers.ModelSerializer):
     def get_behaviors(self, obj):
         qs = UserBehavior.objects.accepted_or_public(obj)
         serialized = UserBehaviorSerializer(qs, many=True)
+        return serialized.data
+
+    def get_actions(self, obj):
+        qs = UserAction.objects.accepted_or_public(obj)
+        serialized = UserActionSerializer(qs, many=True)
         return serialized.data
 
     def validate_username(self, value):
