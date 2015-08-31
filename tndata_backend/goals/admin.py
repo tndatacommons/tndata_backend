@@ -245,13 +245,23 @@ admin.site.register(models.Action, ActionAdmin)
 
 class UserCategoryAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'user', 'category', 'created_on'
+        'user_email', 'user_first', 'user_last', 'user', 'category',
+        'created_on', 'accepted', 'enrolled',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'category__title', 'category__id'
     )
     raw_id_fields = ("user", "category")
+
+    def accepted(self, obj):
+        values = obj.category.packageenrollment_set.filter(user=obj.user)
+        return all(values.values_list("accepted", flat=True))
+
+    def enrolled(self, obj):
+        items = obj.category.packageenrollment_set.filter(user=obj.user)
+        results = [item.enrolled_on.isoformat() for item in items]
+        return ", ".join(results)
 
 admin.site.register(models.UserCategory, UserCategoryAdmin)
 
