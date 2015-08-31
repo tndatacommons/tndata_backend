@@ -1,5 +1,5 @@
 from django import template
-from goals.models import Action
+from goals.models import Category, Goal, Action, Behavior
 from utils.templatetags.util_tags import object_controls
 
 register = template.Library()
@@ -42,12 +42,13 @@ def goal_object_controls(context, obj):
         else:
             result['can_duplicate'] = True
 
-    # Transfer permissions.
-    result['can_transfer'] = any([
-        user.is_staff,
-        user.is_superuser,
-        obj.created_by == user,
-    ])
+    # Transfers only apply to Content instances.
+    if obj.__class__ in [Category, Goal, Action, Behavior]:
+        result['can_transfer'] = any([
+            user.is_staff,
+            user.is_superuser,
+            hasattr(obj, "created_by") and obj.created_by == user,
+        ])
     return result
 
 
