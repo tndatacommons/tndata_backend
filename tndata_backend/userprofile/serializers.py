@@ -4,6 +4,9 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from goals.models import (
+    UserCategory,
+)
 from goals.serializers import (
     UserActionSerializer,
     UserBehaviorSerializer,
@@ -31,11 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
         source="useraction_set",
         read_only=True,
     )
-    categories = UserCategorySerializer(
-        many=True,
-        source="usercategory_set",
-        read_only=True
-    )
+    categories = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
 
@@ -48,6 +47,11 @@ class UserSerializer(serializers.ModelSerializer):
             'needs_onboarding',
         )
         read_only_fields = ("id", "date_joined", )
+
+    def get_categories(self, obj):
+        qs = UserCategory.objects.accepted_or_public(obj)
+        serialized = UserCategorySerializer(qs, many=True)
+        return serialized.data
 
     def validate_username(self, value):
         User = get_user_model()

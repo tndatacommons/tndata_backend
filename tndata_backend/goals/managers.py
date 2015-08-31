@@ -14,6 +14,25 @@ from .settings import (
 from utils import user_utils
 
 
+class UserCategoryManager(models.Manager):
+
+    def accepted_or_public(self, user):
+        """Return UserCategory instances for Categories that are,
+        1. Public (the user opted into)
+        2. Packages that the user has accepted.
+
+        """
+        # The user's UserCategory instances
+        qs = self.filter(user=user)
+
+        # Category IDs that have NOT been accepted by the user
+        ids = user.packageenrollment_set.filter(accepted=False)
+        ids = ids.values_list("category", flat=True)
+
+        # Result: Exclude those un-accepted categories
+        return qs.exclude(category__id__in=ids)
+
+
 class UserActionManager(models.Manager):
 
     def with_custom_triggers(self):

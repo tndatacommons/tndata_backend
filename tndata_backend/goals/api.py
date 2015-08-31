@@ -951,7 +951,7 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     serializer_class = serializers.UserCategorySerializer
 
     def get_queryset(self):
-        return self.queryset.filter(user__id=self.request.user.id)
+        return models.UserCategory.objects.accepted_or_public(user=self.request.user)
 
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing

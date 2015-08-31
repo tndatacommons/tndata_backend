@@ -35,6 +35,7 @@ from .managers import (
     PackageEnrollmentManager,
     TriggerManager,
     UserActionManager,
+    UserCategoryManager,
     WorkflowManager
 )
 from .mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
@@ -1308,6 +1309,8 @@ class UserCategory(models.Model):
             return qs.latest().current_score
         except CategoryProgress.DoesNotExist:
             return 0.0
+
+    objects = UserCategoryManager()
 
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")
