@@ -22,6 +22,9 @@ class UserCategoryManager(models.Manager):
         2. Packages that the user has accepted.
 
         """
+        if not user.is_authenticated():
+            return self.get_queryset().none()
+
         # The user's UserCategory instances
         qs = self.filter(user=user)
 
@@ -40,6 +43,9 @@ class UserGoalManager(models.Manager):
         categories/packages.
 
         """
+        if not user.is_authenticated():
+            return self.get_queryset().none()
+
         # The user's selected Goal instances
         qs = self.filter(user=user)
 
@@ -58,6 +64,9 @@ class UserBehaviorManager(models.Manager):
         accepted categories/packages.
 
         """
+        if not user.is_authenticated():
+            return self.get_queryset().none()
+
         # The user's selected Behavior instances
         qs = self.filter(user=user)
 
@@ -76,6 +85,9 @@ class UserActionManager(models.Manager):
         accepted categories/packages.
 
         """
+        if not user.is_authenticated():
+            return self.get_queryset().none()
+
         # The user's selected Action instances
         qs = self.filter(user=user)
 
