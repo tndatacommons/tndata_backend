@@ -1725,3 +1725,21 @@ class PackageEnrollment(models.Model):
                 pass
 
     objects = PackageEnrollmentManager()
+
+
+# TODO: Uncomment This when notifications for packaged content is ready
+#@receiver(post_save, sender=PackageEnrollment, dispatch_uid="notifiy_for_new_package")
+#def notify_for_new_package(sender, instance, created, **kwargs):
+#    """Create and schedule a GCMMEssage for users that have a device registered,
+#    once they've been enrolled in a new package.
+#
+#    """
+#    if created and instance.user.gcmdevice_set.exists():
+#        from notifications.models import GCMMessage
+#        GCMMessage.objects.create(
+#            user=instance.user,
+#            title="You've been enrolled.",
+#            message="Welcome to {0}".format(instance.category.title),
+#            deliver_on=timezone.now(),
+#            obj=instance,
+#        )
