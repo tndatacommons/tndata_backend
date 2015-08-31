@@ -66,6 +66,11 @@ class ContentPermissions:
         return perms
 
     @property
+    def admin_codenames(self):
+        """Just the codenames for admins."""
+        return [p.split(".")[-1] for p in self.admins]
+
+    @property
     def authors(self):
         """permissions for authors"""
         perms = self.viewers
@@ -73,6 +78,11 @@ class ContentPermissions:
             perms.append('goals.add_{0}'.format(obj))
             perms.append('goals.change_{0}'.format(obj))
         return perms
+
+    @property
+    def author_codenames(self):
+        """Just the codenames for authors."""
+        return [p.split(".")[-1] for p in self.authors]
 
     @property
     def editors(self):
@@ -85,9 +95,19 @@ class ContentPermissions:
         return perms
 
     @property
+    def editor_codenames(self):
+        """Just the codenames for editors."""
+        return [p.split(".")[-1] for p in self.editors]
+
+    @property
     def viewers(self):
         """permissions for viewers"""
         return ['goals.view_{0}'.format(obj) for obj in self._viewer_objects]
+
+    @property
+    def viewer_codenames(self):
+        """Just the codenames for viewers."""
+        return [p.split(".")[-1] for p in self.viewers]
 
 ContentPermissions = ContentPermissions()  # make it act like a monad.
 

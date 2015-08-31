@@ -145,6 +145,21 @@ class BehaviorForm(forms.ModelForm):
         }
 
 
+def _authors():
+    """Returns a QuerySet of Users that are Content Authors.
+
+    Those users are either staff or have the ContentAuthor ContentPermissions
+    (either permissions directory or through a Group membership).
+
+    """
+    User = get_user_model()
+    return User.objects.filter(
+        Q(user_permissions__codename__in=ContentPermissions.author_codenames) |
+        Q(groups__permissions__codename__in=ContentPermissions.author_codenames) |
+        Q(is_staff=True)
+    ).distinct()
+
+
 def _contributors():
     """Returns a QuerySet of Users that can be Package Contributors.
 
@@ -163,6 +178,20 @@ def _contributors():
 class ContributorChoiceField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
             return obj.get_full_name()
+
+
+class AuthorChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+            return obj.get_full_name()
+
+
+class ContentAuthorForm(forms.Form):
+    """A form that lets us select a content author. This is used in the Transfer
+    view, to move ownership from one author to another."""
+    user = AuthorChoiceField(
+        queryset=_authors(),
+        help_text="Select the new owner for this item."
+    )
 
 
 class CategoryForm(forms.ModelForm):
