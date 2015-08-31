@@ -1057,6 +1057,20 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
       `html_consent_more`.
     * `goals`: an array of goals that are included in this category / package
 
+    ## Accepting the Enrollment
+
+    When users are enrolled into packaged content, they must indeicate their
+    acceptance of the _consent_ (`consent_summary`, `consent_more`). To
+    update a user's acceptance, send a PUT request to the detail endpoint
+    for a PackentEnrollment.
+
+    PUT to `/api/users/packages/{id}/` with:
+
+        {'accepted': True}
+
+    This will indicate they've accepted the terms of the enrollment, and the
+    packaged content will be available with the rest of the content.
+
     ----
 
     """
