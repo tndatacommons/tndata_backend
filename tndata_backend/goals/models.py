@@ -36,6 +36,7 @@ from .managers import (
     TriggerManager,
     UserActionManager,
     UserCategoryManager,
+    UserGoalManager,
     WorkflowManager
 )
 from .mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
@@ -1032,6 +1033,8 @@ class UserGoal(models.Model):
             return qs.latest().current_score
         except GoalProgress.DoesNotExist:
             return 0.0
+
+    objects = UserGoalManager()
 
 
 @receiver(pre_delete, sender=UserGoal, dispatch_uid="del_goal_behaviors")

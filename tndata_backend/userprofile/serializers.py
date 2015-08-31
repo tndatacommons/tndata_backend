@@ -6,6 +6,7 @@ from rest_framework import serializers
 
 from goals.models import (
     UserCategory,
+    UserGoal,
 )
 from goals.serializers import (
     UserActionSerializer,
@@ -23,7 +24,9 @@ class UserSerializer(serializers.ModelSerializer):
     needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
     username = serializers.CharField(required=False)
     timezone = serializers.ReadOnlyField(source='userprofile.timezone')
-    goals = UserGoalSerializer(many=True, source='usergoal_set', read_only=True)
+
+    categories = serializers.SerializerMethodField(read_only=True)
+    goals = serializers.SerializerMethodField(read_only=True)
     behaviors = UserBehaviorSerializer(
         many=True,
         source="userbehavior_set",
@@ -34,7 +37,6 @@ class UserSerializer(serializers.ModelSerializer):
         source="useraction_set",
         read_only=True,
     )
-    categories = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
 
@@ -51,6 +53,11 @@ class UserSerializer(serializers.ModelSerializer):
     def get_categories(self, obj):
         qs = UserCategory.objects.accepted_or_public(obj)
         serialized = UserCategorySerializer(qs, many=True)
+        return serialized.data
+
+    def get_goals(self, obj):
+        qs = UserGoal.objects.accepted_or_public(obj)
+        serialized = UserGoalSerializer(qs, many=True)
         return serialized.data
 
     def validate_username(self, value):

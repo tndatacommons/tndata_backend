@@ -364,7 +364,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     permission_classes = [IsOwner]
 
     def get_queryset(self):
-        return self.queryset.filter(user__id=self.request.user.id)
+        return models.UserGoal.objects.accepted_or_public(user=self.request.user)
 
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
