@@ -35,6 +35,7 @@ from .managers import (
     PackageEnrollmentManager,
     TriggerManager,
     UserActionManager,
+    UserBehaviorManager,
     UserCategoryManager,
     UserGoalManager,
     WorkflowManager
@@ -1126,6 +1127,8 @@ class UserBehavior(models.Model):
         """
         uids = self.user.useraction_set.values_list('action_id', flat=True)
         return self.behavior.action_set.filter(id__in=uids)
+
+    objects = UserBehaviorManager()
 
 
 @receiver(pre_delete, sender=UserBehavior, dispatch_uid="del_behavior_actions")

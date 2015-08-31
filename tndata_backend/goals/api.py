@@ -505,6 +505,11 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     permission_classes = [IsOwner]
 
     def get_queryset(self):
+        # First, only expose content in Categories/Packages that are either
+        # public or in which we've accepted the terms/consent form.
+        self.queryset = models.UserBehavior.objects.accepted_or_public(self.request.user)
+
+        # Now, filter on category or goal if necessary
         goal = self.request.GET.get('goal', None)
         self.queryset = self.queryset.filter(user__id=self.request.user.id)
 
