@@ -11,6 +11,7 @@ from .. models import (
     BehaviorProgress,
     Category,
     Goal,
+    PackageEnrollment,
     Trigger,
     UserGoal,
     UserBehavior,
@@ -1857,3 +1858,121 @@ class TestBehaviorProgressAPI(APITestCase):
         )
         response = self.client.put(self.detail_url, self.payload)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TestPackageEnrollmentAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.admin = User.objects.create(
+            username="admin",
+            email="admin@example.com",
+        )
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.category = Category.objects.create(
+            order=1,
+            title="Test Cat",
+            created_by=self.admin,
+            consent_summary="Summary",
+            consent_more="More",
+            packaged_content=True,
+        )
+        self.category.package_contributors.add(self.admin)
+        self.category.publish()
+        self.category.save()
+
+        self.goal = Goal.objects.create(title="Test Goal")
+        self.goal.categories.add(self.category)
+        self.goal.publish()
+
+        self.package = PackageEnrollment.objects.create(
+            user=self.user,
+            category=self.category,
+            enrolled_by=self.admin,
+        )
+        self.package.goals.add(self.goal)
+
+        self.url = reverse('packageenrollment-list')
+        self.detail_url = reverse(
+            'packageenrollment-detail',
+            args=[self.package.id]
+        )
+        self.payload = {'accepted': True}
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id__in=[self.user.id, self.admin.id]).delete()
+        Category.objects.filter(id=self.category.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+
+    def test_get_list_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_post_list_unauthenticated(self):
+        """Creating objects via the api is not allowed."""
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_post_list_authenticated(self):
+        """Creating objects via the api is not allowed."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_get_detail_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_detail_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['id'], self.package.id)
+        self.assertEqual(response.data['user'], self.user.id)
+        self.assertEqual(response.data['accepted'], False)
+
+        # NOTE: the api is supposed to format in ISO format, but it differs
+        # slightly, becuase the +00:00 is omitted.
+        updated = self.package.updated_on.isoformat().replace("+00:00", "Z")
+        self.assertEqual(response.data['updated_on'], updated)
+        enrolled = self.package.enrolled_on.isoformat().replace("+00:00", "Z")
+        self.assertEqual(response.data['enrolled_on'], enrolled)
+        self.assertEqual(response.data['category']['id'], self.category.id)
+        self.assertEqual(response.data['goals'][0]['id'], self.goal.id)
+
+    def test_put_detail_unauthenticated(self):
+        """Ensure updates are not allowed when unauthenticated."""
+        response = self.client.put(self.detail_url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_put_detail_updates_accept(self):
+        """Updating PackageEnrollment should work when authenticated."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(self.detail_url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        package = PackageEnrollment.objects.get(pk=self.package.id)
+        self.assertTrue(package.accepted)

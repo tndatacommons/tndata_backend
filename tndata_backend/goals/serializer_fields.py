@@ -256,3 +256,25 @@ class SimpleTriggerField(serializers.RelatedField):
             'recurrences': value.serialized_recurrences(),
             'recurrences_display': value.recurrences_as_text(),
         }
+
+
+class PackagedCategoryField(serializers.RelatedField):
+    """A representation of a "packaged" `Category`. This is a read-only field,
+    very similar to the SimpleCategoryField, but this one also includes the
+    category's consent fields."""
+
+    def to_internal_value(self, data):
+        return _get_object(Category, data)
+
+    def to_representation(self, value):
+        return {
+            'id': value.id,
+            'title': value.title,
+            'title_slug': value.title_slug,
+            'description': value.description,
+            'html_description': value.rendered_description,
+            'consent_summary': value.consent_summary,
+            'consent_more': value.consent_more,
+            'html_consent_summary': value.rendered_consent_summary,
+            'html_consent_more': value.rendered_consent_more,
+        }

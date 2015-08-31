@@ -6,6 +6,7 @@ from . models import (
     BehaviorProgress,
     Category,
     Goal,
+    PackageEnrollment,
     Trigger,
     UserAction,
     UserGoal,
@@ -20,6 +21,7 @@ from . serializer_fields import (
     NullableCharField,
     NullableDateField,
     NullableTimeField,
+    PackagedCategoryField,
     SimpleActionField,
     SimpleBehaviorField,
     SimpleCategoryField,
@@ -317,3 +319,16 @@ class UserCategorySerializer(serializers.ModelSerializer):
         """Return the number of user-selected goals that are children of this
         Category."""
         return obj.get_user_goals().count()
+
+
+class PackageEnrollmentSerializer(serializers.ModelSerializer):
+    """A Serializer for `PackageEnrollment`."""
+    category = PackagedCategoryField(queryset=Category.objects.all())
+    goals = GoalListField(many=True, read_only=True)
+
+    class Meta:
+        model = PackageEnrollment
+        fields = (
+            'id', 'user', 'accepted', 'updated_on', 'enrolled_on',
+            'category', 'goals',
+        )

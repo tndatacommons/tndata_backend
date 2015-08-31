@@ -14,6 +14,7 @@ from goals.api import (
     BehaviorProgressViewSet,
     CategoryViewSet,
     GoalViewSet,
+    PackageEnrollmentViewSet,
     TriggerViewSet,
     UserActionViewSet,
     UserBehaviorViewSet,
@@ -68,6 +69,7 @@ router.register(r'users/behaviors/progress', BehaviorProgressViewSet)
 router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/goals', UserGoalViewSet)
+router.register(r'users/packages', PackageEnrollmentViewSet)
 
 # ViewSets from the notifications app.
 router.register(r'notifications/devices', GCMDeviceViewSet)

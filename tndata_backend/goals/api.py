@@ -853,7 +853,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
                 useraction=useraction
             )
             return Response({'created': uca.id})
-        except Exception as e:
+        except Exception:
             return Response(
                 {'error': "Invalid Request"},
                 status=status.HTTP_400_BAD_REQUEST
@@ -1025,3 +1025,47 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
             except (models.UserBehavior.DoesNotExist, IndexError):
                 pass  # Creating will fail
         return super().create(request, *args, **kwargs)
+
+
+class PackageEnrollmentViewSet(mixins.ListModelMixin,
+                               mixins.RetrieveModelMixin,
+                               mixins.UpdateModelMixin,
+                               viewsets.GenericViewSet):
+    """ This endpoint allows a user retreive and update their enrollment
+    information for "packaged content".
+
+    GET requests will return the following information for an authenticated
+    user:
+
+    * `user`: ID of the authenticated user.
+    * `accepted`: Whether or not the user has accepted the enrollment.
+    * `updated_on`: Date at which this enrollment was last updated.
+    * `enrolled_on`: Date on which the user was enrolled.
+    * `category`: the category / package in which the user is enrolled. This
+      representation of a category is slightly different from others in the API,
+      because it includes both markdown and html versions of consent fields:
+      `consent_summary`, `html_consent_summary`, `consent_more`, and
+      `html_consent_more`.
+    * `goals`: an array of goals that are included in this category / package
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.PackageEnrollment.objects.all()
+    serializer_class = serializers.PackageEnrollmentSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def update(self, request, *args, **kwargs):
+        """ONLY allow the user to change their acceptance of this item.
+
+        * accept: A Boolean value.
+
+        """
+        obj = self.get_object()
+        request.data['user'] = request.user.id
+        request.data['category'] = obj.category.id
+        return super().update(request, *args, **kwargs)
