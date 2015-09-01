@@ -1,3 +1,5 @@
+from pprint import pformat
+
 from django.contrib import admin
 from django.template.defaultfilters import mark_safe
 from django.utils import timezone
@@ -40,22 +42,36 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'message_id', 'title', 'message'
     ]
-    exclude = ('response_text', )
+    exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
-        'message_id', 'success', 'response_code', 'gcm_response', 'expire_on',
-        'registration_ids', 'created_on',
+        'message_id', 'success', 'response_code', 'gcm_response',
+        'pretty_response_data', 'delivered_to', 'registered_devices',
+        'created_on', 'expire_on',
     )
     actions = ['send_notification', 'expire_messages']
 
-    def registration_ids(self, obj):
-        """List all the registration IDs for the message's user."""
+    def pretty_response_data(self, obj):
+        """pretty-printed response data"""
+        data = pformat(obj.response_data)
+        return mark_safe("<pre>{0}</pre>".format(data))
+    pretty_response_data.short_description = "GCM Response Data"
+    pretty_response_data.allow_tags = True
+
+    def delivered_to(self, obj):
+        """This is the list of registration_ids that we get back from GCM
+        after sending the message"""
+        return mark_safe("<pre>{0}</pre>".format(obj.registration_ids))
+    delivered_to.short_description = "Delivered to"
+    delivered_to.allow_tags = True
+
+    def registered_devices(self, obj):
+        """List all the registration IDs owned by the user."""
         if obj.user:
-            ids = obj.user.gcmdevice_set.values_list("registration_id", flat=True)
-            ids = "\n".join(ids)
+            ids = "\n".join(obj.registered_devices)
             return mark_safe("<pre>{0}</pre>".format(ids))
         return ''
-    registration_ids.short_description = "Registration IDs"
-    registration_ids.allow_tags = True
+    registered_devices.short_description = "Registered Devices"
+    registered_devices.allow_tags = True
 
     def gcm_response(self, obj):
         """Formatting for the response_text that GCM sets."""
