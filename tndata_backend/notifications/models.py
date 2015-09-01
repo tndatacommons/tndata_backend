@@ -103,21 +103,55 @@ class GCMMessage(models.Model):
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
 
-    def snooze(self, hours=None, save=True):
-        """Reset the message's deliver_on date."""
+    def _set_deliver_on(self, dt):
+        """Set a new deliver on date using the given datetime object. If
+        the given datetime object is naive, it will be converted to the user's
+        timezone (if available), then converted to UTC and stored. This method
+        will set the value of the `devliver_on` field.
+
+        Returns True if the field was updated.
+
+        """
+        if timezone.is_naive(dt):
+            # Convert to user's timezone if possible.
+            if self.user:
+                tz = pytz.timezone(self.user.userprofile.timezone)
+                dt = timezone.make_aware(dt, timezone=tz)
+
+            # Convert to UTC before saving.
+            dt = dt.astimezone(timezone.utc)
+        self.deliver_on = dt
+        return True
+
+    def _snooze_hours(self, hours):
+        """If we're snoozing a set number of hours, this method will calculate
+        that and update the `deliver_on` field appropriately.
+
+        Returns True if the field was updated.
+
+        """
+        changed = False
         if hours is not None and isinstance(hours, list) and len(hours) > 0:
             hours = hours[0]  # if it's a list, pluck the first element
-
         if hours is not None and isinstance(hours, str):
             try:
                 hours = int(hours)  # convert to an int
             except ValueError:
                 hours = None
-
         if hours:
             self.deliver_on = timezone.now() + timedelta(hours=hours)
-            if save:
-                self.save()
+            changed = True
+        return changed
+
+    def snooze(self, hours=None, new_datetime=None, save=True):
+        """Reset the message's deliver_on date."""
+        changed = False
+        if new_datetime:
+            changed = self._set_deliver_on(new_datetime)
+        elif hours:
+            changed = self._snooze_hours(hours)
+        if changed and save:
+            self.save()
 
     def _set_message_id(self):
         """This is an attempt to ensure we don't send duplicate messages to
