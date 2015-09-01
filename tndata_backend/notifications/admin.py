@@ -14,6 +14,7 @@ class GCMDeviceAdmin(admin.ModelAdmin):
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'registration_id', 'device_name',
     ]
+    readonly_fields = ('device_name', 'registration_id')
 
     def user_username(self, obj):
         return obj.user.username
@@ -38,6 +39,10 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'message_id', 'title', 'message'
     ]
+    readonly_fields = (
+        'message_id', 'success', 'response_code', 'response_text', 'expire_on',
+        'created_on',
+    )
     actions = ['send_notification', 'expire_messages']
 
     def message_teaser(self, obj):
