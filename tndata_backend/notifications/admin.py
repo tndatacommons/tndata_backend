@@ -46,9 +46,26 @@ class GCMMessageAdmin(admin.ModelAdmin):
     readonly_fields = (
         'success', 'response_code', 'gcm_response',
         'pretty_response_data', 'delivered_to', 'registered_devices',
-        'created_on', 'expire_on',
+        'gcm_diagnostics', 'created_on', 'expire_on',
     )
     actions = ['send_notification', 'expire_messages']
+
+    def gcm_diagnostics(self, obj):
+        """Print links to the GCM Diagnostics page."""
+        output = "<p>n/a</p>"
+        if obj.response_data and len(obj.response_data) > 0:
+            output = "<ul>{0}</ul>"
+            items = []
+            for resp in obj.response_data:
+                for d in resp.get('results', []):
+                    message_id = d.get('message_id', None)
+                    if message_id:
+                        items.append('<li>{0}</li>'.format(message_id))
+            if len(items) > 0:
+                output = output.format("\n".join(items))
+        return mark_safe(output)
+    gcm_diagnostics.short_description = "GCM Message IDs"
+    gcm_diagnostics.allow_tags = True
 
     def pretty_response_data(self, obj):
         """pretty-printed response data"""
