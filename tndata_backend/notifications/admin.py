@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.template.defaultfilters import mark_safe
 from django.utils import timezone
 
 from . import models
@@ -39,11 +40,28 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'message_id', 'title', 'message'
     ]
+    exclude = ('response_text', )
     readonly_fields = (
-        'message_id', 'success', 'response_code', 'response_text', 'expire_on',
-        'created_on',
+        'message_id', 'success', 'response_code', 'gcm_response', 'expire_on',
+        'registration_ids', 'created_on',
     )
     actions = ['send_notification', 'expire_messages']
+
+    def registration_ids(self, obj):
+        """List all the registration IDs for the message's user."""
+        if obj.user:
+            ids = obj.user.gcmdevice_set.values_list("registration_id", flat=True)
+            ids = "\n".join(ids)
+            return mark_safe("<pre>{0}</pre>".format(ids))
+        return ''
+    registration_ids.short_description = "Registration IDs"
+    registration_ids.allow_tags = True
+
+    def gcm_response(self, obj):
+        """Formatting for the response_text that GCM sets."""
+        return mark_safe("<pre>{0}</pre>".format(obj.response_text))
+    gcm_response.short_description = "GCM Response"
+    gcm_response.allow_tags = True
 
     def message_teaser(self, obj):
         return "{0}...".format(obj.message[:32])
