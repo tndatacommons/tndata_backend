@@ -94,17 +94,18 @@ class TestGCMMessageManager(TestCase):
 
     def test_create_fails(self):
         """Ensure that an attempt to create a duplicate returns None"""
-        # NOTE: message_id should be unique: it hashes the content-type and
-        # object_id with a user's id, so a duplicate message must be tied to
-        # a existing object
-        #
-        # So a Duplicate user and a Duplicate related object, should force a
-        # duplicate message_id
+        # GCMMessage objects are unique on these fields, together:
+        # - user
+        # - title
+        # - message
+        # - deliver_on
+        # - object_id
+        # - content_type
         msg = GCMMessage.objects.create(
             self.user,
-            "READY",
-            "This is ready for delivery",
-            datetime_utc(1999, 2, 1, 13, 0),
-            self.related_obj,
+            self.ready_message.title,
+            self.ready_message.message,
+            self.ready_message.deliver_on,
+            self.ready_message.content_object,
         )
         self.assertIsNone(msg)

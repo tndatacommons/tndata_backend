@@ -56,7 +56,7 @@ def log_message(gcm_message, event, tfmt="%Y-%m-%d %H:%I:%S%z"):
         )
         message = message.format(
             event=event,
-            id=gcm_message.message_id,
+            id=gcm_message.id,
             created=gcm_message.created_on.strftime(tfmt),
             deliver=gcm_message.deliver_on.strftime(tfmt),
             title=gcm_message.title

@@ -20,6 +20,6 @@ class GCMMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = GCMMessage
         fields = (
-            'id', 'user', 'message_id', 'content', 'success', 'response_code',
+            'id', 'user', 'content', 'success', 'response_code',
             'deliver_on', 'created_on',
         )

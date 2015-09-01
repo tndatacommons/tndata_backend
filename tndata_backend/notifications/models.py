@@ -2,8 +2,7 @@ import json
 import logging
 import pytz
 
-from datetime import datetime, timedelta
-from hashlib import md5
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -61,12 +60,6 @@ class GCMMessage(models.Model):
         settings.AUTH_USER_MODEL,
         help_text="The owner of this message."
     )
-    message_id = models.CharField(
-        max_length=32,
-        db_index=True,
-        blank=True,  # Generated automatcially
-        help_text="Unique ID for this message."
-    )
     title = models.CharField(max_length=256, default="")
     message = models.CharField(max_length=256, default="")
 
@@ -104,11 +97,13 @@ class GCMMessage(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.message_id
+        return "{0} on {1}".format(self.title, self.deliver_on)
 
     class Meta:
         ordering = ['-success', 'deliver_on', '-created_on']
-        unique_together = ("user", "message_id")
+        unique_together = (
+            "user", "title", "message", "deliver_on", "object_id", "content_type"
+        )
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
 
@@ -162,26 +157,6 @@ class GCMMessage(models.Model):
         if changed and save:
             self.save()
 
-    def _set_message_id(self):
-        """This is an attempt to ensure we don't send duplicate messages to
-        a user. This hashes the content type & content object's ID (if available)
-        (which should always have consistent title/messages) with the user.
-
-        If there's no related content object, this will hash the current
-        date & time for the message id.
-
-        """
-        content_info = datetime.utcnow().strftime("%c")
-        if self.content_object:
-            # If we have additional content, use taht as well.
-            content_info = "{0}-{1}-{2}-{3}".format(
-                content_info,
-                self.content_type.name,
-                self.object_id,
-                self.user.id
-            )
-        self.message_id = md5(content_info.encode("utf8")).hexdigest()
-
     def _localize(self):
         """Ensure times are stored in UTC"""
         if self.deliver_on and self.deliver_on.tzinfo is None:
@@ -191,8 +166,6 @@ class GCMMessage(models.Model):
 
     def save(self, *args, **kwargs):
         self._localize()
-        if not self.message_id:
-            self._set_message_id()
         super(GCMMessage, self).save(*args, **kwargs)
 
     def _get_gcm_client(self):

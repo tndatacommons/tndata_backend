@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from hashlib import md5
 from json import dumps
 from unittest.mock import Mock, patch
 
@@ -89,20 +88,10 @@ class TestGCMMessage(TestCase):
         )
 
     def test__str__(self):
-        with patch("notifications.models.datetime") as mock_dt:
-            now = datetime_utc(1234, 1, 2, 11, 30)
-            nowstring = now.strftime("%c")
-            mock_dt.utcnow.return_value = now
-            content_info = "{0}-{1}-{2}-{3}".format(
-                nowstring,
-                self.msg.content_type.name,
-                self.msg.object_id,
-                self.user.id
-            )
-            expected = md5(content_info.encode("utf8")).hexdigest()
-            self.msg._set_message_id()  # ensure it's set correctly
-            actual = "{}".format(self.msg)
-            self.assertEqual(expected, actual)
+        self.assertEqual(
+            self.msg.__str__(),
+            "{0} on {1}".format(self.msg.title, self.msg.deliver_on)
+        )
 
     def test_snooze_hours(self):
         """Ensure deliver_on gets updated correctly when we snooze for an hour"""
@@ -136,34 +125,6 @@ class TestGCMMessage(TestCase):
             expected = datetime_utc(2015, 9, 1, 15, 30)
         self.assertEqual(self.msg.deliver_on, expected)
 
-    def test__set_message_id(self):
-        with patch("notifications.models.datetime") as mock_dt:
-            now = datetime_utc(1234, 1, 2, 11, 30)
-            nowstring = now.strftime("%c")
-            mock_dt.utcnow.return_value = now
-            content_info = "{0}-{1}-{2}-{3}".format(
-                nowstring,
-                self.msg.content_type.name,
-                self.msg.object_id,
-                self.user.id
-            )
-            expected = md5(content_info.encode("utf8")).hexdigest()
-            self.msg._set_message_id()  # Call the method.
-            self.assertEqual(self.msg.message_id, expected)  # check result
-
-    def test__set_message_id_when_no_content_object(self):
-        """Ensure this still works if there's no content_object."""
-        with patch("notifications.models.datetime") as mock_dt:
-            date = datetime_utc(2015, 5, 16, 15, 30)
-            mock_dt.utcnow.return_value = date
-
-            alert_date = datetime_utc(2014, 5, 30, 14, 45)
-            msg = GCMMessage.objects.create(
-                self.user, "NEW Test", "another message", alert_date
-            )
-            expected = md5(date.strftime("%c").encode("utf8")).hexdigest()
-            self.assertEqual(msg.message_id, expected)
-
     def test__localize(self):
         _deliver_on = self.msg.deliver_on
         _expire_on = self.msg.expire_on
@@ -182,15 +143,13 @@ class TestGCMMessage(TestCase):
         self.msg.save()
 
     def test_save(self):
-        """Save should call _localize and _set_message_id."""
+        """Save should call _localize."""
         mock_localize = Mock(return_value=datetime_utc(2000, 1, 2, 3, 30))
-        mock_set_message_id = Mock(return_value="MESSAGEID")
 
         # HACK: need a new object to associate a mesage with.
         obj = GCMDevice.objects.create(user=self.user, registration_id="NEW")
 
         GCMMessage._localize = mock_localize
-        GCMMessage._set_message_id = mock_set_message_id
         msg = GCMMessage.objects.create(
             self.user,
             "ASDF",
@@ -199,7 +158,6 @@ class TestGCMMessage(TestCase):
             obj,
         )
         mock_localize.assert_any_call()
-        mock_set_message_id.assert_any_call()
 
         # clean up.
         obj.delete()

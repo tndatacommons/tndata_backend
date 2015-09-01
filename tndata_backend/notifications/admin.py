@@ -40,11 +40,11 @@ class GCMMessageAdmin(admin.ModelAdmin):
     list_filter = ('success', 'response_code')
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
-        'message_id', 'title', 'message'
+        'title', 'message'
     ]
     exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
-        'message_id', 'success', 'response_code', 'gcm_response',
+        'success', 'response_code', 'gcm_response',
         'pretty_response_data', 'delivered_to', 'registered_devices',
         'created_on', 'expire_on',
     )
