@@ -11,6 +11,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
+from jsonfield import JSONField
 from pushjack import GCMClient
 from . managers import GCMMessageManager
 from . settings import GCM
@@ -82,7 +83,15 @@ class GCMMessage(models.Model):
         blank=True,
         help_text="text of the response sent to GCM."
     )
-
+    response_data = JSONField(
+        blank=True,
+        default={},
+        help_text="The response data we get from GCM after it delivers this"
+    )
+    registration_ids = models.TextField(
+        blank=True,
+        help_text="The registration_ids that GCM says it delivered to",
+    )
     deliver_on = models.DateTimeField(
         db_index=True,
         help_text="Date/Time on which the message should be delivered (UTC)"
@@ -98,7 +107,7 @@ class GCMMessage(models.Model):
         return self.message_id
 
     class Meta:
-        ordering = ['success', '-deliver_on', '-created_on']
+        ordering = ['-success', 'deliver_on', '-created_on']
         unique_together = ("user", "message_id")
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
@@ -190,7 +199,7 @@ class GCMMessage(models.Model):
         return GCMClient(api_key=GCM['API_KEY'])
 
     @property
-    def registration_ids(self):
+    def registered_devices(self):
         """Return the active registration IDs associated with the user."""
         # Note: if the user has no devices, creating a GCMMessage through
         # the manager (GCMMessage.objects.create) will fail.
@@ -249,7 +258,7 @@ class GCMMessage(models.Model):
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
-        resp = client.send(self.registration_ids, self.content_json, **options)
+        resp = client.send(self.registered_devices, self.content_json, **options)
         self._save_response(resp)
         return resp
 
@@ -268,12 +277,33 @@ class GCMMessage(models.Model):
             self.success = True
 
     def _save_response(self, resp):
+        """This method saves response data from GCM. This is mostly good for
+        debugging message delivery, and this method will parse out that data
+        and populate the following fields:
+
+        * resposne_code
+        * response_text
+        * response_data
+        * registration_ids
+
+        """
         report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
         report = ""
+
+        # Save the http response info
         for r in resp.responses:  # Should only be 1 item.
             report += report_pattern.format(r.status_code, r.reason, r.url)
             self.response_code = r.status_code
         self.response_text = report
+
+        # Save all the registration_ids that GCM thinks it delivered to
+        rids = []
+        for msg in resp.messages:  # this is a list of dicts
+            rids.extend(msg.get("registration_ids", []))
+        self.registration_ids = "\n".join(rids)
+
+        # Save the whole chunk of response data
+        self.response_data = resp.data
 
         self._set_expiration()
         self.save()
