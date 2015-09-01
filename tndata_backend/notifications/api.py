@@ -1,5 +1,7 @@
+from datetime import datetime
 from django.contrib.auth.signals import user_logged_out
 from django.dispatch import receiver
+from django.utils import timezone
 
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
@@ -108,6 +110,22 @@ class GCMMessageViewSet(mixins.ListModelMixin,
 
         {snooze: 24}
 
+    You may also specify a specific date (including year, month, and day) and
+    time (including hour and minute, without timezone information) as a string:
+
+        {time: "14:00", date: "2015-09-01"}
+
+    Examples of acceptable time formats include:
+
+    - 24hr: `9:00`, `09:00`, `13:45`
+    - 12hr: `9:00 AM`, `1:45 PM`
+
+    Examples of accepted date formats include:
+
+    - year-month-day: `2015-09-01`
+    - month-day-year: `9-1-2015`
+
+    Dates can be specified with or without leading zeros.
 
     ----
 
@@ -120,9 +138,57 @@ class GCMMessageViewSet(mixins.ListModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def _parse_time(self, time):
+        dt = None  # The result datetime object
+        if time and isinstance(time, list) and len(time) > 0:
+            time = time[0]
+        if time:
+            formats = ["%H:%M", "%I:%M %p", "%I:%M%p"]
+            for fmt in formats:
+                try:
+                    dt = datetime.strptime(time, fmt)
+                except ValueError:
+                    pass
+        return dt
+
+    def _parse_date(self, date):
+        dt = None  # The result datetime object
+        if date and isinstance(date, list) and len(date) > 0:
+            date = date[0]
+        if date:
+            formats = ["%Y-%m-%d", '%m-%d-%Y']
+            for fmt in formats:
+                try:
+                    dt = datetime.strptime(date, fmt)
+                except ValueError:
+                    pass
+        return dt
+
+    def _combine(self, date=None, time=None):
+        dt = None
+        if date is None and time is not None:
+            # We don't have a date; combine the time with today.
+            dt = datetime.now().combine(time)
+        elif date is not None and time is not None:
+            # We got both: combine them
+            dt = datetime.combine(date, time.time())
+        return dt
+
     def update(self, request, *args, **kwargs):
         """Allow users to snooze their notifications."""
+        #import ipdb;ipdb.set_trace();
+
+        # Pull the submitted options.
+        snooze = request.data.pop("snooze", None)
+        time = self._parse_time(request.data.pop("time", None))
+        date = self._parse_date(request.data.pop("date", None))
+        dt = self._combine(date, time)
+
         obj = self.get_object()
-        obj.snooze(hours=request.data.pop("snooze", 0))
+        if dt:
+            obj.snooze(new_datetime=dt)
+        elif snooze is not None:
+            obj.snooze(hours=snooze)
+
         ser = self.serializer_class(obj)
         return Response(ser.data)
