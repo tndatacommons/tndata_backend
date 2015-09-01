@@ -45,7 +45,7 @@ class GCMDevice(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['user', 'registration_id']
+        ordering = ['user', '-created_on', 'registration_id']
         unique_together = ("registration_id", "user")
         verbose_name = "GCM Device"
         verbose_name_plural = "GCM Devices"
@@ -98,7 +98,7 @@ class GCMMessage(models.Model):
         return self.message_id
 
     class Meta:
-        ordering = ['deliver_on']
+        ordering = ['success', '-deliver_on', '-created_on']
         unique_together = ("user", "message_id")
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"

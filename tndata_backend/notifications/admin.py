@@ -30,8 +30,8 @@ admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 
 class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
-        'user_email', 'user_username', 'message_id', 'title',
-        'deliver_on', 'expire_on', 'success', 'response_code',
+        'user_email', 'user_username', 'title', 'message_teaser',
+        'deliver_on', 'success', 'created_on',
     )
     list_filter = ('success', 'response_code')
     search_fields = [
@@ -39,6 +39,9 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'message_id', 'title', 'message'
     ]
     actions = ['send_notification', 'expire_messages']
+
+    def message_teaser(self, obj):
+        return "{0}...".format(obj.message[:32])
 
     def user_username(self, obj):
         return obj.user.username
