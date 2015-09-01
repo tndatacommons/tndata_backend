@@ -289,7 +289,6 @@ class GCMMessage(models.Model):
         """
         report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
         report = ""
-
         # Save the http response info
         for r in resp.responses:  # Should only be 1 item.
             report += report_pattern.format(r.status_code, r.reason, r.url)

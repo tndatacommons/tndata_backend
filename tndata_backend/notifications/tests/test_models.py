@@ -210,9 +210,9 @@ class TestGCMMessage(TestCase):
         self.assertIsInstance(client, GCMClient)
         self.assertEqual(client.api_key, settings.GCM['API_KEY'])
 
-    def test_registration_ids(self):
+    def test_registered_devices(self):
         self.assertEqual(
-            self.msg.registration_ids,
+            self.msg.registered_devices,
             ['REGISTRATIONID']
         )
 
@@ -270,10 +270,15 @@ class TestGCMMessage(TestCase):
 
     def test_send(self):
         with patch("notifications.models.GCMClient") as mock_client:
-            resp = Mock(responses=[Mock(status_code=200, reason='ok', url='url')])
-            mock_client.return_value = Mock(**{'send.return_value': resp})
+            self.msg._save_response = Mock()  # Don't call _save_response
+            mock_resp = Mock(
+                status_code=200,
+                reason='ok',
+                url='url',
+            )
+            mock_client.return_value = Mock(**{'send.return_value': mock_resp})
 
-            self.assertEqual(self.msg.send(), resp)
+            self.assertEqual(self.msg.send(), mock_resp)
             mock_client.return_value.send.assert_called_once_with(
                 ['REGISTRATIONID'],
                 self.msg.content_json,
@@ -310,13 +315,16 @@ class TestGCMMessage(TestCase):
         other_device.delete()
 
     def test__save_response(self):
-        mock_resp = Mock(responses=[Mock(**{
-            'status_code': 200,
-            'reason': 'OK',
-            'url': 'FOO',
-        })])
+        resp = Mock(status_code=200, reason='OK', url="FOO")
+        mock_resp = Mock(
+            responses=[resp],
+            messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            data=[{'some': 'data'}]
+        )
         self.msg._save_response(mock_resp)
 
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
         self.assertEqual(self.msg.response_text, expected_text)
         self.assertEqual(self.msg.response_code, 200)
+        self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
+        self.assertEqual(self.msg.response_data, [{'some': 'data'}])

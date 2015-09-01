@@ -52,7 +52,6 @@ class TestGCMMessageManager(TestCase):
             title="Ready Message",
             message="This is ready for delivery",
             deliver_on=datetime_utc(1999, 2, 1, 13, 0),
-            expire_on=datetime_utc(1999, 2, 2, 13, 0)
         )
         cls.ready_message.save()
 
