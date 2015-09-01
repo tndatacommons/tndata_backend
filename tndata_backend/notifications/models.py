@@ -114,7 +114,7 @@ class GCMMessage(models.Model):
         """
         if timezone.is_naive(dt):
             # Convert to user's timezone if possible.
-            if self.user:
+            if self.user and hasattr(self.user, "userprofile"):
                 tz = pytz.timezone(self.user.userprofile.timezone)
                 dt = timezone.make_aware(dt, timezone=tz)
 

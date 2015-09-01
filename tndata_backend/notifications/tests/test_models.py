@@ -70,6 +70,12 @@ class TestGCMMessage(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
+        try:
+            cls.user.userprofile.timezone = 'America/Chicago'
+            cls.user.userprofile.save()
+        except ValueError:
+            pass
+
         cls.device = GCMDevice.objects.create(
             user=cls.user,
             registration_id="REGISTRATIONID"
@@ -97,6 +103,38 @@ class TestGCMMessage(TestCase):
             self.msg._set_message_id()  # ensure it's set correctly
             actual = "{}".format(self.msg)
             self.assertEqual(expected, actual)
+
+    def test_snooze_hours(self):
+        """Ensure deliver_on gets updated correctly when we snooze for an hour"""
+        with patch("notifications.models.timezone") as mock_tz:
+            now = datetime_utc(1234, 1, 2, 11, 30)
+            mock_tz.now.return_value = now
+
+            # When snoozing for an hour, and input is an int
+            self.msg.snooze(hours=1)
+            expected = datetime_utc(1234, 1, 2, 12, 30)
+            self.assertEqual(self.msg.deliver_on, expected)
+
+            # When snoozing for an hour, and input is a list
+            self.msg.snooze(hours=[1])
+            expected = datetime_utc(1234, 1, 2, 12, 30)
+            self.assertEqual(self.msg.deliver_on, expected)
+
+            # When snoozing for an hour, and input is a string
+            self.msg.snooze(hours='1')
+            expected = datetime_utc(1234, 1, 2, 12, 30)
+            self.assertEqual(self.msg.deliver_on, expected)
+
+    def test_snooze_date(self):
+        """Ensure deliver_on gets updated correctly when we snooze with a
+        specific date."""
+        self.msg.snooze(new_datetime=datetime(2015, 9, 1, 15, 30))
+        if hasattr(self.user, "userprofile"):
+            # User should have a timzone (set to America/Chicago)
+            expected = datetime_utc(2015, 9, 1, 20, 30)
+        else:
+            expected = datetime_utc(2015, 9, 1, 15, 30)
+        self.assertEqual(self.msg.deliver_on, expected)
 
     def test__set_message_id(self):
         with patch("notifications.models.datetime") as mock_dt:
