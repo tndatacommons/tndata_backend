@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -25,6 +25,7 @@ from . forms import (
     GoalForm,
     PackageEnrollmentForm,
     TriggerForm,
+    UploadImageForm,
 )
 from . mixins import (
     ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
@@ -984,3 +985,36 @@ class AcceptEnrollmentCompleteView(TemplateView):
             id__in=self.request.session.get("package_ids", [])
         )
         return context
+
+
+def file_upload(request, object_type, pk):
+    """Handler for drag-n-drop file uploads for Goals, Behaviors, and Actions.
+
+    NOTE: This only works for the `icon` field at the moment.
+    See: https://docs.djangoproject.com/en/1.8/topics/http/file-uploads/
+
+    """
+    # The supported models.
+    objects = {
+        'goal': (Goal, UploadImageForm),
+        'action': (Action, UploadImageForm),
+        'behavior': (Behavior, UploadImageForm),
+    }
+    try:
+        model, form_class = objects.get(object_type, (None, None))
+        obj = get_object_or_404(model, pk=pk)
+    except ValueError:
+        return HttpResponseBadRequest()
+
+    errors = ""
+    if request.method == "POST":
+        form = form_class(request.POST, request.FILES)
+        if form.is_valid():
+            obj.icon = request.FILES['file']
+            obj.save()
+        else:
+            errors = str(form.errors)
+        return HttpResponse()
+
+    # Assume something went wrong.
+    return HttpResponseBadRequest(errors)

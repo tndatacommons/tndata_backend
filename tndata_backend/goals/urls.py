@@ -9,6 +9,16 @@ urlpatterns = patterns('',
         name='index'
     ),
 
+    # Async file upload url
+    # format:  /goals/<object_type>/<pk>/upload/
+    # e.g. /goals/action/428/upload/
+    # e.g. /goals/category/2/upload/
+    url(
+        r'^upload/(?P<object_type>\w+)/(?P<pk>\d+)/$',
+        views.file_upload,
+        name='file-upload'
+    ),
+
     # Custom Packages
     url(
         r'^accept-enrollment/complete/$',

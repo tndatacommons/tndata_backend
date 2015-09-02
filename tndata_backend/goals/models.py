@@ -298,6 +298,9 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
             ("publish_goal", "Can Publish Goals"),
         )
 
+    def get_async_icon_upload_url(self):
+        return reverse("goals:file-upload", args=["goal", self.id])
+
     @property
     def rendered_description(self):
         """Render the description markdown"""
@@ -767,6 +770,9 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
             ("publish_behavior", "Can Publish Permissions"),
         )
 
+    def get_async_icon_upload_url(self):
+        return reverse("goals:file-upload", args=["behavior", self.id])
+
     @property
     def categories(self):
         """Return a QuerySet of Categories for this object's selected Goals"""
@@ -903,6 +909,9 @@ class Action(URLMixin, BaseBehavior):
             ("decline_action", "Can Decline Actions"),
             ("publish_action", "Can Publish Actions"),
         )
+
+    def get_async_icon_upload_url(self):
+        return reverse("goals:file-upload", args=["action", self.id])
 
     def get_user_mapping(self, user):
         """Return the first UserAction object that matches this Action and the
