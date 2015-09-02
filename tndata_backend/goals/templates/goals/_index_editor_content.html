@@ -15,7 +15,7 @@
 <tbody>
   {% for obj in categories %}
     <tr>
-      <td>{% goal_object_controls obj %}</td>
+      <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Category</span>
         {{ obj.state|label }}
@@ -33,7 +33,7 @@
   {% endfor %}
   {% for obj in goals %}
     <tr>
-      <td>{% goal_object_controls obj %}</td>
+      <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Goal</span>
         {{ obj.state|label }}
@@ -51,14 +51,13 @@
   {% endfor %}
   {% for obj in behaviors %}
     <tr>
-      <td>{% goal_object_controls obj %}</td>
+      <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Behavior</span>
         {{ obj.state|label }}
       </td>
       <td>
         <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
-        <small>{{ obj.created_by|default:obj.updated_by }}</small>
       </td>
       <td>
         {{ obj.updated_on|date:"n-j-Y" }}<br/>
@@ -70,7 +69,7 @@
   {% endfor %}
   {% for obj in actions %}
     <tr>
-      <td>{% goal_object_controls obj %}</td>
+      <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Action</span>
         {{ obj.state|label }}
