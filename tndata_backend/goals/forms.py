@@ -476,3 +476,13 @@ class CSVUploadForm(forms.Form):
             raise self.InvalidFormat(
                 "There was a problem saving your data: {0}".format(e)
             )
+
+
+class UploadImageForm(forms.Form):
+    """A Simple file upload form. This accepts 1 parameter named 'file', and
+    validates that it's an image. This is used in the async upload handler.
+
+    See views.file_upload
+
+    """
+    file = forms.ImageField()
