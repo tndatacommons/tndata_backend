@@ -148,12 +148,22 @@ class GCMMessage(models.Model):
         return changed
 
     def snooze(self, hours=None, new_datetime=None, save=True):
-        """Reset the message's deliver_on date."""
+        """Snoozing a message essentially reschedules it for delivery at another
+        time. This involves:
+
+        - resetting the message's deliver_on date/time.
+        - removing the expire_on field.
+        - removing the success value (success=True gets excluded by the
+          manager's ready_for_delivery method).
+
+        """
         changed = False
         if new_datetime:
             changed = self._set_deliver_on(new_datetime)
         elif hours:
             changed = self._snooze_hours(hours)
+        self.success = None
+        self.expire_on = None
         if changed and save:
             self.save()
 
