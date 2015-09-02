@@ -15,10 +15,14 @@
       <table class="object-list">
       <thead>
       <tr>
-        <th><i class="fa fa-cog"></i></th>
+        <th>
+          {% if user|is_editor %}
+            <i class="fa fa-cog"></i>
+          {% endif %}
+          State
+        </th>
         <th>Order</th>
         <th>Title</th>
-        <th>State</th>
         <th>Notification</th>
         <th>Trigger Time</th>
         <th>Trigger Date</th>
@@ -30,13 +34,18 @@
       <tbody>
       {% for action in actions %}
         <tr>
-          <td>{% publish_deny_form action "dropdown" %}</td>
+          <td>
+            {% if user|is_editor %}
+              {% publish_deny_form action "dropdown" %}
+            {% else %}
+              {{ action|label }}
+            {% endif %}
+          </td>
           <td>{{ action.sequence_order }}</td>
           <td>
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
-          <td>{{ action|label }}</td>
           <td>{{ action.notification_text }}</td>
           {% with trigger=action.default_trigger %}
             <td>{{ trigger.time|default:"-"}}</td>

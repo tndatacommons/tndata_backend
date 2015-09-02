@@ -1,5 +1,7 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
+{% load goal_tags %}
+
 {% block title %}Categories{% endblock %}
 
 
@@ -14,11 +16,16 @@
       <table class="object-list">
       <thead>
       <tr>
+        <th>
+          {% if user|is_editor %}
+            <i class="fa fa-cog"></i>
+          {% endif %}
+          State
+        </th>
         <th>Order</th>
         <th>Icon</th>
         <th>Colors</th>
         <th>Title</th>
-        <th>State</th>
         <th>Child Content</th>
       </tr>
       </thead>
@@ -26,6 +33,13 @@
       {% for category in categories %}
         {% with category_url=category.get_absolute_url %}
         <tr>
+          <td>
+            {% if user|is_editor %}
+              {% publish_deny_form category "dropdown" %}
+            {% else %}
+              {{ category|label }}
+            {% endif %}
+          </td>
           <td>{{ category.order }}</td>
           <td>
             {% with icon=category.get_absolute_icon %}
@@ -48,12 +62,9 @@
           </td>
           <td>
               <a href="{{ category_url }}">{{ category }}</a>
-          </td>
-          <td>
-            {{ category|label }}
-            {% if category.is_packaged %}
-              <span class="label info">Package</span>
-            {% endif %}
+              {% if category.is_packaged %}
+                <span class="label info">Package</span>
+              {% endif %}
           </td>
           <td>
             <ul class="accordion" data-accordion>

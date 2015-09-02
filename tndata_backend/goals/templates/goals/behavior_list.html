@@ -1,5 +1,7 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
+{% load goal_tags %}
+
 {% block title %}Behaviors{% endblock %}
 
 {% block breadcrumbs %}
@@ -14,9 +16,14 @@
       <table class="object-list">
       <thead>
       <tr>
+        <th>
+          {% if user|is_editor %}
+            <i class="fa fa-cog"></i>
+          {% endif %}
+          State
+        </th>
         <th>Icon</th>
         <th>Title</th>
-        <th>State</th>
         <th style="width:200px;max-width: 200px;">Informal List</th>
         <th style="width:200px;max-width: 200px;">Related Content</th>
       </tr>
@@ -25,6 +32,13 @@
       {% for behavior in behaviors %}
         {% with behavior_url=behavior.get_absolute_url %}
         <tr>
+          <td>
+            {% if user|is_editor %}
+              {% publish_deny_form behavior "dropdown" %}
+            {% else %}
+              {{ behavior|label }}
+            {% endif %}
+          </td>
           <td class="gray">
           {% with icon=behavior.get_absolute_icon %}
             {% if icon %}
@@ -35,7 +49,6 @@
           {% endwith %}
           </td>
           <td><a href="{{ behavior_url }}">{{ behavior }}</a></td>
-          <td>{{ behavior|label }}</td>
           <td style="width:200px;max-width: 200px;">
             {{ behavior.informal_list|linebreaksbr|default:"-" }}
           </td>

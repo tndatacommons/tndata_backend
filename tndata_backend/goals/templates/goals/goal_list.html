@@ -1,5 +1,7 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
+{% load goal_tags %}
+
 {% block title %}Goals{% endblock %}
 
 {% block breadcrumbs %}
@@ -13,8 +15,13 @@
       <table class="object-list">
       <thead>
       <tr>
+        <th>
+          {% if user|is_editor %}
+            <i class="fa fa-cog"></i>
+          {% endif %}
+          State
+        </th>
         <th>Title</th>
-        <th>State</th>
         <th>Behaviors</th>
         <th>Categories</th>
         <th>Icon</th>
@@ -23,8 +30,14 @@
       <tbody>
       {% for goal in goals %}
         <tr>
+        <td>
+          {% if user|is_editor %}
+            {% publish_deny_form goal "dropdown" %}
+          {% else %}
+            {{ goal|label }}
+          {% endif %}
+        </td>
         <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
-        <td>{{ goal|label }}</td>
         <td>{{ goal.behavior_set.all|join:", " }}</td>
         <td>{{ goal.categories.all|join:", " }}</td>
         <td class="gray">
