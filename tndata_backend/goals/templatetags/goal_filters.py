@@ -1,8 +1,21 @@
 from django import template
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
+from goals.permissions import is_content_editor
 
 register = template.Library()
+
+
+@register.filter("is_editor")
+def user_is_editor(user):
+    """Return True if the user is a content editor, otherwise False.
+
+    Handy for using in an if/else:
+
+        {% if user|is_editor %}
+
+    """
+    return is_content_editor(user)
 
 
 @register.filter("label", is_safe=True)
