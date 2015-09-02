@@ -12,6 +12,9 @@ def action_creation_menu():
 
 @register.inclusion_tag("utils/_object_controls.html", takes_context=True)
 def goal_object_controls(context, obj):
+    """Compile custom permissions for Goal objects, and render the util's
+    _object_controls template."""
+
     result = object_controls(context, obj, "goals")
     user = context.request.user
 
@@ -87,10 +90,17 @@ def form_buttons(obj, object_name=None):
 
 
 @register.inclusion_tag("goals/_publish_deny_form.html")
-def publish_deny_form(obj):
-    """Given an object, render Publish / Deny buttons."""
+def publish_deny_form(obj, layout=None):
+    """Given an object, render Publish / Deny buttons.
+
+    You can specify optional layous by passing in a layout flag:
+
+    * layout: "dropdown" or None are the current options.
+
+    """
     return {
         "obj": obj,
         "publishable": any([obj.is_draft, obj.is_pending]),
         "declineable": any([obj.is_pending]),
+        "layout": layout,
     }
