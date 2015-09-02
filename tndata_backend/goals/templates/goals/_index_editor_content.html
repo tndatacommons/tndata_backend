@@ -6,8 +6,8 @@
 <table class="object-list">
 <thead>
   <tr>
-  <th><i class="fa fa-cog"></i></th>
-  <th>Type/Status</th>
+  <th><i class="fa fa-cog"></i> Status</th>
+  <th>Type</th>
   <th>Title</th>
   <th>Updated</th>
   </tr>
@@ -18,7 +18,6 @@
       <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Category</span>
-        {{ obj|label }}
       </td>
       <td>
         <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
@@ -36,7 +35,6 @@
       <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Goal</span>
-        {{ obj|label }}
       </td>
       <td>
         <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
@@ -54,7 +52,6 @@
       <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Behavior</span>
-        {{ obj|label }}
       </td>
       <td>
         <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
@@ -72,7 +69,6 @@
       <td>{% publish_deny_form obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Action</span>
-        {{ obj|label }}
       </td>
       <td>
         <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>

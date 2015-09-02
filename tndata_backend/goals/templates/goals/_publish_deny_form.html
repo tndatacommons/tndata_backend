@@ -7,7 +7,7 @@
     data-dropdown="id-{{obj.id}}-publish-dropdown"
     aria-controls="id-{{obj.id}}-publish-dropdown"
     aria-expanded="false"
-    class="tiny button dropdown success">{{ obj.state }}</a><br/>
+    class="tiny button dropdown {{ obj.state_label }}">{{ obj.state_title }}</a><br/>
   <ul id="id-{{obj.id}}-publish-dropdown"
       data-dropdown-content
       class="f-dropdown secondary"
