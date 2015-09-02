@@ -9,6 +9,7 @@
 {# Datatables' Foundation CSS (see bodyjs block for the JS) #}
 <link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.css" />
 <link rel="stylesheet" href="{% static 'js/chosen/chosen.css' %}" />
+<link rel="stylesheet" href="{% static 'js/dropzone/basic.css' %}" />
 <style type="text/css">
 .breadcrumbs {margin-top:1em;}
 select[multiple] {min-height: 100px;}
@@ -55,6 +56,12 @@ div.modified {
   font-size: .8em;
 }
 div.modified em {color:#888;}
+form.dropzone {
+  width:100%;
+  min-height:100px;
+  text-align: center;
+  border:3px dotted #aaa;
+}
 </style>
 {% endblock %}
 
@@ -187,6 +194,7 @@ div.modified em {color:#888;}
   <script src="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.js"></script>
   <script src="{% static 'js/garlic.min.js' %}"></script> {# Garlic.js: Save form state in localstorage #}
   <script src="{% static 'js/chosen/chosen.jquery.min.js' %}"></script>
+  <script src="{% static 'js/dropzone/dropzone.js' %}"></script>
   <script>
   $(document).ready(function() {
     // Apply datatables to all .object-list tables.

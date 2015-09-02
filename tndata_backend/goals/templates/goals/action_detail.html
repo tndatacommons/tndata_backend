@@ -35,7 +35,19 @@
           </dd>
           {% endwith %}
         <dt>Notification Text</dt><dd>{{ action.notification_text }}</dd>
-        <dt>Icon</dt><dd class="gray">
+        <dt>Icon</dt>
+          <dd class="gray">
+
+          {# ------------- Async file upload form ------------------- #}
+          {% if user == action.created_by or user|is_editor %}
+          <form action="{{ action.get_async_icon_upload_url }}"
+                enctype="multipart/form-data"
+                method="post"
+                class="dropzone">&nbsp;{% csrf_token %}
+          </form>
+          {% endif %}
+          {# ------------- /Async file upload form ------------------- #}
+
           {% with icon=action.get_absolute_icon %}
           {% if icon %}
             <a href="{{ icon }}" target="_blank">
@@ -47,11 +59,10 @@
               {% endif %}
               Location: <small><a href="{{ icon }}">{{ icon }}</a></small>
             </p>
-          {% else %}
-            <em>No icon available</em>
           {% endif %}
           {% endwith %}
-        </dd>
+
+          </dd>
         <dt>Source Link</dt><dd>{{ action.source_link|urlize}}</dd>
         <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
       </dl>

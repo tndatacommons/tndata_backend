@@ -22,6 +22,15 @@
         <dt>Action List</dt><dd>{{ behavior.informal_list|markdown }}</dd>
         <dt>External Resource</dt><dd>{{ behavior.external_resource }}</dd>
         <dt>Icon</dt><dd class="gray">
+          {# ------------- Async file upload form ------------------- #}
+          {% if user == behavior.created_by or user|is_editor %}
+          <form action="{{ behavior.get_async_icon_upload_url }}"
+                enctype="multipart/form-data"
+                method="post"
+                class="dropzone">&nbsp;{% csrf_token %}
+          </form>
+          {% endif %}
+          {# ------------- /Async file upload form ------------------- #}
           {% with icon=behavior.get_absolute_icon %}
           {% if icon %}
             <a href="{{ icon }}" target="_blank">

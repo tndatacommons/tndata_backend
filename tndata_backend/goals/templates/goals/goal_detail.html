@@ -20,6 +20,15 @@
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
       <dt>More Info</dt><dd>{{ goal.more_info|markdown }}</dt>
       <dt>Icon</dt><dd class="gray">
+        {# ------------- Async file upload form ------------------- #}
+        {% if user == goal.created_by or user|is_editor %}
+        <form action="{{ goal.get_async_icon_upload_url }}"
+              enctype="multipart/form-data"
+              method="post"
+              class="dropzone">&nbsp;{% csrf_token %}
+        </form>
+        {% endif %}
+        {# ------------- /Async file upload form ------------------- #}
         {% with icon=goal.get_absolute_icon %}
         {% if icon %}
           <a href="{{ icon }}" target="_blank">
