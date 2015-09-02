@@ -35,7 +35,7 @@
           {% endwith %}
           </td>
           <td><a href="{{ behavior_url }}">{{ behavior }}</a></td>
-          <td>{{ behavior.state|label }}</td>
+          <td>{{ behavior|label }}</td>
           <td style="width:200px;max-width: 200px;">
             {{ behavior.informal_list|linebreaksbr|default:"-" }}
           </td>

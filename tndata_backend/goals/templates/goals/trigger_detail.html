@@ -37,7 +37,7 @@
         is attached to the following behavior sequences:</p>
       <ul>
       {% for b in trigger.behavior_set.all %}
-        <li>{{ b.state|label }} <a href="{{b.get_absolute_url}}">{{ b }}</a></li>
+        <li>{{ b|label }} <a href="{{b.get_absolute_url}}">{{ b }}</a></li>
       {% endfor %}
       </ul>
       {% endif %}
@@ -48,7 +48,7 @@
         is attached to the following behavior actions:</p>
       <ul>
       {% for a in trigger.action_set.all %}
-        <li>{{ a.state|label }} <a href="{{a.get_absolute_url}}">{{ a }}</a></li>
+        <li>{{ a|label }} <a href="{{a.get_absolute_url}}">{{ a }}</a></li>
       {% endfor %}
       </ul>
       {% endif %}

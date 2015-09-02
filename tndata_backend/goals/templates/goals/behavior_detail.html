@@ -16,7 +16,7 @@
     <div class="large-6 small-12 columns">
       <h1>{{ behavior }} {% goal_object_controls behavior %}</h1>
       <dl>
-        <dt>State</dt><dd>{{ behavior.state|label }}</dd>
+        <dt>State</dt><dd>{{ behavior|label }}</dd>
         <dt>Description</dt><dd>{{ behavior.description|markdown }}</dd>
         <dt>More Info</dt><dd>{{ behavior.more_info|markdown }}</dd>
         <dt>Action List</dt><dd>{{ behavior.informal_list|markdown }}</dd>
@@ -62,7 +62,7 @@
       <ul>
       {% for cat in behavior.categories %}
         <li>
-          {{ cat.state|label }}
+          {{ cat|label }}
           <a href="{{ cat.get_absolute_url }}">{{ cat }}</a>
         </li>
       {% empty %}
@@ -73,7 +73,7 @@
       <ul>
       {% for goal in behavior.goals.all %}
         <li>
-          {{ goal.state|label }}
+          {{ goal|label }}
           <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
         </li>
       {% empty %}
@@ -84,7 +84,7 @@
       <ul>
       {% for action in behavior.action_set.all %}
         <li>
-          {{ action.state|label }}
+          {{ action|label }}
           <a href="{{ action.get_absolute_url }}">{{ action }}</a>
         </li>
       {% empty %}

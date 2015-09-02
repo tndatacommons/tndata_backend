@@ -16,7 +16,7 @@
     <div class="large-6 small-12 columns">
       <h1>{{ action }} {% goal_object_controls action %}</h1>
       <dl>
-        <dt>State</dt><dd>{{ action.state|label }}</dd>
+        <dt>State</dt><dd>{{ action|label }}</dd>
         <dt>Sequence Order</dt><dd>{{ action.sequence_order }}</dd>
         <dt>Action Type</dt><dd>{{ action.get_action_type_display }}</dd>
 
@@ -67,7 +67,7 @@
       <h2 class="subheader">Behavior</h2>
       {% with behavior=action.behavior%}
       <p>
-        {{ behavior.state|label }}
+        {{ behavior|label }}
         <a href="{{ behavior.get_absolute_url }}">{{ behavior}}</a>
       </p>
       <table>

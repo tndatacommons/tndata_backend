@@ -231,6 +231,26 @@ class StateMixin:
     """Convenience methods for models that use a `state` FSMField."""
 
     @property
+    def state_title(self):
+        """This is a display-related conventience property: It returns a
+        human-friendly version of the object's current state."""
+        return " ".join(self.state.title().split("-"))
+
+    @property
+    def state_label(self):
+        """This is a display-related conventience property: It returns a
+        Foundation label class name based on the object's state.
+
+        """
+        state_labels = {
+            'draft': 'secondary',
+            'pending-review': 'warning',
+            'declined': 'alert',
+            'published': 'success',
+        }
+        return state_labels.get(self.state, "info")
+
+    @property
     def is_draft(self):
         return self.state == "draft"
 

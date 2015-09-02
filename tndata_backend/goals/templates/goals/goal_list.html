@@ -24,7 +24,7 @@
       {% for goal in goals %}
         <tr>
         <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
-        <td>{{ goal.state|label }}</td>
+        <td>{{ goal|label }}</td>
         <td>{{ goal.behavior_set.all|join:", " }}</td>
         <td>{{ goal.categories.all|join:", " }}</td>
         <td class="gray">

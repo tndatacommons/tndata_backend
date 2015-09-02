@@ -1,3 +1,5 @@
+{% load goal_filters %}
+
 <form action="{{ obj.get_publish_url }}" method="post">{% csrf_token %}
 {% if layout == "dropdown" %}
   {# NOTE: This is clunky, but still allows us to submit this for without extra JS #}
@@ -5,7 +7,7 @@
     data-dropdown="id-{{obj.id}}-publish-dropdown"
     aria-controls="id-{{obj.id}}-publish-dropdown"
     aria-expanded="false"
-    class="tiny button dropdown secondary">Status</a><br/>
+    class="tiny button dropdown success">{{ obj.state }}</a><br/>
   <ul id="id-{{obj.id}}-publish-dropdown"
       data-dropdown-content
       class="f-dropdown secondary"

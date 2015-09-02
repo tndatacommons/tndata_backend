@@ -36,7 +36,7 @@
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
-          <td>{{ action.state|label }}</td>
+          <td>{{ action|label }}</td>
           <td>{{ action.notification_text }}</td>
           {% with trigger=action.default_trigger %}
             <td>{{ trigger.time|default:"-"}}</td>

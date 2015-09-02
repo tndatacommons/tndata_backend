@@ -50,7 +50,7 @@
               <a href="{{ category_url }}">{{ category }}</a>
           </td>
           <td>
-            {{ category.state|label }}
+            {{ category|label }}
             {% if category.is_packaged %}
               <span class="label info">Package</span>
             {% endif %}

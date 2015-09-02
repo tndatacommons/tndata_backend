@@ -19,7 +19,7 @@
         {{ category }} {% goal_object_controls category %}</h1>
       <dl>
         <dt>State</dt><dd>
-          {{ category.state|label }}
+          {{ category|label }}
           {% if category.is_packaged %}
             <span class="label info">Package</span>
           {% endif %}
@@ -98,17 +98,17 @@
       {% for goal in category.goals %}
         <li><span class="label secondary" title="Goal">G</span>
           <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
-          {{ goal.state|label }}
+          {{ goal|label }}
           <ul>
           {% for bs in goal.behavior_set.all %}
             <li><span class="label secondary" title="Behavior">B</span>
               <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
-              {{ bs.state|label }}
+              {{ bs|label }}
               <ul>
                 {% for ba in bs.action_set.all %}
                   <li><span class="label secondary" title="Action">A</span>
                     <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
-                    {{ba.state|label}}
+                    {{ba|label}}
                   </li>
                 {% endfor %}
               </ul>
