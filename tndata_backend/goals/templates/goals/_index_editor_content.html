@@ -1,0 +1,91 @@
+{% load goal_filters %}
+{% load goal_tags %}
+
+{% if is_editor %}
+<h2>Content for Review</h2>
+<table class="object-list">
+<thead>
+  <tr>
+  <th><i class="fa fa-cog"></i></th>
+  <th>Type/Status</th>
+  <th>Title</th>
+  <th>Updated</th>
+  </tr>
+</thead>
+<tbody>
+  {% for obj in categories %}
+    <tr>
+      <td>{% goal_object_controls obj %}</td>
+      <td>
+        <span class="label secondary">Category</span>
+        {{ obj.state|label }}
+      </td>
+      <td>
+        <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
+      </td>
+      <td>
+        {{ obj.updated_on|date:"n-j-Y" }}<br/>
+        by: {{ obj.created_by|default:obj.updated_by }}<br/>
+        <small class="label secondary">
+          {{ obj.updated_on|timesince }} ago</small>
+      </td>
+    </tr>
+  {% endfor %}
+  {% for obj in goals %}
+    <tr>
+      <td>{% goal_object_controls obj %}</td>
+      <td>
+        <span class="label secondary">Goal</span>
+        {{ obj.state|label }}
+      </td>
+      <td>
+        <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
+      </td>
+      <td>
+        {{ obj.updated_on|date:"n-j-Y" }}<br/>
+        <span class="label">{{ obj.created_by|default:obj.updated_by }}</span><br/>
+        <small class="label secondary">
+          {{ obj.updated_on|timesince }} ago</small>
+      </td>
+    </tr>
+  {% endfor %}
+  {% for obj in behaviors %}
+    <tr>
+      <td>{% goal_object_controls obj %}</td>
+      <td>
+        <span class="label secondary">Behavior</span>
+        {{ obj.state|label }}
+      </td>
+      <td>
+        <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
+        <small>{{ obj.created_by|default:obj.updated_by }}</small>
+      </td>
+      <td>
+        {{ obj.updated_on|date:"n-j-Y" }}<br/>
+        by: {{ obj.created_by|default:obj.updated_by }}<br/>
+        <small class="label secondary">
+          {{ obj.updated_on|timesince }} ago</small>
+      </td>
+    </tr>
+  {% endfor %}
+  {% for obj in actions %}
+    <tr>
+      <td>{% goal_object_controls obj %}</td>
+      <td>
+        <span class="label secondary">Action</span>
+        {{ obj.state|label }}
+      </td>
+      <td>
+        <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
+      </td>
+      <td>
+        {{ obj.updated_on|date:"n-j-Y" }}<br/>
+        by: {{ obj.created_by|default:obj.updated_by }}<br/>
+        <small class="label secondary">
+          {{ obj.updated_on|timesince }} ago</small>
+      </td>
+    </tr>
+  {% endfor %}
+</tbody>
+</table>
+{% endif %}

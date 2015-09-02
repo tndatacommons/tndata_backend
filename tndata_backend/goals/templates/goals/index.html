@@ -1,119 +1,35 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
+{% load goal_tags %}
 
 {% block content %}
+{% comment %}
+
+  NOTE: This file is split into different layous for Authors & Editors.
+
+  * Author: get a left/right view with instructions / content
+  * Editors: 2 rows, the top is 12-column instructions, 2nd is split review / content
+
+{% endcomment %}
+{% if is_editor %}
+  <div class="row">
+    <div class="large-12 medium-12 small-12 columns">
+      {% include "goals/_index_help.html" %}</div>
+  </div>
   <div class="row">
     <div class="large-6 medium-6 small-12 columns">
-      <h1>Instructions</h1>
-      <p>This is your Dashboard. Content that you've created or content that you
-      need to review if you're an Editor, will be displayed here.</p>
-    </div>
+      {% include "goals/_index_editor_content.html" %}</div>
     <div class="large-6 medium-6 small-12 columns">
-      {% if is_editor %}
-        <h2>Content for Review</h2>
-        <table class="object-list">
-        <thead>
-          <tr>
-          <th>Type</th>
-          <th>Title</th>
-          <th>State</th>
-          <th>Created By</th>
-          <th>Last Updated</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for obj in categories %}
-            <tr>
-              <td>Category</td>
-              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-              <td>{{ obj.state|label }}</td>
-              <td>{{ obj.created_by }}</td>
-              <td>{{ obj.updated_on|timesince }} ago</td>
-            </tr>
-          {% endfor %}
-          {% for obj in goals %}
-            <tr>
-              <td>Goal</td>
-              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-              <td>{{ obj.state|label }}</td>
-              <td>{{ obj.created_by }}</td>
-              <td>{{ obj.updated_on|timesince }} ago</td>
-            </tr>
-          {% endfor %}
-          {% for obj in behaviors %}
-            <tr>
-              <td>Behavior</td>
-              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-              <td>{{ obj.state|label }}</td>
-              <td>{{ obj.created_by }}</td>
-              <td>{{ obj.updated_on|timesince }} ago</td>
-            </tr>
-          {% endfor %}
-          {% for obj in actions %}
-            <tr>
-              <td>Action</td>
-              <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-              <td>{{ obj.state|label }}</td>
-              <td>{{ obj.created_by }}</td>
-              <td>{{ obj.updated_on|timesince }} ago</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-        </table>
-      {% endif %}
-
-      <h2>My Content</h2>
-      {% if has_my_content %}
-      <table class="object-list"
-        summary="Content you've either created or recently updated">
-      <thead>
-        <tr>
-        <th>Type</th>
-        <th>Title</th>
-        <th>State</th>
-        <th>Last Updated</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for obj in my_categories %}
-          <tr>
-            <td>Category</td>
-            <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-            <td>{{ obj.state|label }}</td>
-            <td>{{ obj.updated_on|timesince }} ago</td>
-          </tr>
-        {% endfor %}
-        {% for obj in my_goals %}
-          <tr>
-            <td>Goal</td>
-            <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-            <td>{{ obj.state|label }}</td>
-            <td>{{ obj.updated_on|timesince }} ago</td>
-          </tr>
-        {% endfor %}
-        {% for obj in my_behaviors %}
-          <tr>
-            <td>Behavior</td>
-            <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-            <td>{{ obj.state|label }}</td>
-            <td>{{ obj.updated_on|timesince }} ago</td>
-          </tr>
-        {% endfor %}
-        {% for obj in my_actions %}
-          <tr>
-            <td>Action</td>
-            <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-            <td>{{ obj.state|label }}</td>
-            <td>{{ obj.updated_on|timesince }} ago</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-      </table>
-      {% else %}
-        <p>You haven't yet created any content.</p>
-      {% endif %}
-    </div>
-  </div> {# end .row #}
-  <hr/>
+      {% include "goals/_index_author_content.html" %}</div>
+  </div>
+{% else %}
+  <div class="row">
+    <div class="large-6 medium-6 small-12 columns">
+      {% include "goals/_index_help.html" %}</div>
+    <div class="large-6 medium-6 small-12 columns">
+      {% include "goals/_index_author_content.html" %}</div>
+  </div>
+{% endif %}
+<hr/>
 {% endblock %}
 
