@@ -24,25 +24,16 @@ class UserViewSet(viewsets.ModelViewSet):
     POST to `/api/users/` with the following information:
 
         {
-            "username": "YOUR-USERNAME",
-            "password": "YOUR-PASSWORD",
             "email": "YOUR-EMAIL",
+            "password": "YOUR-PASSWORD",
             "first_name": "First",
             "last_name": "Last"
         }
 
-    **Note**: `username` and `email` can be used interchangibly; You must
-    provide at least one (and a password). Aslo, `first_name` and `last_name`
-    are optional.
+    **Note**: `email` and `password` are required! However, `first_name` and
+    `last_name` are optional.
 
-    *Valid Examples*:
-
-        {
-            "username": "YOUR-USERNAME",
-            "password": "YOUR-PASSWORD",
-        }
-
-    or
+    *Valid Example*:
 
         {
             "email": "YOUR-EMAIL",
@@ -56,12 +47,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     ## Acquiring an Auth token
 
-    POST to `/api/auth/token/` with either a username/password or email/password
-    pair:
-
-        {"username": "YOUR-USERNAME", "password": "YOUR-PASSWORD"}
-
-    or:
+    POST to `/api/auth/token/` with either an  email/password pair:
 
         {"email": "YOUR-EMAIL", "password": "YOUR-PASSWORD"}
 
@@ -114,6 +100,13 @@ class UserViewSet(viewsets.ModelViewSet):
         """Alter the returned response, so that it includes an API token for a
         newly created user.
         """
+        # NOTE: We expect an email address to be given, here, but this api
+        # used to support a username. If we receive a username, but no email
+        # address, we swap them. This'll prevent and edge case where we might
+        # end up with duplicate accounts.
+        if request.data.get("username") and request.data.get("email") is None:
+            request.data['email'] = request.data.get('username')
+            request.data.pop('username')
         resp = super(UserViewSet, self).create(request, *args, **kwargs)
         # Include the newly-created User's auth token (if we have a user)
         if hasattr(self, 'object') and hasattr(self.object, 'auth_token'):

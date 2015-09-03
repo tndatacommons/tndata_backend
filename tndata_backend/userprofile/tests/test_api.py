@@ -93,13 +93,13 @@ class TestUsersAPI(APITestCase):
     def test_post_user_list(self):
         """POSTing to the user-list should create a new user."""
         url = reverse('user-list')
-        response = self.client.post(url, {'username': 'new', 'password': 'secret'})
+        data = {'email': 'new@user.com', 'password': 'secret'}
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(self.User.objects.count(), 2)
 
         # Ensure retrieved info contains an auth token
-        u = self.User.objects.get(username='new')
-        self.assertEqual(response.data['username'], 'new')
+        u = self.User.objects.get(email='new@user.com')
         self.assertEqual(response.data['token'], u.auth_token.key)
 
         # Clean up.
@@ -129,6 +129,27 @@ class TestUsersAPI(APITestCase):
         # Clean up.
         u.delete()
 
+    def test_post_user_list_with_existing_account_email_as_username(self):
+        """POSTing to the user-list with the email address for an existing account
+        (even if provided as the username) should fail to create a new user,
+        but should return an http 400 response.
+
+        """
+        # Generate an existing user.
+        user = {"email": "foo@example.com", "first_name": "F", "last_name": "L"}
+        user['username'] = user_utils.username_hash(user['email'])
+        user = self.User.objects.create(**user)
+
+        url = reverse('user-list')
+        expected_error = "This user account already exists."
+
+        # First try to create this account, but include the email in the
+        # username field.
+        data = {'username': user.email, 'password': 'xxx'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, expected_error, status_code=400)
+
     def test_post_user_list_with_existing_account(self):
         """POSTing to the user-list with username/email for an existing account
         should fail to create a new user, but should return an http 400 response.
@@ -152,7 +173,6 @@ class TestUsersAPI(APITestCase):
         data = {'username': user.username, 'password': 'xxx'}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertContains(response, expected_error, status_code=400)
 
     def test_get_user_detail(self):
         """Ensure authenticated users can access their data."""
