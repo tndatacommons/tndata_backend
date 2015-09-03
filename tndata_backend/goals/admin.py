@@ -348,7 +348,6 @@ class BehaviorProgressAdmin(UserRelatedModelAdmin):
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'behavior__id', 'behavior__title',
     )
     raw_id_fields = ("user", "user_behavior")
 
