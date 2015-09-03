@@ -209,6 +209,17 @@ class TestCategoryDetailView(TestCaseWithGroups):
         self.assertContains(resp, self.category.title)
         self.assertIn("category", resp.context)
 
+    def test_viewer_get_changed_url(self):
+        """Ensure we can still access a page if the title_slug changes."""
+        self.client.login(username="viewer", password="pass")
+
+        # if the object's title changes, the old url should still work.
+        self.category.title = "Some New thing that's different"
+        self.category.save()
+        self.assertNotEqual(self.category.get_absolute_url(), self.url)
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
 
 class TestCategoryCreateView(TestCaseWithGroups):
 
@@ -668,6 +679,17 @@ class TestGoalDetailView(TestCaseWithGroups):
 
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_viewer_get_changed_url(self):
+        """Ensure we can still access a page if the title_slug changes."""
+        self.client.login(username="viewer", password="pass")
+
+        # if the object's title changes, the old url should still work.
+        self.goal.title = "Some New thing that's different"
+        self.goal.save()
+        self.assertNotEqual(self.goal.get_absolute_url(), self.url)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
@@ -1536,6 +1558,17 @@ class TestBehaviorDetailView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_viewer_get_changed_url(self):
+        """Ensure we can still access a page if the title_slug changes."""
+        self.client.login(username="viewer", password="pass")
+
+        # if the object's title changes, the old url should still work.
+        self.behavior.title = "Some New thing that's different"
+        self.behavior.save()
+        self.assertNotEqual(self.behavior.get_absolute_url(), self.url)
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
 
 class TestBehaviorCreateView(TestCaseWithGroups):
 
@@ -2051,6 +2084,17 @@ class TestActionDetailView(TestCaseWithGroups):
 
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_viewer_get_changed_url(self):
+        """Ensure we can still access a page if the title_slug changes."""
+        self.client.login(username="viewer", password="pass")
+
+        # if the action's title changes, the old url should still work.
+        self.action.title = "Some New thing that's different"
+        self.action.save()
+        self.assertNotEqual(self.action.get_absolute_url(), self.url)
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 

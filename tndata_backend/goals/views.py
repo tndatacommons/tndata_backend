@@ -607,7 +607,6 @@ class ActionDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
-    query_pk_and_slug = True  # Use pk and slug together to identify object.
 
 
 class ActionCreateView(ContentAuthorMixin, CreatedByView):
@@ -616,7 +615,6 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
-    query_pk_and_slug = True  # Use pk and slug together to identify object.
     action_type = Action.CUSTOM
 
     def _set_action_type(self, action_type):
@@ -716,7 +714,6 @@ class ActionPublishView(ContentEditorMixin, PublishView):
     model = Action
     slug_field = 'title_slug'
     pk_url_kwarg = 'pk'
-    query_pk_and_slug = True  # Use pk and slug together to identify object.
 
     def get_object(self, kwargs):
         """Actions may have have duplicates title_slug values, so we need to
@@ -733,7 +730,6 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
-    query_pk_and_slug = True  # Use pk and slug together to identify object.
     form_class = ActionForm
 
     def post(self, request, *args, **kwargs):
@@ -801,7 +797,6 @@ class ActionDeleteView(ContentEditorMixin, ContentDeleteView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
-    query_pk_and_slug = True  # Use pk and slug together to identify object.
     success_url = reverse_lazy('goals:index')
 
 
