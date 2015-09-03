@@ -1,7 +1,35 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+
 from . import models
 
 from utils.admin import UserRelatedModelAdmin
+
+
+def remove_app_data(modeladmin, request, queryset):
+    """Remove a user's selected content from the mobile app. This essentiall
+    deletes their: UserAction, UserBehavior, UserCategory, BehaviorProgress,
+    GoalProgress, CategoryProgress, PackageEnrollment, Trigger,
+    UserCompletedAction instances as well as their GCMMessages.
+
+    """
+    for obj in queryset:
+        if isinstance(obj, models.UserProfile):
+            obj = obj.user
+
+        obj.useraction_set.all().delete()
+        obj.userbehavior_set.all().delete()
+        obj.usergoal_set.all().delete()
+        obj.usercategory_set.all().delete()
+        obj.trigger_set.all().delete()
+        obj.behaviorprogress_set.all().delete()
+        obj.goalprogress_set.all().delete()
+        obj.categoryprogress_set.all().delete()
+        obj.usercompletedaction_set.all().delete()
+        obj.packageenrollment_set.all().delete()
+        obj.gcmmessage_set.all().delete()
+remove_app_data.short_description = "Remove App Data"
 
 
 class UserProfileAdmin(UserRelatedModelAdmin):
@@ -12,5 +40,12 @@ class UserProfileAdmin(UserRelatedModelAdmin):
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
     )
-
+    actions = [remove_app_data]
 admin.site.register(models.UserProfile, UserProfileAdmin)
+
+
+class CustomUserAdmin(UserAdmin):
+    """Override the default UserAdmin class so we can attach a custom action."""
+    actions = [remove_app_data]
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
