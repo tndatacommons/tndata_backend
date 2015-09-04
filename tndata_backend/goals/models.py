@@ -919,6 +919,19 @@ class Action(URLMixin, BaseBehavior):
         super().save(*args, **kwargs)
         self.remove_queued_messages()
 
+    def get_disable_trigger_url(self):
+        args = [self.id, self.title_slug]
+        return reverse("goals:action-disable-trigger", args=args)
+
+    def disable_default_trigger(self):
+        """Remove the default trigger from this action."""
+        trigger_id = self.default_trigger.pk
+        self.default_trigger = None
+        self.save()
+
+        # Delete the now-orphaned trigger
+        Trigger.objects.filter(pk=trigger_id).delete()
+
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["action", self.id])
 

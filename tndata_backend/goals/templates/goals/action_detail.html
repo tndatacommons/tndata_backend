@@ -27,6 +27,17 @@
         <dt>Default Trigger</dt>
           {% with trigger=action.default_trigger %}
           <dd>
+            {# A simple form to disable the trigger #}
+            {% if trigger and user|is_editor %}
+              <form action="{{ action.get_disable_trigger_url }}"
+                    method="post"
+                    class="pull-right">
+                {% csrf_token %}
+                {{ disable_trigger_form }}
+                <button type="submit" class="button info tiny">
+                <i class="fa fa-bell-slash"></i> Disable</button>
+              </form>
+            {% endif %}
             {% if trigger.time %}{{ trigger.time }}{% endif %}
             {% if trigger.trigger_date %}{{ trigger.trigger_date }}{% endif %}
             {% if trigger.recurrences %}

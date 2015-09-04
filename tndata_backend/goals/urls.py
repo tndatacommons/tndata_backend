@@ -85,6 +85,11 @@ urlpatterns = patterns('',
         name='action-list'
     ),
     url(
+        r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/disable-trigger/$',
+        views.disable_trigger,
+        name='action-disable-trigger'
+    ),
+    url(
         r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
         views.ActionPublishView.as_view(),
         name='action-publish'

@@ -22,6 +22,10 @@ from . utils import read_uploaded_csv
 from . widgets import TimeSelectWidget
 
 
+class DisableTriggerForm(forms.Form):
+    ok = forms.BooleanField(initial=True, widget=forms.HiddenInput)
+
+
 class ActionForm(forms.ModelForm):
     """A Form for creating/updating actions. This form orders related behaviors
     alphabetically."""

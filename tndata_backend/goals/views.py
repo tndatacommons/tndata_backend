@@ -22,6 +22,7 @@ from . forms import (
     CategoryForm,
     ContentAuthorForm,
     CSVUploadForm,
+    DisableTriggerForm,
     GoalForm,
     PackageEnrollmentForm,
     TriggerForm,
@@ -608,6 +609,11 @@ class ActionDetailView(ContentViewerMixin, DetailView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
 
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx['disable_trigger_form'] = DisableTriggerForm()
+        return ctx
+
 
 class ActionCreateView(ContentAuthorMixin, CreatedByView):
     model = Action
@@ -790,6 +796,19 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
                 prefix="trigger"
             )
         return context
+
+
+def disable_trigger(request, pk, title_slug):
+    """A Simple view to remove an action's default trigger."""
+    action = get_object_or_404(Action, pk=pk)
+    if request.method == "POST":
+        form = DisableTriggerForm(request.POST)
+        if form.is_valid():
+            action.disable_default_trigger()
+            messages.success(request, "The default trigger has been removed.")
+        else:
+            messages.error(request, "Sorry, we could not remove the trigger.")
+    return redirect(action.get_absolute_url())
 
 
 class ActionDeleteView(ContentEditorMixin, ContentDeleteView):
