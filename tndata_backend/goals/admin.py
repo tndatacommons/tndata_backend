@@ -309,14 +309,17 @@ admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'action', 'categories',
-        'custom_trigger', 'custom_triggers_allowed', 'created_on',
+        'user_email', 'user_first', 'user_last', 'notification', 'action',
+        'categories', 'custom_triggers_allowed', 'created_on',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'action__id', 'action__title',
+        'action__id', 'action__title', 'action__notification_text',
     )
     raw_id_fields = ("user", "action")
+
+    def notification(self, obj):
+        return obj.action.notification_text
 
     def categories(self, obj):
         cats = set()
