@@ -63,6 +63,11 @@
     {% include "goals/_form_fields_sans_notes.html" %}
     <fieldset>
       <legend>Reminder Details</legend>
+        {% if action.default_trigger %}
+        <button type="button" id="disable-trigger-button"
+                class="button info tiny pull-right">
+          <i class="fa fa-bell-slash"></i> Disable</button>
+        {% endif %}
       {{ trigger_form.as_p }}
     </fieldset>
     {% form_buttons object "Action" %}
@@ -127,6 +132,17 @@ Category
   </div>
 </div>
 </form>
+
+{# NOTE: We can't have forms within forms, so this has to be down here. #}
+{% if action.default_trigger %}
+<form action="{{ action.get_disable_trigger_url }}"
+      method="post"
+      class="pull-right"
+      id="disable-trigger-form">
+  {% csrf_token %}
+  {{ disable_trigger_form }}
+</form>
+{% endif %}
 {% endblock %}
 
 
@@ -138,5 +154,12 @@ Category
     $('.datepicker').datepicker({'format': 'mm/dd/yyyy'});
     $("div.recurrence-widget").find(".add-date").attr("href", "#").hide();
   });
+
+  {# NOTE: only add the ability to submit this if we have a default trigger #}
+  {% if action.default_trigger %}
+  $("#disable-trigger-button").click(function() {
+    $("#disable-trigger-form").submit();
+  });
+  {% endif %}
   </script>
 {% endblock %}

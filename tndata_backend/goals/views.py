@@ -795,6 +795,9 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
                 instance=self.object.default_trigger,
                 prefix="trigger"
             )
+
+        # And the ability to disable it.
+        context['disable_trigger_form'] = DisableTriggerForm()
         return context
 
 
