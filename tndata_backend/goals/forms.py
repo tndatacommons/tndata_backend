@@ -3,6 +3,7 @@ import re
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.forms import ValidationError
@@ -377,7 +378,16 @@ class PackageEnrollmentForm(forms.Form):
     def clean_email_addresses(self):
         """Returns a list of email addresses."""
         content = self.cleaned_data['email_addresses']
-        return [email for email in re.split(r"\s|,", content) if email.strip()]
+        emails = [email for email in re.split(r"\s|,", content) if email.strip()]
+        for email in emails:
+            try:
+                validate_email(email)
+            except ValidationError:
+                raise ValidationError(
+                    "%(value)s is not a valid email address.",
+                    params={'value': email}
+                )
+        return emails
 
 
 class AcceptEnrollmentForm(forms.Form):
