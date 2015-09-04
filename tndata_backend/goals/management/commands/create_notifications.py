@@ -8,14 +8,23 @@ from django.utils import timezone
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
-#from utils import slack
 
 
 logger = logging.getLogger("loggly_logs")
+ERROR = True
+WARNING = False
+
+
+class SingleItemList(list):
+    """that only allows one item"""
+    def append(self, item):
+        if item not in self:
+            super().append(item)
 
 
 class Command(BaseCommand):
     help = 'Creates notification Messages for users Actions & Behaviors'
+    _log_messages = SingleItemList()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,10 +47,17 @@ class Command(BaseCommand):
         t = self._to_localtime(t, user)
         return t
 
+    def write_log(self):
+        for msg, error in self._log_messages:
+            if error:
+                logger.error(msg)
+                self.stderr.write(msg)
+            else:
+                logger.warning(msg)
+                self.stdout.write(msg)
+
     def create_behavior_message(self, user):
         """Create a single notification for ALL of a user's selected Behaviors."""
-        # TODO: Give users a way to specify a single, priority (behavior)
-        # custom reminder instead of using the default.
         try:
             # create(self, user, title, message, deliver_on, obj=None)
             m = GCMMessage.objects.create(
@@ -52,21 +68,17 @@ class Command(BaseCommand):
             )
             if m is not None:
                 self._messages_created += 1
-                #slack.log_message(m, "Behavior Message Created")
-            else:
-                msg = "Failed to create Behavior Message for {0}".format(user)
-                logger.warning(msg)
-                self.stderr.write(msg)
+            #else:
+                #msg = "Failed to create Behavior Message for {0}".format(user)
+                #self._log_messages.append((msg, ERROR))
         except GCMDevice.DoesNotExist:
             msg = "User {0} has not registered a Device".format(user)
-            logger.error(msg, exc_info=1)
-            self.stderr.write(msg)
+            self._log_messages.append((msg, ERROR))
 
     def create_message(self, user, obj, title, message, delivery_date):
         if delivery_date is None:
             msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
-            logger.error(msg)
-            self.stderr.write(msg)
+            self._log_messages.append((msg, ERROR))
         else:
             try:
                 if len(title) > 256:
@@ -76,17 +88,14 @@ class Command(BaseCommand):
                 )
                 if m is not None:
                     self._messages_created += 1
-                    #slack.log_message(m, "Message Created")
-                else:
-                    msg = "Failed to create message for {0}/{1}-{2}".format(
-                        user, obj.__class__.__name__, obj.id
-                    )
-                    logger.warning(msg)
-                    self.stderr.write(msg)
+                #else:
+                    #msg = "Failed to create message for {0}/{1}-{2}".format(
+                        #user, obj.__class__.__name__, obj.id
+                    #)
+                    #self._log_messages.append((msg, ERROR))
             except GCMDevice.DoesNotExist:
                 msg = "User {0} has not registered a Device".format(user)
-                logger.error(msg, exc_info=1)
-                self.stderr.write(msg)
+                self._log_messages.append((msg, ERROR))
 
     def handle(self, *args, **options):
         # Make sure everything is ok before we run this.
@@ -129,5 +138,5 @@ class Command(BaseCommand):
 
         # Finish with a confirmation message
         m = "Created {0} notification messages.".format(self._messages_created)
-        logger.info(m)
-        self.stdout.write(m)
+        self._log_messages.append((m, WARNING))
+        self.write_log()
