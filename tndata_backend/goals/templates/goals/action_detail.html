@@ -22,13 +22,21 @@
 
         <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
         <dt>More Info</dt><dd>{{ action.more_info|markdown }}</dd>
+
+        {% if action.external_resource_name %}
         <dt>Resource Name</dt><dd>{{ action.external_resource_name }}</dd>
+        {% endif %}
+
+        {% if action.external_resource %}
         <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
+        {% endif %}
+
+        {% with trigger=action.default_trigger %}
+        {% if trigger %}
         <dt>Default Trigger</dt>
-          {% with trigger=action.default_trigger %}
           <dd>
             {# A simple form to disable the trigger #}
-            {% if trigger and user|is_editor %}
+            {% if user|is_editor %}
               <form action="{{ action.get_disable_trigger_url }}"
                     method="post"
                     class="pull-right">
@@ -44,8 +52,11 @@
               <br/><em>{{ trigger.recurrences_as_text }}</em>
             {% endif %}
           </dd>
-          {% endwith %}
+        {% endif %}
+        {% endwith %}
+
         <dt>Notification Text</dt><dd>{{ action.notification_text }}</dd>
+
         <dt>Icon</dt>
           <dd class="gray">
 
@@ -74,8 +85,14 @@
           {% endwith %}
 
           </dd>
+
+        {% if action.source_link %}
         <dt>Source Link</dt><dd>{{ action.source_link|urlize}}</dd>
+        {% endif %}
+
+        {% if action.source_notes %}
         <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
+        {% endif %}
       </dl>
       {% modified action %}
       {% if perms.goals.publish_action %}{% publish_deny_form action %}{% endif %}
