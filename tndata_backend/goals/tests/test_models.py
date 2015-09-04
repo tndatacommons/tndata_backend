@@ -3,6 +3,7 @@ from datetime import datetime, date, time
 from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.db.models import QuerySet
 from django.utils import timezone
@@ -1319,3 +1320,103 @@ class TestCategoryProgress(TestCase):
 
     def test_text_glyph(self):
         self.assertEqual(self.cp.text_glyph, u"\u2198")
+
+
+class TestPackageEnrollment(TestCase):
+    """Tests for the `PackageEnrollment` model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin, created = User.objects.get_or_create(
+            username="admin",
+            email="admin@example.com"
+        )
+        cls.user, created = User.objects.get_or_create(
+            username="test",
+            first_name="Test",
+            last_name="User",
+            email="test@example.com"
+        )
+        cls.category = Category.objects.create(
+            order=1,
+            title="Test Category",
+            packaged_content=True,
+        )
+        cls.category.publish()
+        cls.category.package_contributors.add(cls.admin)
+
+        # create some child content
+        cls.goal = Goal.objects.create(title="G", description="G.")
+        cls.goal.publish()
+        cls.goal.categories.add(cls.category)
+        cls.behavior = Behavior.objects.create(title='B')
+        cls.behavior.publish()
+        cls.behavior.save()
+        cls.behavior.goals.add(cls.goal)
+        cls.action = Action.objects.create(behavior=cls.behavior, title="A")
+        cls.action.publish()
+        cls.action.save()
+
+    def setUp(self):
+        # Create an actual package enrollment.
+        self.pe = PackageEnrollment.objects.create(
+            user=self.user,
+            category=self.category,
+            enrolled_by=self.admin
+        )
+        self.pe.goals.add(self.goal)
+
+    def tearDown(self):
+        PackageEnrollment.objects.all().delete()
+        for m in [UserCategory, UserGoal, UserBehavior, UserAction]:
+            m.objects.all().delete()
+
+    def test__str__(self):
+        expected = "Test User enrolled on {}".format(self.pe.enrolled_on)
+        actual = "{}".format(self.pe)
+        self.assertEqual(expected, actual)
+
+    def test_defaults(self):
+        """Test the PackageEnrollment's default values."""
+        self.assertFalse(self.pe.prevent_custom_triggers)
+        self.assertFalse(self.pe.accepted)
+
+    def test_properties(self):
+        self.assertEqual(
+            self.pe.rendered_consent_summary,
+            self.category.rendered_consent_summary
+        )
+        self.assertEqual(
+            self.pe.rendered_consent_more,
+            self.category.rendered_consent_more
+        )
+
+    def test_get_absolute_url(self):
+        self.assertEqual(
+            self.pe.get_absolute_url(),
+            reverse('goals:package-detail', args=[self.pe.id])
+        )
+
+    def test_get_accept_url(self):
+        self.assertEqual(
+            self.pe.get_accept_url(),
+            reverse('goals:accept-enrollment', args=[self.pe.id])
+        )
+
+    def test_accept(self):
+        self.pe.create_user_mappings = Mock()
+        self.assertFalse(self.pe.accepted)
+        self.pe.accept()
+        self.assertTrue(self.pe.accepted)
+        self.pe.create_user_mappings.assert_called_once_with()
+
+    def test_create_user_mappings(self):
+        self.assertFalse(self.user.usercategory_set.exists())
+        self.assertFalse(self.user.usergoal_set.exists())
+        self.assertFalse(self.user.userbehavior_set.exists())
+        self.assertFalse(self.user.useraction_set.exists())
+        self.pe.create_user_mappings()
+        self.assertTrue(self.user.usercategory_set.exists())
+        self.assertTrue(self.user.usergoal_set.exists())
+        self.assertTrue(self.user.userbehavior_set.exists())
+        self.assertTrue(self.user.useraction_set.exists())

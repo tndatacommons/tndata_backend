@@ -240,7 +240,8 @@ class PackageEnrollmentManager(models.Manager):
         for them. Returns a QuerySet of PackageEnrollment objects.
 
         """
-        # NOTE: don't create duplicate PackageEnrollments; just udpate goals.
+        # NOTE: this doesn't create duplicate PackageEnrollments, but it does
+        # udpate a user's goals.
         created_objects = []
         User = get_user_model()
 
@@ -266,6 +267,8 @@ class PackageEnrollmentManager(models.Manager):
                     enrolled_by=by,
                     prevent_custom_triggers=prevent_triggers
                 )
+
+            # Will add new goals or update the existing relationships.
             for goal in goals:
                 obj.goals.add(goal)
             obj.save()

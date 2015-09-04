@@ -1687,7 +1687,7 @@ class PackageEnrollment(models.Model):
     def get_absolute_url(self):
         """Currently, this is the PackageDetailView, which provides a list of
         enrollments."""
-        return reverse("goals:pacage-detail")
+        return reverse("goals:package-detail", args=[self.pk])
 
     def get_accept_url(self):
         return reverse("goals:accept-enrollment", args=[self.pk])
@@ -1697,41 +1697,28 @@ class PackageEnrollment(models.Model):
         self.save()
         self.create_user_mappings()
 
-    # TODO: NEEDS TESTS.
     def create_user_mappings(self):
-        """Creates all of the User* mappings for the associated categories and
+        """Creates all of the User-mappings for the associated categories and
         all child content."""
-        # TODO: this is terribly inefficient, because we'll likely be doing
+        # This is terribly inefficient, because we'll likely be doing
         # this for a number of users at once.
-        try:
-            UserCategory.objects.create(user=self.user, category=self.category)
-        except IntegrityError:
-            pass
+        UserCategory.objects.get_or_create(user=self.user, category=self.category)
 
         # Enroll the user in the goals.
         goals = self.goals.all()
         for goal in goals:
-            try:
-                UserGoal.objects.create(user=self.user, goal=goal)
-            except IntegrityError:
-                pass
+            UserGoal.objects.get_or_create(user=self.user, goal=goal)
 
         # Enroll the User in the Behaviors
         behaviors = Behavior.objects.published().filter(goals=goals).distinct()
         for behavior in behaviors:
-            try:
-                UserBehavior.objects.create(user=self.user, behavior=behavior)
-            except IntegrityError:
-                pass
+            UserBehavior.objects.get_or_create(user=self.user, behavior=behavior)
 
         # Enroll the User in the Actions
         actions = Action.objects.published().filter(behavior__in=behaviors)
         actions = actions.distinct()
         for action in actions:
-            try:
-                UserAction.objects.create(user=self.user, action=action)
-            except IntegrityError:
-                pass
+            UserAction.objects.get_or_create(user=self.user, action=action)
 
     objects = PackageEnrollmentManager()
 
