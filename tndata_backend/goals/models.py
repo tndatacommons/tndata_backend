@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.db import models, IntegrityError
+from django.db import models
 from django.db.models import Avg
 from django.db.models.signals import (
     pre_delete, pre_save, post_delete, post_save
@@ -26,6 +26,7 @@ from django.utils import timezone
 
 from django_fsm import FSMField, transition
 from markdown import markdown
+from notifications.models import GCMMessage
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from utils import colors, dateutils
@@ -910,6 +911,14 @@ class Action(URLMixin, BaseBehavior):
             ("publish_action", "Can Publish Actions"),
         )
 
+    def save(self, *args, **kwargs):
+        """After saving an Action, we remove any stale GCM Notifications that
+        were associated with the action, IF any of the fields used to generate
+        a notification have changed.
+        """
+        super().save(*args, **kwargs)
+        self.remove_queued_messages()
+
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["action", self.id])
 
@@ -923,6 +932,35 @@ class Action(URLMixin, BaseBehavior):
 
         """
         return self.useraction_set.filter(user=user, action=self).first()
+
+    def remove_queued_messages(self):
+        """Remove all GCMMessage objects that have a GenericForeignKey to this
+        action instance.
+
+        Once removed, the scheduled task will re-created any messages that need
+        to be sent in the future.
+
+        Historical note: I tried to check if fields had changed before doing
+        this, but it was _hard_ with the related default_trigger field (because
+        local values would be different types than what I read from the DB).
+        I used something like: http://stackoverflow.com/a/15280630/182778 to
+        build:
+
+            _changed(['notification_text', 'default_trigger__time', ... ])
+
+        """
+        if not getattr(self, "_removed_queued_messages", False):
+            # We need the content type for this object because we'll use it to
+            # query the queued messages.
+            action_type = ContentType.objects.get_for_model(self)
+
+            params = {
+                'content_type': action_type,
+                'object_id': self.id,
+                'success': None,  # only messages that haven't been sent.
+            }
+            GCMMessage.objects.filter(**params).delete()
+            self._removed_queued_messages = True
 
     objects = WorkflowManager()
 
