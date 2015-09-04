@@ -35,12 +35,12 @@ admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
         'user_email', 'user_username', 'title', 'message_teaser',
-        'deliver_on', 'success', 'created_on',
+        'content_type', 'object_id', 'deliver_on', 'success', 'created_on',
     )
     list_filter = ('success', 'response_code')
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
-        'title', 'message'
+        'title', 'message', 'content_type__model', 'object_id',
     ]
     exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
