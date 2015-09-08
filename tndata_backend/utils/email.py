@@ -1,5 +1,6 @@
-from django.core.mail import get_connection
+from django.core.mail import get_connection, mail_managers
 from django.core.mail.message import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 
 def send_mass_html_mail(datatuple, fail_silently=False, auth_user=None,
@@ -37,3 +38,21 @@ def send_mass_html_mail(datatuple, fail_silently=False, auth_user=None,
         messages.append(message)
 
     return connection.send_messages(messages)
+
+
+
+def send_new_user_request_notification_to_managers(user):
+    """When a user signs up, we require admin/manager intervention to activate
+    their account. This email sends managers that notification.
+
+    """
+    subject = "New User Request"
+    ctx = {
+        'user': user,
+        'alert': subject,
+        'cta_link': 'https://app.tndata.org/admin/auth/user/{0}/'.format(user.id),
+        'cta_text': 'Activate User',
+    }
+    message = render_to_string('utils/email/new_user_request.txt', ctx)
+    html_message = render_to_string('utils/email/new_user_request.html', ctx)
+    return mail_managers(subject, message, html_message=html_message)

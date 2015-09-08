@@ -1,0 +1,34 @@
+{% extends 'email/base_email.html' %}
+
+{% block title %}
+  {{ alert }}
+{% endblock %}
+
+
+{% block content %}
+
+<p>We have a request for a new user account from the following:</p>
+<p>
+  Name: {{ user.get_full_name }}<br/>
+  Email: {{ user.email }}<br/>
+  Joined: {{ user.date_joined }}
+</p>
+
+<p>To activate this account, edit the user's admin entry and check the
+<strong>Active</strong> option.</p>
+
+{% endblock %}
+
+{% block post_cta %}
+
+<p>To allow users to create content, give them the <strong>Content Author</strong>
+and <strong>Content Viewer</strong> permissions.</p>
+
+<p>See this screenshot for reference:<br/>
+<a href="http://i.imgur.com/8LUGOky.jpg">
+  <img src="http://i.imgur.com/8LUGOky.jpg" /></a>
+</p>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+

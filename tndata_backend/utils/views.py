@@ -1,12 +1,12 @@
 from django import http
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.core.mail import mail_admins
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, FormView
 
 from userprofile.forms import UserForm
+from .email import send_new_user_request_notification_to_managers
 from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
 from . user_utils import username_hash
@@ -32,15 +32,9 @@ def signup(request):
                 u.set_password(password_form.cleaned_data['password'])
                 u.save()
 
-                # Email admins about the new user.
-                message = (
-                    "We have a request for a new user account from the "
-                    "following:\n\nName: {0}\nEmail: {1}\n\nTo activate this "
-                    "account, visit:\n"
-                    "https://app.tndata.org/admin/auth/user/{2}/\n\n"
-                )
-                message = message.format(u.get_full_name(), u.email, u.id)
-                mail_admins("New User Request", message)
+                # Email Managers about the new user. They will need to
+                # activate the account.
+                send_new_user_request_notification_to_managers(u)
 
                 return redirect(reverse("utils:signup") + "?c=1")
         else:

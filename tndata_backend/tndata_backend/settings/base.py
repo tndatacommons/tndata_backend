@@ -19,7 +19,7 @@ MANAGERS = ADMINS + (
 )
 DEFAULT_FROM_EMAIL = 'Compass Team <webmaster@tndata.org>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_SUBJECT_PREFIX = "TNData"
+EMAIL_SUBJECT_PREFIX = "[TNData] "
 
 # Site's FQDN and URL. For building links in email.
 SITE_DOMAIN = "app.tndata.org"
