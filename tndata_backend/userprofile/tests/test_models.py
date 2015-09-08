@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -22,6 +24,37 @@ class TestPlace(TestCase):
         self.place.name = "Home Thingy"
         self.place.save()
         self.assertEqual(self.place.slug, "home-thingy")
+
+
+class TestUserPlace(TestCase):
+    """Tests for the `UserPlace` model."""
+
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+        cls.user = User.objects.create_user(
+            username="me",
+            email="me@example.com",
+            password="secret"
+        )
+        cls.profile = cls.user.userprofile
+        cls.place = Place.objects.create(name="Home", primary=True)
+        cls.up = UserPlace.objects.create(
+            user=cls.user,
+            profile=cls.profile,
+            place=cls.place,
+            latitude="35.1213",
+            longitude="-89.9905"
+        )
+
+    def test__str__(self):
+        expected = "Home (35.1213, -89.9905)"
+        actual = "{}".format(self.up)
+        self.assertEqual(expected, actual)
+
+    def test_latlon(self):
+        expected = ('35.1213','-89.9905')
+        self.assertEqual(self.up.latlon, expected)
 
 
 class TestUserProfile(TestCase):
