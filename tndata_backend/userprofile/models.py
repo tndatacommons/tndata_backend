@@ -52,14 +52,15 @@ class UserPlace(models.Model):
     def __str__(self):
         return "{0} ({1}, {2})".format(self.place, self.latitude, self.longitude)
 
-    @property
-    def latlon(self):
-        return (self.latitude, self.longitude)
-
     class Meta:
+        unique_together = ('user', 'place')
         order_with_respect_to = "user"
         verbose_name = "User Place"
         verbose_name_plural = "User Places"
+
+    @property
+    def latlon(self):
+        return (self.latitude, self.longitude)
 
 
 class UserProfile(models.Model):
