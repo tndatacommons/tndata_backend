@@ -8,7 +8,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .. models import Place, UserProfile
+from .. models import Place, UserPlace, UserProfile
 from .. serializers import UserSerializer
 from utils import user_utils
 
@@ -52,6 +52,124 @@ class TestPlaceAPI(APITestCase):
         url = reverse('place-detail', args=[self.home.id])
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TestUserPlaceAPI(APITestCase):
+    """Tests for the `UserPlace` api endpoint. NOTE: We have a migration that
+    creates Home, Work, School places."""
+
+    def setUp(self):
+        self.home = Place.objects.get(name="Home")
+
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="me",
+            email="me@example.com",
+            password="secret"
+        )
+        self.profile = self.user.userprofile
+        self.up = UserPlace.objects.create(
+            user=self.user,
+            profile=self.profile,
+            place=self.home,
+            latitude="35.1213",
+            longitude="-89.9905"
+        )
+
+    def test_get_userplace_list_unauthenticated(self):
+        """Ensure unauthenticated requests don't return any data."""
+        url = reverse('userplace-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_userplace_list(self):
+        url = reverse('userplace-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['count'], 1)
+        obj = response.data['results'][0]
+        self.assertEqual(obj['id'], self.up.id)
+        self.assertEqual(obj['user'], self.user.id)
+        self.assertEqual(obj['profile'], self.profile.id)
+        self.assertEqual(obj['place']['id'], self.home.id)
+        self.assertEqual(obj['place']['name'], self.home.name)
+        self.assertEqual(obj['place']['slug'], self.home.slug)
+
+    def test_post_userplace_list(self):
+        """Creating an new place should create a new UserPlace and a Place object."""
+        url = reverse('userplace-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = {
+            'place': 'The Library',
+            'latitude': '35.123456789',
+            'longitude': '-89.123456789',
+        }
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # We should have a new Place.
+        self.assertEqual(Place.objects.filter(name="The Library").count(), 1)
+
+        # The user should have a UserPlace object.
+        up = UserPlace.objects.get(user=self.user, place__name="The Library")
+        self.assertEqual(up.user, self.user)
+        self.assertEqual(up.profile, self.profile)
+        self.assertEqual(str(up.latitude), "35.1235")
+        self.assertEqual(str(up.longitude), "-89.1235")
+
+    def test_post_userplace_list_duplicate_not_allowed(self):
+        """Creating an duplicate place name is not allowed."""
+        url = reverse('userplace-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        # NOTE: The user already has a Home place saved (from setUp)
+        post_data = {
+            'place': 'Home',
+            'latitude': '35.123456789',
+            'longitude': '-89.123456789',
+        }
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_userplace_detail(self):
+        """Ensure a user can view their own place data."""
+        url = reverse('userplace-detail', args=[self.up.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['user'], self.user.id)
+        self.assertEqual(response.data['profile'], self.profile.id)
+        self.assertEqual(response.data['place']['id'], self.home.id)
+        self.assertEqual(response.data['place']['name'], self.home.name)
+        self.assertEqual(response.data['place']['slug'], self.home.slug)
+        self.assertTrue(response.data['place']['primary'])
+
+    def test_put_userplace_detail(self):
+        """Ensure users can update their UserPlace objects."""
+        url = reverse('userplace-detail', args=[self.up.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = {'longitude': '20.0'}
+        response = self.client.put(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Now, let's check the result.
+        up = UserPlace.objects.get(pk=self.up.id)
+        self.assertEqual(str(up.longitude), '20.0000')
+        self.assertEqual(str(up.latitude), str(self.up.latitude))  # unchanged
 
 
 class TestUserSerializer(TestCase):
