@@ -20,6 +20,12 @@ from . import models
 from utils import user_utils
 
 
+class PlaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Place
+        fields = ('id', 'name', 'slug', 'primary', 'updated_on', 'created_on')
+
+
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')

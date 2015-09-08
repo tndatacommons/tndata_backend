@@ -35,7 +35,7 @@ from survey.api import (
     RandomQuestionViewSet,
 )
 from userprofile.api import (
-    UserViewSet, UserProfileViewSet, api_logout, obtain_auth_token
+    PlaceViewSet, UserViewSet, UserProfileViewSet, api_logout, obtain_auth_token
 )
 from utils import views as utils_views
 
@@ -88,6 +88,7 @@ router.register(r'survey/open', OpenEndedQuestionViewSet)
 router.register(r'survey', RandomQuestionViewSet, base_name="surveyrandom")
 
 # ViewSets from the userprofile app.
+router.register(r'places', PlaceViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
 
