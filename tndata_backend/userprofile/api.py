@@ -94,10 +94,19 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def _quant(self, request, field, default=None):
+        assert field in ['longitude', 'latitude']
+        if field in request.data:
+            value = Decimal(request.data[field]).quantize(Decimal('0.0001'))
+            return str(value)
+        return default
+
     def create(self, request, *args, **kwargs):
         place = request.data.get('place')
         if place:
             place, _ = models.Place.objects.get_or_create(name=place.title())
+        request.data['longitude'] = self._quant(request, 'longitude')
+        request.data['latitude'] = self._quant(request, 'latitude')
         request.data['place'] = place.id
         request.data['user'] = request.user.id
         request.data['profile'] = request.user.userprofile.id
@@ -111,20 +120,9 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
             request.data['place'] = place.id
         else:
             request.data['place'] = up.place.id
-        if 'longitude' in request.data:
-            lng = request.data['longitude']
-            lng = Decimal(lng).quantize(Decimal('0.0001'))
-            request.data['longitude'] = str(lng)
-        else:
-            request.data['longitude'] = up.longitude
 
-        if 'latitude' in request.data:
-            lat = request.data['latitude']
-            lat = Decimal(lat).quantize(Decimal('0.0001'))
-            request.data['latitude'] = str(lat)
-        else:
-            request.data['latitude'] = up.latitude
-
+        request.data['longitude'] = self._quant(request, 'longitude', up.longitude)
+        request.data['latitude'] = self._quant(request, 'latitude', up.latitude)
         request.data['user'] = request.user.id
         request.data['profile'] = request.user.userprofile.id
         return super().update(request, *args, **kwargs)
