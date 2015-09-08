@@ -1,7 +1,27 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from .. models import Token, UserProfile
+from .. models import Place, Token, UserPlace, UserProfile
+
+
+class TestPlace(TestCase):
+    """Tests for the `Place` model."""
+
+    def setUp(self):
+        self.place = Place.objects.create(name='Work', primary=True)
+
+    def tearDown(self):
+        self.place.delete()
+
+    def test__str__(self):
+        self.assertEqual("{}".format(self.place), "Work")
+
+    def test_save(self):
+        """Ensure that slugs get created on save."""
+        self.assertEqual(self.place.slug, "work")  # From the setUp
+        self.place.name = "Home Thingy"
+        self.place.save()
+        self.assertEqual(self.place.slug, "home-thingy")
 
 
 class TestUserProfile(TestCase):

@@ -8,9 +8,52 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .. models import UserProfile
+from .. models import Place, UserProfile
 from .. serializers import UserSerializer
 from utils import user_utils
+
+
+class TestPlaceAPI(APITestCase):
+
+    def setUp(self):
+        self.place = Place.objects.create(name='Test Place', primary=True)
+        self.place.save()
+
+    def tearDown(self):
+        Place.objects.filter(id=self.place.id).delete()
+
+    def test_get_place_list(self):
+        url = reverse('place-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['count'], 1)
+        c = response.data['results'][0]
+        self.assertEqual(c['id'], self.place.id)
+        self.assertEqual(c['name'], self.place.name)
+        self.assertEqual(c['slug'], self.place.slug)
+        self.assertTrue(c['primary'])
+
+    def test_post_place_list(self):
+        """Ensure this endpoint is read-only."""
+        url = reverse('place-list')
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_get_place_detail(self):
+        url = reverse('place-detail', args=[self.place.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.place.id)
+        self.assertEqual(response.data['name'], self.place.name)
+        self.assertEqual(response.data['slug'], self.place.slug)
+        self.assertTrue(response.data['primary'])
+
+    def test_post_place_detail(self):
+        """Ensure this endpoint is read-only."""
+        url = reverse('place-detail', args=[self.place.id])
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TestUserSerializer(TestCase):
