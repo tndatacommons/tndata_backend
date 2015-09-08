@@ -14,24 +14,22 @@ from utils import user_utils
 
 
 class TestPlaceAPI(APITestCase):
+    """Tests for the `Place` api endpoint. NOTE: We have a migration that
+    creates Home, Work, School places."""
 
     def setUp(self):
-        self.place = Place.objects.create(name='Test Place', primary=True)
-        self.place.save()
-
-    def tearDown(self):
-        Place.objects.filter(id=self.place.id).delete()
+        self.home = Place.objects.get(name="Home")
 
     def test_get_place_list(self):
         url = reverse('place-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response.data['count'], 1)
-        c = response.data['results'][0]
-        self.assertEqual(c['id'], self.place.id)
-        self.assertEqual(c['name'], self.place.name)
-        self.assertEqual(c['slug'], self.place.slug)
+        self.assertEqual(response.data['count'], 3)  # Places from Migrations
+        c = response.data['results'][0]  # Home should be first.
+        self.assertEqual(c['id'], self.home.id)
+        self.assertEqual(c['name'], self.home.name)
+        self.assertEqual(c['slug'], self.home.slug)
         self.assertTrue(c['primary'])
 
     def test_post_place_list(self):
@@ -41,17 +39,17 @@ class TestPlaceAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_get_place_detail(self):
-        url = reverse('place-detail', args=[self.place.id])
+        url = reverse('place-detail', args=[self.home.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], self.place.id)
-        self.assertEqual(response.data['name'], self.place.name)
-        self.assertEqual(response.data['slug'], self.place.slug)
+        self.assertEqual(response.data['id'], self.home.id)
+        self.assertEqual(response.data['name'], self.home.name)
+        self.assertEqual(response.data['slug'], self.home.slug)
         self.assertTrue(response.data['primary'])
 
     def test_post_place_detail(self):
         """Ensure this endpoint is read-only."""
-        url = reverse('place-detail', args=[self.place.id])
+        url = reverse('place-detail', args=[self.home.id])
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 

@@ -7,23 +7,21 @@ from .. models import Place, Token, UserPlace, UserProfile
 
 
 class TestPlace(TestCase):
-    """Tests for the `Place` model."""
+    """Tests for the `Place` model. NOTE: We have a migration that creates
+    Home, Work, School places."""
 
     def setUp(self):
-        self.place = Place.objects.create(name='Work', primary=True)
-
-    def tearDown(self):
-        self.place.delete()
+        self.place = Place.objects.create(name='Foo')
 
     def test__str__(self):
-        self.assertEqual("{}".format(self.place), "Work")
+        self.assertEqual("{}".format(self.place), "Foo")
 
     def test_save(self):
         """Ensure that slugs get created on save."""
-        self.assertEqual(self.place.slug, "work")  # From the setUp
-        self.place.name = "Home Thingy"
+        self.assertEqual(self.place.slug, "foo")  # From the setUp
+        self.place.name = "Foo Thingy"
         self.place.save()
-        self.assertEqual(self.place.slug, "home-thingy")
+        self.assertEqual(self.place.slug, "foo-thingy")
 
 
 class TestUserPlace(TestCase):
@@ -38,7 +36,7 @@ class TestUserPlace(TestCase):
             password="secret"
         )
         cls.profile = cls.user.userprofile
-        cls.place = Place.objects.create(name="Home", primary=True)
+        cls.place = Place.objects.get(name="Home")  # from migration
         cls.up = UserPlace.objects.create(
             user=cls.user,
             profile=cls.profile,
