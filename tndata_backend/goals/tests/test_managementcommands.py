@@ -23,7 +23,7 @@ class TestCreateNotifications(TestCase):
             call_command('create_notifications')
 
             # We should have logged a 'finished' message
-            logger.info.assert_called_with("Created 0 notification messages.")
+            logger.warning.assert_called_with("Created 0 notification messages.")
 
     def test_create_notifications_with_content(self):
         User = get_user_model()
@@ -70,4 +70,4 @@ class TestCreateNotifications(TestCase):
             call_command('create_notifications')
 
             # We should have logged a 'finished' message
-            logger.info.assert_called_with("Created 3 notification messages.")
+            logger.warning.assert_called_with("Created 3 notification messages.")
