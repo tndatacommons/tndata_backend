@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
 from rest_framework import mixins, status, viewsets
@@ -35,6 +37,97 @@ class PlaceViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Place.objects.filter(primary=True)
     serializer_class = serializers.PlaceSerializer
+
+
+class UserPlaceViewSet(mixins.CreateModelMixin,
+                       mixins.ListModelMixin,
+                       mixins.RetrieveModelMixin,
+                       mixins.UpdateModelMixin,
+                       viewsets.GenericViewSet):
+    """User Places are Places defined by a user. A `UserPlace` object consists
+    of the following fields:
+
+    * id: The unique database id of the place.
+    * user: The user's unique database ID.
+    * profile: The user's unique profile ID (see the
+      [/api/userprofiles/](/api/userprofiles/) endpoint)
+    * place: A hash represnting the name of a place. See the
+      [/api/users/places/](/api/users/places/) endpoint.
+    * latitude: A decimal value representing the latitude of the place.
+    * longitude: A decimal value representing the longitude of the place.
+    * updated_on: Date the place was updated.
+    * created_on: Date the place was created.
+
+    ## Creating a UserPlace
+
+    POST to `/api/users/places/` with the following information:
+
+        {
+            "place": "PLACE-NAME"        // e.g. 'Home' or 'Work'
+            "latitude": "LATITUDE",      // e.g. '35.1234'
+            "longitude": "LONGITUDE",    // e.g. '-89.1234'
+        }
+
+    ## Updating a UserPlace
+
+    A UserPlace instance has a unique resource URI based on it's Database ID,
+    e.g. `/api/users/places/1/`. To update this object, send a PUT request
+    containing values that you want to update, e.g.:
+
+        {
+            "latitude": "27.9881",
+            "longitude": "86.9253"
+        }
+
+    **NOTE**: A user can define only _one Place name_. For example, if a user
+    sets a `Home` location, they can have only one UserPlace objects where
+    `place` is set to "Home".
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.UserPlace.objects.all()
+    serializer_class = serializers.UserPlaceSerializer
+    permission_classes = [permissions.IsSelf]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def create(self, request, *args, **kwargs):
+        place = request.data.get('place')
+        if place:
+            place, _ = models.Place.objects.get_or_create(name=place.title())
+        request.data['place'] = place.id
+        request.data['user'] = request.user.id
+        request.data['profile'] = request.user.userprofile.id
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        up = self.get_object()
+        place = request.data.get('place')
+        if place:
+            place, _ = models.Place.objects.get_or_create(name=place.title())
+            request.data['place'] = place.id
+        else:
+            request.data['place'] = up.place.id
+        if 'longitude' in request.data:
+            lng = request.data['longitude']
+            lng = Decimal(lng).quantize(Decimal('0.0001'))
+            request.data['longitude'] = str(lng)
+        else:
+            request.data['longitude'] = up.longitude
+
+        if 'latitude' in request.data:
+            lat = request.data['latitude']
+            lat = Decimal(lat).quantize(Decimal('0.0001'))
+            request.data['latitude'] = str(lat)
+        else:
+            request.data['latitude'] = up.latitude
+
+        request.data['user'] = request.user.id
+        request.data['profile'] = request.user.userprofile.id
+        return super().update(request, *args, **kwargs)
 
 
 class UserViewSet(viewsets.ModelViewSet):

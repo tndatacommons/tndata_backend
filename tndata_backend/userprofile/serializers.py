@@ -26,6 +26,31 @@ class PlaceSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug', 'primary', 'updated_on', 'created_on')
 
 
+class PlaceField(serializers.RelatedField):
+
+    def to_internal_value(self, data):
+        return models.Place.objects.get(pk=data)
+
+    def to_representation(self, value):
+        return {
+            'id': value.id,
+            'name': value.name,
+            'slug': value.slug,
+            'primary': value.primary,
+        }
+
+
+class UserPlaceSerializer(serializers.ModelSerializer):
+    place = PlaceField(queryset=models.Place.objects.all())
+
+    class Meta:
+        model = models.UserPlace
+        fields = (
+            'id', 'user', 'profile', 'place', 'latitude', 'longitude'
+        )
+        read_only_fields = ("id", "updated_on", "created_on", )
+
+
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
