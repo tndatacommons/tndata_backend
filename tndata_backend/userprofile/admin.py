@@ -32,6 +32,22 @@ def remove_app_data(modeladmin, request, queryset):
 remove_app_data.short_description = "Remove App Data"
 
 
+class PlaceAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'updated_on', 'created_on')
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = ('name',)
+admin.site.register(models.Place, PlaceAdmin)
+
+
+class UserPlaceAdmin(UserRelatedModelAdmin):
+    list_display = ('user', 'user_email', 'user_first', 'user_last', 'place')
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'place__name',
+    )
+admin.site.register(models.UserPlace, UserPlaceAdmin)
+
+
 class UserProfileAdmin(UserRelatedModelAdmin):
     list_display = (
         'user', 'user_email', 'user_first', 'user_last', 'timezone',

@@ -7,9 +7,59 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.db.models import ObjectDoesNotExist
 from django.dispatch import receiver
+from django.utils.text import slugify
 
 from rest_framework.authtoken.models import Token
 from survey.models import Instrument
+
+
+class Place(models.Model):
+    name = models.CharField(max_length=32, unique=True, db_index=True)
+    slug = models.SlugField(max_length=32, unique=True, db_index=True)
+
+    # We'll let users add their own places, but we want to indicate that
+    # some are used for suggestions or as primary places
+    primary = models.BooleanField(
+        default=False,
+        help_text="Use this place as a suggestion for users."
+    )
+
+    updated_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{}".format(self.name)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Place"
+        verbose_name_plural = "Places"
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+
+class UserPlace(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    profile = models.ForeignKey('UserProfile')
+    place = models.ForeignKey(Place)
+    latitude = models.DecimalField(max_digits=8, decimal_places=4, db_index=True)
+    longitude = models.DecimalField(max_digits=8, decimal_places=4, db_index=True)
+    updated_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{0} {1}".format(self.place, self.latlon)
+
+    @property
+    def latlon(self):
+        return (self.latitude, self.longitude)
+
+    class Meta:
+        order_with_respect_to = "user"
+        verbose_name = "User Place"
+        verbose_name_plural = "User Places"
 
 
 class UserProfile(models.Model):
