@@ -95,7 +95,7 @@ class ContentAuthorMixin:
         should have:
 
         * view permissions for ALL draft & published content
-        * write permissions ONLY for their own draft/declined content
+        * write permissions ONLY for their own draft/declined/published content
         * create permissions for all content
 
         Returns True if the user has permissions to view/update the object.
@@ -114,7 +114,7 @@ class ContentAuthorMixin:
         owner = request.user == obj.created_by
 
         # Content owners are updating their own draft/declined content.
-        if owner and updating and obj.state in ['draft', 'declined']:
+        if owner and updating and obj.state in ['draft', 'declined', 'published']:
             return True  # OK
         elif owner:
             self._denied_message = (
@@ -158,9 +158,8 @@ class ContentEditorMixin:
 
 
 class ReviewableUpdateMixin:
-    """This allows users to submit content for
-    review. On POST, we simply check for a True `review` value once the object
-    has been saved.
+    """This allows users to submit content for review. On POST, we simply check
+    for a True `review` value once the object has been saved.
 
     """
     def get_context_data(self, **kwargs):

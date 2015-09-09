@@ -33,13 +33,20 @@ def goal_object_controls(context, obj):
             result['can_delete'] = True
             result['can_duplicate'] = True
     else:
-        if not is_editor and (obj.is_pending or obj.is_published):
+        # Don't allow editing pending items unless you're a publisher.
+        if not is_editor and obj.is_pending:
             result['can_update'] = False
             result['can_delete'] = False
+        elif not is_editor and obj.is_published:
+            # Only allow users to edit their own items if published.
+            result['can_update'] = (obj.created_by == user)
+            result['can_delete'] = False
         elif not is_editor and result.get('can_update', False):
+            # otherwise, they can do whatever to their own content.
             result['can_update'] = (obj.created_by == user)
             result['can_delete'] = (obj.created_by == user)
 
+        # Only allow duplicating published items.
         if obj.is_pending or obj.is_draft or obj.is_declined:
             result['can_duplicate'] = False
         else:
