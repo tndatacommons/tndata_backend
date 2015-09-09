@@ -137,7 +137,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="This option determines whether or not custom triggers will "
                   "be allowed by default when enrolling users in the package."
     )
-    prevent_custom_triggers_display = models.BooleanField(
+    display_prevent_custom_triggers_option = models.BooleanField(
         default=True,
         help_text="This option determines whether or not package contributors "
                   "will see the option to prevent custom triggers during "
