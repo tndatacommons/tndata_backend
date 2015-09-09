@@ -75,6 +75,7 @@ INSTALLED_APPS = (
     # 3rd-party apps
     'corsheaders',
     'crispy_forms',
+    'crispy_forms_foundation',
     'django_extensions',
     'jsonfield',
     'recurrence',
@@ -183,6 +184,10 @@ MESSAGE_TAGS = {
     message_constants.ERROR: 'error alert'
 }
 
+
+# Crispy forms
+CRISPY_TEMPLATE_PACK = 'foundation-5'
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5')
 
 # Django Rest Framework
 REST_FRAMEWORK = {

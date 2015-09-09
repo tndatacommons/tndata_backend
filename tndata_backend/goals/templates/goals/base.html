@@ -2,7 +2,6 @@
 {% load static from staticfiles %}
 {% load goal_tags %}
 
-
 {% block title %}Goals{% endblock %}
 
 {% block head %}
@@ -19,7 +18,8 @@ ul.nested ul {list-style-type:none;}
 ul.nested ul li ul {list-style-type:none;}
 dl dd {border-bottom:1px solid #eee;}
 /* Styles for helptext */
-span.helptext {color:#777; font-style:italic;}
+span.helptext, .hint {color:#777; font-style:italic;}
+div.hint { margin-bottom: 1em;}
 form select,
 form input[type="text"], form p input[type="date"], form p input[type="password"]
 form input[type="datetime"], form p input[type="datetime-local"],
@@ -29,6 +29,9 @@ form input[type="time"], form p input[type="url"], form p input[type="color"],
 form textarea {
   margin-bottom: 0px;
 }
+form fieldset {border:0px; border-top:1px solid #ddd;margin:0;}
+form fieldset legend {padding:0 1rem;font-size:1.5rem;}
+form div.holder {clear: both;margin-bottom: 1em;}
 div.row.field-row {margin-bottom: 1em;}
 
 textarea[rows] {height: 100px;}

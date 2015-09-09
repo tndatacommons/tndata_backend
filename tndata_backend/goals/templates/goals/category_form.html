@@ -1,5 +1,9 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load goal_filters %}
+{% load crispy_forms_tags %}
+
+
 {% block title %}Category Form{% endblock %}
 
 
@@ -19,19 +23,26 @@
 
 {% block content %}
 <h1>{% if object %}Update Category: {{object}}{% else %}Create Category{% endif %}</h1>
+<p>A <strong>Category</strong> is the top-level organizational unit for
+Goals &amp; their Actions, and is the first thing a user will see in the app.</p>
+
 <form
   data-persist="garlic"
   action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:category-create' %}{% endif %}"
   method="post"
   enctype="multipart/form-data">{% csrf_token %}
-<div class="row">
-  <div class="large-6 small-12 columns">
-    <p>A <strong>Category</strong> is the top-level organizational unit for
-    behavior-change Actions, and is the first thing a user will see in the app.</p>
-    {# Render all but the 'notes' field #}
-    {% include "goals/_form_fields_sans_notes.html" %}
+
+  {% crispy form %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
     {% form_buttons object "Category" %}
+    </div>
   </div>
+</form>
+
+<hr/>
+
+<div class="row">
   <div class="large-6 small-12 columns">
     <p>The structure of our data looks something like the following:</p>
     <pre class="panel">
@@ -41,25 +52,32 @@ Category
   --- Action 1
   --- Action 2
     </pre>
-    <p class="panel">
-      {{ form.notes.label_tag }}
-      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
-    </p>
+  </div>
+  <div class="large-6 small-12 columns">
     <table>
       <caption>Existing Categories</caption>
       <thead>
-        <tr><th>Order</th><th>Name</th></tr>
+        <tr><th>Order</th><th>Name</th><th>State</th><th>Created</th></tr>
       </thead>
       <tbody>
       {% for cat in categories %}
         <tr>
           <td>{{ cat.order }}</td>
           <td><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></td>
+          <td>
+            {{ cat|label }}
+            {% if cat.is_packaged %}
+              <span class="label info">Package</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if cat.created_by %}{{ cat.created_by.get_short_name }} on<br/>{% endif %}
+            {{ cat.created_on|date:"M j, Y" }}
+          </td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-</form>
 {% endblock %}

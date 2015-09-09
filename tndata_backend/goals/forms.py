@@ -8,7 +8,17 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.forms import ValidationError
 from django.utils.text import slugify
+from django.utils.translation import ugettext_lazy as _
 
+from crispy_forms.bootstrap import PrependedText
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import (
+    Div,
+    Field,
+    Fieldset,
+    HTML,
+    Layout,
+)
 from recurrence import serialize as serialize_recurrences
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
@@ -211,9 +221,11 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = [
-            'packaged_content', 'package_contributors', 'order', 'title',
-            'description', 'icon', 'image', 'color', 'secondary_color', 'notes',
-            'consent_summary', 'consent_more',
+            'packaged_content', 'package_contributors',
+            'prevent_custom_triggers_default',
+            'display_prevent_custom_triggers_option',
+            'order', 'title', 'description', 'icon', 'image', 'color',
+            'secondary_color', 'notes', 'consent_summary', 'consent_more',
         ]
         labels = {"order": "Default Order", "notes": "Scratchpad"}
         widgets = {
@@ -224,13 +236,8 @@ class CategoryForm(forms.ModelForm):
             "consent_more": TextareaWithMarkdownHelperWidget(),
         }
 
-    class Media:
-        js = (
-            "foundation/js/vendor/jquery.js",
-            "js/category_form.js",
-        )
-
     def __init__(self, *args, **kwargs):
+        # Set a default color / secondary color
         initial = kwargs.get('initial', {})
         instance = kwargs.get('instance')
         initial_color = getattr(instance, 'color', '#2ECC71')
@@ -239,6 +246,47 @@ class CategoryForm(forms.ModelForm):
             initial['secondary_color'] = colors.lighten(initial_color)
         kwargs['initial'] = initial
         super().__init__(*args, **kwargs)
+
+        # Configure crispy forms.
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Fieldset(
+                        _("Category Details"),
+                        'order',
+                        'title',
+                        'description',
+                        'icon',
+                        'image',
+                        'color',
+                        'secondary_color',
+                    ),
+                    css_class="large-6 small-12 columns"
+                ),
+                Div(
+                    Fieldset(
+                        _("Scratchpad"),
+                        Div(
+                            Field('notes'),
+                            css_class="panel"
+                        ),
+                    ),
+                    Fieldset(
+                        _("Packaged Content"),
+                        'packaged_content',
+                        'package_contributors',
+                        'prevent_custom_triggers_default',
+                        'display_prevent_custom_triggers_option',
+                        'consent_summary',
+                        'consent_more',
+                    ),
+                    css_class="large-6 small-12 columns"
+                ),
+                css_class="row"
+            )
+        )
 
 
 class GoalForm(forms.ModelForm):
