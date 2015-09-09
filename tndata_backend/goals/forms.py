@@ -10,13 +10,11 @@ from django.forms import ValidationError
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
-from crispy_forms.bootstrap import PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Div,
     Field,
     Fieldset,
-    HTML,
     Layout,
 )
 from recurrence import serialize as serialize_recurrences
@@ -227,7 +225,14 @@ class CategoryForm(forms.ModelForm):
             'order', 'title', 'description', 'icon', 'image', 'color',
             'secondary_color', 'notes', 'consent_summary', 'consent_more',
         ]
-        labels = {"order": "Default Order", "notes": "Scratchpad"}
+        labels = {
+            "order": "Default Order",
+            "notes": "Scratchpad",
+            'prevent_custom_triggers_default': 'Prevent custom triggers by default',
+            'display_prevent_custom_triggers_option': (
+                'Display trigger restriction option during enrollment'
+            )
+        }
         widgets = {
             "description": TextareaWithMarkdownHelperWidget(),
             "color": forms.TextInput(attrs={'class': 'color-picker', 'type': 'color'}),
