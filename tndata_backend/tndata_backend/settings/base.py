@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
                                          # have one), but remove from Prod.
 ]
 
+# NOTE: this is the production setting. It uses the cached.Loader.
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -58,7 +59,6 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.tz",
             ),
         },
     },
@@ -74,6 +74,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     # 3rd-party apps
     'corsheaders',
+    'crispy_forms',
     'django_extensions',
     'jsonfield',
     'recurrence',
