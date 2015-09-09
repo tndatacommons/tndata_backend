@@ -62,17 +62,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     urls_icon_field = "icon"
     urls_image_field = "image"
 
-    # Data Fields
-    packaged_content = models.BooleanField(
-        default=False,
-        help_text="Is this Category for a collection of packaged content?"
-    )
-    package_contributors = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        blank=True,
-        help_text="The group of users that will contribute to content in "
-                  "this category."
-    )
+    # Data Fields. Relevant to all Categories (public and packaged)
     order = models.PositiveIntegerField(
         unique=True,
         help_text="Controls the order in which Categories are displayed."
@@ -125,12 +115,36 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         null=True
     )
 
+    # Fields related to 'Packaged Content'
+    packaged_content = models.BooleanField(
+        default=False,
+        help_text="Is this Category for a collection of packaged content?"
+    )
+    package_contributors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        help_text="The group of users that will contribute to content in "
+                  "this category."
+    )
+
     # Packaged content has a consent form (for now anyway). These are only
     # used if a category is marked as a package, and are only available for
     # editing in packages. Both of these should allow markdown.
     consent_summary = models.TextField(blank=True)
     consent_more = models.TextField(blank=True)
+    prevent_custom_triggers_default = models.BooleanField(
+        default=False,
+        help_text="This option determines whether or not custom triggers will "
+                  "be allowed by default when enrolling users in the package."
+    )
+    prevent_custom_triggers_display = models.BooleanField(
+        default=True,
+        help_text="This option determines whether or not package contributors "
+                  "will see the option to prevent custom triggers during "
+                  "user enrollment."
+    )
 
+    # timestamps
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
