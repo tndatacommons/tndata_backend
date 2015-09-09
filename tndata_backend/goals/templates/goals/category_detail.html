@@ -24,15 +24,8 @@
             <span class="label info">Package</span>
           {% endif %}
         </dd>
-        {% if category.is_packaged %}
-          <dt>Package Contributors</dt>
-          <dd>{% for contributor in category.package_contributors.all %}
-            {{ contributor.get_full_name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}</dd>
-        {% endif %}
         <dt>Default Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
-
         <dt>Icon</dt><dd>
           {% with icon=category.get_absolute_icon %}
           {% if icon %}
@@ -75,6 +68,21 @@
           </span>
           {{ category.secondary_color|default:"not set" }}
          </dd>
+      </dl>
+      {% if category.is_packaged %}
+
+      <h2 class="subheader">Package Details</h2>
+      <dl>
+        <dt>Package Contributors</dt>
+        <dd>
+          {% for contributor in category.package_contributors.all %}
+            {{ contributor.get_full_name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </dd>
+        <dt>Prevent Custom Triggers default</dt>
+        <dd>{{ category.prevent_custom_triggers_default|iconbool }}</dd>
+        <dt>Display the Prevent Custom Triggers Option during enrollment</dt>
+        <dd>{{ category.display_prevent_custom_triggers_option|iconbool }}</dt>
         <dt>Consent Summary</dt><dd>
           <div class="panel">{{ category.rendered_consent_summary|safe }}</div>
         </dd>
@@ -82,9 +90,10 @@
           <div class="panel">{{ category.rendered_consent_more|safe }}</div>
         </dd>
       </dl>
+      {% endif %}
+
       {% modified category %}
       {% if perms.goals.publish_category %}{% publish_deny_form category %}{% endif %}
-
     </div>
     <div class="large-6 small-12 columns">
       {% if category.notes %}
@@ -94,27 +103,34 @@
       <h2 class="subheader">Content</h2>
       <p><strong>{{ category }}</strong>
         contains the following Goals, Behaviors, and Actions:</p>
-      <ul class="nested">
+      <ul class="accordion" data-accordion>
       {% for goal in category.goals %}
-        <li><span class="label secondary" title="Goal">G</span>
-          <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
-          {{ goal|label }}
-          <ul>
+        <li class="accordion-navigation clearfix">
+          <a href="#goal-{{goal.id}}"><div class="pull-right">{{ goal|label }}</div> {{ goal }}</a>
+          <div id="goal-{{ goal.id }}" class="content{% if forloop.first %} active{% endif %}">
           {% for bs in goal.behavior_set.all %}
-            <li><span class="label secondary" title="Behavior">B</span>
-              <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
-              {{ bs|label }}
-              <ul>
+            <dl>
+              <dt class="clearfix">
+                <div class="pull-right">{{ bs|label }}</div>
+                <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
+              </dt>
+              <dd class="clearfix">
+                <ul>
                 {% for ba in bs.action_set.all %}
-                  <li><span class="label secondary" title="Action">A</span>
+                  <li>
+                    <div class="pull-right">{{ba|label}}</div>
                     <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
-                    {{ba|label}}
                   </li>
+                {% empty %}
+                  <li><em>There are no actions in this behavior</em></li>
                 {% endfor %}
-              </ul>
-            </li>
+                </ul>
+              </dd>
+            </dl>
+          {% empty %}
+            <em>There are no Behaviors/Actions in this Goal.</em>
           {% endfor %}
-          </ul>
+          </div>
         </li>
       {% endfor %}
       </ul>
