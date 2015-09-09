@@ -428,9 +428,18 @@ class PackageEnrollmentForm(forms.Form):
     def __init__(self, category, *args, **kwargs):
         """Provice a specific category for this for in order to enroll users
         in it's set of Goals."""
+
+        # set the initial value for this field if it's defined on the category
+        if category.prevent_custom_triggers_default:
+            kwargs['initial'] = {'prevent_custom_triggers': True}
+
         super().__init__(*args, **kwargs)
         qs = Goal.objects.published().filter(categories=category)
         self.fields['packaged_goals'].queryset = qs
+
+        # See whether or not we want to hide this field.
+        if not category.display_prevent_custom_triggers_option:
+            self.fields['prevent_custom_triggers'].widget = forms.HiddenInput()
 
     def clean_email_addresses(self):
         """Returns a list of email addresses."""
