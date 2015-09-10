@@ -57,6 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
     needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
     username = serializers.CharField(required=False)
     timezone = serializers.ReadOnlyField(source='userprofile.timezone')
+    places = serializers.SerializerMethodField(read_only=True)
 
     categories = serializers.SerializerMethodField(read_only=True)
     goals = serializers.SerializerMethodField(read_only=True)
@@ -71,10 +72,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
-            "goals", "behaviors", "actions", "categories", 'token',
-            'needs_onboarding',
+            'token', 'needs_onboarding', "places", "goals", "behaviors",
+            "actions", "categories",
         )
         read_only_fields = ("id", "date_joined", )
+
+    def get_places(self, obj):
+        qs = models.UserPlace.objects.filter(user=obj)
+        serialized = UserPlaceSerializer(qs, many=True)
+        return serialized.data
 
     def get_categories(self, obj):
         qs = UserCategory.objects.accepted_or_public(obj)
