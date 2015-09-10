@@ -27,12 +27,11 @@ def goal_object_controls(context, obj):
     # - can_delete
     # - can_duplicate
     # - can_transfer
-    if not hasattr(obj, "is_pending"):
-        if is_editor:  # assume no other attrs
-            result['can_update'] = True
-            result['can_delete'] = True
-            result['can_duplicate'] = True
-    else:
+    if is_editor:
+        result['can_update'] = True
+        result['can_delete'] = True
+        result['can_duplicate'] = True
+    elif hasattr(obj, "is_pending"):
         # Don't allow editing pending items unless you're a publisher.
         if not is_editor and obj.is_pending:
             result['can_update'] = False
