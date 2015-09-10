@@ -44,9 +44,13 @@
           <td>
             {% with icon=category.get_absolute_icon %}
               {% if icon %}
-                <a href="{{ category_url }}">
-                <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
-                </a>
+                <div class="gray centered">
+                  <a href="{{ category_url }}">
+                    <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
+                  </a>
+                </div>
+              {% else %}
+                <em>no icon</em>
               {% endif %}
             {% endwith %}
           </td>

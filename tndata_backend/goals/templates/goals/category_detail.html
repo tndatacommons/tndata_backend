@@ -26,17 +26,17 @@
         </dd>
         <dt>Default Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
-        <dt>Icon</dt><dd>
+        <dt>Icon</dt><dd class="gray centered">
           {% with icon=category.get_absolute_icon %}
           {% if icon %}
             <a href="{{ icon }}" target="_blank">
             <img src="{{ icon }}" alt="{{ category }} icon" />
             </a>
-            <p class="panel callout">
+            <p class="panel">
               {% if category.icon %}
               Image details: {{ category.icon|details }}<br/>
               {% endif %}
-              Location: <small><a href="{{ icon }}">{{ icon }}</a></small>
+              Location: <a href="{{ icon }}">{{ icon|truncatechars:40 }}</a>
             </p>
           {% else %}
             <em>No icon available</em>
