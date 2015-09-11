@@ -105,12 +105,14 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
         place = request.data.get('place')
         if place:
             place, _ = models.Place.objects.get_or_create(name=place.title())
-        request.data['longitude'] = self._quant(request, 'longitude')
-        request.data['latitude'] = self._quant(request, 'latitude')
-        request.data['place'] = place.id
-        request.data['user'] = request.user.id
-        request.data['profile'] = request.user.userprofile.id
-        return super().create(request, *args, **kwargs)
+            request.data['longitude'] = self._quant(request, 'longitude')
+            request.data['latitude'] = self._quant(request, 'latitude')
+            request.data['place'] = place.id
+            request.data['user'] = request.user.id
+            request.data['profile'] = request.user.userprofile.id
+            return super().create(request, *args, **kwargs)
+        content = {'error': "'{}' is not a valid Place".format(place)}
+        return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         up = self.get_object()
