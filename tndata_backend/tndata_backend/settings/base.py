@@ -120,7 +120,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'tndata_backend.urls'
 WSGI_APPLICATION = 'tndata_backend.wsgi.application'
 
-# Production Database settings.
+# Local Database settings.
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
     'default': {
