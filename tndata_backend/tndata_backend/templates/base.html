@@ -16,10 +16,20 @@
       list-style-type: none;margin-left:0px;padding:1em;
       background-color:#f04124;border-color:#de2d0f;color:#ffffff;
     }
+    {% if staging %}
+    div.header-staging,div.footer-staging {
+      text-align:center;
+      padding:0;margin:0;border:0;line-height:50px;
+      font-size:40px;font-weight:bold;color:#6e521c;
+      background-color: #ff9200;
+    }
+    div.footer-staging {position:fixed;bottom:0px;width:100%;}
+    {% endif %}
     </style>
     {% block head %}{% endblock %}
   </head>
   <body>
+    {% if staging %}<div class="header-staging">Staging</div>{% endif %}
     {% block topnav %}{% endblock %}
 
     {% block messages %}
@@ -43,6 +53,7 @@
       <a href="/terms/" style="color:#aaa;">Terms of Service</a> |
       <a href="/privacy/" style="color:#aaa;">Privacy Notice</a>
     </p>
+    {% if staging %}<div class="footer-staging">Staging</div>{% endif %}
     {% block bodyjs %}
     <script src="{% static 'foundation/js/vendor/jquery.js' %}"></script>
     <script src="{% static 'foundation/js/foundation.min.js' %}"></script>
