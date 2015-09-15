@@ -29,9 +29,10 @@ SITE_URL = "https://{0}".format(SITE_DOMAIN)
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 SECRET_KEY = 'xt67918srm3f=0$#k%7quk+&pdtwy7#n=pfn%4kzyae$kxmw%j'
 DEBUG = False
+STAGING = False
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
-    '.tndata.org', '.tndata.org.', '104.236.244.232',
+    '.tndata.org', '.tndata.org.', '104.236.244.232', '159.203.68.206',
     'brad.ngrok.io', 'tndata.ngrok.io',  # TODO: leave in staging (when we
                                          # have one), but remove from Prod.
 ]
@@ -59,6 +60,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
+                "utils.context_processors.staging",
             ),
         },
     },
