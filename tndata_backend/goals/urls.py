@@ -31,6 +31,11 @@ urlpatterns = patterns('',
         name='accept-enrollment'
     ),
     url(
+        r'^packages/(?P<pk>\d+)/reminder/$',
+        views.enrollment_reminder,
+        name='package-reminder'
+    ),
+    url(
         r'^packages/(?P<pk>\d+)/enroll/$',
         views.PackageEnrollmentView.as_view(),
         name='package-enroll'

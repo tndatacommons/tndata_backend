@@ -1,4 +1,5 @@
 {% extends 'email/base_email.html' %}
+{% load util_filters %}
 
 {% block title %}
 Welcome to {{ category }}
@@ -7,15 +8,24 @@ Welcome to {{ category }}
 
 {% block content %}
   <h1>Welcome to {{ category }}</h1>
-  <p>Hi,</p>
-  <p>We're letting you know that you've been enrolled in some new
-  packages within Compass.</p>
 
-  {% if not new_user and accepted %}
-    <p>Since you've already got the Compass app, there's nothing else for you
-    to do. Simply open the app and enjoy.</p>
-  {% elif not accepted %}
+  {% if message %}
 
+    {{ message|markdown }}
+
+  {% else %}
+    {# Default message to the user. #}
+    <p>Hi,</p>
+    <p>We're letting you know that you've been enrolled in some new
+    packages within Compass.</p>
+
+    {% if not new_user and accepted %}
+      <p>Since you've already got the Compass app, there's nothing else for you
+      to do. Simply open the app and enjoy.</p>
+    {% elif not accepted %}
+
+    {% endif %}
+    {# ---- end default message ---- #}
   {% endif %}
 {% endblock %}
 

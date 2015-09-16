@@ -486,6 +486,31 @@ class AcceptEnrollmentForm(forms.Form):
         super().__init__(*args, **kwargs)
 
 
+class EnrollmentReminderForm(forms.Form):
+    """This form is used to create a Reminder email for enrollees that have
+    not yet accepted the package enrollment. It's content get automatically
+    pre-populated with some email content.
+
+    """
+    message = forms.CharField(
+        widget=forms.Textarea,
+        help_text="The message that you type above will replace the original "
+                  "content in the first enrollment email, but it will still "
+                  "contain the link for the user to accept the enrollment."
+    )
+
+    def _initial_message(self):
+        return (
+            "We haven't heard from you yet, but we wanted to let you know "
+            "there's still time to get started! "
+        )
+
+    def __init__(self, *args, **kwargs):
+        if 'initial' not in kwargs:
+            kwargs['initial'] = {'message': self._initial_message()}
+        super().__init__(*args, **kwargs)
+
+
 class InvalidFormatException(Exception):
     """Custom exception that gets raised when the CSVUploadForm fails."""
     pass

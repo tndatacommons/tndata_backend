@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
@@ -23,6 +23,7 @@ from . forms import (
     ContentAuthorForm,
     CSVUploadForm,
     DisableTriggerForm,
+    EnrollmentReminderForm,
     GoalForm,
     PackageEnrollmentForm,
     TriggerForm,
@@ -35,7 +36,7 @@ from . mixins import (
 from . models import (
     Action, Behavior, Category, Goal, PackageEnrollment, Trigger
 )
-from . permissions import is_content_editor, superuser_required
+from . permissions import ContentPermissions, is_content_editor, superuser_required
 from . utils import num_user_selections
 
 
@@ -916,6 +917,26 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         if not self._can_access():
             context['form'] = None
         return context
+
+
+@permission_required(ContentPermissions.authors, raise_exception=True)
+def enrollment_reminder(request, pk):
+    """Let us send a reminder email to users that have not accepted the
+    enrollment."""
+    category = get_object_or_404(Category, pk=pk)
+    enrollments = category.packageenrollment_set.filter(accepted=False)
+
+    if request.method == "POST":
+        form = EnrollmentReminderForm(request.POST)
+        if form.is_valid():
+            msg = form.cleaned_data['message']
+            send_package_enrollment_batch(request, enrollments, message=msg)
+            return redirect(category.get_view_enrollment_url())
+    else:
+        form = EnrollmentReminderForm()
+
+    ctx = {'form': form, 'category': category, 'enrollments': enrollments}
+    return render(request, "goals/package_enrollment_reminder.html", ctx)
 
 
 # TODO: NEEDS TESTS.

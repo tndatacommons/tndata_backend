@@ -59,6 +59,9 @@
       <p>
         <a class="button" href="{{ category.get_enroll_url }}">
           Enroll New Users</a>
+
+        <a class="button secondary" href="{% url 'goals:package-reminder' category.id %}">
+          Send Reminder Email</a>
       </p>
     </div>
   </div> {# end .row #}

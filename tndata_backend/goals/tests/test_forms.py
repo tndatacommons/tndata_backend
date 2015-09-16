@@ -4,6 +4,7 @@ from .. forms import (
     ActionTriggerForm,
     BehaviorForm,
     CategoryForm,
+    EnrollmentReminderForm,
     GoalForm,
     TriggerForm,
 )
@@ -294,3 +295,17 @@ class TestTimeSelectWidget(TestCase):
         rendered_parts = rendered.split("\n")
         # An <option> for every time (48) + 2 (<select> and </select>)
         self.assertEqual(len(rendered_parts), 50)
+
+
+class TestEnrollmentReminderForm(TestCase):
+
+    def test_unbound(self):
+        form = EnrollmentReminderForm()
+        self.assertEqual(list(form.fields.keys()), ['message'])
+        self.assertIn('message', form.initial)
+        self.assertEqual(form.initial['message'], form._initial_message())
+
+    def test_bound_all(self):
+        data = {'message': 'Testing'}
+        form = EnrollmentReminderForm(data)
+        self.assertTrue(form.is_valid())

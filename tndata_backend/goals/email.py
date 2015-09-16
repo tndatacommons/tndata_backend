@@ -4,11 +4,13 @@ from django.template.loader import render_to_string
 from utils.email import send_mass_html_mail
 
 
-def send_package_enrollment_batch(request, enrollments):
+def send_package_enrollment_batch(request, enrollments, message=None):
     """Send the notification email to those users who have been enrolled.
 
     * request: an HttpRequest instance.
     * enrollments: A QuerySet of the newly created PackageEnrollment objects.
+    * message: An optional message to display to the users. If provided, this
+      will replace the default body content of the email.
 
     """
     cta_link = None
@@ -26,6 +28,7 @@ def send_package_enrollment_batch(request, enrollments):
             cta_text = "Get Started"
 
         context = {
+            "message": message,
             "alert": "You're enrolled!",
             "email": pe.user.email,
             "username": pe.user.username,

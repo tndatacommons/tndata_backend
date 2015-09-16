@@ -1,3 +1,6 @@
+{% if message %}
+{{ message|safe }}
+{% else %}
 Hi,
 
 We're letting you know that you've been enrolled in some new
@@ -9,6 +12,7 @@ Simply follow the link below to set up your new account.
 {% elif not accepted %}
 Simply click the button below to accept the the terms of this content,
 and then you'll see them in the app.
+{% endif %}
 {% endif %}
 
 {% if cta_link %}

@@ -1,16 +1,18 @@
 import pytz
 from datetime import time
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
 
 from .. models import (
+    Action,
+    Behavior,
     Category,
     Goal,
+    PackageEnrollment,
     Trigger,
-    Behavior,
-    Action,
 )
 from .. permissions import (
     get_or_create_content_admins,
@@ -2663,3 +2665,123 @@ class TestAcceptEnrollmentCompleteView(TestCase):
         resp = self.client.get(reverse("goals:accept-enrollment-complete"))
         self.assertEqual(resp.status_code, 200)
         self.client.logout()
+
+
+class TestEnrollmentReminderView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+
+        # Create a contributor for the class.
+        content_author_group = get_or_create_content_authors()
+        args = ("contributor", "contributor@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(content_author_group)
+
+        # Create the Category and the content hierarchy
+        cls.category = Category.objects.create(
+            packaged_content=True,
+            order=25,
+            title="Test Package Category",
+            state="published",
+            created_by=cls.editor,
+        )
+        cls.category.package_contributors.add(cls.contributor)
+        cls.category.save()
+
+        # An Un-accepted Enrollment
+        args = ("unenrolled", "unerolled@example.com", "pass")
+        cls.user = User.objects.create_user(*args)
+        cls.enrollment = PackageEnrollment.objects.create(
+            user=cls.user,
+            category=cls.category,
+            accepted=False,
+            enrolled_by=cls.contributor,
+        )
+
+        # URL and POST payload
+        cls.payload = {'message': 'Email Content'}
+        cls.url = reverse("goals:package-reminder", args=[cls.category.id])
+        cls.success_url = cls.category.get_view_enrollment_url()
+        cls.enrollments = PackageEnrollment.objects.filter(accepted=False)
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/package_enrollment_reminder.html")
+        self.assertIn("enrollments", resp.context)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_contributor_get(self):
+        self.client.login(username="contributor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/package_enrollment_reminder.html")
+        self.assertIn("enrollments", resp.context)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/package_enrollment_reminder.html")
+        self.assertIn("enrollments", resp.context)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/package_enrollment_reminder.html")
+        self.assertIn("enrollments", resp.context)
+        self.assertIn("category", resp.context)
+        self.assertIn("form", resp.context)
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_anon_post(self):
+        resp = self.ua_client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        self.client.login(username="admin", password="pass")
+        with patch('goals.views.send_package_enrollment_batch') as email:
+            resp = self.client.post(self.url, self.payload)
+            self.assertEqual(resp.status_code, 302)
+            self.assertRedirects(resp, self.success_url)
+
+    def test_editor_post(self):
+        self.client.login(username="editor", password="pass")
+        with patch('goals.views.send_package_enrollment_batch') as email:
+            resp = self.client.post(self.url, self.payload)
+            self.assertEqual(resp.status_code, 302)
+            self.assertRedirects(resp, self.success_url)
+
+    def test_author_post(self):
+        self.client.login(username="author", password="pass")
+        with patch('goals.views.send_package_enrollment_batch') as email:
+            resp = self.client.post(self.url, self.payload)
+            self.assertEqual(resp.status_code, 302)
+            self.assertRedirects(resp, self.success_url)
+
+    def test_viewer_post(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 403)
