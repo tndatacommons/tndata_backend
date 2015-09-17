@@ -1,11 +1,22 @@
 from .base import *
 
-STAGING = True
 DEBUG = True
+STAGING = True
+
+INSTALLED_APPS = INSTALLED_APPS + (
+    'debug_toolbar',
+    'querycount',
+)
+
+# Just like production, but without the cached template loader
 TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
+TEMPLATES[0]['OPTIONS']['loaders'] = [
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+]
 
 # django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
-CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_ALLOW_ALL = True
 
 # EMAIL via Mailgun. Production server details, below (app.tndata.org)
 EMAIL_SUBJECT_PREFIX = "[Staging TNData] "
@@ -16,36 +27,18 @@ EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
+# Rainbow-tests
+TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
 
-# Logging Config
-# --------------
-# This config is for loggly.com; It should work in addition to the django
-# default logging config.
-#
-# See https://docs.python.org/3/library/logging.handlers.html#sysloghandler
-# for information on the SysLogHandler.
-LOGGING = {
-   'version': 1,
-   'disable_existing_loggers': False,
-   'formatters': {
-      'django': {
-         'format':'django: %(message)s',
-       },
-    },
-   'handlers': {
-      'logging.handlers.SysLogHandler': {
-         'level': 'DEBUG',
-         'class': 'logging.handlers.SysLogHandler',
-         'facility': 'local7',
-         'formatter': 'django',
-       },
-   },
-   'loggers': {
-      'loggly_logs':{
-         'handlers': ['logging.handlers.SysLogHandler'],
-         'propagate': True,
-         'format':'django: %(message)s',
-         'level': 'DEBUG',
-       },
-    }
-}
+# Explicit setting for debug_toolbar
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+MIDDLEWARE_CLASSES = (
+    'querycount.middleware.QueryCountMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+) + MIDDLEWARE_CLASSES
+
+INTERNAL_IPS = (
+    '159.203.68.206',
+    '127.0.0.1',
+    '::1',
+)
