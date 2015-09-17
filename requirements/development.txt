@@ -1,5 +1,0 @@
-coverage==3.7.1
-django-debug-toolbar==1.3
-django-rainbowtests==0.3.0
-django-querycount==0.2.0
--e git://github.com/bradmontgomery/clog.git@master#egg=clog-dev
