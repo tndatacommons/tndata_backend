@@ -1,5 +1,4 @@
-"""
-Django settings for tndata_backend project.
+""" Django settings for tndata_backend project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -166,7 +165,6 @@ USE_TZ = True
 
 # Media Uploads, default
 MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
-MEDIA_URL = "http://app.tndata.org/media/"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
