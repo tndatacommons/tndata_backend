@@ -1,7 +1,9 @@
 from .base import *
 
-DEBUG = False
 STAGING = True
+DEBUG = True
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
+
 
 # django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
