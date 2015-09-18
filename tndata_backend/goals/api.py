@@ -1091,4 +1091,11 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
         obj = self.get_object()
         request.data['user'] = request.user.id
         request.data['category'] = obj.category.id
-        return super().update(request, *args, **kwargs)
+        result = super().update(request, *args, **kwargs)
+
+        # Check the old object and refresh it to see if the user just accepted;
+        # if so, we need to call .accept(), so they get enrolled properly
+        new_obj = self.get_object()
+        if not obj.accepted and new_obj.accepted:
+            new_obj.accept()
+        return result
