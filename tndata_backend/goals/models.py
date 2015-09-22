@@ -580,7 +580,7 @@ class Trigger(URLMixin, models.Model):
                 return None
 
         # Return the next value in the recurrence
-        elif recurrences:
+        elif recurrences and alert_on:
             return self.recurrences.after(
                 now,  # The next recurrence after the current time.
                 inc=True,  # return the current time if it matches the recurrence.
