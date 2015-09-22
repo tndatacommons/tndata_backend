@@ -2,14 +2,19 @@ from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+STAGING = False
+
+SITE_DOMAIN = "localhost"
+SITE_URL = "http://127.0.0.1:8000"
+MANAGERS = ADMINS
 
 # TODO: Add querycount settings to ignore: admin, static files
 QUERYCOUNT = {
     'THRESHOLDS': {
         'MEDIUM': 50,
         'HIGH': 200,
-        'MIN_TIME_TO_LOG':0,
-        'MIN_QUERY_COUNT_TO_LOG':0
+        'MIN_TIME_TO_LOG': 0,
+        'MIN_QUERY_COUNT_TO_LOG': 0
     },
     'IGNORE_PATTERNS': [r'^/static', r'^/media', r'^/admin'],
 }
@@ -20,32 +25,27 @@ INSTALLED_APPS = INSTALLED_APPS + (
     'querycount',
 )
 
-# Exclude the cached.Loader from dev so we render the template each time.
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'debug': DEBUG,
-            'context_processors': (
-                "django.contrib.auth.context_processors.auth",
-                "django.template.context_processors.debug",
-                "django.template.context_processors.i18n",
-                "django.template.context_processors.media",
-                "django.template.context_processors.static",
-                "django.template.context_processors.tz",
-                "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.tz",
-            ),
-        },
-    },
+# Just like production, but without the cached template loader
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
+TEMPLATES[0]['OPTIONS']['loaders'] = [
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
 ]
 
-# Media Uploads for Development
-MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
-MEDIA_URL = "/media/"
-STATIC_URL = "/static/"
+# Disable AWS/S3 (for when working on js/css locally)
+# ---------------------------------------------------
+#STATIC_ROOT = "collected_static_files"
+#STATIC_URL = "/static/"
+#STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+#STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+#STATICFILES_FINDERS = (
+    #"django.contrib.staticfiles.finders.FileSystemFinder",
+    #"django.contrib.staticfiles.finders.AppDirectoriesFinder",
+#)
+#MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
+#MEDIA_URL = "/media/"
+#DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
 
 # EMAIL via Mailgun.
 # Details for the DEV sandbox server:
@@ -56,6 +56,13 @@ EMAIL_HOST_PASSWORD = 'ac2a70a9988127ff7fa217f559c2d59a'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_PORT = '587'  # 25, 587, 465
+
+# Local email delivery
+#EMAIL_HOST = 'localhost'
+#EMAIL_HOST_USER = ''
+#EMAIL_HOST_PASSWORD = ''
+#EMAIL_USE_TLS = False
+#EMAIL_PORT = 1025
 
 # django-cors-headers
 # https://github.com/ottoyiu/django-cors-headers/
