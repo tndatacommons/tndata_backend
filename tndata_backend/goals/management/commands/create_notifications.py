@@ -8,6 +8,7 @@ from django.utils import timezone
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
+from utils.user_utils import to_localtime
 
 
 logger = logging.getLogger("loggly_logs")
@@ -31,20 +32,12 @@ class Command(BaseCommand):
         self._messages_created = 0
         self._behavior_trigger = Trigger.objects.get_default_behavior_trigger()
 
-    def _to_localtime(self, t, user):
-        """given a time, convert it to the user's localtime."""
-        if user.userprofile.timezone:
-            tz = pytz.timezone(user.userprofile.timezone)
-            t = timezone.make_naive(t)
-            t = timezone.make_aware(t, timezone=tz)
-        return t
-
     def _get_behavior_trigger_localtime(self, user):
         # We need to convert this into the user's local timezone.
         # To do that, we make it naive, then make it aware using the user's
         # timezone.
         t = self._behavior_trigger.next()
-        t = self._to_localtime(t, user)
+        t = to_localtime(t, user)
         return t
 
     def write_log(self):
@@ -133,7 +126,7 @@ class Command(BaseCommand):
                     ua.action,
                     ua.action.notification_title,
                     ua.action.notification_text,
-                    self._to_localtime(trigger_time, ua.user)
+                    to_localtime(trigger_time, ua.user)
                 )
 
         # Finish with a confirmation message

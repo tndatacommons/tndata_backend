@@ -1,7 +1,19 @@
 import hashlib
+import pytz
+
 from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.db.models import ObjectDoesNotExist
+from django.utils import timezone
+
+
+def to_localtime(dt, user):
+    """Given a datetime object, convert it to the user's localtime."""
+    if user.userprofile.timezone:
+        tz = pytz.timezone(user.userprofile.timezone)
+        dt = timezone.make_naive(dt)
+        dt = timezone.make_aware(dt, timezone=tz)
+    return dt
 
 
 def get_all_permissions(user, sort=False):
