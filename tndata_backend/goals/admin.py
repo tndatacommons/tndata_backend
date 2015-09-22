@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.contrib.messages import ERROR
 from django.db import IntegrityError, transaction
+from django.http import HttpResponse
 
+import tablib
 from django_fsm import TransitionNotAllowed
-
 from utils.admin import UserRelatedModelAdmin
 
 from . import models
@@ -331,6 +332,29 @@ class UserActionAdmin(UserRelatedModelAdmin):
 admin.site.register(models.UserAction, UserActionAdmin)
 
 
+def tablib_export_user_completed_actions(modeladmin, request, queryset):
+    """Adapted from django_tablib, which hasn't been upgraded in a while :( """
+    data = tablib.Dataset()
+    for uca in queryset:
+        # Ensure our dates are serialized.
+        completed_on = uca.created_on.strftime("%c")
+        action_added_on = uca.useraction.created_on.strftime("%c")
+
+        data.append([
+            uca.user.email,
+            uca.action.title,
+            completed_on,
+            action_added_on,
+        ])
+
+    data.headers = ['Email', 'Action', 'Completed On', 'Action Added On']
+    filename = 'completed_actions.csv'
+    response = HttpResponse(data.csv, content_type="text/csv")
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    return response
+tablib_export_user_completed_actions.short_description = "Export Data as a CSV File"
+
+
 class UserCompletedActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'user_first', 'user_last',
@@ -341,6 +365,7 @@ class UserCompletedActionAdmin(UserRelatedModelAdmin):
         'action__id', 'action__title',
     )
     raw_id_fields = ("user", "action", "useraction")
+    actions = [tablib_export_user_completed_actions]
 
 admin.site.register(models.UserCompletedAction, UserCompletedActionAdmin)
 
