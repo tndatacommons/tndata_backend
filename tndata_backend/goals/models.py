@@ -520,7 +520,7 @@ class Trigger(URLMixin, models.Model):
         alert_time = None
         if self.trigger_date and self.time:
             alert_time = self._combine(self.time, self.trigger_date, tz)
-        elif self.time:
+        elif self.time is not None:
             now = timezone.now().astimezone(tz)
             alert_time = self._combine(self.time, now, tz)
         return alert_time
