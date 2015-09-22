@@ -1,6 +1,6 @@
 from .base import *
 
-DEBUG = True
+DEBUG = False
 STAGING = True
 
 # Site's FQDN and URL. For building links in email.
