@@ -9,9 +9,10 @@ from django.utils import timezone
 
 def to_localtime(dt, user):
     """Given a datetime object, convert it to the user's localtime."""
-    if user.userprofile.timezone:
+    if dt and user.userprofile.timezone:
         tz = pytz.timezone(user.userprofile.timezone)
-        dt = timezone.make_naive(dt)
+        if timezone.is_aware(dt):
+            dt = timezone.make_naive(dt)
         dt = timezone.make_aware(dt, timezone=tz)
     return dt
 
