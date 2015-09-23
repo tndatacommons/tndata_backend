@@ -1,6 +1,8 @@
 import pytz
 
 from collections import defaultdict
+from datetime import datetime
+
 from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.db import models
@@ -114,12 +116,71 @@ class UserProfile(models.Model):
         }
         return getattr(question, m[question.question_type]).latest()
 
+    def _get_bio_responses(self, question_type, question_id):
+        qid = 'question_id'
+        qtype = 'question_type'
+        return [
+            d for d in self.bio
+            if d[qid] == question_id and d[qtype] == question_type
+        ]
+
+    @property
+    def zipcode(self):
+        question_id = 2  # My zip code is
+        answer_key = 'response'
+        for d in self._get_bio_responses('openendedquestion', question_id):
+            return d.get(answer_key, None)
+        return None
+
+    @property
+    def age(self):
+        question_id = 1  # I was born on
+        answer_key = 'response'
+        for d in self._get_bio_responses('openendedquestion', question_id):
+            if d.get(answer_key):
+                birthdate = datetime.strptime(d[answer_key], "%Y-%m-%d")
+                delta = datetime.today() - birthdate
+                return int(delta.days / 365)
+        return None
+
+    @property
+    def has_relationship(self):
+        question_id = 3  # Relationships: I am currently...
+        answer_key = 'selected_option_text'
+        options = ['In a relationship', 'Married', 'Single and looking']
+        for d in self._get_bio_responses('multiplechoicequestion', question_id):
+            if d.get(answer_key) in options:
+                return True
+        return None
+
+    @property
+    def gender(self):
+        """Returns the user's gender choice, converted to lowercase."""
+        question_id = 1  # Gender: I am ...
+        answer_key = 'selected_option_text'
+        for d in self._get_bio_responses('multiplechoicequestion', question_id):
+            if d.get(answer_key):
+                return d[answer_key].lower().strip()
+        return None
+
+    @property
+    def is_parent(self):
+        question_id = 6  # Children: I have...
+        answer_key = 'selected_option_text'
+        for d in self._get_bio_responses('multiplechoicequestion', question_id):
+            if d.get(answer_key) and d[answer_key].lower() != 'no children':
+                return True
+        return False
+
     @property
     def bio(self):
         # UGH. We shoe-horned this shit into a survey and now there's no
         # clean way to get what *should* be a 1-to-1 relationship between
         # a user an some responses. I'm just hard-coding this for now because
         # i hate future me.
+        if hasattr(self, '_bio_results'):
+            return self._bio_results
+
         results = []
         try:
             inst = Instrument.objects.get(pk=4)
@@ -157,6 +218,7 @@ class UserProfile(models.Model):
 
         except Instrument.DoesNotExist:
             pass
+        self._bio_results = results
         return results
 
     @property
