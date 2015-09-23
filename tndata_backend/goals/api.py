@@ -2,12 +2,15 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import (
+    api_view, authentication_classes, detail_route
+)
 from rest_framework.response import Response
 
-from . mixins import DeleteMultipleMixin
 from . import models
 from . import serializers
+from . import user_feed
+from . mixins import DeleteMultipleMixin
 
 
 class IsOwner(permissions.BasePermission):
@@ -15,6 +18,26 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication, SessionAuthentication])
+def user_feed_view(request, format=None):
+    """Initial attempt at a user feed."""
+
+    from clog.clog import clog
+    feed_data = []
+    ua = user_feed.next_user_action(request.user)
+    feed_data.append(serializers.UserActionSerializer(ua).data)
+
+    suggestions = user_feed.suggested_goals(request.user)
+    feed_data.extend(serializers.GoalSerializer(suggestions, many=True).data)
+
+    user_goals = [t[1] for t in user_feed.selected_goals(request.user)]
+    feed_data.extend(serializers.UserGoalSerializer(user_goals, many=True).data)
+
+    clog(feed_data)  # TODO: remove me
+    return Response(feed_data)
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):

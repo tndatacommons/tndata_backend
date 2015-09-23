@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.conf.urls import patterns, include, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import login, logout
@@ -20,6 +20,7 @@ from goals.api import (
     UserBehaviorViewSet,
     UserCategoryViewSet,
     UserGoalViewSet,
+    user_feed_view,
 )
 from notifications.api import GCMDeviceViewSet, GCMMessageViewSet
 from survey.api import (
@@ -99,7 +100,8 @@ router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
 
 
-urlpatterns = patterns('',
+urlpatterns = [
+    url(r'^api/feed/$', user_feed_view, name="feed"),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(r'^api/', include(router.urls)),
@@ -123,11 +125,11 @@ urlpatterns = patterns('',
     url(r'^404/$', utils_views.FourOhFour.as_view()),
     url(r'^500/$', utils_views.FiveHundred.as_view()),
     url(r'^$', IndexView.as_view())
-)
+]
 
 
 if settings.DEBUG:
     import debug_toolbar
-    urlpatterns += patterns('',
+    urlpatterns += [
         url(r'^__debug__/', include(debug_toolbar.urls)),
-    )
+    ]
