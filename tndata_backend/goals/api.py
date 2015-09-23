@@ -27,12 +27,18 @@ def user_feed_view(request, format=None):
 
     from clog.clog import clog
     feed_data = []
+
+    # Up next UserAction
     ua = user_feed.next_user_action(request.user)
     feed_data.append(serializers.UserActionSerializer(ua).data)
 
+    # Suggestions?
     suggestions = user_feed.suggested_goals(request.user)
     feed_data.extend(serializers.GoalSerializer(suggestions, many=True).data)
 
+    # The user's selected goals (UserGoals)
+    # NOTE: this function returns tuples of (progress, UserGoal) ordered by
+    # the goal with the least progress first.
     user_goals = [t[1] for t in user_feed.selected_goals(request.user)]
     feed_data.extend(serializers.UserGoalSerializer(user_goals, many=True).data)
 
