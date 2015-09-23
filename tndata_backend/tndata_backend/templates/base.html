@@ -16,12 +16,12 @@
       list-style-type: none;margin-left:0px;padding:1em;
       background-color:#f04124;border-color:#de2d0f;color:#ffffff;
     }
-    {% if staging %}
+    {% if staging or debug %}
     div.header-staging,div.footer-staging {
       text-align:center;
       padding:0;margin:0;border:0;line-height:50px;
       font-size:40px;font-weight:bold;color:#6e521c;
-      background-color: #ff9200;
+      background-color: {% if debug %}#eeeeee{% else %}#ff9200{% endif %};
     }
     div.footer-staging {position:fixed;bottom:0px;width:100%;}
     {% endif %}
@@ -30,6 +30,7 @@
   </head>
   <body>
     {% if staging %}<div class="header-staging">Staging</div>{% endif %}
+    {% if debug %}<div class="header-staging">DEBUG</div>{% endif %}
     {% block topnav %}{% endblock %}
 
     {% block messages %}
@@ -54,6 +55,7 @@
       <a href="/privacy/" style="color:#aaa;">Privacy Notice</a>
     </p>
     {% if staging %}<div class="footer-staging">Staging</div>{% endif %}
+    {% if debug %}<div class="footer-staging">DEBUG</div>{% endif %}
     {% block bodyjs %}
     <script src="{% static 'foundation/js/vendor/jquery.js' %}"></script>
     <script src="{% static 'foundation/js/foundation.min.js' %}"></script>
