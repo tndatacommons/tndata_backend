@@ -31,6 +31,9 @@ def next_user_action(user):
     """Looks at all of the user's selected Actions, generating the 'next'
     trigger time and returns the upcoming action."""
 
+    if not user.is_authenticated():
+        return []
+
     # TODO: instead of queyring this so inefficeintly, we could do this on save
     # for every UserAction, and store the value locally (resetting when it's
     # delivered?)
@@ -115,7 +118,6 @@ def suggested_goals(user, limit=5):
 
 
 def _usergoal_sorter(usergoal):
-    import ipdb;ipdb.set_trace();
     return usergoal.progress_value
 
 
