@@ -114,6 +114,11 @@ def suggested_goals(user, limit=5):
     return goals.filter(criteria)[:limit]
 
 
+def _usergoal_sorter(usergoal):
+    import ipdb;ipdb.set_trace();
+    return usergoal.progress_value
+
+
 def selected_goals(user):
     """Return the user's selected goals, ... ideally sorted in order of
     upcoming events, but that's a nasty query :(
@@ -121,5 +126,5 @@ def selected_goals(user):
     For now: Sorted by progress value (low-to-high)
     """
     user_goals = user.usergoal_set.all()
-    user_goals = sorted([(ug.progress_value, ug) for ug in user_goals])
-    return user_goals
+    user_goals = sorted(user_goals, key=_usergoal_sorter)
+    return [(ug.progress_value, ug) for ug in user_goals]

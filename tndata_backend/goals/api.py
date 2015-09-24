@@ -25,6 +25,8 @@ class IsOwner(permissions.BasePermission):
 def user_feed_view(request, format=None):
     """Initial attempt at a user feed."""
 
+    # TODO: Include an `object_type` property in the serializers so the app
+    # can distinguish what's going on.
     from clog.clog import clog
     feed_data = []
 
