@@ -343,11 +343,12 @@ def tablib_export_user_completed_actions(modeladmin, request, queryset):
         data.append([
             uca.user.email,
             uca.action.title,
+            uca.state,
             completed_on,
             action_added_on,
         ])
 
-    data.headers = ['Email', 'Action', 'Completed On', 'Action Added On']
+    data.headers = ['Email', 'Action', 'State', 'Saved On', 'Action Adopted']
     filename = 'completed_actions.csv'
     response = HttpResponse(data.csv, content_type="text/csv")
     response['Content-Disposition'] = 'attachment; filename=%s' % filename
@@ -358,12 +359,13 @@ tablib_export_user_completed_actions.short_description = "Export Data as a CSV F
 class UserCompletedActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'user_first', 'user_last',
-        'useraction', 'action', 'created_on', 'updated_on',
+        'useraction', 'action', 'state', 'created_on', 'updated_on',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title',
     )
+    list_filter = ('state', )
     raw_id_fields = ("user", "action", "useraction")
     actions = [tablib_export_user_completed_actions]
 

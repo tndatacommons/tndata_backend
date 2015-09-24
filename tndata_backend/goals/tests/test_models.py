@@ -1122,6 +1122,8 @@ class TestUserCompletedAction(TestCase):
             user=self.user,
             action=self.action
         )
+
+        # Default state == "completed"
         self.uca = UserCompletedAction.objects.create(
             user=self.user,
             useraction=self.ua,
@@ -1139,6 +1141,15 @@ class TestUserCompletedAction(TestCase):
         expected = "{}".format(self.action.title)
         actual = "{}".format(self.uca)
         self.assertEqual(expected, actual)
+
+    def test_completed(self):
+        self.assertTrue(self.uca.completed)
+
+    def test_dismissed(self):
+        self.assertFalse(self.uca.dismissed)
+
+    def test_snoozed(self):
+        self.assertFalse(self.uca.snoozed)
 
 
 class TestUserCategory(TestCase):
