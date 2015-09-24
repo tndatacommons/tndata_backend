@@ -27,6 +27,11 @@ from utils.user_utils import to_localtime
 from .models import Goal
 
 
+def activity_progress(user):
+    # TODO: you've completed X / Y activities for today.
+    pass
+
+
 def next_user_action(user):
     """Looks at all of the user's selected Actions, generating the 'next'
     trigger time and returns the upcoming action."""
