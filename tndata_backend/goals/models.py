@@ -1332,9 +1332,19 @@ class UserCompletedAction(models.Model):
     perform) this action.
 
     """
+    STATE_CHOICES = (
+        ('completed', 'Completed'),
+        ('dismissed', 'Dismissed'),
+        ('snoozed', 'Snoozed'),
+    )
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     useraction = models.ForeignKey(UserAction)
     action = models.ForeignKey(Action)
+    state = models.CharField(
+        max_length=32,
+        default="completed",
+        choices=STATE_CHOICES
+    )
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -1345,6 +1355,18 @@ class UserCompletedAction(models.Model):
         ordering = ['user', 'action']
         verbose_name = "User Completed Action"
         verbose_name_plural = "User Completed Action"
+
+    @property
+    def completed(self):
+        return self.state == "completed"
+
+    @property
+    def dismissed(self):
+        return self.state == "dismissed"
+
+    @property
+    def snoozed(self):
+        return self.state == "snoozed"
 
 
 class UserCategory(models.Model):
