@@ -1524,19 +1524,19 @@ class TestUserActionAPI(APITestCase):
         # First with no body (should set the state to completed)
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        uca = UserCompletedAction.objects.filter(user=self.user, useraction=self.ua)
+        uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
         self.assertTrue(uca.completed)
 
         # Now set it's state to 'dismissed'
         response = self.client.post(url, {'state': 'dismissed'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        uca = UserCompletedAction.objects.filter(user=self.user, useraction=self.ua)
+        uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
         self.assertTrue(uca.dismissed)
 
         # Now set it's state to 'snoozed'
         response = self.client.post(url, {'state': 'snoozed'})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        uca = UserCompletedAction.objects.filter(user=self.user, useraction=self.ua)
+        uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
         self.assertTrue(uca.snoozed)
 
 
