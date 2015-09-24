@@ -729,8 +729,8 @@ class UserActionViewSet(mixins.CreateModelMixin,
     To retrive all *UserActions*s that belong to a particular Action, use one
     of the following:
 
-    * `/api/users/actions/?behavior={action_id}` or by slug
-    * `/api/users/actions/?behavior={action_title_slug}`
+    * `/api/users/actions/?action={action_id}` or by slug
+    * `/api/users/actions/?action={action_title_slug}`
 
     **NOTE**: Action titles are not unique, so filtering by the `title_slug`
     may return a number of results.
