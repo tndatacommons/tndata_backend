@@ -33,7 +33,14 @@ from . serializer_fields import (
 User = get_user_model()
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class ObjectTypeModelSerializer(serializers.ModelSerializer):
+    object_type = serializers.SerializerMethodField()
+
+    def get_object_type(self, obj):
+        return obj.__class__.__name__.lower()
+
+
+class CategorySerializer(ObjectTypeModelSerializer):
     """A Serializer for `Category`."""
     goals = GoalListField(many=True, read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
@@ -46,7 +53,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = (
             'id', 'order', 'title', 'title_slug', 'description',
             'html_description', 'goals_count', 'goals',
-            'icon_url', 'image_url', 'color', 'secondary_color',
+            'icon_url', 'image_url', 'color', 'secondary_color', 'object_type',
         )
 
     def get_goals_count(self, obj):
@@ -54,7 +61,7 @@ class CategorySerializer(serializers.ModelSerializer):
         return obj.goals.filter(state="published").count()
 
 
-class GoalSerializer(serializers.ModelSerializer):
+class GoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Goal`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     categories = CategoryListField(many=True, read_only=True)
@@ -65,7 +72,7 @@ class GoalSerializer(serializers.ModelSerializer):
         model = Goal
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
-            'outcome', 'icon_url', 'categories', 'behaviors_count',
+            'outcome', 'icon_url', 'categories', 'behaviors_count', 'object_type',
         )
 
     def get_behaviors_count(self, obj):
@@ -73,7 +80,7 @@ class GoalSerializer(serializers.ModelSerializer):
         return obj.behavior_set.filter(state="published").count()
 
 
-class TriggerSerializer(serializers.ModelSerializer):
+class TriggerSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Trigger`s.  Includes user information, though
     that may be null for the set of defulat (non-custom) triggers."""
     recurrences_display = serializers.ReadOnlyField(source='recurrences_as_text')
@@ -82,7 +89,7 @@ class TriggerSerializer(serializers.ModelSerializer):
         model = Trigger
         fields = (
             'id', 'user', 'name', 'name_slug', 'trigger_type', 'time', 'location',
-            'recurrences', 'recurrences_display', 'next',
+            'recurrences', 'recurrences_display', 'next', 'object_type',
         )
         read_only_fields = ("id", "name_slug", "next")
 
@@ -157,7 +164,7 @@ class CustomTriggerSerializer(serializers.Serializer):
         return instance
 
 
-class BehaviorSerializer(serializers.ModelSerializer):
+class BehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Behavior`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
@@ -172,7 +179,7 @@ class BehaviorSerializer(serializers.ModelSerializer):
             'id', 'title', 'title_slug', 'description', 'html_description',
             'more_info', 'html_more_info', 'external_resource', 'default_trigger',
             'notification_text', 'icon_url', 'image_url', 'goals',
-            'actions_count',
+            'actions_count', 'object_type',
         )
         read_only_fields = ("actions_count", )
 
@@ -181,18 +188,18 @@ class BehaviorSerializer(serializers.ModelSerializer):
         return obj.action_set.filter(state="published").count()
 
 
-class BehaviorProgressSerializer(serializers.ModelSerializer):
+class BehaviorProgressSerializer(ObjectTypeModelSerializer):
     """A Serializer for `BehaviorProgress`."""
 
     class Meta:
         model = BehaviorProgress
         fields = (
             'id', 'user', 'user_behavior', 'status', 'status_display',
-            'reported_on',
+            'reported_on', 'object_type',
         )
 
 
-class ActionSerializer(serializers.ModelSerializer):
+class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
@@ -208,10 +215,11 @@ class ActionSerializer(serializers.ModelSerializer):
             'title', 'description', 'html_description', 'more_info',
             'html_more_info', 'external_resource', 'external_resource_name',
             'default_trigger', 'notification_text', 'icon_url', 'image_url',
+            'object_type',
         )
 
 
-class UserGoalSerializer(serializers.ModelSerializer):
+class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
     user_categories = SimpleCategoryField(
         source="get_user_categories",
@@ -232,7 +240,7 @@ class UserGoalSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'user', 'goal', 'user_categories',
             'user_behaviors_count', 'user_behaviors', 'created_on',
-            'progress_value', 'custom_triggers_allowed',
+            'progress_value', 'custom_triggers_allowed', 'object_type',
         )
         read_only_fields = ("id", "created_on")
 
@@ -242,7 +250,7 @@ class UserGoalSerializer(serializers.ModelSerializer):
         return obj.get_user_behaviors().count()
 
 
-class UserBehaviorSerializer(serializers.ModelSerializer):
+class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
     user_categories = SimpleCategoryField(
         source="get_user_categories",
@@ -272,7 +280,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'user', 'behavior', 'custom_trigger', 'user_categories',
             'user_goals', 'user_actions_count', 'user_actions', 'created_on',
-            'custom_triggers_allowed',
+            'custom_triggers_allowed', 'object_type',
         )
         read_only_fields = ("id", "created_on", )
 
@@ -282,7 +290,7 @@ class UserBehaviorSerializer(serializers.ModelSerializer):
         return obj.get_user_actions().count()
 
 
-class UserActionSerializer(serializers.ModelSerializer):
+class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
     custom_trigger = CustomTriggerField(
@@ -295,12 +303,12 @@ class UserActionSerializer(serializers.ModelSerializer):
         model = UserAction
         fields = (
             'id', 'user', 'action', 'custom_trigger',
-            'custom_triggers_allowed', 'created_on',
+            'custom_triggers_allowed', 'created_on', 'object_type',
         )
         read_only_fields = ("id", "created_on", )
 
 
-class UserCategorySerializer(serializers.ModelSerializer):
+class UserCategorySerializer(ObjectTypeModelSerializer):
     """A serializer for `UserCategory` model(s)."""
     category = SimpleCategoryField(queryset=Category.objects.all())
     user_goals = SimpleGoalField(source="get_user_goals", many=True, read_only=True)
@@ -312,6 +320,7 @@ class UserCategorySerializer(serializers.ModelSerializer):
         fields = (
             'id', 'user', 'category', 'user_goals_count', 'user_goals',
             'created_on', 'progress_value', 'custom_triggers_allowed',
+            'object_type',
         )
         read_only_fields = ("id", "created_on")
 
@@ -321,7 +330,7 @@ class UserCategorySerializer(serializers.ModelSerializer):
         return obj.get_user_goals().count()
 
 
-class PackageEnrollmentSerializer(serializers.ModelSerializer):
+class PackageEnrollmentSerializer(ObjectTypeModelSerializer):
     """A Serializer for `PackageEnrollment`."""
     category = PackagedCategoryField(queryset=Category.objects.all())
     goals = GoalListField(many=True, read_only=True)
@@ -330,5 +339,5 @@ class PackageEnrollmentSerializer(serializers.ModelSerializer):
         model = PackageEnrollment
         fields = (
             'id', 'user', 'accepted', 'updated_on', 'enrolled_on',
-            'category', 'goals',
+            'category', 'goals', 'object_type',
         )
