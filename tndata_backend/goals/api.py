@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
@@ -742,11 +743,15 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     ## Completing Actions
 
-    A User may wish to indicate that they've performed (or completed) an action.
-    To do that:
+    A User may wish to indicate that they've performed (or completed) an action
+    or that they've dismissed or snoozed an action. To save this information:
 
     * send a POST request to `/api/users/actions/{useraction_id}/complete/`
-    * A 200 response indicates that the action has been marked as complete.
+      with a body containing a `state` variable set to one of the following:
+      `completed`, `dismissed`, `snoozed`
+    * A 200 response indicates that the action has been updated or created. If
+      updated, the response will be: `{updated: <object_id>}`, if created:
+      `{created: <object_id>}`.
 
     ----
 
@@ -884,15 +889,36 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='complete')
     def complete(self, request, pk=None):
-        """"Allow a user to complete their action."""
+        """"Allow a user to complete their action. If the POST request has no
+        body, we assume they're marking it as `completed`, otherwise we update
+        based on the given `state` field."""
         try:
             useraction = self.get_object()
-            uca = models.UserCompletedAction.objects.create(
-                user=useraction.user,
-                action=useraction.action,
-                useraction=useraction
-            )
-            return Response({'created': uca.id})
+            state = request.data.get('state', 'completed')
+            updated = False
+            try:
+                # Keep 1 record per day
+                now = timezone.now()
+                uca = models.UserCompletedAction.objects.filter(
+                    created_on__year=now.year,
+                    created_on__month=now.month,
+                    created_on__day=now.day
+                ).get(
+                    user=useraction.user,
+                    action=useraction.action,
+                    useraction=useraction
+                )
+                uca.state = state
+                uca.save()
+                updated = True
+            except models.UserCompletedAction.DoesNotExist:
+                uca = models.UserCompletedAction.objects.create(
+                    user=useraction.user,
+                    action=useraction.action,
+                    useraction=useraction,
+                    state=state,
+                )
+            return Response({'updated' if updated else 'created': uca.id})
         except Exception:
             return Response(
                 {'error': "Invalid Request"},
