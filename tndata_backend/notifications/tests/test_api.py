@@ -21,7 +21,9 @@ class TestGCMDeviceAPI(APITestCase):
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
         cls.device = GCMDevice.objects.create(
             user=cls.user,
-            registration_id="REGISTRATIONID"
+            registration_id="REGISTRATIONID",
+            device_name='My Device',
+            device_id='MYDEVICE'
         )
         cls.url = reverse('gcmdevice-list')
 
@@ -42,6 +44,7 @@ class TestGCMDeviceAPI(APITestCase):
         self.assertEqual(c['id'], self.device.id)
         self.assertEqual(c['user'], self.device.user.id)
         self.assertEqual(c['device_name'], self.device.device_name)
+        self.assertEqual(c['device_id'], self.device.device_id)
         self.assertEqual(c['is_active'], self.device.is_active)
         self.assertIn('created_on', c)
         self.assertIn('updated_on', c)
@@ -56,8 +59,20 @@ class TestGCMDeviceAPI(APITestCase):
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.post(self.url, {'registration_id': 'NEWREGID'})
+        post_data = {'registration_id': 'NEWREGID', 'device_id': 'NEWDEVICE'}
+        response = self.client.post(self.url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        qs = GCMDevice.objects.filter(user=self.user, registration_id='NEWREGID')
+        self.assertTrue(qs.exists())
+
+    def test_post_device_list_updating_device_id(self):
+        """Test Updating a Device."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = {'registration_id': 'NEWREGID', 'device_id': 'MYDEVICE'}
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         qs = GCMDevice.objects.filter(user=self.user, registration_id='NEWREGID')
         self.assertTrue(qs.exists())
 

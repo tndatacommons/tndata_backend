@@ -30,7 +30,8 @@ class TestGCMDevice(TestCase):
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
         cls.device = GCMDevice.objects.create(
             user=cls.user,
-            registration_id="REGISTRATIONID"
+            registration_id="REGISTRATIONID",
+            device_id="DEVICEID"
         )
 
     def test__str__(self):
