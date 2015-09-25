@@ -30,18 +30,13 @@ from .models import Goal, UserAction
 def todays_actions(user):
     """return a list of actions that the user should perform today."""
     now = timezone.now()
-    next_trigger_date = now + timedelta(days=1)
-    user_actions = []
-
-    for ua in user.useraction_set.all():
-        if ua.custom_trigger:
-            t = ua.custom_trigger.next()
-        elif ua.default_trigger:
-            t = ua.default_trigger.next()
-        if t < next_trigger_date:
-            user_actions.append(ua.id)
-
-    return UserAction.objects.filter(id__in=user_actions)
+    upcoming = UserAction.objects.upcoming().filter(user=user)
+    upcoming = upcoming.filter(
+        next_trigger_date__year=now.year,
+        next_trigger_date__month=now.month,
+        next_trigger_date__day=now.day,
+    )
+    return upcoming.order_by('next_trigger_date')
 
 
 def todays_actions_progress(useractions):
@@ -50,7 +45,9 @@ def todays_actions_progress(useractions):
     data = [1 if ua.completed_today else 0 for ua in useractions]
     completed = sum(data)
     total = len(data)
-    progress = int(completed/total * 100)
+    progress = 0
+    if total > 0:
+        progress = int(completed/total * 100)
     return {'completed': completed, 'total': total, 'progress': progress}
 
 
@@ -60,31 +57,7 @@ def next_user_action(user):
 
     if not user.is_authenticated():
         return None
-
-    # TODO: instead of queyring this so inefficeintly, we could do this on save
-    # for every UserAction, and store the value locally (resetting when it's
-    # delivered?)
-    #
-    # That way we could query for this directly.
-
-    now = timezone.now()
-    next_trigger_date = now + timedelta(days=400)  # arbitrary far-off date
-    next_ua = None
-
-    for ua in user.useraction_set.all():
-        t = None
-        if ua.custom_trigger:
-            t = ua.custom_trigger.next()
-        elif ua.default_trigger:
-            t = ua.default_trigger.next()
-
-        if t is not None:
-            t = to_localtime(t, user)
-            if t > now and t < next_trigger_date:
-                next_trigger_date = t
-                next_ua = ua
-
-    return next_ua
+    return todays_actions(user).first()
 
 
 def suggested_goals(user, limit=5):
