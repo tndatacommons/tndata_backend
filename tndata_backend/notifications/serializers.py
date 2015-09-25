@@ -8,8 +8,8 @@ class GCMDeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = GCMDevice
         fields = (
-            'id', 'user', 'registration_id', 'device_name', 'is_active',
-            'created_on', 'updated_on',
+            'id', 'user','device_name', 'device_id', 'registration_id',
+            'is_active', 'created_on', 'updated_on',
         )
         read_only_fields = ("id", "created_on", "updated_on")
 
