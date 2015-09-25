@@ -1,9 +1,9 @@
 from datetime import datetime
 from django.contrib.auth.signals import user_logged_out
+from django.db.models import Q
 from django.dispatch import receiver
-from django.utils import timezone
 
-from rest_framework import mixins, permissions, status, viewsets
+from rest_framework import mixins, permissions, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
@@ -30,9 +30,12 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
     To create a message, you must POST the following information to
     `/api/notifications/devices`:
 
+    * `device_name`: (optional) a name for the device
+    * `device_id`: A unique identifier for the device. This is used along with
+      the user's information to uniquely identify a device, and to update the
+      registration id when it changes.
     * `registration_id`: This is the device's registration ID. For more info,
       see the [Register for GCM](https://developer.android.com/google/gcm/client.html#sample-register) section in the android developer documentation.
-    * `device_name`: (optional) a name for the device
     * `is_active`: (optional) Defaults to True; whether or not the device accepts
       notifications.
 
@@ -47,19 +50,59 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
+    def _update(self, request):
+        """Update the user's registration ID for the given device_id. If not
+        device ID is given, or if the device ID is not found, this method will
+        update any of the user's GCMDevice entries, and remove those without
+        a device id.
+
+        """
+        device = None
+        device_id = request.data.get('device_id', None)
+        device_name = request.data.get('device_name', None)
+        active = request.data.get('is_active', True)
+        registration_id = request.data.get('registration_id', None)
+
+        try:
+            # Device ID is given, try updating that.
+            params = {'user': request.user, 'device_id': device_id}
+            device = models.GCMDevice.objects.get(**params)
+        except (models.GCMDevice.DoesNotExist, models.GCMDevice.MultipleObjectsReturned):
+            # Device ID doesn't exist in our DB, just pick a device who's
+            # ID is None and update it.
+            params = {'user': request.user, 'device_id': None}
+            device = models.GCMDevice.objects.filter(**params).first()
+
+        if device:
+            device.device_id = device_id
+            device.device_name = device_name
+            device.is_active = active
+            device.registration_id = registration_id
+            device.save()
+
+        if device and device_id:
+            # If we _did_ update the device with an ID, remove all of the old
+            # None-type device objects.
+            params = {'user': request.user, 'device_id': None}
+            models.GCMDevice.objects.filter(**params).delete()
+
+        ser = self.serializer_class(device)
+        return Response(ser.data)
+
     def create(self, request, *args, **kwargs):
-        """Only create objects for the authenticated user."""
-
+        """Handles POST requests, but this method also checks for existing
+        instances of a device, and calls `update` when appropriate."""
+        # Only do this for authenticated users.
         if request.user.is_authenticated():
-            qs = models.GCMDevice.objects.filter(
-                user=request.user,
-                registration_id=request.data.get('registration_id')
-            )
-            if qs.exists():
-                # No need to do anything.
-                return Response(None, status=status.HTTP_304_NOT_MODIFIED)
-
             request.data['user'] = request.user.id
+            devices = models.GCMDevice.objects.filter(user=request.user).filter(
+                Q(device_id=request.data.get('device_id')) |
+                Q(device_id=None)
+            )
+            if devices.exists():
+                # The user's device already exists, let's update instead.
+                return self._update(request)
+
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
 
 
@@ -176,8 +219,6 @@ class GCMMessageViewSet(mixins.ListModelMixin,
 
     def update(self, request, *args, **kwargs):
         """Allow users to snooze their notifications."""
-        #import ipdb;ipdb.set_trace();
-
         # Pull the submitted options.
         snooze = request.data.pop("snooze", None)
         time = self._parse_time(request.data.pop("time", None))
