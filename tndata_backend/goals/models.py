@@ -1283,9 +1283,9 @@ class UserAction(models.Model):
         if trigger:
             next_date = trigger.next()
             # Convert to UTC if necessary
-            if timezone.is_aware(next_date):
+            if next_date and timezone.is_aware(next_date):
                 next_date = next_date.astimezone(timezone.utc)
-            else:
+            elif next_date:
                 next_date = timezone.make_aware(next_date, timezone.utc)
             self.next_trigger_date = next_date
 
