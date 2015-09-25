@@ -9,8 +9,8 @@ from . import models
 
 class GCMDeviceAdmin(admin.ModelAdmin):
     list_display = (
-        'user_email', 'user_username', 'regid', 'device_name', 'is_active',
-        'updated_on',
+        'user_email', 'user_username', 'device_name', 'device_id', 'regid',
+        'is_active', 'updated_on',
     )
     list_filter = ('is_active', )
     search_fields = [
