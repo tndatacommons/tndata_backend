@@ -53,10 +53,10 @@ def user_feed_view(request, format=None):
     """
     feed = {
         'next_action': None,
-        'actions': [],
         'progress': None,
+        'user_actions': [],
+        'user_goals': [],
         'suggestions': [],
-        'goals': [],
     }
 
     # Up next UserAction
@@ -65,7 +65,7 @@ def user_feed_view(request, format=None):
 
     # Actions to do today.
     todo = user_feed.todays_actions(request.user)
-    feed['actions'] = serializers.UserActionSerializer(todo, many=True).data
+    feed['user_actions'] = serializers.UserActionSerializer(todo, many=True).data
 
     # Progress for today
     feed['progress'] = user_feed.todays_actions_progress(todo)
@@ -78,7 +78,7 @@ def user_feed_view(request, format=None):
     # NOTE: this function returns tuples of (progress, UserGoal) ordered by
     # the goal with the least progress first.
     user_goals = [t[1] for t in user_feed.selected_goals(request.user)]
-    feed['goals'] = serializers.UserGoalSerializer(user_goals, many=True).data
+    feed['user_goals'] = serializers.UserGoalSerializer(user_goals, many=True).data
     return Response(feed)
 
 
