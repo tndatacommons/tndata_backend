@@ -3,7 +3,7 @@ from django.contrib.auth.signals import user_logged_out
 from django.db.models import Q
 from django.dispatch import receiver
 
-from rest_framework import mixins, permissions, viewsets
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
@@ -59,7 +59,7 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
         """
         device = None
         device_id = request.data.get('device_id', None)
-        device_name = request.data.get('device_name', None)
+        device_name = request.data.get('device_name', '')
         active = request.data.get('is_active', True)
         registration_id = request.data.get('registration_id', None)
 
@@ -95,6 +95,13 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
         # Only do this for authenticated users.
         if request.user.is_authenticated():
             request.data['user'] = request.user.id
+
+            # Check to see if this already exists:
+            reg_id = request.data.get('registration_id', None)
+            params = {'user': request.user, 'registration_id': reg_id}
+            if reg_id and models.GCMDevice.objects.filter(**params).exists():
+                return Response(None, status=status.HTTP_304_NOT_MODIFIED)
+
             devices = models.GCMDevice.objects.filter(user=request.user).filter(
                 Q(device_id=request.data.get('device_id')) |
                 Q(device_id=None)
