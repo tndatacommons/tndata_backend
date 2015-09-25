@@ -80,6 +80,20 @@ class UserBehaviorManager(models.Manager):
 
 class UserActionManager(models.Manager):
 
+    def upcoming(self):
+        """Return a queryset UserActions that have an upcoming trigger."""
+        qs = self.get_queryset()
+        return qs.filter(next_trigger_date__gte=timezone.now())
+
+    def stale(self):
+        """Return a queryset of UserActions whose `next_trigger_date` is either
+        stale or None."""
+        qs = self.get_queryset()
+        return qs.filter(
+            Q(next_trigger_date__lt=timezone.now()) |
+            Q(next_trigger_date=None)
+        )
+
     def accepted_or_public(self, user):
         """Return UserAction instances for actions that are in public or
         accepted categories/packages.
