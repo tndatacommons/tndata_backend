@@ -1253,16 +1253,45 @@ class UserAction(models.Model):
         null=True,
         help_text="A User-defined trigger for this behavior"
     )
+    next_trigger_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="The next date/time that a notification for this action "
+                  "will be triggered (this is auto-populated and is in UTC)."
+    )
     created_on = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return "{0}".format(self.action.title)
 
     class Meta:
         ordering = ['user', 'action']
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
+
+    def __str__(self):
+        return "{0}".format(self.action.title)
+
+    def _set_next_trigger_date(self):
+        """Attempt to  stash this action's next trigger date so we can query
+        for it. This first tries any custom triggers then uses the default
+        trigger. The result may be None (it's possible some action's no longer
+        have a future trigger).
+
+        NOTE: Always store this in UTC.
+
+        """
+        trigger = self.custom_trigger or self.default_trigger
+        if trigger:
+            next_date = trigger.next()
+            # Convert to UTC if necessary
+            if timezone.is_aware(next_date):
+                next_date = next_date.astimezone(timezone.utc)
+            else:
+                next_date = timezone.make_aware(next_date, timezone.utc)
+            self.next_trigger_date = next_date
+
+    def save(self, *args, **kwargs):
+        self._set_next_trigger_date()
+        return super().save(*args, **kwargs)
 
     @property
     def completed_today(self):
