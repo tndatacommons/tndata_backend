@@ -1523,7 +1523,7 @@ class TestUserActionAPI(APITestCase):
         )
         # First with no body (should set the state to completed)
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
         self.assertTrue(uca.completed)
 

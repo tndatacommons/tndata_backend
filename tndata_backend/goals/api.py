@@ -916,12 +916,20 @@ class UserActionViewSet(mixins.CreateModelMixin,
                     user=useraction.user,
                     action=useraction.action,
                     useraction=useraction,
-                    state=state,
+                    state=state
                 )
-            return Response({'updated' if updated else 'created': uca.id})
-        except Exception:
+
+            if updated:
+                data = {'updated': uca.id}
+                status_code = status.HTTP_200_OK
+            else:
+                data = {'created': uca.id}
+                status_code = status.HTTP_201_CREATED
+            return Response(data=data, status=status_code)
+
+        except Exception as e:
             return Response(
-                {'error': "Invalid Request"},
+                data={'error': "{0}".format(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
