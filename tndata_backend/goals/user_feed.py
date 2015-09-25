@@ -24,12 +24,34 @@ from datetime import timedelta
 from django.db.models import Q
 from django.utils import timezone
 from utils.user_utils import to_localtime
-from .models import Goal
+from .models import Goal, UserAction
 
 
-def activity_progress(user):
-    # TODO: you've completed X / Y activities for today.
-    pass
+def todays_actions(user):
+    """return a list of actions that the user should perform today."""
+    now = timezone.now()
+    next_trigger_date = now + timedelta(days=1)
+    user_actions = []
+
+    for ua in user.useraction_set.all():
+        if ua.custom_trigger:
+            t = ua.custom_trigger.next()
+        elif ua.default_trigger:
+            t = ua.default_trigger.next()
+        if t < next_trigger_date:
+            user_actions.append(ua.id)
+
+    return UserAction.objects.filter(id__in=user_actions)
+
+
+def todays_actions_progress(useractions):
+    """Return the status of completed or not for today's actions."""
+    # e.g. you've completed X / Y activities for today.
+    data = [1 if ua.completed_today else 0 for ua in useractions]
+    completed = sum(data)
+    total = len(data)
+    progress = int(completed/total * 100)
+    return {'completed': completed, 'total': total, 'progress': progress}
 
 
 def next_user_action(user):
@@ -37,7 +59,7 @@ def next_user_action(user):
     trigger time and returns the upcoming action."""
 
     if not user.is_authenticated():
-        return []
+        return None
 
     # TODO: instead of queyring this so inefficeintly, we could do this on save
     # for every UserAction, and store the value locally (resetting when it's

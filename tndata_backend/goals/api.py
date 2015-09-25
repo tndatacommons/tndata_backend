@@ -24,29 +24,62 @@ class IsOwner(permissions.BasePermission):
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication, SessionAuthentication])
 def user_feed_view(request, format=None):
-    """Initial attempt at a user feed."""
+    """**The User's Home Feed**. This endpoint returns an object with the
+    following data (read below for a description of each field):
 
-    # TODO: Include an `object_type` property in the serializers so the app
-    # can distinguish what's going on.
-    from clog.clog import clog
-    feed_data = []
+        {
+            'next_action': {...},
+            'progress': {},
+            'user_actions': [<UserAction>, ... ],
+            'user_goals': [<UserGoal>, ...],
+            'suggestions': [<Goal>, ... ],
+        }
+
+    ## Data
+
+    * `next_action` is a `UserAction` object (the mapping between a User and
+      an Action`. This is the upcoming activity for the user.
+    * `progress` is an object containing the number of actions completed today,
+      the number of total actions scheduled for today, and the percentage of
+      those completed.
+    * `user_actions` is a list of the `UserAction`s that are relevant for today
+      (i.e. the user has a reminder scheduled for today)
+    * `user_goals` is a list of all of the user's selected Goals. Each item is
+      a `UserGoal` object (the mapping between a user and a goal).
+    * `suggestions` is a list of suggested `Goal` objects for the user.
+
+    ----
+
+    """
+    feed = {
+        'next_action': None,
+        'actions': [],
+        'progress': None,
+        'suggestions': [],
+        'goals': [],
+    }
 
     # Up next UserAction
     ua = user_feed.next_user_action(request.user)
-    feed_data.append(serializers.UserActionSerializer(ua).data)
+    feed['next_action'] = serializers.UserActionSerializer(ua).data
 
-    # Suggestions?
+    # Actions to do today.
+    todo = user_feed.todays_actions(request.user)
+    feed['actions'] = serializers.UserActionSerializer(todo, many=True).data
+
+    # Progress for today
+    feed['progress'] = user_feed.todays_actions_progress(todo)
+
+    # Goal Suggestions
     suggestions = user_feed.suggested_goals(request.user)
-    feed_data.extend(serializers.GoalSerializer(suggestions, many=True).data)
+    feed['suggestions'] = serializers.GoalSerializer(suggestions, many=True).data
 
     # The user's selected goals (UserGoals)
     # NOTE: this function returns tuples of (progress, UserGoal) ordered by
     # the goal with the least progress first.
     user_goals = [t[1] for t in user_feed.selected_goals(request.user)]
-    feed_data.extend(serializers.UserGoalSerializer(user_goals, many=True).data)
-
-    clog(feed_data)  # TODO: remove me
-    return Response(feed_data)
+    feed['goals'] = serializers.UserGoalSerializer(user_goals, many=True).data
+    return Response(feed)
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):

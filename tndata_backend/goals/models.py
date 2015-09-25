@@ -1265,6 +1265,17 @@ class UserAction(models.Model):
         verbose_name_plural = "User Actions"
 
     @property
+    def completed_today(self):
+        """Return True if this action was completed today, False otherwise"""
+        now = timezone.now()
+        return self.user.usercompletedaction_set.filter(
+            created_on__year=now.year,
+            created_on__month=now.month,
+            created_on__day=now.day,
+            state='completed'
+        ).exists()
+
+    @property
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
         Package where custom triggers are restricted. """
