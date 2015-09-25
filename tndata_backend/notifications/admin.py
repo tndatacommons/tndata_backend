@@ -10,14 +10,14 @@ from . import models
 class GCMDeviceAdmin(admin.ModelAdmin):
     list_display = (
         'user_email', 'user_username', 'regid', 'device_name', 'is_active',
-        'created_on',
+        'updated_on',
     )
     list_filter = ('is_active', )
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
-        'registration_id', 'device_name',
+        'device_name', 'device_id', 'registration_id', 'device_name',
     ]
-    readonly_fields = ('device_name', 'registration_id')
+    readonly_fields = ('device_name', 'device_id', 'registration_id')
 
     def user_username(self, obj):
         return obj.user.username

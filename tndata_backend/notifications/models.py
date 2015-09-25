@@ -31,6 +31,13 @@ class GCMDevice(models.Model):
         default="Default Device",
         help_text="A name for this device"
     )
+    device_id = models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+        help_text="Some unique ID for a device. This is used to help update "
+                  "the registration_id for individual users."
+    )
     registration_id = models.CharField(
         max_length=256,
         db_index=True,
