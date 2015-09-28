@@ -1306,6 +1306,22 @@ class UserAction(models.Model):
             behavior=self.action.behavior
         ).first()
 
+    def get_user_goals(self):
+        """Returns a QuerySet of Goals related to this Action (and it's parent
+        Behavior), but restricts those goals to those which the user has
+        selected."""
+        user_behavior = self.user_behavior
+        if user_behavior:
+            return user_behavior.get_user_goals()
+        return Goal.objects.none()
+
+    def get_primary_goal(self):
+        """Return a Goal (or None) representing the primary goal associated
+        with this user's selected Action."""
+        # TODO: Save this as a field on the  model and set it when the user
+        # selects the goal.
+        return self.get_user_goals().first()
+
     @property
     def completed_today(self):
         """Return True if this action was completed today, False otherwise"""
