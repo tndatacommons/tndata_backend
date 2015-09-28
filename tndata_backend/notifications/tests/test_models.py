@@ -13,6 +13,8 @@ from .. models import (
     GCMDevice,
     GCMMessage,
 )
+from ..settings import DEFAULTS
+
 
 User = get_user_model()
 
@@ -201,7 +203,7 @@ class TestGCMMessage(TestCase):
                 "id": msg.id,
                 "title": "ASDF",
                 "message": "A asdf message",
-                "object_type": None,
+                "object_type": DEFAULTS['DEFAULT_OBJECT_TYPE'],
                 "object_id": None,
                 "user_mapping_id": None,
             }
@@ -221,7 +223,7 @@ class TestGCMMessage(TestCase):
             "id": msg.id,
             "title": "ASDF",
             "message": "A asdf message",
-            "object_type": None,
+            "object_type": DEFAULTS['DEFAULT_OBJECT_TYPE'],
             "object_id": None,
             "user_mapping_id": None,
         })

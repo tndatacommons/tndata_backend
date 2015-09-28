@@ -13,7 +13,7 @@ from django.utils import timezone
 from jsonfield import JSONField
 from pushjack import GCMClient
 from . managers import GCMMessageManager
-from . settings import GCM
+from . settings import DEFAULTS, GCM
 
 
 logger = logging.getLogger("loggly_logs")
@@ -217,7 +217,7 @@ class GCMMessage(models.Model):
             "id": self.id,
             "title": self.title,
             "message": self.message,
-            "object_type": object_type,  # What if None?
+            "object_type": object_type if object_type else DEFAULTS['DEFAULT_OBJECT_TYPE'],
             "object_id": object_id,
             "user_mapping_id": user_mapping_id,
         }
