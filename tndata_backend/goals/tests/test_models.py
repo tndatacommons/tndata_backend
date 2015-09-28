@@ -1058,8 +1058,13 @@ class TestUserAction(TestCase):
             email="test@example.com"
         )
         self.goal = Goal.objects.create(title="Goal for Behavior")
+        self.ug = UserGoal.objects.create(user=self.user, goal=self.goal)
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.behavior.goals.add(self.goal)
+        self.ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=self.behavior
+        )
         self.action = Action.objects.create(
             title='Test Action',
             behavior=self.behavior
@@ -1079,6 +1084,18 @@ class TestUserAction(TestCase):
         expected = "Test Action"
         actual = "{}".format(self.ua)
         self.assertEqual(expected, actual)
+
+    def test_user_behavior(self):
+        self.assertEqual(self.ua.user_behavior, self.ub)
+
+    def test_get_user_goals(self):
+        self.assertEqual(
+            list(self.ua.get_user_goals()),
+            list(self.ub.get_user_goals())
+        )
+
+    def test_get_primary_goal(self):
+        self.assertEqual(self.ua.get_primary_goal(), self.goal)
 
     def test_custom_triggers_allowed(self):
         """Ensure that custom triggers are allowed when the user is not
