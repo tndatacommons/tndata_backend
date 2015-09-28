@@ -298,12 +298,13 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         required=False
     )
     custom_triggers_allowed = serializers.ReadOnlyField()
+    primary_goal = SimpleGoalField(source="get_primary_goal", read_only=True)
 
     class Meta:
         model = UserAction
         fields = (
             'id', 'user', 'action', 'custom_trigger', 'next_trigger_date',
-            'custom_triggers_allowed', 'created_on', 'object_type',
+            'custom_triggers_allowed', 'created_on', 'object_type', 'primary_goal',
         )
         read_only_fields = ("id", "created_on", )
 
