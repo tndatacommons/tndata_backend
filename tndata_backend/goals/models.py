@@ -1294,6 +1294,19 @@ class UserAction(models.Model):
         return super().save(*args, **kwargs)
 
     @property
+    def user_behavior(self):
+        """Return the `UserBehavior` object that is related to the Action's
+        parent Behavior.
+
+        Returns a UserBehavior instance or None.
+
+        """
+        return UserBehavior.objects.filter(
+            user=self.user,
+            behavior=self.action.behavior
+        ).first()
+
+    @property
     def completed_today(self):
         """Return True if this action was completed today, False otherwise"""
         now = timezone.now()
