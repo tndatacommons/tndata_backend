@@ -1215,17 +1215,41 @@ class TestUserActionAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_useraction_list_athenticated(self):
-        """Authenticated users Should be able to create a UserAction."""
+        """Authenticated users should be able to create a UserAction."""
         newaction = Action.objects.create(title="New", behavior=self.behavior)
 
         url = reverse('useraction-list')
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.post(url, {"action": newaction.id})
+        post_data = {'action': newaction.id}
+        response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
         self.assertEqual(UserAction.objects.filter(user=self.user).count(), 2)
+
+        ua = UserAction.objects.get(user=self.user, action__title="New")
+        self.assertIsNone(ua.primary_goal)
+
+        # Clean up.
+        newaction.delete()
+
+    def test_post_useraction_list_athenticated_including_primary_goal(self):
+        """Authenticated users should be able to create a UserAction. This test
+        also includes a primary goal with the POST request."""
+        newaction = Action.objects.create(title="New2", behavior=self.behavior)
+
+        url = reverse('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        post_data = {'action': newaction.id, 'primary_goal': self.goal.id}
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(UserAction.objects.filter(user=self.user).count(), 2)
+
+        ua = UserAction.objects.get(user=self.user, action__title="New2")
+        self.assertEqual(ua.primary_goal, self.goal)
 
         # Clean up.
         newaction.delete()
@@ -1243,6 +1267,38 @@ class TestUserActionAPI(APITestCase):
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(UserAction.objects.filter(user=self.user).count(), 3)
+
+        ua = UserAction.objects.get(user=self.user, action__id=action_a.id)
+        self.assertIsNone(ua.primary_goal)
+        ua = UserAction.objects.get(user=self.user, action__id=action_b.id)
+        self.assertIsNone(ua.primary_goal)
+
+        # Clean up.
+        action_a.delete()
+        action_b.delete()
+
+    def test_post_useraction_list_multiple_athenticated_with_primary_goal(self):
+        """Authenticated users should be able to create multiple UserActions AND
+        include a primary goal with each."""
+        action_a = Action.objects.create(title="Action A", behavior=self.behavior)
+        action_b = Action.objects.create(title="Action B", behavior=self.behavior)
+
+        url = reverse('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        post_data = [
+            {"action": action_a.id, 'primary_goal': self.goal.id},
+            {"action": action_b.id, 'primary_goal': self.goal.id},
+        ]
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(UserAction.objects.filter(user=self.user).count(), 3)
+
+        ua = UserAction.objects.get(user=self.user, action__id=action_a.id)
+        self.assertEqual(ua.primary_goal, self.goal)
+        ua = UserAction.objects.get(user=self.user, action__id=action_b.id)
+        self.assertEqual(ua.primary_goal, self.goal)
 
         # Clean up.
         action_a.delete()

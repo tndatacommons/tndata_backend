@@ -688,9 +688,10 @@ class UserActionViewSet(mixins.CreateModelMixin,
     ## Adding a Action
 
     To associate a Action with a User, POST to `/api/users/actions/` with the
-    following data:
+    following data (the action the user is selecting, and (optionally) the
+    parent goal for the action).
 
-        {'action': ACTION_ID}
+        {'action': ACTION_ID, 'primary_goal': GOAL_ID}
 
     ## Adding multiple Actions in one request
 
@@ -698,9 +699,9 @@ class UserActionViewSet(mixins.CreateModelMixin,
     in a single request. To do this, POST an array of action IDs, e.g.:
 
         [
-            {'action': 3},
-            {'action': 4},
-            {'action': 5}
+            {'action': 3, 'primary_goal': GOAL_ID},
+            {'action': 4, 'primary_goal': GOAL_ID},
+            {'action': 5, 'primary_goal': GOAL_ID}
         ]
 
     ## Removing multiple Actions in one request.

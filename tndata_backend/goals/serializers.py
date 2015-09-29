@@ -298,15 +298,31 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         required=False
     )
     custom_triggers_allowed = serializers.ReadOnlyField()
-    primary_goal = SimpleGoalField(source="get_primary_goal", read_only=True)
+    primary_goal = SimpleGoalField(
+        source='get_primary_goal',
+        queryset=Goal.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = UserAction
         fields = (
             'id', 'user', 'action', 'custom_trigger', 'next_trigger_date',
-            'custom_triggers_allowed', 'created_on', 'object_type', 'primary_goal',
+            'custom_triggers_allowed', 'created_on', 'object_type',
+            'primary_goal',
         )
         read_only_fields = ("id", "created_on", )
+
+    def create(self, validated_data):
+        """Handle the primary_goal field correctly; We use `get_primary_goal`
+        to populate it's method, but when creating an instance that's not a
+        valid argument for UserAction.objects.create.
+
+        """
+        primary_goal = validated_data.pop("get_primary_goal", None)
+        if primary_goal:
+            validated_data['primary_goal'] = primary_goal
+        return super().create(validated_data)
 
 
 class UserCategorySerializer(ObjectTypeModelSerializer):
