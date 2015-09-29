@@ -1095,7 +1095,21 @@ class TestUserAction(TestCase):
         )
 
     def test_get_primary_goal(self):
+        # When the `primary_goal` field is null, return the first of the
+        # user's goals based on the action's parent behavior
+        self.assertIsNone(self.ua.primary_goal)
         self.assertEqual(self.ua.get_primary_goal(), self.goal)
+
+        # When we *do* have a primary goal, this method should return it.
+        primary_goal = Goal.objects.create(title="Primary")
+        self.ua.primary_goal = primary_goal
+        self.ua.save()
+
+        self.assertIsNotNone(self.ua.primary_goal)
+        self.assertEqual(self.ua.get_primary_goal(), primary_goal)
+
+        # Clean up
+        Goal.objects.filter(title="Primary").delete()
 
     def test_custom_triggers_allowed(self):
         """Ensure that custom triggers are allowed when the user is not

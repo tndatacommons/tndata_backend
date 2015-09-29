@@ -1259,6 +1259,13 @@ class UserAction(models.Model):
         help_text="The next date/time that a notification for this action "
                   "will be triggered (this is auto-populated and is in UTC)."
     )
+    primary_goal = models.ForeignKey(
+        Goal,
+        blank=True,
+        null=True,
+        help_text="A primary goal associated with this action. Typically this "
+                  "is the goal through which a user navigated to find the action."
+    )
     created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1318,9 +1325,11 @@ class UserAction(models.Model):
     def get_primary_goal(self):
         """Return a Goal (or None) representing the primary goal associated
         with this user's selected Action."""
-        # TODO: Save this as a field on the  model and set it when the user
-        # selects the goal.
-        return self.get_user_goals().first()
+        if self.primary_goal:
+            result = self.primary_goal
+        else:
+            result = self.get_user_goals().first()
+        return result
 
     @property
     def completed_today(self):
