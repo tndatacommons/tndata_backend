@@ -60,7 +60,7 @@ class GoalAdmin(ContentWorkflowAdmin):
         'title', 'title_slug', 'state', 'in_categories', 'get_absolute_icon',
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
-    search_fields = ['title', 'subtitle', 'description', 'outcome']
+    search_fields = ['title', 'subtitle', 'description', 'outcome', 'keywords']
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
     filter_horizontal = ('categories', )

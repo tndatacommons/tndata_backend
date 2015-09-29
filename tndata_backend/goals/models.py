@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Avg
@@ -296,6 +297,13 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         related_name="goals_created",
         null=True
     )
+    keywords = ArrayField(
+        models.CharField(max_length=32, blank=True),
+        default=list,
+        blank=True,
+        help_text="Add keywords for this goal. These will be used to generate "
+                  "suggestions for the user."
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -313,6 +321,9 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
             ("publish_goal", "Can Publish Goals"),
         )
 
+    def _clean_keywords(self):
+        self.keywords = [kw.strip().lower() for kw in self.keywords]
+
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["goal", self.id])
 
@@ -322,8 +333,16 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         return markdown(self.description)
 
     def save(self, *args, **kwargs):
-        """Always slugify the title prior to saving the model."""
+        """This method ensurse we always perform a few tasks prior to saving
+        a Goal. These include:
+
+        - Always slugify the title.
+        - Always clean keywords (strip & lowercase)
+        - Set the updated_by/created_by fields when possible.
+
+        """
         self.title_slug = slugify(self.title)
+        self._clean_keywords()
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Goal, self).save(*args, **kwargs)
 
