@@ -463,6 +463,7 @@ class PackageEnrollmentAdmin(UserRelatedModelAdmin):
         'user_email', 'user_first', 'user_last', 'accepted', 'enrolled_by',
         'enrolled_on', 'category',
     )
+    list_filter = ('category', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'category__id', 'category__title',
