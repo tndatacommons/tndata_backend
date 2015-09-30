@@ -223,6 +223,7 @@ class TestGoalForm(TestCase):
         form = GoalForm()
         fields = sorted([
             'categories', 'title', 'description', 'icon', 'more_info', 'notes',
+            'keywords',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
