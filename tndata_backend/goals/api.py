@@ -59,6 +59,9 @@ def user_feed_view(request, format=None):
         'suggestions': [],
     }
 
+    if not request.user.is_authenticated():
+        return Response(feed)
+
     # Up next UserAction
     ua = user_feed.next_user_action(request.user)
     feed['next_action'] = serializers.UserActionSerializer(ua).data
