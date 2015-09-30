@@ -359,6 +359,8 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     * `goal`: An object that represents the `Goal` selected by the user
     * `user_categories`: An array of `Category` objects selected by the user,
       that are also parents of this goal.
+    * `primary_category`: The primary category for this goal, based on the
+      user's selection.
     * `user_behaviors_count`: the number of child Behaviors that the user has
       selected that are contained in this goal.
     * `user_behaviors`: An array of `Behavior` objects selected by the user.

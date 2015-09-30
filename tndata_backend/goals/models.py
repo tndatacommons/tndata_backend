@@ -1122,6 +1122,11 @@ class UserGoal(models.Model):
             category.progress_value = scores.get(category.id, 0.0)
         return results
 
+    def get_primary_category(self):
+        """Return the first user-selected category that is a
+        parent of this goal."""
+        return self.get_user_categories().first()
+
     @property
     def progress_value(self):
         try:
