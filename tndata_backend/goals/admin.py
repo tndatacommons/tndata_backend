@@ -61,13 +61,24 @@ class GoalAdmin(ContentWorkflowAdmin):
         'created_by', 'created_on', 'updated_by', 'updated_on',
     )
     search_fields = ['title', 'subtitle', 'description', 'outcome', 'keywords']
-    list_filter = ('state', )
+    list_filter = ('state', 'all_keywords')
     prepopulated_fields = {"title_slug": ("title", )}
     filter_horizontal = ('categories', )
     raw_id_fields = ('updated_by', 'created_by')
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
+
+    # TODO: turn the below into a custom ListFilter (ArrayListFieldFilter?)
+    # See: https://docs.djangoproject.com/en/1.8/ref/contrib/admin/#django.contrib.admin.ModelAdmin.list_filter
+    #
+    # See the source of ChoicesFieldListFilter and see what they do.
+    # https://github.com/django/django/blob/master/django/contrib/admin/filters.py#L264
+    #
+    def all_keywords(self):
+        keywords = Goal.objects.values_list("keywords", flat=True)
+        keywords = [kw for sublist in keywords for kw in sublist if kw]
+        return keywords
 
 admin.site.register(models.Goal, GoalAdmin)
 

@@ -322,7 +322,9 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         )
 
     def _clean_keywords(self):
-        self.keywords = [kw.strip().lower() for kw in self.keywords]
+        """Split keywords on spaces, lowercase, and strip whitespace."""
+        keywords = " ".join(self.keywords).lower()
+        self.keywords = [kw.strip() for kw in keywords.split()]
 
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["goal", self.id])
