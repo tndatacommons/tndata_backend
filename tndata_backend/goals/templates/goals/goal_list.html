@@ -22,6 +22,7 @@
           State
         </th>
         <th>Title</th>
+        <th>Keywords</th>
         <th>Behaviors</th>
         <th>Categories</th>
         <th>Icon</th>
@@ -38,6 +39,11 @@
           {% endif %}
         </td>
         <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
+        <td>
+          {% for kw in goal.keywords %}
+            <span class="label secondary">{{ kw }}</span>
+          {% endfor %}
+        </td>
         <td>{{ goal.behavior_set.all|join:", " }}</td>
         <td>{{ goal.categories.all|join:", " }}</td>
         <td class="gray">

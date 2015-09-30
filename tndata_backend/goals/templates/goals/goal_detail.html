@@ -17,6 +17,14 @@
       <h1>{{ goal }} {% goal_object_controls goal %}</h1>
       <dl>
       <dt>State</dt><dd>{{ goal|label }}</dd>
+      {% if goal.keywords %}
+        <dt>Keywords</dt>
+        <dd>
+        {% for kw in goal.keywords %}
+          <span class="label secondary">{{ kw }}</span>
+        {% endfor %}
+        </dd>
+      {% endif %}
       <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
       <dt>More Info</dt><dd>{{ goal.more_info|markdown }}</dt>
       <dt>Icon</dt><dd class="gray">
