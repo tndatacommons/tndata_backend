@@ -58,10 +58,12 @@
 
       <p>
         <a class="button" href="{{ category.get_enroll_url }}">
-          Enroll New Users</a>
+          <i class="fa fa-plus-circle"></i> Enroll New Users</a>
 
+        <a class="button secondary" href="{% url 'goals:package-cta-email' category.id %}">
+          <i class="fa fa-envelope"></i> Email Enrollees</a>
         <a class="button secondary" href="{% url 'goals:package-reminder' category.id %}">
-          Send Reminder Email</a>
+          <i class="fa fa-bell"></i> Send Reminder Email</a>
       </p>
     </div>
   </div> {# end .row #}

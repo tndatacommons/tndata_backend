@@ -13,7 +13,7 @@ from userprofile.forms import UserForm
 from utils.db import get_max_order
 from utils.forms import SetNewPasswordForm
 
-from . email import send_package_enrollment_batch
+from . email import send_package_cta_email, send_package_enrollment_batch
 from . forms import (
     ActionForm,
     AcceptEnrollmentForm,
@@ -22,6 +22,7 @@ from . forms import (
     CategoryForm,
     ContentAuthorForm,
     CSVUploadForm,
+    CTAEmailForm,
     DisableTriggerForm,
     EnrollmentReminderForm,
     GoalForm,
@@ -920,6 +921,31 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
 
 
 @permission_required(ContentPermissions.authors, raise_exception=True)
+def enrollment_cta_email(request, pk):
+    """Let us send an arbitrary CTA email to users enrolled in a package."""
+    category = get_object_or_404(Category, pk=pk)
+    enrollments = category.packageenrollment_set.filter(accepted=True)
+
+    if request.method == "POST":
+        form = CTAEmailForm(request.POST)
+        if form.is_valid():
+            params = {
+                'cta_link': form.cleaned_data['link'],
+                'cta_text': form.cleaned_data['link_text'],
+                'message': form.cleaned_data['message'],
+                'subject': form.cleaned_data['subject'],
+            }
+            send_package_cta_email(request, enrollments, **params)
+            messages.success(request, "Your message has been sent")
+            return redirect(category.get_view_enrollment_url())
+    else:
+        form = CTAEmailForm()
+
+    ctx = {'form': form, 'category': category, 'enrollments': enrollments}
+    return render(request, "goals/package_enrollment_cta_email.html", ctx)
+
+
+@permission_required(ContentPermissions.authors, raise_exception=True)
 def enrollment_reminder(request, pk):
     """Let us send a reminder email to users that have not accepted the
     enrollment."""
@@ -931,6 +957,7 @@ def enrollment_reminder(request, pk):
         if form.is_valid():
             msg = form.cleaned_data['message']
             send_package_enrollment_batch(request, enrollments, message=msg)
+            messages.success(request, "Your message has been sent")
             return redirect(category.get_view_enrollment_url())
     else:
         form = EnrollmentReminderForm()

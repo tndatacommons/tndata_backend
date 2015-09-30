@@ -1,0 +1,10 @@
+{{ message|safe }}
+
+{% if cta_link %}
+{{ cta_text }}: {{ cta_link }}
+{% endif %}
+
+
+Thank you!
+
+-- The Compass Team

@@ -1,0 +1,47 @@
+{% extends "goals/base.html" %}
+
+{% block title %}Email Enrollees{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+  <li class="current">{{ category }}</li>
+{% endblock %}
+
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+    <h1>{{ category }} Email</h1>
+
+    <p>Create an email message to send to users who have accepted their enrollment
+    in this package. This message will get sent to the following:</p>
+    <ul>
+    {% for enrollment in enrollments %}
+      <li>
+      {% with name=enrollment.user.get_full_name email=enrollment.user.email %}
+        {% if name %}{{ name }}: {% endif %}
+        <a href="mailto:{{ email }}">{{ email }}</a>
+      {% endwith %}
+      </li>
+    {% empty %}
+      <li><em>There are no users who have accepted this enrollment.</li>
+    {% endfor %}
+    </ul>
+
+    {% if form %}
+    <form
+      data-persist="garlic"
+      action="{% url 'goals:package-cta-email' category.id %}"
+      method="post">{% csrf_token %}
+    {{ form.as_p}}
+    <hr/>
+    <p><button type="submit">Send Email</button></p>
+    </form>
+    {% else %}
+        <p class="alert-box warning">You do not have permission to enroll
+        users in this package.</p>
+    {% endif %}
+    </div> {# end .row #}
+  </div> {# end .row #}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'email/base_email.html' %}
+{% load util_filters %}
+
+{% block title %}{{ alert }}{% endblock %}
+
+{% block content %}{{ message|markdown }}{% endblock %}
+
+{% block post_cta %}
+  <p>Thank you!<br/><br/>-- The Compass Team</p>
+{% endblock %}
+
+{% block footer %}{% endblock %}

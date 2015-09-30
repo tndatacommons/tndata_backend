@@ -31,6 +31,11 @@ urlpatterns = patterns('',
         name='accept-enrollment'
     ),
     url(
+        r'^packages/(?P<pk>\d+)/email/$',
+        views.enrollment_cta_email,
+        name='package-cta-email'
+    ),
+    url(
         r'^packages/(?P<pk>\d+)/reminder/$',
         views.enrollment_reminder,
         name='package-reminder'

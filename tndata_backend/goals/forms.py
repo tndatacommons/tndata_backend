@@ -487,6 +487,31 @@ class AcceptEnrollmentForm(forms.Form):
         super().__init__(*args, **kwargs)
 
 
+class CTAEmailForm(forms.Form):
+    """This form is used to create an arbitrary Email for users in a Package.
+    It may contain a CTA link (and text) as well as a subject and message for
+    the user.
+
+    """
+    subject = forms.CharField(
+        help_text="The subject of your email.",
+        required=True,
+    )
+    message = forms.CharField(
+        widget=forms.Textarea,
+        required=True,
+        help_text="This is the body of your email message."
+    )
+    link = forms.URLField(
+        required=False,
+        help_text="(Optional) A link that you want users to click on."
+    )
+    link_text = forms.CharField(
+        required=False,
+        help_text="(Optional) The Call-To-Action text for the above link."
+    )
+
+
 class EnrollmentReminderForm(forms.Form):
     """This form is used to create a Reminder email for enrollees that have
     not yet accepted the package enrollment. It's content get automatically
