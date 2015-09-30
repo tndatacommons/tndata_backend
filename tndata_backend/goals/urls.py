@@ -1,8 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from . import views
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(
         r'^$',
         views.IndexView.as_view(),
@@ -267,4 +267,9 @@ urlpatterns = patterns('',
         views.CategoryDetailView.as_view(),
         name='category-detail'
     ),
-)
+    url(
+        r'^batch-assign-keywords/$',
+        views.admin_batch_assign_keywords,
+        name='batch-assign-keywords'
+    ),
+]

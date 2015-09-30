@@ -1,7 +1,10 @@
+import urllib
+
 from django.contrib import admin
 from django.contrib.messages import ERROR
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError, transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 import tablib
 from django_fsm import TransitionNotAllowed
@@ -90,9 +93,10 @@ class ArrayFieldListFilter(admin.SimpleListFilter):
         """
         # Compare the requested value (either '80s' or '90s')
         # to decide how to filter the queryset.
-        lookup = [self.value()]
+        lookup = self.value()
         if lookup:
-            queryset = queryset.filter(keywords__contains=lookup)
+            queryset = queryset.filter(keywords__contains=[lookup])
+        return queryset
 
 
 class GoalAdmin(ContentWorkflowAdmin):
@@ -104,7 +108,15 @@ class GoalAdmin(ContentWorkflowAdmin):
     list_filter = ('state', ArrayFieldListFilter)
     prepopulated_fields = {"title_slug": ("title", )}
     filter_horizontal = ('categories', )
+    actions = ['add_keywords', ]
     raw_id_fields = ('updated_by', 'created_by')
+
+    def add_keywords(self, request, queryset):
+        ids = "+".join(str(g.id) for g in queryset)
+        args = urllib.parse.urlencode({'ids': ids})
+        url = reverse('goals:batch-assign-keywords')
+        return HttpResponseRedirect("{0}?{1}".format(url, args))
+    add_keywords.description = "Assign Keywords"
 
     def in_categories(self, obj):
         return ", ".join(sorted([cat.title for cat in obj.categories.all()]))

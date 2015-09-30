@@ -1083,3 +1083,31 @@ def file_upload(request, object_type, pk):
 
     # Assume something went wrong.
     return HttpResponseBadRequest(errors)
+
+
+def admin_batch_assign_keywords(request):
+    if request.method == "POST":
+        goal_ids = request.POST.get('ids', '')
+        goals = Goal.objects.filter(id__in=goal_ids.split('+'))
+        keywords = request.POST.get('keywords', '')
+        keywords = keywords.split(",")
+        for goal in goals:
+            goal.keywords = goal.keywords + keywords
+            goal.save()
+        msg = "Keywords added to {0} goals.".format(goals.count())
+        messages.success(request, msg)
+        return redirect('/admin/goals/goal/')
+    else:
+        goal_ids = request.GET.get('ids', '')
+        goals = Goal.objects.filter(id__in=goal_ids.split('+'))
+
+    context = {
+        'app_label': 'goals',
+        'title': 'Add Keywords',
+        'opts': {'app_label': 'goals'},
+        'original': None,
+        'adminform': None,
+        'goal_ids': goal_ids,
+        'goals': goals,
+    }
+    return render(request, 'goals/admin_batch_assign_keywords.html', context)

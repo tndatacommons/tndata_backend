@@ -1,0 +1,40 @@
+{% extends "admin/change_form.html" %}
+
+
+{% block content %}
+
+<div id="content-main">
+  <form action="{% url 'goals:batch-assign-keywords' %}" method="post">
+  {% csrf_token %}
+  <div>
+    <fieldset class="module aligned">
+    <h2>Selected Goals</h2>
+    <ul>
+    {% for goal in goals %}
+      <li>{{ goal }}</li>
+    {% empty %}
+      <li><em>No goals were selected</em></li>
+    {% endfor %}
+    </ul>
+    </fieldset>
+
+    <fieldset class="module aligned">
+      <div class="form-row field-keywords">
+        <div>
+          <label for="id_keywords">Keywords</label>
+          <input type="text" name="keywords" id="id_keywords" style="width:50%"/>
+          <input type="hidden" name="ids" id="id_ids" value="{{ goal_ids }}"/>
+          <p class="help">
+            Add keywords to the goals listed. These will be added
+            in addition to any keywords that are currently set on the goal.
+          </p>
+        </div>
+      </div>
+    </fieldset>
+    <div class="submit-row">
+      <input type="submit" value="Save" class="default" name="_save"/>
+    </div>
+  </div>
+  </form>
+</div>
+{% endblock %}
