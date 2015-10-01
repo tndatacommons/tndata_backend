@@ -361,7 +361,7 @@ admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'notification', 'action',
+        'user_email', 'next_trigger_date', 'notification', 'action',
         'action_state', 'primary_goal', 'categories', 'custom_triggers_allowed',
         'created_on',
     )
