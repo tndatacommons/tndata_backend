@@ -23,8 +23,114 @@ import random
 from datetime import timedelta
 from django.db.models import Q
 from django.utils import timezone
-from utils.user_utils import to_localtime
-from .models import Goal, UserAction
+from .models import Goal, UserAction, UserCompletedAction
+
+
+def action_feedback(user, useraction, lookback=30):
+    """This function assembles data for *feedback* on the user's upcoming
+    action. See: https://goo.gl/7UUjzq
+
+    This is essentially just a bit of encouragment for the user, but the content
+    of that encouragement is based on their previous activity. Roughly:
+
+    - If <= 20% of the current months previously scheduled actions completed
+      (i.e., 2 actions each day. On the 10th day of the month if <= 4 actions
+      completed)
+    - If > 20% but <= 60% of the current months previously scheduled actions
+      completed (i.e., 2 actions each day. On the 10th day of the month if > 4
+      but <= 12 actions completed)
+    - If > 60% of the current months previously scheduled actions completed
+      (i.e., 2 actions each day. On the 10th day of the month if > 12 actions
+      completed)
+
+    Parameters:
+
+    * user - the user for which this data is assembled.
+    * useraction - the user's next action (a UserAction instance)
+    * lookback - number of days to look back for their completed history.
+
+    Returns a dict of the form:
+
+        {
+            'title': 'some string',
+            'subtitle': 'some string',
+            'total': <total number of activities>,
+            'completed': <number completed>,
+            'percentage': <percentage: completed / total>
+        }
+
+    """
+    feedback = {
+        'low': {
+            'title': "I've done some work to {goal} this month!",
+            'subtitle': 'Every action taken brings me closer',
+        },
+        'med': {
+            'title': "I've done {num} activities to {goal} this month!",
+            'subtitle': 'I must really want this!',
+        },
+        'hi': {
+            'title': (
+                "I've done {num} out of {total} activities to {goal} "
+                "this month!"
+            ),
+            'subtitle': "I'm doing great! I'll schedule another activity!",
+        },
+    }
+    # Data points needed:
+    # - total number of UserActions for the time period
+    # - completed UserActions for the time period.
+    # - percentage of Actions completed/scheduled in some period (lookback)
+
+    # NOTE: UserAction's always get updated with the *next up* trigger date
+    # so we can't use them to calculate the above. For now, we'll just use
+    # the UserCompletedAction model, but that will only work if the user has
+    # the version of the app that records incomplete as well as completed actions.
+    dt = timezone.now() - timedelta(days=lookback)
+    qs = UserCompletedAction.objects.filter(
+        user=user,
+        useraction=useraction,
+        updated_on__gt=dt
+    )
+    total = qs.count()
+    completed = qs.filter(state="completed").count()
+    if total > 0:
+        percentage = round((completed / total) * 100)
+    else:
+        percentage = 0
+    goal = useraction.get_primary_goal()
+    goal_title = goal.title.lower() if goal.title else "achieve my goal"
+
+    resp = {
+        'title': '',
+        'subtitle': '',
+        'total': total,
+        'completed': completed,
+        'incomplete': total - completed,
+        'percentage': percentage,
+    }
+
+    if percentage <= 20:
+        title = feedback['low']['title'].format(goal=goal_title)
+        resp.update({
+            'title': title,
+            'subtitle': feedback['low']['subtitle']
+        })
+    elif percentage >= 60:
+        title = feedback['hi']['title'].format(
+            goal=goal_title, num=completed, total=total
+        )
+        resp.update({
+            'title': title,
+            'subtitle': feedback['hi']['subtitle']
+        })
+    else:
+        title = feedback['med']['title'].format(goal=goal_title, num=completed)
+        resp.update({
+            'title': title,
+            'subtitle': feedback['med']['subtitle']
+        })
+    return resp
 
 
 def todays_actions(user):

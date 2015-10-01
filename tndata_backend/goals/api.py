@@ -29,6 +29,7 @@ def user_feed_view(request, format=None):
 
         {
             'next_action': {...},
+            'action_feedback': {...},
             'progress': {},
             'user_actions': [<UserAction>, ... ],
             'user_goals': [<UserGoal>, ...],
@@ -39,6 +40,8 @@ def user_feed_view(request, format=None):
 
     * `next_action` is a `UserAction` object (the mapping between a User and
       an Action`. This is the upcoming activity for the user.
+    * `action_feedback` is a dict of data for the feedback card related to the
+      user's `next_action`.
     * `progress` is an object containing the number of actions completed today,
       the number of total actions scheduled for today, and the percentage of
       those completed.
@@ -53,6 +56,7 @@ def user_feed_view(request, format=None):
     """
     feed = {
         'next_action': None,
+        'action_feedback': None,
         'progress': None,
         'user_actions': [],
         'user_goals': [],
@@ -65,6 +69,9 @@ def user_feed_view(request, format=None):
     # Up next UserAction
     ua = user_feed.next_user_action(request.user)
     feed['next_action'] = serializers.UserActionSerializer(ua).data
+    if ua:
+        # The Action feedback is irrelevant if there's no user action
+        feed['action_feedback'] = user_feed.action_feedback(request.user, ua)
 
     # Actions to do today.
     todo = user_feed.todays_actions(request.user)
