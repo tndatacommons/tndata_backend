@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
 from django.core import validators
-from django.core.cache import cache
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
@@ -21,6 +20,7 @@ from goals.serializers import (
 )
 from . import models
 from utils import user_utils
+from utils.decorators import cached_method
 
 
 class PlaceSerializer(serializers.ModelSerializer):
@@ -87,13 +87,9 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "date_joined", )
 
+    @cached_method(cache_key="{0}-User._get_feed")
     def _get_feed(self, obj):
         """Assemble all the user feed data at once because it's more efficient."""
-        cache_key = "{0}-User._get_feed".format(obj.id)
-        results = cache.get(cache_key)
-        if results:
-            return results
-
         if not hasattr(self, "_feed"):
             self._feed = {
                 'next_action': None,
@@ -125,8 +121,6 @@ class UserSerializer(serializers.ModelSerializer):
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
             self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
-
-        cache.set(cache_key, self._feed)
         return self._feed
 
     def get_next_action(self, obj):
@@ -144,54 +138,34 @@ class UserSerializer(serializers.ModelSerializer):
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
 
+    @cached_method(cache_key="{0}-User.get_places")
     def get_places(self, obj):
-        cache_key = "{0}-User.get_places".format(obj.id)
-        result = cache.get(cache_key)
-        if result:
-            return result
         qs = models.UserPlace.objects.filter(user=obj)
         serialized = UserPlaceSerializer(qs, many=True)
-        cache.set(cache_key, serialized.data)
         return serialized.data
 
+    @cached_method(cache_key="{0}-User.get_categories")
     def get_categories(self, obj):
-        cache_key = "{0}-User.get_categories".format(obj.id)
-        result = cache.get(cache_key)
-        if result:
-            return result
         qs = UserCategory.objects.accepted_or_public(obj)
         serialized = UserCategorySerializer(qs, many=True)
-        cache.set(cache_key, serialized.data)
         return serialized.data
 
+    @cached_method(cache_key="{0}-User.get_goals")
     def get_goals(self, obj):
-        cache_key = "{0}-User.get_goals".format(obj.id)
-        result = cache.get(cache_key)
-        if result:
-            return result
         qs = UserGoal.objects.accepted_or_public(obj)
         serialized = UserGoalSerializer(qs, many=True)
-        cache.set(cache_key, serialized.data)
         return serialized.data
 
+    @cached_method(cache_key="{0}-User.get_behaviors")
     def get_behaviors(self, obj):
-        cache_key = "{0}-User.get_behaviors".format(obj.id)
-        result = cache.get(cache_key)
-        if result:
-            return result
         qs = UserBehavior.objects.accepted_or_public(obj)
         serialized = UserBehaviorSerializer(qs, many=True)
-        cache.set(cache_key, serialized.data)
         return serialized.data
 
+    @cached_method(cache_key="{0}-User.get_actions")
     def get_actions(self, obj):
-        cache_key = "{0}-User.get_actions".format(obj.id)
-        result = cache.get(cache_key)
-        if result:
-            return result
         qs = UserAction.objects.accepted_or_public(obj)
         serialized = UserActionSerializer(qs, many=True)
-        cache.set(cache_key, serialized.data)
         return serialized.data
 
     def validate_username(self, value):
