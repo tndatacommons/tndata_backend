@@ -165,10 +165,25 @@ class UserViewSet(viewsets.ModelViewSet):
     * `userprofile_id` -- Unique ID for the [UserProfile](/api/userprofiles/)
     * `token` -- The user's [auth token](#acquiring-an-autho-token)
     * `needs_onboarding` -- Whether or not the user should go through onboarding.
+
+    Collections of related data for the user, include:
+
+    * `next_action` -- a l`UserAction` object (the mapping between a User and
+      an Action`. This is the upcoming activity for the user.
+    * `action_feedback` -- a dict of data for the feedback card related to the
+      user's `next_action`.
+    * `progress` -- an object containing the number of actions completed today,
+      the number of total actions scheduled for today, and the percentage of
+      those completed.
+    * `upcoming_actions` -- a list of the `UserAction`s that are relevant for
+      today (i.e. the user has a reminder scheduled for today)
+    * `suggestions` -- a list of suggested `Goal`s for the user.
+
     * `places` -- An array of the [user's Places](/api/users/places/)
     * `goals` -- An array of the user's selected [Goals](/api/users/goals/)
     * `behaviors` -- An array of the user's selected [Behaviors](/api/users/behaviors/)
-    * `actions` -- An array of the user's selected [Actions](/api/users/actions/)
+    * `actions` -- An array containin all of the user's selected
+      [Actions](/api/users/actions/)
     * `categories` -- An array of the user's [Categories](/api/users/categories/)
 
     ## Creating a User <a href="#creating-a-user">&para;</a>

@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from goals import user_feed
 from goals.models import (
     UserAction,
     UserBehavior,
@@ -11,6 +12,7 @@ from goals.models import (
     UserGoal,
 )
 from goals.serializers import (
+    GoalSerializer,
     UserActionSerializer,
     UserBehaviorSerializer,
     UserCategorySerializer,
@@ -64,6 +66,12 @@ class UserSerializer(serializers.ModelSerializer):
     behaviors = serializers.SerializerMethodField(read_only=True)
     actions = serializers.SerializerMethodField(read_only=True)
 
+    next_action = serializers.SerializerMethodField(read_only=True)
+    action_feedback = serializers.SerializerMethodField(read_only=True)
+    progress = serializers.SerializerMethodField(read_only=True)
+    upcoming_actions = serializers.SerializerMethodField(read_only=True)
+    suggestions = serializers.SerializerMethodField(read_only=True)
+
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
 
@@ -73,9 +81,61 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             'token', 'needs_onboarding', "places", "goals", "behaviors",
-            "actions", "categories",
+            "actions", "categories", "next_action", "action_feedback",
+            "progress", "upcoming_actions", "suggestions",
         )
         read_only_fields = ("id", "date_joined", )
+
+    def _get_feed(self, obj):
+        """Assemble all the user feed data at once because it's more efficient."""
+        if not hasattr(self, "_feed"):
+            self._feed = {
+                'next_action': None,
+                'action_feedback': None,
+                'progress': None,
+                'upcoming': [],
+                'suggestions': [],
+            }
+
+            if not obj.is_authenticated():
+                return self._feed
+
+            # Up next UserAction
+            ua = user_feed.next_user_action(obj)
+            self._feed['next_action'] = UserActionSerializer(ua).data
+            if ua:
+                # The Action feedback is irrelevant if there's no user action
+                feedback = user_feed.action_feedback(obj, ua)
+                self._feed['action_feedback'] = feedback
+
+            # Actions to do today.
+            upcoming = user_feed.todays_actions(obj)
+
+            # Progress for today
+            self._feed['progress'] = user_feed.todays_actions_progress(upcoming)
+            upcoming = UserActionSerializer(upcoming, many=True).data
+            self._feed['upcoming'] = upcoming
+
+            # Goal Suggestions
+            suggestions = user_feed.suggested_goals(obj)
+            self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
+
+        return self._feed
+
+    def get_next_action(self, obj):
+        return self._get_feed(obj)['next_action']
+
+    def get_action_feedback(self, obj):
+        return self._get_feed(obj)['action_feedback']
+
+    def get_progress(self, obj):
+        return self._get_feed(obj)['progress']
+
+    def get_upcoming_actions(self, obj):
+        return self._get_feed(obj)['upcoming']
+
+    def get_suggestions(self, obj):
+        return self._get_feed(obj)['suggestions']
 
     def get_places(self, obj):
         qs = models.UserPlace.objects.filter(user=obj)
