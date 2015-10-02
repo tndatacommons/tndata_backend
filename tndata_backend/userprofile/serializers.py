@@ -95,7 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
                 'next_action': None,
                 'action_feedback': None,
                 'progress': None,
-                'upcoming': [],
+                'upcoming_actions': [],
                 'suggestions': [],
             }
 
@@ -116,7 +116,7 @@ class UserSerializer(serializers.ModelSerializer):
             # Progress for today
             self._feed['progress'] = user_feed.todays_actions_progress(upcoming)
             upcoming = UserActionSerializer(upcoming, many=True).data
-            self._feed['upcoming'] = upcoming
+            self._feed['upcoming_actions'] = upcoming
 
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
@@ -133,7 +133,7 @@ class UserSerializer(serializers.ModelSerializer):
         return self._get_feed(obj)['progress']
 
     def get_upcoming_actions(self, obj):
-        return self._get_feed(obj)['upcoming']
+        return self._get_feed(obj)['upcoming_actions']
 
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
