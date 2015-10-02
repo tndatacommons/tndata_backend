@@ -213,13 +213,20 @@ def suggested_goals(user, limit=5):
         criteria = criteria.add(rels, Q.OR)
 
     # TODO: what should we do for the following attributes?
+    # NOTE: we're going to change onboarding to get binary results for
+    # questions, and with the Goal's keywords, we can do a better job of
+    # matching things up.
+    #
     # if profile.age
     # if profile.zipcode
-    # if profile.gender ==
+    # if profile.gender
 
     # Pick a random sample of suggestions (or the leftover goals)...
     ids = list(goals.filter(criteria).values_list("id", flat=True))
-    criteria = Q(id__in=random.sample(ids, limit))
+    if limit < len(ids):
+        criteria = Q(id__in=random.sample(ids, limit))
+    else:
+        criteria = Q(id__in=ids)
     return goals.filter(criteria)[:limit]
 
 
