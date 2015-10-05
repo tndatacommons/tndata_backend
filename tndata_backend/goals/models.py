@@ -1570,7 +1570,7 @@ class BehaviorProgress(models.Model):
         ordering = ['-reported_on']
         get_latest_by = "reported_on"
         verbose_name = "Behavior Progress"
-        verbose_name_plural = "Behavior Progression"
+        verbose_name_plural = "Behavior Progresses"
 
     def __str__(self):
         return self.get_status_display()
@@ -1714,7 +1714,7 @@ class GoalProgressManager(models.Manager):
 
 
 class GoalProgress(models.Model):
-    """Agregates data from `BehaviorProgression` up to 'today'."""
+    """Agregates data from `BehaviorProgress` up to 'today'."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     goal = models.ForeignKey(Goal)
     current_score = models.FloatField()
@@ -1726,7 +1726,7 @@ class GoalProgress(models.Model):
         ordering = ['-reported_on']
         get_latest_by = "reported_on"
         verbose_name = "Goal Progress"
-        verbose_name_plural = "Goal Progression"
+        verbose_name_plural = "Goal Progresses"
 
     def __str__(self):
         return "{}".format(self.current_score)
@@ -1848,7 +1848,7 @@ class CategoryProgress(models.Model):
         ordering = ['-reported_on']
         get_latest_by = "reported_on"
         verbose_name = "Category Progress"
-        verbose_name_plural = "Category Progression"
+        verbose_name_plural = "Category Progresses"
 
     def __str__(self):
         return "{}".format(self.current_score)
