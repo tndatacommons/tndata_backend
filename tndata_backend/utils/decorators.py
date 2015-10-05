@@ -25,7 +25,8 @@ def cached_method(cache_key):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if len(args) > 1:  # extract the first arg & use as the cache key
-                key = cache_key.format(args[1])
+                obj_id = getattr(args[1], "id", str(args[1]))
+                key = cache_key.format(obj_id)
                 result = cache.get(key)
                 if result is None:
                     result = func(*args, **kwargs)
