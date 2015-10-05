@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, time
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
@@ -32,15 +32,6 @@ class TestUserFeed(TestCase):
         cls.User = get_user_model()
         cls.user = cls.User.objects.create_user('user', 'u@example.com', 'secret')
 
-        # A Trigger for an action...
-        cls.trigger = Trigger.objects.create(
-            user=cls.user,
-            name="test-trigger-for-action",
-            trigger_type="time",
-            time=time(22, 0),
-            recurrences="RRULE:FREQ=DAILY"
-        )
-
         # Create a Category
         cls.category = Category.objects.create(order=1, title='Test Category')
         cls.category.publish()
@@ -71,11 +62,23 @@ class TestUserFeed(TestCase):
         cls.uc = UserCategory.objects.create(user=cls.user, category=cls.category)
         cls.ug = UserGoal.objects.create(user=cls.user, goal=cls.goal)
         cls.ub = UserBehavior.objects.create(user=cls.user, behavior=cls.behavior)
-        cls.ua = UserAction.objects.create(
-            user=cls.user,
-            action=cls.action,
-            custom_trigger=cls.trigger
-        )
+
+        dt = timezone.now()
+        with patch('goals.models.timezone.now') as mock_now:
+            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 0, 5)
+            # A Trigger for an action...
+            cls.trigger = Trigger.objects.create(
+                user=cls.user,
+                name="test-trigger-for-action",
+                trigger_type="time",
+                time=time(22, 0),
+                recurrences="RRULE:FREQ=DAILY"
+            )
+            cls.ua = UserAction.objects.create(
+                user=cls.user,
+                action=cls.action,
+                custom_trigger=cls.trigger
+            )
 
     def test_action_feedback(self):
         # We have no UserCompletedAction objects, so this should be < 20%
@@ -91,9 +94,9 @@ class TestUserFeed(TestCase):
         )
 
     def test_todays_actions(self):
-        dt = timezone.now() + timedelta(days=1)
+        dt = timezone.now()
         with patch('goals.user_feed.timezone.now') as mock_now:
-            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 1, 0)
+            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 11, 0)
             result = user_feed.todays_actions(self.user)
             self.assertEqual(list(result), [self.ua])
 
@@ -104,9 +107,9 @@ class TestUserFeed(TestCase):
         self.assertEqual(resp['progress'], 0)
 
     def test_next_user_action(self):
-        dt = timezone.now() + timedelta(days=1)
+        dt = timezone.now()
         with patch('goals.user_feed.timezone.now') as mock_now:
-            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 1, 10)
+            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 11, 10)
             ua = user_feed.next_user_action(self.user)
             self.assertEqual(ua, self.ua)
 
