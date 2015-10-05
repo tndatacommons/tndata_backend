@@ -1220,6 +1220,12 @@ class UserBehavior(models.Model):
         trigger."""
         return "custom trigger for userbehavior-{0}".format(self.id)
 
+    def get_useractions(self):
+        """Returns a QuerySet of UserAction objects whose Action is a child of
+        this object's associated Behavior.
+        """
+        return self.user.useraction_set.filter(action__behavior=self.behavior)
+
     def get_actions(self):
         """Returns a QuerySet of Actions related to this Behavior, but
         restricts the results to those which the user has selected.
@@ -1549,7 +1555,15 @@ class BehaviorProgress(models.Model):
     )
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     user_behavior = models.ForeignKey(UserBehavior)
+
+    # Status is for user-input feedback (e.g. the daily check-in)
     status = models.IntegerField(choices=PROGRESS_CHOICES)
+
+    # Action progress is calculated based on completed vs. non-completed Actions
+    actions_total = models.IntegerField(default=0)
+    actions_completed = models.IntegerField(default=0)
+    action_progress = models.FloatField(default=0)
+
     reported_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1560,6 +1574,46 @@ class BehaviorProgress(models.Model):
 
     def __str__(self):
         return self.get_status_display()
+
+    def _calculate_action_progress(self):
+        """Count the user's scheduled + completed actions that are children of
+        the related UserBehavior.behavior, but only do this for the date this
+        progress item was saved (so we can back-fill old action progress if
+        available).
+
+        This method will overwrite the following fields:
+
+        - actions_total
+        - actions_completed
+        - action_progress
+
+        """
+        dt = self.reported_on
+        if dt is None:
+            dt = timezone.now()
+
+        uas = self.user_behavior.get_useractions()
+        uas = uas.filter(
+            next_trigger_date__day=dt.day,
+            next_trigger_date__month=dt.month,
+            next_trigger_date__year=dt.year
+        )
+        self.actions_total = len(uas)
+        # NOTE: This is only good for "today"
+        #self.actions_completed = sum(ua.completed_today for ua in uas)
+        self.actions_completed = self.user.usercompletedaction_set.filter(
+            useraction__in=uas.values_list("id", flat=True),
+            updated_on__day=dt.day,
+            updated_on__month=dt.month,
+            updated_on__year=dt.year,
+            state="completed"
+        ).count()
+        if self.actions_total > 0:
+            self.action_progress = self.actions_completed / self.actions_total
+
+    def save(self, *args, **kwargs):
+        self._calculate_action_progress()
+        super().save(*args, **kwargs)
 
     @property
     def status_display(self):
