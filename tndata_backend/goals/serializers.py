@@ -269,7 +269,7 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
     )
     user_actions_count = serializers.SerializerMethodField()
     user_actions = SimpleActionField(
-        source="get_user_actions",
+        source="get_actions",
         many=True,
         read_only=True,
     )
@@ -292,7 +292,7 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
     def get_user_actions_count(self, obj):
         """Return the number of user-selected actions that are children of
         this Behavior."""
-        return obj.get_user_actions().count()
+        return obj.get_actions().count()
 
 
 class UserActionSerializer(ObjectTypeModelSerializer):

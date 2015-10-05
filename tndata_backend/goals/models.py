@@ -1220,7 +1220,7 @@ class UserBehavior(models.Model):
         trigger."""
         return "custom trigger for userbehavior-{0}".format(self.id)
 
-    def get_user_actions(self):
+    def get_actions(self):
         """Returns a QuerySet of Actions related to this Behavior, but
         restricts the results to those which the user has selected.
 
