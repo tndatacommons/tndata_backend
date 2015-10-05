@@ -99,7 +99,10 @@ def action_feedback(user, useraction, lookback=30):
     else:
         percentage = 0
     goal = useraction.get_primary_goal()
-    goal_title = goal.title.lower() if goal.title else "achieve my goal"
+    if goal:
+        goal_title = goal.title.lower()
+    else:
+        goal_title = "achieve my goal"
 
     resp = {
         'title': '',
