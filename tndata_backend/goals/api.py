@@ -1095,17 +1095,27 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
 class BehaviorProgressViewSet(mixins.CreateModelMixin,
                               mixins.ListModelMixin,
                               mixins.RetrieveModelMixin,
+                              mixins.UpdateModelMixin,
                               viewsets.GenericViewSet):
-    """ This endpoint allows a user to record their progress toward a Behavior,
-    and retrieve a history of that progress.
+    """ This endpoint allows a user to record their daily 'self-assessed'
+    progress toward a Behavior, and retrieve a history of that progress.
 
-    GET requests will return the following information for an authenticated
-    user:
+    This model also contains daily aggregates of completed actions that are
+    children of the behavior.
 
+    GET requests will return the following information for an authenticated user:
+
+    * `id`: Unique ID for a `BehaviorProgress` object.
     * `user`: ID of the authenticated user.
     * `user_behavior`: ID of the associated `UserBehavior` (User-to-Behavior mapping)
     * `status`: Value of their progress, in the range of 1-3
-    * `reported_on`: Date on which progress was reported.
+    * `status_display`: Human-readable status of the user's progress.
+    * `actions_total`: The total number of actions contained within the Behavior
+      that were scheduled for the day.
+    * `actions_complete`:  The number of actions within the Behavior that were
+      completed during the day.
+    * `action_progress`: The percentage of actions completed / actions total.
+    * `reported_on`: Date on which progress was initially reported.
 
     ## Saving Progress
 
@@ -1118,6 +1128,22 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
     * `user_behavior`: The ID for the `UserBehavior` instance (the mapping
       between a User and a Behavior). Optional if `behavior` is provided.
 
+    This will create a new BehaviorProgress snapshot. _However_, if an instance
+    of a BehaviorProgress alread exists for the day in which this data is POSTed,
+    that instance will be updated (so that there _should_ only be one of these
+    per day).
+
+    ## Updating Progress
+
+    You may also send a PUT request to `/api/users/behaviors/progress/{id}/`
+    with the following information to update an existing `BehaviorProgress`
+    instance:
+
+    * `status`: A numerical value, 1 for "Off Course", 2 for "Seeking", and 3
+      for "On Course".
+    * `user_behavior`: The ID for the `UserBehavior` instance (the mapping
+      between a User and a Behavior).
+
     ----
 
     """
@@ -1129,21 +1155,65 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
-    def create(self, request, *args, **kwargs):
-        """Only create objects for the authenticated user."""
+    def _parse_request_data(self, request):
+        """This method does a few things to modify any request data:
+
+        - ensure we only create objects for the authenticated user
+        - add the id of the BehaviorProgress if we already have one for today
+        - if a Behavior id is submitted, try to include the UserBehavior id
+
+        """
+        # Set the authenticated user's ID
         request.data['user'] = request.user.id
-        # If a behavior id provided, attempt to retrieve the UserBehavior object
-        if 'behavior' in request.data and 'user_behavior' not in request.data:
+
+        # If a behavior is provided, attempt to retrieve the UserBehavior object
+        if request.method == "POST":
+            if 'behavior' in request.data and 'user_behavior' not in request.data:
+                try:
+                    behavior = request.data.pop('behavior', [])
+                    if isinstance(behavior, list):
+                        behavior = behavior[0]
+                    request.data['user_behavior'] = models.UserBehavior.objects.filter(
+                        user=request.user,
+                        behavior__id=behavior
+                    ).values_list('id', flat=True)[0]
+                except (models.UserBehavior.DoesNotExist, IndexError):
+                    pass  # Creating will fail
+
+            # If we already have a BehaviorProgress for "today", include its ID
             try:
-                behavior = request.data.pop('behavior', [])
-                if isinstance(behavior, list):
-                    behavior = behavior[0]
-                request.data['user_behavior'] = models.UserBehavior.objects.filter(
-                    user=request.user,
-                    behavior__id=behavior
-                ).values_list('id', flat=True)[0]
-            except (models.UserBehavior.DoesNotExist, IndexError):
-                pass  # Creating will fail
+                now = timezone.now()
+                params = {
+                    'user': request.user,
+                    'reported_on__year': now.year,
+                    'reported_on__month': now.month,
+                    'reported_on__day': now.day,
+                }
+                if 'user_behavior' in request.data:
+                    params['user_behavior'] = request.data['user_behavior']
+                else:
+                    params['behavior'] = request.data['behavior']
+                qs = models.BehaviorProgress.objects.filter(**params)
+                request.data['id'] = qs.latest().id
+            except models.BehaviorProgress.DoesNotExist:
+                pass
+
+        return request
+
+    def update(self, request, *args, **kwargs):
+        request = self._parse_request_data(request)
+        return super().create(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        request = self._parse_request_data(request)
+
+        # If we've got a BehaviorProgress ID, we need to update instead of create
+        if 'id' in request.data:
+            bp = models.BehaviorProgress.objects.get(id=request.data['id'])
+            bp.status = request.data['status']
+            bp.save()
+            data = self.serializer_class(bp).data
+            return Response(data=data, status=status.HTTP_200_OK)
         return super().create(request, *args, **kwargs)
 
 
