@@ -264,5 +264,8 @@ STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 MEDIAFILES_LOCATION = 'media'
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'utils.storages.MediaStorage'
-
 # -----------------------------------------------------------------------------
+
+
+# Goal Settings
+PROGRESS_HISTORY_DAYS = 30  # Number of days back to generate progress history
