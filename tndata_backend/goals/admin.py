@@ -442,8 +442,9 @@ admin.site.register(models.BehaviorProgress, BehaviorProgressAdmin)
 
 class GoalProgressAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user', 'goal', 'current_total', 'max_total',
-        'current_score', 'text_glyph', 'reported_on'
+        'id', 'user_email', 'goal', 'current_total', 'max_total', 'current_score',
+        'text_glyph', 'daily_action_progress', 'weekly_action_progress',
+        'action_progress', 'reported_on'
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
