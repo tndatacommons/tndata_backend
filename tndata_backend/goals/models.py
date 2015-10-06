@@ -1717,9 +1717,21 @@ class GoalProgress(models.Model):
     """Agregates data from `BehaviorProgress` up to 'today'."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     goal = models.ForeignKey(Goal)
+
+    # Aggregating the self-reported Behavior Progress
     current_score = models.FloatField()
     current_total = models.FloatField()
     max_total = models.FloatField()
+
+    # Aggregating the user's completed Actions
+    daily_actions_total = models.IntegerField(default=0)
+    daily_actions_completed = models.IntegerField(default=0)
+    daily_action_progress = models.FloatField(default=0)
+
+    actions_total = models.IntegerField(default=0)
+    actions_completed = models.IntegerField(default=0)
+    action_progress = models.FloatField(default=0)
+
     reported_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
