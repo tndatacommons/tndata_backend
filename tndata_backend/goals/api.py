@@ -1163,6 +1163,9 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
         - if a Behavior id is submitted, try to include the UserBehavior id
 
         """
+        if not request.user.is_authenticated():
+            return request
+
         # Set the authenticated user's ID
         request.data['user'] = request.user.id
 
@@ -1184,7 +1187,7 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
             try:
                 now = timezone.now()
                 params = {
-                    'user': request.user,
+                    'user': request.user.id,
                     'reported_on__year': now.year,
                     'reported_on__month': now.month,
                     'reported_on__day': now.day,

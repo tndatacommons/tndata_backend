@@ -1873,14 +1873,26 @@ class TestBehaviorProgressAPI(APITestCase):
         response = self.client.post(self.url, self.payload)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_post_list_authenticated(self):
+    def test_post_list_authenticated_when_progress_exists(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        q = BehaviorProgress.objects.filter(user=self.user, user_behavior=self.ub)
+        self.assertEqual(q.count(), 1)
+
+    def test_post_list_authenticated_when_progress_doesnot_exist(self):
+        # Remove any existing BehaviorProgress objects for the day.
+        BehaviorProgress.objects.filter(user=self.user).delete()
+
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.post(self.url, self.payload)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         q = BehaviorProgress.objects.filter(user=self.user, user_behavior=self.ub)
-        self.assertEqual(q.count(), 2)  # started with 1, now has 2
+        self.assertEqual(q.count(), 1)
 
     def test_post_list_authenticated_with_behavior(self):
         self.client.credentials(
@@ -1889,9 +1901,9 @@ class TestBehaviorProgressAPI(APITestCase):
         self.payload.pop('user_behavior')
         self.payload['behavior'] = self.behavior.id
         response = self.client.post(self.url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         q = BehaviorProgress.objects.filter(user=self.user, user_behavior=self.ub)
-        self.assertEqual(q.count(), 2)  # started with 1, now has 2
+        self.assertEqual(q.count(), 1)
 
     def test_get_detail_unauthenticated(self):
         """Ensure un-authenticated requests don't expose any results."""
@@ -1912,17 +1924,17 @@ class TestBehaviorProgressAPI(APITestCase):
         self.assertEqual(response.data['status'], self.p.status)
         self.assertEqual(response.data['status_display'], self.p.get_status_display())
 
-    def test_put_detail_not_allowed(self):
-        """Ensure PUTing to the detail endpoint is not allowed."""
-        response = self.client.put(self.detail_url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        # Even if you're authenticated
+    def test_put(self):
+        """PUTing should update the day's BehaviorProgress."""
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.put(self.detail_url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        payload = {
+            'status': BehaviorProgress.OFF_COURSE,
+            'user_behavior': self.ub.id,
+        }
+        response = self.client.put(self.detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestPackageEnrollmentAPI(APITestCase):
