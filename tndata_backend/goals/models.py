@@ -17,7 +17,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.db.models.signals import (
     pre_delete, pre_save, post_delete, post_save
 )
@@ -1600,7 +1600,6 @@ class BehaviorProgress(models.Model):
         )
         self.actions_total = len(uas)
         # NOTE: This is only good for "today"
-        #self.actions_completed = sum(ua.completed_today for ua in uas)
         self.actions_completed = self.user.usercompletedaction_set.filter(
             useraction__in=uas.values_list("id", flat=True),
             updated_on__day=dt.day,
@@ -1760,6 +1759,59 @@ class GoalProgress(models.Model):
         lookup = {'user_behavior__behavior__goals__in': [self.goal]}
         return self.user.behaviorprogress_set.filter(**lookup)
 
+    def _calculate_actions_stats(self, days=1):
+        """Calculate the actions stats from the BehaviorProgress model over
+        some time period ending with either this model's reported_on date or
+        today's date if if `reported_on` is None.
+
+        Returns a 3-tuple of the following: (completed, total, progress), where
+
+        * completed - the number of actions completed
+        * total - the total number of actions scheduled
+        * progress - the percentage (as a float): completed / total
+
+        """
+        dt_end = self.reported_on if self.reported_on else timezone.now()
+        dt_start = dt_end - timedelta(days=days)
+
+        # Tweak the time periods so our (start, end) range encompasses the day
+        start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = dt_end.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        # Run the aggregate over the relevant BehaviorProgress objects.
+        qs = self.child_behaviorprogresses().filter(reported_on__range=(start, end))
+        qs = qs.aggregate(Sum('actions_total'), Sum('actions_completed'))
+
+        total = qs.get('actions_total__sum', 0) or 0
+        completed = qs.get('actions_completed__sum', 0) or 0
+        progress = 0
+        if total > 0:
+            progress = completed / total
+        return (completed, total, progress)
+
+    def calculate_daily_action_stats(self):
+        """Aggregate the BehaviorProgress action status saved on the same day."""
+        completed, total, progress = self._calculate_actions_stats(days=1)
+        self.daily_actions_total = total
+        self.daily_actions_completed = completed
+        self.daily_action_progress = progress
+
+    def calculate_weekly_action_stats(self):
+        """Aggregate the BehaviorProgress action stats for the past week."""
+        completed, total, progress = self._calculate_actions_stats(days=7)
+        self.weekly_actions_total = total
+        self.weekly_actions_completed = completed
+        self.weekly_action_progress = progress
+
+    def calculate_aggregate_action_stats(self):
+        """Aggregate the BehaviorProgress action stats."""
+        completed, total, progress = self._calculate_actions_stats(
+            days=settings.PROGRESS_HISTORY_DAYS
+        )
+        self.actions_total = total
+        self.actions_completed = completed
+        self.action_progress = progress
+
     def _calculate_score(self, digits=2):
         v = 0
         if self.max_total > 0:
@@ -1772,7 +1824,7 @@ class GoalProgress(models.Model):
         start = self.reported_on.replace(hour=0, minute=0, second=0, microsecond=0)
         end = self.reported_on.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-        scores = self.child_behaviorprogress()
+        scores = self.child_behaviorprogresses()
         scores = scores.filter(reported_on__range=(start, end))
         scores = scores.values_list('status', flat=True)
 
@@ -1782,6 +1834,9 @@ class GoalProgress(models.Model):
 
     def save(self, *args, **kwargs):
         self._calculate_score()
+        self.calculate_daily_action_stats()
+        self.calculate_weekly_action_stats()
+        self.calculate_aggregate_action_stats()
         return super().save(*args, **kwargs)
 
     @property
