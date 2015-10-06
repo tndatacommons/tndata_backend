@@ -1752,6 +1752,14 @@ class GoalProgress(models.Model):
     def __str__(self):
         return "{}".format(self.current_score)
 
+    def child_behaviorprogresses(self):
+        """Returns a queryset of BehaviorProgress instances whose related
+        Behavior is a child of this object's Goal.
+
+        """
+        lookup = {'user_behavior__behavior__goals__in': [self.goal]}
+        return self.user.behaviorprogress_set.filter(**lookup)
+
     def _calculate_score(self, digits=2):
         v = 0
         if self.max_total > 0:
@@ -1761,14 +1769,13 @@ class GoalProgress(models.Model):
     def recalculate_score(self):
         """Recalculate all of the BehaviorProgress values for the current date,
         updating the relevant score-related fields."""
-        behavior_ids = self.user.userbehavior_set.values_list("behavior", flat=True)
         start = self.reported_on.replace(hour=0, minute=0, second=0, microsecond=0)
         end = self.reported_on.replace(hour=23, minute=59, second=59, microsecond=999999)
-        scores = BehaviorProgress.objects.filter(
-            user_behavior__behavior_id__in=behavior_ids,
-            user=self.user,
-            reported_on__range=(start, end)
-        ).values_list('status', flat=True)
+
+        scores = self.child_behaviorprogress()
+        scores = scores.filter(reported_on__range=(start, end))
+        scores = scores.values_list('status', flat=True)
+
         self.current_total = sum(scores)
         self.max_total = len(scores) * BehaviorProgress.ON_COURSE
         self._calculate_score()
