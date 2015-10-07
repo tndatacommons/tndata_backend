@@ -248,6 +248,14 @@ class TestUsersAPI(APITestCase):
         self.assertIn('behaviors', response.data['results'][0])
         self.assertIn('actions', response.data['results'][0])
         self.assertIn('categories', response.data['results'][0])
+        self.assertIn('places', response.data['results'][0])
+
+        # As well as the collections used for the home feed
+        self.assertIn('next_action', response.data['results'][0])
+        self.assertIn('action_feedback', response.data['results'][0])
+        self.assertIn('progress', response.data['results'][0])
+        self.assertIn('upcoming_actions', response.data['results'][0])
+        self.assertIn('suggestions', response.data['results'][0])
 
     def test_post_user_list(self):
         """POSTing to the user-list should create a new user."""
