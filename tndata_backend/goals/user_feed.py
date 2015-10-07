@@ -182,7 +182,8 @@ def suggested_goals(user, limit=5):
     and filters on Goal title's based on those 2 criteria, then picks 5 items
     at random.
 
-    If you don' match any of those, you get served random goals.
+    If you don't match any of those, you get served random goals from the
+    categories you've selected.
 
     """
     # From the goals the user has _not_ selected (that are public)...
@@ -191,6 +192,9 @@ def suggested_goals(user, limit=5):
         categories__packaged_content=True,
         id__in=user_selected_goals
     )
+    # but only those that are in the user's selected categories.
+    cats = user.usercategory_set.values_list('category', flat=True)
+    goals = goals.filter(categories__in=cats).distinct()
 
     # Use some details from the user's profile to filter these...
     criteria = Q()
