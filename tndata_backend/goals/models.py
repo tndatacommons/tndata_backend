@@ -1076,6 +1076,14 @@ class UserGoal(models.Model):
         verbose_name_plural = "User Goals"
 
     @property
+    def goal_progress(self):
+        """Returns the most recent GoalProgress instance related to this Goal."""
+        try:
+            return self.goalprogress_set.latest()
+        except GoalProgress.DoesNotExist:
+            return None
+
+    @property
     def custom_triggers_allowed(self):
         """Check to see if the user/goal is in a Package where custom triggers
         are restricted. """
