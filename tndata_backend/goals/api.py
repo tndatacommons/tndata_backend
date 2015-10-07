@@ -510,6 +510,24 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     * `id`: A unique identifier for the `UserBehavior` mapping.
     * `user`: A unique identifier for the `User`
     * `behavior`: An object that represents the `Behavior` selected by the user
+    * `behavior_progress`: An object containing information on the user's
+      progress toward the completion of their scheduled actions within this
+      behavior. It contains the following information:
+
+        - `id`: a unique id for the GoalProgress instance.
+        - `user`: the user's unique id
+        - `user_behavior`: The unique id of the parent UserBehavior
+        - `status`: An integer representing the user's daily reported progress,
+          (1 means Off Course, 2 is Seeking, 3 is On Course).
+        - `status_display`: A human-readable version of status.
+        - `daily_actions_total`: Number of actions scheduled for _this day_.
+        - `daily_actions_completed`: Number of actions the user completed in
+          _this day_
+        - `daily_action_progress`: Daily progress percentage (as a float). This
+          is calculated with `daily_actions_completed` / `daily_actions_total`
+        - `reported_on`: Date/Time on which this data was recorded.
+        - `object_type`: Will always be `behaviorprogress`
+
     * `custom_trigger`: (will be `null`). This is currently not implemented.
     * `custom_triggers_allowed`: A boolean that indicates whether or not a user
       should be able to customize the reminders beneath this content

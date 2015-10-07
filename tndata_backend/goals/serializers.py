@@ -292,6 +292,7 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
         read_only=True,
     )
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
+    behavior_progress = BehaviorProgressSerializer(read_only=True)
     custom_trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False
@@ -301,9 +302,9 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserBehavior
         fields = (
-            'id', 'user', 'behavior', 'custom_trigger', 'user_categories',
-            'user_goals', 'user_actions_count', 'user_actions', 'created_on',
-            'custom_triggers_allowed', 'object_type',
+            'id', 'user', 'behavior', 'behavior_progress', 'custom_trigger',
+            'user_categories', 'user_goals', 'user_actions_count', 'user_actions',
+            'created_on', 'custom_triggers_allowed', 'object_type',
         )
         read_only_fields = ("id", "created_on", )
 

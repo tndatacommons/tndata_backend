@@ -1191,6 +1191,14 @@ class UserBehavior(models.Model):
         verbose_name_plural = "User Behaviors"
 
     @property
+    def behavior_progress(self):
+        """Returns the most recent GoalProgress instance related to this Goal."""
+        try:
+            return self.behaviorprogress_set.latest()
+        except BehaviorProgress.DoesNotExist:
+            return None
+
+    @property
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
         Package where custom triggers are restricted. """
