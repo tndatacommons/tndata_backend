@@ -450,7 +450,7 @@ class GoalProgressAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'goal__id', 'goal__title',
     )
-    raw_id_fields = ("user", "goal")
+    raw_id_fields = ("user", "goal", "usergoal")
 
 admin.site.register(models.GoalProgress, GoalProgressAdmin)
 
