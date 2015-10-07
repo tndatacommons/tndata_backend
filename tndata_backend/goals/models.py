@@ -1809,15 +1809,15 @@ class GoalProgress(models.Model):
     def calculate_daily_action_stats(self):
         """Aggregate the BehaviorProgress action status saved on the same day."""
         completed, total, progress = self._calculate_actions_stats(days=1)
-        self.daily_actions_total = total
         self.daily_actions_completed = completed
+        self.daily_actions_total = total
         self.daily_action_progress = progress
 
     def calculate_weekly_action_stats(self):
         """Aggregate the BehaviorProgress action stats for the past week."""
         completed, total, progress = self._calculate_actions_stats(days=7)
-        self.weekly_actions_total = total
         self.weekly_actions_completed = completed
+        self.weekly_actions_total = total
         self.weekly_action_progress = progress
 
     def calculate_aggregate_action_stats(self):
@@ -1825,8 +1825,8 @@ class GoalProgress(models.Model):
         completed, total, progress = self._calculate_actions_stats(
             days=settings.PROGRESS_HISTORY_DAYS
         )
-        self.actions_total = total
         self.actions_completed = completed
+        self.actions_total = total
         self.action_progress = progress
 
     def _calculate_score(self, digits=2):

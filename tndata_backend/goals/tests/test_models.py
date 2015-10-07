@@ -1258,6 +1258,44 @@ class TestBehaviorProgress(TestCase):
     def test_behavior(self):
         self.assertEqual(self.progress.behavior, self.behavior)
 
+    def test__calculate_action_progress(self):
+        # First, we need some Actions that are children of the behavior.
+        a1 = Action.objects.create(title="A1", behavior=self.behavior)
+        a2 = Action.objects.create(title="A2", behavior=self.behavior)
+
+        # Then the user needs to select them.
+        dt = timezone.now()
+        ua1 = UserAction.objects.create(
+            user=self.user, action=a1, next_trigger_date=dt
+        )
+        ua2 = UserAction.objects.create(
+            user=self.user, action=a2, next_trigger_date=dt
+        )
+
+        # Then, add some UserCompletedAction objects for the user.
+        # 1 completed, 1 incomplete.
+        uca1 = UserCompletedAction.objects.create(
+            user=self.user,
+            useraction=ua1,
+            action=a1,
+            state="snoozed"
+        )
+        uca2 = UserCompletedAction.objects.create(
+            user=self.user,
+            useraction=ua2,
+            action=a2,
+            state="completed"
+        )
+
+        self.progress._calculate_action_progress()
+        self.assertEqual(self.progress.daily_actions_total, 2)
+        self.assertEqual(self.progress.daily_actions_completed, 1)
+        self.assertEqual(self.progress.daily_action_progress, 0.5)
+
+        # Clean up.
+        for obj in [a1, a2, ua1, ua2, uca1, uca2]:
+            obj.delete()
+
 
 class TestGoalProgress(TestCase):
     """Tests for the `GoalProgress` model."""
@@ -1277,18 +1315,38 @@ class TestGoalProgress(TestCase):
             user=cls.user,
             behavior=cls.behavior
         )
+
+        cls.action1 = Action.objects.create(title='TA1', behavior=cls.behavior)
+        cls.action2 = Action.objects.create(title='TA2', behavior=cls.behavior)
+        cls.ua1 = UserAction.objects.create(
+            user=cls.user,
+            action=cls.action1,
+            next_trigger_date=timezone.now()
+        )
+        cls.ua2 = UserAction.objects.create(
+            user=cls.user,
+            action=cls.action2,
+            next_trigger_date=timezone.now()
+        )
+        cls.uca1 = UserCompletedAction.objects.create(
+            user=cls.user,
+            useraction=cls.ua1,
+            action=cls.action1,
+            state='dismissed',
+        )
+        cls.uca2 = UserCompletedAction.objects.create(
+            user=cls.user,
+            useraction=cls.ua2,
+            action=cls.action2,
+            state='completed',
+        )
+
         # Create some progress items toward this User's Behavior
         data = {
             'user': cls.user,
             'user_behavior': cls.ub,
-            'status': BehaviorProgress.ON_COURSE
+            'status': BehaviorProgress.ON_COURSE,
         }
-        BehaviorProgress.objects.create(**data)
-
-        data['status'] = BehaviorProgress.SEEKING
-        BehaviorProgress.objects.create(**data)
-
-        data['status'] = BehaviorProgress.OFF_COURSE
         BehaviorProgress.objects.create(**data)
 
         # Create a GoalProgress by generating the scores.
@@ -1296,29 +1354,76 @@ class TestGoalProgress(TestCase):
 
     def test_expected_values(self):
         """Ensure the score components contain the expected values."""
-        self.assertEqual(self.gp.current_total, 6)  # 3 + 2 + 1
-        self.assertEqual(self.gp.max_total, 9)  # 3 * 3
-        self.assertEqual(self.gp.current_score, 0.67)  # round(6/9, 2)
+        self.assertEqual(self.gp.current_total, 3)
+        self.assertEqual(self.gp.max_total, 3)
+        self.assertEqual(self.gp.current_score, 1.0)  # round(3/3, 2)
 
     def test__str__(self):
-        self.assertEqual("0.67", "{}".format(self.gp))
+        self.assertEqual("1.0", "{}".format(self.gp))
 
     def test__calculate_value(self):
         """Ensure that this method calculates the score."""
-        expected = round(self.gp.current_total / self.gp.max_total, 2)
+        expected = round(self.gp.current_total / self.gp.max_total, 1)
         self.gp._calculate_score()
         self.assertEqual(self.gp.current_score, expected)
 
+    def test__calculate_actions_stats(self):
+        expected = (1, 2, 0.5)
+        results = self.gp._calculate_actions_stats()
+        self.assertEqual(results, expected)
+
+    @patch.object(GoalProgress, '_calculate_actions_stats')
+    def test_calculate_daily_action_stats(self, mock_method):
+        mock_method.return_value = (1, 2, 0.5)
+        self.gp.calculate_daily_action_stats()
+        self.assertEqual(self.gp.daily_actions_completed, 1)
+        self.assertEqual(self.gp.daily_actions_total, 2)
+        self.assertEqual(self.gp.daily_action_progress, 0.5)
+
+    @patch.object(GoalProgress, '_calculate_actions_stats')
+    def test_calculate_weekly_action_stats(self, mock_method):
+        mock_method.return_value = (1, 2, 0.5)
+        self.gp.calculate_weekly_action_stats()
+        self.assertEqual(self.gp.weekly_actions_completed, 1)
+        self.assertEqual(self.gp.weekly_actions_total, 2)
+        self.assertEqual(self.gp.weekly_action_progress, 0.5)
+
+    @patch.object(GoalProgress, '_calculate_actions_stats')
+    def test_calculate_aggregate_action_stats(self, mock_method):
+        mock_method.return_value = (1, 2, 0.5)
+        self.gp.calculate_aggregate_action_stats()
+        self.assertEqual(self.gp.actions_completed, 1)
+        self.assertEqual(self.gp.actions_total, 2)
+        self.assertEqual(self.gp.action_progress, 0.5)
+
     def test_save(self):
         """Saving an object should calculate it's score"""
+        # setup
         original = self.gp._calculate_score
+        daily = self.gp.calculate_daily_action_stats
+        weekly = self.gp.calculate_weekly_action_stats
+        aggregate = self.gp.calculate_aggregate_action_stats
+
         self.gp._calculate_score = Mock()
+        self.gp.calculate_daily_action_stats = Mock()
+        self.gp.calculate_weekly_action_stats = Mock()
+        self.gp.calculate_aggregate_action_stats = Mock()
+
+        # Test
         self.gp.save()
         self.gp._calculate_score.assert_called_once_with()
+        self.gp.calculate_daily_action_stats.assert_called_once_with()
+        self.gp.calculate_weekly_action_stats.assert_called_once_with()
+        self.gp.calculate_aggregate_action_stats.assert_called_once_with()
+
+        # Clean up
         self.gp._calculate_score = original
+        self.gp.calculate_daily_action_stats = daily
+        self.gp.calculate_weekly_action_stats = weekly
+        self.gp.calculate_aggregate_action_stats = aggregate
 
     def test_text_glyph(self):
-        self.assertEqual(self.gp.text_glyph, u"\u2192")
+        self.assertEqual(self.gp.text_glyph, u"\u2191")
 
 
 class TestCategoryProgress(TestCase):
