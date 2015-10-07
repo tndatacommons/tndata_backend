@@ -364,6 +364,15 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     def publish(self):
         pass
 
+    def get_parent_category_for_user(self, user):
+        """Return one of this object's parent categories, prefering one that
+        the given user has selected."""
+        user_cats = user.usercategory_set.values_list('category', flat=True)
+        cat = self.categories.filter(id__in=user_cates).first()
+        if cat is None:
+            cat = self.categories.first()
+        return cat
+
     objects = WorkflowManager()
 
 

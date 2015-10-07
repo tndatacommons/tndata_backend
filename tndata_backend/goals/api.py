@@ -94,7 +94,8 @@ def user_feed_view(request, format=None):
 
     # Goal Suggestions
     suggestions = user_feed.suggested_goals(request.user)
-    feed['suggestions'] = serializers.GoalSerializer(suggestions, many=True).data
+    gs = serializers.GoalSerializer(suggestions, many=True, user=request.user)
+    feed['suggestions'] = gs.data
 
     # The user's selected goals (UserGoals)
     # NOTE: this function returns tuples of (progress, UserGoal) ordered by

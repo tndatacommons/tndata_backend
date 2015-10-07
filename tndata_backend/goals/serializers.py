@@ -68,17 +68,29 @@ class GoalSerializer(ObjectTypeModelSerializer):
     categories = CategoryListField(many=True, read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     behaviors_count = serializers.SerializerMethodField()
+    primary_category = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Goal
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
-            'outcome', 'icon_url', 'categories', 'behaviors_count', 'object_type',
+            'outcome', 'icon_url', 'categories', 'primary_category',
+            'behaviors_count', 'object_type',
         )
 
     def get_behaviors_count(self, obj):
         """Return the number of child Behaivors for the given Goal (obj)."""
         return obj.behavior_set.filter(state="published").count()
+
+    def get_primary_category(self, obj):
+        """Include a primary category object for a Goal, when possible"""
+        if self.user:
+            return obj.get_parent_category_for_user(self.user)
+        return None
 
 
 class TriggerSerializer(ObjectTypeModelSerializer):
