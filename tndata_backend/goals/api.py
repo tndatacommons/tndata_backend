@@ -1156,11 +1156,12 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
     * `user_behavior`: ID of the associated `UserBehavior` (User-to-Behavior mapping)
     * `status`: Value of their progress, in the range of 1-3
     * `status_display`: Human-readable status of the user's progress.
-    * `actions_total`: The total number of actions contained within the Behavior
-      that were scheduled for the day.
-    * `actions_complete`:  The number of actions within the Behavior that were
-      completed during the day.
-    * `action_progress`: The percentage of actions completed / actions total.
+    * `daily_actions_total`: The total number of actions contained within the
+      Behavior that were scheduled for the day.
+    * `daily_actions_complete`:  The number of actions within the Behavior that
+      were completed during the day.
+    * `daily_action_progress`: The percentage of actions completed. Calculated
+      vial `daily_actions_completed` / `daily_actions_total`.
     * `reported_on`: Date on which progress was initially reported.
 
     ## Saving Progress

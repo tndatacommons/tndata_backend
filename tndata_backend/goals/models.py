@@ -1576,9 +1576,9 @@ class BehaviorProgress(models.Model):
     status = models.IntegerField(choices=PROGRESS_CHOICES)
 
     # Action progress is calculated based on completed vs. non-completed Actions
-    actions_total = models.IntegerField(default=0)
-    actions_completed = models.IntegerField(default=0)
-    action_progress = models.FloatField(default=0)
+    daily_actions_total = models.IntegerField(default=0)
+    daily_actions_completed = models.IntegerField(default=0)
+    daily_action_progress = models.FloatField(default=0)
 
     reported_on = models.DateTimeField(auto_now_add=True)
 
@@ -1599,9 +1599,9 @@ class BehaviorProgress(models.Model):
 
         This method will overwrite the following fields:
 
-        - actions_total
-        - actions_completed
-        - action_progress
+        - daily_actions_total
+        - daily_actions_completed
+        - daily_action_progress
 
         """
         dt = self.reported_on
@@ -1614,17 +1614,18 @@ class BehaviorProgress(models.Model):
             next_trigger_date__month=dt.month,
             next_trigger_date__year=dt.year
         )
-        self.actions_total = len(uas)
-        # NOTE: This is only good for "today"
-        self.actions_completed = self.user.usercompletedaction_set.filter(
+        self.daily_actions_total = len(uas)
+        self.daily_actions_completed = self.user.usercompletedaction_set.filter(
             useraction__in=uas.values_list("id", flat=True),
             updated_on__day=dt.day,
             updated_on__month=dt.month,
             updated_on__year=dt.year,
             state="completed"
         ).count()
-        if self.actions_total > 0:
-            self.action_progress = self.actions_completed / self.actions_total
+        if self.daily_actions_total > 0:
+            self.daily_action_progress = (
+                self.daily_actions_completed / self.daily_actions_total
+            )
 
     def save(self, *args, **kwargs):
         self._calculate_action_progress()
@@ -1796,10 +1797,10 @@ class GoalProgress(models.Model):
 
         # Run the aggregate over the relevant BehaviorProgress objects.
         qs = self.child_behaviorprogresses().filter(reported_on__range=(start, end))
-        qs = qs.aggregate(Sum('actions_total'), Sum('actions_completed'))
+        qs = qs.aggregate(Sum('daily_actions_total'), Sum('daily_actions_completed'))
 
-        total = qs.get('actions_total__sum', 0) or 0
-        completed = qs.get('actions_completed__sum', 0) or 0
+        total = qs.get('daily_actions_total__sum', 0) or 0
+        completed = qs.get('daily_actions_completed__sum', 0) or 0
         progress = 0
         if total > 0:
             progress = completed / total

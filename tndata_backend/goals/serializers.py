@@ -196,8 +196,8 @@ class BehaviorProgressSerializer(ObjectTypeModelSerializer):
         model = BehaviorProgress
         fields = (
             'id', 'user', 'user_behavior', 'status', 'status_display',
-            'actions_total', 'actions_completed', 'action_progress',
-            'reported_on', 'object_type',
+            'daily_actions_total', 'daily_actions_completed',
+            'daily_action_progress', 'reported_on', 'object_type',
         )
 
 

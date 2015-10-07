@@ -429,8 +429,9 @@ admin.site.register(models.UserCompletedAction, UserCompletedActionAdmin)
 
 class BehaviorProgressAdmin(UserRelatedModelAdmin):
     list_display = (
-        'id', 'user', 'behavior', 'status', 'action_progress',
-        'actions_completed', 'actions_total', 'reported_on'
+        'id', 'user', 'behavior', 'status',
+        'daily_action_progress', 'daily_actions_completed', 'daily_actions_total',
+        'reported_on',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
