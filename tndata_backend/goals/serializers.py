@@ -6,6 +6,7 @@ from . models import (
     BehaviorProgress,
     Category,
     Goal,
+    GoalProgress,
     PackageEnrollment,
     Trigger,
     UserAction,
@@ -200,6 +201,21 @@ class BehaviorProgressSerializer(ObjectTypeModelSerializer):
         )
 
 
+class GoalProgressSerializer(ObjectTypeModelSerializer):
+    """A Serializer for `GoalProgress`."""
+
+    class Meta:
+        model = GoalProgress
+        fields = (
+            'id', 'goal', 'usergoal', 'current_score', 'current_total',
+            'max_total', 'daily_actions_total', 'daily_actions_completed',
+            'daily_action_progress', 'weekly_actions_total',
+            'weekly_actions_completed', 'weekly_action_progress',
+            'actions_total', 'actions_completed', 'action_progress',
+            'reported_on'
+        )
+
+
 class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
@@ -234,6 +250,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         read_only=True,
     )
     goal = SimpleGoalField(queryset=Goal.objects.none())
+    goal_progress = GoalProgressSerializer(read_only=True)
     custom_triggers_allowed = serializers.ReadOnlyField()
     primary_category = SimpleCategoryField(
         source='get_primary_category',
@@ -243,7 +260,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'user_categories',
+            'id', 'user', 'goal', 'goal_progress', 'user_categories',
             'user_behaviors_count', 'user_behaviors', 'created_on',
             'progress_value', 'custom_triggers_allowed', 'object_type',
             'primary_category',

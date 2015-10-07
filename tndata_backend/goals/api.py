@@ -372,8 +372,36 @@ class UserGoalViewSet(mixins.CreateModelMixin,
       selected that are contained in this goal.
     * `user_behaviors`: An array of `Behavior` objects selected by the user.
     * `created_on`: Time at which the user selected this item.
-    * `progress_value`: The user's self-reported progress toward behaviors in
+    * `progress_value`: The user's self-reported progress toward *Behaviors* in
       this goal.
+    * `goal_progress`: An object containing information on the user's progress
+      toward the completion of their scheduled actions within this goal. It
+      contains the following information:
+
+        - `id`: a unique id for the GoalProgress instance.
+        - `goal`: the goal's unique id
+        - `usergoal`: The unique id of the parent UserGoal
+        - `current_score`: The aggregate Behavior-rerporting score.
+        - `current_total`: The sum of user-reported behavior progresses within
+          this goal.
+        - `max_total`: The maximum possible value for the Behavior-reported score.
+        - `daily_actions_total`: Number of actions scheduled for _this day_.
+        - `daily_actions_completed`: Number of actions the user completed in
+          _this day_
+        - `daily_action_progress`: Daily progress percentage (as a float). This
+          is calculated with `daily_actions_completed` / `daily_actions_total`
+        - `weekly_actions_total`: Number of actions scheduled for the past 7 days
+        - `weekly_actions_completed`: Number of actions completed over the past
+          7 days
+        - `weekly_action_progress`: Percentage of completed actions for the week.
+        - `actions_total`:  Number of actions scheduled for our historical
+          reporting period
+        - `actions_completed`: Number of actions completed during our historical
+          reporting period.
+        - `action_progress`:  Percentage of actions completed (as a float) during
+          the historical reporting period.
+        - `reported_on`: Date/Time on which this data was recorded.
+
     * `custom_triggers_allowed`: A boolean that indicates whether or not a user
       should be able to customize the reminders beneath this content
 
