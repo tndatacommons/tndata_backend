@@ -17,6 +17,36 @@ def to_localtime(dt, user):
     return dt
 
 
+def local_now(user):
+    """Return a `now` time in the user's local timezone."""
+    now = timezone.now()
+    return to_localtime(now, user)
+
+
+def local_day_range(user, dt=None):
+    """Return a tuple of the form (start, end), containing datetime objects
+    in utc time that represents the range for the user's full day.
+
+    * user: a User instance. The User whom we're considering.
+    * dt: (optional). If given, this is the datetime around which the range
+      is constructed.
+
+    This is useful to query for objects that were updated or created during the
+    user's day; e.g.
+
+        Model.objects.filter(created__range=local_day_range(user))
+
+    """
+    if dt is None:
+        dt = local_now(user)
+    else:
+        dt = to_localtime(dt, user)
+
+    start = dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    end = dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+    return (start.astimezone(timezone.utc), end.astimezone(timezone.utc))
+
+
 def get_all_permissions(user, sort=False):
     """Given a user, this returns a list of all Permission objects, that are
     either assigned to the user or assigned to one of the user's Groups.
