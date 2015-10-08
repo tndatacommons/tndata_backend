@@ -6,24 +6,55 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from goals.models import BehaviorProgress, GoalProgress, CategoryProgress
-
+from goals.models import (
+    BehaviorProgress,
+    GoalProgress,
+    CategoryProgress,
+    UserBehavior
+)
 
 logger = logging.getLogger("loggly_logs")
 
 
 class Command(BaseCommand):
-    help = 'Updates BehaviorProgress, and creates GoalProgress/CategoryProgress. Run Nightly'
+    help = (
+        'Update/creates BehaviorProgress, GoalProgress, & CategoryProgress. '
+        'Run Nightly'
+    )
 
     def handle(self, *args, **options):
         User = get_user_model()
 
         err_msg = "Failed to generate scores for {0}"
+        bp_created = 0
         bp_count = 0
         gp_count = 0  # for aggregate action info
 
         gp_scores_count = 0  # for aggreage behavior info
         cp_scores_count = 0
+
+        # BehaviorProgress was originally created _only_ when a user did the
+        # daily checking. However, now that it's used to automatically aggregate
+        # action completions, we need to create them automatically for the user
+        # every day.
+        today = timezone.now().date()
+        for ub in UserBehavior.objects.all():
+            try:
+                bp = BehaviorProgress.objects.get(
+                    user=ub.user,
+                    user_behavior=ub,
+                    reported_on__contains=today
+                )
+            except BehaviorProgress.DoesNotExist:
+                # We need to create one.
+                BehaviorProgress.objects.create(
+                    user=ub.user,
+                    user_behavior=ub,
+                    status=BehaviorProgress.OFF_COURSE
+                )
+                bp_created += 1
+            except (BehaviorProgress.MultipleObjectsReturned, Exception):
+                pass
 
         try:
             # Update BehaviorProgress instances in some time period, so they
@@ -66,10 +97,13 @@ class Command(BaseCommand):
             logger.error(err_msg.format("CategoryProgress"), exc_info=1)
 
         msg = (
-            "Generating Progress Stats: {0} BehaviorProgress stats updated, "
-            "{1} GoalProgress stats updated, {2} GoalProgress scores updated, "
-            "{3} CategoryProgress scores updated."
+            "Generating Progress Stats: "
+            "{0} BehaviorProgress created. "
+            "{1} BehaviorProgress stats updated, "
+            "{2} GoalProgress stats updated, "
+            "{3} GoalProgress scores updated, "
+            "{4} CategoryProgress scores updated."
         )
         self.stdout.write(
-            msg.format(bp_count, gp_count, gp_scores_count, cp_scores_count)
+            msg.format(bp_created, bp_count, gp_count, gp_scores_count, cp_scores_count)
         )
