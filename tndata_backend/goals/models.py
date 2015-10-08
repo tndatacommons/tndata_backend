@@ -195,6 +195,13 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         ids = self.goals.values_list('behavior', flat=True)
         return Behavior.objects.filter(pk__in=ids)
 
+    @property
+    def actions(self):
+        """Returns a QuerySet of all Actions nested beneath this category's
+        set of Goals & Behaviors. """
+        ids = self.behaviors.values_list('action', flat=True)
+        return Action.objects.filter(pk__in=ids)
+
     def _format_color(self, color):
         """Ensure that colors include a # symbol at the beginning."""
         return color if color.startswith("#") else "#{0}".format(color)
@@ -236,6 +243,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
 
     def get_enroll_url(self):
         return reverse("goals:package-enroll", args=[self.id])
+
+    def get_package_calendar_url(self):
+        if self.packaged_content:
+            return reverse("goals:package-calendar", args=[self.id])
 
     objects = CategoryManager()
 
