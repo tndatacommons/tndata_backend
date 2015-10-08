@@ -1617,20 +1617,18 @@ class BehaviorProgress(models.Model):
         if dt is None:
             dt = timezone.now()
 
-        uas = self.user_behavior.get_useractions()
-        uas = uas.filter(
-            next_trigger_date__day=dt.day,
-            next_trigger_date__month=dt.month,
-            next_trigger_date__year=dt.year
+        # NOTE: UserAction.next_trigger_date gets updated daily, so we can't
+        # use it to query for historical data. Intead, we need to look at the
+        # history of completed information (UserCompletedAction objects where
+        # the action's parent behavior matches this behavior).
+        ucas = self.user.usercompletedaction_set.filter(
+            user=self.user,
+            action__behavior=self.user_behavior.behavior,
+            updated_on__contains=dt.date()
         )
-        self.daily_actions_total = len(uas)
-        self.daily_actions_completed = self.user.usercompletedaction_set.filter(
-            useraction__in=uas.values_list("id", flat=True),
-            updated_on__day=dt.day,
-            updated_on__month=dt.month,
-            updated_on__year=dt.year,
-            state="completed"
-        ).count()
+        self.daily_actions_total = ucas.count()
+        self.daily_actions_completed = ucas.filter(state="compelted").count()
+
         if self.daily_actions_total > 0:
             self.daily_action_progress = (
                 self.daily_actions_completed / self.daily_actions_total
