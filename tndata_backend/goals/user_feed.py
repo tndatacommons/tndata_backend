@@ -152,8 +152,10 @@ def todays_actions(user):
 
 
 def todays_actions_progress(user):
-    """Return the status of completed or not for all of the user's actions
-    that were scheduled for 'today'.
+    """Return some stats indicating to user's progress toward completing their
+    actions that were scheduled for 'today'.
+
+    * user -- the user for whom we're calculating stats.
 
     Returns a dict of the form:
 
@@ -170,9 +172,16 @@ def todays_actions_progress(user):
     * progress is an integer representing the percentage complete
 
     """
-    # Query for the UserActions that should be scheduled today.
+    # NOTE: The UserAction.next_trigger_date field gets refreshed automatically
+    # every two hours. So, to get a picture of the whole day at a time, we need
+    # to consider both it and the previous trigger date.
+
+    # Query for the UserActions that should have been scheduled today.
     today = local_day_range(user)
-    useractions = user.useraction_set.filter(next_trigger_date__range=today)
+    useractions = user.useraction_set.filter(
+        Q(next_trigger_date__range=today) |
+        Q(prev_trigger_date__range=today)
+    ).distinct()
 
     # e.g. you've completed X / Y activities for today.
     data = [1 if ua.completed_today else 0 for ua in useractions]
