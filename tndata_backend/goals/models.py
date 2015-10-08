@@ -1467,17 +1467,21 @@ class UserCompletedAction(models.Model):
     perform) this action.
 
     """
+    COMPLETED = 'completed'
+    DISMISSED = 'dismissed'
+    SNOOZED = 'snoozed'
+
     STATE_CHOICES = (
-        ('completed', 'Completed'),
-        ('dismissed', 'Dismissed'),
-        ('snoozed', 'Snoozed'),
+        (COMPLETED, 'Completed'),
+        (DISMISSED, 'Dismissed'),
+        (SNOOZED, 'Snoozed'),
     )
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     useraction = models.ForeignKey(UserAction)
     action = models.ForeignKey(Action)
     state = models.CharField(
         max_length=32,
-        default="completed",
+        default=COMPLETED,
         choices=STATE_CHOICES
     )
     updated_on = models.DateTimeField(auto_now=True)
@@ -1493,7 +1497,7 @@ class UserCompletedAction(models.Model):
 
     @property
     def completed(self):
-        return self.state == "completed"
+        return self.state == self.COMPLETED
 
     @property
     def dismissed(self):
@@ -1627,7 +1631,9 @@ class BehaviorProgress(models.Model):
             updated_on__contains=dt.date()
         )
         self.daily_actions_total = ucas.count()
-        self.daily_actions_completed = ucas.filter(state="compelted").count()
+        self.daily_actions_completed = ucas.filter(
+            state=UserCompletedAction.COMPLETED
+        ).count()
 
         if self.daily_actions_total > 0:
             self.daily_action_progress = (
