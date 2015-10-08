@@ -120,6 +120,9 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     * icon_url: A URL for a square image. This is the category's Icon.
     * image_url: A URL for a larger image associated with the category. Use as the
       category's _hero_ image above each tab.
+    * color: A primary color for content in this category
+    * secondary_color: A secondary color for content
+    * packaged_content: True or False. Is this category a package.
     * goals: A list of goals that appear in this category. See the [Goals](/api/goals/)
         endpoint for more information.
 

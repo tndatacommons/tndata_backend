@@ -134,6 +134,7 @@ class CategoryListField(serializers.RelatedField):
             'image_url': value.get_absolute_image(),
             'color': value.color,
             'secondary_color': value.secondary_color,
+            'packaged_content': value.packaged_content,
         }
 
 
@@ -155,6 +156,7 @@ class SimpleCategoryField(serializers.RelatedField):
             'image_url': value.get_absolute_image(),
             'color': value.color,
             'secondary_color': value.secondary_color,
+            'packaged_content': value.packaged_content,
             'progress_value': getattr(value, 'progress_value', 0.0),
             'goals_count': value.goals.filter(state="published").count(),
         }
@@ -277,4 +279,5 @@ class PackagedCategoryField(serializers.RelatedField):
             'consent_more': value.consent_more,
             'html_consent_summary': value.rendered_consent_summary,
             'html_consent_more': value.rendered_consent_more,
+            'packaged_content': value.packaged_content,
         }

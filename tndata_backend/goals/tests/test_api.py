@@ -51,6 +51,7 @@ class TestCategoryAPI(APITestCase):
         self.assertEqual(c['icon_url'], self.category.get_absolute_icon())
         self.assertEqual(c['image_url'], self.category.get_absolute_image())
         self.assertEqual(c['goals_count'], self.category.goals.count())
+        self.assertFalse(c['packaged_content'])
 
     def test_post_category_list(self):
         """Ensure this endpoint is read-only."""

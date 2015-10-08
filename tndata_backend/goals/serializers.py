@@ -53,7 +53,7 @@ class CategorySerializer(ObjectTypeModelSerializer):
         model = Category
         fields = (
             'id', 'order', 'title', 'title_slug', 'description',
-            'html_description', 'goals_count', 'goals',
+            'html_description', 'goals_count', 'goals', 'packaged_content',
             'icon_url', 'image_url', 'color', 'secondary_color', 'object_type',
         )
 
