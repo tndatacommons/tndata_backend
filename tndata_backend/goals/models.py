@@ -1317,6 +1317,10 @@ class UserAction(models.Model):
         help_text="The next date/time that a notification for this action "
                   "will be triggered (this is auto-populated and is in UTC)."
     )
+    # In order to calculate "today's stats" for completed vs incomplete
+    # actions, we need to be able to query backwards at least a day to find
+    # actions that were scheduled in the past 24 hours.
+    prev_trigger_date = models.DateTimeField(null=True)
     primary_goal = models.ForeignKey(
         Goal,
         blank=True,
@@ -1352,6 +1356,7 @@ class UserAction(models.Model):
                 next_date = next_date.astimezone(timezone.utc)
             elif next_date:
                 next_date = timezone.make_aware(next_date, timezone.utc)
+            self.prev_trigger_date = self.next_trigger_date
             self.next_trigger_date = next_date
 
     def save(self, *args, **kwargs):
