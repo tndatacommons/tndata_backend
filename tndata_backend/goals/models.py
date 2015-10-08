@@ -368,7 +368,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         """Return one of this object's parent categories, prefering one that
         the given user has selected."""
         user_cats = user.usercategory_set.values_list('category', flat=True)
-        cat = self.categories.filter(id__in=user_cates).first()
+        cat = self.categories.filter(id__in=user_cats).first()
         if cat is None:
             cat = self.categories.first()
         return cat

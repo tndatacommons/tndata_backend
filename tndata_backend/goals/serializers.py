@@ -89,7 +89,8 @@ class GoalSerializer(ObjectTypeModelSerializer):
     def get_primary_category(self, obj):
         """Include a primary category object for a Goal, when possible"""
         if self.user:
-            return obj.get_parent_category_for_user(self.user)
+            cat = obj.get_parent_category_for_user(self.user)
+            return CategorySerializer(cat).data
         return None
 
 
