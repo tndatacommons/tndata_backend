@@ -148,7 +148,7 @@ def todays_actions(user):
     dt = to_localtime(dt, user).astimezone(timezone.utc)  # conver to utc
 
     upcoming = upcoming.filter(next_trigger_date__lte=dt)
-    return upcoming.order_by('-next_trigger_date')
+    return upcoming.order_by('next_trigger_date')
 
 
 def todays_actions_progress(useractions):
