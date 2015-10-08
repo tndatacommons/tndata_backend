@@ -1,0 +1,92 @@
+{% extends "goals/base.html" %}
+{% load goal_filters %}
+{% load util_filters %}
+
+{% block title %}Calendar for {{category}}{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  {# Calendar table css #}
+  <style type="text/css">
+  table.calendar {width:100%;}
+  table.calendar caption {font-size: x-large;}
+  table.calendar caption a.prev{float:left;}
+  table.calendar caption a.next{float:right;}
+  table.calendar td {
+    vertical-align: top;
+    text-align:left;
+  }
+  table.calendar td.date div.date-wrapper {
+    position: relative;
+    min-height: 100px;
+    min-width: 100px;
+  }
+  table.calendar td.selected { background-color: #ffe;}
+  table.calendar td span.day {
+    color: #ccc;
+    z-index:1;
+    font-size:20px;
+  }
+  table.calendar td div.action-wrapper {
+    border-bottom: 1px dotted #ccc;
+    margin-left:1em;
+    margin-bottom:.5em;
+  }
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+  <li class="current">{{ category }}</li>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>{{ category }} Triggers</h2>
+
+      <table class="calendar">
+      <caption>
+        <a href="?d={{prev_date}}" class="prev">&larr; Previous</a>
+        {{ starting_date|date:"F Y" }}
+        <a href="?d={{next_date}}" class="next">Next &rarr;</a>
+      </caption>
+      <thead>
+      <tr>
+        <th>Sun</th>
+        <th>Mon</th>
+        <th>Tue</th>
+        <th>Wed</th>
+        <th>Thu</th>
+        <th>Fri</th>
+        <th>Sat</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for week in calendar %}
+        <tr>
+        {% for day in week %}
+          <td class="date {% if day == starting_date.date %}selected{% endif %}">
+            <div class="date-wrapper">
+            <span class="day">{{ day.day }}</span>
+            {% for adate, dt, action in actions %}
+              {% if adate == day %}
+                <div class="action-wrapper">
+                  <a href="{{ action.get_update_url }}">{{ action }}</a>.
+                  <small>{{ dt|date:"P" }}</small>
+                </div>
+              {% endif %}
+            {% endfor %}
+            </div>
+          </td>
+        {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+
+
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}

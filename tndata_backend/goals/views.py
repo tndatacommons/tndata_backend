@@ -1,3 +1,6 @@
+from calendar import Calendar
+from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import permission_required, user_passes_test
@@ -12,6 +15,7 @@ from django_fsm import TransitionNotAllowed
 from userprofile.forms import UserForm
 from utils.db import get_max_order
 from utils.forms import SetNewPasswordForm
+from utils.user_utils import local_now, to_localtime
 
 from . email import send_package_cta_email, send_package_enrollment_batch
 from . forms import (
@@ -918,6 +922,37 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         if not self._can_access():
             context['form'] = None
         return context
+
+
+@permission_required(ContentPermissions.authors, raise_exception=True)
+def package_calendar(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    start = request.GET.get('d', None)
+    if start is None:
+        start = local_now(request.user)
+    else:
+        year, month = start.split('-')
+        start = to_localtime(datetime(int(year), int(month), 1), request.user)
+    actions = category.actions.filter(default_trigger__isnull=False)
+
+    action_data = []
+    for action in actions:
+        dt = action.default_trigger.next()
+        if dt:
+            action_data.append((dt.date(), dt, action))
+
+    # note: start calendar on suday (6)
+    cal = Calendar(firstweekday=6).monthdatescalendar(start.year, start.month)
+
+    ctx = {
+        'category': category,
+        'actions': action_data,
+        'calendar': cal,
+        'starting_date': start,
+        'next_date': (cal[-1][-1] + timedelta(days=1)).strftime("%Y-%m"),
+        'prev_date': (cal[0][0] - timedelta(days=1)).strftime("%Y-%m"),
+    }
+    return render(request, "goals/package_calendar.html", ctx)
 
 
 @permission_required(ContentPermissions.authors, raise_exception=True)

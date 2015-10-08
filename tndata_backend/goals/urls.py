@@ -46,6 +46,11 @@ urlpatterns = [
         name='package-enroll'
     ),
     url(
+        r'^packages/(?P<pk>\d+)/calendar/$',
+        views.package_calendar,
+        name='package-calendar'
+    ),
+    url(
         r'^packages/(?P<pk>\d+)/$',
         views.PackageDetailView.as_view(),
         name='package-detail'
