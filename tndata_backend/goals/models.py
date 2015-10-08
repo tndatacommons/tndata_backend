@@ -31,6 +31,7 @@ from notifications.models import GCMMessage
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from utils import colors, dateutils
+from utils.user_utils import local_day_range
 
 from .managers import (
     CategoryManager,
@@ -1391,11 +1392,8 @@ class UserAction(models.Model):
     @property
     def completed_today(self):
         """Return True if this action was completed today, False otherwise"""
-        now = timezone.now()
         return self.user.usercompletedaction_set.filter(
-            created_on__year=now.year,
-            created_on__month=now.month,
-            created_on__day=now.day,
+            created_on__range=local_day_range(self.user),
             state='completed'
         ).exists()
 
@@ -1617,9 +1615,7 @@ class BehaviorProgress(models.Model):
         - daily_action_progress
 
         """
-        dt = self.reported_on
-        if dt is None:
-            dt = timezone.now()
+        date_range = local_day_range(self.user, self.reported_on)
 
         # NOTE: UserAction.next_trigger_date gets updated daily, so we can't
         # use it to query for historical data. Intead, we need to look at the
@@ -1628,7 +1624,7 @@ class BehaviorProgress(models.Model):
         ucas = self.user.usercompletedaction_set.filter(
             user=self.user,
             action__behavior=self.user_behavior.behavior,
-            updated_on__contains=dt.date()
+            updated_on__range=date_range
         )
         self.daily_actions_total = ucas.count()
         self.daily_actions_completed = ucas.filter(
@@ -1801,12 +1797,8 @@ class GoalProgress(models.Model):
         * progress - the percentage (as a float): completed / total
 
         """
-        dt_end = self.reported_on if self.reported_on else timezone.now()
-        dt_start = dt_end - timedelta(days=days)
-
-        # Tweak the time periods so our (start, end) range encompasses the day
-        start = dt_start.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = dt_end.replace(hour=23, minute=59, second=59, microsecond=999999)
+        start, end = local_day_range(self.user, self.reported_on)
+        start = start - timedelta(days=days)
 
         # Run the aggregate over the relevant BehaviorProgress objects.
         qs = self.child_behaviorprogresses().filter(reported_on__range=(start, end))
