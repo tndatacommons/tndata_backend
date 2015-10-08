@@ -20,9 +20,11 @@ https://trello.com/c/zKedLoZe/170-initial-home-feed
 """
 import random
 
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from django.db.models import Q
 from django.utils import timezone
+from utils.user_utils import to_localtime
+
 from .models import Goal, UserAction, UserCompletedAction
 
 
@@ -138,14 +140,15 @@ def action_feedback(user, useraction, lookback=30):
 
 def todays_actions(user):
     """return a list of actions that the user should perform today."""
-    now = timezone.now()
+    # Upcoming gives us all UserActions whose trigger date is in the future...
     upcoming = UserAction.objects.upcoming().filter(user=user)
-    upcoming = upcoming.filter(
-        next_trigger_date__year=now.year,
-        next_trigger_date__month=now.month,
-        next_trigger_date__day=now.day,
-    )
-    return upcoming.order_by('next_trigger_date')
+
+    # We want to show only those left for "today" (in the user's timezone)
+    dt = datetime.combine(datetime.today(), time(23, 59))  # just before midnight
+    dt = to_localtime(dt, user).astimezone(timezone.utc)  # conver to utc
+
+    upcoming = upcoming.filter(next_trigger_date__lte=dt)
+    return upcoming.order_by('-next_trigger_date')
 
 
 def todays_actions_progress(useractions):
