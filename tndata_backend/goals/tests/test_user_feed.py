@@ -101,7 +101,7 @@ class TestUserFeed(TestCase):
             self.assertEqual(list(result), [self.ua])
 
     def test_todays_actions_progress(self):
-        resp = user_feed.todays_actions_progress([self.ua])
+        resp = user_feed.todays_actions_progress(self.user)
         self.assertEqual(resp['completed'], 0)
         self.assertEqual(resp['total'], 1)
         self.assertEqual(resp['progress'], 0)

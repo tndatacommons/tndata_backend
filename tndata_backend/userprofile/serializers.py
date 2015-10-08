@@ -114,7 +114,7 @@ class UserSerializer(serializers.ModelSerializer):
             upcoming = user_feed.todays_actions(obj)
 
             # Progress for today
-            self._feed['progress'] = user_feed.todays_actions_progress(upcoming)
+            self._feed['progress'] = user_feed.todays_actions_progress(obj)
             upcoming = UserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 

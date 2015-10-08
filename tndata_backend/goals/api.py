@@ -90,7 +90,7 @@ def user_feed_view(request, format=None):
     feed['user_actions'] = serializers.UserActionSerializer(todo, many=True).data
 
     # Progress for today
-    feed['progress'] = user_feed.todays_actions_progress(todo)
+    feed['progress'] = user_feed.todays_actions_progress(request.user)
 
     # Goal Suggestions
     suggestions = user_feed.suggested_goals(request.user)

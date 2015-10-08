@@ -23,7 +23,7 @@ import random
 from datetime import datetime, time, timedelta
 from django.db.models import Q
 from django.utils import timezone
-from utils.user_utils import to_localtime
+from utils.user_utils import to_localtime, local_day_range
 
 from .models import Goal, UserAction, UserCompletedAction
 
@@ -151,8 +151,29 @@ def todays_actions(user):
     return upcoming.order_by('next_trigger_date')
 
 
-def todays_actions_progress(useractions):
-    """Return the status of completed or not for today's actions."""
+def todays_actions_progress(user):
+    """Return the status of completed or not for all of the user's actions
+    that were scheduled for 'today'.
+
+    Returns a dict of the form:
+
+        {
+            'completed': X,
+            'total': X,
+            'progress': X,
+        }
+
+    where
+
+    * completed is the number of Actions the user completed.
+    * total is the total number of scheduled actions
+    * progress is an integer representing the percentage complete
+
+    """
+    # Query for the UserActions that should be scheduled today.
+    today = local_day_range(user)
+    useractions = user.useraction_set.filter(next_trigger_date__range=today)
+
     # e.g. you've completed X / Y activities for today.
     data = [1 if ua.completed_today else 0 for ua in useractions]
     completed = sum(data)
