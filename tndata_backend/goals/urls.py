@@ -277,4 +277,9 @@ urlpatterns = [
         views.admin_batch_assign_keywords,
         name='batch-assign-keywords'
     ),
+    url(
+        r'^debug-notifications/$',
+        views.debug_notifications,
+        name='debug_notifications'
+    ),
 ]

@@ -1444,6 +1444,11 @@ class UserAction(models.Model):
         trigger."""
         return "custom trigger for useraction-{0}".format(self.id)
 
+    def queued_notifications(self):
+        msgs = self.user.gcmmessage_set.filter(object_id=self.action.id)
+        msgs = msgs.order_by('-deliver_on').distinct()
+        return msgs
+
     objects = UserActionManager()
 
 

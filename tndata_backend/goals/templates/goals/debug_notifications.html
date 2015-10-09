@@ -1,0 +1,56 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Debug Notifications{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+{% endblock %}
+
+
+{% block content %}
+<h1>Today's Notifications</h1>
+
+<form action="{% url 'goals:debug_notifications' %}" method="get">
+  <div class="row">
+    <div class="large-12 column">
+      {{ form|crispy }}
+      <p><input type="submit" value="Search" class="button"/></p>
+    </div>
+  </div>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Previous</th>
+      <th>Next</th>
+      <th>Notifications</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ua in useractions %}
+      <tr>
+        <td>{{ ua.action }}</td>
+        <td>{{ ua.prev_trigger_date|default:"n/a"}}</td>
+        <td>{{ ua.next_trigger_date|default:"n/a"}}</td>
+        <td>
+          <ul style="list-style-type:none;">
+          {% for msg in ua.queued_notifications %}
+            <li>
+              <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
+              <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
+                 target="_blank">{{ msg.deliver_on }}</a>
+            </li>
+          {% empty %}
+            <li><em>none scheduled</em></li>
+          {% endfor %}
+          </ul>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

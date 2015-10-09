@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Q
@@ -14,8 +15,8 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django_fsm import TransitionNotAllowed
 from userprofile.forms import UserForm
 from utils.db import get_max_order
-from utils.forms import SetNewPasswordForm
-from utils.user_utils import local_now, to_localtime
+from utils.forms import EmailForm, SetNewPasswordForm
+from utils.user_utils import local_day_range, local_now, to_localtime
 
 from . email import send_package_cta_email, send_package_enrollment_batch
 from . forms import (
@@ -1146,3 +1147,34 @@ def admin_batch_assign_keywords(request):
         'goals': goals,
     }
     return render(request, 'goals/admin_batch_assign_keywords.html', context)
+
+
+@user_passes_test(superuser_required, login_url='/')
+def debug_notifications(request):
+    """A view to allow searching by email addresss, then listing all UserActions
+    for a day, with all of the sheduled GCMNotifications for that user.
+
+    """
+    User = get_user_model()
+    useractions = None
+    email = request.GET.get('email_address', None)
+    if email is None:
+        form = EmailForm()
+    else:
+        form = EmailForm(initial={'email_address': email})
+        try:
+            user = User.objects.get(email__icontains=email)
+            today = local_day_range(user)
+            useractions = user.useraction_set.filter(
+                Q(prev_trigger_date__range=today) |
+                Q(next_trigger_date__range=today)
+            ).order_by("next_trigger_date").distinct()
+        except User.DoesNotExist:
+            messages.error(request, "Could not find that user")
+
+    context = {
+        'form': form,
+        'email': email,
+        'useractions': useractions,
+    }
+    return render(request, 'goals/debug_notifications.html', context)
