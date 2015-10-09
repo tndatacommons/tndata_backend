@@ -26,6 +26,7 @@
   <thead>
     <tr>
       <th>Action</th>
+      <th>Completed</th>
       <th>Previous</th>
       <th>Next</th>
       <th>Notifications</th>
@@ -42,6 +43,14 @@
             Next: {{ ua.next|date:"M j Y P e"|default:"None" }}
           {% endif %}
           </em>
+        </td>
+        <td>
+        {% for uca in completed %}
+          {% if uca.useraction == ua %}
+            {{ uca.state }}<br/>
+            {{ uca.updated_on }}
+          {% endif %}
+        {% endfor %}
         </td>
         <td>{{ ua.prev_trigger_date|default:"n/a"}}</td>
         <td>{{ ua.next_trigger_date|default:"n/a"}}</td>

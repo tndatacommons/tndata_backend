@@ -18,6 +18,7 @@ from utils.db import get_max_order
 from utils.forms import EmailForm, SetNewPasswordForm
 from utils.user_utils import local_day_range, local_now, to_localtime
 
+from . import user_feed
 from . email import send_package_cta_email, send_package_enrollment_batch
 from . forms import (
     ActionForm,
@@ -40,7 +41,7 @@ from . mixins import (
     ReviewableUpdateMixin,
 )
 from . models import (
-    Action, Behavior, Category, Goal, PackageEnrollment, Trigger
+    Action, Behavior, Category, Goal, PackageEnrollment, Trigger, UserCompletedAction
 )
 from . permissions import ContentPermissions, is_content_editor, superuser_required
 from . utils import num_user_selections
@@ -1157,6 +1158,8 @@ def debug_notifications(request):
     """
     User = get_user_model()
     useractions = None
+    completed = None
+    progress = None
     email = request.GET.get('email_address', None)
     if email is None:
         form = EmailForm()
@@ -1169,6 +1172,12 @@ def debug_notifications(request):
                 Q(prev_trigger_date__range=today) |
                 Q(next_trigger_date__range=today)
             ).order_by("next_trigger_date").distinct()
+
+            completed = UserCompletedAction.objects.filter(
+                user=user,
+                updated_on__range=today
+            )
+            progress = user_feed.todays_actions_progress(user)
         except User.DoesNotExist:
             messages.error(request, "Could not find that user")
 
@@ -1176,5 +1185,7 @@ def debug_notifications(request):
         'form': form,
         'email': email,
         'useractions': useractions,
+        'completed': completed,
+        'progress': progress,
     }
     return render(request, 'goals/debug_notifications.html', context)
