@@ -1085,6 +1085,20 @@ class TestUserAction(TestCase):
         actual = "{}".format(self.ua)
         self.assertEqual(expected, actual)
 
+    def test_completed_today(self):
+        # ensure that the action is completed, and this should return True
+        UserCompletedAction.objects.create(
+            user=self.user,
+            action=self.action,
+            useraction=self.ua,
+            state="completed"
+        )
+        self.assertTrue(self.ua.completed_today)
+
+    def test_completed_today_incomplete(self):
+        # When the user has not completed the action, this should return False.
+        self.assertFalse(self.ua.completed_today)
+
     def test_user_behavior(self):
         self.assertEqual(self.ua.user_behavior, self.ub)
 
