@@ -548,10 +548,11 @@ class Trigger(URLMixin, models.Model):
 
         return dt
 
-    def get_tz(self):
+    def get_tz(self, user=None):
         """Return a Timezone object for the user; defaults to UTC if no user."""
-        if self.user:
-            return pytz.timezone(self.user.userprofile.timezone)
+        user = user or self.user
+        if user:
+            return pytz.timezone(user.userprofile.timezone)
         return timezone.utc
 
     def get_alert_time(self, tz=None):
@@ -582,14 +583,14 @@ class Trigger(URLMixin, models.Model):
         now = timezone.now().astimezone(tz)
         return list(filter(lambda d: d > now, dates))
 
-    def next(self):
+    def next(self, user=None):
         """Generate the next date for this Trigger. For recurring triggers,
         this will return a datetime object for the next time the trigger should
         fire in the user's local time if, this object is associated with a
         user; otherwise, the date will be in UTC.
 
         """
-        tz = self.get_tz()
+        tz = self.get_tz(user=user)
         alert_on = self.get_alert_time(tz)
         now = timezone.now().astimezone(tz)
         recurrences = self.serialized_recurrences()
@@ -1353,6 +1354,14 @@ class UserAction(models.Model):
     @property
     def trigger(self):
         return self.custom_trigger or self.default_trigger
+
+    def next(self):
+        """Return the next trigger datetime object in the user's local timezone
+        or None."""
+        trigger = self.trigger
+        if trigger:
+            return trigger.next(user=self.user)
+        return None
 
     def _set_next_trigger_date(self):
         """Attempt to  stash this action's next trigger date so we can query

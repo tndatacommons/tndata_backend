@@ -35,7 +35,7 @@
     {% for ua in useractions %}
       <tr>
         <td>
-          <strong>{{ ua.action }}</strong><br/>
+          <strong>{{ ua.id }} - {{ ua.action }}</strong><br/>
           <em>
           {% if ua.custom_trigger %}
             Custom Trigger: {{ ua.custom_trigger.recurrences_as_text|default:"None" }}<br/>
