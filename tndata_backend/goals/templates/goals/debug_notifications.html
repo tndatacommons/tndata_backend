@@ -37,12 +37,9 @@
         <td>
           <strong>{{ ua.id }} - {{ ua.action }}</strong><br/>
           <em>
-          {% if ua.custom_trigger %}
-            Custom Trigger: {{ ua.custom_trigger.recurrences_as_text|default:"None" }}<br/>
-            Next: {{ ua.custom_trigger.next|date:"M j Y P e"|default:"None" }}
-          {% else %}
-            Default Trigger: {{ ua.default_trigger.recurrences_as_text|default:"None" }}<br/>
-            Next: {{ ua.default_trigger.next|date:"M j Y P e"|default:"None" }}
+          {% if ua.trigger %}
+            Trigger: {{ ua.trigger.recurrences_as_text|default:"Not Recurring" }}<br/>
+            Next: {{ ua.next|date:"M j Y P e"|default:"None" }}
           {% endif %}
           </em>
         </td>
