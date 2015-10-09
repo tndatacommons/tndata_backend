@@ -7,6 +7,15 @@ from django.db.models import ObjectDoesNotExist
 from django.utils import timezone
 
 
+def to_utc(dt):
+    """Convert the given naive/aware datetime to UTC."""
+    if dt and timezone.is_aware(dt):
+        dt = dt.astimezone(timezone.utc)
+    elif dt:
+        dt = timezone.make_aware(dt, timezone.utc)
+    return dt
+
+
 def to_localtime(dt, user):
     """Given a datetime object, convert it to the user's localtime."""
     if dt and user.userprofile.timezone:
