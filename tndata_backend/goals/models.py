@@ -1101,7 +1101,8 @@ class UserGoal(models.Model):
     def goal_progress(self):
         """Returns the most recent GoalProgress instance related to this Goal."""
         try:
-            return self.goalprogress_set.latest()
+            params = {'user': self.user, 'goal': self.goal}
+            return GoalProgress.objects.filter(**params).latest()
         except GoalProgress.DoesNotExist:
             return None
 
