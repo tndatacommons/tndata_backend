@@ -31,7 +31,7 @@ from notifications.models import GCMMessage
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from utils import colors, dateutils
-from utils.user_utils import local_day_range
+from utils.user_utils import local_day_range, to_utc
 
 from .managers import (
     CategoryManager,
@@ -1350,6 +1350,10 @@ class UserAction(models.Model):
     def __str__(self):
         return "{0}".format(self.action.title)
 
+    @property
+    def trigger(self):
+        return self.custom_trigger or self.default_trigger
+
     def _set_next_trigger_date(self):
         """Attempt to  stash this action's next trigger date so we can query
         for it. This first tries any custom triggers then uses the default
@@ -1359,14 +1363,10 @@ class UserAction(models.Model):
         NOTE: Always store this in UTC.
 
         """
-        trigger = self.custom_trigger or self.default_trigger
+        trigger = self.trigger
         if trigger:
-            next_date = trigger.next()
             # Convert to UTC if necessary
-            if next_date and timezone.is_aware(next_date):
-                next_date = next_date.astimezone(timezone.utc)
-            elif next_date:
-                next_date = timezone.make_aware(next_date, timezone.utc)
+            next_date = to_utc(trigger.next())
 
             # Save the previous trigger date, but don't overwrite on subsequent
             # saves; Only save when `next_trigger_date` changes.
