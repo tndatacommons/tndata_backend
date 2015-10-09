@@ -22,7 +22,7 @@
 
 {% if useractions %}
 <table>
-  <caption>{{useractions.count}} <code>UserAction</code>s</caption>
+  <caption>{{useractions.count}} <code>UserAction</code></caption>
   <thead>
     <tr>
       <th>Action</th>
@@ -35,14 +35,14 @@
     {% for ua in useractions %}
       <tr>
         <td>
-          {{ ua.action }}<br/>
+          <strong>{{ ua.action }}</strong><br/>
           <em>
           {% if ua.custom_trigger %}
-            Custom Trigger: {{ ua.custom_trigger.recurrences_as_text }}<br/>
-            Next: {{ ua.custom_trigger.next }}
+            Custom Trigger: {{ ua.custom_trigger.recurrences_as_text|default:"None" }}<br/>
+            Next: {{ ua.custom_trigger.next|date:"M j Y P e"|default:"None" }}
           {% else %}
-            Default Trigger: {{ ua.default_trigger.recurrences_as_text }}
-            Next: {{ ua.default_trigger.next }}
+            Default Trigger: {{ ua.default_trigger.recurrences_as_text|default:"None" }}<br/>
+            Next: {{ ua.default_trigger.next|date:"M j Y P e"|default:"None" }}
           {% endif %}
           </em>
         </td>
@@ -54,7 +54,7 @@
             <li>
               <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
               <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
-                 target="_blank">{{ msg.deliver_on }}</a>
+                 target="_blank">{{ msg.deliver_on|date:"M j Y P e" }}</a>
             </li>
           {% empty %}
             <li><em>none scheduled</em></li>
