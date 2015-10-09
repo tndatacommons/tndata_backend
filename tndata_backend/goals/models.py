@@ -1367,7 +1367,12 @@ class UserAction(models.Model):
                 next_date = next_date.astimezone(timezone.utc)
             elif next_date:
                 next_date = timezone.make_aware(next_date, timezone.utc)
-            self.prev_trigger_date = self.next_trigger_date
+
+            # Save the previous trigger date, but don't overwrite on subsequent
+            # saves; Only save when `next_trigger_date` changes.
+            if next_date != self.next_trigger_date and next_date != self.prev_trigger_date:
+                self.prev_trigger_date = self.next_trigger_date
+
             self.next_trigger_date = next_date
 
     def save(self, *args, **kwargs):
