@@ -32,7 +32,18 @@
   <tbody>
     {% for ua in useractions %}
       <tr>
-        <td>{{ ua.action }}</td>
+        <td>
+          {{ ua.action }}<br/>
+          <em>
+          {% if ua.custom_trigger %}
+            Custom Trigger: {{ ua.custom_trigger.recurrences_as_text }}<br/>
+            Next: {{ ua.custom_trigger.next }}
+          {% else %}
+            Default Trigger: {{ ua.default_trigger.recurrences_as_text }}
+            Next: {{ ua.default_trigger.next }}
+          {% endif %}
+          </em>
+        </td>
         <td>{{ ua.prev_trigger_date|default:"n/a"}}</td>
         <td>{{ ua.next_trigger_date|default:"n/a"}}</td>
         <td>
