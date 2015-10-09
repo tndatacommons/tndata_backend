@@ -20,6 +20,7 @@
   </div>
 </form>
 
+{% if useractions %}
 <table>
   <thead>
     <tr>
@@ -63,5 +64,7 @@
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
+
 
 {% endblock %}
