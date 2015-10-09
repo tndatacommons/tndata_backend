@@ -20,6 +20,13 @@
   </div>
 </form>
 
+{% if progress %}
+<div class="panel">
+  <p>Your daily progress stats as shown on the home feed.</p>
+  <pre>{{ progress|pprint }}</pre>
+</div>
+{% endif %}
+
 {% if useractions %}
 <table>
   <caption>{{useractions.count}} <code>UserAction</code></caption>
