@@ -1149,6 +1149,51 @@ class TestUserAction(TestCase):
         cat.delete()
         admin.delete()
 
+    def test__set_next_trigger_date_when_no_trigger(self):
+        # The action doesn't have a trigger, and there's no custom trigger,
+        # calling this essentially has no side effect
+        self.assertIsNone(self.ua.next_trigger_date)
+        self.assertIsNone(self.ua.prev_trigger_date)
+        self.ua._set_next_trigger_date()
+        self.assertIsNone(self.ua.next_trigger_date)
+        self.assertIsNone(self.ua.prev_trigger_date)
+
+    @patch.object(UserAction, 'default_trigger')
+    def test__set_next_trigger_date_with_default_trigger(self, mock_trigger):
+        # Calling this the first time when both values are null should reset
+        # both fields.
+        mock_trigger.next.return_value = tzdt(2015, 10, 9, 11, 30)
+        self.assertIsNone(self.ua.next_trigger_date)
+        self.assertIsNone(self.ua.prev_trigger_date)
+        self.ua._set_next_trigger_date()
+        self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 9, 11, 30))
+        self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
+
+        # Calling this a second time should NOT change the prev_trigger_date
+        mock_trigger.reset_mock()
+        mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)  # next day
+        self.ua._set_next_trigger_date()
+        self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
+        self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
+
+    @patch.object(UserAction, 'custom_trigger')
+    def test__set_next_trigger_date_with_custom_trigger(self, mock_trigger):
+        # Set some initial values for the next/prev trigger fields.
+        self.ua.prev_trigger_date = tzdt(2015, 10, 8, 11, 30)
+        self.ua.next_trigger_date = tzdt(2015, 10, 9, 11, 30)
+
+        mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)
+        self.ua._set_next_trigger_date()
+
+        # both next/prev dates should have gotten updated.
+        self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
+        self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
+
+        # Calling again should NOT change anything.
+        self.ua._set_next_trigger_date()
+        self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
+        self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
+
 
 class TestUserCompletedAction(TestCase):
     """Tests for the `UserCompletedAction` model."""
