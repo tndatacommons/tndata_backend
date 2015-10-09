@@ -1,9 +1,7 @@
 import logging
-import pytz
 
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
@@ -61,9 +59,6 @@ class Command(BaseCommand):
             )
             if m is not None:
                 self._messages_created += 1
-            #else:
-                #msg = "Failed to create Behavior Message for {0}".format(user)
-                #self._log_messages.append((msg, ERROR))
         except GCMDevice.DoesNotExist:
             msg = "User {0} has not registered a Device".format(user)
             self._log_messages.append((msg, ERROR))
@@ -81,11 +76,6 @@ class Command(BaseCommand):
                 )
                 if m is not None:
                     self._messages_created += 1
-                #else:
-                    #msg = "Failed to create message for {0}/{1}-{2}".format(
-                        #user, obj.__class__.__name__, obj.id
-                    #)
-                    #self._log_messages.append((msg, ERROR))
             except GCMDevice.DoesNotExist:
                 msg = "User {0} has not registered a Device".format(user)
                 self._log_messages.append((msg, ERROR))
@@ -107,14 +97,14 @@ class Command(BaseCommand):
 
         # Schedule upcoming notifications for UserAction's Custom Trigger
         for ua in UserAction.objects.all():
-            next_trigger = ua.trigger.next()
-            if next_trigger:
+            user_trigger = ua.trigger
+            if user_trigger:
                 self.create_message(
                     ua.user,
                     ua.action,
                     ua.action.notification_title,
                     ua.action.notification_text,
-                    next_trigger
+                    user_trigger.next()  # Should always be in the user's timezone
                 )
 
         # Finish with a confirmation message
