@@ -1679,6 +1679,11 @@ class BehaviorProgress(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def daily_action_progress_percent(self):
+        """The `daily_action_progress` value as integer percent."""
+        return int(self.daily_action_progress * 100)
+
+    @property
     def status_display(self):
         return self.get_status_display()
 
@@ -1814,6 +1819,21 @@ class GoalProgress(models.Model):
 
     def __str__(self):
         return "{}".format(self.current_score)
+
+    @property
+    def daily_action_progress_percent(self):
+        """The `daily_action_progress` value as integer percent."""
+        return int(self.daily_action_progress * 100)
+
+    @property
+    def weekly_action_progress_percent(self):
+        """The `weekly_action_progress` value as integer percent."""
+        return int(self.weekly_action_progress * 100)
+
+    @property
+    def action_progress_percent(self):
+        """The `action_progress` value as integer percent."""
+        return int(self.action_progress * 100)
 
     def child_behaviorprogresses(self):
         """Returns a queryset of BehaviorProgress instances whose related

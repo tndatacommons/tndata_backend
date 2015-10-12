@@ -210,7 +210,8 @@ class BehaviorProgressSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'user', 'user_behavior', 'status', 'status_display',
             'daily_actions_total', 'daily_actions_completed',
-            'daily_action_progress', 'reported_on', 'object_type',
+            'daily_action_progress', 'daily_action_progress_percent',
+            'reported_on', 'object_type',
         )
 
 
@@ -222,10 +223,11 @@ class GoalProgressSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'goal', 'usergoal', 'current_score', 'current_total',
             'max_total', 'daily_actions_total', 'daily_actions_completed',
-            'daily_action_progress', 'weekly_actions_total',
-            'weekly_actions_completed', 'weekly_action_progress',
+            'daily_action_progress', 'daily_action_progress_percent',
+            'weekly_actions_total', 'weekly_actions_completed',
+            'weekly_action_progress', 'weekly_action_progress_percent',
             'actions_total', 'actions_completed', 'action_progress',
-            'reported_on'
+            'action_progress_percent', 'reported_on',
         )
 
 

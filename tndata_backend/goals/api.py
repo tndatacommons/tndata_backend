@@ -406,16 +406,22 @@ class UserGoalViewSet(mixins.CreateModelMixin,
           _this day_
         - `daily_action_progress`: Daily progress percentage (as a float). This
           is calculated with `daily_actions_completed` / `daily_actions_total`
+        - `daily_action_progress_percent`: The daily progress expressed as an
+          integer percentage.
         - `weekly_actions_total`: Number of actions scheduled for the past 7 days
         - `weekly_actions_completed`: Number of actions completed over the past
           7 days
         - `weekly_action_progress`: Percentage of completed actions for the week.
+        - `weekly_action_progress_percent`: The weekly progress expressed as an
+          integer percentage.
         - `actions_total`:  Number of actions scheduled for our historical
           reporting period
         - `actions_completed`: Number of actions completed during our historical
           reporting period.
         - `action_progress`:  Percentage of actions completed (as a float) during
           the historical reporting period.
+        - `action_progress_percent`: The progress expressed as an integer
+          percentage.
         - `reported_on`: Date/Time on which this data was recorded.
 
     * `custom_triggers_allowed`: A boolean that indicates whether or not a user
@@ -1178,6 +1184,8 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
       were completed during the day.
     * `daily_action_progress`: The percentage of actions completed. Calculated
       vial `daily_actions_completed` / `daily_actions_total`.
+    * `daily_action_progress_percent`: The same as `daily_action_progress`, but
+      as an integer percent instead of a decimal.
     * `reported_on`: Date on which progress was initially reported.
 
     ## Saving Progress
