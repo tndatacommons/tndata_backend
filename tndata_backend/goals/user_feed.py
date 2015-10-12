@@ -25,7 +25,7 @@ from django.db.models import Q
 from django.utils import timezone
 from utils.user_utils import to_localtime, local_day_range
 
-from .models import Goal, UserAction, UserCompletedAction
+from .models import Goal, UserCompletedAction
 
 
 def action_feedback(user, useraction, lookback=30):
@@ -139,15 +139,26 @@ def action_feedback(user, useraction, lookback=30):
 
 
 def todays_actions(user):
-    """return a list of actions that the user should perform today."""
-    # Upcoming gives us all UserActions whose trigger date is in the future...
-    upcoming = UserAction.objects.upcoming().filter(user=user)
+    """Return a QuerySet of UserAction objects that the user should perform
+    today, ordered by `next_trigger_date` field (e.g. next up is first in the
+    list).
+
+    This result excludes any UserActions that have already been completed.
+
+    """
 
     # We want to show only those left for "today" (in the user's timezone)
-    dt = datetime.combine(datetime.today(), time(23, 59))  # just before midnight
-    dt = to_localtime(dt, user).astimezone(timezone.utc)  # conver to utc
+    today = local_day_range(user)
+    now = timezone.now()
 
-    upcoming = upcoming.filter(next_trigger_date__lte=dt)
+    dt = datetime.combine(datetime.today(), time(23, 59))  # just before midnight
+    dt = to_localtime(dt, user).astimezone(timezone.utc)  # convert to utc
+    upcoming = user.useraction_set.filter(next_trigger_date__range=(now, dt))
+
+    # Exclude those that have been completed
+    cids = user.usercompletedaction_set.filter(updated_on__range=today)
+    cids = cids.values_list('useraction', flat=True)
+    upcoming = upcoming.exclude(id__in=cids)
     return upcoming.order_by('next_trigger_date')
 
 
