@@ -65,7 +65,7 @@ def action_feedback(user, useraction, lookback=30):
     feedback = {
         'low': {
             'title': "I've done some work to {goal} this month!",
-            'subtitle': 'Every action taken brings me closer',
+            'subtitle': 'Even small steps can help me reach my goal',
         },
         'med': {
             'title': "I've done {num} activities to {goal} this month!",
