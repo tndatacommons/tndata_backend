@@ -112,13 +112,30 @@ class TestUserProgress(TestCase):
                 custom_trigger=cls.t3
             )
 
-    def test_aggregate_progress(self):
-        """Calls the `aggregate_progress management command`."""
-        timezone_path = 'goals.management.commands.aggregate_progress.timezone'
-        log_path = "goals.management.commands.create_notifications.logger"
+    @patch('sys.stderr')
+    @patch('sys.stdout')
+    def _run_refresh_useractions(self, mock_stderr, mock_stdout, dt=None):
+        """Calls the `refresh_useractions` management command`."""
+        timezone_path = 'goals.managers.timezone'
+        log_path = "goals.management.commands.refresh_useractions.logger"
         with patch(log_path):
             with patch(timezone_path) as mock_timezone:
-                mock_timezone.now.return_value = self.dt  # today, 9am
+                if dt is None:
+                    dt = self.dt  # today, 9am
+                mock_timezone.now.return_value = dt
+                call_command('refresh_useractions')
+
+    @patch('sys.stderr')
+    @patch('sys.stdout')
+    def _run_aggregate_progress(self, mock_stderr, mock_stdout, dt=None):
+        """Calls the `aggregate_progress` management command`."""
+        timezone_path = 'goals.management.commands.aggregate_progress.timezone'
+        log_path = "goals.management.commands.aggregate_progress.logger"
+        with patch(log_path):
+            with patch(timezone_path) as mock_timezone:
+                if dt is None:
+                    dt = self.dt  # today, 9am
+                mock_timezone.now.return_value = dt
                 call_command('aggregate_progress')
 
     def test_action_feedback_zero_percent(self):
@@ -135,6 +152,7 @@ class TestUserProgress(TestCase):
                 mock_now.return_value = self.dt - timedelta(days=d)
                 UserCompletedAction.objects.create(**params)
 
+        self._run_aggregate_progress()
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
             'title': "I've done some work to gtitle this month!",
@@ -164,6 +182,7 @@ class TestUserProgress(TestCase):
                 mock_now.return_value = self.dt - timedelta(days=d)
                 UserCompletedAction.objects.create(**params)
 
+        self._run_aggregate_progress()
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
             'title': "I've done 5 activities to gtitle this month!",
@@ -191,6 +210,7 @@ class TestUserProgress(TestCase):
                 mock_now.return_value = self.dt - timedelta(days=d)
                 UserCompletedAction.objects.create(**params)
 
+        self._run_aggregate_progress()
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
             'title': "I've done 6 out of 10 activities to gtitle this month!",
@@ -224,12 +244,15 @@ class TestUserProgress(TestCase):
 
         with patch('utils.user_utils.timezone') as mock_tz:
             # At 9am
-            args = (self.dt.year, self.dt.month, self.dt.day, 9, 0)
-            mock_tz.now.return_value = tzdt(*args)
+            now = tzdt(self.dt.year, self.dt.month, self.dt.day, 9, 0)
+
+            mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
             mock_tz.utc = timezone.utc
 
+            self._run_refresh_useractions(dt=now)
+            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
@@ -240,12 +263,14 @@ class TestUserProgress(TestCase):
 
             # At 10pm
             mock_tz.reset_mock()
-            args = (self.dt.year, self.dt.month, self.dt.day, 22, 0)
-            mock_tz.now.return_value = tzdt(*args)
+            now = tzdt(self.dt.year, self.dt.month, self.dt.day, 22, 0)
+            mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
             mock_tz.utc = timezone.utc
 
+            self._run_refresh_useractions(dt=now)
+            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
@@ -256,17 +281,38 @@ class TestUserProgress(TestCase):
 
             # At 11:45pm
             mock_tz.reset_mock()
-            args = (self.dt.year, self.dt.month, self.dt.day, 23, 45)
-            mock_tz.now.return_value = tzdt(*args)
+            now = tzdt(self.dt.year, self.dt.month, self.dt.day, 23, 45)
+            mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
             mock_tz.utc = timezone.utc
 
+            self._run_refresh_useractions(dt=now)
+            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
                 'total': 3,
                 'progress': 66,
+            }
+            self.assertEqual(progress, expected)
+
+            # Next day at 12:02 am
+            mock_tz.reset_mock()
+            now = self.dt + timedelta(days=1)
+            now = tzdt(now.year, now.month, now.day, 0, 2)
+            mock_tz.now.return_value = now
+            mock_tz.make_aware = timezone.make_aware
+            mock_tz.make_naive = timezone.make_naive
+            mock_tz.utc = timezone.utc
+
+            self._run_refresh_useractions(dt=now)
+            self._run_aggregate_progress(dt=now)
+            progress = user_feed.todays_actions_progress(self.user)
+            expected = {
+                'completed': 0,
+                'total': 0,
+                'progress': 0,
             }
             self.assertEqual(progress, expected)
 
