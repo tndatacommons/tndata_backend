@@ -87,7 +87,6 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "date_joined", )
 
-    @cached_method(cache_key="{0}-User._get_feed")
     def _get_feed(self, obj):
         """Assemble all the user feed data at once because it's more efficient."""
         if not hasattr(self, "_feed"):
@@ -162,7 +161,6 @@ class UserSerializer(serializers.ModelSerializer):
         serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_actions")
     def get_actions(self, obj):
         qs = UserAction.objects.accepted_or_public(obj)
         serialized = UserActionSerializer(qs, many=True)
