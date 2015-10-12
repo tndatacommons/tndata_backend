@@ -1505,6 +1505,7 @@ class UserCompletedAction(models.Model):
     COMPLETED = 'completed'
     DISMISSED = 'dismissed'
     SNOOZED = 'snoozed'
+    UNSET = '-'
 
     STATE_CHOICES = (
         (COMPLETED, 'Completed'),
@@ -1516,7 +1517,7 @@ class UserCompletedAction(models.Model):
     action = models.ForeignKey(Action)
     state = models.CharField(
         max_length=32,
-        default=COMPLETED,
+        default=UNSET,
         choices=STATE_CHOICES
     )
     updated_on = models.DateTimeField(auto_now=True)
@@ -1526,7 +1527,7 @@ class UserCompletedAction(models.Model):
         return "{0}".format(self.action.title)
 
     class Meta:
-        ordering = ['user', 'action']
+        ordering = ['-updated_on', 'user', 'action']
         verbose_name = "User Completed Action"
         verbose_name_plural = "User Completed Action"
 
