@@ -1212,7 +1212,7 @@ class TestUserCompletedAction(TestCase):
             action=self.action
         )
 
-        # Default state == "completed"
+        # Default state == "-"
         self.uca = UserCompletedAction.objects.create(
             user=self.user,
             useraction=self.ua,
@@ -1232,7 +1232,7 @@ class TestUserCompletedAction(TestCase):
         self.assertEqual(expected, actual)
 
     def test_completed(self):
-        self.assertTrue(self.uca.completed)
+        self.assertFalse(self.uca.completed)
 
     def test_dismissed(self):
         self.assertFalse(self.uca.dismissed)
