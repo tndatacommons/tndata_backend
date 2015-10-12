@@ -336,7 +336,7 @@ class TestUserFeed(TestCase):
             fb['title'], "I've done some work to test goal this month!"
         )
         self.assertEqual(
-            fb['subtitle'], "Every action taken brings me closer"
+            fb['subtitle'], "Even small steps can help me reach my goal"
         )
 
     def test_todays_actions(self):
