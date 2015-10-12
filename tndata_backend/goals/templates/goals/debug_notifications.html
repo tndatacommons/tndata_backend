@@ -1,10 +1,14 @@
 {% extends "goals/base.html" %}
 {% load crispy_forms_tags %}
+{% load tz %}
 
 {% block title %}Debug Notifications{% endblock %}
 
 {% block head %}
   {{ block.super }}
+  <style type="text/css">
+  table tbody tr td {vertical-align: top;}
+  </style>
 {% endblock %}
 
 
@@ -20,54 +24,91 @@
   </div>
 </form>
 
-{% if progress %}
+<h2>User Feed Data</h2>
 <div class="panel">
+  <p><strong>Next User Action: {{ next_user_action }} at
+    <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.</strong></p>
   <p>Your daily progress stats as shown on the home feed.</p>
   <pre>{{ progress|pprint }}</pre>
-</div>
-{% endif %}
 
+</div>
+
+
+<h2>Notification Schedule &amp; Queue</h2>
 {% if useractions %}
 <table>
   <caption>{{useractions.count}} <code>UserAction</code></caption>
   <thead>
     <tr>
       <th>Action</th>
-      <th>Completed</th>
-      <th>Previous</th>
-      <th>Next</th>
+      <th>Status</th>
       <th>Notifications</th>
     </tr>
   </thead>
   <tbody>
     {% for ua in useractions %}
       <tr>
-        <td>
-          <strong>{{ ua.id }} - {{ ua.action }}</strong><br/>
+        <td> {# --- Action info --- #}
+          <strong>{{ ua.action }}</strong><br/>
           <em>
           {% if ua.trigger %}
-            Trigger: {{ ua.trigger.recurrences_as_text|default:"Not Recurring" }}<br/>
-            Next: {{ ua.next|date:"M j Y P e"|default:"None" }}
+            {% with recur=ua.trigger.recurrences_as_text %}
+            Trigger: {% if recur %}{{ recur }}{% else %}
+              {{ ua.trigger.date|default:"no date" }} /
+              {{ ua.trigger.time|default:"no time" }}{% endif %}
+            {% endwith %}
+            <br/>
+            Next:<br/>
+            <span class="label info">
+              {{ ua.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
+            <span class="label secondary">
+              {{ ua.next|utc|date:"M j Y P e"|default:"None" }}</span>
           {% endif %}
           </em>
+          <hr/>
+          <code>Action.id: {{ ua.action.id }}</code><br/>
+          <code>UserAction.id: {{ ua.id }}</code><br/>
         </td>
-        <td>
+        <td> {# --- Status --- #}
+        <strong>Previous Trigger</strong><br/>
+        {% if ua.prev_trigger_date %}
+          <span class="label info">
+            {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+          </span><br/>
+          <span class="label secondary">
+            {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+        {% else %}
+          <em>None</em>
+        {% endif %}
+        <hr/>
+        <strong>Next Trigger</strong><br/>
+        {% if ua.next_trigger_date %}
+          <span class="label info">
+            {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+          </span><br/>
+          <span class="label secondary">
+            {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+        {% else %}
+          <em>None</em>
+        {% endif %}
+        <hr/>
         {% for uca in completed %}
           {% if uca.useraction == ua %}
-            {{ uca.state }}<br/>
-            {{ uca.updated_on }}
+            <strong><i class="fa fa-trophy"></i> {{ uca.state|upper }}</strong><br/>
+            <span class="label info">
+              {{ uca.updated_on|localtime|date:"M j Y P e" }}</span>
+            <span class="label secondary">
+            {{ uca.updated_on|utc|date:"M j Y P e" }}</span><br/>
           {% endif %}
         {% endfor %}
         </td>
-        <td>{{ ua.prev_trigger_date|default:"n/a"}}</td>
-        <td>{{ ua.next_trigger_date|default:"n/a"}}</td>
         <td>
           <ul style="list-style-type:none;">
           {% for msg in ua.queued_notifications %}
             <li>
               <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
               <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
-                 target="_blank">{{ msg.deliver_on|date:"M j Y P e" }}</a>
+                 target="_blank">{{ msg.deliver_on|date:"P e m/d/Y" }}</a>
             </li>
           {% empty %}
             <li><em>none scheduled</em></li>

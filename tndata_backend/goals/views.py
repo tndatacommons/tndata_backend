@@ -1160,6 +1160,7 @@ def debug_notifications(request):
     useractions = None
     completed = None
     progress = None
+    next_user_action = None
     email = request.GET.get('email_address', None)
     if email is None:
         form = EmailForm()
@@ -1178,6 +1179,7 @@ def debug_notifications(request):
                 updated_on__range=today
             )
             progress = user_feed.todays_actions_progress(user)
+            next_user_action = user_feed.next_user_action(user)
         except User.DoesNotExist:
             messages.error(request, "Could not find that user")
 
@@ -1187,5 +1189,6 @@ def debug_notifications(request):
         'useractions': useractions,
         'completed': completed,
         'progress': progress,
+        'next_user_action': next_user_action,
     }
     return render(request, 'goals/debug_notifications.html', context)
