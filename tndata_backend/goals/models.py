@@ -28,6 +28,7 @@ from django.utils import timezone
 from django_fsm import FSMField, transition
 from markdown import markdown
 from notifications.models import GCMMessage
+from notifications.signals import notification_snoozed
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from utils import colors, dateutils
@@ -1386,7 +1387,15 @@ class UserAction(models.Model):
             self.next_trigger_date = next_date
 
     def save(self, *args, **kwargs):
-        self._set_next_trigger_date()
+        """Adds a hook to update the prev_trigger_date & next_trigger_date
+        whenever this object is saved. You can control this with the following
+        additional keyword argument:
+
+        * update_triggers: (default is True).
+
+        """
+        if kwargs.pop("update_triggers", True):
+            self._set_next_trigger_date()
         return super().save(*args, **kwargs)
 
     @property
@@ -1460,6 +1469,20 @@ class UserAction(models.Model):
         return msgs
 
     objects = UserActionManager()
+
+
+@receiver(notification_snoozed)
+def reset_next_trigger_date_when_snoozed(sender, message, user,
+                                         related_object, deliver_on, **kwargs):
+    """If a user snoozes a notification (in the notifications app), this function
+    will try to update the relevant UserAction's `next_trigger_date`.
+
+    """
+    if related_object and message.content_type.name.lower() == 'action':
+        ua = related_object.useraction_set.filter(user=user).first()
+        if ua and deliver_on:
+            ua.next_trigger_date = deliver_on
+            ua.save(update_triggers=False)
 
 
 @receiver(post_delete, sender=UserAction)
