@@ -14,7 +14,7 @@ from jsonfield import JSONField
 from pushjack import GCMClient
 from . managers import GCMMessageManager
 from . settings import DEFAULTS, GCM
-
+from . signals import notification_snoozed
 
 logger = logging.getLogger("loggly_logs")
 
@@ -173,6 +173,8 @@ class GCMMessage(models.Model):
         self.expire_on = None
         if changed and save:
             self.save()
+            # Fire a signal so we know this was snoozed.
+            self.send_notification_snoozed()
 
     def _localize(self):
         """Ensure times are stored in UTC"""
@@ -180,6 +182,15 @@ class GCMMessage(models.Model):
             self.deliver_on = pytz.utc.localize(self.deliver_on)
         if self.expire_on and self.expire_on.tzinfo is None:
             self.expire_on = pytz.utc.localize(self.expire_on)
+
+    def send_notification_snoozed(self):
+        notification_snoozed.send(
+            sender=self.__class__,
+            message=self,
+            user=self.user,
+            related_object=self.content_object,
+            deliver_on=self.deliver_on
+        )
 
     def save(self, *args, **kwargs):
         self._localize()
