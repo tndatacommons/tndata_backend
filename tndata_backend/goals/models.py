@@ -1425,7 +1425,7 @@ class UserAction(models.Model):
         """Return True if this action was completed today, False otherwise"""
         return self.user.usercompletedaction_set.filter(
             action=self.action,
-            created_on__range=local_day_range(self.user),
+            updated_on__range=local_day_range(self.user),
             state='completed'
         ).exists()
 
