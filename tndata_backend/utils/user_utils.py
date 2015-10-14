@@ -7,6 +7,13 @@ from django.db.models import ObjectDoesNotExist
 from django.utils import timezone
 
 
+def tzdt(*args, **kwargs):
+    """Return a timezone-aware datetime object."""
+    tz = kwargs.pop("tz", timezone.utc)
+    dt = datetime(*args)
+    return timezone.make_aware(dt, timezone=tz)
+
+
 def to_utc(dt):
     """Convert the given naive/aware datetime to UTC."""
     if dt and timezone.is_aware(dt):
