@@ -44,6 +44,7 @@ class TestUserProgress(TestCase):
     def setUpTestData(cls):
         cls.User = get_user_model()
         cls.user = cls.User.objects.create_user('user', 'u@example.com', 'secret')
+        # NOTE: User's default timezone is America/Chicago
 
         # Create a Category/Goal/Behavior/Action(s) content
         cls.category = mommy.make(Category, title="CAT", state="published")
@@ -243,7 +244,7 @@ class TestUserProgress(TestCase):
             UserCompletedAction.objects.create(**params)
 
         with patch('utils.user_utils.timezone') as mock_tz:
-            # At 9am
+            # At 9am UTC / 4am CDT / 3am CST
             now = tzdt(self.dt.year, self.dt.month, self.dt.day, 9, 0)
 
             mock_tz.now.return_value = now
@@ -262,7 +263,7 @@ class TestUserProgress(TestCase):
             }
             self.assertEqual(progress, expected)
 
-            # At 10pm
+            # At 10pm UTC / 5pm CDT / 4pm CST
             mock_tz.reset_mock()
             now = tzdt(self.dt.year, self.dt.month, self.dt.day, 22, 0)
             mock_tz.now.return_value = now
@@ -281,7 +282,7 @@ class TestUserProgress(TestCase):
             }
             self.assertEqual(progress, expected)
 
-            # At 11:45pm
+            # At 11:45pm UTC / 6:45 CDT / 5:45 CST
             mock_tz.reset_mock()
             now = tzdt(self.dt.year, self.dt.month, self.dt.day, 23, 45)
             mock_tz.now.return_value = now
@@ -300,10 +301,30 @@ class TestUserProgress(TestCase):
             }
             self.assertEqual(progress, expected)
 
-            # Next day at 12:02 am
+            # Next day at 12am UTC / 7pm CDT / 6pm CST
             mock_tz.reset_mock()
             now = self.dt + timedelta(days=1)
-            now = tzdt(now.year, now.month, now.day, 0, 2)
+            now = tzdt(now.year, now.month, now.day, 0, 0)
+            mock_tz.now.return_value = now
+            mock_tz.make_aware = timezone.make_aware
+            mock_tz.make_naive = timezone.make_naive
+            mock_tz.is_naive = timezone.is_naive
+            mock_tz.utc = timezone.utc
+
+            self._run_refresh_useractions(dt=now)
+            self._run_aggregate_progress(dt=now)
+            progress = user_feed.todays_actions_progress(self.user)
+            expected = {
+                'completed': 2,
+                'total': 3,
+                'progress': 66,
+            }
+            self.assertEqual(progress, expected)
+
+            # Next day at 6:02am UTC / 1:02am CDT / 12:02am CST
+            mock_tz.reset_mock()
+            now = self.dt + timedelta(days=1)
+            now = tzdt(now.year, now.month, now.day, 6, 2)
             mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
