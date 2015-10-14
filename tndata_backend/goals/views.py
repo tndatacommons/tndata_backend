@@ -1184,6 +1184,8 @@ def debug_notifications(request):
             progress = user_feed.todays_actions_progress(user)
             next_user_action = user_feed.next_user_action(user)
             upcoming = user_feed.todays_actions(user)
+            for ua in useractions:
+                ua.upcoming = ua in upcoming
         except User.DoesNotExist:
             messages.error(request, "Could not find that user")
 

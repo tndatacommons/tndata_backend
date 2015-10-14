@@ -36,9 +36,20 @@
 <div class="panel">
   <p><strong>Next User Action: {{ next_user_action }} at
     <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.</strong></p>
+  <hr/>
+  <p>UPCOMING</p>
+  <ol>
+    {% for ua in upcoming %}
+    <li>
+      {{ ua.action }} at
+      <span class="label info">
+        {{ ua.next_trigger_date|localtime|date:"M j Y P e" }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+  <hr/>
   <p>Your daily progress stats as shown on the home feed.</p>
   <pre>{{ progress|pprint }}</pre>
-
 </div>
 
 
@@ -58,8 +69,10 @@
       <tr>
 
         {# --- Action info --- #}
-        <td class="{% if ua in upcoming %}upcoming{% else %}past{% endif %}">
-          <strong>{{ ua.action }}</strong><br/>
+        <td class="{% if ua.upcoming %}upcoming{% else %}past{% endif %}">
+          <strong>
+            {% if ua.upcoming %}<i class="fa fa-star"></i>{% endif %}
+            {{ ua.action }}</strong><br/>
           <em>
           {% if ua.trigger %}
             {% with recur=ua.trigger.recurrences_as_text %}
