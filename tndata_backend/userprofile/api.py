@@ -168,7 +168,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     Collections of related data for the user, include:
 
-    * `next_action` -- a l`UserAction` object (the mapping between a User and
+    * `next_action` -- a `UserAction` object (the mapping between a User and
       an Action`. This is the upcoming activity for the user.
     * `action_feedback` is a object of data for the _feedback card_ related to
       the user's `next_action`. It's intention is to _reinforce the user's
