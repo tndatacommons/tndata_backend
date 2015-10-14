@@ -24,12 +24,21 @@ def to_utc(dt):
 
 
 def to_localtime(dt, user):
-    """Given a datetime object, convert it to the user's localtime."""
+    """Given a datetime object, convert it to the user's localtime.
+
+    * dt - either a naive or aware datetime object. If naive, the user's
+      timezone will be applied, making it aware. If aware, the datetime object
+      will be converted to the user's timezone.
+    * user - a User instance. They must have a UserProfile with a set timezone
+      for this to work properly.
+
+    """
     if dt and user.userprofile.timezone:
         tz = pytz.timezone(user.userprofile.timezone)
-        if timezone.is_aware(dt):
-            dt = timezone.make_naive(dt)
-        dt = timezone.make_aware(dt, timezone=tz)
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt, timezone=tz)
+        else:
+            dt = dt.astimezone(tz)
     return dt
 
 
