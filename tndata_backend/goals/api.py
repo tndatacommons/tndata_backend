@@ -759,6 +759,8 @@ class UserActionViewSet(mixins.CreateModelMixin,
     * `id`: A unique identifier for the `UserAction` mapping.
     * `user`: A unique identifier for the `User`
     * `action`: An object that represents the `Action` selected by the user
+    * `next_reminder`: a date/time in the user's local timezone for the
+      next push notification for this action (may be null if nothing is scheduled)
     * `custom_trigger`: An object that represent's the user's created `Trigger`,
       i.e. information about when notifications for this action should be sent.
     * `custom_triggers_allowed`: A boolean that indicates whether or not a user

@@ -32,7 +32,7 @@ from notifications.signals import notification_snoozed
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from utils import colors, dateutils
-from utils.user_utils import local_day_range, to_utc
+from utils.user_utils import local_day_range, to_localtime, to_utc
 
 from .managers import (
     CategoryManager,
@@ -1359,7 +1359,12 @@ class UserAction(models.Model):
 
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
-        or None."""
+        or None. This returns the value of `next_trigger_date` if it's in the
+        future, otherwise it'll generate the next date from the trigger."""
+        if self.next_trigger_date and self.next_trigger_date > timezone.now():
+            # Convert to the user's timezone.
+            return to_localtime(self.next_trigger_date, self.user)
+
         trigger = self.trigger
         if trigger:
             return trigger.next(user=self.user)
