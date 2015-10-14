@@ -73,15 +73,18 @@
           <strong>
             {% if ua.upcoming %}<i class="fa fa-star"></i>{% endif %}
             {{ ua.action }}</strong><br/>
+          <code>
+            Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}
+          </code><br/>
           <em>
           {% if ua.trigger %}
             {% with recur=ua.trigger.recurrences_as_text %}
-            Trigger: {% if recur %}{{ recur }}{% else %}
-              {{ ua.trigger.date|default:"no date" }} /
-              {{ ua.trigger.time|default:"no time" }}{% endif %}
+              {% if recur %}{{ recur|upper }}{% else %}
+                {{ ua.trigger.date|default:"No date" }} /
+                {{ ua.trigger.time|default:"No time" }}
+              {% endif %}
             {% endwith %}
             <br/>
-            Next:<br/>
             <span class="label info">
               {{ ua.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
             <span class="label secondary">
@@ -89,8 +92,15 @@
           {% endif %}
           </em>
           <hr/>
-          <code>Action.id: {{ ua.action.id }}</code><br/>
-          <code>UserAction.id: {{ ua.id }}</code><br/>
+          {% for uca in completed %}
+            {% if uca.useraction == ua %}
+              <strong><i class="fa fa-trophy"></i> {{ uca.state|upper }}</strong><br/>
+              <span class="label info">
+                {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
+              <span class="label secondary">
+              {{ uca.updated_on|utc|date:"M j Y P e" }}</span>
+            {% endif %}
+          {% endfor %}
         </td>
 
         {# --- Status --- #}
@@ -116,16 +126,6 @@
         {% else %}
           <em>None</em>
         {% endif %}
-        <hr/>
-        {% for uca in completed %}
-          {% if uca.useraction == ua %}
-            <strong><i class="fa fa-trophy"></i> {{ uca.state|upper }}</strong><br/>
-            <span class="label info">
-              {{ uca.updated_on|localtime|date:"M j Y P e" }}</span>
-            <span class="label secondary">
-            {{ uca.updated_on|utc|date:"M j Y P e" }}</span><br/>
-          {% endif %}
-        {% endfor %}
         </td>
 
         {# --- Scheduled/Past Notifications --- #}
