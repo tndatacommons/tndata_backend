@@ -8,6 +8,10 @@
   {{ block.super }}
   <style type="text/css">
   table tbody tr td {vertical-align: top;}
+  td.past {
+    color: #888;
+    text-decoration: line-through;
+  }
   </style>
 {% endblock %}
 
@@ -24,7 +28,11 @@
   </div>
 </form>
 
-<h2>User Feed Data</h2>
+<h2>User Feed Data.
+  <span class="label info">{{ today.0|localtime }}</span>
+  <small>to</small>
+  <span class="label info">{{ today.1|localtime }}</span>
+</h2>
 <div class="panel">
   <p><strong>Next User Action: {{ next_user_action }} at
     <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.</strong></p>
@@ -48,7 +56,9 @@
   <tbody>
     {% for ua in useractions %}
       <tr>
-        <td> {# --- Action info --- #}
+
+        {# --- Action info --- #}
+        <td class="{% if ua in upcoming %}upcoming{% else %}past{% endif %}">
           <strong>{{ ua.action }}</strong><br/>
           <em>
           {% if ua.trigger %}
@@ -69,18 +79,9 @@
           <code>Action.id: {{ ua.action.id }}</code><br/>
           <code>UserAction.id: {{ ua.id }}</code><br/>
         </td>
-        <td> {# --- Status --- #}
-        <strong>Previous Trigger</strong><br/>
-        {% if ua.prev_trigger_date %}
-          <span class="label info">
-            {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-          </span><br/>
-          <span class="label secondary">
-            {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-        {% else %}
-          <em>None</em>
-        {% endif %}
-        <hr/>
+
+        {# --- Status --- #}
+        <td>
         <strong>Next Trigger</strong><br/>
         {% if ua.next_trigger_date %}
           <span class="label info">
@@ -88,6 +89,17 @@
           </span><br/>
           <span class="label secondary">
             {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+        {% else %}
+          <em>None</em>
+        {% endif %}
+        <hr/>
+        <strong>Previous Trigger</strong><br/>
+        {% if ua.prev_trigger_date %}
+          <span class="label info">
+            {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+          </span><br/>
+          <span class="label secondary">
+            {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
         {% else %}
           <em>None</em>
         {% endif %}
@@ -102,6 +114,8 @@
           {% endif %}
         {% endfor %}
         </td>
+
+        {# --- Scheduled/Past Notifications --- #}
         <td>
           <ul style="list-style-type:none;">
           {% for msg in ua.queued_notifications %}
