@@ -20,10 +20,10 @@ https://trello.com/c/zKedLoZe/170-initial-home-feed
 """
 import random
 
-from datetime import datetime, time, timedelta
+from datetime import timedelta
 from django.db.models import Q
 from django.utils import timezone
-from utils.user_utils import to_localtime, local_day_range
+from utils.user_utils import local_day_range
 
 from .models import Goal, UserCompletedAction
 
@@ -148,15 +148,17 @@ def todays_actions(user):
     """
 
     # We want to show only those left for "today" (in the user's timezone)
-    today = local_day_range(user)
+    today = local_day_range(user)  # start/end in UTC wrapping the user's day
     now = timezone.now()
 
-    dt = datetime.combine(datetime.today(), time(23, 59))  # just before midnight
-    dt = to_localtime(dt, user).astimezone(timezone.utc)  # convert to utc
-    upcoming = user.useraction_set.filter(next_trigger_date__range=(now, dt))
+    # The `next_trigger_date` should always be saved as UTC
+    upcoming = user.useraction_set.filter(next_trigger_date__range=(now, today[1]))
 
     # Exclude those that have been completed
-    cids = user.usercompletedaction_set.filter(updated_on__range=today)
+    cids = user.usercompletedaction_set.filter(
+        updated_on__range=today,
+        state=UserCompletedAction.COMPLETED
+    )
     cids = cids.values_list('useraction', flat=True)
     upcoming = upcoming.exclude(id__in=cids)
     return upcoming.order_by('next_trigger_date')
@@ -190,11 +192,11 @@ def todays_actions_progress(user):
     # Query for the UserActions that should have been scheduled today.
     today = local_day_range(user)
     useractions = user.useraction_set.filter(
-        Q(next_trigger_date__range=today) |
-        Q(prev_trigger_date__range=today)
+        Q(prev_trigger_date__range=today) |
+        Q(next_trigger_date__range=today)
     ).distinct()
 
-    # e.g. you've completed X / Y activities for today.
+    # e.g. you've completed X / Y actions for today.
     data = [1 if ua.completed_today else 0 for ua in useractions]
     completed = sum(data)
     total = len(data)
