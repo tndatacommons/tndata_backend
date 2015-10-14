@@ -249,6 +249,7 @@ class TestUserProgress(TestCase):
             mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
+            mock_tz.is_naive = timezone.is_naive
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
@@ -267,6 +268,7 @@ class TestUserProgress(TestCase):
             mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
+            mock_tz.is_naive = timezone.is_naive
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
@@ -285,6 +287,7 @@ class TestUserProgress(TestCase):
             mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
+            mock_tz.is_naive = timezone.is_naive
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
@@ -304,6 +307,7 @@ class TestUserProgress(TestCase):
             mock_tz.now.return_value = now
             mock_tz.make_aware = timezone.make_aware
             mock_tz.make_naive = timezone.make_naive
+            mock_tz.is_naive = timezone.is_naive
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
