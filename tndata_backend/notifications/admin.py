@@ -37,7 +37,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'user_email', 'user_username', 'title', 'message_teaser',
         'content_type', 'object_id', 'deliver_on', 'success', 'created_on',
     )
-    list_filter = ('success', 'response_code')
+    list_filter = ('success', 'response_code', 'content_type')
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'title', 'message', 'content_type__model', 'object_id',
