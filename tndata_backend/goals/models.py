@@ -544,7 +544,7 @@ class Trigger(URLMixin, models.Model):
         if timezone.is_aware(a_time) and a_time.tzinfo != tz:
             # the time value here is correct, but should
             # be in the user's timezone.
-            a_time = a_time.replace(tzinfo=tz)
+            a_time = a_time.replace(tzinfo=None)
 
         dt = datetime.combine(a_date, a_time)
         if timezone.is_naive(dt):
