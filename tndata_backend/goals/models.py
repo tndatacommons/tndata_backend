@@ -1381,8 +1381,9 @@ class UserAction(models.Model):
         """
         trigger = self.trigger
         if trigger:
-            # Convert to UTC if necessary
-            next_date = to_utc(trigger.next())
+            # This trigger retuns the date in the user's timezone, so convert
+            # it back to UTC.
+            next_date = to_utc(trigger.next(user=self.user))
 
             # Save the previous trigger date, but don't overwrite on subsequent
             # saves; Only save when `next_trigger_date` changes.
