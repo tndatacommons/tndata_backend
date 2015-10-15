@@ -382,7 +382,7 @@ class TestUserFeed(TestCase):
 
         dt = timezone.now()
         with patch('goals.models.timezone.now') as mock_now:
-            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 0, 5)
+            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 8, 0)
             # A Trigger for an action...
             cls.trigger = Trigger.objects.create(
                 user=cls.user,

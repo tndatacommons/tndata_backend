@@ -1,7 +1,12 @@
-from datetime import datetime, date, time
+from datetime import date, time
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
+
+import pytz
+from utils.user_utils import tzdt
 
 from .. models import (
     Action,
@@ -105,30 +110,41 @@ class TestTriggerManager(TestCase):
         )
 
     def test_create_for_user(self):
-        # When there's a time & recurrence
-        trigger = Trigger.objects.create_for_user(
-            self.user,
-            "New Trigger",
-            time(8, 30),
-            None,
-            "RRULE:FREQ=WEEKLY;BYDAY=MO",
-        )
-        self.assertEqual(
-            trigger.recurrences_as_text(),
-            "weekly, each Monday"
-        )
+        with patch('goals.models.timezone') as mock_tz:
+            mock_tz.is_naive = timezone.is_naive
+            mock_tz.is_aware = timezone.is_aware
+            mock_tz.make_aware = timezone.make_aware
+            mock_tz.make_naive = timezone.make_naive
+            mock_tz.utc = timezone.utc
+            mock_tz.now.return_value = tzdt(2015, 3, 14, 8, 30)
 
-        # when there's a time & a date
-        trigger = Trigger.objects.create_for_user(
-            self.user,
-            "Other New Trigger",
-            time(9, 30),
-            date(2025, 3, 14),
-            None
-        )
-        expected = datetime.combine(date(2025, 3, 14), time(9, 30))
-        expected = timezone.make_aware(expected, timezone=timezone.utc)
-        self.assertEqual(trigger.next(), expected)
+            # When there's a time & recurrence
+            trigger = Trigger.objects.create_for_user(
+                self.user,
+                "New Trigger",
+                time(8, 30),
+                None,
+                "RRULE:FREQ=WEEKLY;BYDAY=MO",
+            )
+            self.assertEqual(
+                trigger.recurrences_as_text(),
+                "weekly, each Monday"
+            )
+
+            # when there's a time & a date
+            trigger = Trigger.objects.create_for_user(
+                self.user,
+                "Other New Trigger",
+                time(9, 30),
+                date(2015, 3, 15),
+                None
+            )
+            tz = pytz.timezone(self.user.userprofile.timezone)
+            expected = tzdt(2015, 3, 15, 9, 30, tz=tz)
+            self.assertEqual(
+                trigger.next().strftime("%c %z"),
+                expected.strftime("%c %z")
+            )
 
     def test_create_for_userbehavior(self):
         b = Behavior.objects.create(title='Test Behavior')
