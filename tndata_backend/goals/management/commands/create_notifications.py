@@ -31,11 +31,8 @@ class Command(BaseCommand):
         self._behavior_trigger = Trigger.objects.get_default_behavior_trigger()
 
     def _get_behavior_trigger_localtime(self, user):
-        # We need to convert this into the user's local timezone.
-        # To do that, we make it naive, then make it aware using the user's
-        # timezone.
-        t = self._behavior_trigger.next()
-        t = to_localtime(t, user)
+        # Return the behavior trigger in the user's timezone.
+        t = self._behavior_trigger.next(user=user)
         return t
 
     def write_log(self):
