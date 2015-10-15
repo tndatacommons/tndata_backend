@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
-from utils.user_utils import to_localtime
+from utils.user_utils import to_localtime, to_utc
 
 
 logger = logging.getLogger("loggly_logs")
@@ -96,12 +96,16 @@ class Command(BaseCommand):
         for ua in UserAction.objects.all():
             user_trigger = ua.trigger
             if user_trigger:
+                # Will be in the user's timezone
+                deliver_on = user_trigger.next(user=ua.user)
+                deliver_on = to_utc(deliver_on)
+
                 self.create_message(
                     ua.user,
                     ua.action,
                     ua.action.notification_title,
                     ua.action.notification_text,
-                    user_trigger.next()  # Should always be in the user's timezone
+                    deliver_on,
                 )
 
         # Finish with a confirmation message
