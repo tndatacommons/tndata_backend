@@ -1186,7 +1186,7 @@ def debug_notifications(request):
             upcoming = user_feed.todays_actions(user)
             for ua in useractions:
                 ua.upcoming = ua in upcoming
-        except User.DoesNotExist:
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
     context = {

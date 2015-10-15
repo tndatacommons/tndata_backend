@@ -78,6 +78,8 @@
           </code><br/>
           <em>
           {% if ua.trigger %}
+            {% if ua.trigger != ua.custom_trigger %}
+              <span class="label">DEFAULT</span> {% endif %}
             {% with recur=ua.trigger.recurrences_as_text %}
               {% if recur %}{{ recur|upper }}{% else %}
                 {{ ua.trigger.date|default:"No date" }} /
