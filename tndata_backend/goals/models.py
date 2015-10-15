@@ -541,6 +541,11 @@ class Trigger(URLMixin, models.Model):
             a_date = timezone.now().astimezone(tz)
 
         # Ensure our combined date/time has the appropriate timezone
+        if timezone.is_aware(a_time) and a_time.tzinfo != tz:
+            # the time value here is correct, but should
+            # be in the user's timezone.
+            a_time = a_time.replace(tzinfo=tz)
+
         dt = datetime.combine(a_date, a_time)
         if timezone.is_naive(dt):
             dt = timezone.make_aware(dt, timezone=tz)
@@ -1359,15 +1364,21 @@ class UserAction(models.Model):
 
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
-        or None. This returns the value of `next_trigger_date` if it's in the
-        future, otherwise it'll generate the next date from the trigger."""
+        or None. This method will either return the value of `next_trigger_date`
+        or the next date/time generated from the trigger, whichever is *next*."""
+
+        trigger_times = []
         if self.next_trigger_date and self.next_trigger_date > timezone.now():
             # Convert to the user's timezone.
-            return to_localtime(self.next_trigger_date, self.user)
+            trigger_times.append(to_localtime(self.next_trigger_date, self.user))
 
-        trigger = self.trigger
-        if trigger:
-            return trigger.next(user=self.user)
+        if self.trigger:
+            trigger_times.append(self.trigger.next(user=self.user))
+
+        trigger_times = list(filter(None, trigger_times))
+        if len(trigger_times) > 0:
+            return min(trigger_times)
+
         return None
 
     def _set_next_trigger_date(self):
@@ -1383,7 +1394,8 @@ class UserAction(models.Model):
         if trigger:
             # This trigger retuns the date in the user's timezone, so convert
             # it back to UTC.
-            next_date = to_utc(trigger.next(user=self.user))
+            next_date = trigger.next(user=self.user)
+            next_date = to_utc(next_date)
 
             # Save the previous trigger date, but don't overwrite on subsequent
             # saves; Only save when `next_trigger_date` changes.
