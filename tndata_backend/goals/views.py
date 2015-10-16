@@ -1189,6 +1189,7 @@ def debug_notifications(request):
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
+    all_useractions = user.useraction_set.all().order_by("next_trigger_date")
     context = {
         'form': form,
         'email': email,
@@ -1198,5 +1199,6 @@ def debug_notifications(request):
         'next_user_action': next_user_action,
         'upcoming': upcoming,
         'today': today,
+        'all_useractions': all_useractions,
     }
     return render(request, 'goals/debug_notifications.html', context)

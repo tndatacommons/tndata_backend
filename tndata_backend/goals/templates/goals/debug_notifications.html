@@ -28,29 +28,58 @@
   </div>
 </form>
 
-<h2>User Feed Data.
-  <span class="label info">{{ today.0|localtime }}</span>
-  <small>to</small>
-  <span class="label info">{{ today.1|localtime }}</span>
-</h2>
-<div class="panel">
-  <p><strong>Next User Action: {{ next_user_action }} at
-    <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.</strong></p>
-  <hr/>
-  <p>UPCOMING</p>
-  <ol>
-    {% for ua in upcoming %}
-    <li>
-      {{ ua.action }} at
-      <span class="label info">
-        {{ ua.next_trigger_date|localtime|date:"M j Y P e" }}</span>
-    </li>
-    {% endfor %}
-  </ol>
-  <hr/>
-  <p>Your daily progress stats as shown on the home feed.</p>
-  <pre>{{ progress|pprint }}</pre>
-</div>
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <h2>User Feed Data</h2>
+    <p>
+      <span class="label info">{{ today.0|localtime }}</span> to
+      <span class="label info">{{ today.1|localtime }}</span>
+    </p>
+    <div class="panel">
+      <p><strong>Next User Action: {{ next_user_action }} at
+        <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.</strong></p>
+      <hr/>
+      <p>UPCOMING</p>
+      <ol>
+        {% for ua in upcoming %}
+        <li>
+          {{ ua.action }} at
+          <span class="label info">
+            {{ ua.next_trigger_date|localtime|date:"M j Y P e" }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+      <hr/>
+      <p>Your daily progress stats as shown on the home feed.</p>
+      <pre>{{ progress|pprint }}</pre>
+    </div>
+  </div>
+  <div class="large-6 small-12 columns">
+    <h2>User Completed Actions</h2>
+    <p>
+      <span class="label info">{{ today.0|localtime }}</span> to
+      <span class="label info">{{ today.1|localtime }}</span>
+    </p>
+    </h2>
+    <div class="panel">
+      <ul>
+      {% for uca in completed %}
+        <li>
+          ({{uca.id}}) {{ uca.action }}: <em>{{ uca.state|upper }}</em><br/>
+          <small>
+          Updated: <span class="label info">
+            {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
+          Created: <span class="label info">
+            {{ uca.created_on|localtime|date:"M j Y P e" }}</span>
+          </small>
+        </li>
+      {% empty %}
+        <li>no completed actions for this day</li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div> {# end .row #}
 
 
 <h2>Notification Schedule &amp; Queue</h2>
@@ -149,6 +178,48 @@
   </tbody>
 </table>
 {% endif %}
+
+
+<h2>All User-selected Actions</h2>
+<table>
+  <caption>{{all_useractions.count}} <code>UserAction</code>s</caption>
+  <thead>
+    <tr>
+      <th>UserAction</th>
+      <th>Next</th>
+      <th>Scheduled today</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for ua in all_useractions %}
+    <tr>
+      <td>
+        <strong>{{ ua.action }}</strong><br/>
+        <code>Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}</code><br/>
+      </td>
+      <td>
+        <strong>Next Trigger</strong><br/>
+        {% if ua.next_trigger_date %}
+          <span class="label info">
+            {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+          </span><br/>
+          <span class="label secondary">
+            {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+        {% else %}
+          <em>None</em>
+        {% endif %}
+      </td>
+      <td>
+        {% if ua in useractions %}
+          <i class="fa fa-check"></i>
+        {% else %}
+          -
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
 
 
 {% endblock %}
