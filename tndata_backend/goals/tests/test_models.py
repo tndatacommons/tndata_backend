@@ -686,6 +686,60 @@ class TestTrigger(TestCase):
         # Clean up
         t.delete()
 
+    def test_default_trigger_timezone(self):
+        """A Default trigger, with no user input should return UTC time"""
+        trigger = Trigger.objects.create(
+            name="Test Default",
+            trigger_type="time",
+            time=time(23, 59),
+            recurrences='RRULE:FREQ=DAILY'
+        )
+
+        expected = datetime.combine(timezone.now(), time(23, 59))
+        expected = timezone.make_aware(expected, timezone=timezone.utc)
+        result = trigger.next()
+        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+
+    def test_default_trigger_with_user_timezone(self):
+        user = User.objects.create_user('u', 'u@example.com', 'pass')
+        user.userprofile.timezone = 'America/Chicago'
+        user.userprofile.save()
+
+        trigger = Trigger.objects.create(
+            name="Test Default",
+            trigger_type="time",
+            time=time(23, 59),
+            recurrences='RRULE:FREQ=DAILY'
+        )
+
+        tz = pytz.timezone('America/Chicago')
+        expected = datetime.combine(timezone.now(), time(23, 59))
+        expected = timezone.make_aware(expected, timezone=tz)
+        result = trigger.next(user=user)
+        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+
+    def test_custom_trigger_timezone(self):
+        user = User.objects.create_user('u', 'u@example.com', 'pass')
+        user.userprofile.timezone = 'America/Chicago'
+        user.userprofile.save()
+
+        trigger = Trigger.objects.create(
+            user=user,
+            name="User Custom Trigger",
+            trigger_type="time",
+            time=time(23, 59),
+            recurrences='RRULE:FREQ=DAILY'
+        )
+
+        tz = pytz.timezone('America/Chicago')
+        expected = datetime.combine(timezone.now(), time(23, 59))
+        expected = timezone.make_aware(expected, timezone=tz)
+        result = trigger.next()  # When called with no extra input.
+        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+
+        result = trigger.next(user=user)  # When called with input.
+        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+
 
 class TestBehavior(TestCase):
     """Tests for the `Behavior` model."""
@@ -1209,7 +1263,7 @@ class TestUserAction(TestCase):
         self.assertFalse(UserBehavior.objects.filter(**params).exists())
 
         # Add the action, and the behavior gets added too
-        ua = UserAction.objects.create(user=self.user, action=a)
+        UserAction.objects.create(user=self.user, action=a)
         self.assertTrue(UserBehavior.objects.filter(**params).exists())
 
         # Clean up
