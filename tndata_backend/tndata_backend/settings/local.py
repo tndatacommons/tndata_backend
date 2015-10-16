@@ -68,9 +68,6 @@ EMAIL_PORT = '587'  # 25, 587, 465
 # https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = True
 
-# Rainbow-tests
-TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverCoverageRunner'
-
 # Explicit setting for debug_toolbar
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 MIDDLEWARE_CLASSES = (

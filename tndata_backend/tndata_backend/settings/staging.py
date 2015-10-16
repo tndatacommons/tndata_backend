@@ -31,9 +31,6 @@ EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-# Rainbow-tests
-TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
-
 # Explicit setting for debug_toolbar
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 MIDDLEWARE_CLASSES = (

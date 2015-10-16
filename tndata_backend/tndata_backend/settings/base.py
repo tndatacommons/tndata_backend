@@ -185,6 +185,9 @@ MESSAGE_TAGS = {
     message_constants.ERROR: 'error alert'
 }
 
+# Rainbow-tests
+TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
+
 
 # Crispy forms
 CRISPY_TEMPLATE_PACK = 'foundation-5'
