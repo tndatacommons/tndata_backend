@@ -8,9 +8,6 @@ from django.test import TestCase
 import pytz
 
 from .. user_utils import (
-    create_inactive_user,
-    date_hash,
-    get_all_permissions,
     local_day_range,
     local_now,
     to_localtime,
@@ -80,7 +77,7 @@ class TestUserUtils(TestCase):
         self.assertEqual(result.tzname(), 'CST')
         self.assertEqual(result.strftime("%c"), expected.strftime("%c"))
 
-    def local_now(self):
+    def test_local_now(self):
         with patch('utils.user_utils.timezone') as mock_tz:
             mock_tz.is_aware = timezone.is_aware
             mock_tz.make_naive = timezone.make_naive
@@ -145,3 +142,26 @@ class TestUserUtils(TestCase):
             expected = tzdt(2015, 1, 15, 23, 0, tz=self.tz)
             result = local_now(self.user)
             self.assertEqual(result.strftime("%c"), expected.strftime("%c"))
+
+    def test_username_hash(self):
+        self.assertEqual(
+            username_hash('foo@example.com'),
+            'b48def645758b95537d4424c84d1a9'
+        )
+
+    def test_local_day_range(self):
+        with patch('utils.user_utils.timezone') as mock_tz:
+            mock_tz.is_aware = timezone.is_aware
+            mock_tz.is_naive = timezone.is_naive
+            mock_tz.make_naive = timezone.make_naive
+            mock_tz.make_aware = timezone.make_aware
+            mock_tz.utc = timezone.utc
+            mock_tz.now.return_value = tzdt(2015, 10, 1, 11, 30)
+
+            result = local_day_range(self.user)
+            expected = (
+                tzdt(2015, 10, 16, 5, 0),
+                tzdt(2015, 10, 17, 4, 59, 59, 999999)
+            )
+
+            self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
