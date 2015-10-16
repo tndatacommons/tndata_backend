@@ -185,21 +185,29 @@ def todays_actions_progress(user):
     * progress is an integer representing the percentage complete
 
     """
+    # Start & End of "today", in UTC from the perspective of the user's timezone
+    today = local_day_range(user)
+
+    # Query for the UserActions that should have been scheduled today PLUS
+    # anything that actually got marked as completed today
+    ucas = UserCompletedAction.objects.filter(
+        updated_on__range=today,
+        user=user,
+    )
+    useraction_ids = ucas.values_list('useraction', flat=True)
+
     # NOTE: The UserAction.next_trigger_date field gets refreshed automatically
     # every two hours. So, to get a picture of the whole day at a time, we need
     # to consider both it and the previous trigger date.
-
-    # Query for the UserActions that should have been scheduled today.
-    today = local_day_range(user)
     useractions = user.useraction_set.filter(
         Q(prev_trigger_date__range=today) |
-        Q(next_trigger_date__range=today)
+        Q(next_trigger_date__range=today) |
+        Q(id__in=useraction_ids)
     ).distinct()
 
     # e.g. you've completed X / Y actions for today.
-    data = [1 if ua.completed_today else 0 for ua in useractions]
-    completed = sum(data)
-    total = len(data)
+    completed = ucas.filter(state=UserCompletedAction.COMPLETED).count()
+    total = useractions.count()
     progress = 0
     if total > 0:
         progress = int(completed/total * 100)
