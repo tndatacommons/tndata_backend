@@ -1438,7 +1438,11 @@ class UserAction(models.Model):
             # If the prev trigger is *still* None, it's possible this is a
             # non-recurring event or that we've run out of recurrences. If
             # that's the case, and next is in the past, prev == next.
-            if self.prev_trigger_date is None and self.next_trigger_date < timezone.now():
+            in_past = (
+                self.next_trigger_date and
+                self.next_trigger_date < timezone.now()
+            )
+            if self.prev_trigger_date is None and in_past:
                 self.prev_trigger_date = self.next_trigger_date
 
     def save(self, *args, **kwargs):
