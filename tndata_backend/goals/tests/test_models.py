@@ -1160,13 +1160,16 @@ class TestUserAction(TestCase):
 
     @patch.object(UserAction, 'default_trigger')
     def test__set_next_trigger_date_with_default_trigger(self, mock_trigger):
+        prev_date = tzdt(2015, 10, 8, 11, 30)
+        mock_trigger.previous.return_value = prev_date
+
         # Calling this the first time when both values are null...
         mock_trigger.next.return_value = tzdt(2015, 10, 9, 11, 30)
         self.assertIsNone(self.ua.next_trigger_date)
         self.assertIsNone(self.ua.prev_trigger_date)
         self.ua._set_next_trigger_date()
         self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 9, 11, 30))
-        self.assertIsNone(self.ua.prev_trigger_date)  # Does NOT change
+        self.assertEqual(self.ua.prev_trigger_date, prev_date)
 
         # Calling this a second time should change the prev_trigger_date
         mock_trigger.reset_mock()

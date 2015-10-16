@@ -639,11 +639,36 @@ class Trigger(URLMixin, models.Model):
         # No recurrence or not a time-pased Trigger.
         return None
 
-    def formatted_next(self):
-        n = self.next()
-        if n is not None:
-            return n.strftime("%c")
-        return "N/A"
+    def previous(self, user=None, lookback=30):
+        """If this trigger is for a recurring event, this method will generate
+        the previous instance of the recurrence in the user's timezone;
+        otherwise it will return None.
+
+        Returns the time in the user's local timezone (or None)
+
+        """
+        user = self.user or user
+        if user is None:
+            raise AssertionError("Trigger.previous requires a user.")
+
+        if user and self.recurrences is not None and self.time:
+            # recurrences only work with naive datetimes,
+            # so try to get today's start
+            today = local_day_range(user)[0]
+            today = today.replace(tzinfo=None)
+            start = today - timedelta(days=lookback)
+
+            dates = self.recurrences.between(
+                after=start,
+                before=today,
+                dtstart=start,
+            )
+            if len(dates):
+                dt = max(dates)
+                dt = datetime.combine(dt, self.time.replace(tzinfo=None))
+                dt = to_localtime(dt, user)
+                return dt
+        return None
 
     objects = TriggerManager()
 
@@ -1403,6 +1428,12 @@ class UserAction(models.Model):
                 self.prev_trigger_date = self.next_trigger_date
 
             self.next_trigger_date = next_date
+
+            # If we get to this point and the previous trigger is none,
+            # try to back-fill (generate it) using the recurrence.
+            if self.prev_trigger_date is None:
+                prev = self.trigger.previous(user=self.user)
+                self.prev_trigger_date = to_utc(prev)
 
     def save(self, *args, **kwargs):
         """Adds a hook to update the prev_trigger_date & next_trigger_date
