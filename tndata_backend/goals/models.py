@@ -1489,6 +1489,20 @@ class UserAction(models.Model):
     objects = UserActionManager()
 
 
+@receiver(post_save, sender=UserAction)
+def create_parent_user_behavior(sender, instance, using, **kwargs):
+    """If a user doens't have a UserBehavior object for the UserAction's
+    parent behavior this will create one.
+
+    """
+    params = {'user': instance.user, 'behavior': instance.action.behavior}
+    if not UserBehavior.objects.filter(**params).exists():
+        UserBehavior.objects.create(
+            user=instance.user,
+            behavior=instance.action.behavior
+        )
+
+
 @receiver(notification_snoozed)
 def reset_next_trigger_date_when_snoozed(sender, message, user,
                                          related_object, deliver_on, **kwargs):

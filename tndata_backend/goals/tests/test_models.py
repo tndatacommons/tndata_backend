@@ -1193,6 +1193,28 @@ class TestUserAction(TestCase):
         self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
         self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
 
+    def test_create_parent_user_behavior(self):
+        """If a user somehow adds an Action without adding that Action's parent
+        Behavior, the `create_parent_user_behavior` signal handler should
+        create it."""
+        b = Behavior.objects.create(title="Other", state="published")
+        b.goals.add(self.goal)
+        a = Action.objects.create(title="Do Other", behavior=b, state="published")
+
+        # Ensure user does not have the behavior selected
+        params = {'user': self.user, 'behavior': b}
+        self.assertFalse(UserBehavior.objects.filter(**params).exists())
+
+        # Add the action, and the behavior gets added too
+        ua = UserAction.objects.create(user=self.user, action=a)
+        self.assertTrue(UserBehavior.objects.filter(**params).exists())
+
+        # Clean up
+        UserBehavior.objects.filter(behavior=b).delete()
+        UserAction.objects.filter(action=a).delete()
+        a.delete()
+        b.delete()
+
 
 class TestUserCompletedAction(TestCase):
     """Tests for the `UserCompletedAction` model."""
