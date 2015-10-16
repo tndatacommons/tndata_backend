@@ -8,6 +8,7 @@ from django.test import TestCase
 import pytz
 
 from .. user_utils import (
+    create_inactive_user,
     local_day_range,
     local_now,
     to_localtime,
@@ -80,14 +81,16 @@ class TestUserUtils(TestCase):
     def test_local_now(self):
         with patch('utils.user_utils.timezone') as mock_tz:
             mock_tz.is_aware = timezone.is_aware
+            mock_tz.is_naive = timezone.is_naive
             mock_tz.make_naive = timezone.make_naive
             mock_tz.make_aware = timezone.make_aware
+            mock_tz.utc = timezone.utc
 
-            # 0am utc -> previous 3pm cst
+            # 0am utc -> previous day at 6pm cst
             mock_tz.now.return_value = tzdt(2015, 1, 15, 0, 0)
-            expected = tzdt(2015, 1, 14, 15, 0, tz=self.tz)
+            expected = tzdt(2015, 1, 14, 18, 0, tz=self.tz)
             result = local_now(self.user)
-            self.assertEqual(result.strftime("%c"), expected.strftime("%c"))
+            self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
 
             # 3am utc -> previous day 9pm cst
             mock_tz.now.return_value = tzdt(2015, 1, 15, 3, 0)
@@ -160,8 +163,12 @@ class TestUserUtils(TestCase):
 
             result = local_day_range(self.user)
             expected = (
-                tzdt(2015, 10, 16, 5, 0),
-                tzdt(2015, 10, 17, 4, 59, 59, 999999)
+                tzdt(2015, 10, 1, 5, 0),
+                tzdt(2015, 10, 2, 4, 59, 59, 999999)
             )
+            self.assertEqual(result, expected)
 
-            self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+    def test_create_inactive_user(self):
+        user = create_inactive_user("somenewuser@example.com")
+        self.assertFalse(user.is_active)
+        self.assertTrue(user.userprofile.needs_onboarding)
