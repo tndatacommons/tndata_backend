@@ -1435,6 +1435,12 @@ class UserAction(models.Model):
                 prev = self.trigger.previous(user=self.user)
                 self.prev_trigger_date = to_utc(prev)
 
+            # If the prev trigger is *still* None, it's possible this is a
+            # non-recurring event or that we've run out of recurrences. If
+            # that's the case, and next is in the past, prev == next.
+            if self.prev_trigger_date is None and self.next_trigger_date < timezone.now():
+                self.prev_trigger_date = self.next_trigger_date
+
     def save(self, *args, **kwargs):
         """Adds a hook to update the prev_trigger_date & next_trigger_date
         whenever this object is saved. You can control this with the following
