@@ -186,7 +186,8 @@
   <thead>
     <tr>
       <th>UserAction</th>
-      <th>Next</th>
+      <th>Prev Trigger</th>
+      <th>Next Trigger</th>
       <th>Scheduled today</th>
     </tr>
   </thead>
@@ -196,9 +197,24 @@
       <td>
         <strong>{{ ua.action }}</strong><br/>
         <code>Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}</code><br/>
+        <em>
+        {% with recur=ua.trigger.recurrences_as_text %}
+          {% if recur %}{{ recur }}{% else %}
+            {{ua.trigger.trigger_date}}/{{ua.trigger.time}}{% endif %}
+        {% endwith %}
       </td>
       <td>
-        <strong>Next Trigger</strong><br/>
+        {% if ua.next_trigger_date %}
+          <span class="label info">
+            {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+          </span><br/>
+          <span class="label secondary">
+            {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+        {% else %}
+          <em>None</em>
+        {% endif %}
+      </td>
+      <td>
         {% if ua.next_trigger_date %}
           <span class="label info">
             {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
