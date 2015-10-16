@@ -43,7 +43,12 @@ from . mixins import (
 from . models import (
     Action, Behavior, Category, Goal, PackageEnrollment, Trigger, UserCompletedAction
 )
-from . permissions import ContentPermissions, is_content_editor, superuser_required
+from . permissions import (
+    ContentPermissions,
+    is_content_editor,
+    staff_required,
+    superuser_required
+)
 from . utils import num_user_selections
 
 
@@ -1150,7 +1155,7 @@ def admin_batch_assign_keywords(request):
     return render(request, 'goals/admin_batch_assign_keywords.html', context)
 
 
-@user_passes_test(superuser_required, login_url='/')
+@user_passes_test(staff_required, login_url='/')
 def debug_notifications(request):
     """A view to allow searching by email addresss, then listing all UserActions
     for a day, with all of the sheduled GCMNotifications for that user.

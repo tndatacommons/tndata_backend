@@ -163,6 +163,10 @@ def get_or_create_content_viewers():
 # --------------------------
 # Permission Check Functions
 # --------------------------
+def staff_required(user):
+    """Verifies that a user is authenticated and a staff user."""
+    return user.is_authenticated() and user.is_staff
+
 
 def superuser_required(user):
     """Verifies that a user is authenticated and a super user."""
