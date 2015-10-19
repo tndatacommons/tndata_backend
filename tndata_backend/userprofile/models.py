@@ -124,14 +124,17 @@ class UserProfile(models.Model):
             if d[qid] == question_id and d[qtype] == question_type
         ]
 
-    def _get_profile_responses(self, question_type, question_id):
+    def _get_profile_survey_responses(self, question_type, question_id):
         qid = 'question_id'
         qtype = 'question_type'
         return [
-            d for d in self.bio
+            d for d in self.profile_survey
             if d[qid] == question_id and d[qtype] == question_type
         ]
 
+    # -------------------------------------------------------------------------
+    # Bio/Onboarding survey responses.
+    # -------------------------------------------------------------------------
     @property
     def zipcode(self):
         question_id = 2  # My zip code is
@@ -172,13 +175,61 @@ class UserProfile(models.Model):
         return None
 
     @property
-    def is_parent(self):
+    def num_children(self):
         question_id = 6  # Children: I have...
         answer_key = 'selected_option_text'
         for d in self._get_bio_responses('multiplechoicequestion', question_id):
-            if d.get(answer_key) and d[answer_key].lower() != 'no children':
-                return True
+            return d.get(answer_key)
+        return None
+
+    # -------------------------------------------------------------------------
+    # Initial Profile survey responses.
+    # -------------------------------------------------------------------------
+    @property
+    def employed(self):
+        """Returns True or False. """
+        question_id = 13  # I am currently employed.
+        answer_key = 'selected_option'
+        for d in self._get_profile_survey_responses('binaryquestion', question_id):
+            return d.get(answer_key)
         return False
+
+    @property
+    def in_relationship(self):
+        """Returns True or False. """
+        question_id = 14  # I am currently in a romantic relationship.
+        answer_key = 'selected_option'
+        for d in self._get_profile_survey_responses('binaryquestion', question_id):
+            return d.get(answer_key)
+        return False
+
+    @property
+    def is_parent(self):
+        """Returns True or False. """
+        question_id = 16  # I am a parent.
+        answer_key = 'selected_option'
+        for d in self._get_profile_survey_responses('binaryquestion', question_id):
+            return d.get(answer_key)
+        return False
+
+    @property
+    def has_college_degree(self):
+        """Returns True or False. """
+        question_id = 12  # I have a college degree.
+        answer_key = 'selected_option'
+        for d in self._get_profile_survey_responses('binaryquestion', question_id):
+            return d.get(answer_key)
+        return False
+
+    @property
+    def sex(self):
+        """Returns a string: 'Male' or 'Female' or None. """
+        question_id = 12  # My sex is:
+        answer_key = 'selected_option_text'
+        qtype = 'multiplechoicequestion'
+        for d in self._get_profile_survey_responses(qtype, question_id):
+            return d.get(answer_key)
+        return None
 
     def _get_survey_instrument_results(self, instrument_id, local_cache):
         # UGH. We shoe-horned this shit into a survey and now there's no
@@ -214,7 +265,10 @@ class UserProfile(models.Model):
                 try:
                     r = self._response(question)
                     data['response_id'] = r.id
-                    if question.question_type in option_types:
+                    if question.question_type == 'binaryquestion':
+                        data['selected_option'] = r.selected_option
+                        data['selected_option_text'] = r.selected_option_text
+                    elif question.question_type in option_types:
                         data['selected_option'] = r.selected_option.id
                         data['selected_option_text'] = r.selected_option_text
                     elif question.question_type == 'openendedquestion':
