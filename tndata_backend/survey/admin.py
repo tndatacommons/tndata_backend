@@ -16,6 +16,7 @@ class MultipleChoiceResponseOptionInline(admin.TabularInline):
 
 class MultipleChoiceQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'order', 'available')
+    list_filter = ('instruments', )
     inlines = [
         MultipleChoiceResponseOptionInline,
     ]
@@ -35,6 +36,7 @@ admin.site.register(models.MultipleChoiceResponse, MultipleChoiceResponseAdmin)
 
 class OpenEndedQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'order', 'available')
+    list_filter = ('instruments', )
 admin.site.register(models.OpenEndedQuestion, OpenEndedQuestionAdmin)
 
 
@@ -51,6 +53,7 @@ admin.site.register(models.OpenEndedResponse, OpenEndedResponseAdmin)
 
 class LikertQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'order', 'available')
+    list_filter = ('instruments', )
 admin.site.register(models.LikertQuestion, LikertQuestionAdmin)
 
 
@@ -67,6 +70,7 @@ admin.site.register(models.LikertResponse, LikertResponseAdmin)
 
 class BinaryQuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'order', 'available')
+    list_filter = ('instruments', )
 admin.site.register(models.BinaryQuestion, BinaryQuestionAdmin)
 
 
