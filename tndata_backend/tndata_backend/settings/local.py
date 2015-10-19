@@ -34,17 +34,17 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
 
 # Disable AWS/S3 (for when working on js/css locally)
 # ---------------------------------------------------
-#STATIC_ROOT = "collected_static_files"
-#STATIC_URL = "/static/"
-#STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-#STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
-#STATICFILES_FINDERS = (
-    #"django.contrib.staticfiles.finders.FileSystemFinder",
-    #"django.contrib.staticfiles.finders.AppDirectoriesFinder",
-#)
-#MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
-#MEDIA_URL = "/media/"
-#DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+STATIC_ROOT = "collected_static_files"
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+STATICFILES_FINDERS = (
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+)
+MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
+MEDIA_URL = "/media/"
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 
 # EMAIL via Mailgun.
