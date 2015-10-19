@@ -40,6 +40,49 @@ class InstrumentDetailView(SurveyAdminsMixin, DetailView):
     queryset = Instrument.objects.all()
     context_object_name = 'instrument'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Aggregate results
+        instrument = context['instrument']
+        results = {}
+        for qtype, question in instrument.questions:
+            results[question.text] = None
+
+        total_responses = 0
+        for qtype, question in instrument.questions:
+            if qtype == 'LikertQuestion':
+                responses = question.likertresponse_set.all()
+                total_responses += responses.count()
+                results[question.text] = dict(Counter([
+                    resp.selected_option_text for resp in responses
+                ]))
+            elif qtype == 'BinaryQuestion':
+                responses = question.binaryresponse_set.all()
+                total_responses += responses.count()
+                results[question.text] = dict(Counter([
+                    resp.selected_option_text for resp in responses
+                ]))
+            elif qtype == 'MultipleChoiceQuestion':
+                responses = question.multiplechoiceresponse_set.all()
+                total_responses += responses.count()
+                results[question.text] = dict(Counter([
+                    resp.selected_option_text for resp in responses
+                ]))
+            elif qtype == 'OpenEndedQuestion':
+                responses = question.openendedresponse_set.all()
+                total_responses += responses.count()
+                results[question.text] = dict(Counter([
+                    resp.response for resp in responses
+                ]))
+
+        context['total_responses'] = total_responses
+        if total_responses > 0:
+            context['responses'] = results
+        else:
+            context['responses'] = {}
+        return context
+
 
 class InstrumentCreateView(SurveyAdminsMixin, CreateView):
     model = Instrument
@@ -321,7 +364,6 @@ class OpenEndedQuestionDeleteView(SurveyAdminsMixin, DeleteView):
     success_url = reverse_lazy('survey:index')
 
 
-
 # Quick & Dirty forms to take a survey.
 class TakeSurveyView(SurveyAdminsMixin, ListView):
     """To take the survey, we must first pick an instrument."""
@@ -385,7 +427,7 @@ class TakeSurveyResultsView(SurveyAdminsMixin, TemplateView):
             created_on__day=max_date.day,
             created_on__hour=max_date.hour,
             created_on__minute=max_date.minute,
-            #created_on__second=max_date.second  # TODO: WAT: http://note.io/1QKmSxQ
+            # created_on__second=max_date.second  # TODO: WAT: http://note.io/1QKmSxQ
         )
 
     def _count_labels(self, qs, n=20):
