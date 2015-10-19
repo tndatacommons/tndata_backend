@@ -1,8 +1,10 @@
+from datetime import timedelta
 from pprint import pformat
 
 from django.contrib import admin
 from django.template.defaultfilters import mark_safe
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 from . import models
 
@@ -32,12 +34,43 @@ class GCMDeviceAdmin(admin.ModelAdmin):
 admin.site.register(models.GCMDevice, GCMDeviceAdmin)
 
 
+class DeliverDayListFilter(admin.SimpleListFilter):
+    title = _('Delivery Day')
+    parameter_name = 'deliver'
+
+    def lookups(self, request, model_admin):
+        """
+        Returns a list of tuples. The first element in each
+        tuple is the coded value for the option that will
+        appear in the URL query. The second element is the
+        human-readable name for the option that will appear
+        in the right sidebar.
+        """
+        dt = timezone.now()
+        today = dt.strftime("%Y-%m-%d")
+        tomorrow = (dt + timedelta(days=1)).strftime("%Y-%m-%d")
+        yesterday = (dt - timedelta(days=1)).strftime("%Y-%m-%d")
+
+        return (
+            (today, _('Today')),
+            (tomorrow, _('Tomorrow')),
+            (yesterday, _('Yesterday')),
+        )
+
+    def queryset(self, request, queryset):
+        day = self.value()
+        if day:
+            queryset = queryset.filter(deliver_on__startswith=day)
+        return queryset
+
+
 class GCMMessageAdmin(admin.ModelAdmin):
+    date_hierarchy = 'deliver_on'
     list_display = (
         'user_email', 'user_username', 'title', 'message_teaser',
         'content_type', 'object_id', 'deliver_on', 'success', 'created_on',
     )
-    list_filter = ('success', 'response_code', 'content_type')
+    list_filter = (DeliverDayListFilter, 'success', 'content_type')
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'title', 'message', 'content_type__model', 'object_id',
