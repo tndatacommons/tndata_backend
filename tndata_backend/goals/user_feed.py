@@ -248,47 +248,60 @@ def suggested_goals(user, limit=5):
     )
     # but only those that are in the user's selected categories.
     cats = user.usercategory_set.values_list('category', flat=True)
-    goals = goals.filter(categories__in=cats).distinct()
+    goals = goals.filter(categories__in=cats)
 
-    # Use some details from the user's profile to filter these...
-    criteria = Q()
+    # Excluding the sensitive content
+    goals = goals.exclude(keywords__contains=['sensitive']).distinct()
+
+    # Now, use the user's profile data to assemble some keywords. Choose from
+    # the following set:
+    #
+    # career, child, female, job, no_child, no_degree, no_job, no_relate,
+    # relate, sensitive, tcijuniors, tciseniors, work
 
     profile = user.userprofile
-    if profile.has_relationship:
-        rels = (
-            Q(title__icontains='relationship') |
-            Q(description__icontains='relationship') |
-            Q(title__icontains='family') |
-            Q(description__icontains='family') |
-            Q(title__icontains='partner') |
-            Q(description__icontains='parner')
-        )
-        criteria = criteria.add(rels, Q.OR)
+    user_keywords = []
+    exclude_keywords = []
+
+    if not profile.has_college_degree:
+        user_keywords.append('no_degree')
+    else:
+        exclude_keywords.append('no_degree')
+
+    if profile.in_relationship:
+        user_keywords.append('relate')
+        exclude_keywords.append('no_relate')
+    else:
+        user_keywords.append('no_relate')
+        exclude_keywords.append('relate')
 
     if profile.is_parent:
-        rels = (
-            Q(title__icontains='child') |
-            Q(title__icontains='parent') |
-            Q(description__icontains='parent')
-        )
-        criteria = criteria.add(rels, Q.OR)
+        user_keywords.append('child')
+        exclude_keywords.append('no_child')
+    else:
+        user_keywords.append('no_child')
+        exclude_keywords.append('child')
 
-    # TODO: what should we do for the following attributes?
-    # NOTE: we're going to change onboarding to get binary results for
-    # questions, and with the Goal's keywords, we can do a better job of
-    # matching things up.
-    #
-    # if profile.age
-    # if profile.zipcode
-    # if profile.gender
+    if profile.employed:
+        user_keywords.extend(['career', 'job', 'work'])
+    else:
+        user_keywords.append('no_job')
+
+    if profile.sex == "Female":
+        user_keywords.append('female')
+    elif profile.sex == "Male":
+        exclude_keywords.append('female')
+
+    goals = goals.filter(keywords__overlap=user_keywords)
+    goals = goals.exclude(keywords__overlap=exclude_keywords)
 
     # Pick a random sample of suggestions (or the leftover goals)...
-    ids = list(goals.filter(criteria).values_list("id", flat=True))
+    ids = list(goals.values_list("id", flat=True))
     if limit < len(ids):
-        criteria = Q(id__in=random.sample(ids, limit))
+        goals = Goal.objects.filter(id__in=random.sample(ids, limit))
     else:
-        criteria = Q(id__in=ids)
-    return goals.filter(criteria)[:limit]
+        goals = Goal.objects.filter(id__in=ids)
+    return goals[:limit]
 
 
 def _usergoal_sorter(usergoal):

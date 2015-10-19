@@ -357,6 +357,7 @@ class TestUserFeed(TestCase):
         # A Goal
         cls.goal = Goal.objects.create(title="Test Goal")
         cls.goal.categories.add(cls.category)
+        cls.goal.keywords = ['no_degree']  # will get matched; user has no info
         cls.goal.publish()
         cls.goal.save()
 
