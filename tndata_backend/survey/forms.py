@@ -121,8 +121,13 @@ class SurveyResponseForm(forms.Form):
     def _build_fields(self):
         # Iterate over the instrument's questions and create appropriate fields.
         self.fields = {}
-        if set(t for t, q in self.instrument.questions) != {"LikertQuestion"}:
-            msg = "Only Instruments with LikertQuestions are supported"
+        accepted_question_types = {
+            "LikertQuestion", 'BinaryQuestion',
+            'MultipleChoiceQuestion', 'OpenEndedQuestion'
+        }
+        question_types = set(t for t, q in self.instrument.questions)
+        if question_types.issubset(accepted_question_types):
+            msg = "Only Instruments with Likert and Binary Questions are supported"
             self.cleaned_data = {}  # hack so add_error doesn't fail
             self.add_error(None, msg)
             #raise forms.ValidationError(msg, code="invalid")
