@@ -124,6 +124,14 @@ class UserProfile(models.Model):
             if d[qid] == question_id and d[qtype] == question_type
         ]
 
+    def _get_profile_responses(self, question_type, question_id):
+        qid = 'question_id'
+        qtype = 'question_type'
+        return [
+            d for d in self.bio
+            if d[qid] == question_id and d[qtype] == question_type
+        ]
+
     @property
     def zipcode(self):
         question_id = 2  # My zip code is
@@ -172,18 +180,17 @@ class UserProfile(models.Model):
                 return True
         return False
 
-    @property
-    def bio(self):
+    def _get_survey_instrument_results(self, instrument_id, local_cache):
         # UGH. We shoe-horned this shit into a survey and now there's no
         # clean way to get what *should* be a 1-to-1 relationship between
         # a user an some responses. I'm just hard-coding this for now because
         # i hate future me.
-        if hasattr(self, '_bio_results'):
-            return self._bio_results
+        if hasattr(self, local_cache):
+            return getattr(self, local_cache)
 
         results = []
         try:
-            inst = Instrument.objects.get(pk=4)
+            inst = Instrument.objects.get(pk=instrument_id)
             for qtype, question in inst.questions:
                 data = {
                     'question_id': question.id,
@@ -218,8 +225,17 @@ class UserProfile(models.Model):
 
         except Instrument.DoesNotExist:
             pass
-        self._bio_results = results
+
+        setattr(self, local_cache, results)
         return results
+
+    @property
+    def profile_survey(self):
+        return self._get_survey_instrument_results(6, '_profile_survey')
+
+    @property
+    def bio(self):
+        return self._get_survey_instrument_results(4, '_bio_results')
 
     @property
     def surveys(self):
