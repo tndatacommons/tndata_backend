@@ -3,17 +3,24 @@
 <h2>Popular Content</h2>
 <div class="row">
   <div class="large-3 medium-3 small-6 columns">
-    <h3>Categories</h3>
-    {% comment %}
-    <table>
-      <caption>Popular Categories</caption>
-      <tbody>
-      {% for name, count in popular_categories %}
-        <tr><th>{{ name }}</th><td>{{ count }}</td></tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    {% endcomment %}
+    <h3>Categories
+      <small><a href="#" data-reveal-id="pop-cat-modal">Data</a></small>
+    </h3>
+
+    <div id="pop-cat-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Categories</h2>
+        <table style="width:100%">
+          <thead><tr><th>Category</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_categories %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
     <canvas id="popular-categories" width="180" height="180"></canvas>
     <script>
     // Get the context of the canvas element we want to select
@@ -32,7 +39,24 @@
     </script>
   </div>
   <div class="large-3 medium-3 small-6 columns">
-    <h3>Goals</h3>
+    <h3>Goals
+      <small><a href="#" data-reveal-id="pop-goal-modal">Data</a></small>
+    </h3>
+
+    <div id="pop-goal-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Goals</h2>
+        <table style="width:100%">
+          <thead><tr><th>Goal</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_goals %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
     <canvas id="popular-goals" width="180" height="180"></canvas>
     <script>
     // Get the context of the canvas element we want to select
@@ -52,7 +76,24 @@
   </div> {# end .columns #}
 
   <div class="large-3 medium-6 small-6 columns">
-    <h3>Behaviors</h3>
+    <h3>Behaviors
+      <small><a href="#" data-reveal-id="pop-beh-modal">Data</a></small>
+    </h3>
+
+    <div id="pop-beh-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Behaviors</h2>
+        <table style="width:100%">
+          <thead><tr><th>Behavior</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_behaviors %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
     <canvas id="popular-behaviors" width="180" height="180"></canvas>
     <script>
     // Get the context of the canvas element we want to select
@@ -71,7 +112,24 @@
     </script>
   </div>
   <div class="large-3 medium-6 small-6 columns">
-    <h3>Actions</h3>
+    <h3>Actions
+      <small><a href="#" data-reveal-id="pop-act-modal">Data</a></small>
+    </h3>
+
+    <div id="pop-act-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Actions</h2>
+        <table style="width:100%">
+          <thead><tr><th>Action</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_actions %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
     <canvas id="popular-actions" width="180" height="180"></canvas>
     <script>
     // Get the context of the canvas element we want to select
