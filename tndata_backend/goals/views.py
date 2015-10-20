@@ -1,4 +1,5 @@
 from calendar import Calendar
+from collections import Counter
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -41,7 +42,17 @@ from . mixins import (
     ReviewableUpdateMixin,
 )
 from . models import (
-    Action, Behavior, Category, Goal, PackageEnrollment, Trigger, UserCompletedAction
+    Action,
+    Behavior,
+    Category,
+    Goal,
+    PackageEnrollment,
+    Trigger,
+    UserAction,
+    UserBehavior,
+    UserCategory,
+    UserCompletedAction,
+    UserGoal,
 )
 from . permissions import (
     ContentPermissions,
@@ -243,7 +254,13 @@ class IndexView(ContentViewerMixin, TemplateView):
     template_name = "goals/index.html"
 
     def get(self, request, *args, **kwargs):
-        """Include info on pending and declined content items."""
+        """Include the following additional info for the goal app's index:
+
+        * pending and declined content items for editors
+        * all "my" information (for authors)
+        * some stats on the most popular content.
+
+        """
         context = self.get_context_data(**kwargs)
         if is_content_editor(request.user):
             context['is_editor'] = True
@@ -276,6 +293,18 @@ class IndexView(ContentViewerMixin, TemplateView):
             context['my_behaviors'].exists(),
             context['my_actions'].exists(),
         ])
+
+        # Most popular content.
+        cc = Counter(UserCategory.objects.values_list('category__title', flat=True))
+        gc = Counter(UserGoal.objects.values_list('goal__title', flat=True))
+        bc = Counter(UserBehavior.objects.values_list('behavior__title', flat=True))
+        ac = Counter(UserAction.objects.values_list('action__title', flat=True))
+
+        context['popular_categories'] = cc.most_common(10)
+        context['popular_goals'] = gc.most_common(10)
+        context['popular_behaviors'] = bc.most_common(10)
+        context['popular_actions'] = ac.most_common(10)
+
         return self.render_to_response(context)
 
 

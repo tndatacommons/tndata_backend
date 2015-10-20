@@ -1,0 +1,93 @@
+{% load util_tags %}
+{# List popular content items. This is displayed within a column #}
+<h2>Popular Content</h2>
+<div class="row">
+  <div class="large-3 medium-3 small-6 columns">
+    <h3>Categories</h3>
+    {% comment %}
+    <table>
+      <caption>Popular Categories</caption>
+      <tbody>
+      {% for name, count in popular_categories %}
+        <tr><th>{{ name }}</th><td>{{ count }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endcomment %}
+    <canvas id="popular-categories" width="180" height="180"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-categories").getContext("2d");
+    var data = [
+      {% for name, count in popular_categories %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+  </div>
+  <div class="large-3 medium-3 small-6 columns">
+    <h3>Goals</h3>
+    <canvas id="popular-goals" width="180" height="180"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-goals").getContext("2d");
+    var data = [
+      {% for name, count in popular_goals %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+  </div> {# end .columns #}
+
+  <div class="large-3 medium-6 small-6 columns">
+    <h3>Behaviors</h3>
+    <canvas id="popular-behaviors" width="180" height="180"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-behaviors").getContext("2d");
+    var data = [
+      {% for name, count in popular_behaviors %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+  </div>
+  <div class="large-3 medium-6 small-6 columns">
+    <h3>Actions</h3>
+    <canvas id="popular-actions" width="180" height="180"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-actions").getContext("2d");
+    var data = [
+      {% for name, count in popular_actions %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+  </div> {# end .columns #}
+</div> {# end .rows #}
+<hr/>

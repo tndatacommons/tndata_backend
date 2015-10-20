@@ -1,6 +1,15 @@
 {% extends "goals/base.html" %}
+{% load static from staticfiles %}
 {% load goal_filters %}
 {% load goal_tags %}
+{% load util_tags %}
+
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+{% endblock %}
+
 
 {% block content %}
 {% comment %}
@@ -14,8 +23,10 @@
 {% if is_editor %}
   <div class="row">
     <div class="large-12 medium-12 small-12 columns">
-      {% include "goals/_index_help.html" %}</div>
+      {% include "goals/_index_help.html" %}
+    </div>
   </div>
+  {% include "goals/_index_stats.html" %}
   <div class="row">
     <div class="large-6 medium-6 small-12 columns">
       {% include "goals/_index_editor_content.html" %}</div>
@@ -25,10 +36,13 @@
 {% else %}
   <div class="row">
     <div class="large-6 medium-6 small-12 columns">
-      {% include "goals/_index_help.html" %}</div>
+      {% include "goals/_index_help.html" %}
+    </div>
     <div class="large-6 medium-6 small-12 columns">
-      {% include "goals/_index_author_content.html" %}</div>
+      {% include "goals/_index_author_content.html" %}
+    </div>
   </div>
+  {% include "goals/_index_stats.html" %}
 {% endif %}
 <hr/>
 {% endblock %}
