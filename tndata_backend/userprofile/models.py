@@ -85,7 +85,7 @@ class UserProfile(models.Model):
         blank=True,
         choices=[(tz, tz) for tz in pytz.common_timezones]
     )
-    needs_onboarding = models.BooleanField(default=False, blank=True)
+    needs_onboarding = models.BooleanField(default=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
