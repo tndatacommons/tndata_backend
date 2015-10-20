@@ -426,6 +426,7 @@ class ObtainAuthorization(ObtainAuthToken):
             return Response({
                 'token': token.key,
                 'username': user.username,
+                'id': user.id,
                 'user_id': user.id,
                 'userprofile_id': user.userprofile.id,
                 'first_name': user.first_name,
