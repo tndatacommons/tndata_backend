@@ -451,7 +451,7 @@ class TestUserProfilesAPI(APITestCase):
         self.assertEqual(response.data['results'][0]['id'], self.p.id)
         self.assertEqual(response.data['results'][0]['user'], self.user.id)
         self.assertEqual(response.data['results'][0]['timezone'], self.p.timezone)
-        self.assertFalse(response.data['results'][0]['needs_onboarding'])
+        self.assertTrue(response.data['results'][0]['needs_onboarding'])
 
     def test_post_userprofile_list_not_allowed(self):
         """POSTing to the userprofile-list should not be allowed."""
