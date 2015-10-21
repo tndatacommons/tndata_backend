@@ -16,6 +16,17 @@ from utils import user_utils
 
 class UserCategoryManager(models.Manager):
 
+    def published(self, *args, **kwargs):
+        """Return a QuerySet of UserCategory objects with at least one
+        published category.
+
+        By default, this also includes pacakged content.
+
+        """
+        qs = super().get_queryset()
+        qs = qs.filter(category__state='published')
+        return qs.filter(**kwargs).distinct()
+
     def accepted_or_public(self, user):
         """Return UserCategory instances for Categories that are,
 
@@ -27,7 +38,7 @@ class UserCategoryManager(models.Manager):
             return self.get_queryset().none()
 
         # The user's UserCategory instances
-        qs = self.filter(user=user)
+        qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
         ids = user.packageenrollment_set.filter(accepted=False)
@@ -39,6 +50,15 @@ class UserCategoryManager(models.Manager):
 
 class UserGoalManager(models.Manager):
 
+    def published(self, *args, **kwargs):
+        """Return a QuerySet of UserGoal objects with at least one
+        published Goal.
+
+        """
+        qs = super().get_queryset()
+        qs = qs.filter(goal__state='published')
+        return qs.filter(**kwargs).distinct()
+
     def accepted_or_public(self, user):
         """Return UserGoal instances for goals that are in public or accepted
         categories/packages.
@@ -48,7 +68,7 @@ class UserGoalManager(models.Manager):
             return self.get_queryset().none()
 
         # The user's selected Goal instances
-        qs = self.filter(user=user)
+        qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
         ids = user.packageenrollment_set.filter(accepted=False)
@@ -60,6 +80,15 @@ class UserGoalManager(models.Manager):
 
 class UserBehaviorManager(models.Manager):
 
+    def published(self, *args, **kwargs):
+        """Return a QuerySet of UserBehavior objects with at least one
+        published Behavior.
+
+        """
+        qs = super().get_queryset()
+        qs = qs.filter(behavior__state='published')
+        return qs.filter(**kwargs).distinct()
+
     def accepted_or_public(self, user):
         """Return UserBehavior instances for behaviors that are in public or
         accepted categories/packages.
@@ -69,7 +98,7 @@ class UserBehaviorManager(models.Manager):
             return self.get_queryset().none()
 
         # The user's selected Behavior instances
-        qs = self.filter(user=user)
+        qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
         ids = user.packageenrollment_set.filter(accepted=False)
@@ -80,6 +109,15 @@ class UserBehaviorManager(models.Manager):
 
 
 class UserActionManager(models.Manager):
+
+    def published(self, *args, **kwargs):
+        """Return a QuerySet of UserAction objects with at least one
+        published Action.
+
+        """
+        qs = super().get_queryset()
+        qs = qs.filter(action__state='published')
+        return qs.filter(**kwargs).distinct()
 
     def upcoming(self):
         """Return a queryset UserActions that have an upcoming trigger."""
@@ -104,7 +142,7 @@ class UserActionManager(models.Manager):
             return self.get_queryset().none()
 
         # The user's selected Action instances
-        qs = self.filter(user=user)
+        qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
         ids = user.packageenrollment_set.filter(accepted=False)

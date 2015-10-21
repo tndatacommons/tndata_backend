@@ -399,7 +399,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.UserGoal.objects.all()
+    queryset = models.UserGoal.objects.published()
     serializer_class = serializers.UserGoalSerializer
     permission_classes = [IsOwner]
 
@@ -558,7 +558,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.UserBehavior.objects.all()
+    queryset = models.UserBehavior.objects.published()
     serializer_class = serializers.UserBehaviorSerializer
     permission_classes = [IsOwner]
 
@@ -786,7 +786,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.UserAction.objects.all()
+    queryset = models.UserAction.objects.published()
     serializer_class = serializers.UserActionSerializer
     permission_classes = [IsOwner]
 
@@ -1050,7 +1050,7 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.UserCategory.objects.all()
+    queryset = models.UserCategory.objects.published()
     serializer_class = serializers.UserCategorySerializer
 
     def get_queryset(self):
