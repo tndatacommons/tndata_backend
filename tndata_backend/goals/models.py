@@ -1153,16 +1153,16 @@ class UserGoal(models.Model):
         return not restricted
 
     def get_user_behaviors(self):
-        """Returns a QuerySet of Behaviors related to this Goal, but restricts
-        those behaviors to those which the user has selected.
+        """Returns a QuerySet of published Behaviors related to this Goal, but
+        restricts those behaviors to those which the user has selected.
 
         """
         bids = self.user.userbehavior_set.values_list('behavior_id', flat=True)
-        return self.goal.behavior_set.filter(id__in=bids)
+        return self.goal.behavior_set.filter(id__in=bids, state='published')
 
     def get_user_categories(self):
-        """Returns a QuerySet of Categories related to this Goal, but restricts
-        those categories to those which the user has selected.
+        """Returns a QuerySet of published Categories related to this Goal, but
+        restricts those categories to those which the user has selected.
 
         NOTE: This method also looks up the user's `CategoryProgress` for
         each category, and appends a `progress_value` attribute.
@@ -1180,7 +1180,7 @@ class UserGoal(models.Model):
             except CategoryProgress.DoesNotExist:
                 scores[cid] = 0.0
 
-        results = self.goal.categories.filter(id__in=cids)
+        results = self.goal.categories.filter(id__in=cids, state='published')
         for category in results:
             category.progress_value = scores.get(category.id, 0.0)
         return results
@@ -1270,21 +1270,23 @@ class UserBehavior(models.Model):
         return not restricted
 
     def get_user_categories(self):
-        """Returns a QuerySet of Categories related to this Behavior, but
-        restricts the result to those Categories which the user has selected."""
+        """Returns a QuerySet of published Categories related to this Behavior,
+        but restricts the result to those Categories which the user has selected.
+
+        """
         # User-selected categories
         a = set(self.user.usercategory_set.values_list('category__id', flat=True))
         # Parent categories (through goals)
         b = set(self.behavior.goals.values_list("categories", flat=True))
         # The overlap
         ids = a.intersection(b)
-        return Category.objects.filter(id__in=ids)
+        return Category.objects.published().filter(id__in=ids)
 
     def get_user_goals(self):
-        """Returns a QuerySet of Goals related to this Behavior, but restricts
-        those goals to those which the user has selected."""
+        """Returns a QuerySet of published Goals related to this Behavior, but
+        restricts those goals to those which the user has selected."""
         gids = self.user.usergoal_set.values_list('goal__id', flat=True)
-        return self.behavior.goals.filter(id__in=gids)
+        return self.behavior.goals.filter(id__in=gids, state='published')
 
     def get_custom_trigger_name(self):
         """This should generate a unique name for this object's custom
@@ -1298,12 +1300,12 @@ class UserBehavior(models.Model):
         return self.user.useraction_set.filter(action__behavior=self.behavior)
 
     def get_actions(self):
-        """Returns a QuerySet of Actions related to this Behavior, but
+        """Returns a QuerySet of published Actions related to this Behavior, but
         restricts the results to those which the user has selected.
 
         """
         uids = self.user.useraction_set.values_list('action_id', flat=True)
-        return self.behavior.action_set.filter(id__in=uids)
+        return self.behavior.action_set.filter(id__in=uids, state='published')
 
     objects = UserBehaviorManager()
 
@@ -1472,9 +1474,9 @@ class UserAction(models.Model):
         ).first()
 
     def get_user_goals(self):
-        """Returns a QuerySet of Goals related to this Action (and it's parent
-        Behavior), but restricts those goals to those which the user has
-        selected."""
+        """Returns a QuerySet of published Goals related to this Action (and
+        it's parent Behavior), but restricts those goals to those which the
+        user has selected."""
         user_behavior = self.user_behavior
         if user_behavior:
             return user_behavior.get_user_goals()
@@ -1671,10 +1673,10 @@ class UserCategory(models.Model):
         return not restricted
 
     def get_user_goals(self):
-        """Returns a QuerySet of Goals related to this Category, but restricts
-        those goals to those which the user has selected."""
+        """Returns a QuerySet of published Goals related to this Category, but
+        restricts those goals to those which the user has selected."""
         gids = self.user.usergoal_set.values_list('goal__id', flat=True)
-        return self.category.goals.filter(id__in=gids)
+        return self.category.goals.filter(id__in=gids, state='published')
 
     @property
     def progress_value(self):
