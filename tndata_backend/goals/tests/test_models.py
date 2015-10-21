@@ -1111,7 +1111,7 @@ class TestUserAction(TestCase):
             username="test",
             email="test@example.com"
         )
-        self.goal = Goal.objects.create(title="Goal for Behavior")
+        self.goal = Goal.objects.create(title="Goal for Behavior", state='published')
         self.ug = UserGoal.objects.create(user=self.user, goal=self.goal)
         self.behavior = Behavior.objects.create(title='Test Behavior')
         self.behavior.goals.add(self.goal)

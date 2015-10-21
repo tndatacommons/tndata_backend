@@ -2,6 +2,8 @@ from datetime import date, time
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+
+from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -28,7 +30,7 @@ class TestCategoryAPI(APITestCase):
             order=1,
             title='Test Category',
             description='Some explanation!',
-            notes="Some notes"
+            notes="Some notes",
         )
         self.category.publish()
         self.category.save()
@@ -79,7 +81,7 @@ class TestGoalAPI(APITestCase):
             order=1,
             title='Test Category',
             description='Some explanation!',
-            notes="Some notes"
+            notes="Some notes",
         )
         self.category.publish()
         self.category.save()
@@ -619,12 +621,19 @@ class TestUserGoalAPI(APITestCase):
             username="test",
             email="test@example.com",
         )
+        self.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            state='published'
+        )
         self.goal = Goal.objects.create(
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
+            outcome="The outcome",
+            state='published'
         )
+        self.goal.categories.add(self.category)
 
         self.ug = UserGoal.objects.create(
             user=self.user,
@@ -635,6 +644,7 @@ class TestUserGoalAPI(APITestCase):
         User = get_user_model()
         User.objects.filter(id=self.user.id).delete()
         Goal.objects.filter(id=self.goal.id).delete()
+        Category.objects.filter(id=self.category.id).delete()
         UserGoal.objects.filter(id=self.ug.id).delete()
 
     def test_usergoal_list(self):
@@ -829,13 +839,24 @@ class TestUserBehaviorAPI(APITestCase):
             username="test",
             email="test@example.com",
         )
+        self.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            state='published'
+        )
         self.goal = Goal.objects.create(
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
+            outcome="The outcome",
+            state='published'
         )
-        self.behavior = Behavior.objects.create(title="Test Behavior")
+        self.goal.categories.add(self.category)
+
+        self.behavior = Behavior.objects.create(
+            title="Test Behavior",
+            state='published'
+        )
         self.behavior.goals.add(self.goal)
         self.behavior.save()
 
@@ -1109,13 +1130,21 @@ class TestUserActionAPI(APITestCase):
             username="test",
             email="test@example.com",
         )
+        self.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            state='published'
+        )
         self.goal = Goal.objects.create(
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
             outcome="The outcome"
         )
+        self.goal.categories.add(self.category)
+
         self.behavior = Behavior.objects.create(title="Test Action")
+        self.behavior.publish()
         self.behavior.goals.add(self.goal)
         self.behavior.save()
 
@@ -1123,6 +1152,8 @@ class TestUserActionAPI(APITestCase):
             title="Test Action",
             behavior=self.behavior
         )
+        self.action.publish()
+        self.action.save()
 
         self.ua = UserAction.objects.create(
             user=self.user,
@@ -1612,7 +1643,8 @@ class TestUserCategoryAPI(APITestCase):
         )
         self.category = Category.objects.create(
             title="Test Category",
-            order=1
+            order=1,
+            state='published'
         )
         # TODO: Figure out how to test icon/image fields and their inclusion
         # in the api. Maybe useful: http://goo.gl/nh7Vl4
@@ -1832,11 +1864,18 @@ class TestBehaviorProgressAPI(APITestCase):
             username="test",
             email="test@example.com",
         )
+        self.category = mommy.make(Category, state="published")
+        self.goal = mommy.make(Goal, state="published")
+        self.goal.categories.add(self.category)
+
         self.behavior = Behavior.objects.create(
             title="Test Behavior",
             description="This is a test",
             informal_list="Do this",
+            state='published',
         )
+        self.behavior.goals.add(self.goal)
+
         self.ub = UserBehavior.objects.create(
             user=self.user,
             behavior=self.behavior
