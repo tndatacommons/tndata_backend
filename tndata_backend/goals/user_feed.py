@@ -228,27 +228,23 @@ def suggested_goals(user, limit=5):
 
     * limit: Number of goals to return
 
-    At the moment, it:
+    At the moment, it filters on Goals based on your feedback to the onboarding
+    survey and the categories that you've selected (if any). If you don't match
+    any of the set criteria, you'll receive random goal suggestions.
 
-    - checks if you're in a relationship
-    - if you're a parent
-
-    and filters on Goal title's based on those 2 criteria, then picks 5 items
-    at random.
-
-    If you don't match any of those, you get served random goals from the
-    categories you've selected.
+    This function excludes goals from Packaged content.
 
     """
     # From the goals the user has _not_ selected (that are public)...
     user_selected_goals = user.usergoal_set.values_list("goal__id", flat=True)
-    goals = Goal.objects.published().exclude(
-        categories__packaged_content=True,
-        id__in=user_selected_goals
-    )
-    # but only those that are in the user's selected categories.
-    cats = user.usercategory_set.values_list('category', flat=True)
-    goals = goals.filter(categories__in=cats)
+    goals = Goal.objects.published()  # excludes goals in packaged content
+    goals = goals.exclude(id__in=user_selected_goals)
+
+    # but only those that are in the user's selected categories (if any)
+    cats = user.usercategory_set.filter(category__state='published')
+    cats = cats.values_list('category', flat=True)
+    if cats.count():
+        goals = goals.filter(categories__in=cats)
 
     # Excluding the sensitive content
     goals = goals.exclude(keywords__contains=['sensitive']).distinct()
@@ -263,8 +259,8 @@ def suggested_goals(user, limit=5):
     user_keywords = []
     exclude_keywords = []
 
-    if not profile.has_college_degree:
-        user_keywords.append('no_degree')
+    if profile.has_college_degree:
+        user_keywords.append('degree')
     else:
         exclude_keywords.append('no_degree')
 

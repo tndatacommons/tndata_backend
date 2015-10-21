@@ -432,8 +432,13 @@ class TestUserFeed(TestCase):
             self.assertEqual(ua, self.ua)
 
     def test_suggested_goals(self):
+        goal = Goal.objects.create(
+            title='Other Goal',
+            state='published',
+            keywords=['no_degree']
+        )
         suggestions = user_feed.suggested_goals(self.user)
-        self.assertEqual(list(suggestions), [self.goal])
+        self.assertEqual(list(suggestions), [goal])
 
     def test_selected_goals(self):
         self.assertEqual(
