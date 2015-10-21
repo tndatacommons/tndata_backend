@@ -118,7 +118,12 @@ class TestGoalAPI(APITestCase):
     def test_goal_list_by_category(self):
         """Ensure we can filter by category."""
         # Create another Goal (not in a catgory)
+        c = Category.objects.create(order=2, title="Other")
+        c.publish()
+        c.save()
+
         g = Goal.objects.create(title="ignore me")
+        g.categories.add(c)
         g.publish()
         g.save()
 
