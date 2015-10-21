@@ -12,6 +12,7 @@ from .. models import (
     Action,
     Behavior,
     Category,
+    Goal,
     Trigger,
     UserAction,
     UserBehavior
@@ -51,6 +52,55 @@ class TestCategoryManager(TestCase):
         self.assertIn(self.published_category, results)
         self.assertNotIn(self.packaged_category, results)
         self.assertNotIn(self.draft_category, results)
+
+
+class TestGoalManager(TestCase):
+    """Tests for the `GoalManager` manager."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.draft_category = Category.objects.create(
+            order=1,
+            title="Draft Category",
+        )
+        cls.published_category = Category.objects.create(
+            order=2,
+            title="Published Category",
+            state="published"
+        )
+        cls.packaged_category = Category.objects.create(
+            order=3,
+            title="Packaged Category",
+            state="published",
+            packaged_content=True
+        )
+
+        cls.g1 = Goal.objects.create(title='One', state='published')
+        cls.g1.categories.add(cls.draft_category)
+
+        cls.g2 = Goal.objects.create(title='Two', state='published')
+        cls.g2.categories.add(cls.published_category)
+
+        cls.g3 = Goal.objects.create(title='Three', state='published')
+        cls.g3.categories.add(cls.packaged_category)
+
+    def test_published(self):
+        """Published goals should exclude both unpublished categories and
+        packaged content."""
+        results = Goal.objects.published()
+        self.assertEqual(list(results), [self.g2])
+
+    def test_packages(self):
+        """The packages method should only return packaged content.
+        It should also accept queryest parameters."""
+        results = Goal.objects.packages()
+        self.assertEqual(list(results), [self.g3])
+
+        results = Goal.objects.packages(categories=self.packaged_category)
+        self.assertEqual(list(results), [self.g3])
+
+        results = Goal.objects.packages(categories=self.draft_category)
+        self.assertEqual(list(results), [])
 
 
 class TestTriggerManager(TestCase):
