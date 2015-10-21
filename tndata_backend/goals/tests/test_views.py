@@ -2762,21 +2762,21 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
-        with patch('goals.views.send_package_enrollment_batch') as email:
+        with patch('goals.views.send_package_enrollment_batch'):
             resp = self.client.post(self.url, self.payload)
             self.assertEqual(resp.status_code, 302)
             self.assertRedirects(resp, self.success_url)
 
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
-        with patch('goals.views.send_package_enrollment_batch') as email:
+        with patch('goals.views.send_package_enrollment_batch'):
             resp = self.client.post(self.url, self.payload)
             self.assertEqual(resp.status_code, 302)
             self.assertRedirects(resp, self.success_url)
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
-        with patch('goals.views.send_package_enrollment_batch') as email:
+        with patch('goals.views.send_package_enrollment_batch'):
             resp = self.client.post(self.url, self.payload)
             self.assertEqual(resp.status_code, 302)
             self.assertRedirects(resp, self.success_url)

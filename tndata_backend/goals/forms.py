@@ -414,7 +414,7 @@ class PackageEnrollmentForm(forms.Form):
                    "either one per line or separated by a comma")
     )
     packaged_goals = forms.ModelMultipleChoiceField(
-        queryset=Goal.objects.none(),
+        queryset=Goal.objects.packages(),
         help_text="Select the packages in which to enroll each person"
     )
     prevent_custom_triggers = forms.BooleanField(
@@ -435,7 +435,7 @@ class PackageEnrollmentForm(forms.Form):
             kwargs['initial'] = {'prevent_custom_triggers': True}
 
         super().__init__(*args, **kwargs)
-        qs = Goal.objects.published().filter(categories=category)
+        qs = Goal.objects.packages(categories=category)
         self.fields['packaged_goals'].queryset = qs
 
         # See whether or not we want to hide this field.

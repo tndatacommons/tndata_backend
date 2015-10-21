@@ -270,9 +270,10 @@ class GoalManager(WorkflowManager):
         published = kwargs.pop("published", True)
         qs = super().get_queryset()
         if published:
-            return qs.filter(packaged_content=True, state="published")
+            qs = qs.filter(categories__packaged_content=True, state="published")
         else:
-            return qs.filter(packaged_content=True)
+            qs = qs.filter(categories__packaged_content=True)
+        return qs.filter(**kwargs)
 
 
 class PackageEnrollmentManager(models.Manager):
