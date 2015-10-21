@@ -36,6 +36,7 @@ from utils.user_utils import local_day_range, to_localtime, to_utc
 
 from .managers import (
     CategoryManager,
+    GoalManager,
     PackageEnrollmentManager,
     TriggerManager,
     UserActionManager,
@@ -386,7 +387,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
             cat = self.categories.first()
         return cat
 
-    objects = WorkflowManager()
+    objects = GoalManager()
 
 
 class Trigger(URLMixin, models.Model):
