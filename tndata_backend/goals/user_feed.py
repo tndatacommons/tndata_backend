@@ -262,7 +262,7 @@ def suggested_goals(user, limit=5):
     if profile.has_college_degree:
         user_keywords.append('degree')
     else:
-        exclude_keywords.append('no_degree')
+        user_keywords.append('no_degree')
 
     if profile.in_relationship:
         user_keywords.append('relate')

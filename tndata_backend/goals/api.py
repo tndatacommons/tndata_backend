@@ -3,14 +3,11 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import (
-    api_view, authentication_classes, detail_route
-)
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 
 from . import models
 from . import serializers
-from . import user_feed
 from . mixins import DeleteMultipleMixin
 
 
@@ -19,90 +16,6 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
-
-
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication, SessionAuthentication])
-def user_feed_view(request, format=None):
-    """**The User's Home Feed**. This endpoint returns an object with the
-    following data (read below for a description of each field):
-
-        {
-            'next_action': {...},
-            'action_feedback': {...},
-            'progress': {},
-            'user_actions': [<UserAction>, ... ],
-            'user_goals': [<UserGoal>, ...],
-            'suggestions': [<Goal>, ... ],
-        }
-
-    ## Data
-
-    * `next_action` is a `UserAction` object (the mapping between a User and
-      an Action`. This is the upcoming activity for the user.
-    * `action_feedback` is a object of data for the _feedback card_ related to
-      the user's `next_action`. It's intention is to _reinforce the user's
-      upcoming action with some motivational text_. This content is dynamically
-      generated, and will depend on the percentage of completed vs scheduled
-      actions for the user. It contains the following data:
-
-        - `title`: Title-text for the motivational message.
-        - `subtitle`: A short additional motivational message.
-        - `percentage`: percentage of actions completed in some time period.
-        - `incomplete`: Number of actions the user did not complete in some
-          time period.
-        - `completed`: Number of actions completed in some time period.
-        - `total`: Number of actions schedule in some time period.
-
-    * `progress` is an object containing the number of actions completed today,
-      the number of total actions scheduled for today, and the percentage of
-      those completed.
-    * `user_actions` is a list of the `UserAction`s that are relevant for today
-      (i.e. the user has a reminder scheduled for today)
-    * `user_goals` is a list of all of the user's selected Goals. Each item is
-      a `UserGoal` object (the mapping between a user and a goal).
-    * `suggestions` is a list of suggested `Goal` objects for the user.
-
-    ----
-
-    """
-    feed = {
-        'next_action': None,
-        'action_feedback': None,
-        'progress': None,
-        'user_actions': [],
-        'user_goals': [],
-        'suggestions': [],
-    }
-
-    if not request.user.is_authenticated():
-        return Response(feed)
-
-    # Up next UserAction
-    ua = user_feed.next_user_action(request.user)
-    feed['next_action'] = serializers.UserActionSerializer(ua).data
-    if ua:
-        # The Action feedback is irrelevant if there's no user action
-        feed['action_feedback'] = user_feed.action_feedback(request.user, ua)
-
-    # Actions to do today.
-    todo = user_feed.todays_actions(request.user)
-    feed['user_actions'] = serializers.UserActionSerializer(todo, many=True).data
-
-    # Progress for today
-    feed['progress'] = user_feed.todays_actions_progress(request.user)
-
-    # Goal Suggestions
-    suggestions = user_feed.suggested_goals(request.user)
-    gs = serializers.GoalSerializer(suggestions, many=True, user=request.user)
-    feed['suggestions'] = gs.data
-
-    # The user's selected goals (UserGoals)
-    # NOTE: this function returns tuples of (progress, UserGoal) ordered by
-    # the goal with the least progress first.
-    user_goals = [t[1] for t in user_feed.selected_goals(request.user)]
-    feed['user_goals'] = serializers.UserGoalSerializer(user_goals, many=True).data
-    return Response(feed)
 
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):

@@ -432,11 +432,23 @@ class TestUserFeed(TestCase):
             self.assertEqual(ua, self.ua)
 
     def test_suggested_goals(self):
+        # Create a new category
+        cat = Category.objects.create(order=2, title="Other")
+        cat.publish()
+        cat.save()
+
+        # Ensure it's selected by the user
+        UserCategory.objects.create(user=self.user, category=cat)
+
+        # Create a Goal in that category (with appropriate keywords)
         goal = Goal.objects.create(
             title='Other Goal',
             state='published',
-            keywords=['no_degree']
+            keywords=['no_job', 'no_child']
         )
+        goal.categories.add(cat)
+
+        # User should receive it as a suggestion
         suggestions = user_feed.suggested_goals(self.user)
         self.assertEqual(list(suggestions), [goal])
 

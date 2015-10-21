@@ -20,7 +20,6 @@ from goals.api import (
     UserBehaviorViewSet,
     UserCategoryViewSet,
     UserGoalViewSet,
-    user_feed_view,
 )
 from notifications.api import GCMDeviceViewSet, GCMMessageViewSet
 from survey.api import (
@@ -101,7 +100,6 @@ router.register(r'userprofiles', UserProfileViewSet)
 
 
 urlpatterns = [
-    url(r'^api/feed/$', user_feed_view, name="feed"),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(r'^api/', include(router.urls)),
