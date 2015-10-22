@@ -265,14 +265,14 @@ class UserProfile(models.Model):
                 try:
                     r = self._response(question)
                     data['response_id'] = r.id
-                    if question.question_type == 'binaryquestion':
+                    if question.question_type in ['binaryquestion', 'likertquestion']:
                         data['selected_option'] = r.selected_option
-                        data['selected_option_text'] = r.selected_option_text
-                    elif question.question_type in option_types:
-                        data['selected_option'] = r.selected_option.id
                         data['selected_option_text'] = r.selected_option_text
                     elif question.question_type == 'openendedquestion':
                         data['response'] = r.response
+                    elif question.question_type == 'multiplechoicequestion':
+                        data['selected_option'] = r.selected_option.id
+                        data['selected_option_text'] = r.selected_option_text
                 except ObjectDoesNotExist:
                     pass
                 results.append(data)
