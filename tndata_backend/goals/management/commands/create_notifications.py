@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from goals.models import Trigger, UserAction
 from notifications.models import GCMDevice, GCMMessage
 from notifications.settings import DEFAULTS
-from utils.user_utils import to_localtime, to_utc
+from utils.user_utils import to_utc
 
 
 logger = logging.getLogger("loggly_logs")
@@ -85,15 +85,27 @@ class Command(BaseCommand):
         # selected any Behaviors.
         User = get_user_model()
 
-        # Only those users with devices, who have not messages scheduled
+        # Only those users with registered devices
         users = User.objects.filter(gcmdevice__isnull=False)
 
-        # Those with UserBehaviors selected
-        for user in users.filter(userbehavior__isnull=False).distinct():
+        # Schedule Behavior Notifications for those with selected Behaviors
+        # that are both published and are within published categories.
+        users = users.filter(
+            userbehavior__isnull=False,
+            userbehavior__behavior__state='published'
+        )
+        for user in users.distinct():
             self.create_behavior_message(user)
 
-        # Schedule upcoming notifications for UserAction's Custom Trigger
-        for ua in UserAction.objects.all():
+        # Schedule upcoming notifications for all UserActions with:
+        # - published Actions
+        # - users that have a GCMDevice registered
+        useractions = UserAction.objects.filter(
+            action__state='published',
+            action__behavior__state='published',
+            user__gcmdevice__isnull=False
+        )
+        for ua in useractions.distinct():
             user_trigger = ua.trigger
             if user_trigger:
                 # Will be in the user's timezone
