@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
@@ -5,6 +6,7 @@ from rest_framework.authentication import (
 )
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
+from utils.user_utils import local_day_range
 
 from . import models
 from . import serializers
@@ -741,8 +743,14 @@ class UserActionViewSet(mixins.CreateModelMixin,
     ## Filtering
 
     UserActions can be filtered using a querystring parameter. Currently,
-    filtering is availble for Goals, Behaviors, and Actions. You can filter by
-    an ID or a slug.
+    filtering is availble for Goals, Behaviors, Actions, and for Actions
+    whose notification is scheduled during the current day.
+
+    To filter for actions scheduled _today_, use the following:
+
+    * `/api/users/actions/?today=1`
+
+    For the following examples, you may filter using an ID or a slug.
 
     To retrieve all *UserAction*s that belong to a particular Goal, use
     one of the following:
@@ -796,6 +804,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
         self.queryset = models.UserAction.objects.accepted_or_public(self.request.user)
 
         # Now, filter on category or goal if necessary
+        filter_on_today = bool(self.request.GET.get('today', False))
         goal = self.request.GET.get('goal', None)
         behavior = self.request.GET.get('behavior', None)
         action = self.request.GET.get('action', None)
@@ -813,6 +822,13 @@ class UserActionViewSet(mixins.CreateModelMixin,
             self.queryset = self.queryset.filter(action__id=action)
         elif action is not None:
             self.queryset = self.queryset.filter(action__title_slug=action)
+
+        if filter_on_today:
+            today = local_day_range(self.request.user)
+            self.queryset = self.queryset.filter(
+                Q(prev_trigger_date__range=today) |
+                Q(next_trigger_date__range=today)
+            )
 
         return self.queryset
 

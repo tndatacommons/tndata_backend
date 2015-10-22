@@ -1245,6 +1245,16 @@ class TestUserActionAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
+    def test_get_useraction_list_filtered_on_today(self):
+        # Test with goal id
+        url = "{0}?today=1".format(reverse('useraction-list'))
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
     def test_post_useraction_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post"""
         url = reverse('useraction-list')
