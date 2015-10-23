@@ -26,8 +26,8 @@ CORS_ORIGIN_ALLOW_ALL = True
 # EMAIL via Mailgun. Production server details, below (staging.tndata.org)
 EMAIL_SUBJECT_PREFIX = "[Staging TNData] "
 EMAIL_HOST = 'smtp.mailgun.org'
-EMAIL_HOST_USER = 'postmaster@staging.tndata.org'
-EMAIL_HOST_PASSWORD = '29f90e907d425a4a610a558fef85db42'
+EMAIL_HOST_USER = 'postmaster@sandbox4dc4d62d8cf24785914c55630ab480e6.mailgun.org'
+EMAIL_HOST_PASSWORD = 'ac2a70a9988127ff7fa217f559c2d59a'
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
