@@ -337,6 +337,7 @@ class PackageEnrollmentManager(models.Manager):
                 user = user_utils.create_inactive_user(email)
 
             try:
+                # obj == a PackageEnrollment
                 obj = self.get(user=user, category=category)
                 obj.enrolled_by = by
                 obj.prevent_custom_triggers = prevent_triggers
@@ -353,6 +354,13 @@ class PackageEnrollmentManager(models.Manager):
             for goal in goals:
                 obj.goals.add(goal)
             obj.save()
+
+            # If a user has accepted this package already, go ahead and add
+            # their content. They'll receive an email notifying them about the
+            # new goals, but they won't have to accept them.
+            if obj.accepted:
+                obj.create_user_mappings()
+
             created_objects.append(obj.id)
 
         return self.get_queryset().filter(pk__in=created_objects)
