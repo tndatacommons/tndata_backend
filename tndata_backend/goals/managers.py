@@ -337,13 +337,12 @@ class PackageEnrollmentManager(models.Manager):
                 user = user_utils.create_inactive_user(email)
 
             try:
-                # obj == a PackageEnrollment
-                obj = self.get(user=user, category=category)
-                obj.enrolled_by = by
-                obj.prevent_custom_triggers = prevent_triggers
-                obj.save()
+                enrollment = self.get(user=user, category=category)
+                enrollment.enrolled_by = by
+                enrollment.prevent_custom_triggers = prevent_triggers
+                enrollment.save()
             except self.model.DoesNotExist:
-                obj = self.create(
+                enrollment = self.create(
                     user=user,
                     category=category,
                     enrolled_by=by,
@@ -352,15 +351,15 @@ class PackageEnrollmentManager(models.Manager):
 
             # Will add new goals or update the existing relationships.
             for goal in goals:
-                obj.goals.add(goal)
-            obj.save()
+                enrollment.goals.add(goal)
+            enrollment.save()
 
             # If a user has accepted this package already, go ahead and add
             # their content. They'll receive an email notifying them about the
             # new goals, but they won't have to accept them.
-            if obj.accepted:
-                obj.create_user_mappings()
+            if enrollment.accepted:
+                enrollment.create_user_mappings()
 
-            created_objects.append(obj.id)
+            created_objects.append(enrollment.id)
 
         return self.get_queryset().filter(pk__in=created_objects)
