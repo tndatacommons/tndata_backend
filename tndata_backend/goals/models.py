@@ -1707,7 +1707,22 @@ def delete_category_child_goals(sender, instance, using, **kwargs):
 
 
 class BehaviorProgress(models.Model):
-    """Encapsulates a user's progress & history toward certain behaviors."""
+    """Encapsulates a user's progress & history toward certain behaviors.
+
+    The following are aggregates for a user's progress on Actions within this
+    Behavior. They're populated via the `aggregate_progress` management command.
+
+    * daily_actions_total
+    * daily_actions_completed
+    * daily_action_progress
+
+    NOTE: The OFF_COURSE, SEEKING, and ON_COURSE values have essentially been
+    depricated, so this model really only aggregates up completed action
+    values at the moment.
+
+    TODO: Remove these ^ old fields.
+
+    """
     OFF_COURSE = 1
     SEEKING = 2
     ON_COURSE = 3
@@ -1881,7 +1896,35 @@ class GoalProgressManager(models.Manager):
 
 
 class GoalProgress(models.Model):
-    """Agregates data from `BehaviorProgress` up to 'today'."""
+    """Aggregates data from `BehaviorProgress` up to 'today'.
+
+    The following fields are used to aggregate a user's completed v. incomplete
+    Actions withing this goal (and it's child behaviors):
+
+    * daily_actions_total
+    * daily_action_completed
+    * daily_action_progress
+    * weekly_actions_total
+    * weekly_actions_completed
+    * weekly_action_progress
+    * actions_total
+    * actions_completed
+    * action_progress
+
+    The following fields were used to aggregate the now-deprecated
+    BehaviorProgress data up to the goal.
+
+    * current_score
+    * current_total
+    * max_total
+
+    TODO: ^ remove these fields and associated code.
+
+    ----
+
+    NOTE: Thes values are populated via the `aggregate_progress` command.
+
+    """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     goal = models.ForeignKey(Goal)
     usergoal = models.ForeignKey(UserGoal, null=True)
