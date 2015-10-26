@@ -7,16 +7,18 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Q
+from django.db.models import Avg, Q
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.utils import timezone
 
 from django_fsm import TransitionNotAllowed
 from userprofile.forms import UserForm
 from utils.db import get_max_order
 from utils.forms import EmailForm, SetNewPasswordForm
+from utils.dateutils import dates_range
 from utils.user_utils import local_day_range, local_now, to_localtime
 
 from . import user_feed
@@ -44,8 +46,11 @@ from . mixins import (
 from . models import (
     Action,
     Behavior,
+    BehaviorProgress,
     Category,
+    CategoryProgress,
     Goal,
+    GoalProgress,
     PackageEnrollment,
     Trigger,
     UserAction,
@@ -1197,6 +1202,7 @@ def debug_notifications(request):
     next_user_action = None
     today = None
     upcoming = []
+    all_useractions = []
     email = request.GET.get('email_address', None)
 
     if email is None:
@@ -1220,10 +1226,12 @@ def debug_notifications(request):
             upcoming = user_feed.todays_actions(user)
             for ua in useractions:
                 ua.upcoming = ua in upcoming
+
+            all_useractions = user.useraction_set.all()
+            all_useractions = all_useractions.order_by("next_trigger_date")
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
-    all_useractions = user.useraction_set.all().order_by("next_trigger_date")
     context = {
         'form': form,
         'email': email,
@@ -1236,3 +1244,244 @@ def debug_notifications(request):
         'all_useractions': all_useractions,
     }
     return render(request, 'goals/debug_notifications.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
+def debug_progress(request):
+    """A view to allow searching by email addresss then view and
+    analyze their Category/Goal/Behavior progress data.
+
+    """
+    User = get_user_model()
+    email = request.GET.get('email_address', None)
+    user = None
+    form = EmailForm(initial={'email_address': email})
+    try:
+        user = User.objects.get(email__icontains=email)
+    except (User.DoesNotExist, User.MultipleObjectsReturned):
+        messages.error(request, "Could not find that user")
+        return redirect(reverse('debug_progress'))
+    except ValueError:
+        user = None
+
+    today = timezone.now()
+    days_ago = int(request.GET.get('days_ago', 30))
+    from_date = today - timedelta(days=days_ago)
+
+    # Category Progress Avg Score
+    categories = Category.objects.values_list('id', 'title')
+    cat_ids = [t[0] for t in categories]
+    cat_labels = [t[1] for t in categories]
+    cat_datasets = []
+    avg_scores = []
+    for cid in cat_ids:
+        params = {
+            'category__id': cid,
+            'reported_on__range': (from_date, today),
+            'user': user,
+        }
+        results = CategoryProgress.objects.filter(**params)
+        results = results.aggregate(Avg('current_score'))
+        avg_scores.append(round(results['current_score__avg'] or 0, 1))
+
+    cat_datasets.append({
+        "label": "Average Score",
+        "data": avg_scores,
+    })
+
+    # Behavior Progress Avg Score
+    behavior_labels = []
+    behavior_datasets = []
+    status_scores = []
+    ap_scores = []
+    for day in dates_range(days_ago):
+        behavior_labels.append(day.strftime("%F"))
+        params = {
+            'user': user,
+            'reported_on__year': day.year,
+            'reported_on__month': day.month,
+            'reported_on__day': day.day,
+        }
+        results = BehaviorProgress.objects.filter(**params)
+        results = results.aggregate(Avg('status'), Avg('daily_actions_completed'))
+        status_scores.append(round(results['status__avg'] or 0, 2))
+        ap_scores.append(round(results['daily_actions_completed__avg'] or 0, 2))
+
+    status_data = {'label': 'Behavior Checkin', 'data': status_scores}
+    ap_data = {'label': 'Actions Completed', 'data': ap_scores}
+    behavior_datasets.append((status_data, ap_data))
+
+    # Goal Progress Scores
+    goal_progress_labels = []
+    goal_progress_datasets = []
+    goal_progress_scores = []
+    for day in dates_range(days_ago):
+        goal_progress_labels.append(day.strftime("%F"))
+        params = {
+            'user': user,
+            'reported_on__year': day.year,
+            'reported_on__month': day.month,
+            'reported_on__day': day.day,
+        }
+        results = GoalProgress.objects.filter(**params)
+        results = results.aggregate(Avg('current_score'))
+        goal_progress_scores.append(round(results['current_score__avg'] or 0, 2))
+
+    goal_progress_data = {'label': 'Goal Progress', 'data': goal_progress_scores}
+    goal_progress_datasets.append(goal_progress_data)
+
+    # Goal Action Scores
+    goal_actions_labels = []
+    goal_actions_datasets = []
+    daily = []
+    weekly = []
+    monthly = []
+    for day in dates_range(days_ago):
+        goal_actions_labels.append(day.strftime("%F"))
+        params = {
+            'user': user,
+            'reported_on__year': day.year,
+            'reported_on__month': day.month,
+            'reported_on__day': day.day,
+        }
+        results = GoalProgress.objects.filter(**params)
+        results = results.aggregate(
+            Avg('daily_action_progress'),
+            Avg('weekly_action_progress'),
+            Avg('action_progress')
+        )
+        daily.append(round(results['daily_action_progress__avg'] or 0, 2))
+        weekly.append(round(results['weekly_action_progress__avg'] or 0, 2))
+        monthly.append(round(results['action_progress__avg'] or 0, 2))
+
+    daily_data = {'label': 'Goal Daily Actions', 'data': daily}
+    weekly_data = {'label': 'Goal Weekly Actions', 'data': weekly}
+    monthly_data = {'label': 'Goal Montly Actions', 'data': monthly}
+    goal_actions_datasets.append((daily_data, weekly_data, monthly_data))
+
+    context = {
+        'searched_user': user,
+        'form': form,
+        'email': email,
+        'days_ago': days_ago,
+        'today': today,
+        'from_date': from_date,
+        'cat_labels': cat_labels,
+        'cat_datasets': cat_datasets,
+        'behavior_labels': behavior_labels,
+        'behavior_datasets': behavior_datasets,
+        'goal_progress_labels': goal_progress_labels,
+        'goal_progress_datasets': goal_progress_datasets,
+        'goal_actions_labels': goal_actions_labels,
+        'goal_actions_datasets': goal_actions_datasets,
+    }
+    return render(request, 'goals/debug_progress.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
+def debug_progress_aggregates(request):
+    today = timezone.now()
+    days_ago = int(request.GET.get('days_ago', 30))
+    from_date = today - timedelta(days=days_ago)
+
+    # Category Progress Avg Score
+    categories = Category.objects.values_list('id', 'title')
+    cat_ids = [t[0] for t in categories]
+    cat_labels = [t[1] for t in categories]
+    cat_datasets = []
+    avg_scores = []
+    for cid in cat_ids:
+        params = {
+            'category__id': cid,
+            'reported_on__range': (from_date, today),
+        }
+        results = CategoryProgress.objects.filter(**params)
+        results = results.aggregate(Avg('current_score'))
+        avg_scores.append(round(results['current_score__avg'] or 0, 1))
+
+    cat_datasets.append({
+        "label": "Average Score",
+        "data": avg_scores,
+    })
+
+    # Behavior Progress Avg Score
+    behavior_labels = []
+    behavior_datasets = []
+    status_scores = []
+    ap_scores = []
+    for day in dates_range(days_ago):
+        behavior_labels.append(day.strftime("%F"))
+        params = {
+            'reported_on__year': day.year,
+            'reported_on__month': day.month,
+            'reported_on__day': day.day,
+        }
+        results = BehaviorProgress.objects.filter(**params)
+        results = results.aggregate(Avg('status'), Avg('daily_actions_completed'))
+        status_scores.append(round(results['status__avg'] or 0, 2))
+        ap_scores.append(round(results['daily_actions_completed__avg'] or 0, 2))
+
+    status_data = {'label': 'Behavior Checkin', 'data': status_scores}
+    ap_data = {'label': 'Actions Completed', 'data': ap_scores}
+    behavior_datasets.append((status_data, ap_data))
+
+    # Goal Progress Scores
+    goal_progress_labels = []
+    goal_progress_datasets = []
+    goal_progress_scores = []
+    for day in dates_range(days_ago):
+        goal_progress_labels.append(day.strftime("%F"))
+        params = {
+            'reported_on__year': day.year,
+            'reported_on__month': day.month,
+            'reported_on__day': day.day,
+        }
+        results = GoalProgress.objects.filter(**params)
+        results = results.aggregate(Avg('current_score'))
+        goal_progress_scores.append(round(results['current_score__avg'] or 0, 2))
+
+    goal_progress_data = {'label': 'Goal Progress', 'data': goal_progress_scores}
+    goal_progress_datasets.append(goal_progress_data)
+
+    # Goal Actions Scores
+    goal_actions_labels = []
+    goal_actions_datasets = []
+    daily = []
+    weekly = []
+    monthly = []
+    for day in dates_range(days_ago):
+        goal_actions_labels.append(day.strftime("%F"))
+        params = {
+            'reported_on__year': day.year,
+            'reported_on__month': day.month,
+            'reported_on__day': day.day,
+        }
+        results = GoalProgress.objects.filter(**params)
+        results = results.aggregate(
+            Avg('daily_action_progress'),
+            Avg('weekly_action_progress'),
+            Avg('action_progress')
+        )
+        daily.append(round(results['daily_action_progress__avg'] or 0, 2))
+        weekly.append(round(results['weekly_action_progress__avg'] or 0, 2))
+        monthly.append(round(results['action_progress__avg'] or 0, 2))
+
+    daily_data = {'label': 'Goal Daily Actions', 'data': daily}
+    weekly_data = {'label': 'Goal Weekly Actions', 'data': weekly}
+    monthly_data = {'label': 'Goal Montly Actions', 'data': monthly}
+    goal_actions_datasets.append((daily_data, weekly_data, monthly_data))
+
+    context = {
+        'days_ago': days_ago,
+        'today': today,
+        'from_date': from_date,
+        'cat_labels': cat_labels,
+        'cat_datasets': cat_datasets,
+        'behavior_labels': behavior_labels,
+        'behavior_datasets': behavior_datasets,
+        'goal_progress_labels': goal_progress_labels,
+        'goal_progress_datasets': goal_progress_datasets,
+        'goal_actions_labels': goal_actions_labels,
+        'goal_actions_datasets': goal_actions_datasets,
+    }
+    return render(request, 'goals/debug_progress_aggregates.html', context)

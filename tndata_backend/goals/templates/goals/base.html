@@ -88,8 +88,17 @@ form.dropzone {
       <li><a href="{% url 'userprofile:index' %}">
         <i class="fa fa-user"></i> Account</a></li>
       <li class="divider"></li>
-      <li><a href="/admin/">
-        <i class="fa fa-unlock"></i> Admin</a></li>
+      <li class="has-dropdown">
+        <a href="/admin/"><i class="fa fa-unlock"></i> Admin</a>
+        <ul class="dropdown">
+          <li><a href="{% url 'goals:debug_progress_aggregates' %}">
+            Progress Aggregates</a></li>
+          <li><a href="{% url 'goals:debug_progress' %}">
+            User Progress</a></li>
+          <li><a href="{% url 'goals:debug_notifications' %}">
+            User Notifications</a></li>
+        </ul>
+      </li>
       <li class="divider"></li>
       <li><a href="{% url 'logout' %}">
         <i class="fa fa-sign-out"></i> Sign Out</a></li>

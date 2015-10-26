@@ -1,0 +1,289 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block title %}Debug Progress{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+{% endblock %}
+
+
+{% block content %}
+<h1>Progress Stats <small>from {{ from_date|timesince }} ago</small></h1>
+<p class="text-right">
+  Display data for the past:
+  {% if days_ago != 30 %}<a href="?days_ago=30">30</a>{% else %}<strong>30</strong>{% endif %}
+  {% if days_ago != 60 %}<a href="?days_ago=60">60</a>{% else %}<strong>60</strong>{% endif %}
+  {% if days_ago != 90 %}<a href="?days_ago=90">90</a>{% else %}<strong>90</strong>{% endif %}
+  days.
+</p>
+
+{# --- Behavior Progress / Actions Performed--- #}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <h2>Behavior Data</h2>
+    <p>The daily 3-point check-in data for behaviors, and the number of
+    actions completed.</p>
+
+    <canvas id="behavior-progress" width="970" height="400"></canvas>
+    <script>
+    var ctx = document.getElementById("behavior-progress").getContext("2d");
+    var data = {
+      labels: {{ behavior_labels|json|safe }},
+      datasets: [{% for status_data, ap_data in behavior_datasets %}
+        {
+            label: "{{status_data.label}}",
+            fillColor: "rgba(220,220,220,0.5)",
+            strokeColor: "rgba(220,220,220,0.8)",
+            highlightFill: "rgba(220,220,220,0.75)",
+            highlightStroke: "rgba(220,220,220,1)",
+            data: {{status_data.data|json|safe}},
+        },
+        {
+            label: "{{ap_data.label}}",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: {{ap_data.data|json|safe}},
+        }
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Bar(data);
+    </script>
+
+  </div>
+</div> {# end .row #}
+
+{# --- Goal Actions --- #}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <h2>Goal Actions</h2>
+    <p>The following is an average completion percentage for user's goals. This
+    is just a simple average of the <code>GoalProgress</code>'s daily, weekly,
+    and monthly data fields.</p>
+
+    <canvas id="goal-actions" width="970" height="400"></canvas>
+    <script>
+    var ctx = document.getElementById("goal-actions").getContext("2d");
+    var data = {
+      labels: {{ goal_actions_labels|json|safe }},
+      datasets: [{% for daily, weekly, monthly in goal_actions_datasets %}
+        {
+            label: "{{daily.label}}",
+            fillColor: "rgba(220,180,220,0.5)",
+            strokeColor: "rgba(220,180,220,0.8)",
+            highlightFill: "rgba(220,180,220,0.75)",
+            highlightStroke: "rgba(220,180,220,1)",
+            data: {{daily.data|json|safe}},
+        },
+        {
+            label: "{{weekly.label}}",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: {{weekly.data|json|safe}},
+        },
+        {
+            label: "{{monthly.label}}",
+            fillColor: "rgba(151,200,187,0.5)",
+            strokeColor: "rgba(151,200,187,0.8)",
+            highlightFill: "rgba(151,200,187,0.75)",
+            highlightStroke: "rgba(151,200,187,1)",
+            data: {{monthly.data|json|safe}},
+        }
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Bar(data);
+    </script>
+
+  </div>
+</div> {# end .row #}
+
+
+
+{# --- Goal Progress / Actions Performed--- #}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <h2>Goal Progress Data</h2>
+    <p>The daily 3-point check-in data for behaviors, aggregated up to their
+    parent Goals. The following is a daily average for all users.</p>
+
+    <canvas id="goal-progress" width="970" height="400"></canvas>
+    <script>
+    var ctx = document.getElementById("goal-progress").getContext("2d");
+    var data = {
+      labels: {{ goal_progress_labels|json|safe }},
+      datasets: [{% for d in goal_progress_datasets %}
+        {
+            label: "{{d.label}}",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: {{d.data|json|safe}},
+        }
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Bar(data);
+    </script>
+
+  </div>
+</div> {# end .row #}
+
+{# --- Category Progress --- #}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <h2>Category Progress</h2>
+    <p>The average, aggregated self-reported Behavior progress (on course,
+    seeking, off-course) for the past {{ days_ago }} days. Each item in the chart
+    below is an average for all users (values 0 - 3).</p>
+
+    <canvas id="category-progress" width="970" height="400"></canvas>
+    <script>
+    var ctx = document.getElementById("category-progress").getContext("2d");
+    var data = {
+      labels: {{ cat_labels|json|safe }},
+      datasets: [{% for d in cat_datasets %}
+        {
+            label: "{{d.label}}",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: {{d.data|json|safe}},
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Bar(data);
+    </script>
+
+  </div>
+</div> {# end .row #}
+
+
+
+
+{% comment %}
+
+{# --- Goal Progress --- #}
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <h2>Goal Progress</h2>
+    <table>
+    <thead>
+      <tr>
+        <th>Goal</th>
+        <th>Behavior Score</th>
+        <th>Daily Actions</th>
+        <th>Daily Action Progress</th>
+        <th>Weekly Actions</th>
+        <th>Weekly Action Progress</th>
+        <th>Monthly Actions</th>
+        <th>Monthly Action Progress</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for gp in goal_progresses %}
+      <tr>
+        <td>{{ gp.goal }}</td>
+        <td>{{ gp.current_score }}</td>
+        <td>{{ gp.daily_actions_completed }} / {{ gp.daily_actions_total }}</td>
+        <td>{{ gp.daily_action_progress }}</td>
+        <td>{{ gp.weekly_actions_completed }} / {{ gp.weekly_actions_total }}</td>
+        <td>{{ gp.weekly_action_progress }}</td>
+        <td>{{ gp.actions_completed }} / {{ gp.actions_total }}</td>
+        <td>{{ gp.action_progress }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div>
+  <div class="large-6 small-12 columns">
+
+    <h3>Aggregated Behavior progress (3-point data)</h3>
+    <canvas id="goal-progress" width="500" height="500"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("goal-progress").getContext("2d");
+    var data = {
+      labels: [{% for gp in goal_progresses %}
+        "{{gp.reported_on|date:'M j'}}"{% if not forloop.last %},{% endif %}
+      {% endfor %}],
+      datasets: [
+      {% for gp in goal_progresses %}
+        {
+            label: "{{ gp.goal }}",
+            strokeColor: "{% random_color %}",
+            data: [{% for obj in goal_progresses %}
+              {% if obj.goal == gp.goal %}{{ obj.current_score }}{% endif %},
+            {% endfor %}]
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Line(data);
+    </script>
+
+  </div>
+</div> {# end .row #}
+
+{# --- Behavior Progress --- #}
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <h2>Behavior Progress</h2>
+    <table>
+    <thead>
+      <tr>
+        <th>Behavior</th>
+        <th>Status</th>
+        <th>Daily Actions</th>
+        <th>Daily Action Progress</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for bp in behavior_progresses %}
+      <tr>
+        <td>{{ bp.user_behavior.behavior }}</td>
+        <td>{{ bp.get_status_display }}</td>
+        <td>{{ bp.daily_actions_completed }} / {{ bp.daily_actions_total }}</td>
+        <td>{{ bp.daily_action_progress }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div>
+  <div class="large-6 small-12 columns">
+
+    <h3>Aggregated Behavior status (3-point data)</h3>
+    <canvas id="behavior-progress" width="500" height="500"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("behavior-progress").getContext("2d");
+    var data = {
+      labels: [{% for bp in behavior_progresses %}
+        "{{bp.reported_on|date:'M j'}}"{% if not forloop.last %},{% endif %}
+      {% endfor %}],
+      datasets: [
+      {% for bp in behavior_progresses %}
+        {
+            label: "{{ bp.behavior }}",
+            strokeColor: "{% random_color %}",
+            data: [{% for obj in behavior_progresses %}
+              {% if obj.behavior == bp.behavior %}{{ obj.status }}{% endif %},
+            {% endfor %}]
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Line(data);
+    </script>
+
+  </div>
+</div> {# end .row #}
+{% endcomment %}
+
+{% endblock %}
