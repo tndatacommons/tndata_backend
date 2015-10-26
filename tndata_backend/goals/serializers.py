@@ -332,6 +332,11 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
+    behavior = SimpleBehaviorField(
+        source='user_behavior.behavior',
+        queryset=UserBehavior.objects.all(),
+        required=False
+    )
     custom_trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False
@@ -342,14 +347,19 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         queryset=Goal.objects.all(),
         required=False
     )
+    primary_category = SimpleCategoryField(
+        source='get_primary_category',
+        queryset=Category.objects.all(),
+        required=False
+    )
     next_reminder = serializers.ReadOnlyField(source='next')
 
     class Meta:
         model = UserAction
         fields = (
-            'id', 'user', 'action', 'custom_trigger', 'next_reminder',
+            'id', 'user', 'action', 'behavior', 'custom_trigger', 'next_reminder',
             'custom_triggers_allowed', 'created_on',
-            'object_type', 'primary_goal',
+            'object_type', 'primary_goal', 'primary_category',
         )
         read_only_fields = ("id", "created_on", )
 

@@ -1491,6 +1491,20 @@ class UserAction(models.Model):
             result = self.get_user_goals().first()
         return result
 
+    def get_primary_category(self):
+        """Return a Category (or None) representing the primary category
+        associated with this user's selected Action."""
+        category = None
+        goal = self.get_primary_goal()
+        if goal:
+            uc = UserCategory.objects.filter(
+                category__in=goal.categories.all(),
+                user=self.user
+            ).first()
+            if uc:
+                category = uc.category
+        return category
+
     @property
     def completed_today(self):
         """Return True if this action was completed today, False otherwise"""
