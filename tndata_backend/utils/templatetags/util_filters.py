@@ -1,3 +1,5 @@
+import json
+
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.safestring import mark_safe
@@ -6,6 +8,12 @@ import markdown
 
 
 register = template.Library()
+
+
+@register.filter("json", is_safe=True)
+def to_json(value):
+    """Attempt to convert the primitive value to a json string."""
+    return json.dumps(value)
 
 
 @register.filter("markdown", is_safe=True)
@@ -19,7 +27,6 @@ def process_markdown(text):
 
     """
     return mark_safe(markdown.markdown(text))
-
 
 
 @register.filter("iconbool", is_safe=True)
