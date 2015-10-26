@@ -13,6 +13,7 @@ from .. models import (
     BehaviorProgress,
     Category,
     Goal,
+    GoalProgress,
     PackageEnrollment,
     Trigger,
     UserGoal,
@@ -1864,6 +1865,142 @@ class TestUserCategoryAPI(APITestCase):
 
         # Clean up.
         other_cat.delete()
+
+
+class TestGoalProgressAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.category = mommy.make(Category, state="published")
+        self.goal = mommy.make(Goal, state="published")
+        self.goal.categories.add(self.category)
+
+        self.behavior = Behavior.objects.create(
+            title="Test Behavior",
+            description="This is a test",
+            state='published',
+        )
+        self.behavior.goals.add(self.goal)
+        self.action = mommy.make(
+            Action,
+            title="TestAction",
+            behavior=self.behavior,
+            state='published'
+        )
+
+        self.uc = UserCategory.objects.create(
+            user=self.user,
+            category=self.category
+        )
+        self.ug = UserGoal.objects.create(
+            user=self.user,
+            goal=self.goal,
+        )
+        self.ub = UserBehavior.objects.create(
+            user=self.user,
+            behavior=self.behavior
+        )
+        self.ua = UserAction.objects.create(
+            user=self.user,
+            action=self.action,
+        )
+
+        self.gp = GoalProgress.objects.create(
+            user=self.user,
+            goal=self.goal,
+            usergoal=self.ug,
+        )
+        self.url = reverse('goalprogress-list')
+        self.detail_url = reverse('goalprogress-detail', args=[self.gp.id])
+
+        self.payload = {
+            'daily_checkin': 5,
+            'goal': self.goal.id,
+        }
+
+    def tearDown(self):
+        User = get_user_model()
+        User.objects.filter(id=self.user.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
+        Behavior.objects.filter(id=self.behavior.id).delete()
+        Goal.objects.filter(id=self.goal.id).delete()
+        Category.objects.filter(id=self.category.id).delete()
+
+    def test_get_list_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_post_list_unauthenticated(self):
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_list_authenticated_when_progress_exists(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        q = GoalProgress.objects.filter(user=self.user, goal=self.goal)
+        self.assertEqual(q.count(), 1)  # Should only be 1; both created today
+
+    def test_post_list_authenticated_when_progress_doesnot_exist(self):
+        # Remove any existing GoalProgress objects for the day.
+        GoalProgress.objects.filter(user=self.user).delete()
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(self.url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        q = GoalProgress.objects.filter(user=self.user, goal=self.goal)
+        self.assertEqual(q.count(), 1)
+
+    def test_get_detail_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_detail_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['id'], self.gp.id)
+        self.assertEqual(response.data['user'], self.gp.user.id)
+        self.assertEqual(response.data['usergoal'], self.gp.usergoal.id)
+        self.assertEqual(response.data['daily_checkin'], self.gp.daily_checkin)
+        self.assertEqual(response.data['weekly_checkin'], self.gp.weekly_checkin)
+        self.assertEqual(response.data['monthly_checkin'], self.gp.monthly_checkin)
+
+    def test_put(self):
+        """PUTing should update the day's GoalProgress."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        payload = {
+            'daily_checkin': 1,
+            'goal': self.goal.id,
+        }
+        response = self.client.put(self.detail_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestBehaviorProgressAPI(APITestCase):
