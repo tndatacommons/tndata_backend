@@ -1911,6 +1911,14 @@ class GoalProgress(models.Model):
     * actions_completed
     * action_progress
 
+    The following fields store the user's end-of-day "How are doing" data
+    related to the selected goal. This daily check-in value gets averaged over
+    the past 7 and 30 days (weekly, monthly)
+
+    * daily_checkin
+    * weekly_checkin
+    * monthly_checkin
+
     The following fields were used to aggregate the now-deprecated
     BehaviorProgress data up to the goal.
 
@@ -1918,11 +1926,11 @@ class GoalProgress(models.Model):
     * current_total
     * max_total
 
-    TODO: ^ remove these fields and associated code.
+    TODO: ^ remove these fields and associated code?
 
     ----
 
-    NOTE: Thes values are populated via the `aggregate_progress` command.
+    NOTE: These values are populated via the `aggregate_progress` command.
 
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -1930,9 +1938,15 @@ class GoalProgress(models.Model):
     usergoal = models.ForeignKey(UserGoal, null=True)
 
     # Aggregating the self-reported Behavior Progress
-    current_score = models.FloatField()
-    current_total = models.FloatField()
-    max_total = models.FloatField()
+    current_score = models.FloatField(default=0)
+    current_total = models.FloatField(default=0)
+    max_total = models.FloatField(default=0)
+
+    # Daily check-in fields, for a user's "How are you doing on this Goal"
+    # data. Weekly and Montly values are averages over the past 7 and 30 days.
+    daily_checkin = models.IntegerField(default=0)
+    weekly_checkin = models.FloatField(default=0)
+    monthly_checkin = models.FloatField(default=0)
 
     # Aggregating the user's completed Actions for the day
     daily_actions_total = models.IntegerField(default=0)
@@ -2054,11 +2068,36 @@ class GoalProgress(models.Model):
         self.max_total = len(scores) * BehaviorProgress.ON_COURSE
         self._calculate_score()
 
+    def _calculate_checkin_average(self, days):
+        report_date = self.reported_on if self.reported_on else timezone.now()
+        from_date = report_date - timedelta(days=days)
+        to_date = self.reported_on
+        result = GoalProgress.objects.filter(
+            user=self.user,
+            goal=self.goal,
+            usergoal=self.usergoal,
+            reported_on__range=(from_date, to_date)
+        ).aggregate(Avg('daily_checkin'))
+        return result.get('daily_checkin__avg', 0) or 0
+
+    def _weekly_checkin_average(self):
+        self.weekly_checkin = self._calculate_checkin_average(7)
+
+    def _monthly_checkin_average(self):
+        self.monthly_checkin = self._calculate_checkin_average(30)
+
     def save(self, *args, **kwargs):
+        # Aggregate Behavior scores
         self._calculate_score()
+
+        # Action-related stats
         self.calculate_daily_action_stats()
         self.calculate_weekly_action_stats()
         self.calculate_aggregate_action_stats()
+
+        # Daily "how am i doing" stats and averages.
+        self._weekly_checkin_average()
+        self._monthly_checkin_average()
         return super().save(*args, **kwargs)
 
     @property
