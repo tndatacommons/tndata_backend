@@ -1,5 +1,5 @@
 import pytz
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
@@ -7,6 +7,8 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.db.models import QuerySet
 from django.utils import timezone
+
+from model_mommy import mommy
 
 from .. models import (
     Action,
@@ -1540,11 +1542,15 @@ class TestGoalProgress(TestCase):
         daily = self.gp.calculate_daily_action_stats
         weekly = self.gp.calculate_weekly_action_stats
         aggregate = self.gp.calculate_aggregate_action_stats
+        weekly_checkin = self.gp._weekly_checkin_average
+        monthly_checkin = self.gp._monthly_checkin_average
 
         self.gp._calculate_score = Mock()
         self.gp.calculate_daily_action_stats = Mock()
         self.gp.calculate_weekly_action_stats = Mock()
         self.gp.calculate_aggregate_action_stats = Mock()
+        self.gp._weekly_checkin_average = Mock()
+        self.gp._monthly_checkin_average = Mock()
 
         # Test
         self.gp.save()
@@ -1552,15 +1558,42 @@ class TestGoalProgress(TestCase):
         self.gp.calculate_daily_action_stats.assert_called_once_with()
         self.gp.calculate_weekly_action_stats.assert_called_once_with()
         self.gp.calculate_aggregate_action_stats.assert_called_once_with()
+        self.gp._weekly_checkin_average.assert_called_once_with()
+        self.gp._monthly_checkin_average.assert_called_once_with()
 
         # Clean up
         self.gp._calculate_score = original
         self.gp.calculate_daily_action_stats = daily
         self.gp.calculate_weekly_action_stats = weekly
         self.gp.calculate_aggregate_action_stats = aggregate
+        self.gp._weekly_checkin_average = weekly_checkin
+        self.gp._monthly_checkin_average = monthly_checkin
 
     def test_text_glyph(self):
         self.assertEqual(self.gp.text_glyph, u"\u2191")
+
+    def test__calculate_checkin_average(self):
+        """Should average the `daily_checkin` over the given number of days"""
+        # Create some GoalProgress objects.
+        objects = []
+        today = timezone.now()
+        with patch('django.utils.timezone.now') as mock_now:
+            for day in range(5):
+                mock_now.return_value = today - timedelta(days=day)
+                gp = mommy.make(
+                    'GoalProgress',
+                    user=self.user,
+                    goal=self.goal,
+                    usergoal=self.ug,
+                    daily_checkin=day * 2
+                )
+                objects.append(gp)
+                mock_now.reset_mock()
+
+        self.assertEqual(objects[0]._calculate_checkin_average(1), 1.0)
+        self.assertEqual(objects[0]._calculate_checkin_average(2), 2.0)
+        self.assertEqual(objects[0]._calculate_checkin_average(3), 3.0)
+        self.assertEqual(objects[0]._calculate_checkin_average(4), 4.0)
 
 
 class TestCategoryProgress(TestCase):
