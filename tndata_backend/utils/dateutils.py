@@ -1,9 +1,19 @@
-from datetime import time
+from datetime import time, timedelta
 from django.utils import timezone
 
 import pytz
 
 from .user_utils import to_utc
+
+
+def dates_range(num_days):
+    """Return a generator that yields a datetime.date object for `num_days`
+    in the past.
+
+    """
+    today = timezone.now()
+    for d in range(num_days):
+        yield today - timedelta(days=d)
 
 
 def date_range(datetime_obj, tz=timezone.utc):
