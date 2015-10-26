@@ -1094,6 +1094,143 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
         return super(UserCategoryViewSet, self).create(request, *args, **kwargs)
 
 
+class GoalProgressViewSet(mixins.CreateModelMixin,
+                          mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin,
+                          mixins.UpdateModelMixin,
+                          viewsets.GenericViewSet):
+    """This endpoint allows a user to record and/or update their daily check-in
+    progress toward a Goal, and retrieve a history of that progress.
+
+    Each item in this result contains a number of fields. The basic ones are:
+
+    * `id`: The object's unique ID.
+    * `goal`: The ID of the related Goal.
+    * `usergoal`: The ID of the `UserGoal` (user-to-goal mapping)
+    * `reported_on`: The date/time on which this object was initially created.
+
+    The following fields were used in a (now deprecated) daily 3-scale behavior
+    check-in:
+
+    * `current_score`: aggregate value for the user's behaviors in this goal.
+    * `current_total`: sum of user's check-in values.
+    * `max_total`: maximum possible value
+
+    The following are the new daily check-in values:
+
+    * `daily_checkin`: The user's daily check-in value for this goal.
+    * `weekly_checkin`: Average over the past 7 days.
+    * `monthly_checkin`: Average over the past 30 days.
+
+    The following are stats calculated based on actions that the user has
+    completed. The weekly values are average over 7 days while the rest (e.g.
+    `action_progress`) are averaged over 30 days:
+
+    * `daily_actions_total`: The total number of Actions the user had scheduled
+      within this goal.
+    * `daily_actions_completed`: The number of actions completed.
+    * `daily_action_progress`: Percentage of completed vs. incomplete (as a decimal)
+    * `daily_action_progress_percent`: Percentage of completed vs. incomplete
+      (as an integer)
+    * `weekly_actions_total`
+    * `weekly_actions_completed`
+    * `weekly_action_progress`
+    * `weekly_action_progress_percent`
+    * `actions_total`
+    * `actions_completed`
+    * `action_progress`
+    * `action_progress_percent`
+
+    ## Saving Progress
+
+    To record progress toward a goal, send a POST request containing the
+    following information:
+
+    * `goal`: The ID for the Goal.
+    * `daily_checkin`: An integer value (TODO: Decide on range)
+
+    This will create a new GoalProgress snapshot. _However_, if an instance
+    of a GoalProgress alread exists for the day in which this data is POSTed,
+    that instance will be updated (so that there _should_ only be one of these
+    per day).
+
+    ## Updating Progress
+
+    You may also update a GoalProgress by sending a PUT request to
+    `/api/users/goals/progress/{id}/` containing the same information that
+    you'd use to create a Goalprogress.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.GoalProgress.objects.all()
+    serializer_class = serializers.GoalProgressSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return self.queryset.filter(user__id=self.request.user.id)
+
+    def _parse_request_data(self, request):
+        """This method does a few things to modify any request data:
+
+        - ensure we only create objects for the authenticated user
+        - add the id of the GoalProgress if we already have one for today
+        - if a Goal id is submitted, try to include the UserGoal id
+
+        """
+        if not request.user.is_authenticated():
+            return request
+
+        # Set the authenticated user's ID
+        request.data['user'] = request.user.id
+
+        if request.method == "POST":
+            # If a goal is provided, attempt to retrieve the UserGoal object
+            if 'goal' in request.data and 'usergoal' not in request.data:
+                try:
+                    goal = request.data.get('goal', [])
+                    request.data['usergoal'] = models.UserGoal.objects.filter(
+                        user=request.user,
+                        goal__id=goal
+                    ).values_list('id', flat=True)[0]
+                except (models.UserGoal.DoesNotExist, IndexError):
+                    pass  # Creating will fail
+
+            # If we already have a GoalProgress for "today", include its ID
+            try:
+                today = local_day_range(self.request.user)
+                params = {
+                    'user': request.user.id,
+                    'reported_on__range': today,
+                }
+                if 'usergoal' in request.data:
+                    params['usergoal'] = request.data['usergoal']
+                if 'goal' in request.data:
+                    params['goal'] = request.data['goal']
+                qs = models.GoalProgress.objects.filter(**params)
+                request.data['id'] = qs.latest().id
+            except models.GoalProgress.DoesNotExist:
+                pass
+        return request
+
+    def update(self, request, *args, **kwargs):
+        request = self._parse_request_data(request)
+        return super().update(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        request = self._parse_request_data(request)
+
+        # If we've got a GoalProgress ID, we need to update instead of create
+        if 'id' in request.data:
+            gp = models.GoalProgress.objects.get(id=request.data['id'])
+            gp.daily_checkin = request.data['daily_checkin']
+            gp.save()
+            data = self.serializer_class(gp).data
+            return Response(data=data, status=status.HTTP_200_OK)
+        return super().create(request, *args, **kwargs)
+
+
 class BehaviorProgressViewSet(mixins.CreateModelMixin,
                               mixins.ListModelMixin,
                               mixins.RetrieveModelMixin,

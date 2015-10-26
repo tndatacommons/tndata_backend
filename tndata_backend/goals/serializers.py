@@ -221,8 +221,10 @@ class GoalProgressSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = GoalProgress
         fields = (
-            'id', 'goal', 'usergoal', 'current_score', 'current_total',
-            'max_total', 'daily_actions_total', 'daily_actions_completed',
+            'id', 'user', 'goal', 'usergoal',
+            'current_score', 'current_total', 'max_total',
+            'daily_checkin', 'weekly_checkin', 'monthly_checkin',
+            'daily_actions_total', 'daily_actions_completed',
             'daily_action_progress', 'daily_action_progress_percent',
             'weekly_actions_total', 'weekly_actions_completed',
             'weekly_action_progress', 'weekly_action_progress_percent',
