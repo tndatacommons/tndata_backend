@@ -55,6 +55,16 @@ class TestGCMMessageManager(TestCase):
         )
         cls.ready_message.save()
 
+    def test_for_model(self):
+        qs = GCMMessage.objects.for_model('gcmdevice')
+        self.assertEqual(qs.count(), 2)  # expired & ready messages.
+
+        # Now with a message that has no related objects.
+        dt = datetime_utc(2020, 12, 25, 13, 30)
+        GCMMessage.objects.create(self.user, "T", "M", dt)
+        qs = GCMMessage.objects.for_model('gcmdevice', include_null=True)
+        self.assertEqual(qs.count(), 3)
+
     def test_expired(self):
         qs = GCMMessage.objects.expired()
         self.assertEqual(qs[0], self.expired_message)

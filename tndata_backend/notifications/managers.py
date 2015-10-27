@@ -1,6 +1,8 @@
 import logging
+
 from datetime import datetime
 from django.db import IntegrityError, models, transaction
+from django.db.models import Q
 from django.utils import timezone
 
 
@@ -8,6 +10,14 @@ logger = logging.getLogger("loggly_logs")
 
 
 class GCMMessageManager(models.Manager):
+
+    def for_model(self, model_name, include_null=False):
+        qs = self.get_queryset()
+        if include_null:
+            qs = qs.filter(Q(content_type__model=model_name) | Q(content_type=None))
+        else:
+            qs = qs.filter(content_type__model=model_name)
+        return qs
 
     def expired(self, *args, **kwargs):
         """Return a queryset of expired messages."""
