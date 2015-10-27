@@ -108,6 +108,14 @@
         <li class="accordion-navigation clearfix">
           <a href="#goal-{{goal.id}}"><div class="pull-right">{{ goal|label }}</div> {{ goal }}</a>
           <div id="goal-{{ goal.id }}" class="content{% if forloop.first %} active{% endif %}">
+
+          {# Link to the goal's detail page #}
+          <p class="text-right" style="margin:0;padding:0">
+            <a href="{{ goal.get_absolute_url }}" class="button tiny" target="_blank">
+              <i class="fa fa-external-link"></i> View Goal: {{ goal }}
+            </a>
+          </p>
+
           {% for bs in goal.behavior_set.all %}
             <dl>
               <dt class="clearfix">
