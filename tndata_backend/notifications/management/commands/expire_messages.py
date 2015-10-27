@@ -41,6 +41,14 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            '--type',
+            action='store',
+            dest='content_type',
+            default=None,
+            help="Remove all messages for the given content type's model name."
+        )
+
+        parser.add_argument(
             '--all',
             action='store_true',
             dest='remove_all',
@@ -92,6 +100,13 @@ class Command(BaseCommand):
             # Remove all GCMMessages scheduled after the give date.
             dt = self._parse_date(options['after_date'])
             qs = GCMMessage.objects.filter(deliver_on__gte=dt)
+            self._delete(qs)
+
+        elif options['content_type']:
+            ct = options['content_type']
+            if ct == 'None':
+                ct = None
+            qs = GCMMessage.objects.filter(content_type__model=ct)
             self._delete(qs)
 
         elif options['remove_all']:
