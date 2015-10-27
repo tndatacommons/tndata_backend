@@ -70,9 +70,9 @@ class TestCreateNotifications(TestCase):
             call_command('create_notifications')
 
             # We should have logged a 'finished' message
-            logger.warning.assert_called_with("Created 3 notification messages.")
+            logger.warning.assert_called_with("Created 2 notification messages.")
 
         # Count the number of notifications that should exist for the user.
         # 3 total, 2 actions and 1 behavior
-        self.assertEqual(user.gcmmessage_set.all().count(), 3)
-        self.assertEqual(user.gcmmessage_set.filter(content_type=None).count(), 1)
+        self.assertEqual(user.gcmmessage_set.all().count(), 2)
+        self.assertEqual(user.gcmmessage_set.filter(content_type=None).count(), 0)

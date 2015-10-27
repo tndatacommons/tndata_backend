@@ -1,11 +1,7 @@
 import logging
-
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-
-from goals.models import Trigger, UserAction
+from goals.models import UserAction
 from notifications.models import GCMDevice, GCMMessage
-from notifications.settings import DEFAULTS
 from utils.user_utils import to_utc
 
 
@@ -22,18 +18,12 @@ class SingleItemList(list):
 
 
 class Command(BaseCommand):
-    help = 'Creates notification Messages for users Actions & Behaviors'
+    help = 'Generates GCM notification messages for users.'
     _log_messages = SingleItemList()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._messages_created = 0
-        self._behavior_trigger = Trigger.objects.get_default_behavior_trigger()
-
-    def _get_behavior_trigger_localtime(self, user):
-        # Return the behavior trigger in the user's timezone.
-        t = self._behavior_trigger.next(user=user)
-        return t
 
     def write_log(self):
         for msg, error in self._log_messages:
@@ -43,22 +33,6 @@ class Command(BaseCommand):
             else:
                 logger.warning(msg)
                 self.stdout.write(msg)
-
-    def create_behavior_message(self, user):
-        """Create a single notification for ALL of a user's selected Behaviors."""
-        try:
-            # create(self, user, title, message, deliver_on, obj=None)
-            m = GCMMessage.objects.create(
-                user,
-                DEFAULTS['DEFAULT_TITLE'],
-                DEFAULTS['DEFAULT_TEXT'],
-                self._get_behavior_trigger_localtime(user)
-            )
-            if m is not None:
-                self._messages_created += 1
-        except GCMDevice.DoesNotExist:
-            msg = "User {0} has not registered a Device".format(user)
-            self._log_messages.append((msg, ERROR))
 
     def create_message(self, user, obj, title, message, delivery_date):
         if delivery_date is None:
@@ -81,24 +55,8 @@ class Command(BaseCommand):
         # Make sure everything is ok before we run this.
         self.check()
 
-        # Schedule notifications for Behaviors (1 per user) IFF the user has
-        # selected any Behaviors.
-        User = get_user_model()
-
-        # Only those users with registered devices
-        users = User.objects.filter(gcmdevice__isnull=False)
-
-        # Schedule Behavior Notifications for those with selected Behaviors
-        # that are both published and are within published categories.
-        users = users.filter(
-            userbehavior__isnull=False,
-            userbehavior__behavior__state='published'
-        )
-        for user in users.distinct():
-            self.create_behavior_message(user)
-
         # Schedule upcoming notifications for all UserActions with:
-        # - published Actions
+        # - published Actions (whose parent behavior is also published)
         # - users that have a GCMDevice registered
         useractions = UserAction.objects.filter(
             action__state='published',
