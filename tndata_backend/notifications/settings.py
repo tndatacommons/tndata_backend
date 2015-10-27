@@ -17,15 +17,3 @@ if GCM['API_KEY'] is None:
     raise ImproperlyConfigured(
         "This app requires an GCM API key. Please specify a GCM.API_KEY setting."
     )
-
-
-DEFAULTS = getattr(project_settings, 'NOTIFICATIONS', {})
-if DEFAULTS.get('DEFAULT_TITLE') is None:
-    DEFAULTS['DEFAULT_TITLE'] = "Stay On Course"
-if DEFAULTS.get('DEFAULT_TEXT') is None:
-    DEFAULTS['DEFAULT_TEXT'] = "Check in with Compass to stay on track toward your goals"
-
-# IF the notification isn't associated with some content-object, what should we
-# send as the default `object_type`?  (default is 'behavior')
-if DEFAULTS.get('DEFAULT_OBJECT_TYPE') is None:
-    DEFAULTS['DEFAULT_OBJECT_TYPE'] = "behavior"

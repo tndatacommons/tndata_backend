@@ -13,7 +13,7 @@ from django.utils import timezone
 from jsonfield import JSONField
 from pushjack import GCMClient
 from . managers import GCMMessageManager
-from . settings import DEFAULTS, GCM
+from . settings import GCM
 from . signals import notification_snoozed
 
 logger = logging.getLogger("loggly_logs")
@@ -214,10 +214,8 @@ class GCMMessage(models.Model):
         NOTE: This payload has a limit of 4096 bytes.
         """
         object_type = None
-        object_id = None
-        if self.content_type and self.object_id:
+        if self.content_type:  # If we have a content type, use it's name.
             object_type = self.content_type.name.lower()
-            object_id = self.object_id
 
         user_mapping_id = None
         if self.content_object and hasattr(self.content_object, "get_user_mapping"):
@@ -228,8 +226,8 @@ class GCMMessage(models.Model):
             "id": self.id,
             "title": self.title,
             "message": self.message,
-            "object_type": object_type if object_type else DEFAULTS['DEFAULT_OBJECT_TYPE'],
-            "object_id": object_id,
+            "object_type": object_type,
+            "object_id": self.object_id,
             "user_mapping_id": user_mapping_id,
         }
 

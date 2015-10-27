@@ -9,11 +9,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from pushjack import GCMClient
-from .. models import (
-    GCMDevice,
-    GCMMessage,
-)
-from ..settings import DEFAULTS
+from .. models import GCMDevice, GCMMessage
 
 
 User = get_user_model()
@@ -203,7 +199,7 @@ class TestGCMMessage(TestCase):
                 "id": msg.id,
                 "title": "ASDF",
                 "message": "A asdf message",
-                "object_type": DEFAULTS['DEFAULT_OBJECT_TYPE'],
+                "object_type": None,
                 "object_id": None,
                 "user_mapping_id": None,
             }
@@ -223,7 +219,7 @@ class TestGCMMessage(TestCase):
             "id": msg.id,
             "title": "ASDF",
             "message": "A asdf message",
-            "object_type": DEFAULTS['DEFAULT_OBJECT_TYPE'],
+            "object_type": None,
             "object_id": None,
             "user_mapping_id": None,
         })
