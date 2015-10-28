@@ -108,9 +108,7 @@ class GCMMessage(models.Model):
 
     class Meta:
         ordering = ['-success', 'deliver_on', '-created_on']
-        unique_together = (
-            "user", "title", "message", "deliver_on", "object_id", "content_type"
-        )
+        unique_together = ("user", "title", "message", "deliver_on")
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
 
