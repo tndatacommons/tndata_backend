@@ -21,6 +21,12 @@ from .. settings import (
     DEFAULT_BEHAVIOR_TRIGGER_NAME,
     DEFAULT_BEHAVIOR_TRIGGER_TIME,
     DEFAULT_BEHAVIOR_TRIGGER_RRULE,
+    DEFAULT_MORNING_GOAL_TRIGGER_NAME,
+    DEFAULT_MORNING_GOAL_TRIGGER_TIME,
+    DEFAULT_MORNING_GOAL_TRIGGER_RRULE,
+    DEFAULT_EVENING_GOAL_TRIGGER_NAME,
+    DEFAULT_EVENING_GOAL_TRIGGER_TIME,
+    DEFAULT_EVENING_GOAL_TRIGGER_RRULE,
 )
 
 User = get_user_model()
@@ -136,6 +142,28 @@ class TestTriggerManager(TestCase):
 
         # Calling this again should return the original.
         obj = Trigger.objects.get_default_behavior_trigger()
+        self.assertEqual(obj.id, t.id)
+
+    def test_get_default_morning_goal_trigger(self):
+        # There's no default trigger at the moment, so calling this creates one
+        t = Trigger.objects.get_default_morning_goal_trigger()
+        self.assertEqual(t.name, DEFAULT_MORNING_GOAL_TRIGGER_NAME)
+        self.assertEqual(t.serialized_recurrences(), DEFAULT_MORNING_GOAL_TRIGGER_RRULE)
+        self.assertEqual(t.time.strftime("%H:%M"), DEFAULT_MORNING_GOAL_TRIGGER_TIME)
+
+        # Calling this again should return the original.
+        obj = Trigger.objects.get_default_morning_goal_trigger()
+        self.assertEqual(obj.id, t.id)
+
+    def test_get_default_evening_goal_trigger(self):
+        # There's no default trigger at the moment, so calling this creates one
+        t = Trigger.objects.get_default_evening_goal_trigger()
+        self.assertEqual(t.name, DEFAULT_EVENING_GOAL_TRIGGER_NAME)
+        self.assertEqual(t.serialized_recurrences(), DEFAULT_EVENING_GOAL_TRIGGER_RRULE)
+        self.assertEqual(t.time.strftime("%H:%M"), DEFAULT_EVENING_GOAL_TRIGGER_TIME)
+
+        # Calling this again should return the original.
+        obj = Trigger.objects.get_default_evening_goal_trigger()
         self.assertEqual(obj.id, t.id)
 
     def test_custom(self):

@@ -3,12 +3,19 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Q
+from django.template.defaultfilters import slugify
 from django.utils import timezone
 
 from .settings import (
     DEFAULT_BEHAVIOR_TRIGGER_NAME,
     DEFAULT_BEHAVIOR_TRIGGER_TIME,
     DEFAULT_BEHAVIOR_TRIGGER_RRULE,
+    DEFAULT_MORNING_GOAL_TRIGGER_NAME,
+    DEFAULT_MORNING_GOAL_TRIGGER_TIME,
+    DEFAULT_MORNING_GOAL_TRIGGER_RRULE,
+    DEFAULT_EVENING_GOAL_TRIGGER_NAME,
+    DEFAULT_EVENING_GOAL_TRIGGER_TIME,
+    DEFAULT_EVENING_GOAL_TRIGGER_RRULE,
 )
 
 from utils import user_utils
@@ -186,6 +193,10 @@ class TriggerManager(models.Manager):
 
     * get_default_behavior_trigger() -- returns the default trigger for
       `Behavior` reminders.
+    * get_default_morning_goal_trigger() -- returns the default trigger for the
+      morning Goal reminder.
+    * get_default_evening_goal_trigger() -- returns the default trigger for the
+      evening Goal reminder.
     * custom() -- the set of Triggers that are associated with a user
     * default() -- the set of default Triggers (not associated with a user)
     * for_user(user) -- returns all the triggers for a specific user.
@@ -206,6 +217,33 @@ class TriggerManager(models.Manager):
                 time=trigger_time,
                 recurrences=DEFAULT_BEHAVIOR_TRIGGER_RRULE,
 
+            )
+
+    def get_default_morning_goal_trigger(self):
+        """Retrieve (or create) the default morning Goal trigger."""
+        try:
+            return self.default().get(name_slug=slugify(DEFAULT_MORNING_GOAL_TRIGGER_NAME))
+        except self.model.DoesNotExist:
+            trigger_time = datetime.strptime(DEFAULT_MORNING_GOAL_TRIGGER_TIME, "%H:%M")
+            trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
+            return self.model.objects.create(
+                name=DEFAULT_MORNING_GOAL_TRIGGER_NAME,
+                trigger_type="time",
+                time=trigger_time,
+                recurrences=DEFAULT_MORNING_GOAL_TRIGGER_RRULE,
+            )
+
+    def get_default_evening_goal_trigger(self):
+        try:
+            return self.default().get(name_slug=slugify(DEFAULT_EVENING_GOAL_TRIGGER_NAME))
+        except self.model.DoesNotExist:
+            trigger_time = datetime.strptime(DEFAULT_EVENING_GOAL_TRIGGER_TIME, "%H:%M")
+            trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
+            return self.model.objects.create(
+                name=DEFAULT_EVENING_GOAL_TRIGGER_NAME,
+                trigger_type="time",
+                time=trigger_time,
+                recurrences=DEFAULT_EVENING_GOAL_TRIGGER_RRULE,
             )
 
     def custom(self, **kwargs):
