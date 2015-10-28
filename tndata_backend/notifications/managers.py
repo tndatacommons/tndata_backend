@@ -1,6 +1,6 @@
 import logging
 
-from datetime import datetime
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -30,7 +30,7 @@ class GCMMessageManager(models.Manager):
             deliver_on__lte=timezone.now()
         )
 
-    def _message_exists(self, user, title, message, deliver_on, obj):
+    def _message_exists(self, user, title, message, deliver_on, obj, content_type):
         """Check to see if a GCMMessage already exists; used to prevent creating
         duplicate messages.
 
@@ -42,24 +42,27 @@ class GCMMessageManager(models.Manager):
             'title': title,
             'message': message,
             'deliver_on': deliver_on,
-            'object_id': None,
+            'object_id': obj.id if obj else None,
+            'content_type': content_type,
         }
-        if obj:  # If there's a provided object, also check it's content_type
-            criteria.update({
-                'object_id': obj.id,
-                'content_type__model': obj.__class__.__name__.lower(),
-            })
-
+        # If there's a provided object, use it's content_type (which may be None)
+        if obj:
+            ct = ContentType.objects.get_for_model(obj.__class__)
+            criteria['content_type'] = ct
         return self.filter(**criteria).exists()
 
-    def create(self, user, title, message, deliver_on, obj=None):
+    def create(self, user, title, message, deliver_on, obj=None, content_type=None):
         """Creates an instance of a GCMMessage. Requires the following data:
 
         * user: an auth.User instance.
         * title: Title of the Message.
         * message: Content of the Message.
         * deliver_on: A datetime object: When the message will be delivered (UTC)
-        * obj: (optional) An object to which this message will be related.
+
+        The following are optional keyword arguments:
+
+        * obj: An object to which this message will be related.
+        * content_type: A `ContentType` to which this message will be related.
 
         This method first checks for duplicates, and will not create a duplicate
         version of a message.
@@ -80,7 +83,8 @@ class GCMMessageManager(models.Manager):
 
         try:
             # Don't create Duplicate messages:
-            if not self._message_exists(user, title, message, deliver_on, obj):
+            args = (user, title, message, deliver_on, obj, content_type)
+            if not self._message_exists(*args):
                 # Convert any times to UTC
                 if timezone.is_naive(deliver_on):
                     deliver_on = timezone.make_aware(deliver_on, timezone.utc)
@@ -104,6 +108,6 @@ class GCMMessageManager(models.Manager):
                 "Could not create GCMMessage for user (id = %s) and "
                 "obj = %s. Possibly Duplicate."
             )
-            logger.info(log_msg, user, obj)
+            logger.warning(log_msg, user, obj)
             msg = None  # Most likely a duplicate error.
         return msg
