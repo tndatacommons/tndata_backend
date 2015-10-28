@@ -58,6 +58,7 @@ TEMPLATES = [
                 "django.template.context_processors.media",
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
+                "django.core.context_processors.request",
                 "django.contrib.messages.context_processors.messages",
                 "utils.context_processors.staging",
             ),
@@ -84,6 +85,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'storages',
     'staticflatpages',
+    'waffle',
     # custom apps
     'goals',
     'notifications',
@@ -113,6 +115,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'waffle.middleware.WaffleMiddleware',
     'utils.middleware.TimezoneMiddleware',
     'utils.middleware.ResponseForbiddenMiddleware',
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
