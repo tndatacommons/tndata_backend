@@ -95,8 +95,11 @@ class GCMMessageManager(models.Manager):
                     'message': message,
                     'deliver_on': deliver_on,
                 }
+                if content_type is not None:
+                    kwargs['content_type'] = content_type
                 if obj is not None:
                     kwargs['content_object'] = obj
+
                 with transaction.atomic():
                     msg = self.model(**kwargs)
                     msg.save()
