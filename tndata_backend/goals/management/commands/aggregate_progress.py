@@ -77,8 +77,9 @@ class Command(BaseCommand):
             logger.error(err_msg.format("GoalProgress"), exc_info=1)
 
         try:
-            # Re-calculate action progress stats for GoalProgress objects over
-            # the history range in which we're interested.
+            # Re-calculate action progress stats, and daily/weekly/monthly
+            # checkin values for GoalProgress objects over the history range in
+            # which we're interested.
             dt = timezone.now() - timedelta(days=settings.PROGRESS_HISTORY_DAYS)
             for gp in GoalProgress.objects.filter(reported_on__contains=dt.date()):
                 gp.save()  # Triggers the re-calculation
