@@ -43,6 +43,7 @@ from userprofile.api import (
     api_logout,
     obtain_auth_token,
 )
+from rewards.api import FunContentViewSet
 from utils import views as utils_views
 
 
@@ -99,6 +100,9 @@ router.register(r'places', PlaceViewSet)
 router.register(r'users/places', UserPlaceViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
+
+# ViewSets from the rewards app
+router.register(r'rewards', FunContentViewSet)
 
 
 urlpatterns = [

@@ -89,6 +89,7 @@ INSTALLED_APPS = (
     # custom apps
     'goals',
     'notifications',
+    'rewards',
     'survey',
     'userprofile',
     'utils',
