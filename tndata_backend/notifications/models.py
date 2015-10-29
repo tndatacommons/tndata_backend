@@ -12,6 +12,11 @@ from django.utils import timezone
 
 from jsonfield import JSONField
 from pushjack import GCMClient
+from goals.settings import (
+    DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
+    DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
+)
+
 from . managers import GCMMessageManager
 from . settings import GCM
 from . signals import notification_snoozed
@@ -205,6 +210,29 @@ class GCMMessage(models.Model):
         devices = GCMDevice.objects.filter(is_active=True, user=self.user)
         return list(devices.values_list("registration_id", flat=True))
 
+    def _checkin(self, obj):
+        """NOTE: This alters notifications related to the goals app because
+        I couldn't think of a better place to put this. For the morning/evening
+        checkings, we want:
+
+        - object_type = 'checking'
+        - object_id = 1 for morning
+        - object_id = 2 for evening
+
+        Motivation for this: 1) we don't make the message content any larger,
+        and 2) it's easy to implement in the app. The downside is that this
+        logic is in the notifications app, when it really _should_ be part of
+        the goals app.
+
+        """
+        if obj['object_type'] == 'goal' and obj['object_id'] is None:
+            obj['object_type'] = 'checkin'
+            if obj['title'] == DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE:
+                obj['object_id'] = 1
+            elif obj['title'] == DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE:
+                obj['object_id'] = 2
+        return obj
+
     @property
     def content(self):
         """The Bundled content that gets sent as the messages payload.
@@ -220,14 +248,14 @@ class GCMMessage(models.Model):
             user_mapping = self.content_object.get_user_mapping(self.user)
             user_mapping_id = user_mapping.id if user_mapping else None
 
-        return {
+        return self._checkin({
             "id": self.id,
             "title": self.title,
             "message": self.message,
             "object_type": object_type,
             "object_id": self.object_id,
             "user_mapping_id": user_mapping_id,
-        }
+        })
 
     @property
     def content_json(self):

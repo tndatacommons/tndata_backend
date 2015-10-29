@@ -173,6 +173,49 @@ class TestGCMMessage(TestCase):
             ['REGISTRATIONID']
         )
 
+    def test__checkin(self):
+        from goals.settings import (
+            DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
+            DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
+        )
+        # Input does not change when it's an action
+        obj = {'object_id': 123, 'object_type': 'action', 'title': ''}
+        result = self.msg._checkin(obj)
+        self.assertDictEqual(obj, result)
+
+        # Input does not change when it's null
+        obj = {'object_id': None, 'object_type': None, 'title': ''}
+        result = self.msg._checkin(obj)
+        self.assertDictEqual(obj, result)
+
+        # Input does change when it's a goal with no object ID
+        obj = {
+            'object_id': None,
+            'object_type': 'goal',
+            'title': DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE
+        }
+        result = self.msg._checkin(obj)
+        expected = {
+            'object_id': 1,
+            'object_type': 'checkin',
+            'title': DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE
+        }
+        self.assertDictEqual(result, expected)
+
+        # Input does change when it's a goal with no object ID
+        obj = {
+            'object_id': None,
+            'object_type': 'goal',
+            'title': DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
+        }
+        result = self.msg._checkin(obj)
+        expected = {
+            'object_id': 2,
+            'object_type': 'checkin',
+            'title': DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE,
+        }
+        self.assertDictEqual(result, expected)
+
     def test_content(self):
         self.assertEqual(
             self.msg.content,
