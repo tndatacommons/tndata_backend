@@ -53,6 +53,6 @@ class FunContent(models.Model):
 
         """
         self.message = self.message.strip()
-        self.author = self.author.strip()
+        self.author = self.author.strip() if self.author else ''
         self._clean_keywords()
         super().save(*args, **kwargs)
