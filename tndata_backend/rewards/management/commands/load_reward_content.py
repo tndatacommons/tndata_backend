@@ -120,25 +120,26 @@ class Command(BaseCommand):
             for row in csv.reader(csvfile):
                 message = row[message_start:message_end]
                 message = message_separator.join(message)
+                if message:  # no content, so skip this...
 
-                keywords = []
-                if kw_column:
-                    keywords = row[kw_column]
-                    if kw_delimiter:
-                        keywords = keywords.split(kw_delimiter)
-                    else:
-                        keywords = [keywords]
+                    keywords = []
+                    if kw_column:
+                        keywords = row[kw_column]
+                        if kw_delimiter:
+                            keywords = keywords.split(kw_delimiter)
+                        else:
+                            keywords = [keywords]
 
-                author = ''
-                if author_column:
-                    author = row[author_column]
+                    author = ''
+                    if author_column:
+                        author = row[author_column]
 
-                FunContent.objects.create(
-                    message_type=message_type,
-                    message=message,
-                    author=author,
-                    keywords=keywords
-                )
-                created += 1
+                    FunContent.objects.create(
+                        message_type=message_type,
+                        message=message,
+                        author=author,
+                        keywords=keywords
+                    )
+                    created += 1
 
         self.stdout.write("Created {} items.".format(created))
