@@ -57,7 +57,7 @@ class FunContentViewSet(viewsets.ReadOnlyModelViewSet):
         if keywords:
             queryset = queryset.filter(keywords__contains=keywords)
 
-        if random:
+        if random and queryset.exists():
             pk = choice(queryset.values_list('id', flat=True))
             queryset = queryset.filter(pk=pk)
 
