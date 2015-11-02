@@ -78,6 +78,9 @@
               {% endif %}
             {% endfor %}
             </div>
+            <a class="pull-right button tiny secondary"
+               href="{% url 'goals:action-create' %}?date={{day|date:"Y-m-d"}}">
+               <i class="fa fa-plus"></i> Action</a>
           </td>
         {% endfor %}
         </tr>

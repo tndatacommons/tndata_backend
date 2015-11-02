@@ -675,6 +675,11 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         if action_type in [at[0] for at in Action.ACTION_TYPE_CHOICES]:
             self.action_type = action_type
 
+    def _set_trigger_date(self, date):
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d")
+        self._trigger_date = date
+
     def get_initial(self):
         data = self.initial.copy()
         data.update(self.form_class.INITIAL[self.action_type])
@@ -684,6 +689,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         # See if we're creating a specific Action type, and if so,
         # prepopulate the form with some initial data.
         self._set_action_type(request.GET.get("actiontype", self.action_type))
+        self._set_trigger_date(request.GET.get("date", None))
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -733,7 +739,12 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         context['behaviors'] = Behavior.objects.values(
             "id", "description", "informal_list"
         )
-        if 'trigger_form' not in context:
+        if 'trigger_form' not in context and self._trigger_date:
+            context['trigger_form'] = ActionTriggerForm(
+                prefix="trigger",
+                initial={'trigger_date': self._trigger_date.strftime("%m/%d/%Y")}
+            )
+        elif 'trigger_form' not in context and self._trigger_date:
             context['trigger_form'] = ActionTriggerForm(prefix="trigger")
         return context
 
