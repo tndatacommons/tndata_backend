@@ -206,8 +206,11 @@ class TriggerManager(models.Manager):
         """Retrieve (or create) the default Behavior trigger.
         """
         try:
-            return self.default().get(name_slug="default-behavior-reminder")
-        except self.model.DoesNotExist:
+            slug = slugify(DEFAULT_BEHAVIOR_TRIGGER_NAME)
+            trigger = self.default(name_slug=slug).first()
+            assert trigger is not None
+            return trigger
+        except (self.model.DoesNotExist, AssertionError):
             trigger_time = datetime.strptime(DEFAULT_BEHAVIOR_TRIGGER_TIME, "%H:%M")
             trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
             return self.model.objects.create(
@@ -220,8 +223,11 @@ class TriggerManager(models.Manager):
     def get_default_morning_goal_trigger(self):
         """Retrieve (or create) the default morning Goal trigger."""
         try:
-            return self.default().get(name_slug=slugify(DEFAULT_MORNING_GOAL_TRIGGER_NAME))
-        except self.model.DoesNotExist:
+            slug = slugify(DEFAULT_MORNING_GOAL_TRIGGER_NAME)
+            trigger = self.default(name_slug=slug).first()
+            assert trigger is not None
+            return trigger
+        except (self.model.DoesNotExist, AssertionError):
             trigger_time = datetime.strptime(DEFAULT_MORNING_GOAL_TRIGGER_TIME, "%H:%M")
             trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
             return self.model.objects.create(
@@ -232,8 +238,11 @@ class TriggerManager(models.Manager):
 
     def get_default_evening_goal_trigger(self):
         try:
-            return self.default().get(name_slug=slugify(DEFAULT_EVENING_GOAL_TRIGGER_NAME))
-        except self.model.DoesNotExist:
+            slug = slugify(DEFAULT_EVENING_GOAL_TRIGGER_NAME)
+            trigger = self.default(name_slug=slug).first()
+            assert trigger is not None
+            return trigger
+        except (self.model.DoesNotExist, AssertionError):
             trigger_time = datetime.strptime(DEFAULT_EVENING_GOAL_TRIGGER_TIME, "%H:%M")
             trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
             return self.model.objects.create(
