@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import permission_required, user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Avg, Q
+from django.db.models import Avg, Count, Q
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
@@ -320,6 +320,7 @@ class CategoryListView(ContentViewerMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.annotate(Count('usercategory'))
         return queryset.prefetch_related("goal_set", "goal_set__behavior_set")
 
 
@@ -402,6 +403,7 @@ class GoalListView(ContentViewerMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.annotate(Count('usergoal'))
         return queryset.prefetch_related("behavior_set", "categories")
 
 
@@ -547,6 +549,7 @@ class BehaviorListView(ContentViewerMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.annotate(Count('userbehavior'))
         return queryset.prefetch_related(
             "goals", "goals__categories", "action_set"
         )
@@ -642,6 +645,7 @@ class ActionListView(ContentViewerMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        queryset = queryset.annotate(Count('useraction'))
         return queryset.select_related(
             "behavior__title",
             'default_trigger__time',

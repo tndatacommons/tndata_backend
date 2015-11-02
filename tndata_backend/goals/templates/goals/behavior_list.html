@@ -26,6 +26,7 @@
         <th>Title</th>
         <th style="width:200px;max-width: 200px;">Informal List</th>
         <th style="width:200px;max-width: 200px;">Related Content</th>
+        <th>Selected By</th>
       </tr>
       </thead>
       <tbody>
@@ -92,6 +93,7 @@
               </li>
             </ul>
           </td>
+          <td>{{ behavior.userbehavior__count }}</td>
         </tr>
         {% endwith %}
       {% endfor %}

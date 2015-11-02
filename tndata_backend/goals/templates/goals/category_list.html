@@ -27,6 +27,7 @@
         <th>Colors</th>
         <th>Title</th>
         <th>Child Content</th>
+        <th>Selected By</th>
       </tr>
       </thead>
       <tbody>
@@ -94,6 +95,7 @@
               </li>
             </ul>
           </td>
+          <td>{{ category.usercategory__count }}</td>
         </tr>
         {% endwith %}
       {% endfor %}

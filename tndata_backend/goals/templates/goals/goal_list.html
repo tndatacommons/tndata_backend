@@ -26,6 +26,7 @@
         <th>Behaviors</th>
         <th>Categories</th>
         <th>Icon</th>
+        <th>Selected By</th>
       </tr>
       </thead>
       <tbody>
@@ -53,6 +54,7 @@
             {% endif %}
           {% endwith %}
         </td>
+        <td>{{ goal.usergoal__count }}</td>
         </tr>
       {% endfor %}
       </tbody>

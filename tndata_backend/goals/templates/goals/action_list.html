@@ -29,6 +29,7 @@
         <th>Trigger Repeat</th>
         <th>Behavior</th>
         <th>Icon</th>
+        <th>Selected By</th>
       </tr>
       </thead>
       <tbody>
@@ -60,6 +61,7 @@
               {% endif %}
             {% endwith %}
           </td>
+          <td>{{ action.useraction__count }}</td>
         </tr>
       {% endfor %}
       </tbody>
