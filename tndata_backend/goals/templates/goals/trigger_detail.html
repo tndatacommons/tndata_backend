@@ -12,7 +12,7 @@
 
 {% block content %}
   <div class="row">
-    <div class="large-6 small-12 columns">
+    <div class="large-12 small-12 columns">
       <h1>{{ trigger.name }} {% goal_object_controls trigger %}</h1>
 
       <div data-alert class="alert-box info">
@@ -27,6 +27,26 @@
         <dt>Date</dt><dd>{{ trigger.trigger_date|default:"not set"}}</dd>
         <dt>Recurrences</dt><dd>{{ trigger.recurrences_as_text }}</dd>
         <dt>RRULE data</dt><dd><code>{{ trigger.serialized_recurrences}}</code></dd>
+        <dt>Default for Action:</dt>
+        <dd>
+          {% if trigger.action_default %}
+            <a href="{{ trigger.action_default.get_absolute_url }}">
+              {{ trigger.action_default }}</a>
+          {% else %}
+            None
+          {% endif %}
+        </dd>
+        <dt>Default for Behavior(s):</dt>
+        <dd>
+          {% if trigger.behavior_set.exists %}
+            {% for behavior in trigger.behavior_set.all %}
+              <a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a><br/>
+            {% endfor %}
+          {% else %}
+            None
+          {% endif %}
+        </dd>
+
       </dl>
     </div>
     <div class="large-6 small-12 columns">
