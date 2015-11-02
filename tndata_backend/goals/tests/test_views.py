@@ -2136,6 +2136,28 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertIn("actions", resp.context)
         self.assertIn("behaviors", resp.context)
 
+    def test_admin_get_with_actiontype_params(self):
+        self.client.login(username="admin", password="pass")
+        url = '{}?actiontype={}'.format(self.url, Action.TINY)
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("form", resp.context)
+        self.assertEqual(
+            resp.context['form'].initial['action_type'],
+            Action.TINY
+        )
+
+    def test_admin_get_with_date_get_params(self):
+        self.client.login(username="admin", password="pass")
+        url = '{}?date={}'.format(self.url, "2015-12-25")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("trigger_form", resp.context)
+        self.assertEqual(
+            resp.context['trigger_form'].initial['trigger_date'],
+            "12/25/2015"
+        )
+
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
@@ -2175,6 +2197,15 @@ class TestActionCreateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Action.objects.filter(title="New").exists())
+
+    def test_admin_post_and_review(self):
+        self.client.login(username="admin", password="pass")
+        payload = self.payload
+        payload.update({"review": 1})
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        qs = Action.objects.filter(title="New", state='pending-review')
+        self.assertTrue(qs.exists())
 
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
