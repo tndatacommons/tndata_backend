@@ -215,7 +215,7 @@ class GCMMessage(models.Model):
         I couldn't think of a better place to put this. For the morning/evening
         checkings, we want:
 
-        - object_type = 'checking'
+        - object_type = 'checkin'
         - object_id = 1 for morning
         - object_id = 2 for evening
 
