@@ -669,6 +669,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
     action_type = Action.CUSTOM
+    trigger_date = None
 
     def _set_action_type(self, action_type):
         """Ensure the provided action type is valid."""
@@ -677,8 +678,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
 
     def _set_trigger_date(self, date):
         if date:
-            date = datetime.strptime(date, "%Y-%m-%d")
-        self._trigger_date = date
+            self.trigger_date = datetime.strptime(date, "%Y-%m-%d")
 
     def get_initial(self):
         data = self.initial.copy()
@@ -739,12 +739,12 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         context['behaviors'] = Behavior.objects.values(
             "id", "description", "informal_list"
         )
-        if 'trigger_form' not in context and self._trigger_date:
+        if 'trigger_form' not in context and self.trigger_date:
             context['trigger_form'] = ActionTriggerForm(
                 prefix="trigger",
-                initial={'trigger_date': self._trigger_date.strftime("%m/%d/%Y")}
+                initial={'trigger_date': self.trigger_date.strftime("%m/%d/%Y")}
             )
-        elif 'trigger_form' not in context and self._trigger_date:
+        elif 'trigger_form' not in context:
             context['trigger_form'] = ActionTriggerForm(prefix="trigger")
         return context
 

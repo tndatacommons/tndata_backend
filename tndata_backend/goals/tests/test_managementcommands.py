@@ -17,13 +17,13 @@ from .. models import (
 class TestCreateNotifications(TestCase):
     """Tests for the `create_notifications` management command."""
 
-    def test_create_notificaitons_no_content(self):
+    def test_create_notifications_no_content(self):
         log_path = "goals.management.commands.create_notifications.logger"
         with patch(log_path) as logger:
             call_command('create_notifications')
 
             # We should have logged a 'finished' message
-            logger.warning.assert_called_with("Created 0 notification messages.")
+            logger.warning.assert_called_with("Created 0 notifications.")
 
     def test_create_notifications_with_content(self):
         User = get_user_model()
@@ -70,7 +70,7 @@ class TestCreateNotifications(TestCase):
             call_command('create_notifications')
 
             # We should have logged a 'finished' message
-            logger.warning.assert_called_with("Created 2 notification messages.")
+            logger.warning.assert_called_with("Created 2 notifications.")
 
         # Count the number of notifications that should exist for the user.
         # 3 total, 2 actions and 1 behavior
