@@ -179,22 +179,22 @@ urlpatterns = [
         name='trigger-list'
     ),
     url(
-        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/update/$',
+        r'^triggers/(?P<pk>\d+)/update/$',
         views.TriggerUpdateView.as_view(),
         name='trigger-update'
     ),
     url(
-        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/delete/$',
+        r'^triggers/(?P<pk>\d+)/delete/$',
         views.TriggerDeleteView.as_view(),
         name='trigger-delete'
     ),
     url(
-        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/duplicate/$',
+        r'^triggers/(?P<pk>\d+)/duplicate/$',
         views.TriggerDuplicateView.as_view(),
         name='trigger-duplicate'
     ),
     url(
-        r'^triggers/(?P<pk>\d+)-(?P<name_slug>.+)/$',
+        r'^triggers/(?P<pk>\d+)/$',
         views.TriggerDetailView.as_view(),
         name='trigger-detail'
     ),

@@ -284,9 +284,7 @@ class TestTrigger(TestCase):
         )
 
     def test__str__(self):
-        expected = "Test Trigger  12:34 weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
-        actual = "{}".format(self.trigger)
-        self.assertEqual(expected, actual)
+        self.assertEqual("{}".format(self.trigger), "Test Trigger")
 
     def test__localize_time(self):
         t = Trigger(name="X", time=time(12, 34))
@@ -303,21 +301,21 @@ class TestTrigger(TestCase):
     def test_get_absolute_url(self):
         self.assertEqual(
             self.trigger.get_absolute_url(),
-            "/goals/triggers/{0}-test-trigger/".format(self.trigger.id)
+            "/goals/triggers/{0}/".format(self.trigger.id)
 
         )
 
     def test_get_update_url(self):
         self.assertEqual(
             self.trigger.get_update_url(),
-            "/goals/triggers/{0}-test-trigger/update/".format(self.trigger.id)
+            "/goals/triggers/{0}/update/".format(self.trigger.id)
 
         )
 
     def test_get_delete_url(self):
         self.assertEqual(
             self.trigger.get_delete_url(),
-            "/goals/triggers/{0}-test-trigger/delete/".format(self.trigger.id)
+            "/goals/triggers/{0}/delete/".format(self.trigger.id)
 
         )
 
