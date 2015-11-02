@@ -103,7 +103,6 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     * user: User to which the trigger belongs (will be `null` for this endpoint)
     * name: A unique name for a trigger.
     * name_slug: A web-friendly version of the name.
-    * trigger_type: Type of trigger; should be "time" or "place"
     * time: for "time" trigger types, the time at which an alert is sent.
     * location: Location information (for "place" type triggers)
     * recurrences: For "time" triggers, this is an iCalendar (rfc2445) format.

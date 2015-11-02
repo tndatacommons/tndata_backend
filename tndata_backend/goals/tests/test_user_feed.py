@@ -77,21 +77,18 @@ class TestUserProgress(TestCase):
             cls.t1 = Trigger.objects.create(
                 user=cls.user,
                 name="a1-trigger",
-                trigger_type="time",
                 time=time(22, 0),
                 recurrences="RRULE:FREQ=DAILY"
             )
             cls.t2 = Trigger.objects.create(
                 user=cls.user,
                 name="a2-trigger",
-                trigger_type="time",
                 time=time(22, 30),
                 recurrences="RRULE:FREQ=DAILY"
             )
             cls.t3 = Trigger.objects.create(
                 user=cls.user,
                 name="a3-trigger",
-                trigger_type="time",
                 time=time(23, 0),
                 recurrences="RRULE:FREQ=DAILY"
             )
@@ -388,7 +385,6 @@ class TestUserFeed(TestCase):
             cls.trigger = Trigger.objects.create(
                 user=cls.user,
                 name="test-trigger-for-action",
-                trigger_type="time",
                 time=time(22, 0),
                 recurrences="RRULE:FREQ=DAILY"
             )

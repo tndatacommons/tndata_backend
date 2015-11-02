@@ -118,7 +118,6 @@ class TestTriggerManager(TestCase):
 
         cls.default_trigger = Trigger.objects.create(
             name="Default Trigger",
-            trigger_type="time",
             time=time(12, 34),
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
@@ -126,7 +125,6 @@ class TestTriggerManager(TestCase):
         cls.custom_trigger = Trigger.objects.create(
             user=cls.user,
             name="A Custom Trigger",
-            trigger_type="time",
             trigger_date=date(2243, 7, 4),
             time=time(12, 34),
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",

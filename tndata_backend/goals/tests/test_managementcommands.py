@@ -35,7 +35,6 @@ class TestCreateNotifications(TestCase):
         # Some test content
         default_trigger = Trigger.objects.create(
             name="default",
-            trigger_type="time",
             time=time(12, 34),
             recurrences="RRULE:FREQ=DAILY"
         )
@@ -53,7 +52,6 @@ class TestCreateNotifications(TestCase):
         custom_trigger = Trigger.objects.create(
             user=user,
             name="test custom trigger",
-            trigger_type="time",
             time=time(9, 30),
             recurrences="RRULE:FREQ=DAILY"
         )

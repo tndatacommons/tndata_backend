@@ -23,7 +23,6 @@
       <thead>
       <tr>
         <th>Name</th>
-        <th>Type</th>
         <th>Time</th>
         <th>Recurrence</th>
         <th>Action</th>
@@ -36,7 +35,6 @@
           <td>
             <a href="{{ trigger.get_absolute_url }}">{{ trigger.name }}</a>
           </td>
-          <td>{{ trigger.get_trigger_type_display }}</td>
           <td>{{ trigger.time|default:"-" }}</td>
           <td>{{ trigger.recurrences_as_text }}</td>
           <td>{{ trigger.action_default.title|default:"-" }}</td>

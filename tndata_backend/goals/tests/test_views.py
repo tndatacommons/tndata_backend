@@ -1162,7 +1162,6 @@ class TestTriggerListView(TestCaseWithGroups):
         # Create Trigger
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
-            trigger_type="time",
             time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
@@ -1207,7 +1206,6 @@ class TestTriggerDetailView(TestCaseWithGroups):
         # Create a Trigger
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
-            trigger_type="time",
             time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
@@ -1250,14 +1248,12 @@ class TestTriggerCreateView(TestCaseWithGroups):
         cls.url = reverse("goals:trigger-create")
         cls.non_recurring_payload = {
             'name': "Test Trigger",
-            'trigger_type': "time",
             'time': "",
             'recurrences': "",
         }
 
         cls.recurring_payload = {
             'name': "Recurring",
-            'trigger_type': "time",
             'time': "13:30",
             'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
         }
@@ -1335,14 +1331,12 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         # Create a Trigger
         self.trigger = Trigger.objects.create(
             name="Test Trigger",
-            trigger_type="time",
             time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
         self.url = self.trigger.get_update_url()
         self.payload = {
             "name": "Changed",
-            "trigger_type": self.trigger.trigger_type,
             "time": "13:30",
             "recurrences": 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
         }
@@ -1416,7 +1410,6 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         # Create a Trigger
         self.trigger = Trigger.objects.create(
             name="Test Trigger",
-            trigger_type="time",
             time=time(13, 30, tzinfo=pytz.UTC),
             recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
         )
@@ -1591,7 +1584,6 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         )
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-            trigger_type="time"
         )
         cls.payload = {'title': 'New', 'goals': cls.goal.id}
 
@@ -1661,7 +1653,6 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
         super(cls, TestBehaviorDuplicateView).setUpTestData()
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-            trigger_type="time"
         )
         cls.behavior = Behavior.objects.create(title="Test Behavior")
         cls.url = cls.behavior.get_duplicate_url()
@@ -1777,7 +1768,6 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         )
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-            trigger_type="time"
         )
         cls.payload = {'title': 'U', 'goals': cls.goal.id}
 

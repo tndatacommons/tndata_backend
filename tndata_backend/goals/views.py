@@ -515,7 +515,6 @@ class TriggerDuplicateView(TriggerCreateView):
             obj = self.get_object()
             initial.update({
                 "name": "Copy of {0}".format(obj.name),
-                "trigger_type": obj.trigger_type,
                 "time": obj.time,
                 "recurrences": obj.recurrences,
             })

@@ -410,11 +410,6 @@ class Trigger(URLMixin, models.Model):
     urls_fields = ['pk', 'name_slug']
 
     # Data Fields
-    TRIGGER_TYPES = (
-        ('time', 'Time'),
-        ('place', 'Place'),
-    )
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -430,12 +425,6 @@ class Trigger(URLMixin, models.Model):
                   "can select it later."
     )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    trigger_type = models.CharField(
-        max_length=10,
-        choices=TRIGGER_TYPES,
-        default="time",
-        help_text='The type of Trigger used, e.g. a time-based trigger'
-    )
     location = models.CharField(
         max_length=256,
         blank=True,
@@ -474,14 +463,6 @@ class Trigger(URLMixin, models.Model):
             ("decline_trigger", "Can Decline Triggers"),
             ("publish_trigger", "Can Publish Triggers"),
         )
-
-    @property
-    def is_time_trigger(self):
-        return self.trigger_type == "time"
-
-    @property
-    def is_place_trigger(self):
-        return self.trigger_type == "place"
 
     def _localize_time(self):
         """Adds the UTC timezone info to self.time."""

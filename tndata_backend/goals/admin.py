@@ -125,7 +125,7 @@ admin.site.register(models.Goal, GoalAdmin)
 
 class TriggerAdmin(UserRelatedModelAdmin):
     list_display = (
-        'combined', 'email', 'trigger_type', 'next', 'serialized_recurrences',
+        'combined', 'email', 'next', 'serialized_recurrences',
         'location',
     )
     prepopulated_fields = {"name_slug": ("name", )}

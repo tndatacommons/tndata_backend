@@ -47,7 +47,6 @@ def print_triggers():
     Trigger.objects.filter(name="---testing this---").delete()
     t = Trigger.objects.create(
         name="---testing this---",
-        trigger_type="time",
         time=time(9, 0),  # 9am
         #trigger_date=date(2015, 8, 1),
         #time=time(13, 0),  # 1pm

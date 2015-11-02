@@ -68,18 +68,16 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Type</th>
-          <th>Location</th>
+          <th>Time</th>
+          <th>Recurrences</th>
         </tr>
       </thead>
       <tbody>
       {% for trigger in triggers%}
         <tr>
           <td><a href="{{ trigger.get_absolute_url }}">{{ trigger }}</a></td>
-          <td>{{ trigger.get_trigger_type_display }}</td>
-          <td>
-            {% if trigger.is_time_trigger %}N/A{% else %}
-              {{ trigger.location }}{% endif %}</td>
+          <td>{{ trigger.time }}</td>
+          <td>{{ trigger.recurrences_as_text }}</td>
         </tr>
       {% endfor %}
       </tbody>

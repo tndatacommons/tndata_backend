@@ -178,12 +178,11 @@ class UserActionManager(models.Manager):
 
     def with_only_default_triggers(self):
         """Returns a queryset of UserAction objects that do NOT have a custom
-        trigger, but whose Action does include a default (time) trigger."""
+        trigger, but whose Action does include a default trigger."""
         qs = self.get_queryset()
         return qs.filter(
             custom_trigger__isnull=True,
             action__default_trigger__isnull=False,
-            action__default_trigger__trigger_type="time"
         )
 
 
@@ -213,7 +212,6 @@ class TriggerManager(models.Manager):
             trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
             return self.model.objects.create(
                 name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-                trigger_type="time",
                 time=trigger_time,
                 recurrences=DEFAULT_BEHAVIOR_TRIGGER_RRULE,
 
@@ -228,7 +226,6 @@ class TriggerManager(models.Manager):
             trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
             return self.model.objects.create(
                 name=DEFAULT_MORNING_GOAL_TRIGGER_NAME,
-                trigger_type="time",
                 time=trigger_time,
                 recurrences=DEFAULT_MORNING_GOAL_TRIGGER_RRULE,
             )
@@ -241,7 +238,6 @@ class TriggerManager(models.Manager):
             trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
             return self.model.objects.create(
                 name=DEFAULT_EVENING_GOAL_TRIGGER_NAME,
-                trigger_type="time",
                 time=trigger_time,
                 recurrences=DEFAULT_EVENING_GOAL_TRIGGER_RRULE,
             )
@@ -275,7 +271,6 @@ class TriggerManager(models.Manager):
         trigger = self.create(
             user=user,
             name=name,
-            trigger_type="time",
             time=time,
             trigger_date=date,
             recurrences=rrule,

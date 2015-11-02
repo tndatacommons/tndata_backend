@@ -316,7 +316,6 @@ class ActionTriggerForm(forms.ModelForm):
     """A form for creating a default trigger while creating an action. The
     Trigger object returned by this form (e.g. when calling .save()) will:
 
-    - have trigger_type = 'time'
     - an auto-generated hash as a name.
 
     """
@@ -338,7 +337,6 @@ class ActionTriggerForm(forms.ModelForm):
 
     def save(self, *args, **kwargs):
         obj = super().save(*args, **kwargs)
-        obj.trigger_type = "time"
         obj.name = date_hash()
         return obj
 
@@ -369,7 +367,7 @@ class TriggerForm(forms.ModelForm):
 
     class Meta:
         model = Trigger
-        fields = ['name', 'trigger_type', 'time', 'trigger_date', 'recurrences']
+        fields = ['name', 'time', 'trigger_date', 'recurrences']
         widgets = {
             "time": TimeSelectWidget(),
             "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),

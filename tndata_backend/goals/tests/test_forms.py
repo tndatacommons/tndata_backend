@@ -115,7 +115,6 @@ class TestBehaviorForm(TestCase):
     def setUpTestData(cls):
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-            trigger_type="time"
         )
 
     def test_unbound(self):
@@ -265,14 +264,13 @@ class TestTriggerForm(TestCase):
     def test_unbound(self):
         form = TriggerForm()
         fields = sorted([
-            'name', 'trigger_date', 'trigger_type', 'time', 'recurrences'
+            'name', 'trigger_date', 'time', 'recurrences'
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):
         data = {
             'name': 'New Trigger',
-            'trigger_type': 'time',
             'time': '',
             'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
         }

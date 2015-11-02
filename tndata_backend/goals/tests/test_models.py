@@ -261,7 +261,6 @@ class TestTrigger(TestCase):
     def setUpTestData(cls):
         cls.trigger = Trigger.objects.create(
             name="Test Trigger",
-            trigger_type="time",
             time=time(12, 34),
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
@@ -270,7 +269,6 @@ class TestTrigger(TestCase):
         """Test various recurrences formats"""
         payload = {
             "name": "A",
-            "trigger_type": "time",
             "time": time(12, 34),
             "recurrences": "RRULE:FREQ=DAILY"
         }
@@ -291,14 +289,14 @@ class TestTrigger(TestCase):
         self.assertEqual(expected, actual)
 
     def test__localize_time(self):
-        t = Trigger(name="X", trigger_type="time", time=time(12, 34))
+        t = Trigger(name="X", time=time(12, 34))
         self.assertEqual(t.time, time(12, 34))
         t._localize_time()
         self.assertEqual(t.time, time(12, 34, tzinfo=timezone.utc))
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        trigger = Trigger.objects.create(name="New Name", trigger_type="time")
+        trigger = Trigger.objects.create(name="New Name")
         trigger.save()
         self.assertEqual(trigger.name_slug, "new-name")
 
@@ -354,7 +352,6 @@ class TestTrigger(TestCase):
         t = Trigger.objects.create(
             user=u,
             name="User's test Trigger",
-            trigger_type="time",
             time=time(12, 34),
         )
 
@@ -385,24 +382,13 @@ class TestTrigger(TestCase):
             # No date or time should return None
             self.assertIsNone(Trigger().get_alert_time())
 
-    def test_next_for_place_triggers_is_none(self):
-        """Ensure that next returns the next day's event."""
-        # returns none when trigger_type == 'place'
-        trigger = Trigger.objects.create(
-            name="Place Test Trigger",
-            trigger_type="place",
-        )
-        self.assertIsNone(trigger.next())
-        trigger.delete()
-
     def test_next_when_no_time_or_date(self):
         """Ensure that next none when there's no time, recurrence, or date"""
-        self.assertIsNone(Trigger(trigger_type="time").next())
+        self.assertIsNone(Trigger().next())
 
     def test_next(self):
         trigger = Trigger.objects.create(
             name="Daily Test Trigger",
-            trigger_type="time",
             time=time(12, 34),
             recurrences="RRULE:FREQ=DAILY",
         )
@@ -433,7 +419,6 @@ class TestTrigger(TestCase):
         yields the correct value via it's `next` method."""
         trigger = Trigger.objects.create(
             name="Date-Trigger",
-            trigger_type="time",
             time=time(12, 34),
             trigger_date=date(2222, 3, 15),
         )
@@ -457,7 +442,6 @@ class TestTrigger(TestCase):
         t = Trigger.objects.create(
             name="x",
             time=time(12, 30),
-            trigger_type="time",
             recurrences=rrule
         )
 
@@ -497,7 +481,6 @@ class TestTrigger(TestCase):
             name="x",
             time=time(12, 30),
             trigger_date=date(2015, 8, 2),
-            trigger_type="time",
             recurrences=rrule
         )
 
@@ -536,7 +519,6 @@ class TestTrigger(TestCase):
             name="x",
             time=time(12, 30),
             trigger_date=date(2015, 8, 1),
-            trigger_type="time",
             recurrences=rrule
         )
 
@@ -578,7 +560,6 @@ class TestTrigger(TestCase):
             name="x",
             time=time(9, 0),
             trigger_date=date(2015, 10, 1),
-            trigger_type="time",
             recurrences=rrule
         )
 
@@ -607,7 +588,6 @@ class TestTrigger(TestCase):
             name="x",
             time=time(19, 0),
             trigger_date=date(2015, 8, 17),
-            trigger_type="time",
             recurrences=rrule
         )
 
@@ -661,7 +641,6 @@ class TestTrigger(TestCase):
             name="x",
             time=time(9, 0),  # 9am
             trigger_date=date(2015, 8, 1),
-            trigger_type="time",
             recurrences=rrule
         )
 
@@ -692,7 +671,6 @@ class TestTrigger(TestCase):
         """A Default trigger, with no user input should return UTC time"""
         trigger = Trigger.objects.create(
             name="Test Default",
-            trigger_type="time",
             time=time(23, 59),
             recurrences='RRULE:FREQ=DAILY'
         )
@@ -709,7 +687,6 @@ class TestTrigger(TestCase):
 
         trigger = Trigger.objects.create(
             name="Test Default",
-            trigger_type="time",
             time=time(23, 59),
             recurrences='RRULE:FREQ=DAILY'
         )
@@ -728,7 +705,6 @@ class TestTrigger(TestCase):
         trigger = Trigger.objects.create(
             user=user,
             name="User Custom Trigger",
-            trigger_type="time",
             time=time(23, 59),
             recurrences='RRULE:FREQ=DAILY'
         )
