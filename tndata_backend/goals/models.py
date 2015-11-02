@@ -406,7 +406,7 @@ class Trigger(URLMixin, models.Model):
     # URLMixin attributes
     urls_app_namespace = "goals"
     urls_model_name = "trigger"
-    urls_fields = ['pk', 'name_slug']
+    urls_fields = ['pk']
 
     # Data Fields
     user = models.ForeignKey(
@@ -417,13 +417,10 @@ class Trigger(URLMixin, models.Model):
     )
     name = models.CharField(
         max_length=128,
-        unique=True,
         db_index=True,
-        help_text="Give this trigger a helpful name. It must be unique, and "
-                  "will be used in drop-down lists and other places where you"
-                  "can select it later."
+        help_text="A human-friendly name for this trigger"
     )
-    name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
+    name_slug = models.SlugField(max_length=128, db_index=True)
     time = models.TimeField(
         blank=True,
         null=True,
@@ -442,13 +439,10 @@ class Trigger(URLMixin, models.Model):
     )
 
     def __str__(self):
-        df = "%Y-%m-%d"
-        d = '' if self.trigger_date is None else self.trigger_date.strftime(df)
-        t = '' if self.time is None else self.time.strftime("%H:%M")
-        r = self.recurrences_as_text()
-        return "{0} {1} {2} {3}".format(self.name, d, t, r)
+        return self.name if self.name else "Unnamed Trigger"
 
     class Meta:
+        ordering = ['name', 'id']
         verbose_name = "Trigger"
         verbose_name_plural = "Triggers"
         permissions = (

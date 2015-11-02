@@ -313,12 +313,7 @@ class GoalForm(forms.ModelForm):
 
 
 class ActionTriggerForm(forms.ModelForm):
-    """A form for creating a default trigger while creating an action. The
-    Trigger object returned by this form (e.g. when calling .save()) will:
-
-    - an auto-generated hash as a name.
-
-    """
+    """A form for creating a default trigger while creating an action."""
     recurrences = RecurrenceField(
         help_text="Select the rules to define how this reminder should repeat."
     )
