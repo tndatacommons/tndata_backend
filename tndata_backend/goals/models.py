@@ -391,12 +391,11 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
 
 class Trigger(URLMixin, models.Model):
-    """This class encapsulates date (and in the future, location) -based triggers
-    for Behaviors and Actions.
+    """This class encapsulates date-based triggers for Behaviors and Actions.
 
-    For date or time-based items, a Trigger consists of:
+    A Trigger consists of:
 
-    1. A time (optional); When during the day should the notification be sent.
+    1. A date and/or time; when a notification should be sent.
     2. Recurrences: How frequently (every day, once a month, etc) should the
        notification be sent.
 
@@ -425,12 +424,6 @@ class Trigger(URLMixin, models.Model):
                   "can select it later."
     )
     name_slug = models.SlugField(max_length=128, db_index=True, unique=True)
-    location = models.CharField(
-        max_length=256,
-        blank=True,
-        help_text="Only used when Trigger type is location. "
-                  "Can be 'home', 'work', or a (lat, long) pair."
-    )
     time = models.TimeField(
         blank=True,
         null=True,

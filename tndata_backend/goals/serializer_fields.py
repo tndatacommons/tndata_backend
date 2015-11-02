@@ -96,7 +96,6 @@ class CustomTriggerField(serializers.RelatedField):
             'name_slug': value.name_slug,
             'time': value.time.isoformat() if value.time else None,
             'trigger_date': value.trigger_date,
-            'location': value.location,
             'recurrences': value.serialized_recurrences(),
             'recurrences_display': value.recurrences_as_text(),
         }
@@ -251,7 +250,6 @@ class SimpleTriggerField(serializers.RelatedField):
             'name': value.name,
             'name_slug': value.name_slug,
             'time': value.time,
-            'location': value.location,
             'recurrences': value.serialized_recurrences(),
             'recurrences_display': value.recurrences_as_text(),
         }

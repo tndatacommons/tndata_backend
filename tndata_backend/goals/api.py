@@ -104,7 +104,6 @@ class TriggerViewSet(viewsets.ReadOnlyModelViewSet):
     * name: A unique name for a trigger.
     * name_slug: A web-friendly version of the name.
     * time: for "time" trigger types, the time at which an alert is sent.
-    * location: Location information (for "place" type triggers)
     * recurrences: For "time" triggers, this is an iCalendar (rfc2445) format.
       This field is optional and may be null.
     * recurrences_display: human-readible information for `recurrences`

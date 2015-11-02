@@ -183,7 +183,6 @@ class TestTriggerAPI(APITestCase):
         self.assertEqual(obj['name'], self.trigger.name)
         self.assertEqual(obj['name_slug'], self.trigger.name_slug)
         self.assertEqual(obj['time'], self.trigger.time)
-        self.assertEqual(obj['location'], self.trigger.location)
         self.assertEqual(obj['recurrences'], self.trigger.recurrences)
         self.assertEqual(obj['recurrences_display'], self.trigger.recurrences_as_text())
         self.assertEqual(obj['next'], self.trigger.next())
