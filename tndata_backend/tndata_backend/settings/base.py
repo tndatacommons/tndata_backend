@@ -79,6 +79,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'crispy_forms_foundation',
     'django_extensions',
+    'haystack',
     'jsonfield',
     'recurrence',
     'rest_framework',
@@ -94,6 +95,18 @@ INSTALLED_APPS = (
     'userprofile',
     'utils',
 )
+
+
+# django-haystack settings
+# TODO: Set this up for production
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:9200/',
+        'INDEX_NAME': 'haystack',
+    },
+}
+
 
 # Settings for Google Cloud Messaging.
 GCM = {

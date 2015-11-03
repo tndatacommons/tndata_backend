@@ -32,3 +32,5 @@ django-querycount==0.2.0
 django-waffle==0.11
 -e git+https://github.com/bradmontgomery/clog.git@master#egg=clog-dev
 model-mommy==1.2.5
+elasticsearch==2.1.0
+django-haystack==2.4.1
