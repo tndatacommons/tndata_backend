@@ -1,0 +1,5 @@
+{{ object.title }}
+{{ object.subtitle }}
+{{ object.description }}
+{{ object.more_info }}
+{{ object.outcome }}

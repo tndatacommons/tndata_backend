@@ -1,0 +1,6 @@
+{{ object.title }}
+{{ object.behavior.title }}
+{{ object.description }}
+{{ object.more_info }}
+{{ object.external_resource_name }}
+{{ object.external_resource }}
