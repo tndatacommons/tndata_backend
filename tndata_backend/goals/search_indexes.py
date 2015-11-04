@@ -1,10 +1,23 @@
 from haystack import indexes
 from goals.models import Action, Behavior, Category, Goal
 
+# -----------------------------------------------------------------------------
+# NOTE on haystack fields; see https://goo.gl/1S79dX
+#
+# - text is used by convention, and is the blob of text (read from a template)
+#   that gets indexed.
+# - id, django_ct, django_id & content are reserved for use by haystack
+# - Stored Fields can help prevent DB access when displaying results, e.g.
+#   title, description, etc.
+# -----------------------------------------------------------------------------
+
 
 class CategoryIndex(indexes.SearchIndex, indexes.Indexable):
     """A search index for all public, non-packaged Categories."""
     text = indexes.CharField(document=True, use_template=True)
+    title = indexes.CharField(model_attr='title')
+    description = indexes.CharField(model_attr='description')
+    url = indexes.CharField(model_attr='get_absolute_url')
     pub_date = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
@@ -18,6 +31,9 @@ class CategoryIndex(indexes.SearchIndex, indexes.Indexable):
 class GoalIndex(indexes.SearchIndex, indexes.Indexable):
     """A search index for all public, non-packaged Goals."""
     text = indexes.CharField(document=True, use_template=True)
+    title = indexes.CharField(model_attr='title')
+    description = indexes.CharField(model_attr='description')
+    url = indexes.CharField(model_attr='get_absolute_url')
     pub_date = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
@@ -31,6 +47,9 @@ class GoalIndex(indexes.SearchIndex, indexes.Indexable):
 class BehaviorIndex(indexes.SearchIndex, indexes.Indexable):
     """A search index for all published Behavior."""
     text = indexes.CharField(document=True, use_template=True)
+    title = indexes.CharField(model_attr='title')
+    description = indexes.CharField(model_attr='description')
+    url = indexes.CharField(model_attr='get_absolute_url')
     pub_date = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
@@ -44,6 +63,9 @@ class BehaviorIndex(indexes.SearchIndex, indexes.Indexable):
 class ActionIndex(indexes.SearchIndex, indexes.Indexable):
     """A search index for all published Actions."""
     text = indexes.CharField(document=True, use_template=True)
+    title = indexes.CharField(model_attr='title')
+    description = indexes.CharField(model_attr='description')
+    url = indexes.CharField(model_attr='get_absolute_url')
     pub_date = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):

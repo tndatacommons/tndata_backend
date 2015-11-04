@@ -27,11 +27,10 @@ p.search-container {
         <div>
           <span class="label secondary">{{ result.model_name|title }}</span>
           <strong>
-            <a href="{{ result.object.get_absolute_url }}">
-            {{ result.object.title }}</a></strong> |
+            <a href="{{ result.url }}">
+            {{ result.title }}</a></strong> |
           <small>{{ result.pub_date }}</small>
-          <blockquote>
-            {{ result.object.description }}</blockquote>
+          <blockquote>{{ result.description }}</blockquote>
         </div>
 
       {% empty %}
