@@ -34,3 +34,4 @@ django-waffle==0.11
 model-mommy==1.2.5
 elasticsearch==2.1.0
 django-haystack==2.4.1
+drf-haystack==1.5.5
