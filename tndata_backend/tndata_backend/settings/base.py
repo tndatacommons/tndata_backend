@@ -98,7 +98,7 @@ INSTALLED_APPS = (
 
 
 # django-haystack settings
-# TODO: Set this up for production
+# TODO: CHANGE this for production
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
