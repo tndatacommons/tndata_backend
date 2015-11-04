@@ -18,7 +18,7 @@ class CategoryIndex(indexes.SearchIndex, indexes.Indexable):
     title = indexes.CharField(model_attr='title')
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
-    pub_date = indexes.DateTimeField(model_attr='updated_on')
+    updated_on = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
         return Category
@@ -34,7 +34,7 @@ class GoalIndex(indexes.SearchIndex, indexes.Indexable):
     title = indexes.CharField(model_attr='title')
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
-    pub_date = indexes.DateTimeField(model_attr='updated_on')
+    updated_on = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
         return Goal
@@ -50,7 +50,7 @@ class BehaviorIndex(indexes.SearchIndex, indexes.Indexable):
     title = indexes.CharField(model_attr='title')
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
-    pub_date = indexes.DateTimeField(model_attr='updated_on')
+    updated_on = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
         return Behavior
@@ -66,7 +66,7 @@ class ActionIndex(indexes.SearchIndex, indexes.Indexable):
     title = indexes.CharField(model_attr='title')
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
-    pub_date = indexes.DateTimeField(model_attr='updated_on')
+    updated_on = indexes.DateTimeField(model_attr='updated_on')
 
     def get_model(self):
         return Action
