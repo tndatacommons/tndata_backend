@@ -16,6 +16,7 @@ from goals.api import (
     GoalProgressViewSet,
     GoalViewSet,
     PackageEnrollmentViewSet,
+    SearchViewSet,
     TriggerViewSet,
     UserActionViewSet,
     UserBehaviorViewSet,
@@ -66,6 +67,7 @@ class IndexView(TemplateView):
 router = routers.DefaultRouter()
 
 # ViewSets from the goals app.
+router.register(r'search', SearchViewSet, base_name="search")
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet, base_name="trigger")

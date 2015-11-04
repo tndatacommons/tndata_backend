@@ -1,5 +1,7 @@
 from django.db.models import Q
 from django.utils import timezone
+from drf_haystack.viewsets import HaystackViewSet
+from drf_haystack.filters import HaystackAutocompleteFilter
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
@@ -1423,3 +1425,34 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
         if not obj.accepted and new_obj.accepted:
             new_obj.accept()
         return result
+
+
+class SearchViewSet(HaystackViewSet):
+    """This endpoint lists results from our Search Index (which contains content
+    for [Categories](/api/categories/), [Goals](/api/goals/),
+    [Behaviors](/api/behaviors/), and [Actions](/api/actions/).
+
+    ## Searching
+
+    To search this content, simply send a GET request with a `q` parameter
+    containing your search terms. For example:
+
+        {'q': 'wellness'}
+
+    ## Results
+
+    A paginated list of results will be returned, and each result will contain
+    the following attributes:
+
+    * `id`: The ID of the object represented (a Category, Goal, Behavior, or Action)
+    * `object_type`: Lowercase string representing the type of object (`category`,
+      `goal`, `behavior`, or `action`)
+    * `title`: The title of the object.
+    * `description`: The full description of the object.
+    * `updated_on`: The date/time on which the object was last updated.
+    * `text`: The full text stored in the search index. This is the content
+      against which search is performed.
+
+    """
+    index_models = [models.Category, models.Goal, models.Behavior, models.Action]
+    serializer_class = serializers.SearchSerializer

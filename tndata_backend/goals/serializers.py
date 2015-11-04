@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from drf_haystack.serializers import HaystackSerializer
 from rest_framework import serializers
+
 from . models import (
     Action,
     Behavior,
@@ -14,7 +16,12 @@ from . models import (
     UserBehavior,
     UserCategory,
 )
-
+from . search_indexes import (
+    ActionIndex,
+    BehaviorIndex,
+    CategoryIndex,
+    GoalIndex,
+)
 from . serializer_fields import (
     CategoryListField,
     CustomTriggerField,
@@ -32,6 +39,20 @@ from . serializer_fields import (
 
 
 User = get_user_model()
+
+
+class SearchSerializer(HaystackSerializer):
+    class Meta:
+        index_classes = [CategoryIndex, GoalIndex, BehaviorIndex, ActionIndex]
+        # Fields that are *on* the search index
+        fields = ['title', 'description', 'url', 'updated_on', 'text']
+        field_aliases = {'q': 'text'}
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        # include the object's model type and id
+        result.update({'object_type': instance.model_name, 'id': instance.pk})
+        return result
 
 
 class ObjectTypeModelSerializer(serializers.ModelSerializer):
