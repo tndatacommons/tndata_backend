@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load highlight %}
 
 {% block head %}
 <style type="text/css">
@@ -9,6 +10,7 @@ p.search-container {
   border-top: 1px solid #ccc;
   padding:1em;
 }
+.highlighted {background-color: #ffc;text-decoration: underline;}
 </style>
 {% endblock %}
 
@@ -26,11 +28,12 @@ p.search-container {
       {% for result in page.object_list %}
         <div>
           <span class="label secondary">{{ result.model_name|title }}</span>
-          <strong>
-            <a href="{{ result.url }}">
-            {{ result.title }}</a></strong> |
+          <strong><a href="{{ result.url }}">{{ result.title }}</a></strong> |
           <small>{{ result.pub_date }}</small>
-          <blockquote>{{ result.description }}</blockquote>
+          <blockquote>
+            {% highlight result.description with query max_length 255 %}
+            {#{{ result.description }}#}
+          </blockquote>
         </div>
 
       {% empty %}
