@@ -9,6 +9,17 @@
 {% block head %}
   {{ block.super }}
   <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+  div.legend ul.bar-legend {list-style-type: none;padding:0;margin:0;}
+  div.legend ul.bar-legend li span {
+    display:inline-block;
+    border:1px solid black;
+    width:18px;
+    height: 18px;
+    padding:0;
+    margin: 0 5px 0 0;
+  }
+  </style>
 {% endblock %}
 
 
@@ -22,50 +33,14 @@
   days.
 </p>
 
-{# --- Behavior Progress / Actions Performed--- #}
-<div class="row">
-  <div class="large-12 small-12 columns">
-    <h2>Behavior Data</h2>
-    <p>The daily 3-point check-in data for behaviors, and the number of
-    actions completed.</p>
-
-    <canvas id="behavior-progress" width="970" height="400"></canvas>
-    <script>
-    var ctx = document.getElementById("behavior-progress").getContext("2d");
-    var data = {
-      labels: {{ behavior_labels|json|safe }},
-      datasets: [{% for status_data, ap_data in behavior_datasets %}
-        {
-            label: "{{status_data.label}}",
-            fillColor: "rgba(220,220,220,0.5)",
-            strokeColor: "rgba(220,220,220,0.8)",
-            highlightFill: "rgba(220,220,220,0.75)",
-            highlightStroke: "rgba(220,220,220,1)",
-            data: {{status_data.data|json|safe}},
-        },
-        {
-            label: "{{ap_data.label}}",
-            fillColor: "rgba(151,187,205,0.5)",
-            strokeColor: "rgba(151,187,205,0.8)",
-            highlightFill: "rgba(151,187,205,0.75)",
-            highlightStroke: "rgba(151,187,205,1)",
-            data: {{ap_data.data|json|safe}},
-        }
-      {% endfor %}]
-    }
-    var c = new Chart(ctx).Bar(data);
-    </script>
-
-  </div>
-</div> {# end .row #}
-
 {# --- Goal Actions --- #}
 <div class="row">
   <div class="large-12 small-12 columns">
     <h2>Goal Actions</h2>
+    <div id="goal-actions-legend" class="pull-right panel legend"></div>
     <p>The following is an average completion percentage for user's goals. This
     is just a simple average of the <code>GoalProgress</code>'s daily, weekly,
-    and monthly data fields.</p>
+    and monthly data fields across all users for each day.</p>
 
     <canvas id="goal-actions" width="970" height="400"></canvas>
     <script>
@@ -100,6 +75,7 @@
       {% endfor %}]
     }
     var c = new Chart(ctx).Bar(data);
+    document.getElementById("goal-actions-legend").innerHTML = c.generateLegend();
     </script>
 
   </div>
@@ -110,8 +86,9 @@
 {# --- Goal Progress / Actions Performed--- #}
 <div class="row">
   <div class="large-12 small-12 columns">
-    <h2>Goal Progress Data</h2>
-    <p>The daily 3-point check-in data for behaviors, aggregated up to their
+    <h2>OLD: Goal Progress Data</h2>
+    <div id="goal-progress-legend" class="pull-right panel legend"></div>
+    <p>This is the daily Behavior (3-point) check-in aggregated up to their
     parent Goals. The following is a daily average for all users.</p>
 
     <canvas id="goal-progress" width="970" height="400"></canvas>
@@ -131,6 +108,7 @@
       {% endfor %}]
     }
     var c = new Chart(ctx).Bar(data);
+    document.getElementById("goal-progress-legend").innerHTML = c.generateLegend();
     </script>
 
   </div>
@@ -139,7 +117,8 @@
 {# --- Category Progress --- #}
 <div class="row">
   <div class="large-12 small-12 columns">
-    <h2>Category Progress</h2>
+    <h2>OLD: Category Progress</h2>
+    <div id="category-progress-legend" class="pull-right panel legend"></div>
     <p>The average, aggregated self-reported Behavior progress (on course,
     seeking, off-course) for the past {{ days_ago }} days. Each item in the chart
     below is an average for all users (values 0 - 3).</p>
@@ -161,129 +140,50 @@
       {% endfor %}]
     }
     var c = new Chart(ctx).Bar(data);
+    document.getElementById("category-progress-legend").innerHTML = c.generateLegend();
     </script>
 
   </div>
 </div> {# end .row #}
 
-
-
-
-{% comment %}
-
-{# --- Goal Progress --- #}
+{# --- Behavior Progress / Actions Performed--- #}
 <div class="row">
-  <div class="large-6 small-12 columns">
-    <h2>Goal Progress</h2>
-    <table>
-    <thead>
-      <tr>
-        <th>Goal</th>
-        <th>Behavior Score</th>
-        <th>Daily Actions</th>
-        <th>Daily Action Progress</th>
-        <th>Weekly Actions</th>
-        <th>Weekly Action Progress</th>
-        <th>Monthly Actions</th>
-        <th>Monthly Action Progress</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for gp in goal_progresses %}
-      <tr>
-        <td>{{ gp.goal }}</td>
-        <td>{{ gp.current_score }}</td>
-        <td>{{ gp.daily_actions_completed }} / {{ gp.daily_actions_total }}</td>
-        <td>{{ gp.daily_action_progress }}</td>
-        <td>{{ gp.weekly_actions_completed }} / {{ gp.weekly_actions_total }}</td>
-        <td>{{ gp.weekly_action_progress }}</td>
-        <td>{{ gp.actions_completed }} / {{ gp.actions_total }}</td>
-        <td>{{ gp.action_progress }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-  </div>
-  <div class="large-6 small-12 columns">
+  <div class="large-12 small-12 columns">
+    <h2>OLD: Behavior Data</h2>
+    <div id="behavior-progress-legend" class="pull-right panel legend"></div>
+    <p>Gray: The average daily 3-point Behavior check-in data for all users<br/>
+       Blue: The average daily number of actions completed for all users.</p>
 
-    <h3>Aggregated Behavior progress (3-point data)</h3>
-    <canvas id="goal-progress" width="500" height="500"></canvas>
+    <canvas id="behavior-progress" width="970" height="400"></canvas>
     <script>
-    // Get the context of the canvas element we want to select
-    var ctx = document.getElementById("goal-progress").getContext("2d");
-    var data = {
-      labels: [{% for gp in goal_progresses %}
-        "{{gp.reported_on|date:'M j'}}"{% if not forloop.last %},{% endif %}
-      {% endfor %}],
-      datasets: [
-      {% for gp in goal_progresses %}
-        {
-            label: "{{ gp.goal }}",
-            strokeColor: "{% random_color %}",
-            data: [{% for obj in goal_progresses %}
-              {% if obj.goal == gp.goal %}{{ obj.current_score }}{% endif %},
-            {% endfor %}]
-        }{% if not forloop.last %},{% endif %}
-      {% endfor %}]
-    }
-    var c = new Chart(ctx).Line(data);
-    </script>
-
-  </div>
-</div> {# end .row #}
-
-{# --- Behavior Progress --- #}
-<div class="row">
-  <div class="large-6 small-12 columns">
-    <h2>Behavior Progress</h2>
-    <table>
-    <thead>
-      <tr>
-        <th>Behavior</th>
-        <th>Status</th>
-        <th>Daily Actions</th>
-        <th>Daily Action Progress</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for bp in behavior_progresses %}
-      <tr>
-        <td>{{ bp.user_behavior.behavior }}</td>
-        <td>{{ bp.get_status_display }}</td>
-        <td>{{ bp.daily_actions_completed }} / {{ bp.daily_actions_total }}</td>
-        <td>{{ bp.daily_action_progress }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-  </div>
-  <div class="large-6 small-12 columns">
-
-    <h3>Aggregated Behavior status (3-point data)</h3>
-    <canvas id="behavior-progress" width="500" height="500"></canvas>
-    <script>
-    // Get the context of the canvas element we want to select
     var ctx = document.getElementById("behavior-progress").getContext("2d");
     var data = {
-      labels: [{% for bp in behavior_progresses %}
-        "{{bp.reported_on|date:'M j'}}"{% if not forloop.last %},{% endif %}
-      {% endfor %}],
-      datasets: [
-      {% for bp in behavior_progresses %}
+      labels: {{ behavior_labels|json|safe }},
+      datasets: [{% for status_data, ap_data in behavior_datasets %}
         {
-            label: "{{ bp.behavior }}",
-            strokeColor: "{% random_color %}",
-            data: [{% for obj in behavior_progresses %}
-              {% if obj.behavior == bp.behavior %}{{ obj.status }}{% endif %},
-            {% endfor %}]
-        }{% if not forloop.last %},{% endif %}
+            label: "{{status_data.label}}",
+            fillColor: "rgba(220,220,220,0.5)",
+            strokeColor: "rgba(220,220,220,0.8)",
+            highlightFill: "rgba(220,220,220,0.75)",
+            highlightStroke: "rgba(220,220,220,1)",
+            data: {{status_data.data|json|safe}},
+        },
+        {
+            label: "{{ap_data.label}}",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: {{ap_data.data|json|safe}},
+        }
       {% endfor %}]
     }
-    var c = new Chart(ctx).Line(data);
+    var c = new Chart(ctx).Bar(data);
+    document.getElementById("behavior-progress-legend").innerHTML = c.generateLegend();
     </script>
 
   </div>
 </div> {# end .row #}
-{% endcomment %}
+
 
 {% endblock %}
