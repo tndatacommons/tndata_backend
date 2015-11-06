@@ -7,6 +7,7 @@ This is our collection of Goals & Behaviors. They're organized as follows:
 Actions are the things we want to help people to do.
 
 """
+import hashlib
 import os
 import pytz
 
@@ -49,6 +50,35 @@ from .mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
 from .utils import clean_title, clean_notification, strip
 
 
+def _upload_path(path_format, instance, filename):
+    """Create an upload path (including a filename) for an uploaded file.
+
+    * path_format: A format string for some object type. It should have accept
+      one paramter: e.g. "/path/{}/dir/".
+    * instance: the instance of the model containing a FileField or ImageField.
+    * filename: original filename of the file.
+
+    This function will create a new filename that is a hash of the original and
+    the current time. Uploaded files whill always have a new filename.
+
+    """
+    original_filename, ext = os.path.splitext(filename)
+    hash_content = "{}-{}".format(filename, timezone.now().strftime("%s"))
+    filename = hashlib.md5(hash_content.encode("utf8")).hexdigest()
+    if ext:
+        filename += ext
+    path = path_format.format(type(instance).__name__.lower())
+    return os.path.join(path, filename)
+
+
+def _category_icon_path(instance, filename):
+    return _upload_path("goals/{}", instance, filename)
+
+
+def _catetgory_image_path(instance, filename):
+    return _upload_path("goals/{}/images", instance, filename)
+
+
 class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose.
 
@@ -82,11 +112,13 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="A short (250 character) description for this Category"
     )
     icon = models.ImageField(
-        upload_to="goals/category", null=True, blank=True,
+        upload_to=_category_icon_path,
+        null=True,
+        blank=True,
         help_text="Upload a square icon to be displayed for the Category."
     )
     image = models.ImageField(
-        upload_to="goals/category/images",
+        upload_to=_catetgory_image_path,
         null=True,
         blank=True,
         help_text="A Hero image to be displayed at the top of the Category pager"
@@ -253,6 +285,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     objects = CategoryManager()
 
 
+def _goal_icon_path(instance, filename):
+    return _upload_path("goals/{}", instance, filename)
+
+
 class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     # URLMixin attributes
@@ -297,7 +333,9 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
                   "Consider using bullets."
     )
     icon = models.ImageField(
-        upload_to="goals/goal", null=True, blank=True,
+        upload_to=_goal_icon_path,
+        null=True,
+        blank=True,
         help_text="Upload an icon (256x256) for this goal"
     )
     state = FSMField(default="draft")
@@ -644,14 +682,12 @@ class Trigger(URLMixin, models.Model):
 
 def _behavior_icon_path(instance, filename):
     """Return the path for uploaded icons for `Behavior` and `Action` objects."""
-    p = "goals/{0}/icons".format(type(instance).__name__.lower())
-    return os.path.join(p, filename)
+    return _upload_path("goals/{}/icons", instance, filename)
 
 
 def _behavior_img_path(instance, filename):
     """Return the path for uploaded images for `Behavior` and `Action` objects."""
-    p = "goals/{0}/images".format(type(instance).__name__.lower())
-    return os.path.join(p, filename)
+    return _upload_path("goals/{}/images", instance, filename)
 
 
 class BaseBehavior(ModifiedMixin, StateMixin, models.Model):
