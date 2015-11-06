@@ -1324,13 +1324,20 @@ class UserAction(models.Model):
     next_trigger_date = models.DateTimeField(
         blank=True,
         null=True,
+        editable=False,
         help_text="The next date/time that a notification for this action "
                   "will be triggered (this is auto-populated and is in UTC)."
     )
     # In order to calculate "today's stats" for completed vs incomplete
     # actions, we need to be able to query backwards at least a day to find
     # actions that were scheduled in the past 24 hours.
-    prev_trigger_date = models.DateTimeField(null=True)
+    prev_trigger_date = models.DateTimeField(
+        blank=True,
+        null=True,
+        editable=False,
+        help_text="The previous date/time that a notification for this action "
+                  "was be triggered (this is auto-populated and is in UTC)."
+    )
     primary_goal = models.ForeignKey(
         Goal,
         blank=True,
@@ -1381,6 +1388,14 @@ class UserAction(models.Model):
         NOTE: Always store this in UTC.
 
         """
+        # ---------------------------------------------------------------------
+        # NOTE: Some triggers have time, but no date or recurrence. These will
+        # automatically generate a `next` value IFF the current time is before
+        # the trigger's time; However, when these get queued up, it seems the
+        # prev_trigger_date eventually gets overwritten. We need to figure out
+        # how to write that value when it makes sense, given that triggers are
+        # queued up every few minutes.
+        # ---------------------------------------------------------------------
         trigger = self.trigger
         if trigger:
             # This trigger retuns the date in the user's timezone, so convert
@@ -1389,8 +1404,12 @@ class UserAction(models.Model):
             next_date = to_utc(next_date)
 
             # Save the previous trigger date, but don't overwrite on subsequent
-            # saves; Only save when `next_trigger_date` changes.
-            if next_date != self.next_trigger_date and next_date != self.prev_trigger_date:
+            # saves; Only save when `next_trigger_date` changes (and is not None)
+            next_changed = (
+                next_date != self.next_trigger_date and
+                next_date != self.prev_trigger_date
+            )
+            if next_changed and self.next_trigger_date:
                 self.prev_trigger_date = self.next_trigger_date
 
             self.next_trigger_date = next_date

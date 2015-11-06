@@ -1226,6 +1226,26 @@ class TestUserAction(TestCase):
         self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
         self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
 
+    @patch.object(UserAction, 'custom_trigger')
+    def test__set_next_trigger_date_when_next_is_none(self, mock_trigger):
+        # A non-None prev_trigger_date should not get overwritten by a None value.
+
+        # Set some initial values for the next/prev trigger fields.
+        self.ua.prev_trigger_date = tzdt(2015, 10, 8, 11, 30)
+        self.ua.next_trigger_date = None
+
+        mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)
+        self.ua._set_next_trigger_date()
+
+        # Next should have gotten updated, but prev should stay the saym
+        self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
+        self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 8, 11, 30))
+
+        # Calling again should NOT change anything.
+        self.ua._set_next_trigger_date()
+        self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
+        self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 8, 11, 30))
+
     def test_create_parent_user_behavior(self):
         """If a user somehow adds an Action without adding that Action's parent
         Behavior, the `create_parent_user_behavior` signal handler should
