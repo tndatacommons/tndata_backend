@@ -6,12 +6,63 @@ dates all at once.
 """
 from unittest.mock import patch
 from goals.models import Trigger
-from datetime import date, datetime, time
+from datetime import datetime, time
 from django.utils import timezone
 
 
 def tzdt(*args, **kwargs):
     return timezone.make_aware(datetime(*args), timezone=timezone.utc)
+
+
+def time_only_triggers():
+    # Triggers with a time, but NO date and NO recurrences.
+    triggers = Trigger.objects.filter(
+        time__isnull=False,
+        trigger_date__isnull=True,
+        recurrences__isnull=True
+    )
+    print("Found {}...".format(triggers.count()))
+    results = []
+    for t in triggers:
+        user_actions = t.useraction_set.all()
+        if user_actions.count() > 1:
+            ua_id = "x"
+            action_id = "x"
+            action = "MULTIPLE"
+        else:
+            ua = user_actions.first()
+            ua_id = ua.id
+            action_id = ua.action.id
+            action = ua.action.title
+
+        # 0 - Trigger id
+        # 1 - user email
+        # 2 - action id
+        # 3 - useraction id
+        # 4 - action title
+        # 5 - trigger time
+        # 6 - trigger next
+        results.append(
+            (t.id, t.user.email[:16], action_id, ua_id, action[:35], t.time, t.next())
+
+        )
+
+    results = sorted(results, key=lambda l: l[5])
+    for result in results:
+        print("{0:5}) {1:16} / ({2:4}/{3:4}) {4:35} -- [{5}] {6}".format(*result))
+
+    return triggers
+
+
+def _print_trigger(trigger):
+    print("Trigger Info:")
+    print("- {0}".format(trigger.recurrences_as_text()))
+    print("- time: {0}".format(trigger.time))
+    print("- date: {0}".format(trigger.trigger_date))
+    print("- recr: {0}".format(trigger.serialized_recurrences()))
+    print("- user: {0}".format(trigger.user))
+    print("- name: {0}".format(trigger.name))
+    print("---------------------------------------")
 
 
 def print_triggers():
@@ -53,12 +104,7 @@ def print_triggers():
         #trigger_date=date(2015, 8, 10),  # 8/17/2015
         recurrences=rule
     )
-    print("Trigger Info:")
-    print("- {0}".format(t.recurrences_as_text()))
-    print("- time: {0}".format(t.time))
-    print("- date: {0}".format(t.trigger_date))
-    print("- recr: {0}".format(t.serialized_recurrences()))
-    print("---------------------------------------")
+    _print_trigger(t)
 
     # Time format
     tf = "%a %x %X %Z"
