@@ -7,6 +7,7 @@
 {% block head %}
   {{ block.super }}
   <style type="text/css">
+  table {width: 100%;}
   table tbody tr td {vertical-align: top;}
   td.past {
     color: #888;
@@ -28,6 +29,7 @@
   </div>
 </form>
 
+{% if email %}
 <div class="row">
   <div class="large-6 small-12 columns">
     <h2>User Feed Data</h2>
@@ -185,7 +187,7 @@
   <caption>{{all_useractions.count}} <code>UserAction</code>s</caption>
   <thead>
     <tr>
-      <th>UserAction</th>
+      <th>UserAction / Goal</th>
       <th>Prev Trigger</th>
       <th>Next Trigger</th>
       <th>Scheduled today</th>
@@ -196,12 +198,18 @@
     <tr>
       <td>
         <strong>{{ ua.action }}</strong><br/>
-        <code>Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}</code><br/>
+        {% with goal=ua.get_primary_goal %}{% if goal %}
+          <a href="{{ goal.get_absolute_url }}" target="_blank">{{ goal }}</a>
+          <code>id = {{ goal.id }}</code>
+          <br/>
+        {% endif %}{% endwith %}
         <em>
         {% with recur=ua.trigger.recurrences_as_text %}
           {% if recur %}{{ recur }}{% else %}
             {{ua.trigger.trigger_date}}/{{ua.trigger.time}}{% endif %}
         {% endwith %}
+        </em><br/>
+        <code>Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}</code>
       </td>
       <td>
         {% if ua.next_trigger_date %}
@@ -236,6 +244,6 @@
   {% endfor %}
   </tbody>
 </table>
-
+{% endif %} {# not email #}
 
 {% endblock %}
