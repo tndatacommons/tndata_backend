@@ -33,6 +33,52 @@
   days.
 </p>
 
+
+{# --- UserCompletedActions --- #}
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <h2>User's Completed Actions</h2>
+    <div id="uca-legend" class="pull-right panel legend"></div>
+
+    <canvas id="uca-data" width="970" height="400"></canvas>
+    <script>
+    var ctx = document.getElementById("uca-data").getContext("2d");
+    var data = {
+      labels: {{ uca_labels|json|safe }},
+      datasets: [{% for completed, snoozed, dismissed in uca_datasets %}
+        {
+            label: "{{completed.label}}",
+            fillColor: "rgba(220,180,220,0.5)",
+            strokeColor: "rgba(220,180,220,0.8)",
+            highlightFill: "rgba(220,180,220,0.75)",
+            highlightStroke: "rgba(220,180,220,1)",
+            data: {{completed.data|json|safe}},
+        },
+        {
+            label: "{{snoozed.label}}",
+            fillColor: "rgba(151,187,205,0.5)",
+            strokeColor: "rgba(151,187,205,0.8)",
+            highlightFill: "rgba(151,187,205,0.75)",
+            highlightStroke: "rgba(151,187,205,1)",
+            data: {{snoozed.data|json|safe}},
+        },
+        {
+            label: "{{dismissed.label}}",
+            fillColor: "rgba(151,200,187,0.5)",
+            strokeColor: "rgba(151,200,187,0.8)",
+            highlightFill: "rgba(151,200,187,0.75)",
+            highlightStroke: "rgba(151,200,187,1)",
+            data: {{dismissed.data|json|safe}},
+        }
+      {% endfor %}]
+    }
+    var c = new Chart(ctx).Bar(data);
+    document.getElementById("uca-legend").innerHTML = c.generateLegend();
+    </script>
+
+  </div>
+</div> {# end .row #}
+
 {# --- Goal Actions --- #}
 <div class="row">
   <div class="large-12 small-12 columns">
