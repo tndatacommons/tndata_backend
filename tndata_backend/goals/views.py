@@ -973,23 +973,33 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
 def package_calendar(request, pk):
     category = get_object_or_404(Category, pk=pk)
     start = request.GET.get('d', None)
+
     if start is None:
+        # Start on the first day of the current month
         start = local_now(request.user)
+        start = to_localtime(datetime(start.year, start.month, 1), request.user)
     else:
         year, month = start.split('-')
         start = to_localtime(datetime(int(year), int(month), 1), request.user)
-    actions = category.actions.filter(default_trigger__isnull=False)
 
-    action_data = []
-    for action in actions:
-        dt = action.default_trigger.next()
-        if dt:
-            action_data.append((dt.date(), dt, action))
+    # Include recurrences for actions that have both a default trigger AND
+    # where those triggers have a time (otherwise they're essentially invalid)
+    actions = category.actions.filter(
+        default_trigger__isnull=False,
+        default_trigger__time__isnull=False  # exclude invalid triggers
+    )
 
     # note: start calendar on suday (6)
     cal = Calendar(firstweekday=6).monthdatescalendar(start.year, start.month)
 
+    action_data = []
+    for action in actions:
+        for dt in action.default_trigger.get_occurences(days=31):
+            action_data.append((dt.date(), dt, action))
+    action_data = sorted(action_data, key=lambda d: d[1].strftime("%Y%m%d%H%M"))
+
     ctx = {
+        'today': local_now(request.user),
         'category': category,
         'actions': action_data,
         'calendar': cal,
