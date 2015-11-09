@@ -1373,6 +1373,28 @@ def debug_progress(request):
     monthly_data = {'label': 'Goal Montly Actions', 'data': monthly}
     goal_actions_datasets.append((daily_data, weekly_data, monthly_data))
 
+    # User Completed Actions?
+    uca_labels = []
+    completed = []
+    snoozed = []
+    dismissed = []
+    for day in dates_range(days_ago):
+        uca_labels.append(day.strftime("%F"))
+        params = {
+            'user': user,
+            'updated_on__year': day.year,
+            'updated_on__month': day.month,
+            'updated_on__day': day.day,
+        }
+        results = UserCompletedAction.objects.filter(**params)
+        completed.append(results.filter(state=UserCompletedAction.COMPLETED).count())
+        snoozed.append(results.filter(state=UserCompletedAction.SNOOZED).count())
+        dismissed.append(results.filter(state=UserCompletedAction.DISMISSED).count())
+    completed_data = {'label': 'Completed Actions', 'data': completed}
+    snoozed_data = {'label': 'Snoozed Actions', 'data': snoozed}
+    dismissed_data = {'label': 'Dismissed Actions', 'data': dismissed}
+    uca_datasets = [(completed_data, snoozed_data, dismissed_data), ]
+
     context = {
         'searched_user': user,
         'form': form,
@@ -1388,6 +1410,8 @@ def debug_progress(request):
         'goal_progress_datasets': goal_progress_datasets,
         'goal_actions_labels': goal_actions_labels,
         'goal_actions_datasets': goal_actions_datasets,
+        'uca_labels': uca_labels,
+        'uca_datasets': uca_datasets,
     }
     return render(request, 'goals/debug_progress.html', context)
 
