@@ -1,5 +1,7 @@
+import logging
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
 from rest_framework import mixins, status, viewsets
@@ -15,6 +17,8 @@ from rest_framework.response import Response
 from . import models
 from . import permissions
 from . import serializers
+
+logger = logging.getLogger("loggly_logs")
 
 
 class PlaceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -366,6 +370,9 @@ class UserProfileViewSet(mixins.ListModelMixin,
         * timezone: A timezone string, e.g. "America/Chicago"
 
         """
+        if not settings.DEBUG:
+            log_msg = "User %s setting timezone to %s"
+            logger.info(log_msg % (request.user.id, request.data.get('timezone', None)))
         request.data['user'] = request.user.id
         return super(UserProfileViewSet, self).update(request, *args, **kwargs)
 
