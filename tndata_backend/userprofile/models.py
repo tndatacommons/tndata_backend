@@ -86,6 +86,7 @@ class UserProfile(models.Model):
         choices=[(tz, tz) for tz in pytz.all_timezones]
     )
     needs_onboarding = models.BooleanField(default=True, blank=True)
+    updated_on = models.DateTimeField(auto_now=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
