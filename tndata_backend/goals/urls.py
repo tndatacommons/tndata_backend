@@ -36,6 +36,11 @@ urlpatterns = [
         name='package-cta-email'
     ),
     url(
+        r'^packages/(?P<pk>\d+)/report/$',
+        views.package_report,
+        name='package-report'
+    ),
+    url(
         r'^packages/(?P<pk>\d+)/reminder/$',
         views.enrollment_reminder,
         name='package-reminder'

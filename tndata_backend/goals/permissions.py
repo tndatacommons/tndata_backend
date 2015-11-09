@@ -197,3 +197,11 @@ def is_content_author(user):
 def is_content_editor(user):
     """Verifies that a user is authenticated and a content editor."""
     return _is_superuser_or_in_group(user, CONTENT_EDITORS)
+
+
+def is_package_contributor(user):
+    """Ensures the user is either a superuser, staff, or a package contributor."""
+    if not user.is_authenticated():
+        return False
+    staff = user.is_superuser or user.is_staff
+    return staff or user.packagecontributor_set.exists()

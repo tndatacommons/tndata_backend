@@ -10,12 +10,14 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Avg, Count, Q
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.defaultfilters import timesince
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils import timezone
 
 from django_fsm import TransitionNotAllowed
 from userprofile.forms import UserForm
+from userprofile.models import UserProfile
 from utils.db import get_max_order
 from utils.forms import EmailForm, SetNewPasswordForm
 from utils.dateutils import dates_range
@@ -62,8 +64,9 @@ from . models import (
 from . permissions import (
     ContentPermissions,
     is_content_editor,
+    is_package_contributor,
     staff_required,
-    superuser_required
+    superuser_required,
 )
 from . utils import num_user_selections
 
@@ -1140,6 +1143,84 @@ class AcceptEnrollmentCompleteView(TemplateView):
             id__in=self.request.session.get("package_ids", [])
         )
         return context
+
+
+@user_passes_test(is_package_contributor, login_url='/goals/')
+def package_report(request, pk):
+    category = get_object_or_404(Category, pk=pk)
+    enrollees = category.packageenrollment_set.values_list('user', flat=True)
+
+    today = timezone.now()
+    days_ago = int(request.GET.get('days_ago', 30))
+    from_date = today - timedelta(days=days_ago)
+
+    # Are Users Completing Actions?
+    uca_labels = []
+    completed = []
+    snoozed = []
+    dismissed = []
+    for day in dates_range(days_ago):
+        uca_labels.append(day.strftime("%F"))
+        params = {
+            'user__in': enrollees,
+            'updated_on__year': day.year,
+            'updated_on__month': day.month,
+            'updated_on__day': day.day,
+        }
+        results = UserCompletedAction.objects.filter(**params)
+        completed.append(results.filter(state=UserCompletedAction.COMPLETED).count())
+        snoozed.append(results.filter(state=UserCompletedAction.SNOOZED).count())
+        dismissed.append(results.filter(state=UserCompletedAction.DISMISSED).count())
+
+    completed_data = {'label': 'Completed Actions', 'data': completed}
+    snoozed_data = {'label': 'Snoozed Actions', 'data': snoozed}
+    dismissed_data = {'label': 'Dismissed Actions', 'data': dismissed}
+    uca_datasets = [(completed_data, snoozed_data, dismissed_data), ]
+
+    # Popular Goals
+    usergoals = UserGoal.objects.filter(
+        user__in=enrollees,
+        goal__categories=category
+    ).values_list("goal__title", flat=True).distinct()
+    usergoals = Counter(usergoals)
+    usergoals_datasets = {
+        'label': 'Selected Goals',
+        'data': list(usergoals.values())
+    }
+    usergoals_labels = list(usergoals.keys())
+
+    # How long ago each enrollee's userprofile was updated. This corresponds
+    # to opening the app (since their timezone is updated every time).
+    profiles = UserProfile.objects.filter(user__in=enrollees)
+    accessed = profiles.datetimes('updated_on', 'day')  # TODO: change to updated_on
+    accessed = Counter([timesince(dt) for dt in accessed])
+    accessed = sorted(accessed.items())
+    accessed_labels = [a[0] for a in accessed]
+    accessed_datasets = {
+        'label': 'App Last Accessed',
+        'data': [a[1] for a in accessed]
+    }
+
+    # Count the unkown dates (which may happen because we haven't always tracked
+    unknown = profiles.filter(updated_on__isnull=True).count()
+    if unknown:
+        accessed_labels += ['Unkown']
+        accessed_datasets['data'] += [unknown]
+
+    context = {
+        'category': category,
+        'enrollees': enrollees,
+        'days_ago': days_ago,
+        'today': today,
+        'from_date': from_date,
+        'uca_labels': uca_labels,
+        'uca_datasets': uca_datasets,
+        'accessed_labels': accessed_labels,
+        'accessed_datasets': accessed_datasets,
+        'usergoals_datasets': usergoals_datasets,
+        'usergoals_labels': usergoals_labels,
+    }
+    return render(request, 'goals/package_report.html', context)
 
 
 def file_upload(request, object_type, pk):
