@@ -512,6 +512,7 @@ class TestUserProfilesAPI(APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.put(url, data)
+        self.assertEqual(UserProfile.objects.get(pk=self.p.id).timezone, 'America/New_York')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_put_userprofile_detail_needs_onboarding(self):
