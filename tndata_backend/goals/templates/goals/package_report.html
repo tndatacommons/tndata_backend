@@ -25,7 +25,7 @@
 
 {% block breadcrumbs %}
 <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
-<li><a href="{{ category.get_package_url }}">{{ category }}</a></li>
+<li><a href="{{ category.get_view_enrollment_url }}">{{ category }}</a></li>
 <li class="current">Reports</li>
 {% endblock %}
 
