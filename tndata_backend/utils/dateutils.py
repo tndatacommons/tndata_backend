@@ -1,9 +1,24 @@
+from collections import defaultdict
 from datetime import time, timedelta
 from django.utils import timezone
 
 import pytz
 
 from .user_utils import to_utc
+
+
+def timezone_lookup(tz):
+    """Given a timezone name (e.g. EST, CDT) or a timezone offset (e.g. -0600)
+    construct a dictionary of timezone names from pytz, and return the matching
+    timezone string.
+
+    """
+    tz_lookups = defaultdict(set)
+    for tzname in pytz.all_timezones:
+        dt = timezone.now().astimezone(pytz.timezone(tzname))
+        tz_lookups[dt.tzname()].add(tzname)
+        tz_lookups[dt.strftime("%z")].add(tzname)
+    return (tz_lookups[tz], tz_lookups)
 
 
 def dates_range(num_days):
