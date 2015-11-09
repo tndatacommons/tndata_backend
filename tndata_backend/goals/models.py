@@ -586,7 +586,7 @@ class Trigger(URLMixin, models.Model):
         tz = self.get_tz()
         if begin is None:
             begin = self.get_alert_time(tz)  # "today's" alert time.
-        end = begin + timedelta(days=30)  # alerts a month in the future
+        end = begin + timedelta(days=days)  # alerts a month in the future
         dates = list(self.recurrences.occurrences(
             dtstart=begin,
             dtend=end
