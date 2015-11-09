@@ -159,6 +159,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     package_contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
+        related_name="packagecontributor_set",
         help_text="The group of users that will contribute to content in "
                   "this category."
     )
