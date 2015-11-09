@@ -83,7 +83,7 @@ class UserProfile(models.Model):
         max_length=64,
         default="America/Chicago",
         blank=True,
-        choices=[(tz, tz) for tz in pytz.common_timezones]
+        choices=[(tz, tz) for tz in pytz.all_timezones]
     )
     needs_onboarding = models.BooleanField(default=True, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
