@@ -1,17 +1,18 @@
-from django.db.models import Q
+from datetime import timedelta
+from django.db.models import Avg, Q
 from django.utils import timezone
 from drf_haystack.viewsets import HaystackViewSet
-from drf_haystack.filters import HaystackAutocompleteFilter
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from utils.user_utils import local_day_range
 
 from . import models
 from . import serializers
+from . import settings
 from . mixins import DeleteMultipleMixin
 
 
@@ -1147,7 +1148,7 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
     following information:
 
     * `goal`: The ID for the Goal.
-    * `daily_checkin`: An integer value (TODO: Decide on range)
+    * `daily_checkin`: An integer value in the range 1-5 (inclusive)
 
     This will create a new GoalProgress snapshot. _However_, if an instance
     of a GoalProgress alread exists for the day in which this data is POSTed,
@@ -1159,6 +1160,30 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
     You may also update a GoalProgress by sending a PUT request to
     `/api/users/goals/progress/{id}/` containing the same information that
     you'd use to create a Goalprogress.
+
+    ## Getting Average Progress
+
+    You may set a GET request to the
+    [/api/users/goals/progress/average/](/api/users/goals/progress/average/]
+    endpoint to retrive an average daily and weekly progress. These values
+    are averaged over the past 7 days, and are compared with a given `current`
+    value.
+
+    For example, if the user's current goal progress feed back average is `5`,
+    send the following GET request:
+
+        /api/users/goals/progress/average/?current=5
+
+    The full result of this endpoint contains the following information:
+
+    * `daily_checkin_avg` - Average GoalProgress.daily_checkin values over
+      the past 7 days.
+    * `weekly_checkin_avg` - Average GoalProgress.weekly_checkin values over
+      the past 7 days.
+    * `better`: True if current is > daily_checkin_avg, False otherwise.
+    * `text`: Some display text based on the value of `better`.
+
+
 
     ----
 
@@ -1229,6 +1254,58 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
             data = self.serializer_class(gp).data
             return Response(data=data, status=status.HTTP_200_OK)
         return super().create(request, *args, **kwargs)
+
+    @list_route(permission_classes=[IsOwner], url_path='average')
+    def average(self, request, pk=None):
+        """Returns some average progress values for the user + some feedback
+        text comparing any given `current` value with the daily average.
+
+        Accepts a GET parameter for `current`: The user's current daily
+        checking average (i.e. the average value for all goals that the user
+        is currently checking in.)
+
+        Returns:
+
+        * `daily_checkin_avg` - Average GoalProgress.daily_checkin values over
+          the past 7 days.
+        * `weekly_checkin_avg` - Average GoalProgress.weekly_checkin values over
+          the past 7 days.
+        * `better`: True if current is > daily_checkin_avg, False otherwise.
+        * `text`: Some display text based on the value of `better`.
+
+        """
+        try:
+            user = request.user
+            thresh = timezone.now() - timedelta(days=7)
+            current = int(request.GET.get('current', 0))
+
+            gp = models.GoalProgress.objects.filter(
+                daily_checkin__gt=0,
+                reported_on__gte=thresh,
+                user=user
+            )
+            gp = gp.aggregate(Avg('daily_checkin'), Avg('weekly_checkin'))
+            daily = round((gp.get('daily_checkin__avg', 0) or 0), 2)
+            weekly = round((gp.get('weekly_checkin__avg', 0) or 0), 2)
+
+            better = current >= daily
+            if better:
+                text = settings.CHECKIN_BETTER
+            else:
+                text = settings.CHECKIN_WORSE
+            data = {
+                'daily_checkin_avg': daily,
+                'weekly_checkin_avg': weekly,
+                'better': better,
+                'text': text,
+            }
+            status_code = status.HTTP_200_OK
+            return Response(data=data, status=status_code)
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class BehaviorProgressViewSet(mixins.CreateModelMixin,
