@@ -1976,7 +1976,7 @@ class GoalProgress(models.Model):
     max_total = models.FloatField(default=0)
 
     # Daily check-in fields, for a user's "How are you doing on this Goal"
-    # data. Weekly and Montly values are averages over the past 7 and 30 days.
+    # data. Weekly and Monthly values are averages over the past 7 and 30 days.
     daily_checkin = models.IntegerField(default=0)
     weekly_checkin = models.FloatField(default=0)
     monthly_checkin = models.FloatField(default=0)
