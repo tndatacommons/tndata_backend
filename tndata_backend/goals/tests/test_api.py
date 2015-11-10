@@ -1913,8 +1913,6 @@ class TestGoalProgressAPI(APITestCase):
             goal=self.goal,
             usergoal=self.ug,
             daily_checkin=1,
-            weekly_checkin=1,
-            monthly_checkin=1,
         )
         self.url = reverse('goalprogress-list')
         self.detail_url = reverse('goalprogress-detail', args=[self.gp.id])
@@ -2021,8 +2019,8 @@ class TestGoalProgressAPI(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response.data['weekly_checkin_avg'], 1)
-        self.assertEqual(response.data['daily_checkin_avg'], 1)
+        self.assertEqual(response.data['weekly_checkin_avg'], 0.0)
+        self.assertEqual(response.data['daily_checkin_avg'], 1.0)
         self.assertEqual(response.data['better'], True)
         self.assertEqual(response.data['text'], CHECKIN_BETTER)
 
