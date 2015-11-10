@@ -159,6 +159,7 @@ class TestUserProgress(TestCase):
             'completed': 0,
             'incomplete': 10,
             'percentage': 0,
+            'icon': 1,
         }
         self.assertEqual(results, expected)
 
@@ -189,6 +190,7 @@ class TestUserProgress(TestCase):
             'completed': 5,
             'incomplete': 5,
             'percentage': 50,
+            'icon': 2,
         }
         self.assertEqual(results, expected)
 
@@ -217,6 +219,7 @@ class TestUserProgress(TestCase):
             'completed': 6,
             'incomplete': 4,
             'percentage': 60,
+            'icon': 3,
         }
         self.assertEqual(results, expected)
 
