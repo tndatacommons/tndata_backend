@@ -22,6 +22,7 @@ from .. models import (
     UserAction,
     UserCompletedAction,
 )
+from ..settings import CHECKIN_BETTER, CHECKIN_WORSE
 
 
 class TestCategoryAPI(APITestCase):
@@ -1911,9 +1912,13 @@ class TestGoalProgressAPI(APITestCase):
             user=self.user,
             goal=self.goal,
             usergoal=self.ug,
+            daily_checkin=1,
+            weekly_checkin=1,
+            monthly_checkin=1,
         )
         self.url = reverse('goalprogress-list')
         self.detail_url = reverse('goalprogress-detail', args=[self.gp.id])
+        self.average_url = reverse('goalprogress-average')
 
         self.payload = {
             'daily_checkin': 5,
@@ -1999,6 +2004,34 @@ class TestGoalProgressAPI(APITestCase):
         }
         response = self.client.put(self.detail_url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_progress_average_unauthenticated(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        response = self.client.get(self.average_url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_progress_average_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        # When current > the expected average
+        url = "{0}?current=5".format(self.average_url)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['weekly_checkin_avg'], 1)
+        self.assertEqual(response.data['daily_checkin_avg'], 1)
+        self.assertEqual(response.data['better'], True)
+        self.assertEqual(response.data['text'], CHECKIN_BETTER)
+
+        # When current < the expected average
+        url = "{0}?current=0".format(self.average_url)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['better'], False)
+        self.assertEqual(response.data['text'], CHECKIN_WORSE)
 
 
 class TestBehaviorProgressAPI(APITestCase):

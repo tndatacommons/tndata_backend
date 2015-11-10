@@ -1274,6 +1274,9 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
         * `text`: Some display text based on the value of `better`.
 
         """
+        if not request.user.is_authenticated():
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
         try:
             user = request.user
             thresh = timezone.now() - timedelta(days=7)
