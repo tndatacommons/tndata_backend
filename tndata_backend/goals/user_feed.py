@@ -58,7 +58,8 @@ def action_feedback(user, useraction, lookback=30):
             'subtitle': 'some string',
             'total': <total number of activities>,
             'completed': <number completed>,
-            'percentage': <percentage: completed / total>
+            'percentage': <percentage: completed / total>,
+            'icon': <integer value 1-4>
         }
 
     """
@@ -66,10 +67,12 @@ def action_feedback(user, useraction, lookback=30):
         'low': {
             'title': "I've done some work to {goal} this month!",
             'subtitle': 'Even small steps can help me reach my goal',
+            'icon': 1,
         },
         'med': {
             'title': "I've done {num} activities to {goal} this month!",
             'subtitle': 'I must really want this!',
+            'icon': 2,
         },
         'hi': {
             'title': (
@@ -77,12 +80,15 @@ def action_feedback(user, useraction, lookback=30):
                 "this month!"
             ),
             'subtitle': "I'm doing great! I'll schedule another activity!",
+            'icon': 3,
         },
     }
     # Data points needed:
     # - total number of UserActions for the time period
     # - completed UserActions for the time period.
     # - percentage of Actions completed/scheduled in some period (lookback)
+    # - icons indicate which icon in the app should be displayed:
+    #   1: footsteps, 2: thumbs-up, 3: ribbon, 4: trophy (when all are completed)
 
     # NOTE: UserAction's always get updated with the *next up* trigger date
     # so we can't use them to calculate the above. For now, we'll just use
@@ -113,13 +119,15 @@ def action_feedback(user, useraction, lookback=30):
         'completed': completed,
         'incomplete': total - completed,
         'percentage': percentage,
+        'icon': 1,
     }
 
     if percentage <= 20:
         title = feedback['low']['title'].format(goal=goal_title)
         resp.update({
             'title': title,
-            'subtitle': feedback['low']['subtitle']
+            'subtitle': feedback['low']['subtitle'],
+            'icon': feedback['low']['icon'],
         })
     elif percentage >= 60:
         title = feedback['hi']['title'].format(
@@ -127,14 +135,20 @@ def action_feedback(user, useraction, lookback=30):
         )
         resp.update({
             'title': title,
-            'subtitle': feedback['hi']['subtitle']
+            'subtitle': feedback['hi']['subtitle'],
+            'icon': feedback['hi']['icon'],
         })
     else:
         title = feedback['med']['title'].format(goal=goal_title, num=completed)
         resp.update({
             'title': title,
-            'subtitle': feedback['med']['subtitle']
+            'subtitle': feedback['med']['subtitle'],
+            'icon': feedback['med']['icon'],
         })
+
+    # If wev'e
+    if resp['incomplete'] == 0:
+        resp['icon'] = 4
     return resp
 
 

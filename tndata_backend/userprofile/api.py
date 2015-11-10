@@ -187,6 +187,8 @@ class UserViewSet(viewsets.ModelViewSet):
           time period.
         - `completed`: Number of actions completed in some time period.
         - `total`: Number of actions schedule in some time period.
+        - `icon`: An integer (1-4) indicating which icon should be used.
+          (1: footsteps, 2: thumbs-up, 3: ribbon, 4: trophy (when all are completed))
 
     * `progress` -- an object containing the number of actions completed today,
       the number of total actions scheduled for today, and the percentage of
