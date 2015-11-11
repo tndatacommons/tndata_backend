@@ -32,8 +32,7 @@ STAGING = False
 ALLOWED_HOSTS = [
     'localhost', '127.0.0.1',
     '.tndata.org', '.tndata.org.', '104.236.244.232', '159.203.68.206',
-    'brad.ngrok.io', 'tndata.ngrok.io',  # TODO: leave in staging (when we
-                                         # have one), but remove from Prod.
+    'brad.ngrok.io', 'tndata.ngrok.io',
 ]
 
 # NOTE: this is the production setting. It uses the cached.Loader.
@@ -75,6 +74,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd-party apps
+    'cacheops',
     'corsheaders',
     'crispy_forms',
     'crispy_forms_foundation',
@@ -152,13 +152,51 @@ DATABASES = {
 }
 
 # Caching
+# Redis notes: redis_max_clients: 10000, edis_max_memory: 512mb
+REDIS_PASSWORD = 'VPoDYBZgeyktxArddu4EHrNMdFsUzf7TtFKTP'
+REDIS_PORT = 6379
+REDIS_HOST = '127.0.0.1'
+REDIS_CACHE_DB = 1
+REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
+    password=REDIS_PASSWORD,
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_CACHE_DB
+)
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 60,  # 1-minute cache
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_CACHE_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,  # in seconds
+            "SOCKET_TIMEOUT": 5,  # in seconds
+        },
+        'TIMEOUT': 1200,  # 1-hour cache
     }
 }
+
+# Use the Redis cache as a session backend: https://goo.gl/U0xajQ
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+# django-cacheops
+# See: https://github.com/Suor/django-cacheops#readme
+CACHEOPS_REDIS = {
+    'host': REDIS_HOST,
+    'port': REDIS_PORT,
+    'db': REDIS_CACHE_DB,
+    'socket_timeout': 5,
+    'password': REDIS_PASSWORD,
+}
+CACHEOPS_DEFAULTS = {'timeout': 60 * 60}
+CACHEOPS = {
+    'auth.*': {'ops': ('fetch', 'get')},
+    'auth.permission': {'ops': 'all'},
+    'goals.*': {'ops': ('fetch', 'get')},
+    'userprofile.userprofile': {'ops': ('fetch', 'get')},
+}
+CACHEOPS_DEGRADE_ON_FAILURE = True
 
 
 # django.contrib.auth settings.

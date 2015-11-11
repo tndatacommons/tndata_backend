@@ -47,6 +47,8 @@ MEDIA_URL = "/media/"
 DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 
+# Caching: Uses defaults from settings.base
+
 # EMAIL via Mailgun.
 # Details for the DEV sandbox server:
 # sandbox4dc4d62d8cf24785914c55630ab480e6.mailgun.org

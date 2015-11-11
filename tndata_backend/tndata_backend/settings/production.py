@@ -13,6 +13,29 @@ EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
+# Caching
+# Redis notes: redis_max_clients: 10000, edis_max_memory: 512mb
+REDIS_PASSWORD = 'VPoDYBZgeyktxArddu4EHrNMdFsUzf7TtFKTP'
+REDIS_HOST = 'worker.tndata.org'
+REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
+    password=REDIS_PASSWORD,
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_CACHE_DB
+)
+CACHES['default']['LOCATION'] = REDIS_CACHE_URL
+CACHES['default']['OPTIONS']['IGNORE_EXCEPTIONS'] = True
+
+# django-cacheops
+CACHEOPS_REDIS = {
+    'host': REDIS_HOST,
+    'port': REDIS_PORT,
+    'db': REDIS_CACHE_DB,
+    'socket_timeout': 5,
+    'password': REDIS_PASSWORD,
+}
+
+
 
 # Logging Config
 # --------------
