@@ -35,3 +35,6 @@ model-mommy==1.2.5
 elasticsearch==2.1.0
 django-haystack==2.4.1
 drf-haystack==1.5.5
+redis==2.10.5
+django-redis==4.3.0
+django-cacheops==2.4.3
