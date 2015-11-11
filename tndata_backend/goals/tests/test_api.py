@@ -2019,8 +2019,8 @@ class TestGoalProgressAPI(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response.data['weekly_checkin_avg'], 0.0)
-        self.assertEqual(response.data['daily_checkin_avg'], 1.0)
+        self.assertEqual(response.data['weekly_checkin_avg'], 1.0)
+        self.assertEqual(response.data['daily_checkin_avg'], 0.0)
         self.assertEqual(response.data['better'], True)
         self.assertEqual(response.data['text'], CHECKIN_BETTER)
 

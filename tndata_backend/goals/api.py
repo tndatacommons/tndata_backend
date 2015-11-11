@@ -1176,14 +1176,12 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
 
     The full result of this endpoint contains the following information:
 
-    * `daily_checkin_avg` - Average GoalProgress.daily_checkin values over
-      the past 7 days.
-    * `weekly_checkin_avg` - Average GoalProgress.weekly_checkin values over
+    * `daily_checkin_avg` - Average of _all_ GoalProgress.daily_checkin
+      values for the user for _today_.
+    * `weekly_checkin_avg` - Average GoalProgress.daily_checkin values over
       the past 7 days.
     * `better`: True if current is > daily_checkin_avg, False otherwise.
     * `text`: Some display text based on the value of `better`.
-
-
 
     ----
 
@@ -1266,9 +1264,9 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
 
         Returns:
 
-        * `daily_checkin_avg` - Average GoalProgress.daily_checkin values over
-          the past 7 days.
-        * `weekly_checkin_avg` - Average GoalProgress.weekly_checkin values over
+        * `daily_checkin_avg` - Average of _all_ GoalProgress.daily_checkin
+          values for the user for _today_.
+        * `weekly_checkin_avg` - Average GoalProgress.daily_checkin values over
           the past 7 days.
         * `better`: True if current is > daily_checkin_avg, False otherwise.
         * `text`: Some display text based on the value of `better`.
@@ -1279,17 +1277,25 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
 
         try:
             user = request.user
-            thresh = timezone.now() - timedelta(days=7)
+            today = local_day_range(self.request.user)
+            week_threshold = timezone.now() - timedelta(days=7)
             current = int(request.GET.get('current', 0))
 
-            gp = models.GoalProgress.objects.filter(
+            # Average for Today's progress; all goals.
+            daily = models.GoalProgress.objects.filter(
                 daily_checkin__gt=0,
-                reported_on__gte=thresh,
+                reported_on__range=today,
                 user=user
-            )
-            gp = gp.aggregate(Avg('daily_checkin'), Avg('weekly_checkin'))
-            daily = round((gp.get('daily_checkin__avg', 0) or 0), 2)
-            weekly = round((gp.get('weekly_checkin__avg', 0) or 0), 2)
+            ).aggregate(Avg('daily_checkin'))
+            daily = round((daily.get('daily_checkin__avg', 0) or 0), 2)
+
+            # Average of daily checkins for all goals this week
+            weekly = models.GoalProgress.objects.filter(
+                daily_checkin__gt=0,
+                reported_on__gte=week_threshold,
+                user=user
+            ).aggregate(Avg('daily_checkin'))
+            weekly = round((weekly.get('daily_checkin__avg', 0) or 0), 2)
 
             better = current >= daily
             if better:
