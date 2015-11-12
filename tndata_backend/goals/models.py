@@ -1634,12 +1634,14 @@ class UserCompletedAction(models.Model):
     perform) this action.
 
     """
+    UNCOMPLETED = 'uncompleted'
     COMPLETED = 'completed'
     DISMISSED = 'dismissed'
     SNOOZED = 'snoozed'
     UNSET = '-'
 
     STATE_CHOICES = (
+        (UNCOMPLETED, 'Uncompleted'),
         (COMPLETED, 'Completed'),
         (DISMISSED, 'Dismissed'),
         (SNOOZED, 'Snoozed'),
@@ -1662,6 +1664,10 @@ class UserCompletedAction(models.Model):
         ordering = ['-updated_on', 'user', 'action']
         verbose_name = "User Completed Action"
         verbose_name_plural = "User Completed Action"
+
+    @property
+    def uncompleted(self):
+        return self.state == self.UNCOMPLETED
 
     @property
     def completed(self):
