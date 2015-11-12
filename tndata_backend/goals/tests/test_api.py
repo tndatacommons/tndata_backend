@@ -1642,6 +1642,12 @@ class TestUserActionAPI(APITestCase):
         uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
         self.assertTrue(uca.snoozed)
 
+        # Now set it's state to 'uncompleted'
+        response = self.client.post(url, {'state': 'uncompleted'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
+        self.assertTrue(uca.uncompleted)
+
 
 class TestUserCategoryAPI(APITestCase):
 

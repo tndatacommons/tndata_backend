@@ -1306,6 +1306,18 @@ class TestUserCompletedAction(TestCase):
         actual = "{}".format(self.uca)
         self.assertEqual(expected, actual)
 
+    def test_uncompleted(self):
+        self.assertFalse(self.uca.uncompleted)
+
+        uca = UserCompletedAction.objects.create(
+            user=self.user,
+            useraction=self.ua,
+            action=self.action,
+            state=UserCompletedAction.UNCOMPLETED
+        )
+        self.assertTrue(uca.uncompleted)
+        uca.delete()
+
     def test_completed(self):
         self.assertFalse(self.uca.completed)
 

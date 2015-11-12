@@ -782,14 +782,15 @@ class UserActionViewSet(mixins.CreateModelMixin,
     The Actions that a User has selected are also available through the
     `/api/users/` endpoint as a `actions` object on the user.
 
-    ## Completing Actions
+    ## Completing Actions (or not)
 
-    A User may wish to indicate that they've performed (or completed) an action
-    or that they've dismissed or snoozed an action. To save this information:
+    A User may wish to indicate that they have performed (or completed),
+    dismissed, snoozed, or have decided not to complete an action. To save this
+    information:
 
     * send a POST request to `/api/users/actions/{useraction_id}/complete/`
       with a body containing a `state` variable set to one of the following:
-      `completed`, `dismissed`, `snoozed`
+      `uncompleted`, `completed`, `dismissed`, `snoozed`
     * A 200 response indicates that the action has been updated or created. If
       updated, the response will be: `{updated: <object_id>}`, if created:
       `{created: <object_id>}`.
