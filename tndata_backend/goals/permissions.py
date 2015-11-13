@@ -24,6 +24,7 @@ class ContentPermissions:
     """This class encapsulates a list of permissions for different types
     of users. The types correspond to:
 
+    * admins
     * editors
     * authors
     * viewers
@@ -63,7 +64,7 @@ class ContentPermissions:
             perms.append('goals.view_{0}'.format(obj))
             perms.append('goals.publish_{0}'.format(obj))
             perms.append('goals.decline_{0}'.format(obj))
-        return perms
+        return list(set(perms))
 
     @property
     def admin_codenames(self):
@@ -72,12 +73,12 @@ class ContentPermissions:
 
     @property
     def authors(self):
-        """permissions for authors"""
+        """Permissions for authors: Includes viewer permissions + add/change"""
         perms = self.viewers
         for obj in self._author_objects:
             perms.append('goals.add_{0}'.format(obj))
             perms.append('goals.change_{0}'.format(obj))
-        return perms
+        return list(set(perms))
 
     @property
     def author_codenames(self):
@@ -86,13 +87,14 @@ class ContentPermissions:
 
     @property
     def editors(self):
-        """permissions for editors"""
+        """Permissions for editors: Includes viewer + author permissions +
+        publish, decline, and delete."""
         perms = self.viewers + self.authors
         for obj in self._workflow_objects:
             perms.append('goals.publish_{0}'.format(obj))
             perms.append('goals.decline_{0}'.format(obj))
             perms.append('goals.delete_{0}'.format(obj))
-        return perms
+        return list(set(perms))
 
     @property
     def editor_codenames(self):
@@ -101,7 +103,7 @@ class ContentPermissions:
 
     @property
     def viewers(self):
-        """permissions for viewers"""
+        """Permissions for viewers."""
         return ['goals.view_{0}'.format(obj) for obj in self._viewer_objects]
 
     @property
