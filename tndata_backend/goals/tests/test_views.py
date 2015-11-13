@@ -2785,6 +2785,14 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
         cls.ua_client = Client()  # Create an Unauthenticated client
 
     @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        User = get_user_model()
+        User.objects.all().delete()
+        for model in [Category, Goal, Behavior, Action]:
+            model.objects.all().delete()
+
+    @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
         User = get_user_model()
@@ -2920,6 +2928,14 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
     def setUpClass(cls):
         super().setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        User = get_user_model()
+        User.objects.all().delete()
+        for model in [Category, Goal, Behavior, Action]:
+            model.objects.all().delete()
 
     @classmethod
     def setUpTestData(cls):
