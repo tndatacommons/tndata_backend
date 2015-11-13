@@ -29,16 +29,14 @@ from .. permissions import (
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
-DEFAULT_CACHES = {
+TEST_CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
 
-User = get_user_model()
 
-
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestPermissions(TestCase):
 
     def setUp(self):
@@ -154,7 +152,7 @@ class TestPermissions(TestCase):
         self.assertEqual(codenames, expected_codenames)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCaseWithGroups(TestCase):
     """A TestCase Subclass that adds additional data and/or features for test
     subclasses:
@@ -172,6 +170,7 @@ class TestCaseWithGroups(TestCase):
         If you override this in a TestCase, be sure to call the superclass.
 
         """
+        User = get_user_model()
         Group.objects.all().delete()
 
         content_editor_group = get_or_create_content_editors()
@@ -196,7 +195,7 @@ class TestCaseWithGroups(TestCase):
         cls.viewer.groups.add(content_viewer_group)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestIndexView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -236,7 +235,7 @@ class TestIndexView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryListView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -290,7 +289,7 @@ class TestCategoryListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -357,7 +356,7 @@ class TestCategoryDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -454,7 +453,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -487,7 +486,7 @@ class TestCategoryDuplicateView(TestCaseWithGroups):
         self.assertIn("categories", resp.context)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryPublishView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -574,7 +573,7 @@ class TestCategoryPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -588,16 +587,17 @@ class TestCategoryUpdateView(TestCaseWithGroups):
             'color': '#ff0000',
         }
 
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestCategoryUpdateView).setUpTestData()
+    def setUp(self):
         # Create a Category
-        cls.category = Category.objects.create(
+        self.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
-        cls.url = cls.category.get_update_url()
+        self.url = self.category.get_update_url()
+
+    def tearDown(self):
+        Category.objects.filter(id=self.category.id).delete()
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -629,39 +629,44 @@ class TestCategoryUpdateView(TestCaseWithGroups):
     def test_viewer_submit_for_review(self):
         """Ensure viewers cannot submit for review."""
         self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1
         self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 403)
 
     def test_editor_submit_for_review(self):
         """Ensure editors can submit for review."""
         self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
+
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Category.objects.get(pk=self.category.pk).state, "pending-review")
 
     def test_admin_submit_for_review(self):
         """Ensure admins can submit for review."""
         self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Category.objects.get(pk=self.category.pk).state, "pending-review")
 
     def test_author_submit_for_review(self):
         """Ensure authors CANNOT submit for review (not on Categories)"""
         self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -733,7 +738,7 @@ class TestCategoryDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalListView(TestCaseWithGroups):
 
     @classmethod
@@ -779,7 +784,7 @@ class TestGoalListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -837,7 +842,7 @@ class TestGoalDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -884,7 +889,7 @@ class TestGoalCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -916,7 +921,7 @@ class TestGoalDuplicateView(TestCaseWithGroups):
         self.assertIn("goals", resp.context)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalPublishView(TestCaseWithGroups):
 
     @classmethod
@@ -1001,7 +1006,7 @@ class TestGoalPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -1142,17 +1147,19 @@ class TestGoalUpdateView(TestCaseWithGroups):
     def test_viewer_submit_for_review(self):
         """Ensure viewers cannot submit for review."""
         self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 403)
 
     def test_editor_submit_for_review(self):
         """Ensure editors can submit for review."""
         self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
 
         # NOTE: This should still be draft, because this goal doesn't have any
@@ -1163,7 +1170,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         # Add a child behavior (that's pending/published) and request again.
         behavior = Behavior.objects.create(title="B", state="pending-review")
         behavior.goals.add(self.goal)
-        resp = self.client.post(updated_goal.get_update_url(), self.payload)
+        resp = self.client.post(updated_goal.get_update_url(), payload)
         self.assertEqual(resp.status_code, 302)
 
         updated_goal = Goal.objects.get(pk=self.goal.pk)
@@ -1172,11 +1179,11 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
     def test_admin_submit_for_review(self):
         """Ensure admins can submit for review."""
-
         self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
 
         # NOTE: This should still be draft, because this goal doesn't have any
@@ -1188,18 +1195,20 @@ class TestGoalUpdateView(TestCaseWithGroups):
         behavior = Behavior.objects.create(title="B", state="pending-review")
         behavior.goals.add(updated_goal)
 
-        resp = self.client.post(updated_goal.get_update_url(), self.payload)
+        resp = self.client.post(updated_goal.get_update_url(), payload)
         self.assertEqual(resp.status_code, 302)
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
+        # FAILING with 'draft' != 'pending-review'
         behavior.delete()
 
     def test_author_submit_for_review(self):
         """Ensure authors can submit for review."""
         self.assertEqual(self.goal.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
 
         # NOTE: This should still be draft, because this goal doesn't have any
@@ -1212,14 +1221,14 @@ class TestGoalUpdateView(TestCaseWithGroups):
         behavior.goals.add(self.goal)
         behavior.save()
 
-        resp = self.client.post(updated_goal.get_update_url(), self.payload)
+        resp = self.client.post(updated_goal.get_update_url(), payload)
         self.assertEqual(resp.status_code, 302)
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
         behavior.delete()
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -1294,7 +1303,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestTriggerListView(TestCaseWithGroups):
 
     @classmethod
@@ -1340,7 +1349,7 @@ class TestTriggerListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestTriggerDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -1387,7 +1396,7 @@ class TestTriggerDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestTriggerCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -1468,7 +1477,7 @@ class TestTriggerCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestTriggerUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -1548,7 +1557,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestTriggerDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -1622,7 +1631,7 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorListView(TestCaseWithGroups):
 
     @classmethod
@@ -1664,7 +1673,7 @@ class TestBehaviorListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -1718,7 +1727,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -1795,7 +1804,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -1826,7 +1835,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
         self.assertIn("behaviors", resp.context)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorPublishView(TestCaseWithGroups):
 
     @classmethod
@@ -1906,7 +1915,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -2046,40 +2055,44 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
     def test_viewer_submit_for_review(self):
         """Ensure viewers cannot submit for review."""
         self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1
         self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 403)
 
     def test_editor_submit_for_review(self):
         """Ensure editors can submit for review."""
         self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
 
     def test_admin_submit_for_review(self):
         """Ensure admins can submit for review."""
         self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
 
     def test_author_submit_for_review(self):
         """Ensure authors can submit for review."""
         self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -2148,7 +2161,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionListView(TestCaseWithGroups):
 
     @classmethod
@@ -2193,7 +2206,7 @@ class TestActionListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -2251,7 +2264,7 @@ class TestActionDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -2376,7 +2389,7 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -2408,7 +2421,7 @@ class TestActionDuplicateView(TestCaseWithGroups):
         self.assertIn("actions", resp.context)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionPublishView(TestCaseWithGroups):
     # TODO: need to include a test case for actions with duplicate titles/slugs
 
@@ -2493,7 +2506,7 @@ class TestActionPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -2611,40 +2624,44 @@ class TestActionUpdateView(TestCaseWithGroups):
     def test_viewer_submit_for_review(self):
         """Ensure viewers cannot submit for review."""
         self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 403)
 
     def test_editor_submit_for_review(self):
         """Ensure editors can submit for review."""
         self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
 
     def test_admin_submit_for_review(self):
         """Ensure admins can submit for review."""
         self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
 
     def test_author_submit_for_review(self):
         """Ensure authors can submit for review."""
         self.assertEqual(self.action.state, "draft")  # Ensure we start as draft
-        self.payload['review'] = 1  # Include the review in the payload
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
         self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
+        resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -2721,7 +2738,7 @@ class TestActionDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestPackageEnrollmentView(TestCaseWithGroups):
 
     @classmethod
@@ -2732,6 +2749,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
+        User = get_user_model()
 
         # Create a contributor for the class.
         content_author_group = get_or_create_content_authors()
@@ -2845,7 +2863,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestAcceptEnrollmentCompleteView(TestCase):
     """Simple, publicly-available template."""
 
@@ -2855,7 +2873,7 @@ class TestAcceptEnrollmentCompleteView(TestCase):
         self.client.logout()
 
 
-@override_settings(LOGIN_URL=DEFAULT_CACHES)
+@override_settings(CACHES=TEST_CACHES)
 class TestEnrollmentReminderView(TestCaseWithGroups):
 
     @classmethod
@@ -2866,6 +2884,7 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
+        User = get_user_model()
 
         # Create a contributor for the class.
         content_author_group = get_or_create_content_authors()
