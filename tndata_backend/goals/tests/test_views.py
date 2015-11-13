@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 
 from .. models import (
     Action,
@@ -15,17 +15,146 @@ from .. models import (
     Trigger,
 )
 from .. permissions import (
+    ContentPermissions,
+    Group,
     get_or_create_content_admins,
     get_or_create_content_editors,
     get_or_create_content_authors,
     get_or_create_content_viewers,
+    CONTENT_ADMINS,
+    CONTENT_AUTHORS,
+    CONTENT_EDITORS,
+    CONTENT_VIEWERS,
 )
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
+DEFAULT_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
 User = get_user_model()
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
+class TestPermissions(TestCase):
+
+    def setUp(self):
+        Group.objects.all().delete()
+
+    def tearDown(self):
+        Group.objects.all().delete()
+
+    def test_get_or_create_content_admins(self):
+        group = get_or_create_content_admins()
+        self.assertEqual(group.name, CONTENT_ADMINS)
+        perms = ["goals.{}".format(p.codename) for p in group.permissions.all()]
+        self.assertEqual(sorted(perms), sorted(ContentPermissions.admins))
+
+        expected_codenames = [
+            'add_action',
+            'add_behavior',
+            'add_category',
+            'add_goal',
+            'add_trigger',
+            'change_action',
+            'change_behavior',
+            'change_category',
+            'change_goal',
+            'change_trigger',
+            'decline_action',
+            'decline_behavior',
+            'decline_category',
+            'decline_goal',
+            'decline_trigger',
+            'delete_action',
+            'delete_behavior',
+            'delete_category',
+            'delete_goal',
+            'delete_trigger',
+            'publish_action',
+            'publish_behavior',
+            'publish_category',
+            'publish_goal',
+            'publish_trigger',
+            'view_action',
+            'view_behavior',
+            'view_category',
+            'view_goal',
+            'view_trigger'
+        ]
+        codenames = sorted(ContentPermissions.admin_codenames)
+        self.assertEqual(codenames, expected_codenames)
+
+    def test_get_or_create_content_editors(self):
+        group = get_or_create_content_editors()
+        self.assertEqual(group.name, CONTENT_EDITORS)
+        perms = ["goals.{}".format(p.codename) for p in group.permissions.all()]
+
+        self.assertEqual(sorted(perms), sorted(ContentPermissions.editors))
+
+        expected_codenames = [
+            'add_action',
+            'add_behavior',
+            'add_goal',
+            'change_action',
+            'change_behavior',
+            'change_goal',
+            'decline_action',
+            'decline_behavior',
+            'decline_goal',
+            'delete_action',
+            'delete_behavior',
+            'delete_goal',
+            'publish_action',
+            'publish_behavior',
+            'publish_goal',
+            'view_action',
+            'view_behavior',
+            'view_category',
+            'view_goal',
+        ]
+
+        codenames = sorted(ContentPermissions.editor_codenames)
+        self.assertEqual(codenames, expected_codenames)
+
+    def test_get_or_create_content_authors(self):
+        group = get_or_create_content_authors()
+        self.assertEqual(group.name, CONTENT_AUTHORS)
+        perms = ["goals.{}".format(p.codename) for p in group.permissions.all()]
+        self.assertEqual(sorted(perms), sorted(ContentPermissions.authors))
+
+        expected_codenames = [
+            'add_action',
+            'add_behavior',
+            'add_goal',
+            'change_action',
+            'change_behavior',
+            'change_goal',
+            'view_action',
+            'view_behavior',
+            'view_category',
+            'view_goal'
+        ]
+        codenames = sorted(ContentPermissions.author_codenames)
+        self.assertEqual(codenames, expected_codenames)
+
+    def test_get_or_create_content_viewers(self):
+        group = get_or_create_content_viewers()
+        self.assertEqual(group.name, CONTENT_VIEWERS)
+        perms = ["goals.{}".format(p.codename) for p in group.permissions.all()]
+        self.assertEqual(sorted(perms), sorted(ContentPermissions.viewers))
+
+        expected_codenames = [
+            'view_action', 'view_behavior', 'view_category', 'view_goal'
+        ]
+        codenames = sorted(ContentPermissions.viewer_codenames)
+        self.assertEqual(codenames, expected_codenames)
+
+
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCaseWithGroups(TestCase):
     """A TestCase Subclass that adds additional data and/or features for test
     subclasses:
@@ -43,6 +172,8 @@ class TestCaseWithGroups(TestCase):
         If you override this in a TestCase, be sure to call the superclass.
 
         """
+        Group.objects.all().delete()
+
         content_editor_group = get_or_create_content_editors()
         content_author_group = get_or_create_content_authors()
         content_viewer_group = get_or_create_content_viewers()
@@ -65,6 +196,7 @@ class TestCaseWithGroups(TestCase):
         cls.viewer.groups.add(content_viewer_group)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestIndexView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -104,6 +236,7 @@ class TestIndexView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryListView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -157,6 +290,7 @@ class TestCategoryListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -223,6 +357,7 @@ class TestCategoryDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -319,6 +454,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -351,6 +487,7 @@ class TestCategoryDuplicateView(TestCaseWithGroups):
         self.assertIn("categories", resp.context)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryPublishView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]
@@ -437,6 +574,7 @@ class TestCategoryPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -523,6 +661,7 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestCategoryDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -594,6 +733,7 @@ class TestCategoryDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalListView(TestCaseWithGroups):
 
     @classmethod
@@ -639,6 +779,7 @@ class TestGoalListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -696,6 +837,7 @@ class TestGoalDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -742,6 +884,7 @@ class TestGoalCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -773,6 +916,7 @@ class TestGoalDuplicateView(TestCaseWithGroups):
         self.assertIn("goals", resp.context)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalPublishView(TestCaseWithGroups):
 
     @classmethod
@@ -857,6 +1001,7 @@ class TestGoalPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -1074,6 +1219,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         behavior.delete()
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestGoalDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -1148,6 +1294,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestTriggerListView(TestCaseWithGroups):
 
     @classmethod
@@ -1193,6 +1340,7 @@ class TestTriggerListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestTriggerDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -1239,6 +1387,7 @@ class TestTriggerDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestTriggerCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -1319,6 +1468,7 @@ class TestTriggerCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestTriggerUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -1398,6 +1548,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestTriggerDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -1471,6 +1622,7 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorListView(TestCaseWithGroups):
 
     @classmethod
@@ -1512,6 +1664,7 @@ class TestBehaviorListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -1565,6 +1718,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -1641,6 +1795,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -1671,6 +1826,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
         self.assertIn("behaviors", resp.context)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorPublishView(TestCaseWithGroups):
 
     @classmethod
@@ -1750,6 +1906,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -1922,6 +2079,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestBehaviorDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -1990,6 +2148,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionListView(TestCaseWithGroups):
 
     @classmethod
@@ -2034,6 +2193,7 @@ class TestActionListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionDetailView(TestCaseWithGroups):
 
     @classmethod
@@ -2091,6 +2251,7 @@ class TestActionDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionCreateView(TestCaseWithGroups):
 
     @classmethod
@@ -2215,6 +2376,7 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionDuplicateView(TestCaseWithGroups):
 
     @classmethod
@@ -2246,6 +2408,7 @@ class TestActionDuplicateView(TestCaseWithGroups):
         self.assertIn("actions", resp.context)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionPublishView(TestCaseWithGroups):
     # TODO: need to include a test case for actions with duplicate titles/slugs
 
@@ -2330,6 +2493,7 @@ class TestActionPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionUpdateView(TestCaseWithGroups):
 
     @classmethod
@@ -2480,6 +2644,7 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestActionDeleteView(TestCaseWithGroups):
 
     @classmethod
@@ -2556,6 +2721,7 @@ class TestActionDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestPackageEnrollmentView(TestCaseWithGroups):
 
     @classmethod
@@ -2679,6 +2845,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestAcceptEnrollmentCompleteView(TestCase):
     """Simple, publicly-available template."""
 
@@ -2688,6 +2855,7 @@ class TestAcceptEnrollmentCompleteView(TestCase):
         self.client.logout()
 
 
+@override_settings(LOGIN_URL=DEFAULT_CACHES)
 class TestEnrollmentReminderView(TestCaseWithGroups):
 
     @classmethod
