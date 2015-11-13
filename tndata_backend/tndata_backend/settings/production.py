@@ -73,6 +73,7 @@ LOGGING = {
 
 # Django Haystack / Elasticsearch
 HAYSTACK_CONNECTIONS['default']['URL'] = 'http://worker.tndata.org:9200/'
+HAYSTACK_CONNECTIONS['default']['INDEX_NAME'] = 'haystack'
 
 
 # -----------------------------------------------------------------------------

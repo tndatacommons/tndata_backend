@@ -103,7 +103,7 @@ HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
         'URL': 'http://127.0.0.1:9200/',
-        'INDEX_NAME': 'haystack',
+        'INDEX_NAME': 'haystack-dev',
     },
 }
 
@@ -176,7 +176,7 @@ CACHES = {
 }
 
 # Use the Redis cache as a session backend: https://goo.gl/U0xajQ
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
 
 # django-cacheops

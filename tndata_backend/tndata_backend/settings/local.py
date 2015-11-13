@@ -8,7 +8,6 @@ SITE_DOMAIN = "localhost"
 SITE_URL = "http://127.0.0.1:8000"
 MANAGERS = ADMINS
 
-# TODO: Add querycount settings to ignore: admin, static files
 QUERYCOUNT = {
     'THRESHOLDS': {
         'MEDIUM': 50,
