@@ -29,6 +29,7 @@ from .. permissions import (
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
+TEST_SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 TEST_CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
@@ -36,6 +37,7 @@ TEST_CACHES = {
 }
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestPermissions(TestCase):
 
@@ -152,6 +154,7 @@ class TestPermissions(TestCase):
         self.assertEqual(codenames, expected_codenames)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCaseWithGroups(TestCase):
     """A TestCase Subclass that adds additional data and/or features for test
@@ -195,6 +198,7 @@ class TestCaseWithGroups(TestCase):
         cls.viewer.groups.add(content_viewer_group)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestIndexView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -235,6 +239,7 @@ class TestIndexView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryListView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -289,6 +294,7 @@ class TestCategoryListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryDetailView(TestCaseWithGroups):
 
@@ -356,6 +362,7 @@ class TestCategoryDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryCreateView(TestCaseWithGroups):
 
@@ -453,6 +460,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryDuplicateView(TestCaseWithGroups):
 
@@ -486,6 +494,7 @@ class TestCategoryDuplicateView(TestCaseWithGroups):
         self.assertIn("categories", resp.context)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryPublishView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -573,6 +582,7 @@ class TestCategoryPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryUpdateView(TestCaseWithGroups):
 
@@ -666,6 +676,7 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryDeleteView(TestCaseWithGroups):
 
@@ -738,6 +749,7 @@ class TestCategoryDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalListView(TestCaseWithGroups):
 
@@ -784,6 +796,7 @@ class TestGoalListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalDetailView(TestCaseWithGroups):
 
@@ -842,6 +855,7 @@ class TestGoalDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalCreateView(TestCaseWithGroups):
 
@@ -889,6 +903,7 @@ class TestGoalCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalDuplicateView(TestCaseWithGroups):
 
@@ -921,6 +936,7 @@ class TestGoalDuplicateView(TestCaseWithGroups):
         self.assertIn("goals", resp.context)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalPublishView(TestCaseWithGroups):
 
@@ -1006,6 +1022,7 @@ class TestGoalPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalUpdateView(TestCaseWithGroups):
 
@@ -1228,6 +1245,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         behavior.delete()
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalDeleteView(TestCaseWithGroups):
 
@@ -1303,6 +1321,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerListView(TestCaseWithGroups):
 
@@ -1349,6 +1368,7 @@ class TestTriggerListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerDetailView(TestCaseWithGroups):
 
@@ -1396,6 +1416,7 @@ class TestTriggerDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerCreateView(TestCaseWithGroups):
 
@@ -1477,6 +1498,7 @@ class TestTriggerCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerUpdateView(TestCaseWithGroups):
 
@@ -1557,6 +1579,7 @@ class TestTriggerUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerDeleteView(TestCaseWithGroups):
 
@@ -1631,6 +1654,7 @@ class TestTriggerDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorListView(TestCaseWithGroups):
 
@@ -1673,6 +1697,7 @@ class TestBehaviorListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDetailView(TestCaseWithGroups):
 
@@ -1727,6 +1752,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorCreateView(TestCaseWithGroups):
 
@@ -1804,6 +1830,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDuplicateView(TestCaseWithGroups):
 
@@ -1835,6 +1862,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
         self.assertIn("behaviors", resp.context)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorPublishView(TestCaseWithGroups):
 
@@ -1915,6 +1943,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorUpdateView(TestCaseWithGroups):
 
@@ -2092,6 +2121,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDeleteView(TestCaseWithGroups):
 
@@ -2161,6 +2191,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionListView(TestCaseWithGroups):
 
@@ -2206,6 +2237,7 @@ class TestActionListView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionDetailView(TestCaseWithGroups):
 
@@ -2264,6 +2296,7 @@ class TestActionDetailView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionCreateView(TestCaseWithGroups):
 
@@ -2389,6 +2422,7 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionDuplicateView(TestCaseWithGroups):
 
@@ -2421,6 +2455,7 @@ class TestActionDuplicateView(TestCaseWithGroups):
         self.assertIn("actions", resp.context)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionPublishView(TestCaseWithGroups):
     # TODO: need to include a test case for actions with duplicate titles/slugs
@@ -2506,6 +2541,7 @@ class TestActionPublishView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionUpdateView(TestCaseWithGroups):
 
@@ -2661,6 +2697,7 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionDeleteView(TestCaseWithGroups):
 
@@ -2738,6 +2775,7 @@ class TestActionDeleteView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestPackageEnrollmentView(TestCaseWithGroups):
 
@@ -2863,6 +2901,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestAcceptEnrollmentCompleteView(TestCase):
     """Simple, publicly-available template."""
@@ -2873,6 +2912,7 @@ class TestAcceptEnrollmentCompleteView(TestCase):
         self.client.logout()
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
 class TestEnrollmentReminderView(TestCaseWithGroups):
 
