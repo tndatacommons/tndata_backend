@@ -683,38 +683,41 @@ class TestTrigger(TestCase):
         user.userprofile.timezone = 'America/Chicago'
         user.userprofile.save()
 
-        trigger = Trigger.objects.create(
-            name="Test Default",
-            time=time(23, 59),
-            recurrences='RRULE:FREQ=DAILY'
-        )
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 2, 11, 30)
+            trigger = Trigger.objects.create(
+                name="Test Default",
+                time=time(23, 59),
+                recurrences='RRULE:FREQ=DAILY'
+            )
 
-        tz = pytz.timezone('America/Chicago')
-        expected = datetime.combine(timezone.now(), time(23, 59))
-        expected = timezone.make_aware(expected, timezone=tz)
-        result = trigger.next(user=user)
-        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+            tz = pytz.timezone('America/Chicago')
+            expected = tzdt(2015, 1, 2, 23, 59, tz=tz)
+            result = trigger.next(user=user)
+            self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
 
     def test_custom_trigger_timezone(self):
         user = User.objects.create_user('u', 'u@example.com', 'pass')
         user.userprofile.timezone = 'America/Chicago'
         user.userprofile.save()
 
-        trigger = Trigger.objects.create(
-            user=user,
-            name="User Custom Trigger",
-            time=time(23, 59),
-            recurrences='RRULE:FREQ=DAILY'
-        )
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 2, 11, 30)
 
-        tz = pytz.timezone('America/Chicago')
-        expected = datetime.combine(timezone.now(), time(23, 59))
-        expected = timezone.make_aware(expected, timezone=tz)
-        result = trigger.next()  # When called with no extra input.
-        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+            trigger = Trigger.objects.create(
+                user=user,
+                name="User Custom Trigger",
+                time=time(23, 59),
+                recurrences='RRULE:FREQ=DAILY'
+            )
 
-        result = trigger.next(user=user)  # When called with input.
-        self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+            tz = pytz.timezone('America/Chicago')
+            expected = tzdt(2015, 1, 2, 23, 59, tz=tz)
+            result = trigger.next()  # When called with no extra input.
+            self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+
+            result = trigger.next(user=user)  # When called with input.
+            self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
 
 
 class TestBehavior(TestCase):
