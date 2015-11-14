@@ -115,11 +115,26 @@ ContentPermissions = ContentPermissions()  # make it act like a monad.
 
 
 def _add_perms_to_group(group, perms_list):
-    for perm in perms_list:
-        app, code = perm.split(".")
-        p = Permission.objects.get(content_type__app_label=app, codename=code)
-        group.permissions.add(p)
     group.save()
+    permissions = []
+    for perm_name in perms_list:
+        app, code = perm_name.split(".")
+        perm = Permission.objects.get(content_type__app_label=app, codename=code)
+        permissions.append(perm)
+
+    group.permissions.add(*permissions)
+    group.save()
+
+    # XXX This is compeltely absolutely baffling. There's no reason these
+    # XXX should not be getting saved. But if this happens, try from the
+    # XXX other end.
+    if group.permissions.all().count() == 0:
+        for perm in permissions:
+            perm.group_set.add(group)
+            perm.save()
+        group.save()
+
+    return group
 
 
 def get_or_create_content_admins():
@@ -128,7 +143,7 @@ def get_or_create_content_admins():
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_ADMINS)
-    _add_perms_to_group(group, ContentPermissions.admins)
+    group = _add_perms_to_group(group, ContentPermissions.admins)
     return group
 
 
@@ -138,7 +153,7 @@ def get_or_create_content_authors():
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_AUTHORS)
-    _add_perms_to_group(group, ContentPermissions.authors)
+    group = _add_perms_to_group(group, ContentPermissions.authors)
     return group
 
 
@@ -148,7 +163,7 @@ def get_or_create_content_editors():
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_EDITORS)
-    _add_perms_to_group(group, ContentPermissions.editors)
+    group = _add_perms_to_group(group, ContentPermissions.editors)
     return group
 
 
@@ -158,7 +173,7 @@ def get_or_create_content_viewers():
 
     """
     group, created = Group.objects.get_or_create(name=CONTENT_VIEWERS)
-    _add_perms_to_group(group, ContentPermissions.viewers)
+    group = _add_perms_to_group(group, ContentPermissions.viewers)
     return group
 
 
