@@ -2,6 +2,7 @@ from datetime import date, time
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.test import override_settings
 
 from model_mommy import mommy
 from rest_framework import status
@@ -25,6 +26,19 @@ from .. models import (
 from ..settings import CHECKIN_BETTER, CHECKIN_WORSE
 
 
+# XXX We've got each test case in this module decorated with `override_settings`,
+# XXX though I'm not sure that actually works with APITestCase
+# XXX See: https://github.com/tomchristie/django-rest-framework/issues/2466
+TEST_SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+TEST_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryAPI(APITestCase):
 
     def setUp(self):
@@ -76,6 +90,8 @@ class TestCategoryAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalAPI(APITestCase):
 
     def setUp(self):
@@ -165,6 +181,8 @@ class TestGoalAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestTriggerAPI(APITestCase):
 
     def setUp(self):
@@ -207,6 +225,8 @@ class TestTriggerAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorAPI(APITestCase):
 
     def setUp(self):
@@ -369,6 +389,8 @@ class TestBehaviorAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestActionAPI(APITestCase):
 
     def setUp(self):
@@ -613,6 +635,8 @@ class TestActionAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestUserGoalAPI(APITestCase):
 
     def setUp(self):
@@ -831,6 +855,8 @@ class TestUserGoalAPI(APITestCase):
         other_goal.delete()
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestUserBehaviorAPI(APITestCase):
 
     def setUp(self):
@@ -1122,6 +1148,8 @@ class TestUserBehaviorAPI(APITestCase):
         other_behavior.delete()
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestUserActionAPI(APITestCase):
 
     def setUp(self):
@@ -1649,6 +1677,8 @@ class TestUserActionAPI(APITestCase):
         self.assertTrue(uca.uncompleted)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestUserCategoryAPI(APITestCase):
 
     def setUp(self):
@@ -1872,6 +1902,8 @@ class TestUserCategoryAPI(APITestCase):
         other_cat.delete()
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestGoalProgressAPI(APITestCase):
 
     def setUp(self):
@@ -2038,6 +2070,8 @@ class TestGoalProgressAPI(APITestCase):
         self.assertEqual(response.data['text'], CHECKIN_WORSE)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorProgressAPI(APITestCase):
 
     def setUp(self):
@@ -2164,6 +2198,8 @@ class TestBehaviorProgressAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestPackageEnrollmentAPI(APITestCase):
 
     def setUp(self):
