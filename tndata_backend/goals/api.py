@@ -2,6 +2,7 @@ from datetime import timedelta
 from django.db.models import Avg, Q
 from django.utils import timezone
 from drf_haystack.viewsets import HaystackViewSet
+from drf_haystack.filters import HaystackHighlightFilter
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
@@ -1515,9 +1516,8 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
 
 
 class SearchViewSet(HaystackViewSet):
-    """This endpoint lists results from our Search Index (which contains content
-    for [Categories](/api/categories/), [Goals](/api/goals/),
-    [Behaviors](/api/behaviors/), and [Actions](/api/actions/).
+    """This endpoint lists results from our Search Index, which contains content
+    from [Goals](/api/goals/) and [Actions](/api/actions/).
 
     ## Searching
 
@@ -1526,20 +1526,25 @@ class SearchViewSet(HaystackViewSet):
 
         {'q': 'wellness'}
 
+    A GET request without a search term will return all Goals indexed.
+
     ## Results
 
     A paginated list of results will be returned, and each result will contain
     the following attributes:
 
-    * `id`: The ID of the object represented (a Category, Goal, Behavior, or Action)
-    * `object_type`: Lowercase string representing the type of object (`category`,
-      `goal`, `behavior`, or `action`)
+    * `id`: The ID of the object represented
+    * `object_type`: A lowercase string representing the type of object
+      (currently this will always be `goal`)
     * `title`: The title of the object.
     * `description`: The full description of the object.
     * `updated_on`: The date/time on which the object was last updated.
     * `text`: The full text stored in the search index. This is the content
       against which search is performed.
+    * `highlighted`: A string containing html-highlighted matches. The
+      highlighted keywords are wrapped with `<em>` tags.
 
     """
-    index_models = [models.Category, models.Goal, models.Behavior, models.Action]
+    index_models = [models.Goal]
     serializer_class = serializers.SearchSerializer
+    filter_backends = [HaystackHighlightFilter]

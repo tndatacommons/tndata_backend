@@ -16,12 +16,7 @@ from . models import (
     UserBehavior,
     UserCategory,
 )
-from . search_indexes import (
-    ActionIndex,
-    BehaviorIndex,
-    CategoryIndex,
-    GoalIndex,
-)
+from . search_indexes import GoalIndex
 from . serializer_fields import (
     CategoryListField,
     CustomTriggerField,
@@ -43,15 +38,18 @@ User = get_user_model()
 
 class SearchSerializer(HaystackSerializer):
     class Meta:
-        index_classes = [CategoryIndex, GoalIndex, BehaviorIndex, ActionIndex]
-        # Fields that are *on* the search index
+        index_classes = [GoalIndex]
+        # Fields that are *on* the search index, only.
         fields = ['title', 'description', 'url', 'updated_on', 'text']
         field_aliases = {'q': 'text'}
 
     def to_representation(self, instance):
+        # NOTE: instance is a SearchResult object.
         result = super().to_representation(instance)
-        # include the object's model type and id
-        result.update({'object_type': instance.model_name, 'id': instance.pk})
+        result.update({
+            'object_type': instance.model_name,
+            'id': instance.pk,
+        })
         return result
 
 
