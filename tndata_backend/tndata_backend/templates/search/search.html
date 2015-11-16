@@ -11,13 +11,14 @@ p.search-container {
   padding:1em;
 }
 .highlighted {background-color: #ffc;text-decoration: underline;}
+form.blank {margin: 50% 0px;}
 </style>
 {% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="large-12 medium-12 small-12 columns">
-    <form method="get" action=".">
+    <form method="get" action="." class="{% if query %}results{% else %}blank{% endif %}">
     {{ form.as_p }}
     <p class="search-container">
       <input type="submit" class="button" value="Search">
