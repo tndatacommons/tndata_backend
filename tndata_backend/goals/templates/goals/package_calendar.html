@@ -83,7 +83,11 @@
                     <i class="fa fa-info-circle"></i>
                   </span>
                   {% endwith %}
-                  <a href="{{ action.get_update_url }}">{{ action }}</a>.
+                  {% if is_editor %}
+                    <a href="{{ action.get_update_url }}">{{ action }}</a>.
+                  {% else %}
+                    <a href="{{ action.get_absolute_url }}">{{ action }}</a>.
+                  {% endif %}
                   <small>{{ dt|date:"P" }}</small>
                 </div>
               {% endif %}

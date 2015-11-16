@@ -1002,6 +1002,7 @@ def package_calendar(request, pk):
     action_data = sorted(action_data, key=lambda d: d[1].strftime("%Y%m%d%H%M"))
 
     ctx = {
+        'is_editor': is_content_editor(request.user),
         'today': local_now(request.user),
         'category': category,
         'actions': action_data,
