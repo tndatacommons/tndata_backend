@@ -1,5 +1,13 @@
-{{ object.title }}
-{{ object.subtitle }}
-{{ object.description }}
-{{ object.more_info }}
-{{ object.outcome }}
+{{ object.title|default:""|safe }}
+{{ object.subtitle|default:""|safe }}
+{{ object.description|default:""|safe }}
+{{ object.more_info|default:""|safe }}
+{{ object.outcome|default:""|safe }}
+{% for behavior in object.behavior_set.published %}{% for action in behavior.action_set.published %}
+{{ behavior.title|default:""|safe }}
+{{ action.title|default:""|safe }}
+{{ action.description|default:""|safe }}
+{{ action.more_info|default:""|safe }}
+{{ action.external_resource_name|default:""|safe }}
+{{ action.external_resource|default:""|safe }}
+{% endfor %}{% endfor %}
