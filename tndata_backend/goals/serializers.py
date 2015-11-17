@@ -50,6 +50,9 @@ class SearchSerializer(HaystackSerializer):
             'object_type': instance.model_name,
             'id': instance.pk,
         })
+        if 'highlighted' in result:
+            highlighted = result['highlighted']
+            result['highlighted'] = highlighted.strip().replace("\n\n", "\n")
         return result
 
 
