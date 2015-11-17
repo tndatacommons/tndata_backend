@@ -297,4 +297,9 @@ urlpatterns = [
         views.debug_progress,
         name='debug_progress'
     ),
+    url(
+        r'^reports/triggers/$',
+        views.report_triggers,
+        name='report-triggers'
+    ),
 ]

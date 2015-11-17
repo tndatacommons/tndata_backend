@@ -1628,3 +1628,49 @@ def debug_progress_aggregates(request):
         'uca_datasets': uca_datasets,
     }
     return render(request, 'goals/debug_progress_aggregates.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
+def report_triggers(request):
+    triggers = Trigger.objects.all()
+    total_trigger_count = triggers.count()
+    custom_trigger_count = triggers.filter(user__isnull=False).count()
+
+    with_recurrences = triggers.filter(recurrences__isnull=False).count()
+
+    time_and_date_only = triggers.filter(
+        trigger_date__isnull=False,
+        time__isnull=False,
+        recurrences__isnull=True
+    ).count()
+
+    time_only = triggers.filter(
+        time__isnull=False,
+        trigger_date__isnull=True,
+        recurrences__isnull=True
+    ).count()
+
+    date_only = triggers.filter(
+        trigger_date__isnull=False,
+        time__isnull=True,
+        recurrences__isnull=True
+    ).count()
+
+    # Count all the recurrence options
+    custom_triggers = triggers.filter(user__isnull=False, recurrences__isnull=False)
+    custom_recurrences = []
+    for t in custom_triggers:
+        custom_recurrences.append(t.recurrences_as_text())
+    custom_recurrences = Counter(custom_recurrences)
+
+    context = {
+        'total_trigger_count': total_trigger_count,
+        'custom_trigger_count': custom_trigger_count,
+        'default_trigger_count': total_trigger_count - custom_trigger_count,
+        'with_recurrences': with_recurrences,
+        'time_and_date_only': time_and_date_only,
+        'time_only': time_only,
+        'date_only': date_only,
+        'custom_recurrences': custom_recurrences.most_common(20),
+    }
+    return render(request, 'goals/report_triggers.html', context)

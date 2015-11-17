@@ -1,0 +1,169 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block title %}Debug Progress{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+  div.legend ul.pie-legend {list-style-type: none;padding:0;margin:0;max-width:250px;}
+  div.legend ul.pie-legend li span {
+    display:inline-block;
+    border:1px solid black;
+    width:18px;
+    height: 18px;
+    padding:0;
+    margin: 0 5px 0 0;
+  }
+  </style>
+{% endblock %}
+
+
+{% block content %}
+<h1>Trigger Stats</h1>
+
+<div class="row">
+  <div class="large-4 small-12 columns">
+    <table>
+      <tr><th>Total</th><td>{{ total_trigger_count }}</td></tr>
+      <tr><th>Custom</th><td>{{ custom_trigger_count }}</td></tr>
+      <tr><th>Default</th><td>{{ default_trigger_count }}</td></tr>
+      <tr><th>With Recurrences</th><td>{{ with_recurrences }}</td></tr>
+      <tr><th>With Time &amp; Dates</th><td>{{ time_and_date_only }}</td></tr>
+      <tr><th>With Time, Only</th><td>{{ time_only }}</td></tr>
+      <tr><th>With Date, Only</th><td>{{ date_only }}</td></tr>
+      {% for recurrence, count in custom_recurrences %}
+      <tr><th>{{ recurrence }}</th><td>{{ count }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="large-8 small-12 columns">
+
+    {# --- Custom v. Default triggers --- #}
+    <div id="custom_v_default-legend" class="pull-right panel legend"></div>
+    <canvas id="custom_v_default" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("custom_v_default").getContext("2d");
+    var data = [
+      {
+          value: {{ custom_trigger_count }},
+          color:"#F7464A",
+          highlight: "#FF5A5E",
+          label: "Custom Trigggers"
+      },
+      {
+          value: {{ default_trigger_count }},
+          color: "#46BFBD",
+          highlight: "#5AD3D1",
+          label: "Default Triggers"
+      }
+    ];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("custom_v_default-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+
+    {# --- Trigger with & without recurrences ---- #}
+    <div id="recurrences-legend" class="pull-right panel legend"></div>
+    <canvas id="recurrences" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("recurrences").getContext("2d");
+    var data = [
+      {
+          value: {{ with_recurrences }},
+          color:"#F7464A",
+          highlight: "#FF5A5E",
+          label: "With Recurrences"
+      },
+      {
+          value: {{ total_trigger_count }} - {{ with_recurrences }},
+          color: "#46BFBD",
+          highlight: "#5AD3D1",
+          label: "Without Recurrences"
+      }
+    ];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("recurrences-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+
+    {# --- Triggers w/ time/date only---- #}
+    <div id="time_or_date-legend" class="pull-right panel legend"></div>
+    <canvas id="time_or_date" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("time_or_date").getContext("2d");
+    var data = [
+      {
+          value: {{ time_only }},
+          color:"#F7464A",
+          highlight: "#FF5A5E",
+          label: "Time Only"
+      },
+      {
+          value: {{ date_only }},
+          color: "#46BFBD",
+          highlight: "#5AD3D1",
+          label: "Date Only"
+      },
+      {
+          value: {{total_trigger_count}} - ({{ time_only }} + {{ date_only }}),
+          color: "#aaaaaa",
+          highlight: "#cccccc",
+          label: "Neither/Both"
+      }
+    ];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("time_or_date-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+
+    {# --- Triggers w/ time & date only---- #}
+    <div id="time_and_date-legend" class="pull-right panel legend"></div>
+    <canvas id="time_and_date" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("time_and_date").getContext("2d");
+    var data = [
+      {
+          value: {{ time_and_date_only }},
+          color:"#F7464A",
+          highlight: "#FF5A5E",
+          label: "Time and Date"
+      },
+      {
+          value: {{ total_trigger_count }} - {{ time_and_date_only }},
+          color: "#aaaaaa",
+          highlight: "#cccccc",
+          label: "Others"
+      }
+    ];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("time_and_date-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+
+    {# --- REcurrences ---- #}
+    <div id="recurrence_counts-legend" class="pull-right panel legend"></div>
+    <canvas id="recurrence_counts" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("recurrence_counts").getContext("2d");
+    var data = [{% for recurrence, count in custom_recurrences %}
+      {
+          value: {{ count }},
+          color:"{% random_color %}",
+          highlight: "#FF5A5E",
+          label: "{{ recurrence }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("recurrence_counts-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+  </div>
+</div> {# end .row #}
+
+
+{% endblock %}
