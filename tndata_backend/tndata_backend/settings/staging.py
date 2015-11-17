@@ -47,6 +47,10 @@ REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
 CACHES['default']['LOCATION'] = REDIS_CACHE_URL
 CACHES['default']['OPTIONS']['IGNORE_EXCEPTIONS'] = True
 
+# django-haystack settings for staging
+HAYSTACK_CONNECTIONS['default']['URL'] = 'http://worker.tndata.org:9200/'
+HAYSTACK_CONNECTIONS['default']['INDEX_NAME'] = 'haystack_staging'
+
 # django-cacheops
 CACHEOPS_REDIS = {
     'host': REDIS_HOST,
