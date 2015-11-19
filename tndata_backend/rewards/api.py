@@ -1,5 +1,6 @@
 from random import choice
 
+from redis_metrics import metric
 from rest_framework import viewsets
 from . import models
 from . import serializers
@@ -46,6 +47,10 @@ class FunContentViewSet(viewsets.ReadOnlyModelViewSet):
         author = self.request.GET.get('author', None)
         keywords = self.request.GET.getlist('keywords', [])
         random = self.request.GET.get('random', False)
+
+        # Track metrics on the number of random reward content objects requested
+        if random:
+            metric('viewed-random-reward', category="Rewards")
 
         queryset = super().get_queryset()
         if message_type is not None:
