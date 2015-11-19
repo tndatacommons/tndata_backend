@@ -20,7 +20,6 @@ from crispy_forms.layout import (
 from recurrence import serialize as serialize_recurrences
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
-from utils import colors
 from utils.user_utils import date_hash
 from utils.widgets import TextareaWithMarkdownHelperWidget
 
@@ -245,10 +244,11 @@ class CategoryForm(forms.ModelForm):
         # Set a default color / secondary color
         initial = kwargs.get('initial', {})
         instance = kwargs.get('instance')
-        initial_color = getattr(instance, 'color', '#2ECC71')
-        secondary = getattr(instance, 'secondary_color', None)
-        if 'secondary_color' not in initial and secondary is None:
-            initial['secondary_color'] = colors.lighten(initial_color)
+
+        if not instance and initial.get('color') is None:
+            initial['color'] = Category.DEFAULT_PRIMARY_COLOR
+        if not instance and initial.get('secondary_color') is None:
+            initial['secondary_color'] = Category.DEFAULT_SECONDARY_COLOR
         kwargs['initial'] = initial
         super().__init__(*args, **kwargs)
 

@@ -88,6 +88,8 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     "container".
 
     """
+    DEFAULT_PRIMARY_COLOR = "#2E7D32"
+    DEFAULT_SECONDARY_COLOR = "#4CAF50"
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -130,12 +132,13 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     )
     color = models.CharField(
         max_length=7,
-        default="#2ECC71",
+        default=DEFAULT_PRIMARY_COLOR,
         help_text="Select the color for this Category"
     )
     secondary_color = models.CharField(
         max_length=7,
         blank=True,
+        default=DEFAULT_SECONDARY_COLOR,
         help_text="Select a secondary color for this Category. If omitted, a "
                   "complementary color will be generated."
     )
