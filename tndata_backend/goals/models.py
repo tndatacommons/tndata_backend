@@ -1696,8 +1696,9 @@ class UserCompletedAction(models.Model):
 @receiver(post_save, sender=UserCompletedAction, dispatch_uid="action-completed")
 def action_completed(sender, instance, created, raw, using, **kwargs):
     """Record metrics when a UserCompletedAction status is updated."""
-    key = "action-{}".format(instance.state)
-    metric(key, category="User Interactions")
+    if instance.state:
+        key = "action-{}".format(instance.state)
+        metric(key, category="User Interactions")
 
 
 class UserCategory(models.Model):
