@@ -82,6 +82,7 @@ INSTALLED_APPS = (
     'haystack',
     'jsonfield',
     'recurrence',
+    'redis_metrics',
     'rest_framework',
     'rest_framework.authtoken',
     'storages',
@@ -174,6 +175,21 @@ CACHES = {
         'TIMEOUT': 1200,  # 1-hour cache
     }
 }
+
+# django-redis-metrics
+REDIS_METRICS_DB = 2
+REDIS_METRICS = {
+    'HOST': REDIS_HOST,
+    'PORT': REDIS_PORT,
+    'DB':  REDIS_METRICS_DB,
+    'PASSWORD': REDIS_PASSWORD,
+    'SOCKET_TIMEOUT': None,
+    'SOCKET_CONNECTION_POOL': None,
+    'MIN_GRANULARITY': 'daily',
+    'MAX_GRANULARITY': 'yearly',
+    'MONDAY_FIRST_DAY_OF_WEEK': False,
+}
+
 
 # Use the Redis cache as a session backend: https://goo.gl/U0xajQ
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"

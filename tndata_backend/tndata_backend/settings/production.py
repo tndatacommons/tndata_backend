@@ -35,6 +35,18 @@ CACHEOPS_REDIS = {
     'password': REDIS_PASSWORD,
 }
 
+# django-redis-metrics
+REDIS_METRICS = {
+    'HOST': REDIS_HOST,
+    'PORT': REDIS_PORT,
+    'DB':  REDIS_METRICS_DB,
+    'PASSWORD': REDIS_PASSWORD,
+    'SOCKET_TIMEOUT': None,
+    'SOCKET_CONNECTION_POOL': None,
+    'MIN_GRANULARITY': 'daily',
+    'MAX_GRANULARITY': 'yearly',
+    'MONDAY_FIRST_DAY_OF_WEEK': False,
+}
 
 
 # Logging Config
