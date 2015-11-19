@@ -156,7 +156,7 @@ DATABASES = {
 REDIS_PASSWORD = 'VPoDYBZgeyktxArddu4EHrNMdFsUzf7TtFKTP'
 REDIS_PORT = 6379
 REDIS_HOST = '127.0.0.1'
-REDIS_CACHE_DB = 1
+REDIS_CACHE_DB = 1  # XXX Used in production
 REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     password=REDIS_PASSWORD,
     host=REDIS_HOST,
@@ -177,7 +177,7 @@ CACHES = {
 }
 
 # django-redis-metrics
-REDIS_METRICS_DB = 2
+REDIS_METRICS_DB = 2  # XXX Used in production
 REDIS_METRICS = {
     'HOST': REDIS_HOST,
     'PORT': REDIS_PORT,

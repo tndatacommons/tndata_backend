@@ -35,9 +35,9 @@ EMAIL_USE_SSL = False
 
 # Caching
 # Redis notes: redis_max_clients: 10000, edis_max_memory: 512mb
+REDIS_CACHE_DB = 3  # XXX Only in Staging
 REDIS_PASSWORD = 'VPoDYBZgeyktxArddu4EHrNMdFsUzf7TtFKTP'
 REDIS_HOST = 'worker.tndata.org'
-REDIS_CACHE_DB = 2
 REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     password=REDIS_PASSWORD,
     host=REDIS_HOST,
@@ -62,6 +62,7 @@ CACHEOPS_REDIS = {
 
 
 # django-redis-metrics
+REDIS_METRICS_DB = 4  # XXX  Only in Staging
 REDIS_METRICS = {
     'HOST': REDIS_HOST,
     'PORT': REDIS_PORT,
