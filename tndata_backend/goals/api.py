@@ -9,6 +9,7 @@ from rest_framework.authentication import (
 )
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
+from redis_metrics import metric
 from utils.user_utils import local_day_range
 
 from . import models
@@ -845,6 +846,18 @@ class UserActionViewSet(mixins.CreateModelMixin,
             kwargs['many'] = True
         return super(UserActionViewSet, self).get_serializer(*args, **kwargs)
 
+    def list(self, request, *args, **kwargs):
+        if request.GET.get('today', False):
+            # This is probably the morning check-in
+            metric('viewed-useractions', category="User Interactions")
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        if request.GET.get('today', False):
+            # This is probably the morning check-in
+            metric('viewed-useractions', category="User Interactions")
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if isinstance(self.request.data, list):
@@ -1241,6 +1254,7 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
 
     def update(self, request, *args, **kwargs):
         request = self._parse_request_data(request)
+        metric('updated-goal-progress', category="User Interactions")
         return super().update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
@@ -1253,6 +1267,7 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
             gp.save()
             data = self.serializer_class(gp).data
             return Response(data=data, status=status.HTTP_200_OK)
+        metric('created-goal-progress', category="User Interactions")
         return super().create(request, *args, **kwargs)
 
     @list_route(permission_classes=[IsOwner], url_path='average')
@@ -1548,3 +1563,10 @@ class SearchViewSet(HaystackViewSet):
     index_models = [models.Goal]
     serializer_class = serializers.SearchSerializer
     filter_backends = [HaystackHighlightFilter]
+
+    def list(self, request, *args, **kwargs):
+        for query in request.GET.getlist('q'):
+            # Split all search terms and flatten into a single list
+            for term in query.split():
+                metric('q={}'.format(term), category='Search Terms')
+        return super().list(request, *args, **kwargs)
