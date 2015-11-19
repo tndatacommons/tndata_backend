@@ -32,6 +32,7 @@ from notifications.models import GCMMessage
 from notifications.signals import notification_snoozed
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
+from redis_metrics import metric
 from utils import colors, dateutils
 from utils.user_utils import local_day_range, to_localtime, to_utc
 
@@ -682,6 +683,13 @@ class Trigger(URLMixin, models.Model):
         return None
 
     objects = TriggerManager()
+
+
+@receiver(post_save, sender=Trigger, dispatch_uid="custom-trigger-updated")
+def custom_trigger_updated(sender, instance, created, raw, using, **kwargs):
+    """Record metrics when a User updates their custom triggers."""
+    if instance.user:
+        metric('custom-trigger-updated', category="User Interactions")
 
 
 def _behavior_icon_path(instance, filename):
@@ -1685,6 +1693,13 @@ class UserCompletedAction(models.Model):
         return self.state == "snoozed"
 
 
+@receiver(post_save, sender=UserCompletedAction, dispatch_uid="action-completed")
+def action_completed(sender, instance, created, raw, using, **kwargs):
+    """Record metrics when a UserCompletedAction status is updated."""
+    key = "action-{}".format(instance.state)
+    metric(key, category="User Interactions")
+
+
 class UserCategory(models.Model):
     """A Mapping between users and specific categories."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -1746,6 +1761,17 @@ def delete_category_child_goals(sender, instance, using, **kwargs):
     user_goals = instance.user.usergoal_set.all()
     user_goals = user_goals.exclude(goal__categories__in=user_categories)
     user_goals.delete()
+
+
+@receiver(post_save, sender=UserCategory, dispatch_uid="adopt_usercategories")
+@receiver(post_save, sender=UserGoal, dispatch_uid="adopt_usergoals")
+@receiver(post_save, sender=UserBehavior, dispatch_uid="adopt_userbehaviors")
+@receiver(post_save, sender=UserAction, dispatch_uid="adopt_useractions")
+def user_adopted_content(sender, instance, created, raw, using, **kwargs):
+    """Record some metrics when a user adopts a piece of behavior content."""
+    if created:
+        key = "{}-created".format(sender.__name__.lower())
+        metric(key, category="User Interactions")
 
 
 class BehaviorProgress(models.Model):
