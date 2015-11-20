@@ -8,6 +8,7 @@ SITE_DOMAIN = "localhost"
 SITE_URL = "http://127.0.0.1:8000"
 MANAGERS = ADMINS
 
+# django-querycount settings
 QUERYCOUNT = {
     'THRESHOLDS': {
         'MEDIUM': 50,
@@ -16,6 +17,7 @@ QUERYCOUNT = {
         'MIN_QUERY_COUNT_TO_LOG': 0
     },
     'IGNORE_PATTERNS': [r'^/static', r'^/media', r'^/admin'],
+    'DISPLAY_DUPLICATES': 5,
 }
 
 
