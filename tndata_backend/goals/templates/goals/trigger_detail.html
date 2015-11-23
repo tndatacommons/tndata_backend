@@ -13,7 +13,7 @@
 {% block content %}
   <div class="row">
     <div class="large-12 small-12 columns">
-      <h1>{{ trigger.name }} {% goal_object_controls trigger %}</h1>
+      <h1>{{ trigger.name }}</h1>
 
       <div data-alert class="alert-box info">
         <i class="fa fa-warning"></i> <strong>NOTE on Timezones</strong><br/>
@@ -27,50 +27,23 @@
         <dt>Date</dt><dd>{{ trigger.trigger_date|default:"not set"}}</dd>
         <dt>Recurrences</dt><dd>{{ trigger.recurrences_as_text }}</dd>
         <dt>RRULE data</dt><dd><code>{{ trigger.serialized_recurrences}}</code></dd>
-        <dt>Default for Action:</dt>
-        <dd>
-          {% if trigger.action_default %}
+        {% if trigger.action_default %}
+          <dt>Default Trigger for</dt>
+          <dd>
             <a href="{{ trigger.action_default.get_absolute_url }}">
               {{ trigger.action_default }}</a>
-          {% else %}
-            None
-          {% endif %}
-        </dd>
-        <dt>Default for Behavior(s):</dt>
-        <dd>
-          {% if trigger.behavior_set.exists %}
+          </dd>
+        {% endif %}
+        {% if trigger.behavior_set.exists %}
+          <dt>Default for Behavior(s):</dt>
+          <dd>
             {% for behavior in trigger.behavior_set.all %}
               <a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a><br/>
             {% endfor %}
-          {% else %}
-            None
-          {% endif %}
-        </dd>
+          </dd>
+        {% endif %}
 
       </dl>
-    </div>
-    <div class="large-6 small-12 columns">
-      {% if trigger.behavior_set.exists %}
-      <h2 class="subheader">Behavior</h2>
-      <p><strong>{{ trigger.name }}</strong>
-        is attached to the following behavior sequences:</p>
-      <ul>
-      {% for b in trigger.behavior_set.all %}
-        <li>{{ b|label }} <a href="{{b.get_absolute_url}}">{{ b }}</a></li>
-      {% endfor %}
-      </ul>
-      {% endif %}
-
-      {% if trigger.action_set.exists %}
-      <h2 class="subheader">Action</h2>
-      <p><strong>{{ trigger.name }}</strong>
-        is attached to the following behavior actions:</p>
-      <ul>
-      {% for a in trigger.action_set.all %}
-        <li>{{ a|label }} <a href="{{a.get_absolute_url}}">{{ a }}</a></li>
-      {% endfor %}
-      </ul>
-      {% endif %}
     </div>
   </div>
 {% endblock %}
