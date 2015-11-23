@@ -1118,6 +1118,76 @@ class TestUserAction(TestCase):
         actual = "{}".format(self.ua)
         self.assertEqual(expected, actual)
 
+    def test__completed(self):
+        # When we have no UserCompletedActions
+        self.assertFalse(self.ua._completed('-').exists())
+
+        # We we have 1 UserCompletedAction
+        kwargs = {'useraction': self.ua, 'user': self.user, 'action': self.action}
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertTrue(self.ua._completed('-').exists())
+        uca.delete()
+
+    def test_num_completed(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_completed, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'completed',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_completed, 1)
+        uca.delete()
+
+    def test_num_uncompleted(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_uncompleted, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'uncompleted',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_uncompleted, 1)
+        uca.delete()
+
+    def test_num_snoozed(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_snoozed, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'snoozed',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_snoozed, 1)
+        uca.delete()
+
+    def test_num_dismissed(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_dismissed, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'dismissed',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_dismissed, 1)
+        uca.delete()
+
     def test_completed_today(self):
         # ensure that the action is completed, and this should return True
         UserCompletedAction.objects.create(
