@@ -38,7 +38,6 @@ from . forms import (
     EnrollmentReminderForm,
     GoalForm,
     PackageEnrollmentForm,
-    TriggerForm,
     UploadImageForm,
 )
 from . mixins import (
@@ -496,53 +495,6 @@ class TriggerDetailView(ContentEditorMixin, DetailView):
     queryset = Trigger.objects.default()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-
-
-class TriggerCreateView(ContentEditorMixin, CreateView):
-    model = Trigger
-    form_class = TriggerForm
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super(TriggerCreateView, self).get_context_data(**kwargs)
-        context['triggers'] = Trigger.objects.default()
-        return context
-
-
-class TriggerDuplicateView(TriggerCreateView):
-    """Initializes the Create form with a copy of data from another object."""
-    def get_initial(self, *args, **kwargs):
-        initial = super(TriggerDuplicateView, self).get_initial(*args, **kwargs)
-        try:
-            obj = self.get_object()
-            initial.update({
-                "name": "Copy of {0}".format(obj.name),
-                "time": obj.time,
-                "recurrences": obj.recurrences,
-            })
-        except self.model.DoesNotExist:
-            pass
-        return initial
-
-
-class TriggerUpdateView(ContentEditorMixin, UpdateView):
-    model = Trigger
-    form_class = TriggerForm
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super(TriggerUpdateView, self).get_context_data(**kwargs)
-        context['triggers'] = Trigger.objects.default()
-        return context
-
-
-class TriggerDeleteView(ContentEditorMixin, DeleteView):
-    model = Trigger
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    success_url = reverse_lazy('goals:index')
 
 
 class BehaviorListView(ContentViewerMixin, ListView):
