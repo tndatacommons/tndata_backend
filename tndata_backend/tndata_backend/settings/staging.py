@@ -37,7 +37,7 @@ EMAIL_USE_SSL = False
 # Redis notes: redis_max_clients: 10000, edis_max_memory: 512mb
 REDIS_CACHE_DB = 3  # XXX Only in Staging
 REDIS_PASSWORD = 'VPoDYBZgeyktxArddu4EHrNMdFsUzf7TtFKTP'
-REDIS_HOST = 'worker.tndata.org'
+REDIS_HOST = '10.132.153.230'
 REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     password=REDIS_PASSWORD,
     host=REDIS_HOST,
@@ -48,7 +48,7 @@ CACHES['default']['LOCATION'] = REDIS_CACHE_URL
 CACHES['default']['OPTIONS']['IGNORE_EXCEPTIONS'] = True
 
 # django-haystack settings for staging
-HAYSTACK_CONNECTIONS['default']['URL'] = 'http://worker.tndata.org:9200/'
+HAYSTACK_CONNECTIONS['default']['URL'] = '10.132.153.230:9200/'
 HAYSTACK_CONNECTIONS['default']['INDEX_NAME'] = 'haystack_staging'
 
 # django-cacheops
