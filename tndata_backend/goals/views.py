@@ -230,33 +230,6 @@ class CreatedByView(CreateView):
         return result
 
 
-@user_passes_test(superuser_required, login_url='/')
-def upload_csv(request):
-    """Allow a user to upload a CSV file to populate our data backend."""
-    if request.method == "POST":
-        form = CSVUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                form.save()
-                messages.success(request, 'CSV File uploaded, successfully.')
-                return redirect("goals:index")
-            except CSVUploadForm.InvalidFormat as e:
-                messages.error(
-                    request, "The uploaded file could not be "
-                    "processed. Please check the format and try again: "
-                    " {0}".format(e)
-                )
-        else:
-            messages.warning(
-                request, "This form didn't validate. Please try again."
-            )
-    else:
-        form = CSVUploadForm()
-
-    context = {'form': form}
-    return render(request, 'goals/upload_csv.html', context)
-
-
 class IndexView(ContentViewerMixin, TemplateView):
     template_name = "goals/index.html"
 
