@@ -488,7 +488,7 @@ class GoalDeleteView(ContentEditorMixin, ContentDeleteView):
 
 class TriggerListView(ContentViewerMixin, ListView):
     model = Trigger
-    queryset = Trigger.objects.default()
+    queryset = Trigger.objects.default().values('id', 'name', 'time', 'recurrences')
     context_object_name = 'triggers'
 
 
