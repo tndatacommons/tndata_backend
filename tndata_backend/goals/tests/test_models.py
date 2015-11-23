@@ -305,20 +305,6 @@ class TestTrigger(TestCase):
 
         )
 
-    def test_get_update_url(self):
-        self.assertEqual(
-            self.trigger.get_update_url(),
-            "/goals/triggers/{0}/update/".format(self.trigger.id)
-
-        )
-
-    def test_get_delete_url(self):
-        self.assertEqual(
-            self.trigger.get_delete_url(),
-            "/goals/triggers/{0}/delete/".format(self.trigger.id)
-
-        )
-
     def test_recurrences_as_text(self):
         expected = "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
         self.assertEqual(self.trigger.recurrences_as_text(), expected)
