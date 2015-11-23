@@ -17,7 +17,7 @@ QUERYCOUNT = {
         'MIN_QUERY_COUNT_TO_LOG': 0
     },
     'IGNORE_PATTERNS': [r'^/static', r'^/media', r'^/admin'],
-    'DISPLAY_DUPLICATES': 5,
+    'DISPLAY_DUPLICATES': 1,
 }
 
 
