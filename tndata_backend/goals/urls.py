@@ -73,11 +73,6 @@ urlpatterns = [
         name='category-create'
     ),
     url(
-        r'^new/triggers/$',
-        views.TriggerCreateView.as_view(),
-        name='trigger-create'
-    ),
-    url(
         r'^new/goals/$',
         views.GoalCreateView.as_view(),
         name='goal-create'
@@ -182,21 +177,6 @@ urlpatterns = [
         r'^triggers/$',
         views.TriggerListView.as_view(),
         name='trigger-list'
-    ),
-    url(
-        r'^triggers/(?P<pk>\d+)/update/$',
-        views.TriggerUpdateView.as_view(),
-        name='trigger-update'
-    ),
-    url(
-        r'^triggers/(?P<pk>\d+)/delete/$',
-        views.TriggerDeleteView.as_view(),
-        name='trigger-delete'
-    ),
-    url(
-        r'^triggers/(?P<pk>\d+)/duplicate/$',
-        views.TriggerDuplicateView.as_view(),
-        name='trigger-duplicate'
     ),
     url(
         r'^triggers/(?P<pk>\d+)/$',
