@@ -320,7 +320,7 @@ class ActionTriggerForm(forms.ModelForm):
 
     class Meta:
         model = Trigger
-        fields = ['time', 'trigger_date', 'recurrences']
+        fields = ['stop_on_complete', 'time', 'trigger_date', 'recurrences']
         widgets = {
             "time": TimeSelectWidget(include_empty=True),
             "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),
