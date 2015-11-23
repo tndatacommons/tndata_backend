@@ -1404,6 +1404,26 @@ class UserAction(models.Model):
     def __str__(self):
         return "{0}".format(self.action.title)
 
+    def _completed(self, state):
+        """Return the UserCompletedAction objects for this UserAction."""
+        return self.usercompletedaction_set.filter(state=state)
+
+    @property
+    def num_completed(self):
+        return self._completed(UserCompletedAction.COMPLETED).count()
+
+    @property
+    def num_uncompleted(self):
+        return self._completed(UserCompletedAction.UNCOMPLETED).count()
+
+    @property
+    def num_snoozed(self):
+        return self._completed(UserCompletedAction.SNOOZED).count()
+
+    @property
+    def num_dismissed(self):
+        return self._completed(UserCompletedAction.DISMISSED).count()
+
     @property
     def trigger(self):
         return self.custom_trigger or self.default_trigger
