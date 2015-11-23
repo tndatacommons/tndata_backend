@@ -24,7 +24,7 @@ class TestActionTriggerForm(TestCase):
 
     def test_unbound(self):
         form = ActionTriggerForm()
-        fields = sorted(['time', 'trigger_date', 'recurrences'])
+        fields = sorted(['time', 'trigger_date', 'recurrences', 'stop_on_complete'])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound_all(self):
@@ -32,6 +32,7 @@ class TestActionTriggerForm(TestCase):
             'time': '6:30',
             'trigger_date': '08/20/2015',
             'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+            'stop_on_complete': False,
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
@@ -41,6 +42,7 @@ class TestActionTriggerForm(TestCase):
             'time': '15:30',
             'trigger_date': '',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'stop_on_complete': False,
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
@@ -50,6 +52,7 @@ class TestActionTriggerForm(TestCase):
             'time': '7:00',
             'trigger_date': '02/01/2010',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'stop_on_complete': False,
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
