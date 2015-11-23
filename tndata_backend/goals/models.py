@@ -18,7 +18,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Sum, ObjectDoesNotExist
 from django.db.models.signals import (
     pre_delete, pre_save, post_delete, post_save
 )
@@ -434,13 +434,14 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
 
 class Trigger(models.Model):
-    """This class encapsulates date-based triggers for Behaviors and Actions.
+    """Definition for a (possibly recurring) reminder for an user's Actions.
 
-    A Trigger consists of:
+    A Trigger consists of one or more of the following:
 
-    1. A date and/or time; when a notification should be sent.
-    2. Recurrences: How frequently (every day, once a month, etc) should the
-       notification be sent.
+    - A date and/or time when a notification should be sent.
+    - Recurrences: How frequently (every day, once a month, etc) should the
+      notification be sent.
+    - Whether or not trigger should stop once the action has been completed.
 
     This model is heavily based on django-recurrence:
     https://django-recurrence.readthedocs.org
@@ -473,6 +474,10 @@ class Trigger(models.Model):
         null=True,
         blank=True,
         help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
+    )
+    stop_on_complete = models.BooleanField(
+        default=False,
+        help_text="Should reminders stop after the action has been completed?"
     )
 
     def __str__(self):
@@ -598,6 +603,43 @@ class Trigger(models.Model):
         now = timezone.now().astimezone(tz)
         return list(filter(lambda d: d > now, dates))
 
+    def _stopped_by_completion(self, user=None):
+        """Determine if triggers should stop because the user has completed
+        the action associated with this trigger. This is messy, but it:
+
+        - users the given user, falling back to self.user
+        - returns False for no user
+        - if this is a default trigger, it looks up the UserCompletedAction
+          for the Action on which it is defined as a default
+        - if this is a custom trigger, it looks up the UserCompletedAction
+          for the associated UserAction
+        - If it finds a UserCompletedAction with a state of "complete" it
+          returns True
+        - If it fails any of the above, it returns False
+
+        Returns True if the trigger should stop, False otherwise.
+        """
+        user = user or self.user
+        if user and self.stop_on_complete:  # This only works if we have a user
+            try:
+                # While it's technically possible that this trigger could be
+                # associated with more than one UserAction, it's unlikely,
+                ua = user.useraction_set.filter(custom_trigger=self).first()
+                if ua is None:  # This may be a default trigger...
+                    ua = user.useraction_set.filter(action=self.action_default).first()
+                if ua:
+                    # Try to get the UserAction associated with the trigger
+                    params = {
+                        'user': user,
+                        'useraction': ua,
+                        'action': ua.action,
+                        'state': UserCompletedAction.COMPLETED,
+                    }
+                    return UserCompletedAction.objects.filter(**params).exists()
+            except ObjectDoesNotExist:
+                pass
+        return False
+
     def next(self, user=None):
         """Generate the next date for this Trigger. For recurring triggers,
         this will return a datetime object for the next time the trigger should
@@ -605,6 +647,9 @@ class Trigger(models.Model):
         user; otherwise, the date will be in UTC.
 
         """
+        if self._stopped_by_completion(user):
+            return None
+
         tz = self.get_tz(user=user)
         alert_on = self.get_alert_time(tz)
         now = timezone.now().astimezone(tz)
