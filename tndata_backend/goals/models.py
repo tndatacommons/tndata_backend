@@ -433,7 +433,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     objects = GoalManager()
 
 
-class Trigger(URLMixin, models.Model):
+class Trigger(models.Model):
     """This class encapsulates date-based triggers for Behaviors and Actions.
 
     A Trigger consists of:
@@ -446,12 +446,6 @@ class Trigger(URLMixin, models.Model):
     https://django-recurrence.readthedocs.org
 
     """
-    # URLMixin attributes
-    urls_app_namespace = "goals"
-    urls_model_name = "trigger"
-    urls_fields = ['pk']
-
-    # Data Fields
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -508,6 +502,9 @@ class Trigger(URLMixin, models.Model):
         rrule = self.serialized_recurrences()
         if rrule and 'RDATE:' in rrule:
             self.recurrences = rrule.split('RDATE:')[0].strip()
+
+    def get_absolute_url(self):
+        return reverse('goals:trigger-detail', args=[self.pk])
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
