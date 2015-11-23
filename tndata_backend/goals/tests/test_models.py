@@ -366,6 +366,72 @@ class TestTrigger(TestCase):
             # No date or time should return None
             self.assertIsNone(Trigger().get_alert_time())
 
+    def test__stopped_by_completion__default_trigger(self):
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+
+        trigger = mommy.make(
+            Trigger,
+            name="StopTrigger",
+            time=time(17, 0),
+            recurrences="RRULE:FREQ=DAILY",
+            stop_on_complete=True,
+        )
+        act = mommy.make(
+            Action,
+            behavior=beh,
+            title='Act',
+            state='published',
+            default_trigger=trigger
+        )
+
+        user = mommy.make(User)
+        ua = mommy.make(UserAction, action=act, user=user)
+        self.assertFalse(trigger._stopped_by_completion(user))
+
+        # now the user has completed the action
+        mommy.make(
+            UserCompletedAction,
+            user=user,
+            useraction=ua,
+            action=act,
+            state='completed'
+        )
+        self.assertTrue(trigger._stopped_by_completion(user))
+
+    def test__stopped_by_completion__custom_trigger(self):
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        user = mommy.make(User)
+        trigger = mommy.make(
+            Trigger,
+            name="StopTrigger",
+            time=time(17, 0),
+            recurrences="RRULE:FREQ=DAILY",
+            stop_on_complete=True,
+            user=user
+        )
+        ua = mommy.make(UserAction, user=user, action=act, custom_trigger=trigger)
+        self.assertFalse(trigger._stopped_by_completion(user))
+
+        # now the user has completed the action
+        mommy.make(
+            UserCompletedAction,
+            user=user,
+            useraction=ua,
+            action=ua.action,
+            state='completed'
+        )
+        self.assertTrue(trigger._stopped_by_completion(user))
+
     def test_next_when_no_time_or_date(self):
         """Ensure that next none when there's no time, recurrence, or date"""
         self.assertIsNone(Trigger().next())
