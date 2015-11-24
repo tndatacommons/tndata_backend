@@ -70,7 +70,7 @@ DEFAULT_EVENING_GOAL_TRIGGER_NAME = getattr(
 DEFAULT_EVENING_GOAL_TRIGGER_TIME = getattr(
     default_settings,
     'DEFAULT_EVENING_GOAL_TRIGGER_TIME',
-    '16:30'
+    '20:00'
 )
 DEFAULT_EVENING_GOAL_TRIGGER_RRULE = getattr(
     default_settings,
