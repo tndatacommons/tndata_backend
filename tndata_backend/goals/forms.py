@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
-from django.db.models import Q, ObjectDoesNotExist
+from django.db.models import Q
 
 from django.forms import ValidationError
 from django.utils.text import slugify
@@ -353,7 +353,16 @@ class ActionTriggerForm(forms.ModelForm):
             Fieldset(
                 _("Reminder Details"),
                 disable_button,
-                'stop_on_complete',
+                Div(
+                    Field(
+                        'stop_on_complete',
+                        data_tooltip=None,
+                        aria_haspopup="true",
+                        title=("Reminders will cease to fire once the user "
+                               "has completed this action."),
+                        css_class="has-tip tip-top"
+                    ),
+                ),
                 'time',
                 'trigger_date',
                 'recurrences',
