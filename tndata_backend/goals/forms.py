@@ -323,7 +323,11 @@ class ActionTriggerForm(forms.ModelForm):
 
     class Meta:
         model = Trigger
-        fields = ['stop_on_complete', 'time', 'trigger_date', 'recurrences']
+        fields = [
+            'stop_on_complete', 'time', 'trigger_date',
+            'relative_value', 'relative_units',
+            'recurrences',
+        ]
         widgets = {
             "time": TimeSelectWidget(include_empty=True),
             "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),
@@ -365,6 +369,21 @@ class ActionTriggerForm(forms.ModelForm):
                 ),
                 'time',
                 'trigger_date',
+                Div(
+                    Div('relative_value', css_class="large-6 columns"),
+                    Div('relative_units', css_class="large-6 columns"),
+                    css_class="row"
+                ),
+                Div(
+                    Div(
+                        HTML('<div class="hint">Relative reminders will fire '
+                             'based on when the user adopts an action. Select '
+                             'the amount of time and an a unit to turn this '
+                             'into a relative reminder</div>'),
+                        css_class="large-12 columns"
+                    ),
+                    css_class="row"
+                ),
                 'recurrences',
             )
         )
@@ -378,6 +397,15 @@ class ActionTriggerForm(forms.ModelForm):
         data = super().clean()
         recurrences = data.get('recurrences')
         date = data.get('trigger_date')
+        rel_value = data.get('relative_value')
+        rel_units = data.get('relative_units')
+
+        # Require BOTH relative_value and relative_units
+        if (rel_value or rel_units) and not all([rel_value, rel_units]):
+            self.add_error('relative_value', ValidationError(
+                "Both a value and units are required for Relative Reminders",
+                code="required_for_relative_reminders"
+            ))
 
         # Intervals (e.g. every other day) need a starting date.
         if recurrences and 'INTERVAL' in serialize_recurrences(recurrences) and not date:
