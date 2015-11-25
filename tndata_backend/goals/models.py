@@ -26,6 +26,7 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from django_fsm import FSMField, transition
 from markdown import markdown
 from notifications.models import GCMMessage
@@ -447,6 +448,12 @@ class Trigger(models.Model):
     https://django-recurrence.readthedocs.org
 
     """
+    RELATIVE_UNIT_CHOICES = (
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+        ('years', 'Years'),
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -478,6 +485,24 @@ class Trigger(models.Model):
     stop_on_complete = models.BooleanField(
         default=False,
         help_text="Should reminders stop after the action has been completed?"
+    )
+    # Relative reminders examples:
+    #
+    # - 1 day after action selected
+    # - 2 weeks after action selected
+    # - 1 year after action selected
+    #
+    # IDEA: Once a user selects an action with a 'relative' reminder, we
+    # immediately turn it into a custom reminder and pre-fill the `trigger_date`
+    # based on when the UserAction instance is created. This will require
+    # that the newly created UserAction instance know how to modify the trigger
+    # accordingly. See the create_relative_reminder signal handler for UserAction
+    relative_value = models.IntegerField(default=0)
+    relative_units = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=RELATIVE_UNIT_CHOICES,
     )
 
     def __str__(self):
@@ -517,6 +542,25 @@ class Trigger(models.Model):
         self._localize_time()
         self._strip_rdate_data()
         super(Trigger, self).save(*args, **kwargs)
+
+    @property
+    def is_relative(self):
+        return all([self.relative_units, self.relative_value])
+
+    def relative_trigger_date(self, dt):
+        """If this is a custom (has a user), relative trigger (has both a
+        relative_value and relative_units), this method will calculate the
+        trigger_date (when this trigger should start) relative to the given
+        datetime object.
+
+        Returns a datetime object or None.
+
+        """
+        if self.user and self.is_relative:
+            # build kwargs, e.g.: relativedelta(dt, months=5)
+            kwargs = {self.relative_units, self.relative_value}
+            return dt + relativedelta(**kwargs)
+        return None
 
     def serialized_recurrences(self):
         """Return a rfc2445 formatted unicode string."""
@@ -1639,7 +1683,7 @@ class UserAction(models.Model):
     objects = UserActionManager()
 
 
-@receiver(post_save, sender=UserAction)
+@receiver(post_save, sender=UserAction, dispatch_uid="create-parent-userbehavior")
 def create_parent_user_behavior(sender, instance, using, **kwargs):
     """If a user doens't have a UserBehavior object for the UserAction's
     parent behavior this will create one.
@@ -1651,6 +1695,34 @@ def create_parent_user_behavior(sender, instance, using, **kwargs):
             user=instance.user,
             behavior=instance.action.behavior
         )
+
+
+@receiver(post_save, sender=UserAction, dispatch_uid="create-relative-reminder")
+def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
+    """When a UserAction is created, we need to look at it's default_trigger
+    and see if it's a relative reminder. If so, we automatically create a
+    custom trigger for the user filling in it's trigger_date based on the
+    UserAction's creation date.
+
+    """
+    # TODO: This (relative trigger creation) needs tests!
+    is_relative = (
+        instance.custom_trigger is None and
+        instance.default_trigger.is_relative
+    )
+    if created and is_relative:
+        trigger = Trigger.objects.create(
+            user=instance.user,
+            name="Trigger for {}".format(instance),
+            time=instance.default_trigger.time,
+            trigger_date=instance.default_trigger.trigger_date,
+            recurrences=instance.default_trigger.recurrences,
+            stop_on_complete=instance.default_trigger.stop_on_complete,
+            relative_value=instance.default_trigger.relative_value,
+            relative_units=instance.default_trigger.relative_units
+        )
+        trigger.trigger_date = trigger.relative_trigger_date(instance.created_on)
+        trigger.save()
 
 
 @receiver(notification_snoozed)
