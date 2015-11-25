@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
+{% load crispy_forms_tags %}
 {% block title %}Action Form{% endblock %}
 
 {% block head %}
@@ -61,15 +62,7 @@
     <p>An <strong>Action</strong> is the unit of activity in which
     users will engage.</p>
     {% include "goals/_form_fields_sans_notes.html" %}
-    <fieldset>
-      <legend>Reminder Details</legend>
-        {% if action.default_trigger %}
-        <button type="button" id="disable-trigger-button"
-                class="button info tiny pull-right">
-          <i class="fa fa-bell-slash"></i> Disable</button>
-        {% endif %}
-      {{ trigger_form.as_p }}
-    </fieldset>
+    {% crispy trigger_form %}
     {% form_buttons object "Action" %}
   </div>
   <div class="large-6 small-12 columns">

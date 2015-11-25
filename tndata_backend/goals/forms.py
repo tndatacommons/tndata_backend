@@ -5,7 +5,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Q, ObjectDoesNotExist
+
 from django.forms import ValidationError
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
@@ -15,8 +16,10 @@ from crispy_forms.layout import (
     Div,
     Field,
     Fieldset,
+    HTML,
     Layout,
 )
+
 from recurrence import serialize as serialize_recurrences
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
@@ -329,6 +332,33 @@ class ActionTriggerForm(forms.ModelForm):
             "time": "Reminder Time",
             "trigger_date": "Reminder Date",
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If there's a trigger instance, include a button to disable it. This
+        # should be handled in the template.
+        try:
+            if self.instance.action_default:
+                disable_button = HTML(
+                    '<button type="button" id="disable-trigger-button" '
+                    ' class="button info tiny pull-right">'
+                    '<i class="fa fa-bell-slash"></i> Disable Trigger</button>'
+                )
+        except ObjectDoesNotExist:
+            disable_button = HTML('')
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Reminder Details"),
+                disable_button,
+                'stop_on_complete',
+                'time',
+                'trigger_date',
+                'recurrences',
+            )
+        )
 
     def save(self, *args, **kwargs):
         obj = super().save(*args, **kwargs)
