@@ -924,8 +924,11 @@ def package_calendar(request, pk):
     for action in actions:
         for dt in action.default_trigger.get_occurences(days=31):
             action_data.append((dt.date(), dt, action))
+        # include a list of goal-ids in the action
+        action.goal_ids = list(action.behavior.goals.values_list('id', flat=True))
     action_data = sorted(action_data, key=lambda d: d[1].strftime("%Y%m%d%H%M"))
 
+    goals = list(category.goals.values_list('id', 'title'))
     ctx = {
         'is_editor': is_content_editor(request.user),
         'today': local_now(request.user),
@@ -935,6 +938,7 @@ def package_calendar(request, pk):
         'starting_date': start,
         'next_date': (cal[-1][-1] + timedelta(days=1)).strftime("%Y-%m"),
         'prev_date': (cal[0][0] - timedelta(days=1)).strftime("%Y-%m"),
+        'goals': goals,
     }
     return render(request, "goals/package_calendar.html", ctx)
 
