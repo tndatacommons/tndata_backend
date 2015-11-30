@@ -16,7 +16,6 @@ from .. models import (
     Trigger,
 )
 from .. widgets import TimeSelectWidget
-
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
@@ -24,7 +23,10 @@ class TestActionTriggerForm(TestCase):
 
     def test_unbound(self):
         form = ActionTriggerForm()
-        fields = sorted(['time', 'trigger_date', 'recurrences', 'stop_on_complete'])
+        fields = sorted([
+            'stop_on_complete', 'time', 'trigger_date',
+            'relative_value', 'relative_units', 'recurrences',
+        ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound_all(self):
@@ -33,6 +35,8 @@ class TestActionTriggerForm(TestCase):
             'trigger_date': '08/20/2015',
             'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
             'stop_on_complete': False,
+            'relative_value': 0,
+            'relative_units': '',
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
@@ -43,6 +47,8 @@ class TestActionTriggerForm(TestCase):
             'trigger_date': '',
             'recurrences': 'RRULE:FREQ=DAILY',
             'stop_on_complete': False,
+            'relative_value': 0,
+            'relative_units': '',
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
@@ -53,6 +59,8 @@ class TestActionTriggerForm(TestCase):
             'trigger_date': '02/01/2010',
             'recurrences': 'RRULE:FREQ=DAILY',
             'stop_on_complete': False,
+            'relative_value': 0,
+            'relative_units': '',
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
