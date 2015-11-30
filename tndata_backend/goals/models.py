@@ -558,7 +558,7 @@ class Trigger(models.Model):
         """
         if self.user and self.is_relative:
             # build kwargs, e.g.: relativedelta(dt, months=5)
-            kwargs = {self.relative_units, self.relative_value}
+            kwargs = {self.relative_units: self.relative_value}
             return dt + relativedelta(**kwargs)
         return None
 
@@ -1723,6 +1723,8 @@ def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
         )
         trigger.trigger_date = trigger.relative_trigger_date(instance.created_on)
         trigger.save()
+        instance.custom_trigger = trigger
+        instance.save()
 
 
 @receiver(notification_snoozed)
