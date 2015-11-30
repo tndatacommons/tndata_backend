@@ -464,6 +464,30 @@ class TestTrigger(TestCase):
         # Clean up
         trigger.delete()
 
+    def test_next_with_stop_on_complete(self):
+        """Ensure that a trigger a stop_on_complete set will no longer return
+        dates after it has "stopped"."""
+        trigger = Trigger.objects.create(
+            name="Stop-Trigger",
+            time=time(12, 34),
+            trigger_date=date(2015, 1, 1),
+            stop_on_complete=True
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 9, 0)
+
+            # First, when the trigger hasn't been stopped.
+            trigger._stopped_by_completion = Mock(return_value=False)
+            expected = tzdt(2015, 1, 1, 12, 34)
+            expected = expected.strftime("%c %z")
+            actual = trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # Now once the trigger has been completed
+            trigger._stopped_by_completion = Mock(return_value=True)
+            self.assertIsNone(trigger.next())
+
     def test_next_when_no_recurrence(self):
         """Ensure that a trigger without a recurrence, but with a time & date
         yields the correct value via it's `next` method."""
