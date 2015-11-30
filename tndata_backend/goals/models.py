@@ -1705,9 +1705,9 @@ def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
     UserAction's creation date.
 
     """
-    # TODO: This (relative trigger creation) needs tests!
     is_relative = (
         instance.custom_trigger is None and
+        instance.default_trigger is not None and
         instance.default_trigger.is_relative
     )
     if created and is_relative:
