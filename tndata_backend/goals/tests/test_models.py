@@ -771,6 +771,40 @@ class TestTrigger(TestCase):
             result = trigger.next(user=user)  # When called with input.
             self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
 
+    def test_create_relative_reminder(self):
+        """Creating a UserAction with a defaul relative reminder trigger should
+        result in a new custom trigger with pre-filled data."""
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        default = Trigger.objects.create(
+            name="Default", time=time(13, 30), recurrences="RRULE:FREQ=DAILY",
+            relative_value=1, relative_units="weeks"
+        )
+        act.default_trigger = default
+        act.save()
+
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
+            ua = UserAction.objects.create(user=user, action=act)
+            # A custom trigger should have been created
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(ua.default_trigger, default)
+            self.assertNotEqual(ua.trigger, default)
+            custom = ua.trigger
+
+            # expected next trigger is a week later in the user's timezone
+            tz = pytz.timezone(user.userprofile.timezone)
+            expected = tzdt(2015, 1, 8, 13, 30, tz=tz)
+            expected = expected.strftime("%c %z")
+            actual = custom.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
 
 class TestBehavior(TestCase):
     """Tests for the `Behavior` model."""
