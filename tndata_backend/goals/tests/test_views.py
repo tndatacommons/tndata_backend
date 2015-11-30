@@ -2081,6 +2081,9 @@ class TestActionCreateView(TestCaseWithGroups):
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
             'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
+            'trigger-stop_on_complete': '',
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
         }
 
     def test_anon_get(self):
@@ -2146,6 +2149,9 @@ class TestActionCreateView(TestCaseWithGroups):
             'trigger-time': '',
             'trigger-trigger_date': '',
             'trigger-recurrences': '',
+            'trigger-stop_on_complete': '',
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
         }
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, data)
@@ -2324,6 +2330,9 @@ class TestActionUpdateView(TestCaseWithGroups):
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
             'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
+            'trigger-stop_on_complete': False,
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
         }
 
     def setUp(self):
