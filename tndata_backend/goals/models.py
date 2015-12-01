@@ -505,6 +505,14 @@ class Trigger(models.Model):
         choices=RELATIVE_UNIT_CHOICES,
     )
 
+    # TODO: Add support for recurrences of the form: repeat until occurs x times
+    #       AFTER the user selects an action.
+    #
+    # - requires some flag to opt into that
+    # - involves setting the `trigger_date` automatically when the user selects
+    #   the action (like we do with other relative reminders)
+    # - Needs tests, first?
+
     def __str__(self):
         return self.name if self.name else "Unnamed Trigger"
 
