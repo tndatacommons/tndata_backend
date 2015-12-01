@@ -124,8 +124,9 @@ class TriggerSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Trigger
         fields = (
-            'id', 'user', 'name', 'name_slug', 'time',
-            'recurrences', 'recurrences_display', 'next', 'object_type',
+            'id', 'user', 'name', 'name_slug', 'time', 'trigger_date',
+            'recurrences', 'recurrences_display', 'stop_on_complete',
+            'relative_value', 'relative_units', 'next', 'object_type',
         )
         read_only_fields = ("id", "name_slug", "next")
 
