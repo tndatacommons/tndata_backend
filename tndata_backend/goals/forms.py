@@ -324,7 +324,7 @@ class ActionTriggerForm(forms.ModelForm):
     class Meta:
         model = Trigger
         fields = [
-            'stop_on_complete', 'time', 'trigger_date',
+            'start_when_selected', 'stop_on_complete', 'time', 'trigger_date',
             'relative_value', 'relative_units',
             'recurrences',
         ]
@@ -369,6 +369,14 @@ class ActionTriggerForm(forms.ModelForm):
                 ),
                 'time',
                 'trigger_date',
+                Field(
+                    'start_when_selected',
+                    data_tooltip=None,
+                    aria_haspopup="true",
+                    title=("If selected the reminder date will be automatically "
+                           "be set when the user adds this action."),
+                    css_class="has-tip tip-top"
+                ),
                 Div(
                     Div('relative_value', css_class="large-6 columns"),
                     Div('relative_units', css_class="large-6 columns"),
@@ -399,6 +407,7 @@ class ActionTriggerForm(forms.ModelForm):
         date = data.get('trigger_date')
         rel_value = data.get('relative_value')
         rel_units = data.get('relative_units')
+        start_when_selected = data.get('start_when_selected', False)
 
         # Require BOTH relative_value and relative_units
         if (rel_value or rel_units) and not all([rel_value, rel_units]):
@@ -407,18 +416,18 @@ class ActionTriggerForm(forms.ModelForm):
                 code="required_for_relative_reminders"
             ))
 
-        # Intervals (e.g. every other day) need a starting date.
-        if recurrences and 'INTERVAL' in serialize_recurrences(recurrences) and not date:
-            self.add_error('trigger_date', ValidationError(
-                "A Trigger Date is required for recurrences that contain an "
-                "interval (such as every 2 days)", code="required_for_intervals"
-            ))
-        elif recurrences and 'COUNT' in serialize_recurrences(recurrences) and not date:
-            self.add_error('trigger_date', ValidationError(
-                "A Trigger Date is required for recurrences that occur a set "
-                "number of times", code="required_for_count"
-            ))
-
+        if not start_when_selected and not date:
+            # Intervals (e.g. every other day) need a starting date.
+            if recurrences and 'INTERVAL' in serialize_recurrences(recurrences):
+                self.add_error('trigger_date', ValidationError(
+                    "A Trigger Date is required for recurrences that contain an "
+                    "interval (such as every 2 days)", code="required_for_intervals"
+                ))
+            elif recurrences and 'COUNT' in serialize_recurrences(recurrences):
+                self.add_error('trigger_date', ValidationError(
+                    "A Trigger Date is required for recurrences that occur a set "
+                    "number of times", code="required_for_count"
+                ))
         return data
 
 
