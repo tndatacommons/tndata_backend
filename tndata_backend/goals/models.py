@@ -482,6 +482,11 @@ class Trigger(models.Model):
         blank=True,
         help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
     )
+    start_when_selected = models.BooleanField(
+        default=False,
+        help_text="Should this trigger start on the day the user selects the "
+                  "action? "
+    )
     stop_on_complete = models.BooleanField(
         default=False,
         help_text="Should reminders stop after the action has been completed?"
@@ -553,21 +558,27 @@ class Trigger(models.Model):
 
     @property
     def is_relative(self):
-        return all([self.relative_units, self.relative_value])
+        return (
+            self.start_when_selected or
+            all([self.relative_units, self.relative_value])
+        )
 
     def relative_trigger_date(self, dt):
         """If this is a custom (has a user), relative trigger (has both a
-        relative_value and relative_units), this method will calculate the
-        trigger_date (when this trigger should start) relative to the given
-        datetime object.
+        relative_value and relative_units or is a `start_when_selected` trigger),
+        this method will calculate the trigger_date (when this trigger should
+        start) relative to the given datetime object.
 
         Returns a datetime object or None.
 
         """
-        if self.user and self.is_relative:
+        if self.user and self.is_relative and self.relative_units:
             # build kwargs, e.g.: relativedelta(dt, months=5)
             kwargs = {self.relative_units: self.relative_value}
             return dt + relativedelta(**kwargs)
+        elif self.user and self.is_relative and self.start_when_selected:
+            # If it's just a "start when selected", return the give time.
+            return dt
         return None
 
     def serialized_recurrences(self):
@@ -1725,6 +1736,7 @@ def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
             time=instance.default_trigger.time,
             trigger_date=instance.default_trigger.trigger_date,
             recurrences=instance.default_trigger.recurrences,
+            start_when_selected=instance.default_trigger.start_when_selected,
             stop_on_complete=instance.default_trigger.stop_on_complete,
             relative_value=instance.default_trigger.relative_value,
             relative_units=instance.default_trigger.relative_units
