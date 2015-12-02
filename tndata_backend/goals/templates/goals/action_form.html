@@ -23,6 +23,9 @@
     border-bottom: 1px solid #ddd;
   }
   div.recurrence-widget a.add-date {display:none;}
+  ul.until-count {display:block;}
+  ul.until-count li.until,
+  ul.until-count li.count {display:block; padding:0 !important;}
   </style>
 {% endblock %}
 
@@ -51,6 +54,12 @@
   </div>
 {% endif %}
 
+{% if form.errors or trigger_form.errors %}
+  <div class="alert-box alert">
+    <i class="fa fa-warning"></i> <strong>Action not saved</strong><br/>
+    There was a problem saving your action. See the messages below.
+  </div>
+{% endif %}
 <form
   {# Disable Garlic for custom types, otherwise we have stuff in the wrong place #}
   {% if action_type == "custom" %}data-persist="garlic"{% endif %}
@@ -154,5 +163,34 @@ Category
     $("#disable-trigger-form").submit();
   });
   {% endif %}
+
+  {# ActionTriggerForm: if `start_when_selected` is chosen, empty/disable the reminder date #}
+  var trigger_date = $("#id_trigger-trigger_date");
+  var start_when_selected = $("#id_trigger-start_when_selected");
+  if(start_when_selected.is(":checked")) {
+    trigger_date.val('').prop('disabled', 'disabled');
+  }
+
+  $(start_when_selected).change(function() {
+    if(this.checked) {
+      trigger_date.val('').prop("disabled", "disabled");
+    } else {
+      trigger_date.prop("disabled", "");
+    }
+  });
+
+  {# If we select relative value/units, auto-check the start when selected #}
+  $("#id_trigger-relative_units").change(function() {
+    if($(this).val()) {
+      trigger_date.val('').prop("disabled", "disabled");
+      start_when_selected.prop("checked", true);
+    }
+  });
+  $("#id_trigger-relative_value").change(function() {
+    if($(this).val() && parseInt($(this).val()) > 0) {
+      trigger_date.val('').prop("disabled", "disabled");
+      start_when_selected.prop("checked", true);
+    }
+  });
   </script>
 {% endblock %}
