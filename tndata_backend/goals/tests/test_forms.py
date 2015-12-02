@@ -24,7 +24,7 @@ class TestActionTriggerForm(TestCase):
     def test_unbound(self):
         form = ActionTriggerForm()
         fields = sorted([
-            'stop_on_complete', 'time', 'trigger_date',
+            'start_when_selected', 'stop_on_complete', 'time', 'trigger_date',
             'relative_value', 'relative_units', 'recurrences',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
@@ -34,6 +34,7 @@ class TestActionTriggerForm(TestCase):
             'time': '6:30',
             'trigger_date': '08/20/2015',
             'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+            'start_when_selected': False,
             'stop_on_complete': False,
             'relative_value': 0,
             'relative_units': '',
@@ -46,6 +47,7 @@ class TestActionTriggerForm(TestCase):
             'time': '15:30',
             'trigger_date': '',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'start_when_selected': False,
             'stop_on_complete': False,
             'relative_value': 0,
             'relative_units': '',
@@ -58,6 +60,7 @@ class TestActionTriggerForm(TestCase):
             'time': '7:00',
             'trigger_date': '02/01/2010',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'start_when_selected': False,
             'stop_on_complete': False,
             'relative_value': 0,
             'relative_units': '',
@@ -72,6 +75,7 @@ class TestActionTriggerForm(TestCase):
             'time': '7:00',
             'trigger_date': '02/01/2010',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'start_when_selected': False,
             'stop_on_complete': False,
             'relative_value': 42,  # <-- a non-zero value
             'relative_units': '',  # <-- empty! (error)
@@ -97,6 +101,7 @@ class TestActionTriggerForm(TestCase):
             'trigger_date': '',
             'recurrences': 'RRULE:FREQ=DAILY;COUNT=2',
             'stop_on_complete': False,
+            'start_when_selected': False,
             'relative_value': '0',
             'relative_units': '',
         }
@@ -116,6 +121,7 @@ class TestActionTriggerForm(TestCase):
             'time': '7:00',
             'trigger_date': '',
             'recurrences': 'RRULE:FREQ=DAILY;INTERVAL=2',
+            'start_when_selected': False,
             'stop_on_complete': False,
             'relative_value': '0',
             'relative_units': '',
@@ -129,6 +135,34 @@ class TestActionTriggerForm(TestCase):
         )
         actual = str(form.errors['trigger_date'])
         self.assertEqual(actual, expected)
+
+    def test_clean_intervals_start_when_selected(self):
+        """INTERVAL recurrences are valid when start_when_selected is chosen."""
+        data = {
+            'time': '7:00',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY;INTERVAL=2',
+            'start_when_selected': True,
+            'stop_on_complete': False,
+            'relative_value': '0',
+            'relative_units': '',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+    def test_clean_count_start_when_selected(self):
+        """COUNT recurrences are valid when start_when_selected is chosen."""
+        data = {
+            'time': '7:00',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY;COUNT=2',
+            'start_when_selected': True,
+            'stop_on_complete': False,
+            'relative_value': '0',
+            'relative_units': '',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
 
 
 class TestActionForm(TestCase):

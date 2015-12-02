@@ -796,7 +796,7 @@ class TestTrigger(TestCase):
             self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
 
     def test_create_relative_reminder(self):
-        """Creating a UserAction with a defaul relative reminder trigger should
+        """Creating a UserAction with a default relative reminder trigger should
         result in a new custom trigger with pre-filled data."""
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
@@ -828,6 +828,96 @@ class TestTrigger(TestCase):
             expected = expected.strftime("%c %z")
             actual = custom.next().strftime("%c %z")
             self.assertEqual(actual, expected)
+
+    def test_create_relative_reminder_start_when_selected(self):
+        """Creating a UserAction with a default `start_when_selected` trigger
+        should result in a new custom trigger with pre-filled data."""
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        default = Trigger.objects.create(
+            name="Default", time=time(13, 30), recurrences="RRULE:FREQ=DAILY",
+            start_when_selected=True,
+        )
+        act.default_trigger = default
+        act.save()
+
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
+            ua = UserAction.objects.create(user=user, action=act)
+            # A custom trigger should have been created
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(ua.default_trigger, default)
+            self.assertNotEqual(ua.trigger, default)
+            custom = ua.trigger
+
+            # expected next trigger should be the same date as the UserAction's
+            # creation date, with the Trigger time + the user's timezone
+            tz = pytz.timezone(user.userprofile.timezone)
+            expected = tzdt(2015, 1, 1, 13, 30, tz=tz)
+            expected = expected.strftime("%c %z")
+            actual = custom.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+    def test_relative_reminder_start_when_selected_series(self):
+        """Test a series of generated relative reminder times."""
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        default = Trigger.objects.create(
+            name="RR-start upon selection",
+            time=time(9, 0),
+            recurrences="RRULE:FREQ=DAILY;INTERVAL=2;COUNT=2",
+            start_when_selected=True,
+        )
+        act.default_trigger = default
+        act.save()
+
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        custom_trigger = None
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
+            ua = UserAction.objects.create(user=user, action=act)
+
+            # A custom trigger should have been created
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(ua.default_trigger, default)
+            self.assertNotEqual(ua.trigger, default)
+            custom_trigger = ua.trigger
+
+            # Get the user's timezone
+            tz = pytz.timezone(user.userprofile.timezone)
+
+            # Test some expected "next" values.
+            # At Jan 1, 11:45, next should be Jan 1, 9:00
+            expected = tzdt(2015, 1, 1, 9, 0, tz=tz).strftime("%c %z")
+            actual = custom_trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # On Jan 2, next should be Jan 3, 9:00
+            mock_now.return_value = tzdt(2015, 1, 2, 12, 0)
+            expected = tzdt(2015, 1, 3, 9, 0, tz=tz).strftime("%c %z")
+            actual = custom_trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # On Jan 3, 7:15, next should be Jan 3, 9:00
+            mock_now.return_value = tzdt(2015, 1, 3, 7, 15)
+            expected = tzdt(2015, 1, 3, 9, 0, tz=tz).strftime("%c %z")
+            actual = custom_trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # On Jan 3, 4pm, next should be None since COUNT=2
+            mock_now.return_value = tzdt(2015, 1, 3, 16, 0)
+            self.assertIsNone(custom_trigger.next())
 
 
 class TestBehavior(TestCase):
