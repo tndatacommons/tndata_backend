@@ -1040,7 +1040,10 @@ class Action(URLMixin, BaseBehavior):
     urls_icon_field = "icon"
     urls_image_field = "image"
     default_icon = "img/compass-grey.png"
-    notification_title = "Time for me to..."
+
+    # String formatting patters for notifications
+    _notification_title = "I want to {}"  # Fill with the primary goal.
+    _notification_text = "Time for me to {}"  # Fill with the notification_text
 
     # Data Fields
     title = models.CharField(
@@ -1184,6 +1187,23 @@ class Action(URLMixin, BaseBehavior):
             }
             GCMMessage.objects.filter(**params).delete()
             self._removed_queued_messages = True
+
+    def get_notification_title(self, goal):
+        # Let's try to un-capitalize the first character, but only if:
+        # 1. it's not already lowercase, and
+        # 2. the 2nd character isn't lowercase.
+        title = goal.title
+        if len(title) > 2 and not title[0:2].isupper():
+            title = "{}{}".format(title[0].lower(), title[1:])
+            return self._notification_title.format(title)
+        return self._notification_title.format(title)
+
+    def get_notification_text(self):
+        text = self.notification_text
+        if len(text) > 2 and not text[0:2].isupper():
+            text = "{}{}".format(text[0].lower(), text[1:])
+            return self._notification_text.format(text)
+        return self._notification_text.format(text)
 
     objects = WorkflowManager()
 
@@ -1627,6 +1647,15 @@ class UserAction(models.Model):
             user=self.user,
             behavior=self.action.behavior
         ).first()
+
+    def get_notification_title(self):
+        """Return the string to be used in this user's notification title."""
+        goal = self.get_primary_goal()
+        return self.action.get_notification_title(goal)
+
+    def get_notification_text(self):
+        """Return the string to be used in this user's notification text."""
+        return self.action.get_notification_text()
 
     def get_user_goals(self):
         """Returns a QuerySet of published Goals related to this Action (and

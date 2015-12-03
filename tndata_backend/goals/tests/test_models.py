@@ -1032,14 +1032,13 @@ class TestBehavior(TestCase):
 class TestAction(TestCase):
     """Tests for the `Action` model."""
 
-    # TODO: need to include a test case for actions with duplicate titles/slugs
     def setUp(self):
         self.behavior = Behavior.objects.create(
             title='Test Behavior'
         )
         self.action = Action.objects.create(
             behavior=self.behavior,
-            title="Test Action"
+            title="Test Action",
         )
 
     def tearDown(self):
@@ -1171,6 +1170,40 @@ class TestAction(TestCase):
         self.assertEqual(
             self.action.notification_text,
             "Here's a notification."
+        )
+
+    def test_get_notification_title(self):
+        goal = Mock(title='Pass tests')
+        self.assertEqual(
+            self.action.get_notification_title(goal),
+            "I want to pass tests"
+        )
+        goal = Mock(title='PASS tests')
+        self.assertEqual(
+            self.action.get_notification_title(goal),
+            "I want to PASS tests"
+        )
+        goal = Mock(title='WE are fine')
+        self.assertEqual(
+            self.action.get_notification_title(goal),
+            "I want to WE are fine"
+        )
+
+    def test_get_notification_text(self):
+        self.action.notification_text = "read this."
+        self.assertEqual(
+            self.action.get_notification_text(),
+            "Time for me to read this."
+        )
+        self.action.notification_text = "Read this."
+        self.assertEqual(
+            self.action.get_notification_text(),
+            "Time for me to read this."
+        )
+        self.action.notification_text = "READ this."
+        self.assertEqual(
+            self.action.get_notification_text(),
+            "Time for me to READ this."
         )
 
 
