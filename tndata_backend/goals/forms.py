@@ -139,6 +139,11 @@ class ActionForm(forms.ModelForm):
             "js/action_form.js",
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        notify_label = Action._notification_text.replace("{} ", "")
+        self.fields['notification_text'].label = notify_label
+
 
 class BehaviorForm(forms.ModelForm):
     """A Form for creating/updating behaviors. This form orders related
