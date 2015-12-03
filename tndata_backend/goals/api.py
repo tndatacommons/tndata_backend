@@ -982,6 +982,9 @@ class UserActionViewSet(mixins.CreateModelMixin,
                     useraction=useraction,
                     state=state
                 )
+            
+            if (state == 'snoozed'):
+                metric("snooze-{0}".format(request.data.get('length', 'undefined')))
 
             if updated:
                 data = {'updated': uca.id}
