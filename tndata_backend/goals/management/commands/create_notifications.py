@@ -92,8 +92,8 @@ class Command(BaseCommand):
                 self.create_message(
                     ua.user,
                     ua.action,
-                    ua.action.notification_title,
-                    ua.action.notification_text,
+                    ua.get_notification_title(),
+                    ua.get_notification_text(),
                     deliver_on,
                 )
 
