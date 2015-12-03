@@ -18,7 +18,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Sum, ObjectDoesNotExist
 from django.db.models.signals import (
     pre_delete, pre_save, post_delete, post_save
 )
@@ -26,6 +26,7 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django.utils import timezone
 
+from dateutil.relativedelta import relativedelta
 from django_fsm import FSMField, transition
 from markdown import markdown
 from notifications.models import GCMMessage
@@ -433,25 +434,26 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     objects = GoalManager()
 
 
-class Trigger(URLMixin, models.Model):
-    """This class encapsulates date-based triggers for Behaviors and Actions.
+class Trigger(models.Model):
+    """Definition for a (possibly recurring) reminder for an user's Actions.
 
-    A Trigger consists of:
+    A Trigger consists of one or more of the following:
 
-    1. A date and/or time; when a notification should be sent.
-    2. Recurrences: How frequently (every day, once a month, etc) should the
-       notification be sent.
+    - A date and/or time when a notification should be sent.
+    - Recurrences: How frequently (every day, once a month, etc) should the
+      notification be sent.
+    - Whether or not trigger should stop once the action has been completed.
 
     This model is heavily based on django-recurrence:
     https://django-recurrence.readthedocs.org
 
     """
-    # URLMixin attributes
-    urls_app_namespace = "goals"
-    urls_model_name = "trigger"
-    urls_fields = ['pk']
-
-    # Data Fields
+    RELATIVE_UNIT_CHOICES = (
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+        ('years', 'Years'),
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -480,6 +482,41 @@ class Trigger(URLMixin, models.Model):
         blank=True,
         help_text="An iCalendar (rfc2445) recurrence rule (an RRULE)"
     )
+    start_when_selected = models.BooleanField(
+        default=False,
+        help_text="Should this trigger start on the day the user selects the "
+                  "action? "
+    )
+    stop_on_complete = models.BooleanField(
+        default=False,
+        help_text="Should reminders stop after the action has been completed?"
+    )
+    # Relative reminders examples:
+    #
+    # - 1 day after action selected
+    # - 2 weeks after action selected
+    # - 1 year after action selected
+    #
+    # IDEA: Once a user selects an action with a 'relative' reminder, we
+    # immediately turn it into a custom reminder and pre-fill the `trigger_date`
+    # based on when the UserAction instance is created. This will require
+    # that the newly created UserAction instance know how to modify the trigger
+    # accordingly. See the create_relative_reminder signal handler for UserAction
+    relative_value = models.IntegerField(default=0)
+    relative_units = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=RELATIVE_UNIT_CHOICES,
+    )
+
+    # TODO: Add support for recurrences of the form: repeat until occurs x times
+    #       AFTER the user selects an action.
+    #
+    # - requires some flag to opt into that
+    # - involves setting the `trigger_date` automatically when the user selects
+    #   the action (like we do with other relative reminders)
+    # - Needs tests, first?
 
     def __str__(self):
         return self.name if self.name else "Unnamed Trigger"
@@ -509,12 +546,40 @@ class Trigger(URLMixin, models.Model):
         if rrule and 'RDATE:' in rrule:
             self.recurrences = rrule.split('RDATE:')[0].strip()
 
+    def get_absolute_url(self):
+        return reverse('goals:trigger-detail', args=[self.pk])
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.name_slug = slugify(self.name)
         self._localize_time()
         self._strip_rdate_data()
         super(Trigger, self).save(*args, **kwargs)
+
+    @property
+    def is_relative(self):
+        return (
+            self.start_when_selected or
+            all([self.relative_units, self.relative_value])
+        )
+
+    def relative_trigger_date(self, dt):
+        """If this is a custom (has a user), relative trigger (has both a
+        relative_value and relative_units or is a `start_when_selected` trigger),
+        this method will calculate the trigger_date (when this trigger should
+        start) relative to the given datetime object.
+
+        Returns a datetime object or None.
+
+        """
+        if self.user and self.is_relative and self.relative_units:
+            # build kwargs, e.g.: relativedelta(dt, months=5)
+            kwargs = {self.relative_units: self.relative_value}
+            return dt + relativedelta(**kwargs)
+        elif self.user and self.is_relative and self.start_when_selected:
+            # If it's just a "start when selected", return the give time.
+            return dt
+        return None
 
     def serialized_recurrences(self):
         """Return a rfc2445 formatted unicode string."""
@@ -601,6 +666,43 @@ class Trigger(URLMixin, models.Model):
         now = timezone.now().astimezone(tz)
         return list(filter(lambda d: d > now, dates))
 
+    def _stopped_by_completion(self, user=None):
+        """Determine if triggers should stop because the user has completed
+        the action associated with this trigger. This is messy, but it:
+
+        - users the given user, falling back to self.user
+        - returns False for no user
+        - if this is a default trigger, it looks up the UserCompletedAction
+          for the Action on which it is defined as a default
+        - if this is a custom trigger, it looks up the UserCompletedAction
+          for the associated UserAction
+        - If it finds a UserCompletedAction with a state of "complete" it
+          returns True
+        - If it fails any of the above, it returns False
+
+        Returns True if the trigger should stop, False otherwise.
+        """
+        user = user or self.user
+        if user and self.stop_on_complete:  # This only works if we have a user
+            try:
+                # While it's technically possible that this trigger could be
+                # associated with more than one UserAction, it's unlikely,
+                ua = user.useraction_set.filter(custom_trigger=self).first()
+                if ua is None:  # This may be a default trigger...
+                    ua = user.useraction_set.filter(action=self.action_default).first()
+                if ua:
+                    # Try to get the UserAction associated with the trigger
+                    params = {
+                        'user': user,
+                        'useraction': ua,
+                        'action': ua.action,
+                        'state': UserCompletedAction.COMPLETED,
+                    }
+                    return UserCompletedAction.objects.filter(**params).exists()
+            except ObjectDoesNotExist:
+                pass
+        return False
+
     def next(self, user=None):
         """Generate the next date for this Trigger. For recurring triggers,
         this will return a datetime object for the next time the trigger should
@@ -608,6 +710,9 @@ class Trigger(URLMixin, models.Model):
         user; otherwise, the date will be in UTC.
 
         """
+        if self._stopped_by_completion(user):
+            return None
+
         tz = self.get_tz(user=user)
         alert_on = self.get_alert_time(tz)
         now = timezone.now().astimezone(tz)
@@ -1404,6 +1509,26 @@ class UserAction(models.Model):
     def __str__(self):
         return "{0}".format(self.action.title)
 
+    def _completed(self, state):
+        """Return the UserCompletedAction objects for this UserAction."""
+        return self.usercompletedaction_set.filter(state=state)
+
+    @property
+    def num_completed(self):
+        return self._completed(UserCompletedAction.COMPLETED).count()
+
+    @property
+    def num_uncompleted(self):
+        return self._completed(UserCompletedAction.UNCOMPLETED).count()
+
+    @property
+    def num_snoozed(self):
+        return self._completed(UserCompletedAction.SNOOZED).count()
+
+    @property
+    def num_dismissed(self):
+        return self._completed(UserCompletedAction.DISMISSED).count()
+
     @property
     def trigger(self):
         return self.custom_trigger or self.default_trigger
@@ -1577,7 +1702,7 @@ class UserAction(models.Model):
     objects = UserActionManager()
 
 
-@receiver(post_save, sender=UserAction)
+@receiver(post_save, sender=UserAction, dispatch_uid="create-parent-userbehavior")
 def create_parent_user_behavior(sender, instance, using, **kwargs):
     """If a user doens't have a UserBehavior object for the UserAction's
     parent behavior this will create one.
@@ -1589,6 +1714,37 @@ def create_parent_user_behavior(sender, instance, using, **kwargs):
             user=instance.user,
             behavior=instance.action.behavior
         )
+
+
+@receiver(post_save, sender=UserAction, dispatch_uid="create-relative-reminder")
+def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
+    """When a UserAction is created, we need to look at it's default_trigger
+    and see if it's a relative reminder. If so, we automatically create a
+    custom trigger for the user filling in it's trigger_date based on the
+    UserAction's creation date.
+
+    """
+    is_relative = (
+        instance.custom_trigger is None and
+        instance.default_trigger is not None and
+        instance.default_trigger.is_relative
+    )
+    if created and is_relative:
+        trigger = Trigger.objects.create(
+            user=instance.user,
+            name="Trigger for {}".format(instance),
+            time=instance.default_trigger.time,
+            trigger_date=instance.default_trigger.trigger_date,
+            recurrences=instance.default_trigger.recurrences,
+            start_when_selected=instance.default_trigger.start_when_selected,
+            stop_on_complete=instance.default_trigger.stop_on_complete,
+            relative_value=instance.default_trigger.relative_value,
+            relative_units=instance.default_trigger.relative_units
+        )
+        trigger.trigger_date = trigger.relative_trigger_date(instance.created_on)
+        trigger.save()
+        instance.custom_trigger = trigger
+        instance.save()
 
 
 @receiver(notification_snoozed)

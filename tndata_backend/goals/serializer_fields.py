@@ -98,6 +98,9 @@ class CustomTriggerField(serializers.RelatedField):
             'trigger_date': value.trigger_date,
             'recurrences': value.serialized_recurrences(),
             'recurrences_display': value.recurrences_as_text(),
+            'stop_on_complete': value.stop_on_complete,
+            'relative_value': value.relative_value,
+            'relative_units': value.relative_units,
         }
 
 
@@ -252,6 +255,9 @@ class SimpleTriggerField(serializers.RelatedField):
             'time': value.time,
             'recurrences': value.serialized_recurrences(),
             'recurrences_display': value.recurrences_as_text(),
+            'stop_on_complete': value.stop_on_complete,
+            'relative_value': value.relative_value,
+            'relative_units': value.relative_units,
         }
 
 

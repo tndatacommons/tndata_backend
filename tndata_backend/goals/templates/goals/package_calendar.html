@@ -22,6 +22,9 @@
     min-height: 100px;
     min-width: 100px;
   }
+  table.calendar td.date div.date-wrapper span.day a {
+    color: inherit;
+  }
   table.calendar td.selected { background-color: #ffe;}
   table.calendar td span.day {
     color: #ccc;
@@ -64,6 +67,20 @@
         </div>
       </div>
 
+      {% if contains_relative_reminders %}
+        <div class="alert-box info">
+          <i class="fa fa-info-circle"></i>
+          <strong>This package contains relative reminders</strong><br/>
+          <p>Some of the notifications in this package are delivered to the user
+          based on the day that a user is enrolled in the package. These items
+          are marked with the <i class="fa fa-calendar-o" title="calendar"></i>
+          icon, and we've selected <em>{{ starting_date|date:"M j, Y"|default:"today" }}</em> as the
+          starting date.</p>
+          <p>You can click a day in the calendar below to change the start date
+          for relative reminders.</p>
+        </div>
+      {% endif %}
+
       {% localtime off %}
       <table class="calendar">
       <caption>
@@ -88,15 +105,23 @@
         {% for day in week %}
           <td class="date {% if day == today.date %}selected{% endif %}">
             <div class="date-wrapper">
-            <span class="day">{{ day.day }}</span>
+            <span class="day"
+                  data-tooltip aria-haspopup="true"
+                  title="Select to change your starting date">
+              <a href="?d={{day|date:"Y-m-d"}}">{{ day.day }}</a>
+            </span>
             {% for adate, dt, action in actions %}
               {% if adate == day %}
                 <div class="action-wrapper{% for gid in action.goal_ids %} goal-{{gid}}{% endfor %}">
                   {% with t=action.default_trigger %}
                   <span data-tooltip aria-haspopup="true"
                         class="has-tip tip-top"
-                        title="{{ t.time }}{% if t.trigger_date %}, Starting {{ t.trigger_date }}{% endif %}<br/>{{ t.recurrences_as_text }}">
-                    <i class="fa fa-info-circle"></i>
+                        title="{% if action.is_relative %}Relative to selection: {% endif %}{{ t.time }}{% if t.trigger_date %}, Starting {{ t.trigger_date }}{% endif %}<br/>{{ t.recurrences_as_text }}">
+                    {% if action.is_relative %}
+                      <i class="fa fa-calendar-o"></i>
+                    {% else %}
+                      <i class="fa fa-info-circle"></i>
+                    {% endif %}
                   </span>
                   {% endwith %}
                   {% if is_editor %}

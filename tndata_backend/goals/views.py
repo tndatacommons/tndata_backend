@@ -32,13 +32,11 @@ from . forms import (
     BehaviorForm,
     CategoryForm,
     ContentAuthorForm,
-    CSVUploadForm,
     CTAEmailForm,
     DisableTriggerForm,
     EnrollmentReminderForm,
     GoalForm,
     PackageEnrollmentForm,
-    TriggerForm,
     UploadImageForm,
 )
 from . mixins import (
@@ -66,7 +64,6 @@ from . permissions import (
     is_content_editor,
     is_package_contributor,
     staff_required,
-    superuser_required,
 )
 from . utils import num_user_selections
 
@@ -229,33 +226,6 @@ class CreatedByView(CreateView):
         result = super(CreatedByView, self).form_valid(form)
         self.object.save(created_by=self.request.user)
         return result
-
-
-@user_passes_test(superuser_required, login_url='/')
-def upload_csv(request):
-    """Allow a user to upload a CSV file to populate our data backend."""
-    if request.method == "POST":
-        form = CSVUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                form.save()
-                messages.success(request, 'CSV File uploaded, successfully.')
-                return redirect("goals:index")
-            except CSVUploadForm.InvalidFormat as e:
-                messages.error(
-                    request, "The uploaded file could not be "
-                    "processed. Please check the format and try again: "
-                    " {0}".format(e)
-                )
-        else:
-            messages.warning(
-                request, "This form didn't validate. Please try again."
-            )
-    else:
-        form = CSVUploadForm()
-
-    context = {'form': form}
-    return render(request, 'goals/upload_csv.html', context)
 
 
 class IndexView(ContentViewerMixin, TemplateView):
@@ -488,7 +458,7 @@ class GoalDeleteView(ContentEditorMixin, ContentDeleteView):
 
 class TriggerListView(ContentViewerMixin, ListView):
     model = Trigger
-    queryset = Trigger.objects.default()
+    queryset = Trigger.objects.default().values('id', 'name', 'time', 'recurrences')
     context_object_name = 'triggers'
 
 
@@ -496,53 +466,6 @@ class TriggerDetailView(ContentEditorMixin, DetailView):
     queryset = Trigger.objects.default()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-
-
-class TriggerCreateView(ContentEditorMixin, CreateView):
-    model = Trigger
-    form_class = TriggerForm
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super(TriggerCreateView, self).get_context_data(**kwargs)
-        context['triggers'] = Trigger.objects.default()
-        return context
-
-
-class TriggerDuplicateView(TriggerCreateView):
-    """Initializes the Create form with a copy of data from another object."""
-    def get_initial(self, *args, **kwargs):
-        initial = super(TriggerDuplicateView, self).get_initial(*args, **kwargs)
-        try:
-            obj = self.get_object()
-            initial.update({
-                "name": "Copy of {0}".format(obj.name),
-                "time": obj.time,
-                "recurrences": obj.recurrences,
-            })
-        except self.model.DoesNotExist:
-            pass
-        return initial
-
-
-class TriggerUpdateView(ContentEditorMixin, UpdateView):
-    model = Trigger
-    form_class = TriggerForm
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super(TriggerUpdateView, self).get_context_data(**kwargs)
-        context['triggers'] = Trigger.objects.default()
-        return context
-
-
-class TriggerDeleteView(ContentEditorMixin, DeleteView):
-    model = Trigger
-    slug_field = "name_slug"
-    slug_url_kwarg = "name_slug"
-    success_url = reverse_lazy('goals:index')
 
 
 class BehaviorListView(ContentViewerMixin, ListView):
@@ -981,6 +904,9 @@ def package_calendar(request, pk):
         # Start on the first day of the current month
         start = local_now(request.user)
         start = to_localtime(datetime(start.year, start.month, 1), request.user)
+    elif len(start) == len('yyyy-mm-dd'):
+        year, month, day = start.split('-')
+        start = to_localtime(datetime(int(year), int(month), int(day)), request.user)
     else:
         year, month = start.split('-')
         start = to_localtime(datetime(int(year), int(month), 1), request.user)
@@ -996,11 +922,19 @@ def package_calendar(request, pk):
     cal = Calendar(firstweekday=6).monthdatescalendar(start.year, start.month)
 
     action_data = []
+    contains_relative_reminders = False
     for action in actions:
-        for dt in action.default_trigger.get_occurences(days=31):
+        kwargs = {'days': 31}  # params for get_occurances
+        if action.default_trigger.is_relative:
+            kwargs['begin'] = start  # Start on today
+
+        for dt in action.default_trigger.get_occurences(**kwargs):
             action_data.append((dt.date(), dt, action))
         # include a list of goal-ids in the action
         action.goal_ids = list(action.behavior.goals.values_list('id', flat=True))
+        action.is_relative = action.default_trigger.is_relative
+        if action.default_trigger.is_relative:
+            contains_relative_reminders = True
     action_data = sorted(action_data, key=lambda d: d[1].strftime("%Y%m%d%H%M"))
 
     goals = list(category.goals.values_list('id', 'title'))
@@ -1014,6 +948,7 @@ def package_calendar(request, pk):
         'next_date': (cal[-1][-1] + timedelta(days=1)).strftime("%Y-%m"),
         'prev_date': (cal[0][0] - timedelta(days=1)).strftime("%Y-%m"),
         'goals': goals,
+        'contains_relative_reminders': contains_relative_reminders,
     }
     return render(request, "goals/package_calendar.html", ctx)
 

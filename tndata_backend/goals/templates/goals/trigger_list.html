@@ -1,16 +1,24 @@
 {% extends "goals/base.html" %}
 
-{% block title %}Trigger{% endblock %}
+{% block title %}Default Triggers{% endblock %}
 
 
 {% block breadcrumbs %}
-  <li class="current">Triggers</li>
+  <li class="current">Default Triggers</li>
 {% endblock %}
 
 {% block content %}
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Triggers</h2>
+
+      <div data-alert class="alert-box warning">
+        <i class="fa fa-warning"></i>
+        <strong>Default Triggers are Created on Actions</strong><br/>
+        This page provides a listing of existing default triggers, but these
+        are now created on an action. See the relevant action for more information.
+        <a href="#" class="close">&times;</a>
+      </div>
 
       <div data-alert class="alert-box info">
         <i class="fa fa-warning"></i> <strong>NOTE on Timezones</strong><br/>
@@ -25,20 +33,22 @@
         <th>Name</th>
         <th>Time</th>
         <th>Recurrence</th>
-        <th>Action</th>
-        <th>Behaviors</th>
       </tr>
       </thead>
       <tbody>
+      {# NOTE: the queryset for now uses .values for speed #}
       {% for trigger in triggers %}
         <tr>
           <td>
-            <a href="{{ trigger.get_absolute_url }}">{{ trigger.name }}</a>
+            {# no get_absolute_url because we don't have a full trigger obj #}
+            <a href="/goals/triggers/{{trigger.id}}/">{{ trigger.name }}</a>
           </td>
           <td>{{ trigger.time|default:"-" }}</td>
-          <td>{{ trigger.recurrences_as_text }}</td>
-          <td>{{ trigger.action_default.title|default:"-" }}</td>
-          <td>{{ trigger.behavior_set.count }}</td>
+          <td>
+            {% if trigger.recurrences %}
+              <kb>{{ trigger.recurrences }}</kb>
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
       </tbody>

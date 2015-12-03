@@ -51,6 +51,15 @@
             {% if trigger.recurrences %}
               <br/><em>{{ trigger.recurrences_as_text }}</em>
             {% endif %}
+            {% if trigger.is_relative and trigger.relative_value %}
+              <br/>Starts {{ trigger.relative_value }} {{ trigger.relative_units }}
+              after selection.
+            {% elif trigger.is_relative %}
+              <br/>Starts when selected.
+            {% endif %}
+            {% if trigger.stop_on_complete %}
+              <br/>This trigger stops once the user marks the action as completed.
+            {% endif %}
           </dd>
         {% endif %}
         {% endwith %}

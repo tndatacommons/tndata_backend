@@ -1418,244 +1418,6 @@ class TestTriggerDetailView(TestCaseWithGroups):
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
-class TestTriggerCreateView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestTriggerCreateView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-        cls.url = reverse("goals:trigger-create")
-        cls.non_recurring_payload = {
-            'name': "Test Trigger",
-            'time': "",
-            'recurrences': "",
-        }
-
-        cls.recurring_payload = {
-            'name': "Recurring",
-            'time': "13:30",
-            'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
-        }
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/trigger_form.html")
-        self.assertIn("triggers", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_post(self):
-        resp = self.ua_client.post(self.url, {})
-        self.assertEqual(resp.status_code, 403)
-
-    def test_admin_post(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.non_recurring_payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.default(name="Test Trigger").exists())
-
-        resp = self.client.post(self.url, self.recurring_payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.default(name="Recurring").exists())
-
-    def test_editor_post(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.non_recurring_payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.default(name="Test Trigger").exists())
-
-        resp = self.client.post(self.url, self.recurring_payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.default(name="Recurring").exists())
-
-    def test_author_post(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, {})
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_post(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, {})
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(CACHES=TEST_CACHES)
-class TestTriggerUpdateView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestTriggerUpdateView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    def setUp(self):
-        """NOTE: needs a new trigger for every test."""
-        # Create a Trigger
-        self.trigger = Trigger.objects.create(
-            name="Test Trigger",
-            time=time(13, 30, tzinfo=pytz.UTC),
-            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
-        )
-        self.url = self.trigger.get_update_url()
-        self.payload = {
-            "name": "Changed",
-            "time": "13:30",
-            "recurrences": 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
-        }
-
-    def tearDown(self):
-        Trigger.objects.default(pk=self.trigger.id).delete()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/trigger_form.html")
-        self.assertContains(resp, self.trigger.name)
-        self.assertIn("triggers", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_post(self):
-        resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_admin_post(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.default(name="Changed").exists())
-
-    def test_editor_post(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Trigger.objects.default(name="Changed").exists())
-
-    def test_author_post(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_post(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(CACHES=TEST_CACHES)
-class TestTriggerDeleteView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestTriggerDeleteView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    def setUp(self):
-        """NOTE: need a new Trigger so we can delete it."""
-        # Create a Trigger
-        self.trigger = Trigger.objects.create(
-            name="Test Trigger",
-            time=time(13, 30, tzinfo=pytz.UTC),
-            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
-        )
-        self.url = self.trigger.get_delete_url()
-
-    def tearDown(self):
-        Trigger.objects.default(id=self.trigger.id).delete()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/trigger_confirm_delete.html")
-        self.assertIn("trigger", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_post(self):
-        resp = self.ua_client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_admin_post(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(resp, reverse("goals:index"))
-
-    def test_editor_post(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(resp, reverse("goals:index"))
-
-    def test_author_post(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_post(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(CACHES=TEST_CACHES)
 class TestBehaviorListView(TestCaseWithGroups):
 
     @classmethod
@@ -2319,6 +2081,9 @@ class TestActionCreateView(TestCaseWithGroups):
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
             'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
+            'trigger-stop_on_complete': '',
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
         }
 
     def test_anon_get(self):
@@ -2384,6 +2149,9 @@ class TestActionCreateView(TestCaseWithGroups):
             'trigger-time': '',
             'trigger-trigger_date': '',
             'trigger-recurrences': '',
+            'trigger-stop_on_complete': '',
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
         }
         self.client.login(username="admin", password="pass")
         resp = self.client.post(self.url, data)
@@ -2562,6 +2330,9 @@ class TestActionUpdateView(TestCaseWithGroups):
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
             'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
+            'trigger-stop_on_complete': False,
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
         }
 
     def setUp(self):

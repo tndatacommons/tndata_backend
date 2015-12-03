@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+
 from django.forms import ValidationError
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
@@ -15,8 +16,10 @@ from crispy_forms.layout import (
     Div,
     Field,
     Fieldset,
+    HTML,
     Layout,
 )
+
 from recurrence import serialize as serialize_recurrences
 from recurrence.forms import RecurrenceField
 from utils.db import get_max_order
@@ -320,7 +323,11 @@ class ActionTriggerForm(forms.ModelForm):
 
     class Meta:
         model = Trigger
-        fields = ['time', 'trigger_date', 'recurrences']
+        fields = [
+            'start_when_selected', 'stop_on_complete', 'time', 'trigger_date',
+            'relative_value', 'relative_units',
+            'recurrences',
+        ]
         widgets = {
             "time": TimeSelectWidget(include_empty=True),
             "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),
@@ -329,6 +336,65 @@ class ActionTriggerForm(forms.ModelForm):
             "time": "Reminder Time",
             "trigger_date": "Reminder Date",
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # If there's a trigger instance, include a button to disable it. This
+        # should be handled in the template.
+        try:
+            if self.instance.action_default:
+                disable_button = HTML(
+                    '<button type="button" id="disable-trigger-button" '
+                    ' class="button info tiny pull-right">'
+                    '<i class="fa fa-bell-slash"></i> Disable Trigger</button>'
+                )
+        except ObjectDoesNotExist:
+            disable_button = HTML('')
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Reminder Details"),
+                disable_button,
+                Div(
+                    Field(
+                        'stop_on_complete',
+                        data_tooltip=None,
+                        aria_haspopup="true",
+                        title=("Reminders will cease to fire once the user "
+                               "has completed this action."),
+                        css_class="has-tip tip-top"
+                    ),
+                ),
+                'time',
+                'trigger_date',
+                Field(
+                    'start_when_selected',
+                    data_tooltip=None,
+                    aria_haspopup="true",
+                    title=("If selected the reminder date will be automatically "
+                           "be set when the user adds this action."),
+                    css_class="has-tip tip-top"
+                ),
+                Div(
+                    Div('relative_value', css_class="large-6 columns"),
+                    Div('relative_units', css_class="large-6 columns"),
+                    css_class="row"
+                ),
+                Div(
+                    Div(
+                        HTML('<div class="hint">Relative reminders will fire '
+                             'based on when the user adopts an action. Select '
+                             'the amount of time and an a unit to turn this '
+                             'into a relative reminder</div>'),
+                        css_class="large-12 columns"
+                    ),
+                    css_class="row"
+                ),
+                'recurrences',
+            )
+        )
 
     def save(self, *args, **kwargs):
         obj = super().save(*args, **kwargs)
@@ -339,19 +405,29 @@ class ActionTriggerForm(forms.ModelForm):
         data = super().clean()
         recurrences = data.get('recurrences')
         date = data.get('trigger_date')
+        rel_value = data.get('relative_value')
+        rel_units = data.get('relative_units')
+        start_when_selected = data.get('start_when_selected', False)
 
-        # Intervals (e.g. every other day) need a starting date.
-        if recurrences and 'INTERVAL' in serialize_recurrences(recurrences) and not date:
-            self.add_error('trigger_date', ValidationError(
-                "A Trigger Date is required for recurrences that contain an "
-                "interval (such as every 2 days)", code="required_for_intervals"
-            ))
-        elif recurrences and 'COUNT' in serialize_recurrences(recurrences) and not date:
-            self.add_error('trigger_date', ValidationError(
-                "A Trigger Date is required for recurrences that occur a set "
-                "number of times", code="required_for_count"
+        # Require BOTH relative_value and relative_units
+        if (rel_value or rel_units) and not all([rel_value, rel_units]):
+            self.add_error('relative_value', ValidationError(
+                "Both a value and units are required for Relative Reminders",
+                code="required_for_relative_reminders"
             ))
 
+        if not start_when_selected and not date:
+            # Intervals (e.g. every other day) need a starting date.
+            if recurrences and 'INTERVAL' in serialize_recurrences(recurrences):
+                self.add_error('trigger_date', ValidationError(
+                    "A Trigger Date is required for recurrences that contain an "
+                    "interval (such as every 2 days)", code="required_for_intervals"
+                ))
+            elif recurrences and 'COUNT' in serialize_recurrences(recurrences):
+                self.add_error('trigger_date', ValidationError(
+                    "A Trigger Date is required for recurrences that occur a set "
+                    "number of times", code="required_for_count"
+                ))
         return data
 
 

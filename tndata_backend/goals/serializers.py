@@ -124,8 +124,9 @@ class TriggerSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Trigger
         fields = (
-            'id', 'user', 'name', 'name_slug', 'time',
-            'recurrences', 'recurrences_display', 'next', 'object_type',
+            'id', 'user', 'name', 'name_slug', 'time', 'trigger_date',
+            'recurrences', 'recurrences_display', 'stop_on_complete',
+            'relative_value', 'relative_units', 'next', 'object_type',
         )
         read_only_fields = ("id", "name_slug", "next")
 
@@ -139,12 +140,18 @@ class CustomTriggerSerializer(serializers.Serializer):
 
     Optional fields:
 
-    * name: The name of the trigger; This must be unique and it's up to you
-      to make sure that happens.
-    * time: A string representing a time (naive; will be saved at UTC when
+    * name: The name of the trigger
+    * time: A string representing a time (naive; will be saved as UTC when
       creating the trigger)
-    * date: A string representing a date (yyyy-mm-dd)
+    * date: A string representing a date (in yyyy-mm-dd format)
     * rrule: An RFC2445 formatted unicode string describing the recurrence.
+    * stop_on_complete: (true|false) if true, this trigger will stop firing
+      once the user has marked an action as complete.
+    * relative_value: Used together with `relative_units`, this value defines
+      the amount of time after a user selects an action that the trigger will
+      begin to fire. (e.g. 1 week after selection). Must be an integer value.
+    * relative_units: a string representing a unit of time. Must be one of:
+      'days', 'weeks', 'months', 'years'
 
     Calling this serializer's `save` method will either update or create
     a `Trigger` instance.
@@ -165,6 +172,9 @@ class CustomTriggerSerializer(serializers.Serializer):
     time = NullableTimeField()
     date = NullableDateField()
     rrule = NullableCharField(allow_blank=True)
+    stop_on_complete = serializers.BooleanField(default=False)
+    relative_value = serializers.IntegerField(default=0)
+    relative_units = serializers.CharField(required=False)
 
     def is_valid(self, *args, **kwargs):
         """Ensure that the user for the given user_id actually exists."""

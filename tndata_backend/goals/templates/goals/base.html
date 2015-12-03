@@ -170,17 +170,7 @@ form.dropzone {
       {% endif %}
       {% if perms.goals.view_trigger and user.is_staff %}
         <li class="divider"></li>
-        {% with addobj=perms.goals.add_trigger %}
-        <li{% if addobj %} class="has-dropdown"{% endif %}>
-          <a href="{% url 'goals:trigger-list' %}">Triggers</a>
-          {% if addobj %}
-          <ul class="dropdown">
-            <li><a href="{% url 'goals:trigger-create' %}">
-            <i class="fa fa-plus-circle"></i> Trigger</a></li>
-          </ul>
-          {% endif %}
-        </li>
-        {% endwith %}
+        <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
       {% endif %}
       <li class="divider"></li>
     </ul>

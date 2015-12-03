@@ -305,20 +305,6 @@ class TestTrigger(TestCase):
 
         )
 
-    def test_get_update_url(self):
-        self.assertEqual(
-            self.trigger.get_update_url(),
-            "/goals/triggers/{0}/update/".format(self.trigger.id)
-
-        )
-
-    def test_get_delete_url(self):
-        self.assertEqual(
-            self.trigger.get_delete_url(),
-            "/goals/triggers/{0}/delete/".format(self.trigger.id)
-
-        )
-
     def test_recurrences_as_text(self):
         expected = "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
         self.assertEqual(self.trigger.recurrences_as_text(), expected)
@@ -380,6 +366,72 @@ class TestTrigger(TestCase):
             # No date or time should return None
             self.assertIsNone(Trigger().get_alert_time())
 
+    def test__stopped_by_completion__default_trigger(self):
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+
+        trigger = mommy.make(
+            Trigger,
+            name="StopTrigger",
+            time=time(17, 0),
+            recurrences="RRULE:FREQ=DAILY",
+            stop_on_complete=True,
+        )
+        act = mommy.make(
+            Action,
+            behavior=beh,
+            title='Act',
+            state='published',
+            default_trigger=trigger
+        )
+
+        user = mommy.make(User)
+        ua = mommy.make(UserAction, action=act, user=user)
+        self.assertFalse(trigger._stopped_by_completion(user))
+
+        # now the user has completed the action
+        mommy.make(
+            UserCompletedAction,
+            user=user,
+            useraction=ua,
+            action=act,
+            state='completed'
+        )
+        self.assertTrue(trigger._stopped_by_completion(user))
+
+    def test__stopped_by_completion__custom_trigger(self):
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        user = mommy.make(User)
+        trigger = mommy.make(
+            Trigger,
+            name="StopTrigger",
+            time=time(17, 0),
+            recurrences="RRULE:FREQ=DAILY",
+            stop_on_complete=True,
+            user=user
+        )
+        ua = mommy.make(UserAction, user=user, action=act, custom_trigger=trigger)
+        self.assertFalse(trigger._stopped_by_completion(user))
+
+        # now the user has completed the action
+        mommy.make(
+            UserCompletedAction,
+            user=user,
+            useraction=ua,
+            action=ua.action,
+            state='completed'
+        )
+        self.assertTrue(trigger._stopped_by_completion(user))
+
     def test_next_when_no_time_or_date(self):
         """Ensure that next none when there's no time, recurrence, or date"""
         self.assertIsNone(Trigger().next())
@@ -411,6 +463,30 @@ class TestTrigger(TestCase):
 
         # Clean up
         trigger.delete()
+
+    def test_next_with_stop_on_complete(self):
+        """Ensure that a trigger a stop_on_complete set will no longer return
+        dates after it has "stopped"."""
+        trigger = Trigger.objects.create(
+            name="Stop-Trigger",
+            time=time(12, 34),
+            trigger_date=date(2015, 1, 1),
+            stop_on_complete=True
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 9, 0)
+
+            # First, when the trigger hasn't been stopped.
+            trigger._stopped_by_completion = Mock(return_value=False)
+            expected = tzdt(2015, 1, 1, 12, 34)
+            expected = expected.strftime("%c %z")
+            actual = trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # Now once the trigger has been completed
+            trigger._stopped_by_completion = Mock(return_value=True)
+            self.assertIsNone(trigger.next())
 
     def test_next_when_no_recurrence(self):
         """Ensure that a trigger without a recurrence, but with a time & date
@@ -718,6 +794,130 @@ class TestTrigger(TestCase):
 
             result = trigger.next(user=user)  # When called with input.
             self.assertEqual(result.strftime("%c %z"), expected.strftime("%c %z"))
+
+    def test_create_relative_reminder(self):
+        """Creating a UserAction with a default relative reminder trigger should
+        result in a new custom trigger with pre-filled data."""
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        default = Trigger.objects.create(
+            name="Default", time=time(13, 30), recurrences="RRULE:FREQ=DAILY",
+            relative_value=1, relative_units="weeks"
+        )
+        act.default_trigger = default
+        act.save()
+
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
+            ua = UserAction.objects.create(user=user, action=act)
+            # A custom trigger should have been created
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(ua.default_trigger, default)
+            self.assertNotEqual(ua.trigger, default)
+            custom = ua.trigger
+
+            # expected next trigger is a week later in the user's timezone
+            tz = pytz.timezone(user.userprofile.timezone)
+            expected = tzdt(2015, 1, 8, 13, 30, tz=tz)
+            expected = expected.strftime("%c %z")
+            actual = custom.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+    def test_create_relative_reminder_start_when_selected(self):
+        """Creating a UserAction with a default `start_when_selected` trigger
+        should result in a new custom trigger with pre-filled data."""
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        default = Trigger.objects.create(
+            name="Default", time=time(13, 30), recurrences="RRULE:FREQ=DAILY",
+            start_when_selected=True,
+        )
+        act.default_trigger = default
+        act.save()
+
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
+            ua = UserAction.objects.create(user=user, action=act)
+            # A custom trigger should have been created
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(ua.default_trigger, default)
+            self.assertNotEqual(ua.trigger, default)
+            custom = ua.trigger
+
+            # expected next trigger should be the same date as the UserAction's
+            # creation date, with the Trigger time + the user's timezone
+            tz = pytz.timezone(user.userprofile.timezone)
+            expected = tzdt(2015, 1, 1, 13, 30, tz=tz)
+            expected = expected.strftime("%c %z")
+            actual = custom.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+    def test_relative_reminder_start_when_selected_series(self):
+        """Test a series of generated relative reminder times."""
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+
+        default = Trigger.objects.create(
+            name="RR-start upon selection",
+            time=time(9, 0),
+            recurrences="RRULE:FREQ=DAILY;INTERVAL=2;COUNT=2",
+            start_when_selected=True,
+        )
+        act.default_trigger = default
+        act.save()
+
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        custom_trigger = None
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
+            ua = UserAction.objects.create(user=user, action=act)
+
+            # A custom trigger should have been created
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(ua.default_trigger, default)
+            self.assertNotEqual(ua.trigger, default)
+            custom_trigger = ua.trigger
+
+            # Get the user's timezone
+            tz = pytz.timezone(user.userprofile.timezone)
+
+            # Test some expected "next" values.
+            # At Jan 1, 11:45, next should be Jan 1, 9:00
+            expected = tzdt(2015, 1, 1, 9, 0, tz=tz).strftime("%c %z")
+            actual = custom_trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # On Jan 2, next should be Jan 3, 9:00
+            mock_now.return_value = tzdt(2015, 1, 2, 12, 0)
+            expected = tzdt(2015, 1, 3, 9, 0, tz=tz).strftime("%c %z")
+            actual = custom_trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # On Jan 3, 7:15, next should be Jan 3, 9:00
+            mock_now.return_value = tzdt(2015, 1, 3, 7, 15)
+            expected = tzdt(2015, 1, 3, 9, 0, tz=tz).strftime("%c %z")
+            actual = custom_trigger.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # On Jan 3, 4pm, next should be None since COUNT=2
+            mock_now.return_value = tzdt(2015, 1, 3, 16, 0)
+            self.assertIsNone(custom_trigger.next())
 
 
 class TestBehavior(TestCase):
@@ -1117,6 +1317,76 @@ class TestUserAction(TestCase):
         expected = "Test Action"
         actual = "{}".format(self.ua)
         self.assertEqual(expected, actual)
+
+    def test__completed(self):
+        # When we have no UserCompletedActions
+        self.assertFalse(self.ua._completed('-').exists())
+
+        # We we have 1 UserCompletedAction
+        kwargs = {'useraction': self.ua, 'user': self.user, 'action': self.action}
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertTrue(self.ua._completed('-').exists())
+        uca.delete()
+
+    def test_num_completed(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_completed, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'completed',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_completed, 1)
+        uca.delete()
+
+    def test_num_uncompleted(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_uncompleted, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'uncompleted',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_uncompleted, 1)
+        uca.delete()
+
+    def test_num_snoozed(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_snoozed, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'snoozed',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_snoozed, 1)
+        uca.delete()
+
+    def test_num_dismissed(self):
+        # When we have no UserCompletedActions
+        self.assertEqual(self.ua.num_dismissed, 0)
+
+        # We we have 1 UserCompletedAction
+        kwargs = {
+            'useraction': self.ua,
+            'user': self.user,
+            'action': self.action,
+            'state': 'dismissed',
+        }
+        uca = mommy.make(UserCompletedAction, **kwargs)
+        self.assertEqual(self.ua.num_dismissed, 1)
+        uca.delete()
 
     def test_completed_today(self):
         # ensure that the action is completed, and this should return True

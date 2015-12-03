@@ -16,7 +16,6 @@ from .. models import (
     Trigger,
 )
 from .. widgets import TimeSelectWidget
-
 from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
@@ -24,7 +23,10 @@ class TestActionTriggerForm(TestCase):
 
     def test_unbound(self):
         form = ActionTriggerForm()
-        fields = sorted(['time', 'trigger_date', 'recurrences'])
+        fields = sorted([
+            'start_when_selected', 'stop_on_complete', 'time', 'trigger_date',
+            'relative_value', 'relative_units', 'recurrences',
+        ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound_all(self):
@@ -32,6 +34,10 @@ class TestActionTriggerForm(TestCase):
             'time': '6:30',
             'trigger_date': '08/20/2015',
             'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
+            'start_when_selected': False,
+            'stop_on_complete': False,
+            'relative_value': 0,
+            'relative_units': '',
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
@@ -41,6 +47,10 @@ class TestActionTriggerForm(TestCase):
             'time': '15:30',
             'trigger_date': '',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'start_when_selected': False,
+            'stop_on_complete': False,
+            'relative_value': 0,
+            'relative_units': '',
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
@@ -50,6 +60,106 @@ class TestActionTriggerForm(TestCase):
             'time': '7:00',
             'trigger_date': '02/01/2010',
             'recurrences': 'RRULE:FREQ=DAILY',
+            'start_when_selected': False,
+            'stop_on_complete': False,
+            'relative_value': 0,
+            'relative_units': '',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+    def test_clean_relative(self):
+        """Both relative values/units are required for relative triggers."""
+        # When invalid
+        data = {
+            'time': '7:00',
+            'trigger_date': '02/01/2010',
+            'recurrences': 'RRULE:FREQ=DAILY',
+            'start_when_selected': False,
+            'stop_on_complete': False,
+            'relative_value': 42,  # <-- a non-zero value
+            'relative_units': '',  # <-- empty! (error)
+        }
+        form = ActionTriggerForm(data)
+        self.assertFalse(form.is_valid())
+        expected = (
+            '<ul class="errorlist"><li>Both a value and units are required for '
+            'Relative Reminders</li></ul>'
+        )
+        actual = str(form.errors['relative_value'])
+        self.assertEqual(actual, expected)
+
+        # When valid
+        data['relative_units'] = 'days'
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+    def test_clean_count_require_start_date(self):
+        """A recurrance with a COUNT requires a start date."""
+        data = {
+            'time': '7:00',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY;COUNT=2',
+            'stop_on_complete': False,
+            'start_when_selected': False,
+            'relative_value': '0',
+            'relative_units': '',
+        }
+        form = ActionTriggerForm(data)
+        self.assertFalse(form.is_valid())
+        expected = (
+            '<ul class="errorlist"><li>A Trigger Date is required for '
+            'recurrences that occur a set number of times</li></ul>'
+        )
+        actual = str(form.errors['trigger_date'])
+        self.assertEqual(actual, expected)
+
+    def test_clean_intervals_require_start_date(self):
+        """A recurrance with an INTERVAL requires a start date."""
+        # When invalid
+        data = {
+            'time': '7:00',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY;INTERVAL=2',
+            'start_when_selected': False,
+            'stop_on_complete': False,
+            'relative_value': '0',
+            'relative_units': '',
+        }
+        form = ActionTriggerForm(data)
+        self.assertFalse(form.is_valid())
+        expected = (
+            '<ul class="errorlist"><li>A Trigger Date is required for '
+            'recurrences that contain an interval (such as every 2 days)'
+            '</li></ul>'
+        )
+        actual = str(form.errors['trigger_date'])
+        self.assertEqual(actual, expected)
+
+    def test_clean_intervals_start_when_selected(self):
+        """INTERVAL recurrences are valid when start_when_selected is chosen."""
+        data = {
+            'time': '7:00',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY;INTERVAL=2',
+            'start_when_selected': True,
+            'stop_on_complete': False,
+            'relative_value': '0',
+            'relative_units': '',
+        }
+        form = ActionTriggerForm(data)
+        self.assertTrue(form.is_valid())
+
+    def test_clean_count_start_when_selected(self):
+        """COUNT recurrences are valid when start_when_selected is chosen."""
+        data = {
+            'time': '7:00',
+            'trigger_date': '',
+            'recurrences': 'RRULE:FREQ=DAILY;COUNT=2',
+            'start_when_selected': True,
+            'stop_on_complete': False,
+            'relative_value': '0',
+            'relative_units': '',
         }
         form = ActionTriggerForm(data)
         self.assertTrue(form.is_valid())
