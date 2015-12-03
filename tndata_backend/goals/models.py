@@ -1650,7 +1650,7 @@ class UserAction(models.Model):
 
     def get_notification_title(self):
         """Return the string to be used in this user's notification title."""
-        goal = self.get_primary_goal()
+        goal = self.get_primary_goal() or Goal(title='')
         return self.action.get_notification_title(goal)
 
     def get_notification_text(self):

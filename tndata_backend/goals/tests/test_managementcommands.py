@@ -44,9 +44,13 @@ class TestCreateNotifications(TestCase):
             title="A1",
             state="published",
             default_trigger=default_trigger,
+            notification_text="do A1"
         )
         action2 = Action.objects.create(
-            behavior=behavior, title="A2", state="published"
+            behavior=behavior,
+            title="A2",
+            state="published",
+            notification_text="do A2"
         )
 
         custom_trigger = Trigger.objects.create(
