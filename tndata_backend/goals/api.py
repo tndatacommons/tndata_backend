@@ -990,7 +990,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
                     state=state
                 )
 
-            if (state == 'snoozed'):
+            if state == 'snoozed':
                 metric("snooze-{0}".format(request.data.get('length', 'undefined')), category='Snoozed Reminders')
 
             if updated:
@@ -1578,6 +1578,6 @@ class SearchViewSet(HaystackViewSet):
         for query in request.GET.getlist('q'):
             # Split all search terms and flatten into a single list
             for term in query.split():
-                if (len(term) > 2):
+                if len(term) > 2:
                     metric('q={}'.format(term), category='Search Terms')
         return super().list(request, *args, **kwargs)
