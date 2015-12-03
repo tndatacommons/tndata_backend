@@ -141,7 +141,7 @@ class ActionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        notify_label = Action._notification_text.replace("{} ", "")
+        notify_label = Action._notification_text.replace(" {}", "")
         self.fields['notification_text'].label = notify_label
 
 
