@@ -791,8 +791,15 @@ class UserActionViewSet(mixins.CreateModelMixin,
     information:
 
     * send a POST request to `/api/users/actions/{useraction_id}/complete/`
-      with a body containing a `state` variable set to one of the following:
-      `uncompleted`, `completed`, `dismissed`, `snoozed`
+      with a body containing a `state` and an optional `length`; these values
+      tell us how the user responded to the action, and how long they snoozed
+      the action (if that's what they did).
+
+            {
+                'state': 'snoozed',   # or 'completed', 'uncompleted', 'dismissed'
+                'length': '1hr'         # or  "1d", "custom", "location"
+            }
+
     * A 200 response indicates that the action has been updated or created. If
       updated, the response will be: `{updated: <object_id>}`, if created:
       `{created: <object_id>}`.
@@ -982,6 +989,9 @@ class UserActionViewSet(mixins.CreateModelMixin,
                     useraction=useraction,
                     state=state
                 )
+
+            if (state == 'snoozed'):
+                metric("snooze-{0}".format(request.data.get('length', 'undefined')))
 
             if updated:
                 data = {'updated': uca.id}
