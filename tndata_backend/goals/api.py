@@ -991,7 +991,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
                 )
 
             if (state == 'snoozed'):
-                metric("snooze-{0}".format(request.data.get('length', 'undefined')))
+                metric("snooze-{0}".format(request.data.get('length', 'undefined')), category='Snoozed Reminders')
 
             if updated:
                 data = {'updated': uca.id}
@@ -1578,5 +1578,6 @@ class SearchViewSet(HaystackViewSet):
         for query in request.GET.getlist('q'):
             # Split all search terms and flatten into a single list
             for term in query.split():
-                metric('q={}'.format(term), category='Search Terms')
+                if (len(term) > 2):
+                    metric('q={}'.format(term), category='Search Terms')
         return super().list(request, *args, **kwargs)
