@@ -16,3 +16,7 @@ class UserRelatedModelAdmin(admin.ModelAdmin):
     def user_last(self, obj):
         return obj.user.last_name
     user_last.short_description = "Last Name"
+
+    def full_name(self, obj):
+        return obj.user.get_full_name()
+    full_name.short_description = "Full Name"
