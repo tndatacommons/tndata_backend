@@ -1042,7 +1042,7 @@ class Action(URLMixin, BaseBehavior):
     default_icon = "img/compass-grey.png"
 
     # String formatting patters for notifications
-    _notification_title = "To {}"  # Fill with the primary goal.
+    _notification_title = "To {}:"  # Fill with the primary goal.
     _notification_text = "Time for me to {}"  # Fill with the notification_text
 
     # Data Fields
