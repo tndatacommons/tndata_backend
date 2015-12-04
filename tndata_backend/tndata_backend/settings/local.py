@@ -78,10 +78,26 @@ MIDDLEWARE_CLASSES = (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ) + MIDDLEWARE_CLASSES
 
-INTERNAL_IPS = (
-    '10.0.2.2',  # The Remote address of the proxied requests.
-    '10.0.2.15',
-    '192.168.33.10',
-    '127.0.0.1',
-    '::1',
-)
+
+# TODO: See the ipaddress to see if there's an easy way to just define
+# network blocks: https://docs.python.org/3/library/ipaddress.html
+from ipaddress import IPv4Network, IPv4Address
+class CIDRS(list):
+    """Use the ipaddress module to create lists of ip networks that we check
+    against.
+
+        e.g. INTERNAL_IPS = CIDR_LIST(['127.0.0.1', '192.168.0.0/16'])
+
+    Inspired by https://djangosnippets.org/snippets/1862/
+
+    """
+    def __init__(self, cidrs):
+        self.cidrs = []
+        for cidr in cidrs:
+            self.cidrs.append(IPv4Network(cidr))
+
+    def __contains__(self, ip):
+        return any([IPv4Address(ip) in net for net in self.cidrs])
+
+
+INTERNAL_IPS = CIDRS(['127.0.0.1', '192.168.0.0/16', '10.0.0.0/16'])

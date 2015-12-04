@@ -1,39 +1,40 @@
 """ Django settings for tndata_backend project.
 
-For more information on this file, see
-https://docs.djangoproject.com/en/1.7/topics/settings/
+This file expects that the following environment variables are in place:
 
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.7/ref/settings/
+* ADMIN_NAME
+* ADMIN_EMAIL
+* MANAGER_NAME
+* MANAGER_EMAIL
+* DEFAULT_EMAIL
+
 """
 
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-ADMINS = (
-    ('Brad Montgomery', 'bkmontgomery@tndata.org'),
-)
-MANAGERS = ADMINS + (
-    ('Russell Ingram', 'ringram@tndata.org'),
-)
-DEFAULT_FROM_EMAIL = 'Compass Team <webmaster@tndata.org>'
+# Admins & Managers for the site.
+ADMINS = [(os.environ.get('ADMIN_NAME'), os.environ.get('ADMIN_EMAIL'))]
+MANAGERS = ADMINS + [(os.environ.get('ADMIN_NAME'), os.environ.get('ADMIN_EMAIL'))]
+
+# Email
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_EMAIL')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_SUBJECT_PREFIX = "[TNData] "
 
-# Site's FQDN and URL. For building links in email.
-SITE_DOMAIN = "app.tndata.org"
+# The site's FQDN and URL. Used for building links in email.
+SITE_DOMAIN = os.environ.get('SITE_DOMAIN')
 SITE_URL = "https://{0}".format(SITE_DOMAIN)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
-SECRET_KEY = 'xt67918srm3f=0$#k%7quk+&pdtwy7#n=pfn%4kzyae$kxmw%j'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = False
 STAGING = False
-ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1',
-    '.tndata.org', '.tndata.org.', '104.236.244.232', '159.203.68.206',
-    'brad.ngrok.io', 'tndata.ngrok.io',
-]
+
+# The environment variable for allowed hosts should be a ;-separated string
+# of domains and/or ip addresses, e.g. "localhost;127.0.0.1;example.com"
+ALLOWED_HOSTS = ";".split(os.environ.get('ALLOWED_HOSTS'))
 
 # NOTE: this is the production setting. It uses the cached.Loader.
 TEMPLATES = [
@@ -99,19 +100,18 @@ INSTALLED_APPS = (
 
 
 # django-haystack settings
-# TODO: CHANGE this for production
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': 'http://127.0.0.1:9200/',
-        'INDEX_NAME': 'haystack-dev',
+        'URL': os.environ.get('HAYSTACK_URL'),
+        'INDEX_NAME': os.environ.get('HAYSTACK_INDEX_NAME'),
     },
 }
 
 
 # Settings for Google Cloud Messaging.
 GCM = {
-    'API_KEY': 'AIzaSyCi5AGkIhEWPrO8xo3ec3MIo7-tGlRtng0',
+    'API_KEY': os.environ.get('GCM_API_KEY'),
 }
 
 AUTHENTICATION_BACKENDS = (
@@ -143,19 +143,18 @@ WSGI_APPLICATION = 'tndata_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tndata_backend',
-        'USER': 'tndata_backend',
-        'PASSWORD': 'plicater-nonurban-outlaw-moonfall',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
 }
 
-# Caching
-# Redis notes: redis_max_clients: 10000, edis_max_memory: 512mb
-REDIS_PASSWORD = 'VPoDYBZgeyktxArddu4EHrNMdFsUzf7TtFKTP'
-REDIS_PORT = 6379
-REDIS_HOST = '127.0.0.1'
+# Caching with a redis backend
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+REDIS_PORT = os.environ.get('REDIS_PORT')
+REDIS_HOST = os.environ.get('REDIS_HOST')
 REDIS_CACHE_DB = 1  # XXX Used in production
 REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     password=REDIS_PASSWORD,
@@ -176,7 +175,7 @@ CACHES = {
     }
 }
 
-# django-redis-metrics
+# django-redis-metrics: http://django-redis-metrics.readthedocs.org/en/latest/
 REDIS_METRICS_DB = 2  # XXX Used in production
 REDIS_METRICS = {
     'HOST': REDIS_HOST,
@@ -195,8 +194,7 @@ REDIS_METRICS = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
 
-# django-cacheops
-# See: https://github.com/Suor/django-cacheops#readme
+# django-cacheops: https://github.com/Suor/django-cacheops#readme
 CACHEOPS_REDIS = {
     'host': REDIS_HOST,
     'port': REDIS_PORT,
@@ -219,9 +217,7 @@ LOGIN_URL = 'login'  # Named url patter for the built-in auth
 LOGOUT_URL = 'logout'
 LOGIN_REDIRECT_URL = '/'
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/1.7/topics/i18n/
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 TIME_FORMAT = "g:ia e"  # 5:30pm CDT
@@ -229,21 +225,9 @@ DATE_FORMAT = "N j, Y"  # Jan 3, 2015
 DATETIME_FORMAT = "N j, Y g:iaO e"  # Jan. 3, 2015 5:30pm+200 CDT
 SHORT_DATE_FORMAT = "m/d/Y"  # 01/03/2015
 SHORT_DATETIME_FORMAT = "H:iO"  # 17:30+200
-
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-# Media Uploads, default
-MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.7/howto/static-files/
-# NOTE: See the AWS S3 settings below.
-STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static_files')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
 
 # Messages tags: Updated to represent Foundation alert classes.
 from django.contrib.messages import constants as message_constants
@@ -265,8 +249,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5')
 
 # Django Rest Framework
 REST_FRAMEWORK = {
-    'PAGINATE_BY': 100,  # Turns on Pagination.
-    # Testing: http://www.django-rest-framework.org/api-guide/testing/#configuration
+    'PAGINATE_BY': 100,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
@@ -283,12 +266,11 @@ REST_FRAMEWORK = {
 }
 
 
-# Play Store Details
+# Play Store Link for the mobile app.
 # https://developers.google.com/api-client-library/python/start/get_started
-PLAY_APP_URL = "https://play.google.com/apps/testing/org.tndata.android.compass"
+PLAY_APP_URL = os.environ.get('PLAY_APP_URL')
 
-# django-cors-headers
-# https://github.com/ottoyiu/django-cors-headers/
+# django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
     'localhost',
@@ -296,24 +278,31 @@ CORS_ORIGIN_WHITELIST = (
 )
 
 
-# This is just the test Web/api token.
-# https://api.slack.com/web
-SLACK_API_TOKEN = 'xoxp-4823219390-6288403475-6868819906-193c4a'
-SLACK_CHANNEL = "#tech"
-SLACK_USERNAME = "app.tndata.org"
+# Slack tokens: https://api.slack.com/web
+SLACK_API_TOKEN = os.environ.get('SLACK_API_TOKEN')
+SLACK_CHANNEL = os.environ.get('SLACK_CHANNEL')
+SLACK_USERNAME = os.environ.get('SLACK_USERNAME')
 
-# -----------------------------------------------------------------------------
+# Media Uploads, default
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
+
+# Static files (CSS, JavaScript, Images)
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static_files')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+
 # Amazon S3 & django-storages config
-# -----------------------------------------------------------------------------
-AWS_USER = "tndata"
+AWS_USER = os.environ.get('AWS_USER')
 AWS_HEADERS = {  # http://developer.yahoo.com/performance/rules.html#expires
     'Expires': 'Thu, 31 Dec 2099 20:00:00 GMT',
     'Cache-Control': 'max-age=94608000',
 }
-AWS_STORAGE_BUCKET_NAME = "tndata-staging"
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_BUCKET_NAME = AWS_STORAGE_BUCKET_NAME  # for sync_s3
-AWS_ACCESS_KEY_ID = "AKIAIXQUJ3HCC6GMN74Q"
-AWS_SECRET_ACCESS_KEY = "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"
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 SYNC_S3_PREFIX = 'media'  # only include our media files when using sync_s3
 
 # Tell django-storages that when coming up with the URL for an item in S3
@@ -337,8 +326,6 @@ STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 MEDIAFILES_LOCATION = 'media'
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
 DEFAULT_FILE_STORAGE = 'utils.storages.MediaStorage'
-# -----------------------------------------------------------------------------
 
-
-# Goal Settings
+# Additional Goal app Settings
 PROGRESS_HISTORY_DAYS = 30  # Number of days back to generate progress history
