@@ -47,6 +47,5 @@ directory.
 License
 -------
 
-This code is the property of Tennessee Data Commons.
-
-(c) 2015 all rights reserved.
+This project is distributed under the terms of the MIT license. See the
+LICENSE.md file in this repo.
