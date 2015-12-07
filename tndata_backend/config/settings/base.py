@@ -71,7 +71,7 @@ class CIDRS(list):
         return any([IPv4Address(ip) in net for net in self.cidrs])
 
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'SET-THIS-IN-YOUR-ENVIRONMENT')
 DEBUG = os.environ.get('DEBUG')
 STAGING = os.environ.get('STAGING')
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
