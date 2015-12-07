@@ -209,6 +209,7 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_CONNECT_TIMEOUT": 5,  # in seconds
             "SOCKET_TIMEOUT": 5,  # in seconds
+            "IGNORE_EXCEPTIONS": not DEBUG,  # True in production
         },
         'TIMEOUT': 1200,  # 1-hour cache
     }
@@ -331,7 +332,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-
 # Amazon S3 & django-storages config
 AWS_USER = os.environ.get('AWS_USER')
 AWS_HEADERS = {  # http://developer.yahoo.com/performance/rules.html#expires
@@ -361,14 +361,12 @@ STATICFILES_STORAGE = 'utils.storages.StaticStorage'
 # Or if anything else refers directly to STATIC_URL. So it's safest to always
 # set it.
 STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
-
-MEDIAFILES_LOCATION = 'media'
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
+MEDIAFILES_LOCATION = 'media'
 DEFAULT_FILE_STORAGE = 'utils.storages.MediaStorage'
 
 # Additional Goal app Settings
 PROGRESS_HISTORY_DAYS = 30  # Number of days back to generate progress history
-
 
 # django-querycount settings
 QUERYCOUNT = {
@@ -420,3 +418,37 @@ if DEBUG:
     MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
     MEDIA_URL = "/media/"
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+
+# Logging Config
+# --------------
+# This config is for loggly.com; It should work in addition to the django
+# default logging config.
+#
+# See https://docs.python.org/3/library/logging.handlers.html#sysloghandler
+# for information on the SysLogHandler.
+LOGGING = {
+   'version': 1,
+   'disable_existing_loggers': False,
+   'formatters': {
+      'django': {
+         'format':'django: %(message)s',
+       },
+    },
+   'handlers': {
+      'logging.handlers.SysLogHandler': {
+         'level': 'DEBUG',
+         'class': 'logging.handlers.SysLogHandler',
+         'facility': 'local7',
+         'formatter': 'django',
+       },
+   },
+   'loggers': {
+      'loggly_logs':{
+         'handlers': ['logging.handlers.SysLogHandler'],
+         'propagate': True,
+         'format':'django: %(message)s',
+         'level': 'DEBUG',
+       },
+    }
+}
