@@ -1,12 +1,51 @@
-""" Django settings for tndata_backend project.
+""" Django settings file this project.
 
-This file expects that the following environment variables are in place:
+This file contains settings that are usable for both a production and a
+development environment. You'll need to export the appropriate values as
+environment variables, however. The following environment variables should
+be set prior to running the project:
 
-* ADMIN_NAME
-* ADMIN_EMAIL
-* MANAGER_NAME
-* MANAGER_EMAIL
-* DEFAULT_EMAIL
+* DEBUG -- 1 or 0, defines whether or not we're in debug mode.
+* STAGING -- 1 or 0, defines whether or not we're in a staging environment.
+* SECRET_KEY -- string to use for django's secret key
+* ADMIN_NAME -- Name of the admin user.
+* ADMIN_EMAIL -- Email of the admin user.
+* MANAGER_NAME -- Name of a Manager.
+* MANAGER_EMAIL -- Email of a Manager
+* DEFAULT_EMAIL -- Default email address for transactional email.
+* EMAIL_SUBJECT_PREFIX -- prefix for your emails
+* EMAIL_HOST -- host of your smtp server
+* EMAIL_HOST_USER -- smtp user
+* EMAIL_HOST_PASSWORD -- email password
+* EMAIL_USE_TLS -- whether or not to use TLS
+* EMAIL_USE_SSL -- whether or not to use SSL
+* EMAIL_PORT -- smtp server port
+* ALLOWED_HOSTS -- semicolon-separated string of allowed hosts, e.g.
+                   "localhost;127.0.0.1;.example.com"
+* SITE_DOMAIN -- fully qualified domain name for your site, e.g. "example.com"
+* HAYSTACK_URL -- connection to haystack; e.g. "http://127.0.0.1:9200/"
+* HAYSTACK_INDEX_NAME -- index name to use for haystack
+* GCM_API_KEY -- API key for google cloud messaging
+* DB_NAME -- Database name
+* DB_USER -- Database user
+* DB_PASSWORD -- database password
+* DB_HOST -- database host
+* DB_PORT -- database port
+* REDIS_PASSWORD -- Redis password
+* REDIS_PORT -- Redis port
+* REDIS_HOST -- Redis host, e.g. "127.0.0.1"
+* REDIS_CACHE_DB -- The redis DB to use for the cache.
+* REDIS_METRICS_DB -- The redis DB to use for metrics.
+
+* PLAY_APP_URL -- Link to the downloadable app on the play store.
+* SLACK_API_TOKEN -- slack api token
+* SLACK_CHANNEL -- chanel in which you want slack to post e.g. "#general"
+* SLACK_USERNAME -- username that will be used for posts to slack
+* MEDIA_ROOT -- path to your media uploads (only for local dev if AWS is not used)
+* AWS_USER -- AWS user
+* AWS_STORAGE_BUCKET_NAME -- S3 bucket name
+* AWS_ACCESS_KEY_ID -- AWS access key
+* AWS_SECRET_ACCESS_KEY -- AWS secret
 
 """
 
@@ -32,6 +71,9 @@ class CIDRS(list):
         return any([IPv4Address(ip) in net for net in self.cidrs])
 
 
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG = os.environ.get('DEBUG')
+STAGING = os.environ.get('STAGING')
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Admins & Managers for the site.
@@ -64,12 +106,6 @@ if DEBUG:
     SITE_URL = "http://{0}".format(SITE_DOMAIN)
 else:
     SITE_URL = "https://{0}".format(SITE_DOMAIN)
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
-SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = os.environ.get('DEBUG')
-STAGING = os.environ.get('STAGING')
 
 # The environment variable for allowed hosts should be a ;-separated string
 # of domains and/or ip addresses, e.g. "localhost;127.0.0.1;example.com"
@@ -360,9 +396,9 @@ STATICFILES_STORAGE = 'utils.storages.StaticStorage'
 # This is used by the `static` template tag from `static`, if you're using that.
 # Or if anything else refers directly to STATIC_URL. So it's safest to always
 # set it.
+MEDIAFILES_LOCATION = 'media'
 STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATICFILES_LOCATION)
 MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
-MEDIAFILES_LOCATION = 'media'
 DEFAULT_FILE_STORAGE = 'utils.storages.MediaStorage'
 
 # Additional Goal app Settings
@@ -428,27 +464,27 @@ if DEBUG:
 # See https://docs.python.org/3/library/logging.handlers.html#sysloghandler
 # for information on the SysLogHandler.
 LOGGING = {
-   'version': 1,
-   'disable_existing_loggers': False,
-   'formatters': {
-      'django': {
-         'format':'django: %(message)s',
-       },
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'django': {
+            'format': 'django: %(message)s',
+        },
     },
-   'handlers': {
-      'logging.handlers.SysLogHandler': {
-         'level': 'DEBUG',
-         'class': 'logging.handlers.SysLogHandler',
-         'facility': 'local7',
-         'formatter': 'django',
-       },
-   },
-   'loggers': {
-      'loggly_logs':{
-         'handlers': ['logging.handlers.SysLogHandler'],
-         'propagate': True,
-         'format':'django: %(message)s',
-         'level': 'DEBUG',
-       },
+    'handlers': {
+        'logging.handlers.SysLogHandler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.SysLogHandler',
+            'facility': 'local7',
+            'formatter': 'django',
+        },
+    },
+    'loggers': {
+        'loggly_logs': {
+            'handlers': ['logging.handlers.SysLogHandler'],
+            'propagate': True,
+            'format': 'django: %(message)s',
+            'level': 'DEBUG',
+        },
     }
 }

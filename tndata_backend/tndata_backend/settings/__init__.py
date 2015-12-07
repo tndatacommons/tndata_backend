@@ -1,4 +1,1 @@
-try:
-    from .local import *
-except ImportError:
-    from .production import *
+from .base import *
