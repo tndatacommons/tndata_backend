@@ -210,8 +210,8 @@ MIDDLEWARE_CLASSES = (
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
 )
 
-ROOT_URLCONF = 'tndata_backend.urls'
-WSGI_APPLICATION = 'tndata_backend.wsgi.application'
+ROOT_URLCONF = 'config.urls'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 # Local Database settings.
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
