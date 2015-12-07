@@ -10,7 +10,28 @@ This file expects that the following environment variables are in place:
 
 """
 
+from ipaddress import IPv4Network, IPv4Address
 import os
+
+
+class CIDRS(list):
+    """Use the ipaddress module to create lists of ip networks that we check
+    against.
+
+        e.g. INTERNAL_IPS = CIDR_LIST(['127.0.0.1', '192.168.0.0/16'])
+
+    Inspired by https://djangosnippets.org/snippets/1862/
+
+    """
+    def __init__(self, cidrs):
+        self.cidrs = []
+        for cidr in cidrs:
+            self.cidrs.append(IPv4Network(cidr))
+
+    def __contains__(self, ip):
+        return any([IPv4Address(ip) in net for net in self.cidrs])
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Admins & Managers for the site.
@@ -20,17 +41,20 @@ MANAGERS = ADMINS + [(os.environ.get('ADMIN_NAME'), os.environ.get('ADMIN_EMAIL'
 # Email
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_EMAIL')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_SUBJECT_PREFIX = "[TNData] "
+EMAIL_SUBJECT_PREFIX = os.environ.get('EMAIL_SUBJECT_PREFIX')
 
 # The site's FQDN and URL. Used for building links in email.
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN')
-SITE_URL = "https://{0}".format(SITE_DOMAIN)
+if DEBUG:
+    SITE_URL = "http://{0}".format(SITE_DOMAIN)
+else:
+    SITE_URL = "https://{0}".format(SITE_DOMAIN)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = False
-STAGING = False
+DEBUG = os.environ.get('DEBUG')
+STAGING = os.environ.get('STAGING')
 
 # The environment variable for allowed hosts should be a ;-separated string
 # of domains and/or ip addresses, e.g. "localhost;127.0.0.1;example.com"
@@ -329,3 +353,44 @@ DEFAULT_FILE_STORAGE = 'utils.storages.MediaStorage'
 
 # Additional Goal app Settings
 PROGRESS_HISTORY_DAYS = 30  # Number of days back to generate progress history
+
+
+# django-querycount settings
+QUERYCOUNT = {
+    'THRESHOLDS': {
+        'MEDIUM': 50,
+        'HIGH': 200,
+        'MIN_TIME_TO_LOG': 0,
+        'MIN_QUERY_COUNT_TO_LOG': 0
+    },
+    'IGNORE_PATTERNS': [r'^/static', r'^/media', r'^/admin'],
+    'DISPLAY_DUPLICATES': 1,
+}
+
+# Settings for DEBUG / local development
+# --------------------------------------
+if DEBUG:
+    INSTALLED_APPS = INSTALLED_APPS + (
+        'debug_toolbar',
+        'querycount',
+    )
+
+    # Just like production, but without the cached template loader
+    TEMPLATES[0]['OPTIONS']['loaders'] = [
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    ]
+
+    # Disable AWS/S3 (for when working on js/css locally)
+    # ---------------------------------------------------
+    STATIC_ROOT = "collected_static_files"
+    STATIC_URL = "/static/"
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
+    STATICFILES_FINDERS = (
+        "django.contrib.staticfiles.finders.FileSystemFinder",
+        "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    )
+    MEDIA_ROOT = "/webapps/tndata_backend/uploads/"
+    MEDIA_URL = "/media/"
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
