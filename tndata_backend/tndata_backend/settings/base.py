@@ -42,6 +42,21 @@ MANAGERS = ADMINS + [(os.environ.get('ADMIN_NAME'), os.environ.get('ADMIN_EMAIL'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_EMAIL')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 EMAIL_SUBJECT_PREFIX = os.environ.get('EMAIL_SUBJECT_PREFIX')
+if os.environ.get('EMAIL_HOST'):
+    # 3rd-party email delivery.
+    EMAIL_HOST = os.environ.get('EMAIL_HOST')
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+    EMAIL_USE_TLS = bool(os.environ.get('EMAIL_USE_TLS'))
+    EMAIL_USE_SSL = bool(os.environ.get('EMAIL_USE_SSL'))
+    EMAIL_PORT = os.environ.get('EMAIL_PORT')
+else:
+    # Local email delivery
+    EMAIL_HOST = 'localhost'
+    EMAIL_HOST_USER = ''
+    EMAIL_HOST_PASSWORD = ''
+    EMAIL_USE_TLS = False
+    EMAIL_PORT = 1025
 
 # The site's FQDN and URL. Used for building links in email.
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN')
@@ -179,7 +194,7 @@ DATABASES = {
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_CACHE_DB = 1  # XXX Used in production
+REDIS_CACHE_DB = os.environ.get('REDIS_CACHE_DB')
 REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     password=REDIS_PASSWORD,
     host=REDIS_HOST,
@@ -200,7 +215,7 @@ CACHES = {
 }
 
 # django-redis-metrics: http://django-redis-metrics.readthedocs.org/en/latest/
-REDIS_METRICS_DB = 2  # XXX Used in production
+REDIS_METRICS_DB = os.environ.get('REDIS_METRICS_DB')
 REDIS_METRICS = {
     'HOST': REDIS_HOST,
     'PORT': REDIS_PORT,
@@ -374,6 +389,17 @@ if DEBUG:
         'debug_toolbar',
         'querycount',
     )
+
+    # django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
+    CORS_ORIGIN_ALLOW_ALL = True
+
+    # Explicit setting for debug_toolbar
+    DEBUG_TOOLBAR_PATCH_SETTINGS = False
+    MIDDLEWARE_CLASSES = (
+        'querycount.middleware.QueryCountMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    ) + MIDDLEWARE_CLASSES
+    INTERNAL_IPS = CIDRS(['127.0.0.1', '192.168.0.0/16', '10.0.0.0/16'])
 
     # Just like production, but without the cached template loader
     TEMPLATES[0]['OPTIONS']['loaders'] = [
