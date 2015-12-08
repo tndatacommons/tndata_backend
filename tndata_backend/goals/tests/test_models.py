@@ -1176,17 +1176,17 @@ class TestAction(TestCase):
         goal = Mock(title='Pass tests')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "I want to pass tests"
+            "To pass tests:"
         )
         goal = Mock(title='PASS tests')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "I want to PASS tests"
+            "To PASS tests:"
         )
         goal = Mock(title='WE are fine')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "I want to WE are fine"
+            "To WE are fine:"
         )
 
     def test_get_notification_text(self):
