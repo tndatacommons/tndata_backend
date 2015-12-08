@@ -441,6 +441,20 @@ class TestBinaryResponseAPI(APITestCase):
         self.assertEqual(BinaryResponse.objects.filter(user=self.user).count(), 2)
         q.delete()  # Clean up.
 
+    def test_post_list_athenticated_with_string_instead_of_int(self):
+        """Authenticated users should be able to create a BinaryResponse."""
+        q = BinaryQuestion.objects.create(text="New Question")
+
+        url = reverse('binaryresponse-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {"question": str(q.id), 'selected_option': str(0)}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(BinaryResponse.objects.filter(user=self.user).count(), 2)
+        q.delete()  # Clean up.
+
     def test_get_detail_unauthed(self):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = reverse('binaryresponse-detail', args=[self.response.id])

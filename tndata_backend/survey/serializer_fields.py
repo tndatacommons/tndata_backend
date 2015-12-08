@@ -57,7 +57,11 @@ class QuestionField(serializers.RelatedField):
     MultipleChoiceQuestions"""
 
     def to_internal_value(self, data):
-        # data could be an int or a dict?
+        try:
+            data = int(data)  # Could be an int, dict or something else.
+        except ValueError:
+            pass
+
         if isinstance(data, int):
             return _get_object(self.queryset.model, data)
         return _get_object(self.queryset.model, data.get('id'))
@@ -76,7 +80,11 @@ class MultipleChoiceResponseOptionField(serializers.RelatedField):
     customize this, see `MultipleChoiceQuestion.options`."""
 
     def to_internal_value(self, data):
-        # data is a dict of POSTed info
+        try:
+            data = int(data)  # Could be an int, dict or something else.
+        except ValueError:
+            pass
+
         if isinstance(data, int):
             return _get_object(MultipleChoiceResponseOption, data)
         return _get_object(MultipleChoiceResponseOption, data.get('id'))
