@@ -227,6 +227,7 @@ DATABASES = {
 }
 
 # Caching with a redis backend
+CACHE_TIMEOUT = 60 * 5  # 5-minute cache timeout
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_HOST = os.environ.get('REDIS_HOST')
@@ -247,7 +248,7 @@ CACHES = {
             "SOCKET_TIMEOUT": 5,  # in seconds
             "IGNORE_EXCEPTIONS": not DEBUG,  # True in production
         },
-        'TIMEOUT': 1200,  # 1-hour cache
+        'TIMEOUT': CACHE_TIMEOUT,
     }
 }
 
@@ -278,12 +279,12 @@ CACHEOPS_REDIS = {
     'socket_timeout': 5,
     'password': REDIS_PASSWORD,
 }
-CACHEOPS_DEFAULTS = {'timeout': 60 * 60}
+CACHEOPS_DEFAULTS = {'timeout': CACHE_TIMEOUT}
 CACHEOPS = {
     'auth.*': {'ops': ('fetch', 'get')},
     'auth.permission': {'ops': 'all'},
-    'goals.*': {'ops': ('fetch', 'get')},
-    'userprofile.userprofile': {'ops': ('fetch', 'get')},
+    #'goals.*': {'ops': ('fetch', 'get')},
+    #'userprofile.userprofile': {'ops': ('fetch', 'get')},
 }
 CACHEOPS_DEGRADE_ON_FAILURE = True
 
