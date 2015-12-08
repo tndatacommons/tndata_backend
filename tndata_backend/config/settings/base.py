@@ -72,8 +72,8 @@ class CIDRS(list):
 
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = os.environ.get('DEBUG')
-STAGING = os.environ.get('STAGING')
+DEBUG = bool(int(os.environ.get('DEBUG')))
+STAGING = bool(int(os.environ.get('STAGING')))
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Admins & Managers for the site.
@@ -89,8 +89,8 @@ if os.environ.get('EMAIL_HOST'):
     EMAIL_HOST = os.environ.get('EMAIL_HOST')
     EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
     EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-    EMAIL_USE_TLS = bool(os.environ.get('EMAIL_USE_TLS'))
-    EMAIL_USE_SSL = bool(os.environ.get('EMAIL_USE_SSL'))
+    EMAIL_USE_TLS = bool(int(os.environ.get('EMAIL_USE_TLS')))
+    EMAIL_USE_SSL = bool(int(os.environ.get('EMAIL_USE_SSL')))
     EMAIL_PORT = os.environ.get('EMAIL_PORT')
 else:
     # Local email delivery
@@ -230,7 +230,7 @@ DATABASES = {
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_CACHE_DB = os.environ.get('REDIS_CACHE_DB')
+REDIS_CACHE_DB = int(os.environ.get('REDIS_CACHE_DB'))
 REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     password=REDIS_PASSWORD,
     host=REDIS_HOST,
@@ -252,7 +252,7 @@ CACHES = {
 }
 
 # django-redis-metrics: http://django-redis-metrics.readthedocs.org/en/latest/
-REDIS_METRICS_DB = os.environ.get('REDIS_METRICS_DB')
+REDIS_METRICS_DB = int(os.environ.get('REDIS_METRICS_DB'))
 REDIS_METRICS = {
     'HOST': REDIS_HOST,
     'PORT': REDIS_PORT,
