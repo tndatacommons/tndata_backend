@@ -369,8 +369,9 @@ class PackageEnrollmentManager(models.Manager):
         User = get_user_model()
 
         for email in emails:
+            email = email.strip().lower()
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.get(email__iexact=email)
             except User.DoesNotExist:
                 # Create an inactive user. This will:
                 #
