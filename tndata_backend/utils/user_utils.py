@@ -104,8 +104,16 @@ def username_hash(email, max_length=30):
 def create_inactive_user(email):
     """Creates a user account that's marked as inactive and needing onboarding.
 
+    If this is given an email address for an existing user, that user is returned
+    instead of creating a new user.
+
     """
     User = get_user_model()
+    email = email.strip().lower()
+    try:
+        return User.objects.get(email__iexact=email)
+    except User.DoesNotExist:
+        pass
 
     username = username_hash(email)
     user = User.objects.create_user(username, email)

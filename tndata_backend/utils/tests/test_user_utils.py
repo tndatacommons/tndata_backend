@@ -172,3 +172,13 @@ class TestUserUtils(TestCase):
         user = create_inactive_user("somenewuser@example.com")
         self.assertFalse(user.is_active)
         self.assertTrue(user.userprofile.needs_onboarding)
+
+    def test_create_inactive_user_with_existing_account(self):
+        # Note: ty@example.com exists.
+        user = create_inactive_user("TY@example.com")
+
+        # existing users shouldn't be altered
+        self.assertTrue(user.is_active)
+
+        # This should have just returned the existing account
+        self.assertEqual(user.id, self.user.id)
