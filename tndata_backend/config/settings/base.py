@@ -109,7 +109,7 @@ else:
 
 # The environment variable for allowed hosts should be a ;-separated string
 # of domains and/or ip addresses, e.g. "localhost;127.0.0.1;example.com"
-ALLOWED_HOSTS = ";".split(os.environ.get('ALLOWED_HOSTS'))
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(";")
 
 # NOTE: this is the production setting. It uses the cached.Loader.
 TEMPLATES = [
