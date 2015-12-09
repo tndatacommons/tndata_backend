@@ -17,7 +17,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
-from django.db import models
+from django.db import connection, models
 from django.db.models import Avg, Sum, ObjectDoesNotExist
 from django.db.models.signals import (
     pre_delete, pre_save, post_delete, post_save
@@ -2530,10 +2530,10 @@ class PackageEnrollment(models.Model):
     def get_absolute_url(self):
         """Currently, this is the PackageDetailView, which provides a list of
         enrollments."""
-        return reverse("goals:package-detail", args=[self.pk])
+        return reverse("behaviors:package-detail", args=[self.pk])
 
     def get_accept_url(self):
-        return reverse("goals:accept-enrollment", args=[self.pk])
+        return reverse("behaviors:accept-enrollment", args=[self.pk])
 
     def accept(self):
         self.accepted = True
@@ -2547,13 +2547,13 @@ class PackageEnrollment(models.Model):
         # this for a number of users at once.
         UserCategory.objects.get_or_create(user=self.user, category=self.category)
 
-        # Enroll the user in the goals.
-        goals = self.goals.all()
-        for goal in goals:
-            UserGoal.objects.get_or_create(user=self.user, goal=goal)
+        # Enroll the user in the behaviors.
+        behaviors = self.behaviors.all()
+        for behavior in behaviors:
+            UserGoal.objects.get_or_create(user=self.user, behavior=behavior)
 
         # Enroll the User in the Behaviors
-        behaviors = Behavior.objects.published().filter(goals=goals).distinct()
+        behaviors = Behavior.objects.published().filter(behaviors=behaviors).distinct()
         for behavior in behaviors:
             UserBehavior.objects.get_or_create(user=self.user, behavior=behavior)
 
@@ -2581,3 +2581,86 @@ def notify_for_new_package(sender, instance, created, **kwargs):
             deliver_on=timezone.now(),
             obj=instance,
         )
+
+
+# Convenience functions
+# ---------------------
+
+def popular_actions(top=10):
+    """Returns a list of [(title, count), ... ] tuples for popular Actions."""
+
+    cursor = connection.cursor()
+    query = """
+select count(action_id) as aid_count, action_id
+from goals_useraction group by action_id
+order by aid_count desc
+limit %s
+"""
+    cursor.execute(query, [top])
+    results = cursor.fetchall()
+
+    # split out the counts & action ids so we can look up the relevant titles
+    counts = [t[0] for t in results]
+    ids = [t[1] for t in results]
+    titles = Action.objects.filter(id__in=ids).values_list('title', flat=True)
+    return list(zip(titles, counts))
+
+
+def popular_behaviors(top=10):
+    """Returns a list of [(title, count), ... ] tuples for popular Behaviors."""
+
+    cursor = connection.cursor()
+    query = """
+select count(behavior_id) as bid_count, behavior_id
+from goals_userbehavior group by behavior_id
+order by bid_count desc
+limit %s
+"""
+    cursor.execute(query, [top])
+    results = cursor.fetchall()
+
+    # split out the counts & action ids so we can look up the relevant titles
+    counts = [t[0] for t in results]
+    ids = [t[1] for t in results]
+    titles = Behavior.objects.filter(id__in=ids).values_list('title', flat=True)
+    return list(zip(titles, counts))
+
+
+def popular_goals(top=10):
+    """Returns a list of [(title, count), ... ] tuples for popular Goals."""
+
+    cursor = connection.cursor()
+    query = """
+select count(goal_id) as gid_count, goal_id
+from goals_usergoal group by goal_id
+order by gid_count desc
+limit %s
+"""
+    cursor.execute(query, [top])
+    results = cursor.fetchall()
+
+    # split out the counts & action ids so we can look up the relevant titles
+    counts = [t[0] for t in results]
+    ids = [t[1] for t in results]
+    titles = Goal.objects.filter(id__in=ids).values_list('title', flat=True)
+    return list(zip(titles, counts))
+
+
+def popular_categories(top=10):
+    """Returns a list of [(title, count), ... ] tuples for popular Categories."""
+
+    cursor = connection.cursor()
+    query = """
+select count(category_id) as cid_count, category_id
+from goals_usercategory group by category_id
+order by cid_count desc
+limit %s
+"""
+    cursor.execute(query, [top])
+    results = cursor.fetchall()
+
+    # split out the counts & action ids so we can look up the relevant titles
+    counts = [t[0] for t in results]
+    ids = [t[1] for t in results]
+    titles = Category.objects.filter(id__in=ids).values_list('title', flat=True)
+    return list(zip(titles, counts))
