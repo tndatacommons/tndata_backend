@@ -53,11 +53,12 @@ from . models import (
     GoalProgress,
     PackageEnrollment,
     Trigger,
-    UserAction,
-    UserBehavior,
-    UserCategory,
     UserCompletedAction,
     UserGoal,
+    popular_actions,
+    popular_behaviors,
+    popular_goals,
+    popular_categories,
 )
 from . permissions import (
     ContentPermissions,
@@ -239,16 +240,22 @@ class IndexView(ContentViewerMixin, TemplateView):
         * some stats on the most popular content.
 
         """
+        # Only the fields needed for Category, Goal, Behavior, Action objects
+        # on this page.
+        only_fields = [
+            'id', 'title', 'title_slug', 'updated_on', 'updated_by',
+            'created_by', 'state',
+        ]
         context = self.get_context_data(**kwargs)
         if is_content_editor(request.user):
             context['is_editor'] = True
 
             # Show content pending review.
             mapping = {
-                'categories': Category.objects.filter,
-                'goals': Goal.objects.filter,
-                'behaviors': Behavior.objects.filter,
-                'actions': Action.objects.filter,
+                'categories': Category.objects.only(*only_fields).filter,
+                'goals': Goal.objects.only(*only_fields).filter,
+                'behaviors': Behavior.objects.only(*only_fields).filter,
+                'actions': Action.objects.only(*only_fields).filter,
             }
             for key, func in mapping.items():
                 context[key] = func(state='pending-review').order_by("-updated_on")
@@ -257,9 +264,9 @@ class IndexView(ContentViewerMixin, TemplateView):
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
         mapping = {
             'my_categories': Category.objects.filter,
-            'my_goals': Goal.objects.filter,
-            'my_behaviors': Behavior.objects.filter,
-            'my_actions': Action.objects.filter,
+            'my_goals': Goal.objects.only(*only_fields).filter,
+            'my_behaviors': Behavior.objects.only(*only_fields).filter,
+            'my_actions': Action.objects.only(*only_fields).filter,
         }
         for key, func in mapping.items():
             context[key] = func(conditions)
@@ -273,15 +280,10 @@ class IndexView(ContentViewerMixin, TemplateView):
         ])
 
         # Most popular content.
-        cc = Counter(UserCategory.objects.values_list('category__title', flat=True))
-        gc = Counter(UserGoal.objects.values_list('goal__title', flat=True))
-        bc = Counter(UserBehavior.objects.values_list('behavior__title', flat=True))
-        ac = Counter(UserAction.objects.values_list('action__title', flat=True))
-
-        context['popular_categories'] = cc.most_common(10)
-        context['popular_goals'] = gc.most_common(10)
-        context['popular_behaviors'] = bc.most_common(10)
-        context['popular_actions'] = ac.most_common(10)
+        context['popular_categories'] = popular_categories()
+        context['popular_goals'] = popular_goals()
+        context['popular_behaviors'] = popular_behaviors()
+        context['popular_actions'] = popular_actions()
 
         return self.render_to_response(context)
 
