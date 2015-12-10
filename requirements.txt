@@ -38,3 +38,5 @@ redis==2.10.5
 django-redis==4.3.0
 django-redis-metrics==1.0.3
 django-cacheops==2.4.3
+rq==0.5.6
+django-rq==0.8.0

@@ -108,6 +108,7 @@ router.register(r'rewards', FunContentViewSet)
 
 
 urlpatterns = [
+    url(r'^django-rq/', include('django_rq.urls')),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(r'^api/', include(router.urls)),

@@ -155,6 +155,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'crispy_forms_foundation',
     'django_extensions',
+    'django_rq',
     'haystack',
     'jsonfield',
     'recurrence',
@@ -319,6 +320,20 @@ MESSAGE_TAGS = {
 # Rainbow-tests
 TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
 
+# rq & django_rq config, See:
+# - http://python-rq.org/docs/workers/
+# - https://github.com/ui/django-rq
+# NOTE: To run the worker, do: python manage.py rqworker default
+RQ_DB = 0
+RQ_QUEUES = {
+    'default': {
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': RQ_DB,
+        'PASSWORD': REDIS_PASSWORD,
+        'DEFAULT_TIMEOUT': 360,
+    }
+}
 
 # Crispy forms
 CRISPY_TEMPLATE_PACK = 'foundation-5'
