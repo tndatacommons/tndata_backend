@@ -4,6 +4,10 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
+from django.core.cache import cache
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication,
@@ -13,10 +17,13 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django_rq import job
 
+from goals import models as goal_models
 from . import models
 from . import permissions
 from . import serializers
+
 
 logger = logging.getLogger("loggly_logs")
 
@@ -132,6 +139,56 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
         request.data['user'] = request.user.id
         request.data['profile'] = request.user.userprofile.id
         return super().update(request, *args, **kwargs)
+
+
+@job
+def cache_user_viewset(user_id):
+    """NOTE: This is an async job to re-create the UserSerializer.data
+    for a given user id. It's pretty slow, which is why it's in a delayed job.
+
+    This function is run by a post-save signal handler and pre-caches the results
+    after several models are saved in order to keep the cache fresh.
+    """
+    # reset UserViewSet's cached serialized data
+    key = 'userviewset-{}'.format(user_id)
+    queryset = get_user_model().objects.filter(id=user_id)
+
+    serializer = serializers.UserSerializer(queryset, many=True)
+    cache.set(key, serializer.data, timeout=None)
+
+
+# A dispatch uid for our below signal handler.
+UID = 'reset_userviewset_cache'
+
+
+@receiver(post_save, sender=goal_models.Trigger, dispatch_uid=UID)
+@receiver(post_save, sender=goal_models.UserAction, dispatch_uid=UID)
+@receiver(post_save, sender=goal_models.UserBehavior, dispatch_uid=UID)
+@receiver(post_save, sender=goal_models.UserGoal, dispatch_uid=UID)
+@receiver(post_save, sender=goal_models.UserCategory, dispatch_uid=UID)
+@receiver(post_save, sender=models.UserPlace, dispatch_uid=UID)
+@receiver(post_save, sender=models.UserProfile, dispatch_uid=UID)
+@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid=UID)
+def reset_userviewset_cache(sender, instance, **kwargs):
+    """
+    This is a signal handler that will re-create serialized data for the
+    UserViewSet. This process is really expensive, so we try to pre-cache this
+    for all users, and then set a cache that doesn't expire.
+
+    """
+    if settings.DEBUG:
+        from clog.clog import clog
+        output = "instance: {}\nsender: {}\n".format(instance, sender)
+        clog(output, title="Resetting UserViewSet cache")
+
+    user = None
+    if hasattr(instance, "user"):
+        user = instance.user
+    elif instance.__class__.__name__ == "User":
+        user = instance
+
+    if user:
+        cache_user_viewset.delay(user.id)  # Async / delayed job.
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -284,6 +341,48 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
+
+    def _serialized_data_for_list(self, user, page_or_queryset, timeout=None):
+        """This method is a hook to cache the entire set of data for this
+        (otherwise slow and unwieldy) viewset.
+
+        Arguments for this method:
+
+        * user -- the user's ID is used as part of the cache key
+        * page_or_queryset -- the paginated or plain old queryset of data
+        * timeout -- default is None (meaning never expire)
+
+        NOTE on timeout: we want to keep this page cached as long as possible,
+        so it's up to you to invalidate the cache for this viewset. The
+        cache key is of the form: `userviewset-{userid}`.
+
+        See the `reset_userviewset_cache` signal handler in this file.
+
+        """
+        if not user.is_authenticated():
+            return self.get_serializer(page_or_queryset, many=True)
+
+        key = 'userviewset-{}'.format(user.id)
+        data = cache.get(key)
+        if data is not None:
+            return data
+        serializer = self.get_serializer(page_or_queryset, many=True)
+        cache.set(key, serializer.data, timeout=timeout)
+        return serializer.data
+
+    def list(self, request, *args, **kwargs):
+        """Override the list method from the ListModelMixin, so we can cache
+        the Serializer's results.
+
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            data = self._serialized_data_for_list(request.user, page)
+            return self.get_paginated_response(data)
+
+        data = self._serialized_data_for_list(request.user, queryset)
+        return Response(data)
 
     def create(self, request, *args, **kwargs):
         """Alter the returned response, so that it includes an API token for a
