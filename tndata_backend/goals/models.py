@@ -2530,10 +2530,10 @@ class PackageEnrollment(models.Model):
     def get_absolute_url(self):
         """Currently, this is the PackageDetailView, which provides a list of
         enrollments."""
-        return reverse("behaviors:package-detail", args=[self.pk])
+        return reverse("goals:package-detail", args=[self.pk])
 
     def get_accept_url(self):
-        return reverse("behaviors:accept-enrollment", args=[self.pk])
+        return reverse("goals:accept-enrollment", args=[self.pk])
 
     def accept(self):
         self.accepted = True
@@ -2548,12 +2548,12 @@ class PackageEnrollment(models.Model):
         UserCategory.objects.get_or_create(user=self.user, category=self.category)
 
         # Enroll the user in the behaviors.
-        behaviors = self.behaviors.all()
-        for behavior in behaviors:
-            UserGoal.objects.get_or_create(user=self.user, behavior=behavior)
+        goals = self.goals.all()
+        for goal in goals:
+            UserGoal.objects.get_or_create(user=self.user, goal=goal)
 
         # Enroll the User in the Behaviors
-        behaviors = Behavior.objects.published().filter(behaviors=behaviors).distinct()
+        behaviors = Behavior.objects.published().filter(goals=goals).distinct()
         for behavior in behaviors:
             UserBehavior.objects.get_or_create(user=self.user, behavior=behavior)
 
