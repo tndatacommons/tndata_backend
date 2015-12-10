@@ -101,7 +101,7 @@ class TestRandomQuestionAPI(APITestCase):
         self.assertIn("id", response.data)
         self.assertIn(
             response.data["id"],
-            [self.q1.id, self.q2.id, self.q3, self.q4]
+            [self.q1.id, self.q2.id, self.q3.id, self.q4.id]
         )
 
     def test_get_list_authorized_filtered_by_instrument(self):
