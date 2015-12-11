@@ -1,11 +1,12 @@
 import logging
 from decimal import Decimal
+from random import randint
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
 from django.core.cache import cache
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from rest_framework import mixins, status, viewsets
@@ -143,7 +144,7 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
 
 
 @job
-def cache_user_viewset(user_id):
+def cache_user_viewset(user_id, fid):
     """NOTE: This is an async job to re-create the UserSerializer.data
     for a given user id. It's pretty slow, which is why it's in a delayed job.
 
@@ -156,20 +157,29 @@ def cache_user_viewset(user_id):
 
     serializer = serializers.UserSerializer(queryset, many=True)
     cache.set(key, serializer.data, timeout=None)
+    post_message("#tech", "`cache_user_viewset({}, {})` completed.".format(user_id, fid))
 
 
 # A dispatch uid for our below signal handler.
 UID = 'reset_userviewset_cache'
 
 
+@receiver(post_delete, sender=goal_models.Trigger, dispatch_uid=UID)
+@receiver(post_delete, sender=goal_models.UserAction, dispatch_uid=UID)
+@receiver(post_delete, sender=goal_models.UserBehavior, dispatch_uid=UID)
+@receiver(post_delete, sender=goal_models.UserGoal, dispatch_uid=UID)
+@receiver(post_delete, sender=goal_models.UserCategory, dispatch_uid=UID)
+#@receiver(post_delete, sender=models.UserPlace, dispatch_uid=UID)
+#@receiver(post_delete, sender=models.UserProfile, dispatch_uid=UID)
+#@receiver(post_delete, sender=settings.AUTH_USER_MODEL, dispatch_uid=UID)
 @receiver(post_save, sender=goal_models.Trigger, dispatch_uid=UID)
 @receiver(post_save, sender=goal_models.UserAction, dispatch_uid=UID)
 @receiver(post_save, sender=goal_models.UserBehavior, dispatch_uid=UID)
 @receiver(post_save, sender=goal_models.UserGoal, dispatch_uid=UID)
 @receiver(post_save, sender=goal_models.UserCategory, dispatch_uid=UID)
-@receiver(post_save, sender=models.UserPlace, dispatch_uid=UID)
-@receiver(post_save, sender=models.UserProfile, dispatch_uid=UID)
-@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid=UID)
+#@receiver(post_save, sender=models.UserPlace, dispatch_uid=UID)
+#@receiver(post_save, sender=models.UserProfile, dispatch_uid=UID)
+#@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid=UID)
 def reset_userviewset_cache(sender, instance, **kwargs):
     """
     This is a signal handler that will re-create serialized data for the
@@ -177,10 +187,10 @@ def reset_userviewset_cache(sender, instance, **kwargs):
     for all users, and then set a cache that doesn't expire.
 
     """
+    output = "```instance: {}\nsender: {}\n```".format(instance, sender.__name__)
+    post_message("#tech", "Resetting UserViewSet cache\n" + output)
     if settings.DEBUG:
         from clog.clog import clog
-        output = "instance: {}\nsender: {}\n".format(instance, sender)
-        post_message("#tech", "Resetting UserViewSet cache\n" + output)
         clog(output, title="Resetting UserViewSet cache")
 
     user = None
@@ -189,9 +199,11 @@ def reset_userviewset_cache(sender, instance, **kwargs):
     elif instance.__class__.__name__ == "User":
         user = instance
 
-    if user:
-        cache_user_viewset.delay(user.id)  # Async / delayed job.
-        post_message("#tech", "^^^ async task queued.")
+    if user and user.id:
+        fid = randint(1, 100)
+        cache_user_viewset.delay(user.id, fid)  # Async / delayed job.
+        msg = "^^^ `cache_user_viewset({}, {})` called asynchronously."
+        post_message("#tech", msg.format(user.id, fid))
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -371,9 +383,9 @@ class UserViewSet(viewsets.ModelViewSet):
             log_msg = "Returning cached /api/users/ data for {}".format(user.email)
             post_message("#tech", log_msg)
             return data
-
-        log_msg = "NOT Cached: /api/users/ data for {}, setting cache".format(user.email)
-        post_message("#tech", log_msg)
+        else:
+            log_msg = "NOT Cached: /api/users/ data for {}, setting cache"
+            post_message("#tech", log_msg.format(user.email))
 
         serializer = self.get_serializer(page_or_queryset, many=True)
         cache.set(key, serializer.data, timeout=timeout)
