@@ -3,6 +3,7 @@ import re
 
 from io import TextIOWrapper
 from django.conf import settings
+from django.core.cache import cache
 
 
 # Import clog if we're in debug otherwise make it a noop
@@ -132,8 +133,25 @@ def debug_user_data(user):
         if not added:
             data['orphaned']['actions'].append(action.title)
 
+    # List cached info
+    key = 'userviewset-{}'.format(user.id)
+    cached_data = cache.get(key)
+    if cached_data is not None:
+        print("Cached data for /api/users/")
+        print("---------------------------")
+        items = [d['category']['title'] for d in cached_data[0].get('categories')]
+        print("Categories: {}".format(", ".join(items)))
+        items = [d['goal']['title'] for d in cached_data[0].get('goals')]
+        print("Goals: {}".format(", ".join(items)))
+        items = [d['behavior']['title'] for d in cached_data[0].get('behaviors')]
+        print("Behaviors: {}".format(", ".join(items)))
+        items = [d['action']['title'] for d in cached_data[0].get('actions')]
+        print("Actions: {}".format(", ".join(items)))
+        print("---------------------------")
+
     # Better representation.
     orphans = data.pop("orphaned")
+    print("\nSelected content:")
     for cat, goals in data.items():
         print(cat)
         for goal, behaviors in goals.items():
