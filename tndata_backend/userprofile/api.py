@@ -20,10 +20,11 @@ from rest_framework.response import Response
 from django_rq import job
 
 from goals import models as goal_models
+from utils.slack import post_message
+
 from . import models
 from . import permissions
 from . import serializers
-
 
 logger = logging.getLogger("loggly_logs")
 
@@ -179,6 +180,7 @@ def reset_userviewset_cache(sender, instance, **kwargs):
     if settings.DEBUG:
         from clog.clog import clog
         output = "instance: {}\nsender: {}\n".format(instance, sender)
+        post_message("#tech", "Resetting UserViewSet cache\n" + output)
         clog(output, title="Resetting UserViewSet cache")
 
     user = None
@@ -189,6 +191,7 @@ def reset_userviewset_cache(sender, instance, **kwargs):
 
     if user:
         cache_user_viewset.delay(user.id)  # Async / delayed job.
+        post_message("#tech", "^^^ async task queued.")
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -365,7 +368,13 @@ class UserViewSet(viewsets.ModelViewSet):
         key = 'userviewset-{}'.format(user.id)
         data = cache.get(key)
         if data is not None:
+            log_msg = "Returning cached /api/users/ data for {}".format(user.email)
+            post_message("#tech", log_msg)
             return data
+
+        log_msg = "NOT Cached: /api/users/ data for {}, setting cache".format(user.email)
+        post_message("#tech", log_msg)
+
         serializer = self.get_serializer(page_or_queryset, many=True)
         cache.set(key, serializer.data, timeout=timeout)
         return serializer.data
