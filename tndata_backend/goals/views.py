@@ -905,7 +905,7 @@ def package_calendar(request, pk):
     if start is None:
         # Start on the first day of the current month
         start = local_now(request.user)
-        start = to_localtime(datetime(start.year, start.month, 1), request.user)
+        start = to_localtime(datetime(start.year, start.month, start.day), request.user)
     elif len(start) == len('yyyy-mm-dd'):
         year, month, day = start.split('-')
         start = to_localtime(datetime(int(year), int(month), int(day)), request.user)
@@ -928,7 +928,10 @@ def package_calendar(request, pk):
     for action in actions:
         kwargs = {'days': 31}  # params for get_occurances
         if action.default_trigger.is_relative:
-            kwargs['begin'] = start  # Start on today
+            # XXX: Temporarily set the trigger's start date, so this date
+            # gets used when generating recurrences (which is how this will
+            # work when a user selects the action).
+            action.default_trigger.trigger_date = start
 
         for dt in action.default_trigger.get_occurences(**kwargs):
             action_data.append((dt.date(), dt, action))
