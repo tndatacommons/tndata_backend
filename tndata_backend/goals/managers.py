@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
 from django.template.defaultfilters import slugify
@@ -19,6 +20,21 @@ from .settings import (
 )
 
 from utils import user_utils
+
+
+def _unaccepted_category_ids(user):
+    """Return Category IDs taht have NOT been accepted by the user. This is
+    cached for a short period of time (30s) so that it's results get re-used,
+    since this is often called multiple times."""
+    key = "unaccepted-category-ids-{}".format(user.id)
+    results = cache.get(key)
+    if results is not None:
+        return results
+
+    ids = user.packageenrollment_set.filter(accepted=False)
+    ids = ids.values_list("category", flat=True)
+    cache.set(key, ids, timeout=30)
+    return ids
 
 
 class UserCategoryManager(models.Manager):
@@ -48,8 +64,7 @@ class UserCategoryManager(models.Manager):
         qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
-        ids = user.packageenrollment_set.filter(accepted=False)
-        ids = ids.values_list("category", flat=True)
+        ids = _unaccepted_category_ids(user)
 
         # Result: Exclude those un-accepted categories
         return qs.exclude(category__id__in=ids)
@@ -78,8 +93,7 @@ class UserGoalManager(models.Manager):
         qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
-        ids = user.packageenrollment_set.filter(accepted=False)
-        ids = ids.values_list("category", flat=True)
+        ids = _unaccepted_category_ids(user)
 
         # Result: Exclude those un-accepted categories
         return qs.exclude(goal__categories__id__in=ids)
@@ -108,8 +122,7 @@ class UserBehaviorManager(models.Manager):
         qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
-        ids = user.packageenrollment_set.filter(accepted=False)
-        ids = ids.values_list("category", flat=True)
+        ids = _unaccepted_category_ids(user)
 
         # Result: Exclude those un-accepted categories
         return qs.exclude(behavior__goals__categories__in=ids)
@@ -152,8 +165,7 @@ class UserActionManager(models.Manager):
         qs = self.published().filter(user=user)
 
         # Category IDs that have NOT been accepted by the user
-        ids = user.packageenrollment_set.filter(accepted=False)
-        ids = ids.values_list("category", flat=True)
+        ids = _unaccepted_category_ids(user)
 
         # Result: Exclude those un-accepted categories
         return qs.exclude(action__behavior__goals__categories__in=ids)
