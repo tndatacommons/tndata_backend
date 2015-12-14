@@ -1324,7 +1324,17 @@ class UserGoal(models.Model):
         NOTE: This method also looks up the user's `CategoryProgress` for
         each category, and appends a `progress_value` attribute.
         """
+        # XXX: Not actually using this at the moment.
         cids = self.user.usercategory_set.values_list('category__id', flat=True)
+        results = self.goal.categories.filter(id__in=cids, state='published')
+        for category in results:
+            category.progress_value = 0
+        return results
+
+        # Tombstone for Dead Code
+        tombstone = ("This Code should be dead, since we're not using "
+                     "Category Progress values anymore")
+        assert False, tombstone
 
         # Find all the lastest CategoryProgress objects for each user/category
         scores = {}
