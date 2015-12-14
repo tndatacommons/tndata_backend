@@ -662,9 +662,20 @@ class Trigger(models.Model):
             dtend=end
         ))
 
-        # Return only dates in the future.
+        # Since the dtstart argument to `occurences` means that we _always_
+        # include that date in the list, we now need to filter out any dates
+        # that shouldn't occur on given days. This is a dirty hack.
+        def _filter_days(d):
+            recurrences_text = self.recurrences_as_text().lower()
+            dow = d.strftime("%A").lower()
+            if recurrences_text.startswith("weekly") and dow not in recurrences_text:
+                return False
+            return True
+        dates = list(filter(_filter_days, dates))
+
+        # Return only dates matching "today" or later.
         now = timezone.now().astimezone(tz)
-        return list(filter(lambda d: d > now, dates))
+        return list(filter(lambda d: d.date() >= now.date(), dates))
 
     def _stopped_by_completion(self, user=None):
         """Determine if triggers should stop because the user has completed
@@ -726,7 +737,8 @@ class Trigger(models.Model):
         # dates in the recurrence (30 days out & starting with the current
         # time), then pick the earliest one.
         elif recurrences and "\n" in recurrences:
-            dates = self.get_occurences(begin=now)  # Generate some dates.
+            # Generate some dates, keeping only the future ones
+            dates = [dt for dt in self.get_occurences(begin=now) if dt > now]
             # Then recombine them all with the trigger time. ugh. :(
             dates = [self._combine(self.time, date) for date in dates]
             if len(dates) > 0:
