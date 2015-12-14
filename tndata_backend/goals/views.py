@@ -931,7 +931,7 @@ def package_calendar(request, pk):
             # XXX: Temporarily set the trigger's start date, so this date
             # gets used when generating recurrences (which is how this will
             # work when a user selects the action).
-            action.default_trigger.trigger_date = start
+            action.default_trigger.trigger_date = start + timedelta(days=1)
 
         for dt in action.default_trigger.get_occurences(**kwargs):
             action_data.append((dt.date(), dt, action))
