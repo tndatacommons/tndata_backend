@@ -1659,10 +1659,9 @@ class UserAction(models.Model):
         Returns a UserBehavior instance or None.
 
         """
-        return UserBehavior.objects.filter(
-            user=self.user,
-            behavior=self.action.behavior
-        ).first()
+        qs = UserBehavior.objects.select_related('behavior')
+        qs = qs.prefetch_related('behavior__goals')
+        return qs.filter(user=self.user, behavior=self.action.behavior).first()
 
     def get_notification_title(self):
         """Return the string to be used in this user's notification title."""
