@@ -673,6 +673,10 @@ class Trigger(models.Model):
             return True
         dates = list(filter(_filter_days, dates))
 
+        # IF our recurrences are empty, just keep the first date.
+        if self.recurrences_as_text() == '':
+            dates = dates[0:1]
+
         # Return only dates matching "today" or later.
         now = timezone.now().astimezone(tz)
         return list(filter(lambda d: d.date() >= now.date(), dates))
