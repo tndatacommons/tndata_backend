@@ -21,11 +21,17 @@ https://trello.com/c/zKedLoZe/170-initial-home-feed
 import random
 
 from datetime import timedelta
+from django.core.cache import cache
 from django.db.models import Q
 from django.utils import timezone
 from utils.user_utils import local_day_range
 
 from .models import Goal, UserCompletedAction
+
+
+# Some Cache keys.
+TODAYS_ACTIONS = "todays_actions_{userid}"
+TODAYS_ACTIONS_TIMEOUT = 30
 
 
 def action_feedback(user, useraction, lookback=30):
@@ -160,13 +166,14 @@ def todays_actions(user):
     This result excludes any UserActions that have already been completed.
 
     """
+    cache_key = TODAYS_ACTIONS.format(userid=user.id)
+    results = cache.get(cache_key)
+    if results is not None:
+        return results
 
     # We want to show only those left for "today" (in the user's timezone)
     today = local_day_range(user)  # start/end in UTC wrapping the user's day
     now = timezone.now()
-
-    # The `next_trigger_date` should always be saved as UTC
-    upcoming = user.useraction_set.filter(next_trigger_date__range=(now, today[1]))
 
     # Exclude those that have been completed
     cids = user.usercompletedaction_set.filter(
@@ -174,8 +181,16 @@ def todays_actions(user):
         state=UserCompletedAction.COMPLETED
     )
     cids = cids.values_list('useraction', flat=True)
+
+    # The `next_trigger_date` should always be saved as UTC
+    upcoming = user.useraction_set.select_related('action')
+    upcoming = upcoming.filter(next_trigger_date__range=(now, today[1]))
     upcoming = upcoming.exclude(id__in=cids)
-    return upcoming.order_by('next_trigger_date')
+    upcoming = upcoming.order_by('next_trigger_date')
+
+    # Now cache for a short time because other functions here use this.
+    cache.set(cache_key, upcoming, timeout=TODAYS_ACTIONS_TIMEOUT)
+    return upcoming
 
 
 def todays_actions_progress(user):
@@ -204,24 +219,21 @@ def todays_actions_progress(user):
 
     # Query for the UserActions that should have been scheduled today PLUS
     # anything that actually got marked as completed today
-    ucas = UserCompletedAction.objects.filter(
-        updated_on__range=today,
-        user=user,
-    )
+    ucas = UserCompletedAction.objects.filter(updated_on__range=today, user=user)
     useraction_ids = ucas.values_list('useraction', flat=True)
+
+    # e.g. you've completed X / Y actions for today.
+    completed = ucas.filter(state=UserCompletedAction.COMPLETED).count()
 
     # NOTE: The UserAction.next_trigger_date field gets refreshed automatically
     # every two hours. So, to get a picture of the whole day at a time, we need
     # to consider both it and the previous trigger date.
-    useractions = user.useraction_set.filter(
+    total = user.useraction_set.filter(
         Q(prev_trigger_date__range=today) |
         Q(next_trigger_date__range=today) |
         Q(id__in=useraction_ids)
-    ).distinct()
+    ).distinct().count()
 
-    # e.g. you've completed X / Y actions for today.
-    completed = ucas.filter(state=UserCompletedAction.COMPLETED).count()
-    total = useractions.count()
     progress = 0
     if total > 0:
         progress = int(completed/total * 100)
