@@ -1302,7 +1302,7 @@ class UserGoal(models.Model):
 
         # See if the user is restricted from creating triggers for this goal.
         restricted = self.goal.packageenrollment_set.filter(
-            user=self.user,
+            user__pk=self.user_id,
             prevent_custom_triggers=True
         ).exists()
 
@@ -1426,10 +1426,9 @@ class UserBehavior(models.Model):
         Package where custom triggers are restricted. """
 
         # See if the user is restricted from creating triggers for this goal.
-        goals = self.behavior.goals.values_list("pk", flat=True)
         restricted = PackageEnrollment.objects.filter(
-            goals__pk__in=goals,
-            user=self.user,
+            goals__behavior__pk=self.behavior_id,
+            user__pk=self.user_id,
             prevent_custom_triggers=True
         ).exists()
 
@@ -1729,10 +1728,9 @@ class UserAction(models.Model):
         Package where custom triggers are restricted. """
 
         # See if the user is restricted from creating triggers for this goal.
-        goals = self.action.behavior.goals.values_list("pk", flat=True)
         restricted = PackageEnrollment.objects.filter(
-            goals__pk__in=goals,
-            user=self.user,
+            goals__behavior__action__pk=self.action_id,
+            user__pk=self.user_id,
             prevent_custom_triggers=True
         ).exists()
 
@@ -1932,8 +1930,9 @@ class UserCategory(models.Model):
         are restricted."""
 
         # See if the user is restricted from creating triggers for this goal.
-        restricted = self.category.packageenrollment_set.filter(
-            user=self.user,
+        restricted = PackageEnrollment.objects.filter(
+            user__pk=self.user_id,
+            category=self.category_id,
             prevent_custom_triggers=True
         ).exists()
 
