@@ -919,6 +919,34 @@ class TestTrigger(TestCase):
             mock_now.return_value = tzdt(2015, 1, 3, 16, 0)
             self.assertIsNone(custom_trigger.next())
 
+    def test_relative_reminder_starts_on_appropriate_day(self):
+        """Test that a relative reminder with a weekly recurrence actually
+        starts on the appropriate day, and not just the very next day after
+        it's selected."""
+
+        # Weekly, Wed & Sun at 9am, for 4 occurences.
+        default = Trigger.objects.create(
+            name="RR-start upon selection",
+            time=time(9, 0),
+            recurrences="RRULE:FREQ=WEEKLY;COUNT=4;BYDAY=WE,SU",
+            start_when_selected=True,
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            mock_now.return_value = tzdt(2015, 12, 1, 14, 30)  # 2:30pm Dec 1
+
+            # Test some expected "next" values.
+            # At Jan 1, 11:45, next should be Jan 1, 9:00
+            expected = tzdt(2015, 12, 2, 9, 0, tz=timezone.utc).strftime("%c %z")
+            actual = default.next().strftime("%c %z")
+            self.assertEqual(actual, expected)
+
+            # Test the occurences
+            occurs = default.get_occurences()
+            self.assertEqual(len(occurs), 4)
+            actual = occurs[0].strftime("%c %z")
+            self.assertEqual(actual, expected)
+
 
 class TestBehavior(TestCase):
     """Tests for the `Behavior` model."""
