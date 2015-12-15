@@ -294,6 +294,12 @@ class UserDataSerializer(serializers.ModelSerializer):
                 'behaviors': [
                     [<behavior_id>, <action_id>], ...
                 ],
+                'primary_categories': [
+                    [<goal_id>, <category_id>], ...
+                ],
+                'primary_goals': [
+                    [<action_id>, <goal_id>], ...
+                ],
             }
 
         NOTE: These are IDs for the Category, Goal, Behavior, and Action models,
@@ -309,10 +315,24 @@ class UserDataSerializer(serializers.ModelSerializer):
         # user's selected Action IDs + parent Behavior IDs
         ba = obj.useraction_set.values_list('action__behavior__id', 'action__id')
 
+        # For a goal's primary category, we'r just keeping the first one we find
+        # primary_categories: [[<goal_id>, <primary_category_id>], ...]
+        pcats = {}
+        for catid, goalid in cg:
+            if goalid not in pcats:
+                pcats[goalid] = catid
+        pcats = [[gid, catid] for gid, catid in pcats.items()]
+
+        # The Actions' primary Goal
+        # primary_goals: [[<action_id>, <primary_goal_id>], ...]
+        pgoals = obj.useraction_set.values_list('action__id', 'primary_goal__id')
+
         return {
             'categories': list(cg),
             'goals': list(gb),
             'behaviors': list(ba),
+            'primary_categories': list(pcats),
+            'primary_goals': list(pgoals),
         }
 
     # TODO: optimize the following. -------------------------------------------

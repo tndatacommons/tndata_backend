@@ -376,6 +376,10 @@ class UserDataViewSet(viewsets.ModelViewSet):
     are IDs for the Category, Goal, Behavior, and Action models, and are NOT
     the User* models (i.e. not the mapping ids).
 
+    The `primary_categories` attribute is a list of each goal's primary category
+    (or null if there are none), while the `primary_goals` attribute is a list
+    of each Action's primary goal (or null).
+
         {
             'categories': [
                 [<category_id>, <goal_id>], ...
@@ -385,6 +389,12 @@ class UserDataViewSet(viewsets.ModelViewSet):
             ],
             'behaviors': [
                 [<behavior_id>, <action_id>], ...
+            ],
+            'primary_categories': [
+                [<goal_id>, <category_id>], ...
+            ],
+            'primary_goals': [
+                [<action_id>, <goal_id>], ...
             ],
         }
 

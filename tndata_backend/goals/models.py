@@ -1332,7 +1332,7 @@ class UserGoal(models.Model):
         NOTE: This method also looks up the user's `CategoryProgress` for
         each category, and appends a `progress_value` attribute.
         """
-        # XXX: Not actually using this at the moment.
+        # XXX: Not actually using this (category progress) at the moment.
         cids = self.user.usercategory_set.values_list('category__id', flat=True)
         results = self.goal.categories.filter(id__in=cids, state='published')
         for category in results:
