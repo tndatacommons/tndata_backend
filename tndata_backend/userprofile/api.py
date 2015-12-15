@@ -355,6 +355,23 @@ class UserViewSet(viewsets.ModelViewSet):
         return resp
 
 
+class UserDataViewSet(viewsets.ModelViewSet):
+    """
+    An attempt an a more efficient api to expose user data.
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = get_user_model().objects.all()
+    serializer_class = serializers.UserDataSerializer
+    permission_classes = [permissions.IsSelf]
+
+    def get_queryset(self):
+        userid = self.request.user.id
+        qs = self.queryset.select_related('userprofile')
+        #qs = qs.prefetch_related('userplace_set')
+        #qs = qs.prefetch_related('usercategory_set', 'usergoal_set', 'userbehavior_set')
+        return qs.filter(id=userid)
+
+
 class UserProfileViewSet(mixins.ListModelMixin,
                          mixins.RetrieveModelMixin,
                          mixins.UpdateModelMixin,

@@ -13,6 +13,10 @@ from goals.models import (
 )
 from goals.serializers import (
     GoalSerializer,
+    SimpleUserActionSerializer,
+    SimpleUserBehaviorSerializer,
+    SimpleUserCategorySerializer,
+    SimpleUserGoalSerializer,
     UserActionSerializer,
     UserBehaviorSerializer,
     UserCategorySerializer,
@@ -214,6 +218,65 @@ class UserSerializer(serializers.ModelSerializer):
         user = super(UserSerializer, self).create(validated_data)
         user = self._set_user_password(user, validated_data.get('password', None))
         return user
+
+
+class UserDataSerializer(serializers.ModelSerializer):
+    token = serializers.ReadOnlyField(source='auth_token.key')
+    full_name = serializers.ReadOnlyField(source='get_full_name')
+    userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
+    needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
+    username = serializers.CharField(required=False)
+    timezone = serializers.ReadOnlyField(source='userprofile.timezone')
+    places = serializers.SerializerMethodField(read_only=True)
+
+    categories = serializers.SerializerMethodField(read_only=True)
+    goals = serializers.SerializerMethodField(read_only=True)
+    behaviors = serializers.SerializerMethodField(read_only=True)
+    actions = serializers.SerializerMethodField(read_only=True)
+
+    #next_action = serializers.SerializerMethodField(read_only=True)
+    #action_feedback = serializers.SerializerMethodField(read_only=True)
+    #progress = serializers.SerializerMethodField(read_only=True)
+    #upcoming_actions = serializers.SerializerMethodField(read_only=True)
+    #suggestions = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
+            "timezone", "full_name", 'date_joined', 'userprofile_id',
+            'token', 'needs_onboarding', 'places',
+            'categories', 'goals', 'behaviors', 'actions',
+            #"next_action", "action_feedback", "progress", "upcoming_actions",
+            #"suggestions",
+        )
+        read_only_fields = ("id", "date_joined", )
+
+    def get_places(self, obj):
+        qs = models.UserPlace.objects.select_related("place").filter(user=obj)
+        serialized = UserPlaceSerializer(qs, many=True)
+        return serialized.data
+
+    def get_categories(self, obj):
+        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
+        serialized = SimpleUserCategorySerializer(qs, many=True)
+        return serialized.data
+
+    def get_goals(self, obj):
+        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        serialized = SimpleUserGoalSerializer(qs, many=True)
+        return serialized.data
+
+    def get_behaviors(self, obj):
+        qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
+        serialized = SimpleUserBehaviorSerializer(qs, many=True)
+        return serialized.data
+
+    def get_actions(self, obj):
+        qs = UserAction.objects.accepted_or_public(obj)
+        qs = qs.select_related('action', 'custom_trigger', 'action__default_trigger')
+        serialized = SimpleUserActionSerializer(qs, many=True)
+        return serialized.data
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
