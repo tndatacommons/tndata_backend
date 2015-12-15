@@ -233,6 +233,7 @@ class UserDataSerializer(serializers.ModelSerializer):
     goals = serializers.SerializerMethodField(read_only=True)
     behaviors = serializers.SerializerMethodField(read_only=True)
     actions = serializers.SerializerMethodField(read_only=True)
+    data_graph = serializers.SerializerMethodField(read_only=True)
 
     next_action = serializers.SerializerMethodField(read_only=True)
     action_feedback = serializers.SerializerMethodField(read_only=True)
@@ -246,7 +247,7 @@ class UserDataSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id',
             'token', 'needs_onboarding', 'places',
-            'categories', 'goals', 'behaviors', 'actions',
+            'categories', 'goals', 'behaviors', 'actions', 'data_graph',
             "next_action", "action_feedback", "progress", "upcoming_actions",
             "suggestions",
         )
@@ -277,6 +278,42 @@ class UserDataSerializer(serializers.ModelSerializer):
         qs = qs.select_related('action', 'custom_trigger', 'action__default_trigger')
         serialized = SimpleUserActionSerializer(qs, many=True)
         return serialized.data
+
+    def get_data_graph(self, obj):
+        """This is a list of the user's selected content, organized so we can
+        see the relationships from one model to another. The result is a
+        dictionary containing lists of IDs:
+
+            {
+                'categories': [
+                    [<category_id>, <goal_id>], ...
+                ],
+                'goals': [
+                    [<goal_id>, <behavior_id>], ...
+                ],
+                'behaviors': [
+                    [<behavior_id>, <action_id>], ...
+                ],
+            }
+
+        NOTE: These are IDs for the Category, Goal, Behavior, and Action models,
+        and are NOT the User* models.
+
+        """
+        # user's selected Goal IDs + parent Category IDs
+        cg = obj.usergoal_set.values_list('goal__categories', 'goal__id')
+
+        # user's selected Behavior IDs + parent Goal IDs
+        gb = obj.userbehavior_set.values_list('behavior__goals', 'behavior__id')
+
+        # user's selected Action IDs + parent Behavior IDs
+        ba = obj.useraction_set.values_list('action__behavior__id', 'action__id')
+
+        return {
+            'categories': list(cg),
+            'goals': list(gb),
+            'behaviors': list(ba),
+        }
 
     # TODO: optimize the following. -------------------------------------------
     def _get_feed(self, obj):

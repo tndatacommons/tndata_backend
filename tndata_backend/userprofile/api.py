@@ -358,6 +358,36 @@ class UserViewSet(viewsets.ModelViewSet):
 class UserDataViewSet(viewsets.ModelViewSet):
     """
     An attempt an a more efficient api to expose user data.
+
+    ## Data Fields
+
+    Most of the data fields on this endpoint are fairly straightforward, and
+    share a lot of similarities with `/api/users/`. The differences include:
+
+    - `categories`, `goals`, `behaviors`, `actions` have fewer nested attributes.
+      This makes the queries to populate this data much less complex (and faster)
+    - a `data_graph` attribute exists here that explains the nested relationship
+      for the user's selected content (see below)
+
+    ## Data Graph
+
+    This attribute contains a list of `[parent_id, object_id]` arrays that
+    show the relationship graph for a user's selected content. Note that these
+    are IDs for the Category, Goal, Behavior, and Action models, and are NOT
+    the User* models (i.e. not the mapping ids).
+
+        {
+            'categories': [
+                [<category_id>, <goal_id>], ...
+            ],
+            'goals': [
+                [<goal_id>, <behavior_id>], ...
+            ],
+            'behaviors': [
+                [<behavior_id>, <action_id>], ...
+            ],
+        }
+
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
