@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import permission_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Avg, Count, Q
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
@@ -64,6 +64,7 @@ from . permissions import (
     ContentPermissions,
     is_content_editor,
     is_package_contributor,
+    permission_required,
     staff_required,
 )
 from . utils import num_user_selections
@@ -897,7 +898,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         return context
 
 
-@permission_required(ContentPermissions.authors, raise_exception=True)
+@permission_required(ContentPermissions.authors)
 def package_calendar(request, pk):
     category = get_object_or_404(Category, pk=pk)
     start = request.GET.get('d', None)
@@ -958,7 +959,7 @@ def package_calendar(request, pk):
     return render(request, "goals/package_calendar.html", ctx)
 
 
-@permission_required(ContentPermissions.authors, raise_exception=True)
+@permission_required(ContentPermissions.authors)
 def enrollment_cta_email(request, pk):
     """Let us send an arbitrary CTA email to users enrolled in a package."""
     category = get_object_or_404(Category, pk=pk)
@@ -983,7 +984,7 @@ def enrollment_cta_email(request, pk):
     return render(request, "goals/package_enrollment_cta_email.html", ctx)
 
 
-@permission_required(ContentPermissions.authors, raise_exception=True)
+@permission_required(ContentPermissions.authors)
 def enrollment_reminder(request, pk):
     """Let us send a reminder email to users that have not accepted the
     enrollment."""
