@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import connection, models
 from django.db.models import Avg, Sum, ObjectDoesNotExist
@@ -1299,15 +1300,22 @@ class UserGoal(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/goal is in a Package where custom triggers
         are restricted. """
+        cache_key = "cta-usergoal-{}".format(self.id)
+        results = cache.get(cache_key)
+        if results is not None:
+            return results
 
         # See if the user is restricted from creating triggers for this goal.
-        restricted = self.goal.packageenrollment_set.filter(
+        restricted = PackageEnrollment.objects.filter(
             user__pk=self.user_id,
+            goals__pk=self.goal_id,
             prevent_custom_triggers=True
         ).exists()
 
         # Negate the restriction so our api is positive.
-        return not restricted
+        results = not restricted
+        cache.set(cache_key, results, timeout=30)
+        return results
 
     def get_user_behaviors(self):
         """Returns a QuerySet of published Behaviors related to this Goal, but
@@ -1424,6 +1432,10 @@ class UserBehavior(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
         Package where custom triggers are restricted. """
+        cache_key = "cta-userbehavior-{}".format(self.id)
+        results = cache.get(cache_key)
+        if results is not None:
+            return results
 
         # See if the user is restricted from creating triggers for this goal.
         restricted = PackageEnrollment.objects.filter(
@@ -1433,7 +1445,9 @@ class UserBehavior(models.Model):
         ).exists()
 
         # Negate the restriction so our api is positive.
-        return not restricted
+        results = not restricted
+        cache.set(cache_key, results, timeout=30)
+        return results
 
     def get_user_categories(self):
         """Returns a QuerySet of published Categories related to this Behavior,
@@ -1726,6 +1740,10 @@ class UserAction(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
         Package where custom triggers are restricted. """
+        cache_key = "cta-useraction-{}".format(self.id)
+        results = cache.get(cache_key)
+        if results is not None:
+            return results
 
         # See if the user is restricted from creating triggers for this goal.
         restricted = PackageEnrollment.objects.filter(
@@ -1735,7 +1753,9 @@ class UserAction(models.Model):
         ).exists()
 
         # Negate the restriction so our api is positive.
-        return not restricted
+        results = not restricted
+        cache.set(cache_key, results, timeout=30)
+        return results
 
     @property
     def default_trigger(self):
@@ -1928,6 +1948,10 @@ class UserCategory(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/category is a Package where custom triggers
         are restricted."""
+        cache_key = "cta-usercategory-{}".format(self.id)
+        results = cache.get(cache_key)
+        if results is not None:
+            return results
 
         # See if the user is restricted from creating triggers for this goal.
         restricted = PackageEnrollment.objects.filter(
@@ -1937,7 +1961,9 @@ class UserCategory(models.Model):
         ).exists()
 
         # Negate the restriction so our api is positive.
-        return not restricted
+        results = not restricted
+        cache.set(cache_key, results, timeout=30)
+        return results
 
     def get_user_goals(self):
         """Returns a QuerySet of published Goals related to this Category, but
