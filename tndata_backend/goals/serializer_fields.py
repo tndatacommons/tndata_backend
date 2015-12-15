@@ -158,8 +158,6 @@ class SimpleCategoryField(serializers.RelatedField):
             'color': value.color,
             'secondary_color': value.secondary_color,
             'packaged_content': value.packaged_content,
-            'progress_value': getattr(value, 'progress_value', 0.0),
-            'goals_count': value.goals.filter(state="published").count(),
         }
 
 
