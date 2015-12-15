@@ -236,7 +236,7 @@ class TestIndexView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -291,7 +291,7 @@ class TestCategoryListView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -316,7 +316,7 @@ class TestCategoryDetailView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -392,7 +392,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -425,7 +425,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
     def test_anon_post(self):
         payload = {'order': 2, 'title': 'New', 'description': 'Desc', 'color': '#f00'}
         resp = self.ua_client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         """Ensure Admins can create new Categories"""
@@ -482,7 +482,7 @@ class TestCategoryDuplicateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -527,7 +527,7 @@ class TestCategoryPublishView(TestCaseWithGroups):
     def test_anon_publish(self):
         self.ua_client.login(username="author", password="pass")
         resp = self.client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_publish(self):
         self.client.login(username="admin", password="pass")
@@ -555,7 +555,7 @@ class TestCategoryPublishView(TestCaseWithGroups):
 
     def test_anon_decline(self):
         resp = self.ua_client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_decline(self):
         self.client.login(username="admin", password="pass")
@@ -611,7 +611,7 @@ class TestCategoryUpdateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         resp = self.client.login(username="admin", password="pass")
@@ -698,7 +698,7 @@ class TestCategoryDeleteView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         resp = self.client.login(username="admin", password="pass")
@@ -724,7 +724,7 @@ class TestCategoryDeleteView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         resp = self.client.login(username="admin", password="pass")
@@ -771,7 +771,7 @@ class TestGoalListView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -818,7 +818,7 @@ class TestGoalDetailView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -877,7 +877,7 @@ class TestGoalCreateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -924,7 +924,7 @@ class TestGoalDuplicateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -967,7 +967,7 @@ class TestGoalPublishView(TestCaseWithGroups):
 
     def test_anon_publish(self):
         resp = self.ua_client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_publish(self):
         self.client.login(username="admin", password="pass")
@@ -995,7 +995,7 @@ class TestGoalPublishView(TestCaseWithGroups):
 
     def test_anon_decline(self):
         resp = self.ua_client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_decline(self):
         self.client.login(username="admin", password="pass")
@@ -1063,7 +1063,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1099,7 +1099,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -1268,7 +1268,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1294,7 +1294,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -1343,7 +1343,7 @@ class TestTriggerListView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1390,7 +1390,7 @@ class TestTriggerDetailView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1434,7 +1434,7 @@ class TestBehaviorListView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1477,7 +1477,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1540,7 +1540,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1566,7 +1566,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -1612,7 +1612,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -1650,7 +1650,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
 
     def test_anon_publish(self):
         resp = self.ua_client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_publish(self):
         self.client.login(username="admin", password="pass")
@@ -1678,7 +1678,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
 
     def test_anon_decline(self):
         resp = self.ua_client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_decline(self):
         self.client.login(username="admin", password="pass")
@@ -1745,7 +1745,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1780,7 +1780,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -1902,7 +1902,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -1928,7 +1928,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -1974,7 +1974,7 @@ class TestActionListView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2021,7 +2021,7 @@ class TestActionDetailView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2088,7 +2088,7 @@ class TestActionCreateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2137,7 +2137,7 @@ class TestActionCreateView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post_empty_form(self):
         """This is an edge case, but it shouldn't cause a 500"""
@@ -2211,7 +2211,7 @@ class TestActionDuplicateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -2254,7 +2254,7 @@ class TestActionPublishView(TestCaseWithGroups):
 
     def test_anon_publish(self):
         resp = self.ua_client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_publish(self):
         self.client.login(username="admin", password="pass")
@@ -2282,7 +2282,7 @@ class TestActionPublishView(TestCaseWithGroups):
 
     def test_anon_decline(self):
         resp = self.ua_client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_decline(self):
         self.client.login(username="admin", password="pass")
@@ -2350,7 +2350,7 @@ class TestActionUpdateView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2390,7 +2390,7 @@ class TestActionUpdateView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -2495,7 +2495,7 @@ class TestActionDeleteView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2521,7 +2521,7 @@ class TestActionDeleteView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -2616,7 +2616,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2655,7 +2655,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
@@ -2748,7 +2748,7 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_get(self):
         self.client.login(username="admin", password="pass")
@@ -2793,7 +2793,7 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_admin_post(self):
         self.client.login(username="admin", password="pass")
