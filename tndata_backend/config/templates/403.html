@@ -13,4 +13,13 @@
     wrong, please get in touch with us:
     <a href="mailto:admin@tndata.org">admin@tndata.org</a>.</p>
   {% endif %}
+
+  <p>
+  {% if user.is_authenticated %}
+    You can try <a href="{% url 'logout' %}">logging out</a> and logging back
+    in with a different account.
+  {% else %}
+    You may try <a href="{% url 'login' %}">logging in</a>.
+  {% endif %}
+  </p>
 {% endblock %}
