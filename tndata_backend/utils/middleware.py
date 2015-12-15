@@ -1,4 +1,5 @@
 import pytz
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -51,3 +52,48 @@ class ResponseForbiddenMiddleware(object):
         # all other explicit 403s
         ctx = {"message": response.content}
         return render(request, "403.html", ctx, status=response.status_code)
+
+
+class IgnoreRequestMiddleware(object):
+    """Sometimes we get obviously bad requests. If we can detect those, we'll
+    just ignore them outright.
+
+        Referrer: http://bradmontgomery.net/installation/CHANGELOG
+        Requested URL: /installation/CHANGELOG
+        User agent: Go 1.1 package http
+        IP address: 142.54.184.181
+
+    Let's give them a little gift.
+
+    """
+    IGNORE_DOMAINS = [   # List of HTTP_HOST header domains we'll just ignore
+        'proxyradar.com',
+    ]
+
+    def _ignore_domain(self, request):
+        """ignore requests from obviously bad domains. This will circumvent
+        those annoying Invalid HTTP_HOST header errors."""
+        return any([
+            domain in request.META.get('HTTP_HOST', '')
+            for domain in self.IGNORE_DOMAINS
+        ])
+
+    def process_request(self, request):
+        if self._ignore_domain(request):
+            teapot = """<html><body><pre>
+                                   (
+                        _           ) )
+                     _,(_)._        ((
+                ___,(_______).        )
+              ,'__.   /       \    /\_
+             /,' /  |""|       \  /  /
+            | | |   |__|       |,'  /
+             \`.|                  /
+              `. :           :    /
+                `.            :.,'
+                  `-.________,-'
+
+            </pre></body></html>"""
+            resp = HttpResponse(teapot)
+            resp.status_code = 418
+            return resp

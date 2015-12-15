@@ -206,6 +206,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'waffle.middleware.WaffleMiddleware',
+    'utils.middleware.IgnoreRequestMiddleware',
     'utils.middleware.TimezoneMiddleware',
     'utils.middleware.ResponseForbiddenMiddleware',
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
