@@ -330,11 +330,14 @@ class SimpleUserGoalSerializer(ObjectTypeModelSerializer):
         source='get_primary_category',
         read_only=True
     )
+    custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'created_on', 'primary_category', 'object_type'
+            'id', 'user', 'goal', 'created_on', 'primary_category',
+            'custom_triggers_allowed', 'editable', 'object_type'
         )
         read_only_fields = ("id", "created_on")
 
@@ -390,10 +393,15 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
 class SimpleUserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model with *only* Behavior data."""
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
+    custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserBehavior
-        fields = ('id', 'user', 'behavior', 'created_on', 'object_type')
+        fields = (
+            'id', 'user', 'behavior', 'created_on',
+            'custom_triggers_allowed', 'editable', 'object_type'
+        )
         read_only_fields = ("id", "created_on", )
 
     def get_user_actions_count(self, obj):
