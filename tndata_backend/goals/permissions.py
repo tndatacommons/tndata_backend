@@ -11,7 +11,11 @@ custom groups for people who create and review content:
    decline content created by authors.
 
 """
+from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import PermissionDenied
+from django.utils import six
 
 # Group Names
 CONTENT_ADMINS = "Content Admins"
@@ -222,3 +226,32 @@ def is_package_contributor(user):
         return False
     staff = user.is_superuser or user.is_staff
     return staff or user.packagecontributor_set.exists()
+
+
+def permission_required(perm, login_url=settings.LOGIN_URL, raise_exception=True):
+    """NOTE: This is very similar to django's built-in function (from
+    contrib.auth.decorators.permission_required) except that it raises an
+    excption when the user is logged in, otherwise it redirects to the login
+    url.
+
+    Decorator for views that checks whether a user has a particular permission
+    enabled, redirecting to the log-in page if necessary. The PermissionDenied
+    exception is raised for authenticated users that don't have appropriate
+    permissions.
+
+    """
+    def check_perms(user):
+        if isinstance(perm, six.string_types):
+            perms = (perm, )
+        else:
+            perms = perm
+        # First check if the user has the permission (even anon users)
+        if user.has_perms(perms):
+            return True
+        # In case the 403 handler should be called raise the exception IF the
+        # user is logged in.
+        if raise_exception and user.is_authenticated():
+            raise PermissionDenied
+        # As the last resort, show the login form
+        return False
+    return user_passes_test(check_perms, login_url=login_url)

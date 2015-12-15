@@ -5,7 +5,6 @@ This module contains Mixins.
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.decorators import permission_required
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.core.urlresolvers import reverse
@@ -16,7 +15,11 @@ from django.utils.text import slugify
 from rest_framework import status
 from rest_framework.response import Response
 
-from . permissions import ContentPermissions, superuser_required
+from . permissions import (
+    ContentPermissions,
+    permission_required,
+    superuser_required
+)
 from . utils import num_user_selections
 
 
@@ -68,7 +71,7 @@ class ContentViewerMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentViewerMixin, cls).as_view(**initkwargs)
-        dec = permission_required(ContentPermissions.viewers, raise_exception=True)
+        dec = permission_required(ContentPermissions.viewers)
         return dec(view)
 
 
@@ -84,7 +87,7 @@ class ContentAuthorMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
-        dec = permission_required(ContentPermissions.authors, raise_exception=True)
+        dec = permission_required(ContentPermissions.authors)
         return dec(view)
 
     def _object_permissions(self, request):
@@ -153,7 +156,7 @@ class ContentEditorMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentEditorMixin, cls).as_view(**initkwargs)
-        dec = permission_required(ContentPermissions.editors, raise_exception=True)
+        dec = permission_required(ContentPermissions.editors)
         return dec(view)
 
 
