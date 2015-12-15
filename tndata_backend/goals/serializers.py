@@ -116,6 +116,19 @@ class GoalSerializer(ObjectTypeModelSerializer):
         return None
 
 
+class SimpleGoalSerializer(ObjectTypeModelSerializer):
+    """A Serializer for `Goal` without related models' data."""
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    html_description = serializers.ReadOnlyField(source="rendered_description")
+
+    class Meta:
+        model = Goal
+        fields = (
+            'id', 'title', 'title_slug', 'description', 'html_description',
+            'outcome', 'icon_url', 'object_type',
+        )
+
+
 class TriggerSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Trigger`s.  Includes user information, though
     that may be null for the set of defulat (non-custom) triggers."""

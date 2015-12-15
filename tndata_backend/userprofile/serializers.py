@@ -13,6 +13,7 @@ from goals.models import (
 )
 from goals.serializers import (
     GoalSerializer,
+    SimpleGoalSerializer,
     SimpleUserActionSerializer,
     SimpleUserBehaviorSerializer,
     SimpleUserCategorySerializer,
@@ -368,7 +369,7 @@ class UserDataSerializer(serializers.ModelSerializer):
 
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
-            self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
+            self._feed['suggestions'] = SimpleGoalSerializer(suggestions, many=True).data
         return self._feed
 
     def get_next_action(self, obj):
