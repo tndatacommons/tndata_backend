@@ -326,26 +326,16 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
 class SimpleUserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model containing only goal data"""
     goal = SimpleGoalField(queryset=Goal.objects.none())
-    primary_category = SimpleCategoryField(
-        source='get_primary_category',
-        read_only=True
-    )
     custom_triggers_allowed = serializers.ReadOnlyField()
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'created_on', 'primary_category',
-            'custom_triggers_allowed', 'editable', 'object_type'
+            'id', 'user', 'goal', 'created_on', 'custom_triggers_allowed',
+            'editable', 'object_type'
         )
         read_only_fields = ("id", "created_on")
-
-    def get_primary_category(self, obj):
-        cat = obj.get_primary_category()
-        if cat:
-            return cat.id
-        return cat
 
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
