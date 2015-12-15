@@ -301,6 +301,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
     goal = SimpleGoalField(queryset=Goal.objects.none())
     goal_progress = GoalProgressSerializer(read_only=True)
     custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_category = SimpleCategoryField(
         source='get_primary_category',
         read_only=True
@@ -311,7 +312,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'user', 'goal', 'goal_progress', 'user_categories',
             'user_behaviors_count', 'user_behaviors', 'created_on',
-            'progress_value', 'custom_triggers_allowed', 'object_type',
+            'progress_value', 'custom_triggers_allowed', 'editable', 'object_type',
             'primary_category',
         )
         read_only_fields = ("id", "created_on")
@@ -343,6 +344,7 @@ class SimpleUserGoalSerializer(ObjectTypeModelSerializer):
             return cat.id
         return cat
 
+
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
     user_categories = SimpleCategoryField(
@@ -368,13 +370,14 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
         required=False
     )
     custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserBehavior
         fields = (
             'id', 'user', 'behavior', 'behavior_progress', 'custom_trigger',
             'user_categories', 'user_goals', 'user_actions_count', 'user_actions',
-            'created_on', 'custom_triggers_allowed', 'object_type',
+            'created_on', 'custom_triggers_allowed', 'editable', 'object_type',
         )
         read_only_fields = ("id", "created_on", )
 
@@ -412,6 +415,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         required=False
     )
     custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_goal = SimpleGoalField(
         source='get_primary_goal',
         queryset=Goal.objects.all(),
@@ -428,7 +432,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         model = UserAction
         fields = (
             'id', 'user', 'action', 'behavior', 'custom_trigger', 'next_reminder',
-            'custom_triggers_allowed', 'created_on',
+            'custom_triggers_allowed', 'editable', 'created_on',
             'object_type', 'primary_goal', 'primary_category',
         )
         read_only_fields = ("id", "created_on", )
@@ -453,13 +457,14 @@ class SimpleUserActionSerializer(ObjectTypeModelSerializer):
         required=False
     )
     custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     next_reminder = serializers.ReadOnlyField(source='next')
 
     class Meta:
         model = UserAction
         fields = (
             'id', 'user', 'action', 'custom_trigger', 'next_reminder',
-            'custom_triggers_allowed', 'created_on', 'object_type',
+            'custom_triggers_allowed', 'editable', 'created_on', 'object_type',
         )
         read_only_fields = ("id", "created_on", )
 
@@ -470,12 +475,13 @@ class UserCategorySerializer(ObjectTypeModelSerializer):
     user_goals = SimpleGoalField(source="get_user_goals", many=True, read_only=True)
     user_goals_count = serializers.SerializerMethodField()
     custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserCategory
         fields = (
             'id', 'user', 'category', 'user_goals_count', 'user_goals',
-            'created_on', 'progress_value', 'custom_triggers_allowed',
+            'created_on', 'progress_value', 'custom_triggers_allowed', 'editable',
             'object_type',
         )
         read_only_fields = ("id", "created_on")
@@ -490,12 +496,13 @@ class SimpleUserCategorySerializer(ObjectTypeModelSerializer):
     """A serializer for `UserCategory` model(s) with *only* category data."""
     category = SimpleCategoryField(queryset=Category.objects.all())
     custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserCategory
         fields = (
             'id', 'user', 'category', 'created_on',
-            'custom_triggers_allowed', 'object_type',
+            'custom_triggers_allowed', 'editable', 'object_type',
         )
         read_only_fields = ("id", "created_on")
 
