@@ -959,6 +959,12 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
         help_text="A unique title for this Behavior (50 characters)"
     )
     title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
+    sequence_order = models.IntegerField(
+        default=0,
+        db_index=True,
+        blank=True,
+        help_text="Optional ordering for a sequence of behaviors"
+    )
     goals = models.ManyToManyField(
         Goal,
         blank=True,
