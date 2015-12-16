@@ -994,7 +994,7 @@ class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
     )
 
     class Meta(BaseBehavior.Meta):
-        ordering = ['title']
+        ordering = ['sequence_order', 'title']
         verbose_name = "Behavior"
         verbose_name_plural = "Behaviors"
         # add_behavior, change_behavior, delete_behavior are created by default.
