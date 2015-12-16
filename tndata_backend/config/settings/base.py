@@ -196,6 +196,7 @@ AUTHENTICATION_BACKENDS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'utils.middleware.IgnoreRequestMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -206,7 +207,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'waffle.middleware.WaffleMiddleware',
-    'utils.middleware.IgnoreRequestMiddleware',
     'utils.middleware.TimezoneMiddleware',
     'utils.middleware.ResponseForbiddenMiddleware',
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
@@ -369,6 +369,12 @@ CORS_ORIGIN_WHITELIST = (
     'localhost',
     '127.0.0.1'
 )
+
+# Ignore these bad host headers; This circumvents the SuspiciousOperation
+# exceptions that would otherwise get raised.
+IGNORE_BAD_HOST_HEADERS = [
+    'proxyradar.com',  # Stupid check.proxyradar.com/azenv.php
+]
 
 
 # Slack tokens: https://api.slack.com/web

@@ -1,4 +1,5 @@
 import pytz
+from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -56,26 +57,23 @@ class ResponseForbiddenMiddleware(object):
 
 class IgnoreRequestMiddleware(object):
     """Sometimes we get obviously bad requests. If we can detect those, we'll
-    just ignore them outright.
+    just ignore them outright, returning a little easer egg instead.
 
-        Referrer: http://bradmontgomery.net/installation/CHANGELOG
-        Requested URL: /installation/CHANGELOG
-        User agent: Go 1.1 package http
-        IP address: 142.54.184.181
+    To test this, set DEBUG=False, and use:
 
-    Let's give them a little gift.
+         curl --verbose --header 'Host: example.com' 'http://yoursite.com'
+
+    NOTE: In order for this to work, this must be listed first in the
+    MIDDLEWARE_CLASSES setting.
 
     """
-    IGNORE_DOMAINS = [   # List of HTTP_HOST header domains we'll just ignore
-        'proxyradar.com',
-    ]
-
     def _ignore_domain(self, request):
         """ignore requests from obviously bad domains. This will circumvent
         those annoying Invalid HTTP_HOST header errors."""
+        ignored_domains = getattr(settings, 'IGNORE_BAD_HOST_HEADERS', [])
         return any([
             domain in request.META.get('HTTP_HOST', '')
-            for domain in self.IGNORE_DOMAINS
+            for domain in ignored_domains
         ])
 
     def process_request(self, request):
