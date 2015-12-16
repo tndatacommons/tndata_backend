@@ -232,6 +232,7 @@ class TestBehaviorForm(TestCase):
         fields = sorted([
             'title', 'description', 'more_info', 'informal_list', 'notes',
             'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
+            'sequence_order',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -239,6 +240,7 @@ class TestBehaviorForm(TestCase):
         g = Goal.objects.create(title="G")
         data = {
             'title': 'New Behavior',
+            'sequence_order': 0,
             'description': '',
             'more_info': '',
             'informal_list': '',
@@ -259,6 +261,7 @@ class TestBehaviorForm(TestCase):
         b = Behavior.objects.create(title="B")  # Existing Behavior
         data = {
             'title': 'b',  # should be a duplicate!
+            'sequence_order': 0,
             'description': '',
             'more_info': '',
             'informal_list': '',

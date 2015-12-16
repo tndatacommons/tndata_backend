@@ -23,6 +23,7 @@
           State
         </th>
         <th>Icon</th>
+        <th>Order</th>
         <th>Title</th>
         <th style="width:200px;max-width: 200px;">Informal List</th>
         <th style="width:200px;max-width: 200px;">Related Content</th>
@@ -49,6 +50,7 @@
             {% endif %}
           {% endwith %}
           </td>
+          <td>{{ behavior.sequence_order }}</td>
           <td><a href="{{ behavior_url }}">{{ behavior }}</a></td>
           <td style="width:200px;max-width: 200px;">
             {{ behavior.informal_list|linebreaksbr|default:"-" }}

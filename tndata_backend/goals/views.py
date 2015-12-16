@@ -523,6 +523,7 @@ class BehaviorDuplicateView(BehaviorCreateView):
             obj = self.get_object()
             initial.update({
                 "title": "Copy of {0}".format(obj.title),
+                "sequence_order": obj.sequence_order,
                 "description": obj.description,
                 "more_info": obj.more_info,
                 "informal_list": obj.informal_list,

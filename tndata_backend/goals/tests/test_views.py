@@ -1536,7 +1536,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
         )
-        cls.payload = {'title': 'New', 'goals': cls.goal.id}
+        cls.payload = {'title': 'New', 'goals': cls.goal.id, 'sequence_order': 0}
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -1726,7 +1726,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
         )
-        cls.payload = {'title': 'U', 'goals': cls.goal.id}
+        cls.payload = {'title': 'U', 'goals': cls.goal.id, 'sequence_order': 0}
 
     def setUp(self):
         # Re-create the behavior

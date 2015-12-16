@@ -17,6 +17,7 @@
       <h1>{{ behavior }} {% goal_object_controls behavior %}</h1>
       <dl>
         <dt>State</dt><dd>{{ behavior|label }}</dd>
+        <dt>Sequence Order</dt><dd>{{ behavior.sequence_order }}</dd>
         <dt>Description</dt><dd>{{ behavior.description|markdown }}</dd>
         <dt>More Info</dt><dd>{{ behavior.more_info|markdown }}</dd>
         <dt>Action List</dt><dd>{{ behavior.informal_list|markdown }}</dd>

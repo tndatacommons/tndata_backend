@@ -155,8 +155,9 @@ class BehaviorForm(forms.ModelForm):
     class Meta:
         model = Behavior
         fields = [
-            'title', 'description', 'more_info', 'informal_list', 'notes',
-            'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
+            'title', 'sequence_order', 'description', 'more_info',
+            'informal_list', 'notes', 'external_resource', 'goals', 'icon',
+            'source_link', 'source_notes',
         ]
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
         widgets = {
