@@ -425,7 +425,12 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     def get_parent_category_for_user(self, user):
         """Return one of this object's parent categories, prefering one that
-        the given user has selected."""
+        the given user has selected.
+
+        * user - A User instance. We return a Category that the user has
+          selected if possible.
+
+        """
         user_cats = user.usercategory_set.values_list('category', flat=True)
         cat = self.categories.filter(id__in=user_cats).first()
         if cat is None:

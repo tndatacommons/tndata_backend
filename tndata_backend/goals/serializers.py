@@ -120,13 +120,26 @@ class SimpleGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Goal` without related models' data."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
+    primary_category = serializers.SerializerMethodField()  # NOTE: id only
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Goal
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
-            'outcome', 'icon_url', 'object_type',
+            'outcome', 'icon_url', 'primary_category', 'object_type',
         )
+
+    def get_primary_category(self, obj):
+        """Include a primary category id for a goal, when possible"""
+        if self.user:
+            cat = obj.get_parent_category_for_user(self.user)
+            if cat is not None:
+                return cat.id
+        return None
 
 
 class TriggerSerializer(ObjectTypeModelSerializer):
