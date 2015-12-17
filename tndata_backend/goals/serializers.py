@@ -476,6 +476,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
 class SimpleUserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model with *just* Action data."""
     action = SimpleActionField(queryset=Action.objects.all())
+    primary_goal = serializers.SerializerMethodField(required=False)
     custom_trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False
@@ -487,10 +488,17 @@ class SimpleUserActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserAction
         fields = (
-            'id', 'user', 'action', 'custom_trigger', 'next_reminder',
-            'custom_triggers_allowed', 'editable', 'created_on', 'object_type',
+            'id', 'user', 'action', 'primary_goal', 'custom_trigger',
+            'next_reminder', 'custom_triggers_allowed', 'editable',
+            'created_on', 'object_type',
         )
         read_only_fields = ("id", "created_on", )
+
+    def get_primary_goal(self, obj):
+        goal = obj.get_primary_goal()
+        if goal is not None:
+            return goal.id
+        return None
 
 
 class UserCategorySerializer(ObjectTypeModelSerializer):
