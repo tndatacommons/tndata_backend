@@ -365,7 +365,11 @@ class UserActionAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title', 'action__notification_text',
     )
-    readonly_fields = ['prev_trigger_date', 'next_trigger_date']
+    readonly_fields = [
+        'prev_trigger_date', 'next_trigger_date', 'serialized_action',
+        'serialized_behavior', 'serialized_custom_trigger',
+        'serialized_primary_goal',
+    ]
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
 
     def action_state(self, obj):

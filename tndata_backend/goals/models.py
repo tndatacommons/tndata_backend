@@ -1572,6 +1572,7 @@ class UserAction(models.Model):
 
     # Pre-rendered FK Fields.
     serialized_action = JSONField(blank=True, default=dict)
+    serialized_behavior = JSONField(blank=True, default=dict)
     serialized_custom_trigger = JSONField(blank=True, default=dict)
     serialized_primary_goal = JSONField(blank=True, default=dict)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -1587,15 +1588,21 @@ class UserAction(models.Model):
             from .serializers import ActionSerializer
             self.serialized_action = ActionSerializer(self.action).data
 
+    def _serialize_behavior(self):
+        if self.user_behavior and self.user_behavior.behavior:
+            from .serializers import BehaviorSerializer
+            behavior = self.user_behavior.behavior
+            self.serialized_behavior = BehaviorSerializer(behavior).data
+
     def _serialize_custom_trigger(self):
         if self.custom_trigger:
-            from .serializers import CustomTriggerSerializer
-            self.serialized_action = CustomTriggerSerializer(self.custom_trigger).data
+            from .serializers import TriggerSerializer
+            self.serialized_custom_trigger = TriggerSerializer(self.custom_trigger).data
 
     def _serialize_primary_goal(self):
-        if self.custom_trigger:
+        if self.primary_goal:
             from .serializers import SimpleGoalSerializer
-            self.serialized_action = SimpleGoalSerializer(self.primary_goal).data
+            self.serialized_primary_goal = SimpleGoalSerializer(self.primary_goal).data
 
     def __str__(self):
         return "{0}".format(self.action.title)
@@ -1703,6 +1710,7 @@ class UserAction(models.Model):
 
         """
         self._serialize_action()
+        self._serialize_behavior()
         self._serialize_primary_goal()
         self._serialize_custom_trigger()
         if kwargs.pop("update_triggers", True):
