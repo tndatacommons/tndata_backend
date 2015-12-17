@@ -410,15 +410,21 @@ class UserFeedSerializer(serializers.ModelSerializer):
     user_categories = serializers.SerializerMethodField(read_only=True)
     user_goals = serializers.SerializerMethodField(read_only=True)
 
+    # This object_type helps us differentiate from different but similar enpoints
+    object_type = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = get_user_model()
         fields = (
-            'id', 'username', 'email', 'token',
+            'id', 'username', 'email', 'token', 'object_type',
             'next_action', 'action_feedback', 'progress',
             'upcoming_actions', 'suggestions',
             'user_categories', 'user_goals',
         )
         read_only_fields = ("id", "username", "email")
+
+    def get_object_type(self, obj):
+        return "feed"
 
     def get_user_categories(self, obj):
         qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
@@ -462,7 +468,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
 
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
-            srz = SimpleGoalSerializer(suggestions, many=True)
+            srz = SimpleGoalSerializer(suggestions, many=True, user=obj)
             self._feed['suggestions'] = srz.data
         return self._feed
 

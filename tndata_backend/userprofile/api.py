@@ -364,6 +364,7 @@ class UserDataViewSet(viewsets.ModelViewSet):
     Most of the data fields on this endpoint are fairly straightforward, and
     share a lot of similarities with `/api/users/`. The differences include:
 
+    - `places` -- all of a user's defined [Places](/api/users/places/).
     - `categories`, `goals`, `behaviors`, `actions` have fewer nested attributes.
       This makes the queries to populate this data much less complex (and faster)
     - a `data_graph` attribute exists here that explains the nested relationship
@@ -405,11 +406,7 @@ class UserDataViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
-        userid = self.request.user.id
-        qs = self.queryset.select_related('userprofile')
-        #qs = qs.prefetch_related('userplace_set')
-        #qs = qs.prefetch_related('usercategory_set', 'usergoal_set', 'userbehavior_set')
-        return qs.filter(id=userid)
+        return self.queryset.filter(id=self.request.user.id)
 
 
 class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
