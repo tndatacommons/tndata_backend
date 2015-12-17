@@ -40,6 +40,7 @@ from userprofile.api import (
     PlaceViewSet,
     UserViewSet,
     UserDataViewSet,
+    UserFeedViewSet,
     UserPlaceViewSet,
     UserProfileViewSet,
     api_logout,
@@ -102,6 +103,7 @@ router.register(r'survey', RandomQuestionViewSet, base_name="surveyrandom")
 router.register(r'places', PlaceViewSet)
 router.register(r'users/places', UserPlaceViewSet)
 router.register(r'users/data', UserDataViewSet, base_name="userdata")
+router.register(r'users/feed', UserFeedViewSet, base_name="userfeed")
 router.register(r'users', UserViewSet)
 router.register(r'userprofiles', UserProfileViewSet)
 

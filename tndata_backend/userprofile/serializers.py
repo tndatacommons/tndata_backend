@@ -230,17 +230,17 @@ class UserDataSerializer(serializers.ModelSerializer):
     timezone = serializers.ReadOnlyField(source='userprofile.timezone')
     places = serializers.SerializerMethodField(read_only=True)
 
-    categories = serializers.SerializerMethodField(read_only=True)
-    goals = serializers.SerializerMethodField(read_only=True)
-    behaviors = serializers.SerializerMethodField(read_only=True)
-    actions = serializers.SerializerMethodField(read_only=True)
+    user_categories = serializers.SerializerMethodField(read_only=True)
+    user_goals = serializers.SerializerMethodField(read_only=True)
+    user_behaviors = serializers.SerializerMethodField(read_only=True)
+    user_actions = serializers.SerializerMethodField(read_only=True)
     data_graph = serializers.SerializerMethodField(read_only=True)
 
-    next_action = serializers.SerializerMethodField(read_only=True)
-    action_feedback = serializers.SerializerMethodField(read_only=True)
-    progress = serializers.SerializerMethodField(read_only=True)
-    upcoming_actions = serializers.SerializerMethodField(read_only=True)
-    suggestions = serializers.SerializerMethodField(read_only=True)
+    #next_action = serializers.SerializerMethodField(read_only=True)
+    #action_feedback = serializers.SerializerMethodField(read_only=True)
+    #progress = serializers.SerializerMethodField(read_only=True)
+    #upcoming_actions = serializers.SerializerMethodField(read_only=True)
+    #suggestions = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = get_user_model()
@@ -248,9 +248,10 @@ class UserDataSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id',
             'token', 'needs_onboarding', 'places',
-            'categories', 'goals', 'behaviors', 'actions', 'data_graph',
-            "next_action", "action_feedback", "progress", "upcoming_actions",
-            "suggestions",
+            'user_categories', 'user_goals', 'user_behaviors', 'user_actions',
+            'data_graph',
+            #"next_action", "action_feedback", "progress", "upcoming_actions",
+            #"suggestions",
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -259,22 +260,22 @@ class UserDataSerializer(serializers.ModelSerializer):
         serialized = UserPlaceSerializer(qs, many=True)
         return serialized.data
 
-    def get_categories(self, obj):
+    def get_user_categories(self, obj):
         qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
         serialized = SimpleUserCategorySerializer(qs, many=True)
         return serialized.data
 
-    def get_goals(self, obj):
+    def get_user_goals(self, obj):
         qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
         serialized = SimpleUserGoalSerializer(qs, many=True)
         return serialized.data
 
-    def get_behaviors(self, obj):
+    def get_user_behaviors(self, obj):
         qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
         serialized = SimpleUserBehaviorSerializer(qs, many=True)
         return serialized.data
 
-    def get_actions(self, obj):
+    def get_user_actions(self, obj):
         qs = UserAction.objects.accepted_or_public(obj)
         qs = qs.select_related('action', 'custom_trigger', 'action__default_trigger')
         serialized = SimpleUserActionSerializer(qs, many=True)
@@ -387,6 +388,73 @@ class UserDataSerializer(serializers.ModelSerializer):
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
     # -------------------------------------------------------------------------
+
+
+class UserFeedSerializer(serializers.ModelSerializer):
+    next_action = serializers.SerializerMethodField(read_only=True)
+    action_feedback = serializers.SerializerMethodField(read_only=True)
+    progress = serializers.SerializerMethodField(read_only=True)
+    upcoming_actions = serializers.SerializerMethodField(read_only=True)
+    suggestions = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            'id', 'username', 'email', "next_action", "action_feedback",
+            "progress", "upcoming_actions", "suggestions",
+        )
+        read_only_fields = ("id", "username", "email")
+
+    def _get_feed(self, obj):
+        """Assemble all user feed data at once because it's more efficient."""
+        if not hasattr(self, "_feed"):
+            self._feed = {
+                'next_action': None,
+                'action_feedback': None,
+                'progress': None,
+                'upcoming_actions': [],
+                'suggestions': [],
+            }
+
+            if not obj.is_authenticated():
+                return self._feed
+
+            # Up next UserAction
+            ua = user_feed.next_user_action(obj)
+            self._feed['next_action'] = SimpleUserActionSerializer(ua).data
+            if ua:
+                # The Action feedback is irrelevant if there's no user action
+                feedback = user_feed.action_feedback(obj, ua)
+                self._feed['action_feedback'] = feedback
+
+            # Actions to do today.
+            upcoming = user_feed.todays_actions(obj)
+
+            # Progress for today
+            self._feed['progress'] = user_feed.todays_actions_progress(obj)
+            upcoming = SimpleUserActionSerializer(upcoming, many=True).data
+            self._feed['upcoming_actions'] = upcoming
+
+            # Goal Suggestions
+            suggestions = user_feed.suggested_goals(obj)
+            srz = SimpleGoalSerializer(suggestions, many=True)
+            self._feed['suggestions'] = srz.data
+        return self._feed
+
+    def get_next_action(self, obj):
+        return self._get_feed(obj)['next_action']
+
+    def get_action_feedback(self, obj):
+        return self._get_feed(obj)['action_feedback']
+
+    def get_progress(self, obj):
+        return self._get_feed(obj)['progress']
+
+    def get_upcoming_actions(self, obj):
+        return self._get_feed(obj)['upcoming_actions']
+
+    def get_suggestions(self, obj):
+        return self._get_feed(obj)['suggestions']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
