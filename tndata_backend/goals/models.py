@@ -29,6 +29,7 @@ from django.utils import timezone
 
 from dateutil.relativedelta import relativedelta
 from django_fsm import FSMField, transition
+from jsonfield import JSONField
 from markdown import markdown
 from notifications.models import GCMMessage
 from notifications.signals import notification_snoozed
@@ -1568,6 +1569,11 @@ class UserAction(models.Model):
         help_text="A primary goal associated with this action. Typically this "
                   "is the goal through which a user navigated to find the action."
     )
+
+    # Pre-rendered FK Fields.
+    serialized_action = JSONField(blank=True, default=dict)
+    serialized_custom_trigger = JSONField(blank=True, default=dict)
+    serialized_primary_goal = JSONField(blank=True, default=dict)
     created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1575,6 +1581,21 @@ class UserAction(models.Model):
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
+
+    def _serialize_action(self):
+        if self.action:
+            from .serializers import ActionSerializer
+            self.serialized_action = ActionSerializer(self.action).data
+
+    def _serialize_custom_trigger(self):
+        if self.custom_trigger:
+            from .serializers import CustomTriggerSerializer
+            self.serialized_action = CustomTriggerSerializer(self.custom_trigger).data
+
+    def _serialize_primary_goal(self):
+        if self.custom_trigger:
+            from .serializers import SimpleGoalSerializer
+            self.serialized_action = SimpleGoalSerializer(self.primary_goal).data
 
     def __str__(self):
         return "{0}".format(self.action.title)
@@ -1681,6 +1702,9 @@ class UserAction(models.Model):
         * update_triggers: (default is True).
 
         """
+        self._serialize_action()
+        self._serialize_primary_goal()
+        self._serialize_custom_trigger()
         if kwargs.pop("update_triggers", True):
             self._set_next_trigger_date()
         return super().save(*args, **kwargs)
