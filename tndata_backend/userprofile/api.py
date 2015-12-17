@@ -440,6 +440,12 @@ class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
     * `upcoming_actions` -- a list of the `UserAction`s that are relevant for
       today (i.e. the user has a reminder scheduled for today)
     * `suggestions` -- a list of suggested `Goal`s for the user.
+    * `user_goals` -- an abbreviated list of the user's selected `Goal`s. It
+      includes the following fields:
+        - `id` -- the UserGoal id
+        - `goal__id` -- the id of the Goal
+        - `goal__title` -- the title of the Goal
+
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -451,9 +457,8 @@ class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
         return self.queryset.filter(id=self.request.user.id)
 
 
-
 class UserAccountViewSet(viewsets.ModelViewSet):
-    """The User's account information + places.
+    """The User's account info.
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)

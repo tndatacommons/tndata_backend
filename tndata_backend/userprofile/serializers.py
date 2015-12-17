@@ -464,12 +464,13 @@ class UserFeedSerializer(serializers.ModelSerializer):
     progress = serializers.SerializerMethodField(read_only=True)
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
+    user_goals = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', "next_action", "action_feedback",
-            "progress", "upcoming_actions", "suggestions",
+            "progress", "upcoming_actions", "suggestions", 'user_goals',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -524,6 +525,10 @@ class UserFeedSerializer(serializers.ModelSerializer):
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
 
+    def get_user_goals(self, obj):
+        """The home feed needs a list of goals, but not all goal data. This
+        just exposes goal.id, usergoal.id, and the goal title"""
+        return list(obj.usergoal_set.all().values('id', 'goal__id', 'goal__title'))
 
 class UserProfileSerializer(serializers.ModelSerializer):
     bio = serializers.ReadOnlyField(required=False)
