@@ -304,12 +304,6 @@ class UserDataSerializer(serializers.ModelSerializer):
     user_actions = serializers.SerializerMethodField(read_only=True)
     data_graph = serializers.SerializerMethodField(read_only=True)
 
-    #next_action = serializers.SerializerMethodField(read_only=True)
-    #action_feedback = serializers.SerializerMethodField(read_only=True)
-    #progress = serializers.SerializerMethodField(read_only=True)
-    #upcoming_actions = serializers.SerializerMethodField(read_only=True)
-    #suggestions = serializers.SerializerMethodField(read_only=True)
-
     class Meta:
         model = get_user_model()
         fields = (
@@ -318,8 +312,6 @@ class UserDataSerializer(serializers.ModelSerializer):
             'token', 'needs_onboarding', 'places',
             'user_categories', 'user_goals', 'user_behaviors', 'user_actions',
             'data_graph',
-            #"next_action", "action_feedback", "progress", "upcoming_actions",
-            #"suggestions",
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -405,58 +397,6 @@ class UserDataSerializer(serializers.ModelSerializer):
             'primary_goals': list(pgoals),
         }
 
-    # TODO: optimize the following. -------------------------------------------
-    def _get_feed(self, obj):
-        """Assemble all the user feed data at once because it's more efficient."""
-        if not hasattr(self, "_feed"):
-            self._feed = {
-                'next_action': None,
-                'action_feedback': None,
-                'progress': None,
-                'upcoming_actions': [],
-                'suggestions': [],
-            }
-
-            if not obj.is_authenticated():
-                return self._feed
-
-            # Up next UserAction
-            ua = user_feed.next_user_action(obj)
-            self._feed['next_action'] = SimpleUserActionSerializer(ua).data
-            if ua:
-                # The Action feedback is irrelevant if there's no user action
-                feedback = user_feed.action_feedback(obj, ua)
-                self._feed['action_feedback'] = feedback
-
-            # Actions to do today.
-            upcoming = user_feed.todays_actions(obj)
-
-            # Progress for today
-            self._feed['progress'] = user_feed.todays_actions_progress(obj)
-            upcoming = SimpleUserActionSerializer(upcoming, many=True).data
-            self._feed['upcoming_actions'] = upcoming
-
-            # Goal Suggestions
-            suggestions = user_feed.suggested_goals(obj)
-            self._feed['suggestions'] = SimpleGoalSerializer(suggestions, many=True).data
-        return self._feed
-
-    def get_next_action(self, obj):
-        return self._get_feed(obj)['next_action']
-
-    def get_action_feedback(self, obj):
-        return self._get_feed(obj)['action_feedback']
-
-    def get_progress(self, obj):
-        return self._get_feed(obj)['progress']
-
-    def get_upcoming_actions(self, obj):
-        return self._get_feed(obj)['upcoming_actions']
-
-    def get_suggestions(self, obj):
-        return self._get_feed(obj)['suggestions']
-    # -------------------------------------------------------------------------
-
 
 class UserFeedSerializer(serializers.ModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
@@ -541,10 +481,6 @@ class UserFeedSerializer(serializers.ModelSerializer):
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
 
-    def get_user_goals(self, obj):
-        """The home feed needs a list of goals, but not all goal data. This
-        just exposes goal.id, usergoal.id, and the goal title"""
-        return list(obj.usergoal_set.all().values('id', 'goal__id', 'goal__title'))
 
 class UserProfileSerializer(serializers.ModelSerializer):
     bio = serializers.ReadOnlyField(required=False)
