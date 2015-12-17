@@ -459,20 +459,36 @@ class UserDataSerializer(serializers.ModelSerializer):
 
 
 class UserFeedSerializer(serializers.ModelSerializer):
+    token = serializers.ReadOnlyField(source='auth_token.key')
+
     next_action = serializers.SerializerMethodField(read_only=True)
     action_feedback = serializers.SerializerMethodField(read_only=True)
     progress = serializers.SerializerMethodField(read_only=True)
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
+
+    user_categories = serializers.SerializerMethodField(read_only=True)
     user_goals = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = get_user_model()
         fields = (
-            'id', 'username', 'email', "next_action", "action_feedback",
-            "progress", "upcoming_actions", "suggestions", 'user_goals',
+            'id', 'username', 'email', 'token',
+            'next_action', 'action_feedback', 'progress',
+            'upcoming_actions', 'suggestions',
+            'user_categories', 'user_goals',
         )
         read_only_fields = ("id", "username", "email")
+
+    def get_user_categories(self, obj):
+        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
+        serialized = SimpleUserCategorySerializer(qs, many=True)
+        return serialized.data
+
+    def get_user_goals(self, obj):
+        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        serialized = SimpleUserGoalSerializer(qs, many=True)
+        return serialized.data
 
     def _get_feed(self, obj):
         """Assemble all user feed data at once because it's more efficient."""
