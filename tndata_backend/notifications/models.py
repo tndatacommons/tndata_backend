@@ -90,7 +90,7 @@ class GCMMessage(models.Model):
     )
     response_data = JSONField(
         blank=True,
-        default={},
+        default=dict,
         help_text="The response data we get from GCM after it delivers this"
     )
     registration_ids = models.TextField(
