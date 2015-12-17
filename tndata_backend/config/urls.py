@@ -39,6 +39,7 @@ from survey.api import (
 from userprofile.api import (
     PlaceViewSet,
     UserViewSet,
+    UserAccountViewSet,
     UserDataViewSet,
     UserFeedViewSet,
     UserPlaceViewSet,
@@ -101,6 +102,7 @@ router.register(r'survey', RandomQuestionViewSet, base_name="surveyrandom")
 
 # ViewSets from the userprofile app.
 router.register(r'places', PlaceViewSet)
+router.register(r'users/accounts', UserAccountViewSet, base_name="useraccounts")
 router.register(r'users/places', UserPlaceViewSet)
 router.register(r'users/data', UserDataViewSet, base_name="userdata")
 router.register(r'users/feed', UserFeedViewSet, base_name="userfeed")

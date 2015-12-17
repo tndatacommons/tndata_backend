@@ -451,6 +451,20 @@ class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
         return self.queryset.filter(id=self.request.user.id)
 
 
+
+class UserAccountViewSet(viewsets.ModelViewSet):
+    """The User's account information + places.
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = get_user_model().objects.all()
+    serializer_class = serializers.UserAccountSerializer
+    permission_classes = [permissions.IsSelf]
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.request.user.id)
+
+
 class UserProfileViewSet(mixins.ListModelMixin,
                          mixins.RetrieveModelMixin,
                          mixins.UpdateModelMixin,

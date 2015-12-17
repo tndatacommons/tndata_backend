@@ -59,6 +59,74 @@ class UserPlaceSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "updated_on", "created_on", )
 
 
+class UserAccountSerializer(serializers.ModelSerializer):
+    full_name = serializers.ReadOnlyField(source='get_full_name')
+    userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
+    needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
+    username = serializers.CharField(required=False)
+    timezone = serializers.ReadOnlyField(source='userprofile.timezone')
+    password = serializers.CharField(write_only=True)
+    token = serializers.ReadOnlyField(source='auth_token.key')
+
+    class Meta:
+        model = get_user_model()
+        fields = (
+            'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
+            "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
+            'token', 'needs_onboarding',
+        )
+        read_only_fields = ("id", "date_joined", )
+
+    def validate_username(self, value):
+        User = get_user_model()
+        if not self.partial and User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("This user account already exists.")
+        return value
+
+    def validate_email(self, value):
+        """Validate several things, given a user's email:
+
+        * this is a valid email address
+        * there are no existing users with this email
+        * there are no users with a username hashed from this email
+
+        """
+        User = get_user_model()
+        criteria = (Q(email=value) | Q(username=user_utils.username_hash(value)))
+        if not self.partial and User.objects.filter(criteria).exists():
+            raise serializers.ValidationError("This user account already exists.")
+        validators.validate_email(value)
+        return value
+
+    def _set_user_password(self, instance, password=None):
+        """Ensure that the User password gets set correctly."""
+        if password:
+            instance.set_password(password)
+            instance.save()
+        return instance
+
+    def _generate_username(self, data):
+        """NOTE: We allow users to sign up with an email/password pair. This
+        method will generate a (hopefully unique) username hash using the
+        email address (the first 30 chars from an md5 hex digest).
+        """
+        if not data.get('username', False) and 'email' in data:
+            data['username'] = user_utils.username_hash(data['email'])
+        return data
+
+    def update(self, instance, validated_data):
+        validated_data = self._generate_username(validated_data)
+        instance = super(UserSerializer, self).update(instance, validated_data)
+        instance = self._set_user_password(instance, validated_data.get('password', None))
+        return instance
+
+    def create(self, validated_data):
+        validated_data = self._generate_username(validated_data)
+        user = super(UserSerializer, self).create(validated_data)
+        user = self._set_user_password(user, validated_data.get('password', None))
+        return user
+
+
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
