@@ -41,7 +41,7 @@ class NullableDateField(EmptyFieldMixin, serializers.DateField):
     * input formats: yyyy-mm-dd, yyyy/mm/dd, or ""
 
     """
-    format = "%Y-%m-%d",
+    format = "%Y-%m-%d"
     input_formats = ["%Y-%m-%d", "%Y/%m/%d", ""]  # 2015-06-30, 2015/06/30
 
 
@@ -55,7 +55,7 @@ class NullableTimeField(EmptyFieldMixin, serializers.TimeField):
     * input formats: HH:MM, HH:MM:ss, or ""
 
     """
-    format = "%H:%M",
+    format = "%H:%M"
     input_formats = ["%H:%M", "%H:%M:%S", ""]  # 23:30, 23:30:45, or ''
 
 
