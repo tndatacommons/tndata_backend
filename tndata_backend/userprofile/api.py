@@ -284,58 +284,9 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
-        return self.queryset.filter(id=self.request.user.id)
-
-#    def _serialized_data_for_list(self, user, page_or_queryset, timeout=None):
-#        """NOTE: This method is not currently cached due to the difficulty
-#        of defining an appropriate cache invalidation scheme.
-#
-#        This method is a hook to cache the entire set of data for this
-#        (otherwise slow and unwieldy) viewset.
-#
-#        Arguments for this method:
-#
-#        * user -- the user's ID is used as part of the cache key
-#        * page_or_queryset -- the paginated or plain old queryset of data
-#        * timeout -- default is None (meaning never expire)
-#
-#        NOTE on timeout: we want to keep this page cached as long as possible,
-#        so it's up to you to invalidate the cache for this viewset. The
-#        cache key is of the form: `userviewset-{userid}`.
-#
-#        See the `reset_userviewset_cache` signal handler in this file.
-#
-#        """
-#        if not user.is_authenticated():
-#            return self.get_serializer(page_or_queryset, many=True)
-#
-#        key = 'userviewset-{}'.format(user.id)
-#        data = cache.get(key)
-#        if data is not None:
-#            log_msg = "Returning cached /api/users/ data for {}".format(user.email)
-#            post_message("#tech", log_msg)
-#            return data
-#        else:
-#            log_msg = "NOT Cached: /api/users/ data for {}, setting cache"
-#            post_message("#tech", log_msg.format(user.email))
-#
-#        serializer = self.get_serializer(page_or_queryset, many=True)
-#        #cache.set(key, serializer.data, timeout=timeout)
-#        return serializer.data
-#
-#    def list(self, request, *args, **kwargs):
-#        """Override the list method from the ListModelMixin, so we can cache
-#        the Serializer's results.
-#
-#        """
-#        queryset = self.filter_queryset(self.get_queryset())
-#        page = self.paginate_queryset(queryset)
-#        if page is not None:
-#            data = self._serialized_data_for_list(request.user, page)
-#            return self.get_paginated_response(data)
-#
-#        data = self._serialized_data_for_list(request.user, queryset)
-#        return Response(data)
+        qs = self.queryset.select_related("userprofile", "auth_token")
+        qs = qs.filter(id=self.request.user.id)
+        return qs
 
     def create(self, request, *args, **kwargs):
         """Alter the returned response, so that it includes an API token for a
@@ -406,7 +357,9 @@ class UserDataViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
-        return self.queryset.filter(id=self.request.user.id)
+        qs = self.queryset.select_related("userprofile", "auth_token")
+        qs = qs.filter(id=self.request.user.id)
+        return qs
 
 
 class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
