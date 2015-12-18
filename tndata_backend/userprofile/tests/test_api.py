@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -12,7 +12,20 @@ from .. models import Place, UserPlace, UserProfile
 from .. serializers import UserSerializer
 from utils import user_utils
 
+TEST_REST_FRAMEWORK = {
+    'PAGE_SIZE': 100,
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'utils.api.BrowsableAPIRendererWithoutForms',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'utils.api.NoThrottle',
+    ),
+}
 
+
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestPlaceAPI(APITestCase):
     """Tests for the `Place` api endpoint. NOTE: We have a migration that
     creates Home, Work, School places."""
@@ -54,6 +67,7 @@ class TestPlaceAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestUserPlaceAPI(APITestCase):
     """Tests for the `UserPlace` api endpoint. NOTE: We have a migration that
     creates Home, Work, School places."""
@@ -172,6 +186,7 @@ class TestUserPlaceAPI(APITestCase):
         self.assertEqual(str(up.latitude), str(self.up.latitude))  # unchanged
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestUserSerializer(TestCase):
     def setUp(self):
         self.User = get_user_model()
@@ -213,6 +228,7 @@ class TestUserSerializer(TestCase):
         self.assertEqual(s.validated_data['username'], "me")
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestUsersAPI(APITestCase):
 
     def setUp(self):
@@ -417,6 +433,7 @@ class TestUsersAPI(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestUserProfilesAPI(APITestCase):
 
     def setUp(self):

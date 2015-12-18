@@ -35,9 +35,21 @@ TEST_CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
+TEST_REST_FRAMEWORK = {
+    'PAGE_SIZE': 100,
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'utils.api.BrowsableAPIRendererWithoutForms',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'utils.api.NoThrottle',
+    ),
+}
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryAPI(APITestCase):
 
@@ -91,6 +103,7 @@ class TestCategoryAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalAPI(APITestCase):
 
@@ -182,6 +195,7 @@ class TestGoalAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerAPI(APITestCase):
 
@@ -230,6 +244,7 @@ class TestTriggerAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorAPI(APITestCase):
 
@@ -394,6 +409,7 @@ class TestBehaviorAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionAPI(APITestCase):
 
@@ -640,6 +656,7 @@ class TestActionAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestUserGoalAPI(APITestCase):
 
@@ -860,6 +877,7 @@ class TestUserGoalAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestUserBehaviorAPI(APITestCase):
 
@@ -1153,6 +1171,7 @@ class TestUserBehaviorAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestUserActionAPI(APITestCase):
 
@@ -1682,6 +1701,7 @@ class TestUserActionAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestUserCategoryAPI(APITestCase):
 
@@ -1907,6 +1927,7 @@ class TestUserCategoryAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalProgressAPI(APITestCase):
 
@@ -2075,6 +2096,7 @@ class TestGoalProgressAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorProgressAPI(APITestCase):
 
@@ -2203,6 +2225,7 @@ class TestBehaviorProgressAPI(APITestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestPackageEnrollmentAPI(APITestCase):
 

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -16,7 +17,20 @@ from .. models import (
     OpenEndedResponse,
 )
 
+TEST_REST_FRAMEWORK = {
+    'PAGE_SIZE': 100,
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'utils.api.BrowsableAPIRendererWithoutForms',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'utils.api.NoThrottle',
+    ),
+}
 
+
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestInstrumentAPI(APITestCase):
 
     def setUp(self):
@@ -63,6 +77,7 @@ class TestInstrumentAPI(APITestCase):
         )
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestRandomQuestionAPI(APITestCase):
 
     def setUp(self):
@@ -176,6 +191,7 @@ class TestRandomQuestionAPI(APITestCase):
         self.assertEqual(url, self.q4.get_survey_question_url())
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestBinaryQuestionAPI(APITestCase):
 
     def setUp(self):
@@ -222,6 +238,7 @@ class TestBinaryQuestionAPI(APITestCase):
         )
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestLikertQuestionAPI(APITestCase):
 
     def setUp(self):
@@ -268,6 +285,7 @@ class TestLikertQuestionAPI(APITestCase):
         )
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestOpenEndedQuestionAPI(APITestCase):
 
     def setUp(self):
@@ -314,6 +332,7 @@ class TestOpenEndedQuestionAPI(APITestCase):
         )
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestMultipleChoiceQuestionAPI(APITestCase):
 
     def setUp(self):
@@ -376,6 +395,7 @@ class TestMultipleChoiceQuestionAPI(APITestCase):
         )
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestBinaryResponseAPI(APITestCase):
 
     def setUp(self):
@@ -510,6 +530,7 @@ class TestBinaryResponseAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestLikertResponseAPI(APITestCase):
 
     def setUp(self):
@@ -630,6 +651,7 @@ class TestLikertResponseAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestOpenEndedResponseAPI(APITestCase):
 
     def setUp(self):
@@ -750,6 +772,7 @@ class TestOpenEndedResponseAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestMultipleChoiceResponseAPI(APITestCase):
 
     def setUp(self):

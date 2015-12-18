@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -13,7 +14,20 @@ from .. models import (
 
 User = get_user_model()
 
+TEST_REST_FRAMEWORK = {
+    'PAGE_SIZE': 100,
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'utils.api.BrowsableAPIRendererWithoutForms',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'utils.api.NoThrottle',
+    ),
+}
 
+
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestGCMDeviceAPI(APITestCase):
 
     @classmethod
@@ -92,6 +106,7 @@ class TestGCMDeviceAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestGCMMessageAPI(APITestCase):
 
     @classmethod
