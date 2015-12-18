@@ -1576,6 +1576,7 @@ class UserAction(models.Model):
     serialized_behavior = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
     serialized_custom_trigger = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
     serialized_primary_goal = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_primary_category = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
     created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1604,6 +1605,12 @@ class UserAction(models.Model):
         if self.primary_goal:
             from .serializers import SimpleGoalSerializer
             self.serialized_primary_goal = SimpleGoalSerializer(self.primary_goal).data
+
+    def _serialize_primary_category(self):
+        cat = self.get_primary_category()
+        if cat:
+            from .serializers import SimpleCategorySerializer
+            self.serialized_primary_category = SimpleCategorySerializer(cat).data
 
     def __str__(self):
         return "{0}".format(self.action.title)
@@ -1714,6 +1721,7 @@ class UserAction(models.Model):
         self._serialize_behavior()
         self._serialize_primary_goal()
         self._serialize_custom_trigger()
+        self._serialize_primary_category()
         if kwargs.pop("update_triggers", True):
             self._set_next_trigger_date()
         return super().save(*args, **kwargs)

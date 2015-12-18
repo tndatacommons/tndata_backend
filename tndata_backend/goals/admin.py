@@ -368,7 +368,7 @@ class UserActionAdmin(UserRelatedModelAdmin):
     readonly_fields = [
         'prev_trigger_date', 'next_trigger_date', 'serialized_action',
         'serialized_behavior', 'serialized_custom_trigger',
-        'serialized_primary_goal',
+        'serialized_primary_goal', 'serialized_primary_category',
     ]
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
 
