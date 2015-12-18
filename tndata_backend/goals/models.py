@@ -39,6 +39,7 @@ from redis_metrics import metric
 from utils import colors, dateutils
 from utils.user_utils import local_day_range, to_localtime, to_utc
 
+from .encoder import JSONEncoder, dump_kwargs
 from .managers import (
     CategoryManager,
     GoalManager,
@@ -1571,10 +1572,10 @@ class UserAction(models.Model):
     )
 
     # Pre-rendered FK Fields.
-    serialized_action = JSONField(blank=True, default=dict)
-    serialized_behavior = JSONField(blank=True, default=dict)
-    serialized_custom_trigger = JSONField(blank=True, default=dict)
-    serialized_primary_goal = JSONField(blank=True, default=dict)
+    serialized_action = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_behavior = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_custom_trigger = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_primary_goal = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
     created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
