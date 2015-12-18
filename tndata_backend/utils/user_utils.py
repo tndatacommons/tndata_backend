@@ -2,9 +2,28 @@ import hashlib
 import pytz
 
 from datetime import datetime
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.db.models import ObjectDoesNotExist
 from django.utils import timezone
+
+
+def user_timezone(user, timeout=3600):
+    """Return the user's timezone (as specified on their UserProfile).
+
+    This function is heavily cached, because accessing `user.userprofile.timezone`
+    spawns a database query, and when this is done for each item in a list
+    of serialized objects, it may result in 100s of unnessary queries.
+
+    Returns a string containing the user's timezone, e.g. "America/Chicago"
+
+    """
+    key = "usertz-{}".format(user.id)
+    tz = cache.get(key)
+    if tz is None:
+        tz = user.userprofile.timezone
+        cache.set(key, tz, timeout)
+    return tz
 
 
 def tzdt(*args, **kwargs):
@@ -33,8 +52,9 @@ def to_localtime(dt, user):
       for this to work properly.
 
     """
-    if dt and user.userprofile.timezone:
-        tz = pytz.timezone(user.userprofile.timezone)
+    tz = user_timezone(user)
+    if dt and tz:
+        tz = pytz.timezone(tz)
         if timezone.is_naive(dt):
             dt = timezone.make_aware(dt, timezone=tz)
         else:
