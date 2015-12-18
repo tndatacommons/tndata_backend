@@ -84,6 +84,21 @@ class CategorySerializer(ObjectTypeModelSerializer):
         return obj.goals.filter(state="published").count()
 
 
+class SimpleCategorySerializer(ObjectTypeModelSerializer):
+    """A Serializer for `Category` without related fields."""
+    html_description = serializers.ReadOnlyField(source="rendered_description")
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    image_url = serializers.ReadOnlyField(source="get_absolute_image")
+
+    class Meta:
+        model = Category
+        fields = (
+            'id', 'order', 'title', 'title_slug', 'description',
+            'html_description', 'packaged_content', 'icon_url', 'image_url',
+            'color', 'secondary_color', 'object_type',
+        )
+
+
 class GoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Goal`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
@@ -471,6 +486,27 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         if primary_goal:
             validated_data['primary_goal'] = primary_goal
         return super().create(validated_data)
+
+
+class ReadOnlyUserActionSerializer(ObjectTypeModelSerializer):
+    """A Serializer for READING `UserAction` instances."""
+    action = serializers.ReadOnlyField(source="serialized_action")
+    behavior = serializers.ReadOnlyField(source="serialized_behavior")
+    custom_trigger = serializers.ReadOnlyField(source="serialized_custom_trigger")
+    custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
+    primary_goal = serializers.ReadOnlyField(source="serialized_primary_goal")
+    primary_category = serializers.ReadOnlyField(source="serialized_primary_category")
+    next_reminder = serializers.ReadOnlyField(source='next')
+
+    class Meta:
+        model = UserAction
+        fields = (
+            'id', 'user', 'action', 'behavior', 'custom_trigger', 'next_reminder',
+            'custom_triggers_allowed', 'editable', 'created_on',
+            'object_type', 'primary_goal', 'primary_category',
+        )
+        read_only_fields = ("id", "created_on", )
 
 
 class SimpleUserActionSerializer(ObjectTypeModelSerializer):
