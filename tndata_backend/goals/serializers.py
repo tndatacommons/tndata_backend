@@ -275,6 +275,29 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
         return obj.action_set.filter(state="published").count()
 
 
+class SimpleBehaviorSerializer(ObjectTypeModelSerializer):
+    """A Serializer for `Behavior` instances without related fields."""
+    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
+    image_url = serializers.ReadOnlyField(source="get_absolute_image")
+    html_description = serializers.ReadOnlyField(source="rendered_description")
+    html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
+    actions_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Behavior
+        fields = (
+            'id', 'title', 'title_slug', 'description', 'html_description',
+            'more_info', 'html_more_info', 'external_resource', 'default_trigger',
+            'notification_text', 'icon_url', 'image_url', 'actions_count',
+            'object_type',
+        )
+        read_only_fields = ("actions_count", )
+
+    def get_actions_count(self, obj):
+        """Return the number of child Actions for the given Behavior (obj)."""
+        return obj.action_set.filter(state="published").count()
+
+
 class BehaviorProgressSerializer(ObjectTypeModelSerializer):
     """A Serializer for `BehaviorProgress`."""
 
@@ -362,6 +385,33 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         """Return the number of user-selected Behaviors that are children of
         this Goal."""
         return obj.get_user_behaviors().count()
+
+
+class ReadOnlyUserGoalSerializer(ObjectTypeModelSerializer):
+    """A Serializer for READING the `UserGoal` model instances."""
+    user_categories = serializers.ReadOnlyField(source='serialized_user_categories')
+    user_behaviors_count = serializers.SerializerMethodField()
+    user_behaviors = serializers.ReadOnlyField(source='serialized_user_behaviors')
+    goal = serializers.ReadOnlyField(source='serialized_goal')
+    goal_progress = serializers.ReadOnlyField(source='serialized_goal_progress')
+    custom_triggers_allowed = serializers.ReadOnlyField()
+    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
+    primary_category = serializers.ReadOnlyField(source="serialized_primary_category")
+
+    class Meta:
+        model = UserGoal
+        fields = (
+            'id', 'user', 'goal', 'goal_progress', 'user_categories',
+            'user_behaviors_count', 'user_behaviors', 'created_on',
+            'progress_value', 'custom_triggers_allowed', 'editable', 'object_type',
+            'primary_category',
+        )
+        read_only_fields = ("id", "created_on")
+
+    def get_user_behaviors_count(self, obj):
+        """Return the number of user-selected Behaviors that are children of
+        this Goal."""
+        return len(obj.serialized_user_behaviors)
 
 
 class SimpleUserGoalSerializer(ObjectTypeModelSerializer):
