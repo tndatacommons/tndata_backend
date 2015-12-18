@@ -1681,9 +1681,7 @@ class UserAction(models.Model):
 
     @property
     def trigger(self):
-        if not hasattr(self, "_trigger"):
-            self._trigger = self.custom_trigger or self.default_trigger
-        return self._trigger
+        return self.custom_trigger or self.default_trigger
 
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
