@@ -431,7 +431,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     action = SimpleActionField(queryset=Action.objects.all())
     behavior = SimpleBehaviorField(
         source='user_behavior.behavior',
-        queryset=UserBehavior.objects.all(),
+        queryset=Behavior.objects.all(),
         required=False
     )
     custom_trigger = CustomTriggerField(
