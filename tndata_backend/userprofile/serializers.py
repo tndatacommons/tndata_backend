@@ -13,6 +13,7 @@ from goals.models import (
 )
 from goals.serializers import (
     GoalSerializer,
+    ReadOnlyUserActionSerializer,
     SimpleGoalSerializer,
     SimpleUserActionSerializer,
     SimpleUserBehaviorSerializer,
@@ -116,13 +117,13 @@ class UserAccountSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data = self._generate_username(validated_data)
-        instance = super(UserSerializer, self).update(instance, validated_data)
+        instance = super().update(instance, validated_data)
         instance = self._set_user_password(instance, validated_data.get('password', None))
         return instance
 
     def create(self, validated_data):
         validated_data = self._generate_username(validated_data)
-        user = super(UserSerializer, self).create(validated_data)
+        user = super().create(validated_data)
         user = self._set_user_password(user, validated_data.get('password', None))
         return user
 
@@ -176,7 +177,7 @@ class UserSerializer(serializers.ModelSerializer):
 
             # Up next UserAction
             ua = user_feed.next_user_action(obj)
-            self._feed['next_action'] = UserActionSerializer(ua).data
+            self._feed['next_action'] = ReadOnlyUserActionSerializer(ua).data
             if ua:
                 # The Action feedback is irrelevant if there's no user action
                 feedback = user_feed.action_feedback(obj, ua)
@@ -187,7 +188,7 @@ class UserSerializer(serializers.ModelSerializer):
 
             # Progress for today
             self._feed['progress'] = user_feed.todays_actions_progress(obj)
-            upcoming = UserActionSerializer(upcoming, many=True).data
+            upcoming = ReadOnlyUserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 
             # Goal Suggestions
@@ -235,8 +236,8 @@ class UserSerializer(serializers.ModelSerializer):
         return serialized.data
 
     def get_actions(self, obj):
-        qs = UserAction.objects.accepted_or_public(obj).select_related('action')
-        serialized = UserActionSerializer(qs, many=True)
+        qs = UserAction.objects.accepted_or_public(obj)
+        serialized = ReadOnlyUserActionSerializer(qs, many=True)
         return serialized.data
 
     def validate_username(self, value):
@@ -337,8 +338,7 @@ class UserDataSerializer(serializers.ModelSerializer):
 
     def get_user_actions(self, obj):
         qs = UserAction.objects.accepted_or_public(obj)
-        qs = qs.select_related('action', 'custom_trigger', 'action__default_trigger')
-        serialized = SimpleUserActionSerializer(qs, many=True)
+        serialized = ReadOnlyUserActionSerializer(qs, many=True)
         return serialized.data
 
     def get_data_graph(self, obj):
@@ -452,7 +452,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
 
             # Up next UserAction
             ua = user_feed.next_user_action(obj)
-            self._feed['next_action'] = SimpleUserActionSerializer(ua).data
+            self._feed['next_action'] = ReadOnlyUserActionSerializer(ua).data
             if ua:
                 # The Action feedback is irrelevant if there's no user action
                 feedback = user_feed.action_feedback(obj, ua)
@@ -463,7 +463,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
 
             # Progress for today
             self._feed['progress'] = user_feed.todays_actions_progress(obj)
-            upcoming = SimpleUserActionSerializer(upcoming, many=True).data
+            upcoming = ReadOnlyUserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 
             # Goal Suggestions
