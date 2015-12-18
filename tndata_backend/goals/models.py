@@ -1291,14 +1291,58 @@ class UserGoal(models.Model):
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return "{0}".format(self.goal.title)
+    # Pre-rendered FK Fields.
+    serialized_goal = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_goal_progress = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_user_categories = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_user_behaviors = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_primary_category = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
 
     class Meta:
         ordering = ['user', 'goal']
         unique_together = ("user", "goal")
         verbose_name = "User Goal"
         verbose_name_plural = "User Goals"
+
+    def __str__(self):
+        return "{0}".format(self.goal.title)
+
+    def save(self, *args, **kwargs):
+        self._serialize_goal()
+        self._serialize_goal_progress()
+        self._serialize_user_behaviors()
+        self._serialize_user_categories()
+        self._serialize_primary_category()
+        return super().save(*args, **kwargs)
+
+    def _serialize_goal(self):
+        if self.goal:
+            from .serializers import SimpleGoalSerializer
+            self.serialized_goal = SimpleGoalSerializer(self.goal).data
+
+    def _serialize_goal_progress(self):
+        gp = self.goal_progress
+        if gp:
+            from .serializers import GoalProgressSerializer
+            self.serialized_goal_progress = GoalProgressSerializer(gp).data
+
+    def _serialize_user_categories(self):
+        cats = self.get_user_categories()
+        if cats:
+            from .serializers import SimpleCategorySerializer
+            self.serialized_user_categories = SimpleCategorySerializer(cats, many=True).data
+
+    def _serialize_user_behaviors(self):
+        behaviors = self.get_user_behaviors()
+        if behaviors:
+            from .serializers import SimpleBehaviorSerializer
+            self.serialized_user_behaviors = SimpleBehaviorSerializer(behaviors, many=True).data
+
+    def _serialize_primary_category(self):
+        cat = self.get_primary_category()
+        if cat:
+            from .serializers import SimpleCategorySerializer
+            self.serialized_primary_category = SimpleCategorySerializer(cat).data
 
     @property
     def goal_progress(self):
