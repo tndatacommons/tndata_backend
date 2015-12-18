@@ -408,6 +408,17 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     serializer_class = serializers.UserGoalSerializer
     permission_classes = [IsOwner]
 
+    def get_serializer_class(self):
+        """
+        XXX: I want to user our regular serializer for PUT & POST requests,
+        but I want to use a faster serializer that users the UserAction's
+        pre-rendered fields for GET requests.
+
+        """
+        if self.request.method == "GET":
+            return serializers.ReadOnlyUserGoalSerializer
+        return self.serializer_class
+
     def get_queryset(self):
         return models.UserGoal.objects.accepted_or_public(user=self.request.user)
 

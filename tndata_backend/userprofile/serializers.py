@@ -14,6 +14,7 @@ from goals.models import (
 from goals.serializers import (
     GoalSerializer,
     ReadOnlyUserActionSerializer,
+    ReadOnlyUserGoalSerializer,
     SimpleGoalSerializer,
     SimpleUserActionSerializer,
     SimpleUserBehaviorSerializer,
@@ -226,7 +227,7 @@ class UserSerializer(serializers.ModelSerializer):
     @cached_method(cache_key="{0}-User.get_goals")
     def get_goals(self, obj):
         qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
-        serialized = UserGoalSerializer(qs, many=True)
+        serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_behaviors")
@@ -328,7 +329,7 @@ class UserDataSerializer(serializers.ModelSerializer):
 
     def get_user_goals(self, obj):
         qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
-        serialized = SimpleUserGoalSerializer(qs, many=True)
+        serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 
     def get_user_behaviors(self, obj):
@@ -433,7 +434,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
 
     def get_user_goals(self, obj):
         qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
-        serialized = SimpleUserGoalSerializer(qs, many=True)
+        serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 
     def _get_feed(self, obj):
