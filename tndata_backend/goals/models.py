@@ -37,9 +37,9 @@ from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
 from redis_metrics import metric
 from utils import colors, dateutils
-from utils.user_utils import local_day_range, to_localtime, to_utc
+from utils.user_utils import local_day_range, to_localtime, to_utc, user_timezone
 
-from .encoder import JSONEncoder, dump_kwargs
+from .encoder import dump_kwargs
 from .managers import (
     CategoryManager,
     GoalManager,
@@ -643,7 +643,7 @@ class Trigger(models.Model):
         """Return a Timezone object for the user; defaults to UTC if no user."""
         user = user or self.user
         if user:
-            return pytz.timezone(user.userprofile.timezone)
+            return pytz.timezone(user_timezone(user))
         return timezone.utc
 
     def get_alert_time(self, tz=None):
@@ -1597,8 +1597,8 @@ class UserAction(models.Model):
 
     def _serialize_custom_trigger(self):
         if self.custom_trigger:
-            from .serializers import TriggerSerializer
-            self.serialized_custom_trigger = TriggerSerializer(self.custom_trigger).data
+            from .serializers import CustomTriggerSerializer
+            self.serialized_custom_trigger = CustomTriggerSerializer(self.custom_trigger).data
 
     def _serialize_primary_goal(self):
         if self.primary_goal:
