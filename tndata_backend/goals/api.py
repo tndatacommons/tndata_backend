@@ -812,6 +812,17 @@ class UserActionViewSet(mixins.CreateModelMixin,
     serializer_class = serializers.UserActionSerializer
     permission_classes = [IsOwner]
 
+    def get_serializer_class(self):
+        """
+        XXX: I want to user our regular serializer for PUT & POST requests,
+        but I want to use a faster serializer that users the UserAction's
+        pre-rendered fields for GET requests.
+
+        """
+        if self.request.method == "GET":
+            return serializers.ReadOnlyUserActionSerializer
+        return self.serializer_class
+
     def get_queryset(self):
         # First, only expose content in Categories/Packages that are either
         # public or in which we've accepted the terms/consent form.
