@@ -1363,7 +1363,7 @@ class UserGoal(models.Model):
     def _serialize_goal(self):
         if self.goal:
             from .serializers import SimpleGoalSerializer
-            self.serialized_goal = SimpleGoalSerializer(self.goal).data
+            self.serialized_goal = SimpleGoalSerializer(self.goal, user=self.user).data
 
     def _serialize_goal_progress(self):
         gp = self.goal_progress
@@ -1450,7 +1450,10 @@ class UserGoal(models.Model):
     def get_primary_category(self):
         """Return the first user-selected category that is a
         parent of this goal."""
-        return self.get_user_categories().first()
+        cat = self.get_user_categories().first()
+        if cat is None:
+            cat = self.goal.categories.first()
+        return cat
 
     @property
     def progress_value(self):
@@ -1668,7 +1671,8 @@ class UserAction(models.Model):
 
     def _serialize_primary_goal(self):
         from .serializers import SimpleGoalSerializer
-        self.serialized_primary_goal = SimpleGoalSerializer(self.get_primary_goal()).data
+        pg = self.get_primary_goal()
+        self.serialized_primary_goal = SimpleGoalSerializer(pg, user=self.user).data
 
     def _serialize_primary_category(self):
         cat = self.get_primary_category()
@@ -1864,6 +1868,10 @@ class UserAction(models.Model):
             ).first()
             if uc:
                 category = uc.category
+        if category is None:
+            goal = self.action.behavior.goals.first()
+            if goal:
+                cat = goal.categories.first()
         return category
 
     @property
