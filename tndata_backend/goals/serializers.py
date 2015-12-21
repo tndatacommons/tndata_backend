@@ -333,6 +333,7 @@ class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
+    # TODO: We want to eventuall remove this Behavior field.
     behavior = SimpleBehaviorField(read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
