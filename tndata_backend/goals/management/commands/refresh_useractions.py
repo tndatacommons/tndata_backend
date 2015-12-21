@@ -13,7 +13,7 @@ class Command(BaseCommand):
         count = 0
         for ua in UserAction.objects.stale():
             count += 1
-            ua.save()  # fields get refreshed on save.
+            ua.save(update_triggers=True)  # fields get refreshed on save.
 
         msg = "Refreshed Trigger Date for {0} UserActions".format(count)
         logger.error(msg)
