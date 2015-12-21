@@ -1672,7 +1672,8 @@ class UserAction(models.Model):
     def _serialize_primary_goal(self):
         from .serializers import SimpleGoalSerializer
         pg = self.get_primary_goal()
-        self.serialized_primary_goal = SimpleGoalSerializer(pg, user=self.user).data
+        if pg:
+            self.serialized_primary_goal = SimpleGoalSerializer(pg, user=self.user).data
 
     def _serialize_primary_category(self):
         cat = self.get_primary_category()
@@ -1716,14 +1717,16 @@ class UserAction(models.Model):
 
     @property
     def trigger(self):
-        if self.custom_trigger_id:
+        if self.custom_trigger_id or self.custom_trigger:
             return self.custom_trigger
         return self.default_trigger
 
     @property
     def next_reminder(self):
         """Returns next_trigger_date in the user's local timezone."""
-        return to_localtime(self.next_trigger_date, self.user)
+        if self.next_trigger_date is not None:
+            return to_localtime(self.next_trigger_date, self.user)
+        return self.next()
 
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
@@ -1850,7 +1853,7 @@ class UserAction(models.Model):
             result = self.primary_goal
         else:
             result = self.get_user_goals().first()
-        if not result:
+        if not result and self.user_behavior:
             # Somehow, this user has no goals selected for this Action/Behavior,
             # so fall back to the first goal on the parent behavior.
             result = self.user_behavior.behavior.goals.first()

@@ -1571,7 +1571,7 @@ class TestUserAction(TestCase):
         mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)
         self.ua._set_next_trigger_date()
 
-        # Next should have gotten updated, but prev should stay the saym
+        # Next should have gotten updated, but prev should stay the same
         self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
         self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 8, 11, 30))
 
