@@ -542,18 +542,19 @@ class ReadOnlyUserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for READING `UserAction` instances."""
     action = serializers.ReadOnlyField(source="serialized_action")
     behavior = serializers.ReadOnlyField(source="serialized_behavior")
+    trigger = serializers.ReadOnlyField(source="serialized_trigger")
     custom_trigger = serializers.ReadOnlyField(source="serialized_custom_trigger")
     custom_triggers_allowed = serializers.ReadOnlyField()
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_goal = serializers.ReadOnlyField(source="serialized_primary_goal")
     primary_category = serializers.ReadOnlyField(source="serialized_primary_category")
-    next_reminder = serializers.ReadOnlyField(source='next')
+    next_reminder = serializers.ReadOnlyField(source='next_trigger_date')
 
     class Meta:
         model = UserAction
         fields = (
-            'id', 'user', 'action', 'behavior', 'custom_trigger', 'next_reminder',
-            'custom_triggers_allowed', 'editable', 'created_on',
+            'id', 'user', 'action', 'behavior', 'trigger', 'custom_trigger',
+            'custom_triggers_allowed', 'next_reminder', 'editable', 'created_on',
             'object_type', 'primary_goal', 'primary_category',
         )
         read_only_fields = ("id", "created_on", )
