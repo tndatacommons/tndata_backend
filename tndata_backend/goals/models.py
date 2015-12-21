@@ -55,6 +55,51 @@ from .mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
 from .utils import clean_title, clean_notification, strip
 
 
+def _custom_triggers_allowed(user, user_object, timeout=90):
+    """This function looks up all of a user's selected content IDs, storing
+    them in a dict keyed by an object type. The idea is to check all of these
+    against the user's Packages at once (which is expensive) and cache this
+    for a period.
+
+    That way we don't have to perform this operation for every UserCategory,
+    UserGoal, UserBehavior, UserAction selected by the user during serialization.
+
+    """
+    object_type = user_object.__class__.__name__.lower()
+    cache_key = 'restricted-user-objects-{}'.format(user.id)
+    restricted = cache.get(cache_key)
+    if restricted is None:
+        # All the packages with restricted triggers
+        packages = user.packageenrollment_set.filter(prevent_custom_triggers=True)
+        restricted_categories = packages.values_list('category_id', flat=True)
+        restricted_goals = packages.values_list('goals__id', flat=True)
+
+        # List of UserCategopry IDs that don't allow custom triggers
+        qs = user.usercategory_set.filter(category__id__in=restricted_categories)
+        restricted_user_categories = qs.values_list('id', flat=True)
+
+        # List of UserGoal IDs that don't allow custom triggers
+        qs = user.usergoal_set.filter(goal__id__in=restricted_goals)
+        restricted_user_goals = qs.values_list('id', flat=True)
+
+        # List of UserBehavior IDs that don't allow custom triggers
+        qs = user.userbehavior_set.filter(behavior__goals__id__in=restricted_goals)
+        restricted_user_behaviors = qs.values_list('id', flat=True)
+
+        # List of UserAction IDs that don't allow custom triggers
+        qs = user.useraction_set.filter(action__behavior__goals__id__in=restricted_goals)
+        restricted_user_actions = qs.values_list('id', flat=True)
+
+        restricted = {
+            'usercategory': restricted_user_categories,
+            'usergoal': restricted_user_goals,
+            'userbehavior': restricted_user_behaviors,
+            'useraction': restricted_user_actions,
+        }
+        cache.set(cache_key, restricted, timeout=timeout)
+    return user_object.id not in restricted[object_type]
+
+
 def _upload_path(path_format, instance, filename):
     """Create an upload path (including a filename) for an uploaded file.
 
@@ -1357,22 +1402,7 @@ class UserGoal(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/goal is in a Package where custom triggers
         are restricted. """
-        cache_key = "cta-usergoal-{}".format(self.id)
-        results = cache.get(cache_key)
-        if results is not None:
-            return results
-
-        # See if the user is restricted from creating triggers for this goal.
-        restricted = PackageEnrollment.objects.filter(
-            user__pk=self.user_id,
-            goals__pk=self.goal_id,
-            prevent_custom_triggers=True
-        ).exists()
-
-        # Negate the restriction so our api is positive.
-        results = not restricted
-        cache.set(cache_key, results, timeout=30)
-        return results
+        return _custom_triggers_allowed(self.user, self)
 
     def get_user_behaviors(self):
         """Returns a QuerySet of published Behaviors related to this Goal, but
@@ -1489,22 +1519,7 @@ class UserBehavior(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
         Package where custom triggers are restricted. """
-        cache_key = "cta-userbehavior-{}".format(self.id)
-        results = cache.get(cache_key)
-        if results is not None:
-            return results
-
-        # See if the user is restricted from creating triggers for this goal.
-        restricted = PackageEnrollment.objects.filter(
-            goals__behavior__pk=self.behavior_id,
-            user__pk=self.user_id,
-            prevent_custom_triggers=True
-        ).exists()
-
-        # Negate the restriction so our api is positive.
-        results = not restricted
-        cache.set(cache_key, results, timeout=30)
-        return results
+        return _custom_triggers_allowed(self.user, self)
 
     def get_user_categories(self):
         """Returns a QuerySet of published Categories related to this Behavior,
@@ -1859,22 +1874,7 @@ class UserAction(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
         Package where custom triggers are restricted. """
-        cache_key = "cta-useraction-{}".format(self.id)
-        results = cache.get(cache_key)
-        if results is not None:
-            return results
-
-        # See if the user is restricted from creating triggers for this goal.
-        restricted = PackageEnrollment.objects.filter(
-            goals__behavior__action__pk=self.action_id,
-            user__pk=self.user_id,
-            prevent_custom_triggers=True
-        ).exists()
-
-        # Negate the restriction so our api is positive.
-        results = not restricted
-        cache.set(cache_key, results, timeout=30)
-        return results
+        return _custom_triggers_allowed(self.user, self)
 
     @property
     def default_trigger(self):
@@ -2069,22 +2069,7 @@ class UserCategory(models.Model):
     def custom_triggers_allowed(self):
         """Check to see if the user/category is a Package where custom triggers
         are restricted."""
-        cache_key = "cta-usercategory-{}".format(self.id)
-        results = cache.get(cache_key)
-        if results is not None:
-            return results
-
-        # See if the user is restricted from creating triggers for this goal.
-        restricted = PackageEnrollment.objects.filter(
-            user__pk=self.user_id,
-            category=self.category_id,
-            prevent_custom_triggers=True
-        ).exists()
-
-        # Negate the restriction so our api is positive.
-        results = not restricted
-        cache.set(cache_key, results, timeout=30)
-        return results
+        return _custom_triggers_allowed(self.user, self)
 
     def get_user_goals(self):
         """Returns a QuerySet of published Goals related to this Category, but
