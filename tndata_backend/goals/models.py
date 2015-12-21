@@ -1646,9 +1646,8 @@ class UserAction(models.Model):
             self.serialized_custom_trigger = CustomTriggerSerializer(self.custom_trigger).data
 
     def _serialize_primary_goal(self):
-        if self.primary_goal:
-            from .serializers import SimpleGoalSerializer
-            self.serialized_primary_goal = SimpleGoalSerializer(self.primary_goal).data
+        from .serializers import SimpleGoalSerializer
+        self.serialized_primary_goal = SimpleGoalSerializer(self.get_primary_goal()).data
 
     def _serialize_primary_category(self):
         cat = self.get_primary_category()
@@ -1807,6 +1806,10 @@ class UserAction(models.Model):
             result = self.primary_goal
         else:
             result = self.get_user_goals().first()
+        if not result:
+            # Somehow, this user has no goals selected for this Action/Behavior,
+            # so fall back to the first goal on the parent behavior.
+            result = self.user_behavior.behavior.goals.first()
         return result
 
     def get_primary_category(self):
