@@ -1716,6 +1716,11 @@ class UserAction(models.Model):
             return self.custom_trigger
         return self.default_trigger
 
+    @property
+    def next_reminder(self):
+        """Returns next_trigger_date in the user's local timezone."""
+        return to_localtime(self.next_trigger_date, self.user)
+
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
         or None. This method will either return the value of `next_trigger_date`
