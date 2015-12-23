@@ -152,8 +152,7 @@ class SimpleGoalSerializer(ObjectTypeModelSerializer):
         """Include a primary category id for a goal, when possible"""
         if self.user:
             cat = obj.get_parent_category_for_user(self.user)
-            if cat is not None:
-                return cat.id
+            return CategorySerializer(cat).data
         return None
 
 
