@@ -212,30 +212,31 @@ class UserSerializer(serializers.ModelSerializer):
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
 
-    @cached_method(cache_key="{0}-User.get_places")
+    @cached_method(cache_key="{0}-User.get_places", timeout=60)
     def get_places(self, obj):
         qs = models.UserPlace.objects.select_related("place").filter(user=obj)
         serialized = UserPlaceSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_categories")
+    @cached_method(cache_key="{0}-User.get_categories", timeout=60)
     def get_categories(self, obj):
         qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
         serialized = UserCategorySerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_goals")
+    @cached_method(cache_key="{0}-User.get_goals", timeout=60)
     def get_goals(self, obj):
         qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
         serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_behaviors")
+    @cached_method(cache_key="{0}-User.get_behaviors", timeout=60)
     def get_behaviors(self, obj):
         qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
         serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
+    @cached_method(cache_key="{0}-User.get_actions", timeout=60)
     def get_actions(self, obj):
         qs = UserAction.objects.accepted_or_public(obj)
         serialized = ReadOnlyUserActionSerializer(qs, many=True)
