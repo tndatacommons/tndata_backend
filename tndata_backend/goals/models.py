@@ -2132,6 +2132,31 @@ def user_adopted_content(sender, instance, created, raw, using, **kwargs):
         metric(key, category="User Interactions")
 
 
+@receiver(pre_save, sender=UserAction, dispatch_uid='bust_useraction_cache')
+@receiver(pre_save, sender=UserBehavior, dispatch_uid='bust_userbehavior_cache')
+@receiver(pre_save, sender=UserGoal, dispatch_uid='bust_usergoal_cache')
+@receiver(pre_save, sender=UserCategory, dispatch_uid='bust_usercategory_cache')
+def bust_cache(sender, instance, raw, using, **kwargs):
+    """This is a little messy, but whenever a user's mapping to content is saved
+    we need to bust some cache values. This is mostly for the giant api endpoint
+    that exposes a lot of user data (e.g. in the userprofile app).
+
+    # TODO: extend this to bust all cache keys related to User* objects?
+
+    """
+    # A mapping of model to cache keys
+    cache_key = {
+        UserAction: '{}-User.get_actions',
+        UserBehavior: '{}-User.get_behaviors',
+        UserGoal: '{}-User.get_goals',
+        UserCategory: '{}-User.get_categories',
+    }
+    cache_key = cache_key.get(sender, None)
+    if cache_key:
+        cache_key = cache_key.format(instance.user.id)
+        cache.delete(cache_key)
+
+
 class BehaviorProgress(models.Model):
     """Encapsulates a user's progress & history toward certain behaviors.
 
