@@ -6,6 +6,52 @@ This is our collection of Goals & Behaviors. They're organized as follows:
 
 Actions are the things we want to help people to do.
 
+-------------------------------------------------------------------------------
+
+TODO: Refactor this...
+
+- models/public: Category, Goal, Behavior, Action
+- models/users: UserCategory, UserGoal, UserBehavior
+- models/triggers: Trigger
+- models/packages: PackageEnrollment
+- models/progress: BehaviorProgress, CategoryProgress, GoalProgress,
+    GoalProgressManager, UserCompletedAction
+- models/signals: all the signal handlers
+- models/path: all the image/file upload path functions
+- models/misc: all the other util/misc functions
+
+-------------------------------------------------------------------------------
+
+NEW models for custom goals/actions
+
+- models/custom: CustomGoal, CustomAction
+
+CustomGoal:
+- user
+- title
+- updated
+- created
+
+CustomAction
+- user
+- customgoal
+- trigger
+- text/title
+- updated
+- created
+
+UserCompletedCustomAction (like UserCompletedAction?)
+- (state of completion)?
+- custom action
+- custom goal
+
+CustomActionFeedback
+- text input on how the user is completing their custom goal?
+- date added
+- custom_action
+- custom_goal
+
+-------------------------------------------------------------------------------
 """
 import hashlib
 import os
