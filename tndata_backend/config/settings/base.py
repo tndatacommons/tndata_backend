@@ -240,6 +240,7 @@ REDIS_CACHE_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
     port=REDIS_PORT,
     db=REDIS_CACHE_DB
 )
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -253,6 +254,15 @@ CACHES = {
         'TIMEOUT': CACHE_TIMEOUT,
     }
 }
+if DEBUG:
+    # For development, we can use a dummy or a local-memory cache.
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            #'LOCATION': 'unique-snowflake',
+        }
+    }
 
 # django-redis-metrics: http://django-redis-metrics.readthedocs.org/en/latest/
 REDIS_METRICS_DB = int(os.environ.get('REDIS_METRICS_DB'))
