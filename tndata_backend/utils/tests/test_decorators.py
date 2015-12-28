@@ -12,7 +12,7 @@ class TestCachedMethodDecorator(TestCase):
 
         # A Test class with a cached method.
         class Klass:
-            @cached_method("{}-test")
+            @cached_method("{}-test", timeout=99)
             def meth(self, *args, **kwags):
                 return "result"
         cls.Klass = Klass
@@ -33,7 +33,7 @@ class TestCachedMethodDecorator(TestCase):
             # check for cache calls.
             mock_cache.assert_has_calls([
                 call.get("5-test"),
-                call.set("5-test", "result"),
+                call.set("5-test", "result", timeout=99),
             ])
 
     def test_method_cached(self):
