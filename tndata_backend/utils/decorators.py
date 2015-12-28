@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.core.cache import cache
 from functools import wraps
 
 
-def cached_method(cache_key):
+def cached_method(cache_key, timeout=settings.CACHE_TIMEOUT):
     """Cache a method, using it's first argument to set a cache key.
 
     Params:
@@ -30,7 +31,7 @@ def cached_method(cache_key):
                 result = cache.get(key)
                 if result is None:
                     result = func(*args, **kwargs)
-                    cache.set(key, result)
+                    cache.set(key, result, timeout=timeout)
                 return result
             # Nothing to use as a cache key, just call the method.
             return func(*args, **kwargs)
