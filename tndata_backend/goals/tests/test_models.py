@@ -312,7 +312,7 @@ class TestTrigger(TestCase):
     def test__combine(self):
         """Ensure the Trigger.__combine wrapper works as expected."""
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 2)
             t = self.trigger._combine(time(13, 30))
             self.assertEqual(t, tzdt(2015, 1, 2, 13, 30))
@@ -346,7 +346,7 @@ class TestTrigger(TestCase):
         t.delete()
 
     def test_get_alert_time(self):
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 2)
 
             # No date, should combine "now" + time
@@ -442,7 +442,7 @@ class TestTrigger(TestCase):
             time=time(12, 34),
             recurrences="RRULE:FREQ=DAILY",
         )
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # Ensure we get the *today* if it's scheduled later in the day
             # now is 9:30 am, trigger is for 12:34pm
             mock_now.return_value = tzdt(1000, 10, 20, 9, 30)
@@ -474,7 +474,7 @@ class TestTrigger(TestCase):
             stop_on_complete=True
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 1, 9, 0)
 
             # First, when the trigger hasn't been stopped.
@@ -503,7 +503,7 @@ class TestTrigger(TestCase):
         self.assertEqual(trigger.next(), expected)
 
         # When the set date is in the past, we should not get a value.
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = datetime(
                 2222, 3, 16, 6, 0, tzinfo=timezone.utc
             )
@@ -519,7 +519,7 @@ class TestTrigger(TestCase):
             recurrences=rrule
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # now: 2015-08-15 at 11:00am
             # expected: same day, at appointed time
             mock_now.return_value = datetime(
@@ -558,7 +558,7 @@ class TestTrigger(TestCase):
             recurrences=rrule
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # now: 2015-08-01 at 11:00am
             # expected: 2015-08-02, at 12:30pm
             mock_now.return_value = tzdt(2015, 8, 1, 11, 0)
@@ -596,7 +596,7 @@ class TestTrigger(TestCase):
             recurrences=rrule
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # now: 2015-08-01 at 11:00am
             # expected: same day, at 12:30pm
             mock_now.return_value = datetime(
@@ -637,7 +637,7 @@ class TestTrigger(TestCase):
             recurrences=rrule
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # now: 2015-08-15 at 11:00am, expected: next is 10/1
             mock_now.return_value = tzdt(2015, 8, 15, 11, 0)
             expected = tzdt(2015, 10, 1, 9, 0)
@@ -665,7 +665,7 @@ class TestTrigger(TestCase):
             recurrences=rrule
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # now: 08/15 at 11:00am, expected: next is Mon 8/17
             mock_now.return_value = tzdt(2015, 8, 15, 11, 0)
             expected = tzdt(2015, 8, 17, 19, 0)
@@ -718,7 +718,7 @@ class TestTrigger(TestCase):
             recurrences=rrule
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # now: Sat 08/8 at 11:00am, expected: next is Mon 8/10
             mock_now.return_value = tzdt(2015, 8, 8, 11, 0)
             expected = tzdt(2015, 8, 10, 9, 0)
@@ -759,7 +759,7 @@ class TestTrigger(TestCase):
         user.userprofile.timezone = 'America/Chicago'
         user.userprofile.save()
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 2, 11, 30)
             trigger = Trigger.objects.create(
                 name="Test Default",
@@ -777,7 +777,7 @@ class TestTrigger(TestCase):
         user.userprofile.timezone = 'America/Chicago'
         user.userprofile.save()
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 2, 11, 30)
 
             trigger = Trigger.objects.create(
@@ -813,7 +813,7 @@ class TestTrigger(TestCase):
         act.save()
 
         user = User.objects.create_user("un", "em@il.com", 'pass')
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
             ua = UserAction.objects.create(user=user, action=act)
             # A custom trigger should have been created
@@ -847,7 +847,7 @@ class TestTrigger(TestCase):
         act.save()
 
         user = User.objects.create_user("un", "em@il.com", 'pass')
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
             ua = UserAction.objects.create(user=user, action=act)
             # A custom trigger should have been created
@@ -884,7 +884,7 @@ class TestTrigger(TestCase):
 
         user = User.objects.create_user("un", "em@il.com", 'pass')
         custom_trigger = None
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 1, 1, 11, 45)
             ua = UserAction.objects.create(user=user, action=act)
 
@@ -932,7 +932,7 @@ class TestTrigger(TestCase):
             start_when_selected=True,
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             mock_now.return_value = tzdt(2015, 12, 1, 14, 30)  # 2:30pm Dec 1
 
             # Test some expected "next" values.

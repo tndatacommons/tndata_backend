@@ -69,7 +69,7 @@ class TestUserProgress(TestCase):
 
         dt = timezone.now()
         cls.dt = tzdt(dt.year, dt.month, dt.day, 9, 0)  # Today, 9am
-        with patch('goals.models.timezone.now') as mock_now:
+        with patch('goals.models.triggers.timezone.now') as mock_now:
             # Current time: 9am
             mock_now.return_value = cls.dt
 
@@ -138,7 +138,7 @@ class TestUserProgress(TestCase):
 
     def test_action_feedback_zero_percent(self):
         # Create some UserCompletedAction history for a single Action (10 days)
-        with patch('goals.models.timezone.now') as mock_now:
+        with patch('goals.models.progress.timezone.now') as mock_now:
             params = {
                 'user': self.user,
                 'useraction': self.ua1,
@@ -165,7 +165,7 @@ class TestUserProgress(TestCase):
 
     def test_action_feedback_half_completed(self):
         # Create some UserCompletedAction history for a single Action (10 days)
-        with patch('goals.models.timezone.now') as mock_now:
+        with patch('goals.models.progress.timezone.now') as mock_now:
             params = {
                 'user': self.user,
                 'useraction': self.ua1,
@@ -196,7 +196,7 @@ class TestUserProgress(TestCase):
 
     def test_action_feedback_sixty_percent(self):
         # Create some UserCompletedAction history for a single Action (10 days)
-        with patch('goals.models.timezone.now') as mock_now:
+        with patch('goals.models.progress.timezone.now') as mock_now:
             params = {
                 'user': self.user,
                 'useraction': self.ua1,
@@ -224,7 +224,7 @@ class TestUserProgress(TestCase):
         self.assertEqual(results, expected)
 
     def test_todays_actions_progress(self):
-        with patch('goals.models.timezone.now') as mock_now:
+        with patch('goals.models.progress.timezone.now') as mock_now:
             args = (self.dt.year, self.dt.month, self.dt.day, 9, 0)
             mock_now.return_value = tzdt(*args)
             params = {
@@ -382,7 +382,7 @@ class TestUserFeed(TestCase):
         cls.ub = UserBehavior.objects.create(user=cls.user, behavior=cls.behavior)
 
         dt = timezone.now()
-        with patch('goals.models.timezone.now') as mock_now:
+        with patch('goals.models.triggers.timezone.now') as mock_now:
             mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 8, 0)
             # A Trigger for an action...
             cls.trigger = Trigger.objects.create(

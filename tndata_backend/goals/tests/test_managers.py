@@ -186,7 +186,7 @@ class TestTriggerManager(TestCase):
         )
 
     def test_create_for_user(self):
-        with patch('goals.models.timezone') as mock_tz:
+        with patch('goals.models.triggers.timezone') as mock_tz:
             mock_tz.is_naive = timezone.is_naive
             mock_tz.is_aware = timezone.is_aware
             mock_tz.make_aware = timezone.make_aware
