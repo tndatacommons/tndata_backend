@@ -449,29 +449,29 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         help_text="Optional tips and tricks or other small, associated ideas. "
                   "Consider using bullets."
     )
-    case = models.TextField(
+    case = models.TextField(  # TODO: Remove this field?
         blank=True,
         help_text="Brief description of why this is useful."
     )
-    outcome = models.TextField(
+    outcome = models.TextField(  # TODO: Remove this field?
         blank=True,
         help_text="Brief description of what the user can expect to get by "
                   "adopting the behavior"
     )
-    external_resource = models.CharField(
+    external_resource = models.CharField(  # TODO: Remove this field (not used in Behaviors)?
         blank=True,
         max_length=256,
         help_text=("An external resource is something that will help a user "
                    "accomplish a task. It could be a phone number, link to a "
                    "website, link to another app, or GPS coordinates. ")
     )
-    external_resource_name = models.CharField(
+    external_resource_name = models.CharField(  # TODO: Remove this field?
         blank=True,
         max_length=256,
         help_text=("A human-friendly name for your external resource. This is "
                    "especially helpful for web links.")
     )
-    notification_text = models.CharField(
+    notification_text = models.CharField(  # TODO: Remove this field (there's content, but we're not using it)?
         max_length=256,
         blank=True,
         help_text="Text of the notification (50 characters)"
@@ -482,14 +482,14 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         blank=True,
         help_text="A square icon for this item in the app, preferrably 512x512."
     )
-    image = models.ImageField(
+    image = models.ImageField(  # TODO: Remove this field?
         upload_to=_behavior_img_path,
         null=True,
         blank=True,
         help_text="An image to be displayed for this item, preferrably 1024x1024."
     )
     state = FSMField(default="draft")
-    default_trigger = models.ForeignKey(
+    default_trigger = models.ForeignKey(  # TODO: Remove this field?
         Trigger,
         blank=True,
         null=True,
@@ -668,11 +668,11 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         blank=True,
         help_text="A brief (250 characters) description about this item."
     )
-    case = models.TextField(
+    case = models.TextField(  # TODO: Remove this field?
         blank=True,
         help_text="Brief description of why this is useful."
     )
-    outcome = models.TextField(
+    outcome = models.TextField(  # TODO: Remove this field?
         blank=True,
         help_text="Brief description of what the user can expect to get by "
                   "adopting the behavior"
@@ -701,7 +701,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         blank=True,
         help_text="A square icon for this item in the app, preferrably 512x512."
     )
-    image = models.ImageField(
+    image = models.ImageField(  # TODO: Remove this field?
         upload_to=_behavior_img_path,
         null=True,
         blank=True,
