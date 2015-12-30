@@ -389,11 +389,261 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     objects = GoalManager()
 
 
-class BaseBehavior(ModifiedMixin, StateMixin, models.Model):
-    """This abstract base class contains fields that are common to both
-    `Behavior` and `Action` models.
+class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Model):
+    """A Behavior. Behaviors have many actions associated with them and contain
+    several bits of information for a user."""
+
+    # URLMixin attributes
+    urls_app_namespace = "goals"
+    urls_model_name = "behavior"
+    urls_fields = ["pk", "title_slug"]
+    urls_icon_field = "icon"
+    urls_image_field = "image"
+
+    # Data Fields
+    title = models.CharField(
+        max_length=256,
+        db_index=True,
+        unique=True,
+        help_text="A unique title for this Behavior (50 characters)"
+    )
+    title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
+    sequence_order = models.IntegerField(
+        default=0,
+        db_index=True,
+        blank=True,
+        help_text="Optional ordering for a sequence of behaviors"
+    )
+    goals = models.ManyToManyField(
+        Goal,
+        blank=True,
+        help_text="Select the Goal(s) that this Behavior achieves."
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="A brief (250 characters) description about this item."
+    )
+    informal_list = models.TextField(
+        blank=True,
+        help_text="Use this section to create a list of specific actions for "
+                  "this behavior. This list will be reproduced as a mnemonic "
+                  "on the Action entry page"
+    )
+    source_link = models.URLField(
+        max_length=256,
+        blank=True,
+        null=True,
+        help_text="A link to the source."
+    )
+    source_notes = models.TextField(
+        blank=True,
+        help_text="Narrative notes about the source of this item."
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Misc notes about this item. This is for your use and will "
+                  "not be displayed in the app."
+    )
+    more_info = models.TextField(
+        blank=True,
+        help_text="Optional tips and tricks or other small, associated ideas. "
+                  "Consider using bullets."
+    )
+    case = models.TextField(
+        blank=True,
+        help_text="Brief description of why this is useful."
+    )
+    outcome = models.TextField(
+        blank=True,
+        help_text="Brief description of what the user can expect to get by "
+                  "adopting the behavior"
+    )
+    external_resource = models.CharField(
+        blank=True,
+        max_length=256,
+        help_text=("An external resource is something that will help a user "
+                   "accomplish a task. It could be a phone number, link to a "
+                   "website, link to another app, or GPS coordinates. ")
+    )
+    external_resource_name = models.CharField(
+        blank=True,
+        max_length=256,
+        help_text=("A human-friendly name for your external resource. This is "
+                   "especially helpful for web links.")
+    )
+    notification_text = models.CharField(
+        max_length=256,
+        blank=True,
+        help_text="Text of the notification (50 characters)"
+    )
+    icon = models.ImageField(
+        upload_to=_behavior_icon_path,
+        null=True,
+        blank=True,
+        help_text="A square icon for this item in the app, preferrably 512x512."
+    )
+    image = models.ImageField(
+        upload_to=_behavior_img_path,
+        null=True,
+        blank=True,
+        help_text="An image to be displayed for this item, preferrably 1024x1024."
+    )
+    state = FSMField(default="draft")
+    default_trigger = models.ForeignKey(
+        Trigger,
+        blank=True,
+        null=True,
+        help_text="A trigger/reminder for this behavior"
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="behaviors_updated",
+        null=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="behaviors_created",
+        null=True
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sequence_order', 'title']
+        verbose_name = "Behavior"
+        verbose_name_plural = "Behaviors"
+        # add_behavior, change_behavior, delete_behavior are created by default.
+        permissions = (
+            ("view_behavior", "Can view Permissions"),
+            ("decline_behavior", "Can Decline Permissions"),
+            ("publish_behavior", "Can Publish Permissions"),
+        )
+
+    def __str__(self):
+        return "{0}".format(self.title)
+
+    def _set_notification_text(self):
+        if not self.notification_text:
+            self.notification_text = self.title
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.title_slug = slugify(self.title)
+        kwargs = self._check_updated_or_created_by(**kwargs)
+        self._set_notification_text()
+        super().save(*args, **kwargs)
+
+    @property
+    def rendered_description(self):
+        """Render the description markdown"""
+        return markdown(self.description)
+
+    @property
+    def rendered_more_info(self):
+        """Render the more_info markdown"""
+        return markdown(self.more_info)
+
+    @transition(field=state, source="*", target='draft')
+    def draft(self):
+        pass
+
+    @transition(field=state, source=["draft", "declined"], target='pending-review')
+    def review(self):
+        pass
+
+    @transition(field=state, source="pending-review", target='declined')
+    def decline(self):
+        pass
+
+    @transition(field=state, source=["draft", "pending-review"], target='published')
+    def publish(self):
+        pass
+
+    def get_async_icon_upload_url(self):
+        return reverse("goals:file-upload", args=["behavior", self.id])
+
+    @property
+    def categories(self):
+        """Return a QuerySet of Categories for this object's selected Goals"""
+        cats = self.goals.values_list('categories', flat=True)
+        return Category.objects.filter(pk__in=cats)
+
+    def get_user_mapping(self, user):
+        """Return the first UserBehavior object that matches this Behavior and
+        the given user. There _should_ only be one of these. Returns None if
+        the object is not found.
+
+        Note: This method can be used by other apps that may have a generic
+        relationships (e.g. notifications).
+
+        """
+        return self.userbehavior_set.filter(user=user, behavior=self).first()
+
+    objects = WorkflowManager()
+
+
+class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
+    """Actions are things that people do, and are typically the bit of
+    information to which a user will set a reminder (e.g. a Trigger).
+
+    Actions can be of different types, i.e.:
+
+    * Starter Step
+    * Tiny Version
+    * Resource
+    * Right now
+    * Custom
 
     """
+    STARTER = "starter"
+    TINY = "tiny"
+    RESOURCE = "resource"
+    NOW = "now"
+    LATER = "later"
+    CUSTOM = "custom"
+
+    ACTION_TYPE_CHOICES = (
+        (STARTER, 'Starter Step'),
+        (TINY, 'Tiny Version'),
+        (RESOURCE, 'Resource'),
+        (NOW, 'Do it now'),
+        (LATER, 'Do it later'),
+        (CUSTOM, 'Custom'),
+    )
+
+    # URLMixin attributes
+    urls_fields = ['pk', 'title_slug']
+    urls_app_namespace = "goals"
+    urls_model_name = "action"
+    urls_icon_field = "icon"
+    urls_image_field = "image"
+    default_icon = "img/compass-grey.png"
+
+    # String formatting patters for notifications
+    _notification_title = "To {}:"  # Fill with the primary goal.
+    _notification_text = "Time for me to {}"  # Fill with the notification_text
+
+    # Data Fields
+    title = models.CharField(
+        max_length=256,
+        db_index=True,
+        help_text="A short (50 character) title for this Action"
+    )
+    title_slug = models.SlugField(max_length=256, db_index=True)
+
+    behavior = models.ForeignKey(Behavior, verbose_name="behavior")
+    action_type = models.CharField(
+        max_length=32,
+        default=CUSTOM,
+        choices=ACTION_TYPE_CHOICES,
+        db_index=True,
+    )
+    sequence_order = models.IntegerField(
+        default=0,
+        db_index=True,
+        help_text="Order/number of action in stepwise sequence of behaviors"
+    )
+
     source_link = models.URLField(
         max_length=256,
         blank=True,
@@ -458,201 +708,6 @@ class BaseBehavior(ModifiedMixin, StateMixin, models.Model):
         help_text="An image to be displayed for this item, preferrably 1024x1024."
     )
     state = FSMField(default="draft")
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-    def __str__(self):
-        return "{0}".format(self.title)
-
-    def _set_notification_text(self):
-        if not self.notification_text:
-            self.notification_text = self.title
-
-    @property
-    def rendered_description(self):
-        """Render the description markdown"""
-        return markdown(self.description)
-
-    @property
-    def rendered_more_info(self):
-        """Render the more_info markdown"""
-        return markdown(self.more_info)
-
-    def save(self, *args, **kwargs):
-        """Always slugify the name prior to saving the model."""
-        self.title_slug = slugify(self.title)
-        kwargs = self._check_updated_or_created_by(**kwargs)
-        self._set_notification_text()
-        super(BaseBehavior, self).save(*args, **kwargs)
-
-    @transition(field=state, source="*", target='draft')
-    def draft(self):
-        pass
-
-    @transition(field=state, source=["draft", "declined"], target='pending-review')
-    def review(self):
-        pass
-
-    @transition(field=state, source="pending-review", target='declined')
-    def decline(self):
-        pass
-
-    @transition(field=state, source=["draft", "pending-review"], target='published')
-    def publish(self):
-        pass
-
-
-class Behavior(URLMixin, UniqueTitleMixin,  BaseBehavior):
-    """A Behavior. Behaviors have many actions associated with them and contain
-    several bits of information for a user."""
-
-    # URLMixin attributes
-    urls_app_namespace = "goals"
-    urls_model_name = "behavior"
-    urls_fields = ["pk", "title_slug"]
-    urls_icon_field = "icon"
-    urls_image_field = "image"
-
-    # Data Fields
-    title = models.CharField(
-        max_length=256,
-        db_index=True,
-        unique=True,
-        help_text="A unique title for this Behavior (50 characters)"
-    )
-    title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
-    sequence_order = models.IntegerField(
-        default=0,
-        db_index=True,
-        blank=True,
-        help_text="Optional ordering for a sequence of behaviors"
-    )
-    goals = models.ManyToManyField(
-        Goal,
-        blank=True,
-        help_text="Select the Goal(s) that this Behavior achieves."
-    )
-    informal_list = models.TextField(
-        blank=True,
-        help_text="Use this section to create a list of specific actions for "
-                  "this behavior. This list will be reproduced as a mnemonic "
-                  "on the Action entry page"
-    )
-    default_trigger = models.ForeignKey(
-        Trigger,
-        blank=True,
-        null=True,
-        help_text="A trigger/reminder for this behavior"
-    )
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="behaviors_updated",
-        null=True
-    )
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="behaviors_created",
-        null=True
-    )
-
-    class Meta(BaseBehavior.Meta):
-        ordering = ['sequence_order', 'title']
-        verbose_name = "Behavior"
-        verbose_name_plural = "Behaviors"
-        # add_behavior, change_behavior, delete_behavior are created by default.
-        permissions = (
-            ("view_behavior", "Can view Permissions"),
-            ("decline_behavior", "Can Decline Permissions"),
-            ("publish_behavior", "Can Publish Permissions"),
-        )
-
-    def get_async_icon_upload_url(self):
-        return reverse("goals:file-upload", args=["behavior", self.id])
-
-    @property
-    def categories(self):
-        """Return a QuerySet of Categories for this object's selected Goals"""
-        cats = self.goals.values_list('categories', flat=True)
-        return Category.objects.filter(pk__in=cats)
-
-    def get_user_mapping(self, user):
-        """Return the first UserBehavior object that matches this Behavior and
-        the given user. There _should_ only be one of these. Returns None if
-        the object is not found.
-
-        Note: This method can be used by other apps that may have a generic
-        relationships (e.g. notifications).
-
-        """
-        return self.userbehavior_set.filter(user=user, behavior=self).first()
-
-    objects = WorkflowManager()
-
-
-class Action(URLMixin, BaseBehavior):
-    """Actions are things that people do, and are typically the bit of
-    information to which a user will set a reminder (e.g. a Trigger).
-
-    Actions can be of different types, i.e.:
-
-    * Starter Step
-    * Tiny Version
-    * Resource
-    * Right now
-    * Custom
-
-    """
-    STARTER = "starter"
-    TINY = "tiny"
-    RESOURCE = "resource"
-    NOW = "now"
-    LATER = "later"
-    CUSTOM = "custom"
-
-    ACTION_TYPE_CHOICES = (
-        (STARTER, 'Starter Step'),
-        (TINY, 'Tiny Version'),
-        (RESOURCE, 'Resource'),
-        (NOW, 'Do it now'),
-        (LATER, 'Do it later'),
-        (CUSTOM, 'Custom'),
-    )
-
-    # URLMixin attributes
-    urls_fields = ['pk', 'title_slug']
-    urls_app_namespace = "goals"
-    urls_model_name = "action"
-    urls_icon_field = "icon"
-    urls_image_field = "image"
-    default_icon = "img/compass-grey.png"
-
-    # String formatting patters for notifications
-    _notification_title = "To {}:"  # Fill with the primary goal.
-    _notification_text = "Time for me to {}"  # Fill with the notification_text
-
-    # Data Fields
-    title = models.CharField(
-        max_length=256,
-        db_index=True,
-        help_text="A short (50 character) title for this Action"
-    )
-    title_slug = models.SlugField(max_length=256, db_index=True)
-
-    behavior = models.ForeignKey(Behavior, verbose_name="behavior")
-    action_type = models.CharField(
-        max_length=32,
-        default=CUSTOM,
-        choices=ACTION_TYPE_CHOICES,
-        db_index=True,
-    )
-    sequence_order = models.IntegerField(
-        default=0,
-        db_index=True,
-        help_text="Order/number of action in stepwise sequence of behaviors"
-    )
     default_trigger = models.OneToOneField(
         Trigger,
         blank=True,
@@ -670,6 +725,26 @@ class Action(URLMixin, BaseBehavior):
         related_name="actions_created",
         null=True
     )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sequence_order', 'title']
+        verbose_name = "Action"
+        verbose_name_plural = "Actions"
+        # add_action, change_action, delete_action are created by default.
+        permissions = (
+            ("view_action", "Can view Actions"),
+            ("decline_action", "Can Decline Actions"),
+            ("publish_action", "Can Publish Actions"),
+        )
+
+    def __str__(self):
+        return "{0}".format(self.title)
+
+    def _set_notification_text(self):
+        if not self.notification_text:
+            self.notification_text = self.title
 
     @classmethod
     def get_create_starter_action_url(cls):
@@ -701,24 +776,26 @@ class Action(URLMixin, BaseBehavior):
         return "{0}?actiontype={1}".format(
             reverse("goals:action-create"), cls.CUSTOM)
 
-    class Meta(BaseBehavior.Meta):
-        ordering = ['sequence_order', 'title']
-        verbose_name = "Action"
-        verbose_name_plural = "Actions"
-        # add_action, change_action, delete_action are created by default.
-        permissions = (
-            ("view_action", "Can view Actions"),
-            ("decline_action", "Can Decline Actions"),
-            ("publish_action", "Can Publish Actions"),
-        )
-
     def save(self, *args, **kwargs):
         """After saving an Action, we remove any stale GCM Notifications that
         were associated with the action, IF any of the fields used to generate
         a notification have changed.
         """
+        self.title_slug = slugify(self.title)
+        kwargs = self._check_updated_or_created_by(**kwargs)
+        self._set_notification_text()
         super().save(*args, **kwargs)
         self.remove_queued_messages()
+
+    @property
+    def rendered_description(self):
+        """Render the description markdown"""
+        return markdown(self.description)
+
+    @property
+    def rendered_more_info(self):
+        """Render the more_info markdown"""
+        return markdown(self.more_info)
 
     def get_disable_trigger_url(self):
         args = [self.id, self.title_slug]
@@ -792,5 +869,21 @@ class Action(URLMixin, BaseBehavior):
             text = "{}{}".format(text[0].lower(), text[1:])
             return self._notification_text.format(text)
         return self._notification_text.format(text)
+
+    @transition(field=state, source="*", target='draft')
+    def draft(self):
+        pass
+
+    @transition(field=state, source=["draft", "declined"], target='pending-review')
+    def review(self):
+        pass
+
+    @transition(field=state, source="pending-review", target='declined')
+    def decline(self):
+        pass
+
+    @transition(field=state, source=["draft", "pending-review"], target='published')
+    def publish(self):
+        pass
 
     objects = WorkflowManager()
