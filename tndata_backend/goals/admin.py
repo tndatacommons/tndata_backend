@@ -487,3 +487,44 @@ class PackageEnrollmentAdmin(UserRelatedModelAdmin):
     raw_id_fields = ("user", 'enrolled_by', 'goals')
 
 admin.site.register(models.PackageEnrollment, PackageEnrollmentAdmin)
+
+
+class CustomGoalAdmin(UserRelatedModelAdmin):
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'title',
+    )
+    list_display = ('title', 'created_on')
+    raw_id_fields = ('user', )
+admin.site.register(models.CustomGoal, CustomGoalAdmin)
+
+
+class CustomActionAdmin(UserRelatedModelAdmin):
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'title', 'customgoal__title', 'notification_text'
+    )
+    list_display = ('title', 'prev_trigger_date', 'next_trigger_date', 'created_on')
+    raw_id_fields = ('user', 'customgoal', 'custom_trigger')
+admin.site.register(models.CustomAction, CustomActionAdmin)
+
+
+class CustomActionFeedbackAdmin(UserRelatedModelAdmin):
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'customgoal__title', 'customaction__title', 'text'
+    )
+    list_display = ('customgoal', 'customaction', 'created_on')
+    raw_id_fields = ('user', 'customgoal', 'customaction')
+admin.site.register(models.CustomActionFeedback, CustomActionFeedbackAdmin)
+
+
+class UserCompletedCustomActionAdmin(UserRelatedModelAdmin):
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+        'customaction__title', 'customgoal__title', 'state'
+    )
+    list_display = ('customgoal', 'customaction', 'created_on')
+    list_filter = ('state', )
+    raw_id_fields = ('user', 'customaction', 'customgoal')
+admin.site.register(models.UserCompletedCustomAction, UserCompletedCustomActionAdmin)
