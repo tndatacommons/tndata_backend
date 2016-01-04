@@ -16,6 +16,9 @@ from .. models import (
     BehaviorProgress,
     Category,
     CategoryProgress,
+    CustomAction,
+    CustomActionFeedback,
+    CustomGoal,
     Goal,
     GoalProgress,
     PackageEnrollment,
@@ -24,6 +27,7 @@ from .. models import (
     UserBehavior,
     UserCategory,
     UserCompletedAction,
+    UserCompletedCustomAction,
     UserGoal,
 )
 
@@ -2077,3 +2081,130 @@ class TestPackageEnrollment(TestCase):
         self.assertTrue(self.user.usergoal_set.exists())
         self.assertTrue(self.user.userbehavior_set.exists())
         self.assertTrue(self.user.useraction_set.exists())
+
+
+# -----------------------------------------------------------------------------
+# User-created stuff; CustomGoal, CustomAction, CustomActionFeedback, etc
+# -----------------------------------------------------------------------------
+
+
+class TestCustomGoal(TestCase):
+    """Tests for the `CustomGoal` model."""
+
+    def setUp(self):
+        self.user = mommy.make(User)
+        self.customgoal = mommy.make(CustomGoal, title='test', user=self.user)
+
+    def tearDown(self):
+        CustomGoal.objects.filter(id=self.customgoal.id).delete()
+
+    def test__str__(self):
+        expected = self.customgoal.title
+        actual = "{}".format(self.customgoal)
+        self.assertEqual(expected, actual)
+
+    def test_save(self):
+        """Verify that saving generates a title_slug"""
+        customgoal = CustomGoal.objects.create(title="New CG", user=self.user)
+        customgoal.save()
+        self.assertEqual(customgoal.title_slug, "new-cg")
+        customgoal.delete()  # Clean up.
+
+
+class TestCustomAction(TestCase):
+    """Tests for the `CustomAction` model."""
+
+    def setUp(self):
+        self.user = mommy.make(User)
+        self.customgoal = mommy.make(CustomGoal, title='Goal', user=self.user)
+        self.customaction = mommy.make(
+            CustomAction,
+            user=self.user,
+            customgoal=self.customgoal,
+            title="Action"
+        )
+
+    def tearDown(self):
+        CustomAction.objects.filter(id=self.customaction.id).delete()
+
+    def test__str__(self):
+        expected = self.customaction.title
+        actual = "{}".format(self.customaction)
+        self.assertEqual(expected, actual)
+
+    def test_save(self):
+        """Verify that saving generates a title_slug"""
+        customaction = CustomAction.objects.create(title="New CG", user=self.user)
+        customaction.save()
+        self.assertEqual(customaction.title_slug, "new-cg")
+        customaction.delete()  # Clean up.
+
+    # TODO: test trigger-related stuff
+
+
+class TestUserCompletedCustomAction(TestCase):
+    """Tests for the `UserCompletedCustomAction` model."""
+
+    def setUp(self):
+        self.user = mommy.make(User)
+        self.customgoal = mommy.make(CustomGoal, title='Goal', user=self.user)
+        self.customaction = mommy.make(
+            CustomAction,
+            user=self.user,
+            customgoal=self.customgoal,
+            title="Action"
+        )
+        self.ucca = mommy.make(
+            UserCompletedCustomAction,
+            user=self.user,
+            customaction=self.customaction,
+            customgoal=self.customgoal
+        )
+
+    def tearDown(self):
+        UserCompletedCustomAction.objects.filter(id=self.ucca.id).delete()
+
+    def test__str__(self):
+        expected = self.customaction.title
+        actual = "{}".format(self.ucca)
+        self.assertEqual(expected, actual)
+
+    def test_uncompleted(self):
+        self.assertEqual(self.ucca.uncompleted, "uncompleted")
+
+    def test_completed(self):
+        self.assertEqual(self.ucca.completed, "completed")
+
+    def test_dismissed(self):
+        self.assertEqual(self.ucca.dismissed, "dismissed")
+
+    def test_snoozed(self):
+        self.assertEqual(self.ucca.snoozed, "snoozed")
+
+
+class TestCustomActionFeedback(TestCase):
+    """Tests for the `CustomActionFeedback` model."""
+
+    def setUp(self):
+        self.user = mommy.make(User)
+        self.customgoal = mommy.make(CustomGoal, title='Goal', user=self.user)
+        self.customaction = mommy.make(
+            CustomAction,
+            user=self.user,
+            customgoal=self.customgoal,
+            title="Action"
+        )
+        self.caf = mommy.make(
+            CustomActionFeedback,
+            user=self.user,
+            customaction=self.customaction,
+            customgoal=self.customgoal
+        )
+
+    def tearDown(self):
+        CustomActionFeedback.objects.filter(id=self.caf.id).delete()
+
+    def test__str__(self):
+        expected = self.customaction.title
+        actual = "{}".format(self.caf)
+        self.assertEqual(expected, actual)
