@@ -156,7 +156,8 @@ class BehaviorForm(forms.ModelForm):
         model = Behavior
         fields = [
             'title', 'sequence_order', 'description', 'more_info',
-            'informal_list', 'notes', 'external_resource', 'goals', 'icon',
+            'informal_list', 'notes', 'external_resource',
+            'external_resource_name', 'goals', 'icon',
             'source_link', 'source_notes',
         ]
         labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}

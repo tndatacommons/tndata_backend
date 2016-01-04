@@ -231,8 +231,8 @@ class TestBehaviorForm(TestCase):
         form = BehaviorForm()
         fields = sorted([
             'title', 'description', 'more_info', 'informal_list', 'notes',
-            'external_resource', 'goals', 'icon', 'source_link', 'source_notes',
-            'sequence_order',
+            'external_resource', 'external_resource_name', 'goals', 'icon',
+            'source_link', 'source_notes', 'sequence_order',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -245,6 +245,7 @@ class TestBehaviorForm(TestCase):
             'more_info': '',
             'informal_list': '',
             'external_resource': '',
+            'external_resource_name': '',
             'goals': [g.id],
             'icon': '',
             'source_link': '',
@@ -266,6 +267,7 @@ class TestBehaviorForm(TestCase):
             'more_info': '',
             'informal_list': '',
             'external_resource': '',
+            'external_resource_name': '',
             'goals': [g.id],
             'icon': '',
             'source_link': '',
