@@ -2170,16 +2170,20 @@ class TestUserCompletedCustomAction(TestCase):
         self.assertEqual(expected, actual)
 
     def test_uncompleted(self):
-        self.assertEqual(self.ucca.uncompleted, "uncompleted")
+        # state is unset
+        self.assertFalse(self.ucca.uncompleted)
 
     def test_completed(self):
-        self.assertEqual(self.ucca.completed, "completed")
+        # state is unset
+        self.assertFalse(self.ucca.completed)
 
     def test_dismissed(self):
-        self.assertEqual(self.ucca.dismissed, "dismissed")
+        # state is unset
+        self.assertFalse(self.ucca.dismissed)
 
     def test_snoozed(self):
-        self.assertEqual(self.ucca.snoozed, "snoozed")
+        # state is unset
+        self.assertFalse(self.ucca.snoozed)
 
 
 class TestCustomActionFeedback(TestCase):
