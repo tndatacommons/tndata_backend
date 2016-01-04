@@ -766,7 +766,6 @@ class TestGoalListView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
 
     def test_anon_get(self):
@@ -812,7 +811,6 @@ class TestGoalDetailView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         cls.url = cls.goal.get_absolute_url()
 
@@ -872,7 +870,6 @@ class TestGoalCreateView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
 
     def test_anon_get(self):
@@ -918,7 +915,6 @@ class TestGoalDuplicateView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         cls.url = cls.goal.get_duplicate_url()
 
@@ -952,7 +948,6 @@ class TestGoalPublishView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         cls.url = cls.goal.get_publish_url()
 
@@ -1053,7 +1048,6 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome",
             created_by=self.author
         )
         self.url = self.goal.get_update_url()
@@ -1259,7 +1253,6 @@ class TestGoalDeleteView(TestCaseWithGroups):
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         self.url = self.goal.get_delete_url()
 
@@ -1531,7 +1524,6 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
@@ -1721,7 +1713,6 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
@@ -1733,7 +1724,6 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         self.behavior = Behavior.objects.create(
             title="Title for Test Behavior",
             description="A Description",
-            outcome="An Outcome",
             created_by=self.author
         )
         self.behavior.goals.add(self.goal)

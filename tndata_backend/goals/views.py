@@ -529,7 +529,6 @@ class BehaviorDuplicateView(BehaviorCreateView):
                 "informal_list": obj.informal_list,
                 "external_resoruce": obj.external_resource,
                 "goals": obj.goals.values_list("id", flat=True),
-                "default_trigger": obj.default_trigger.id if obj.default_trigger else None,
                 "source_link": obj.source_link,
                 "source_notes": obj.source_notes,
             })

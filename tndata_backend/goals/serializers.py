@@ -253,7 +253,6 @@ class CustomTriggerSerializer(serializers.Serializer):
 class BehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Behavior`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    image_url = serializers.ReadOnlyField(source="get_absolute_image")
     goals = GoalListField(many=True, read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
@@ -263,9 +262,9 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
         model = Behavior
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
-            'more_info', 'html_more_info', 'external_resource', 'default_trigger',
-            'notification_text', 'icon_url', 'image_url', 'goals',
-            'actions_count', 'object_type',
+            'more_info', 'html_more_info', 'external_resource',
+            'external_resource_name', 'icon_url', 'goals', 'actions_count',
+            'object_type',
         )
         read_only_fields = ("actions_count", )
 
@@ -277,7 +276,6 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
 class SimpleBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Behavior` instances without related fields."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    image_url = serializers.ReadOnlyField(source="get_absolute_image")
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
     actions_count = serializers.SerializerMethodField()
@@ -286,8 +284,8 @@ class SimpleBehaviorSerializer(ObjectTypeModelSerializer):
         model = Behavior
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
-            'more_info', 'html_more_info', 'external_resource', 'default_trigger',
-            'notification_text', 'icon_url', 'image_url', 'actions_count',
+            'more_info', 'html_more_info', 'external_resource',
+            'external_resource_name', 'icon_url', 'actions_count',
             'object_type',
         )
         read_only_fields = ("actions_count", )
@@ -331,7 +329,6 @@ class GoalProgressSerializer(ObjectTypeModelSerializer):
 class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    image_url = serializers.ReadOnlyField(source="get_absolute_image")
     # TODO: We want to eventuall remove this Behavior field.
     behavior = SimpleBehaviorField(read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
@@ -344,7 +341,7 @@ class ActionSerializer(ObjectTypeModelSerializer):
             'id', 'behavior', 'sequence_order', 'title', 'title_slug',
             'title', 'description', 'html_description', 'more_info',
             'html_more_info', 'external_resource', 'external_resource_name',
-            'default_trigger', 'notification_text', 'icon_url', 'image_url',
+            'default_trigger', 'notification_text', 'icon_url',
             'object_type',
         )
 

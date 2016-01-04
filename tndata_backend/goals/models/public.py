@@ -495,15 +495,10 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
     def __str__(self):
         return "{0}".format(self.title)
 
-    def _set_notification_text(self):
-        if not self.notification_text:
-            self.notification_text = self.title
-
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
-        self._set_notification_text()
         super().save(*args, **kwargs)
 
     @property

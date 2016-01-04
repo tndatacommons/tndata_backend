@@ -179,7 +179,6 @@ class SimpleBehaviorField(serializers.RelatedField):
             'external_resource': value.external_resource,
             'external_resource_name': value.external_resource_name,
             'icon_url': value.get_absolute_icon(),
-            'image_url': value.get_absolute_image(),
             'actions_count': value.action_set.filter(state="published").count(),
         }
 
@@ -225,11 +224,9 @@ class SimpleActionField(serializers.RelatedField):
             'html_description': value.rendered_description,
             'more_info': value.more_info,
             'html_more_info': value.rendered_more_info,
-            'outcome': value.outcome,
             'external_resource': value.external_resource,
             'external_resource_name': value.external_resource_name,
             'icon_url': value.get_absolute_icon(),
-            'image_url': value.get_absolute_image(),
             'behavior_id': value.behavior.id,
             'default_trigger': default_trigger,
         }
