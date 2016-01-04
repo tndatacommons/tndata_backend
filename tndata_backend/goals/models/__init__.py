@@ -1,3 +1,9 @@
+from .custom import (  # NOQA
+    CustomGoal,
+    CustomAction,
+    CustomActionFeedback,
+    UserCompletedCustomAction,
+)
 from .misc import (  # NOQA
     popular_actions,
     popular_behaviors,
