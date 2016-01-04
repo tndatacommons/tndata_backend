@@ -2124,9 +2124,6 @@ class TestCustomAction(TestCase):
             title="Action"
         )
 
-    def tearDown(self):
-        CustomAction.objects.filter(id=self.customaction.id).delete()
-
     def test__str__(self):
         expected = self.customaction.title
         actual = "{}".format(self.customaction)
@@ -2134,7 +2131,11 @@ class TestCustomAction(TestCase):
 
     def test_save(self):
         """Verify that saving generates a title_slug"""
-        customaction = CustomAction.objects.create(title="New CG", user=self.user)
+        customaction = CustomAction.objects.create(
+            title="New CG",
+            user=self.user,
+            customgoal=self.customgoal
+        )
         customaction.save()
         self.assertEqual(customaction.title_slug, "new-cg")
         customaction.delete()  # Clean up.
