@@ -2468,3 +2468,152 @@ class TestCustomGoalAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(CustomGoal.objects.filter(title='DELETE').exists())
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+@override_settings(CACHES=TEST_CACHES)
+class TestCustomActionAPI(APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.customgoal = CustomGoal.objects.create(
+            user=self.user,
+            title="Existing Custom Goal"
+        )
+        self.customaction = CustomAction.objects.create(
+            user=self.user,
+            customgoal=self.customgoal,
+            title="Existing Custom Action",
+            notification_text='Do it'
+        )
+
+        # POST payload data
+        self.payload = {
+            'title': 'Existing Custom THING',
+            'notification_text': 'Keep at it',
+            'customgoal': self.customgoal.id,
+        }
+
+    def test_customaction_list(self):
+        """Ensure un-authenticated requests don't expose any results."""
+        url = reverse('customaction-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_customaction_list_authenticated(self):
+        """Ensure authenticated requests DO expose results."""
+        url = reverse('customaction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertTrue(len(response.data['results']) > 0)
+
+        result = response.data['results'][0]
+        self.assertEqual(result['user'], self.user.id)
+        self.assertEqual(result['id'], self.customaction.id)
+        self.assertEqual(result['title'], self.customaction.title)
+        self.assertEqual(result['title_slug'], self.customaction.title_slug)
+        self.assertEqual(result['customgoal'], self.customgoal.id)
+        self.assertEqual(result['notification_text'], 'Do it'),
+        self.assertEqual(result['object_type'], "customaction")
+        self.assertTrue('next_trigger_date' in result)
+        self.assertTrue('prev_trigger_date' in result)
+        self.assertTrue('updated_on' in result)
+        self.assertTrue('created_on' in result)
+
+    def test_post_customaction_list_unathenticated(self):
+        """Unauthenticated requests should not be allowed to post new
+        CustomActions"""
+        url = reverse('customaction-list')
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_customaction_list_athenticated(self):
+        """Authenticated users should be able to create a CustomAction."""
+        url = reverse('customaction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(CustomAction.objects.filter(user=self.user).count(), 2)
+
+    def test_get_customaction_detail_unauthed(self):
+        """Ensure unauthenticated users cannot view this endpoint."""
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_customaction_detail(self):
+        """Ensure authenticated users can view this endpoint."""
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_customaction_detail_not_allowed(self):
+        """Ensure POSTing to the detail endpoint is not allowed."""
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        # Even if you're authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_put_customaction_detail_unauthenticated(self):
+        """Ensure PUTing to the detail endpoint is not allowed."""
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        response = self.client.put(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_put_customaction_detail(self):
+        """Ensure PUTing to the detail endpoint updates."""
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        payload = {
+            'title': 'Altered',
+            'notification_text': self.customaction.notification_text,
+            'customgoal': self.customgoal.id,
+        }
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertEqual(ca.title, 'Altered')
+
+    def test_delete_customaction_detail_unauthed(self):
+        """Ensure unauthenticated users cannot delete."""
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_customaction_detail(self):
+        """Ensure authenticated users can delete."""
+        ca = CustomAction.objects.create(
+            user=self.user,
+            title="DELETE",
+            customgoal=self.customgoal
+        )
+        url = reverse('customaction-detail', args=[ca.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(CustomAction.objects.filter(title='DELETE').exists())
