@@ -13,6 +13,8 @@ from goals.api import (
     BehaviorViewSet,
     BehaviorProgressViewSet,
     CategoryViewSet,
+    CustomActionViewSet,
+    CustomGoalViewSet,
     GoalProgressViewSet,
     GoalViewSet,
     PackageEnrollmentViewSet,
@@ -80,6 +82,8 @@ router.register(r'users/actions', UserActionViewSet)
 router.register(r'users/behaviors/progress', BehaviorProgressViewSet)
 router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)
+router.register(r'users/customgoals', CustomGoalViewSet)
+router.register(r'users/customactions', CustomActionViewSet)
 router.register(r'users/goals/progress', GoalProgressViewSet)
 router.register(r'users/goals', UserGoalViewSet)
 router.register(r'users/packages', PackageEnrollmentViewSet)

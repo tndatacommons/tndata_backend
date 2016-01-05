@@ -1603,3 +1603,67 @@ class SearchViewSet(HaystackViewSet):
                 if len(term) > 2:
                     metric('q={}'.format(term), category='Search Terms')
         return super().list(request, *args, **kwargs)
+
+
+class CustomGoalViewSet(mixins.CreateModelMixin,
+                        mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.DestroyModelMixin,
+                        viewsets.GenericViewSet):
+    """A User's custom goals.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.CustomGoal.objects.all()
+    serializer_class = serializers.CustomGoalSerializer
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated():
+            return models.CustomGoal.objects.filter(user=self.request.user)
+        return models.CustomGoal.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.data['user'] = request.user.id
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Allow users to update their custom goals."""
+        request.data['user'] = request.user.id
+        return super().update(request, *args, **kwargs)
+
+
+class CustomActionViewSet(mixins.CreateModelMixin,
+                          mixins.ListModelMixin,
+                          mixins.RetrieveModelMixin,
+                          mixins.UpdateModelMixin,
+                          mixins.DestroyModelMixin,
+                          viewsets.GenericViewSet):
+    """A User's custom actions.
+
+    ----
+
+    """
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    serializer_class = serializers.CustomActionSerializer
+    queryset = models.CustomAction.objects.all()
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated():
+            return models.CustomAction.objects.filter(user=self.request.user)
+        return models.CustomAction.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        request.data['user'] = request.user.id
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        """Allow users to update their custom goals."""
+        request.data['user'] = request.user.id
+        return super().update(request, *args, **kwargs)

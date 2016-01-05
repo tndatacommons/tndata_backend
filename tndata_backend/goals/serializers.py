@@ -7,6 +7,8 @@ from . models import (
     Behavior,
     BehaviorProgress,
     Category,
+    CustomGoal,
+    CustomAction,
     Goal,
     GoalProgress,
     PackageEnrollment,
@@ -634,3 +636,28 @@ class PackageEnrollmentSerializer(ObjectTypeModelSerializer):
             'id', 'user', 'accepted', 'updated_on', 'enrolled_on',
             'category', 'goals', 'object_type',
         )
+
+
+class CustomGoalSerializer(ObjectTypeModelSerializer):
+    """A Serializer for the `CustomGoal` model."""
+
+    class Meta:
+        model = CustomGoal
+        fields = (
+            'id', 'user', 'title', 'title_slug', 'updated_on', 'created_on',
+            'object_type',
+        )
+        read_only_fields = ("id", "title_slug", "updated_on", "created_on")
+
+
+class CustomActionSerializer(ObjectTypeModelSerializer):
+    """A Serializer for the `CustomAction` model."""
+
+    class Meta:
+        model = CustomAction
+        fields = (
+            'id', 'user', 'customgoal', 'title', 'title_slug',
+            'notification_text', 'custom_trigger', 'next_trigger_date',
+            'prev_trigger_date', 'updated_on', 'created_on', 'object_type',
+        )
+        read_only_fields = ("id", "title_slug", "updated_on", "created_on")
