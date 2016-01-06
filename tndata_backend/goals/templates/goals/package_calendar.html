@@ -63,6 +63,20 @@
               <option value="goal-{{id}}">{{ title }}</option>
             {% endfor %}
             </select>
+
+            <label for="filter-by-stop">Stop after:</label>
+            <select id="filter-by-stop">
+              <option value="">Never</option>
+              <option value="1">1 reminder</option>
+              <option value="2">2 reminders</option>
+              <option value="3">3 reminders</option>
+              <option value="4">4 reminders</option>
+              <option value="5" selected="selected">5 reminders</option>
+              <option value="10">10 reminders</option>
+              <option value="15">15 reminders</option>
+              <option value="20">25 reminders</option>
+            </select>
+            <p><em>Hide reminders that should stop upon completion</em></p>
           </div>
         </div>
       </div>
@@ -110,9 +124,9 @@
                   title="Select to change your starting date">
               <a href="?d={{day|date:"Y-m-d"}}">{{ day.day }}</a>
             </span>
-            {% for adate, dt, action in actions %}
+            {% for adate, dt, action, stop_counter in actions %}
               {% if adate == day %}
-                <div class="action-wrapper{% for gid in action.goal_ids %} goal-{{gid}}{% endfor %}">
+                <div class="action-wrapper{% for gid in action.goal_ids %} goal-{{gid}}{% endfor %}{% if stop_counter %} stop stop-{{ stop_counter }}{% endif %}">
                   {% with t=action.default_trigger %}
                   <span data-tooltip aria-haspopup="true"
                         class="has-tip tip-top"
@@ -123,6 +137,13 @@
                       <i class="fa fa-info-circle"></i>
                     {% endif %}
                   </span>
+                  {% if t.stop_on_complete %}
+                    <span data-tooltip aria-haspopup="true"
+                          class="has-tip tip-top"
+                          title="This reminder will stop once it's completed">
+                      <i class="fa fa-times-circle" ></i>
+                    </span>
+                  {% endif %}
                   {% endwith %}
                   {% if is_editor %}
                     <a href="{{ action.get_update_url }}">{{ action }}</a>.
@@ -155,10 +176,28 @@
 {% block bodyjs %}
   {{ block.super }}
   <script>
+  var handle_stops = function(value) {
+    var hidden = [];
+    var shown = [];
+
+    if(value) {
+      value = parseInt(value);
+      for(var i=1; i <= value; i++) {
+        shown.push(".stop-" + i);
+      }
+      for(var i=value + 1; i<=31; i++) {
+        hidden.push(".stop-" + i);
+      }
+      $(shown.join(", ")).show();
+      $(hidden.join(", ")).hide();
+    } else {
+      $(".stop").show();
+    }
+  }
+
   $(document).ready(function() {
     $("#filter-by-goal").change(function() {
       var value = $(this).val();
-      console.log("FILTERING FOR: " + value);
       if(value) {
         $(".action-wrapper").hide();
         $("." + value).show();
@@ -166,6 +205,12 @@
         $(".action-wrapper").show();
       }
     });
+
+    $("#filter-by-stop").change(function() {
+      handle_stops($(this).val());
+    });
+    handle_stops($("#filter-by-stop").val());
+
   });
   </script>
 {% endblock %}

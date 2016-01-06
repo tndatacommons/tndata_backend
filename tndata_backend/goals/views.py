@@ -1,5 +1,5 @@
 from calendar import Calendar
-from collections import Counter
+from collections import defaultdict, Counter
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -924,8 +924,8 @@ def package_calendar(request, pk):
 
     # note: start calendar on suday (6)
     cal = Calendar(firstweekday=6).monthdatescalendar(start.year, start.month)
-
     action_data = []
+    stop_on_completes = defaultdict(int)  # Action.id to number of iterations
     contains_relative_reminders = False
     for action in actions:
         kwargs = {'days': 31}  # params for get_occurances
@@ -938,13 +938,22 @@ def package_calendar(request, pk):
             start_on = action.default_trigger.relative_trigger_date(start)
             action.default_trigger.trigger_date = start_on
 
+        # include some meta-data for the stop-on-complete actions
+        action.stop_on_complete = action.default_trigger.stop_on_complete
+
         for dt in action.default_trigger.get_occurences(**kwargs):
-            action_data.append((dt.date(), dt, action))
+            stop_counter = None  # A counter for the stop_on_complete triggers.
+            if action.stop_on_complete:
+                stop_on_completes[action.id] += 1
+                stop_counter = stop_on_completes[action.id]
+            action_data.append((dt.date(), dt, action, stop_counter))
+
         # include a list of goal-ids in the action
         action.goal_ids = list(action.behavior.goals.values_list('id', flat=True))
         action.is_relative = action.default_trigger.is_relative
         if action.default_trigger.is_relative:
             contains_relative_reminders = True
+
     action_data = sorted(action_data, key=lambda d: d[1].strftime("%Y%m%d%H%M"))
 
     goals = list(category.goals.values_list('id', 'title'))
