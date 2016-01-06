@@ -931,8 +931,11 @@ def package_calendar(request, pk):
         if action.default_trigger.is_relative:
             # XXX: Temporarily set the trigger's start date, so this date
             # gets used when generating recurrences (which is how this will
-            # work when a user selects the action).
-            action.default_trigger.trigger_date = start + timedelta(days=1)
+            # work when a user selects the action). Additionally, we need to
+            # temporarily assign a user (the logged in user) to make this work.
+            action.default_trigger.user = request.user
+            start_on = action.default_trigger.relative_trigger_date(start)
+            action.default_trigger.trigger_date = start_on
 
         for dt in action.default_trigger.get_occurences(**kwargs):
             action_data.append((dt.date(), dt, action))

@@ -116,7 +116,7 @@
                   {% with t=action.default_trigger %}
                   <span data-tooltip aria-haspopup="true"
                         class="has-tip tip-top"
-                        title="{% if action.is_relative %}Relative to selection: {% endif %}{{ t.time }}{% if t.trigger_date %}, Starting {{ t.trigger_date }}{% endif %}<br/>{{ t.recurrences_as_text }}">
+                        title="{{ t.time }}{% if t.trigger_date %}, starting {{ t.trigger_date|date:"N d" }}{% endif %}<br/>{{ t.recurrences_as_text }}">
                     {% if action.is_relative %}
                       <i class="fa fa-calendar-o"></i>
                     {% else %}
