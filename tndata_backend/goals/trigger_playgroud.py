@@ -6,7 +6,7 @@ dates all at once.
 """
 from unittest.mock import patch
 from goals.models import Trigger
-from datetime import datetime, time
+from datetime import date, datetime, time
 from django.utils import timezone
 
 
@@ -62,6 +62,9 @@ def _print_trigger(trigger):
     print("- recr: {0}".format(trigger.serialized_recurrences()))
     print("- user: {0}".format(trigger.user))
     print("- name: {0}".format(trigger.name))
+    print("- start when selected? {}".format(trigger.start_when_selected))
+    print("- stop on complete? {}".format(trigger.stop_on_complete))
+    print("- relative? {} {}".format(trigger.relative_value, trigger.relative_units))
     print("---------------------------------------")
 
 
@@ -93,16 +96,23 @@ def print_triggers():
     # 24 25 26 27 28 29 30
     # 31
 
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    user = User.objects.get(pk=1)
+
     START_DAY = 1  # Day of month to start on.
-    NUM_DAYS = 20  # Number of days to test.
+    NUM_DAYS = 10  # Number of days to test.
     Trigger.objects.filter(name="---testing this---").delete()
+
     t = Trigger.objects.create(
-        name="---testing this---",
-        time=time(9, 0),  # 9am
-        #trigger_date=date(2015, 8, 1),
-        #time=time(13, 0),  # 1pm
-        #trigger_date=date(2015, 8, 10),  # 8/17/2015
-        recurrences=rule
+        user=user,  # Make this a custom trigger
+        name="testing",
+        time=time(12, 0),  # 12:00 pm
+        trigger_date=date(2016, 1, 6),
+        #recurrences=rule
+        start_when_selected=True,
+        relative_value=5,
+        relative_units='days'
     )
     _print_trigger(t)
 
@@ -114,21 +124,21 @@ def print_triggers():
         day = START_DAY + i
         with patch("goals.models.timezone.now") as now:
             # Early morning
-            now.return_value = tzdt(2015, 8, day, 6, 0)
+            now.return_value = tzdt(2016, 1, day, 6, 0)
             now_string = now().strftime(tf)
             next_time = t.next()
             next_string = next_time.strftime(tf) if next_time else "None"
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
 
             # Late morning
-            now.return_value = tzdt(2015, 8, day, 11, 0)
+            now.return_value = tzdt(2016, 1, day, 11, 0)
             now_string = now().strftime(tf)
             next_time = t.next()
             next_string = next_time.strftime(tf) if next_time else "None"
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
 
             # Afternoon
-            now.return_value = tzdt(2015, 8, day, 13, 30)
+            now.return_value = tzdt(2016, 1, day, 13, 30)
             now_string = now().strftime(tf)
             next_time = t.next()
             next_string = next_time.strftime(tf) if next_time else "None"
