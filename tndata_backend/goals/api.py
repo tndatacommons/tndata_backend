@@ -1561,6 +1561,28 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
             new_obj.accept()
         return result
 
+    def post(self, request, **kwargs):
+        """HACK to route POST requests containing a PK to `accept`."""
+        if 'pk' in kwargs:
+            return self.accept(request, **kwargs)
+        return self.http_method_not_allowed(request, **kwargs)
+
+    @detail_route(methods=['post'], url_path='')
+    def accept(self, request, pk=None):
+        """ This method adds an additional endpoint that lets us update an
+        instance of their PackageEnrollment via a POST request; this is a
+        temporary fix for clients that don't send PUT requests to accept an
+        enrollment.
+
+        """
+        package_enrollment = self.get_object()
+        if request.data.get('accepted', False):
+            srs = self.serializer_class(instance=package_enrollment)
+            package_enrollment.accept()
+            return Response(srs.data)
+        msg = {'error': 'invalid data'}
+        return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SearchViewSet(HaystackViewSet):
     """This endpoint lists results from our Search Index, which contains content

@@ -2331,6 +2331,49 @@ class TestPackageEnrollmentAPI(APITestCase):
         self.assertEqual(response.data['category']['id'], self.category.id)
         self.assertEqual(response.data['goals'][0]['id'], self.goal.id)
 
+    def test_post_detail_should_fail(self):
+        """POSTing to the detail endpoint should fail unless we're accepting
+        an enrollment."""
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # post some invalid data
+        response = self.client.post(self.detail_url, {'category': 123})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_detail_to_accept(self):
+        """POSTing to the detail endpoint can be used to accept an enrollment"""
+        package = PackageEnrollment.objects.create(
+            user=self.user,
+            category=self.category,
+            enrolled_by=self.admin,
+        )
+        url = reverse('packageenrollment-detail', args=[package.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'accepted': True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        package = PackageEnrollment.objects.get(pk=package.id)
+        self.assertTrue(package.accepted)
+
+    def test_post_packageenrollment_accept(self):
+        """POSTing to the packageenrollment-accept detail_route should accept
+        a PackageEnrollment."""
+        package = PackageEnrollment.objects.create(
+            user=self.user,
+            category=self.category,
+            enrolled_by=self.admin,
+        )
+        url = reverse('packageenrollment-accept', args=[package.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'accepted': True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        package = PackageEnrollment.objects.get(pk=package.id)
+        self.assertTrue(package.accepted)
+
     def test_put_detail_unauthenticated(self):
         """Ensure updates are not allowed when unauthenticated."""
         response = self.client.put(self.detail_url, self.payload)
