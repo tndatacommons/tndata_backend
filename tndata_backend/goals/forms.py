@@ -357,6 +357,17 @@ class ActionTriggerForm(forms.ModelForm):
         except ObjectDoesNotExist:
             disable_button = HTML('')
 
+        self.fields['time'].help_text = (
+            "Set the time at which the notification should be sent"
+        )
+        self.fields['trigger_date'].help_text = (
+            "The date on which notifications should start"
+        )
+
+        # Better label names for the Relative Reminders
+        self.fields['relative_value'].label = 'Relative Reminder'
+        self.fields['relative_units'].label = '&nbsp;'
+
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.layout = Layout(
@@ -392,8 +403,8 @@ class ActionTriggerForm(forms.ModelForm):
                     Div(
                         HTML('<div class="hint">Relative reminders will fire '
                              'based on when the user adopts an action. Select '
-                             'the amount of time and an a unit to turn this '
-                             'into a relative reminder</div>'),
+                             'the amount time after the user adds the action '
+                             'that this reminder should start</div>'),
                         css_class="large-12 columns"
                     ),
                     css_class="row"
