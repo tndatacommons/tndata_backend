@@ -866,6 +866,17 @@ def custom_trigger_updated(sender, instance, created, raw, using, **kwargs):
         metric('custom-trigger-updated', category="User Interactions")
 
 
+@receiver(pre_delete, sender=Trigger, dispatch_uid="trigger-remove-queued-messages")
+@receiver(post_save, sender=Trigger, dispatch_uid="trigger-remove-queued-messages")
+def remove_queued_messages(sender, instance, *args, **kwargs):
+    """If a trigger is updated, we need to remove all currently queued GCM
+    Messages that are using the trigger."""
+    try:
+        instance.action_default.remove_queued_messages()
+    except ObjectDoesNotExist:
+        pass
+
+
 def _behavior_icon_path(instance, filename):
     """Return the path for uploaded icons for `Behavior` and `Action` objects."""
     return _upload_path("goals/{}/icons", instance, filename)
