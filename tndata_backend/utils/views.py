@@ -9,6 +9,7 @@ from userprofile.forms import UserForm
 from .email import send_new_user_request_notification_to_managers
 from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
+from . slack import post_message
 from . user_utils import username_hash
 
 
@@ -36,6 +37,12 @@ def signup(request):
                 # activate the account.
                 send_new_user_request_notification_to_managers(u)
 
+                # Ping slack so this doesn't go unnoticed.
+                msg = (
+                    "Hey @bkmontgomery, {user} just registered for an account. "
+                    "Activate at: https://app.tndata.org/admin/auth/user/{id}/"
+                )
+                post_message("#tech", msg.format(user=u, id=u.id))
                 return redirect(reverse("utils:signup") + "?c=1")
         else:
             messages.error(request, "We could not process your request. "
