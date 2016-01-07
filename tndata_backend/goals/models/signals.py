@@ -4,6 +4,7 @@ Signal Handlers for our models.
 """
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
+from django.db.models import ObjectDoesNotExist
 from django.db.models.signals import (
     pre_delete, pre_save, post_delete, post_save
 )
