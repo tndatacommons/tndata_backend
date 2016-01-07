@@ -38,6 +38,7 @@
   }
   span.has-tip {float:right;}
   span.has-tip i {color: #aaa;}
+  .stop-hidden, .goal-hidden {display:none;}
   </style>
 {% endblock %}
 
@@ -188,10 +189,10 @@
       for(var i=value + 1; i<=31; i++) {
         hidden.push(".stop-" + i);
       }
-      $(shown.join(", ")).show();
-      $(hidden.join(", ")).hide();
+      $(shown.join(", ")).removeClass("stop-hidden");
+      $(hidden.join(", ")).addClass("stop-hidden");
     } else {
-      $(".stop").show();
+      $(".stop").removeClass("stop-hidden");
     }
   }
 
@@ -199,10 +200,10 @@
     $("#filter-by-goal").change(function() {
       var value = $(this).val();
       if(value) {
-        $(".action-wrapper").hide();
-        $("." + value).show();
+        $(".action-wrapper").addClass("goal-hidden");
+        $("." + value).removeClass("goal-hidden");
       } else {
-        $(".action-wrapper").show();
+        $(".action-wrapper").removeClass("goal-hidden");
       }
     });
 
