@@ -24,6 +24,7 @@ from .. models import (
     UserCategory,
     UserAction,
     UserCompletedAction,
+    UserCompletedCustomAction,
 )
 from ..settings import CHECKIN_BETTER, CHECKIN_WORSE
 
@@ -2660,3 +2661,33 @@ class TestCustomActionAPI(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(CustomAction.objects.filter(title='DELETE').exists())
+
+    def test_get_complete_unathenticated(self):
+        url = reverse('customaction-complete', args=[self.customaction.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_post_complete_unathenticated(self):
+        url = reverse('customaction-complete', args=[self.customaction.id])
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_post_complete(self):
+        """POSTing to the complete url should crate an UserCompletedCustomAction
+        object for a user."""
+        # We shouldn't have any just yet.
+        qs = UserCompletedCustomAction.objects.filter(user=self.user)
+        self.assertFalse(qs.exists())
+
+        url = reverse('customaction-complete', args=[self.customaction.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'state': 'completed'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        qs = UserCompletedCustomAction.objects.filter(user=self.user)
+        self.assertTrue(qs.exists())
+
+        obj = qs.get(customaction=self.customaction)
+        self.assertEqual(obj.state, "completed")

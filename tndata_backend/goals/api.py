@@ -1769,3 +1769,61 @@ class CustomActionViewSet(mixins.CreateModelMixin,
         """Allow users to update their custom goals."""
         request.data['user'] = request.user.id
         return super().update(request, *args, **kwargs)
+
+    @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='complete')
+    def complete(self, request, pk=None):
+        """"Allow a user to complete their custom action. If the POST request
+        has no body, we assume they're marking it as `completed`, otherwise we
+        update based on the given `state` field.
+
+        NOTE: this api is meant to duplicate that of UserCompletedAction.complete
+
+        """
+        try:
+            customaction = self.get_object()
+            state = request.data.get('state', 'completed')
+            updated = False
+            try:
+                # Keep 1 record per day
+                now = timezone.now()
+                ucca = models.UserCompletedCustomAction.objects.filter(
+                    created_on__year=now.year,
+                    created_on__month=now.month,
+                    created_on__day=now.day
+                ).get(
+                    user=request.user,
+                    customaction=customaction,
+                    customgoal=customaction.customgoal,
+                )
+                ucca.state = state
+                ucca.save()
+                updated = True
+            except models.UserCompletedCustomAction.DoesNotExist:
+                ucca = models.UserCompletedCustomAction.objects.create(
+                    user=request.user,
+                    customaction=customaction,
+                    customgoal=customaction.customgoal,
+                    state=state
+                )
+
+            if state == 'snoozed':
+                t = request.data.get('length', 'undefined')
+                metric("snooze-{0}".format(t), category='Snoozed Reminders')
+
+            if updated:
+                data = {'updated': ucca.id}
+                status_code = status.HTTP_200_OK
+            else:
+                data = {'created': ucca.id}
+                status_code = status.HTTP_201_CREATED
+            return Response(data=data, status=status_code)
+
+        except Exception as e:
+            if e.__class__.__name__ == 'Http404':
+                return_status = status.HTTP_404_NOT_FOUND
+            else:
+                return_status = status.HTTP_400_BAD_REQUEST
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=return_status
+            )
