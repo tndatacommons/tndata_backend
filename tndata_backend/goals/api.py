@@ -1747,6 +1747,29 @@ class CustomActionViewSet(mixins.CreateModelMixin,
             'customgoal': {ID of the parent custom goal},
         }
 
+    ## Completing Custom Action
+
+    You can specify that you've completed a custom action (typically from a
+    reminder) via the `/api/users/customactions/{customaction_id}/complete/`
+    endpoint. Submit a POST request with the following information:
+
+        {'state': 'completed'}
+
+    Where `state` is one of:
+
+    * `uncompleted`
+    * `completed`
+    * `dismissed`
+    * `snoozed`
+
+    ## Custom Action Feedback
+
+    You can provide open-ended feedback on a Custom Action by sending a POST
+    request to the `/api/users/customactions/{customaction_id}/feedback/`
+    endpoint. Submit a POST request with the following information:
+
+        {'text': 'User-supplied text'}
+
     ----
 
     """
@@ -1827,3 +1850,38 @@ class CustomActionViewSet(mixins.CreateModelMixin,
                 data={'error': "{0}".format(e)},
                 status=return_status
             )
+
+    @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='feedback')
+    def feedback(self, request, pk=None):
+        """"Allow a user to create a related CustomActionFeedback object for
+        this custom action.
+
+        """
+        error_msg = ''
+        try:
+            customaction = self.get_object()
+            text = request.data.get('text', '')
+            if text:
+                caf = models.CustomActionFeedback.objects.create(
+                    user=request.user,
+                    customaction=customaction,
+                    customgoal=customaction.customgoal,
+                    text=text
+                )
+                data = {
+                    'id': caf.id,
+                    'user': caf.user.id,
+                    'customgoal': caf.customgoal.id,
+                    'customaction': caf.customaction.id,
+                    'text': caf.text,
+                    'created_on': caf.created_on
+                }
+                return Response(data=data, status=status.HTTP_201_CREATED)
+            error_msg = "Text is required for a CustomActionFeedback object"
+        except Exception as e:
+            error_msg = "{0}".format(e)
+
+        return Response(
+            data={'error': error_msg},
+            status=status.HTTP_400_BAD_REQUEST
+        )

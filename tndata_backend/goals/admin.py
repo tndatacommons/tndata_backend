@@ -514,7 +514,7 @@ class CustomActionFeedbackAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'customgoal__title', 'customaction__title', 'text'
     )
-    list_display = ('customgoal', 'customaction', 'created_on')
+    list_display = ('customgoal', 'customaction', 'text', 'created_on')
     raw_id_fields = ('user', 'customgoal', 'customaction')
 admin.site.register(models.CustomActionFeedback, CustomActionFeedbackAdmin)
 

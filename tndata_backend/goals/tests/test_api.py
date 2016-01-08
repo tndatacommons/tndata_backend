@@ -14,6 +14,7 @@ from .. models import (
     BehaviorProgress,
     Category,
     CustomAction,
+    CustomActionFeedback,
     CustomGoal,
     Goal,
     GoalProgress,
@@ -2691,3 +2692,33 @@ class TestCustomActionAPI(APITestCase):
 
         obj = qs.get(customaction=self.customaction)
         self.assertEqual(obj.state, "completed")
+
+    def test_post_feedback(self):
+        """POSTing to the feedback url should crate an CustomActionFeedback
+        object for a user."""
+        # We shouldn't have any feedback objects just yet.
+        qs = CustomActionFeedback.objects.filter(user=self.user)
+        self.assertFalse(qs.exists())
+
+        url = reverse('customaction-feedback', args=[self.customaction.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'text': 'I did it'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        qs = CustomActionFeedback.objects.filter(user=self.user)
+        self.assertTrue(qs.exists())
+
+        obj = qs.get(customaction=self.customaction)
+        self.assertEqual(obj.text, "I did it")
+
+    def test_post_feedback_text_is_required(self):
+        """POSTing to the feedback url should crate an CustomActionFeedback
+        object for a user."""
+        url = reverse('customaction-feedback', args=[self.customaction.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'text': ''})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
