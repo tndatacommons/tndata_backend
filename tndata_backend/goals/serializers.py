@@ -652,6 +652,10 @@ class CustomGoalSerializer(ObjectTypeModelSerializer):
 
 class CustomActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `CustomAction` model."""
+    custom_trigger = CustomTriggerField(
+        queryset=Trigger.objects.custom(),
+        required=False
+    )
 
     class Meta:
         model = CustomAction
