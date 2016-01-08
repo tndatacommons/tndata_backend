@@ -1788,9 +1788,87 @@ class CustomActionViewSet(mixins.CreateModelMixin,
         request.data['user'] = request.user.id
         return super().create(request, *args, **kwargs)
 
+    def _include_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
+        """Includes a Trigger object into the request's payload; That means,
+        if we're updating a CustomAction, but the Trigger is getting
+        created or updated, we'll make that change, here, then include the
+        Trigger in as part of the request.
+
+        This method looks for an existing Trigger object, and creates one if
+        it doesn't exist.
+
+        """
+        # It's OK if the rrule, time, date are empty/none.
+
+        # Apparently these will always be lists, but for some reason the
+        # rest framework plumbing doesn't actually convert them to their
+        # primary values; And I can't override this in the Serializer subclass
+        # because it fails before field-level validation is called
+        # (e.g. validate_trigger_time or validate_trigger_rrule)
+        if isinstance(trigger_rrule, list) and len(trigger_rrule) > 0:
+            trigger_rrule = trigger_rrule[0]
+        if isinstance(trigger_time, list) and len(trigger_time) > 0:
+            trigger_time = trigger_time[0]
+        if isinstance(trigger_date, list) and len(trigger_date) > 0:
+            trigger_date = trigger_date[0]
+
+        customaction = self.get_object()
+        # Generate a name for the Trigger
+        tname = "CustomAction trigger for {}".format(customaction.id)
+        try:
+            trigger = customaction.custom_trigger
+        except models.Trigger.DoesNotExist:
+            trigger = None
+
+        trigger_data = {
+            'user_id': customaction.user.id,
+            'time': trigger_time,
+            'name': tname,
+            'rrule': trigger_rrule,
+            'date': trigger_date
+        }
+        trigger_serializer = serializers.CustomTriggerSerializer(
+            instance=trigger,
+            data=trigger_data
+        )
+        if trigger_serializer.is_valid(raise_exception=True):
+            trigger = trigger_serializer.save()
+
+        if trigger and trigger.id:
+            customaction.custom_trigger = trigger
+            customaction.save(update_fields=['custom_trigger'])
+            request.data['custom_trigger'] = trigger
+        return request
+
+    def _has_custom_trigger_params(self, params):
+        """Before we update/create a custom trigger, let's check to see if
+        the request actually includes any of the trigger parameters."""
+        return any([
+            'custom_trigger_rrule' in params,
+            'custom_trigger_time' in params,
+            'custom_trigger_date' in params
+        ])
+
     def update(self, request, *args, **kwargs):
-        """Allow users to update their custom goals."""
+        """Allow users to update their custom goals, additionally allowing
+        the following optional fields for creating trigger details:
+
+        * custom_trigger_rrule
+        * custom_trigger_time
+        * custom_trigger_date
+
+        These custom triggers which work just like in the
+        UserActionViewSet.update method.
+
+        """
         request.data['user'] = request.user.id
+        if self._has_custom_trigger_params(request.data.keys()):
+            request = self._include_trigger(
+                request,
+                trigger_rrule=request.data.pop("custom_trigger_rrule", None),
+                trigger_time=request.data.pop("custom_trigger_time", None),
+                trigger_date=request.data.pop("custom_trigger_date", None)
+            )
         return super().update(request, *args, **kwargs)
 
     @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='complete')

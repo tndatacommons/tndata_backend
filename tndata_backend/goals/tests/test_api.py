@@ -2722,3 +2722,144 @@ class TestCustomActionAPI(APITestCase):
         )
         response = self.client.post(url, {'text': ''})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_put_detail_authenticated_with_empty_data(self):
+        """PUT requests should update a CustomAction when blank data is provided
+        for the custom trigger; Doing this will essentially deactivate the
+        trigger.
+
+        """
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # NOTE: user & action are required fields
+        payload = {
+            'title': "Updated Title",
+            'notification_text': 'A notification',
+            'customgoal': self.customgoal.id,
+            'custom_trigger_time': '',
+            'custom_trigger_date': '',
+            'custom_trigger_rrule': '',
+        }
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure the trigger was created/updated.
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertIsNone(ca.custom_trigger.trigger_date)
+        self.assertIsNone(ca.custom_trigger.time)
+        self.assertIsNone(ca.custom_trigger.recurrences)
+
+    def test_put_detail_authenticated_with_custom_trigger(self):
+        """PUT requests containting custom trigger details, should create
+        a custom trigger (if that field was previously null) for the CustomAction.
+
+        """
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        payload = {
+            'title': "Updated Title",
+            'notification_text': 'A notification',
+            'customgoal': self.customgoal.id,
+            'custom_trigger_date': '2222-12-25',
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure it was updated
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertIsNotNone(ca.custom_trigger)
+        self.assertEqual(
+            ca.custom_trigger.recurrences_as_text(),
+            "weekly, each Monday"
+        )
+        self.assertEqual(ca.custom_trigger.time, time(9, 30))
+        self.assertEqual(ca.custom_trigger.trigger_date, date(2222, 12, 25))
+
+    def test_put_custom_trigger_udpates(self):
+        """When we have an existing custom trigger, putting new values should
+        update it."""
+
+        # Create a Custom trigger for our CustomAction
+        custom_trigger = Trigger.objects.create_for_user(
+            user=self.customaction.user,
+            name="custom trigger for customaction-{0}".format(self.customaction.id),
+            time=time(11, 30),
+            date=date(2000, 1, 2),
+            rrule="RRULE:FREQ=DAILY"
+        )
+        self.customaction.custom_trigger = custom_trigger
+        self.customaction.save()
+
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        payload = {
+            'title': "Updated Title",
+            'notification_text': 'A notification',
+            'customgoal': self.customgoal.id,
+            'custom_trigger_date': '2222-12-25',
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the Trigger got updated.
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertEqual(ca.custom_trigger.id, custom_trigger.id)
+        self.assertEqual(
+            ca.custom_trigger.recurrences_as_text(),
+            "weekly, each Monday"
+        )
+        self.assertEqual(ca.custom_trigger.time, time(9, 30))
+        self.assertEqual(ca.custom_trigger.trigger_date, date(2222, 12, 25))
+
+        # clean up
+        Trigger.objects.filter(id=custom_trigger.id).delete()
+
+    def test_put_customaction_custom_trigger_disable(self):
+        """When we have an existing custom trigger, PUTing blank values for the
+        trigger details should disable it."""
+
+        # Create a Custom trigger for our CustomAction
+        custom_trigger = Trigger.objects.create_for_user(
+            user=self.customaction.user,
+            name="custom trigger for customaction-{0}".format(self.customaction.id),
+            time=time(11, 30),
+            date=date(2000, 1, 2),
+            rrule="RRULE:FREQ=DAILY"
+        )
+        self.customaction.custom_trigger = custom_trigger
+        self.customaction.save()
+
+        url = reverse('customaction-detail', args=[self.customaction.id])
+        payload = {
+            'title': "Updated Title",
+            'notification_text': 'A notification',
+            'customgoal': self.customgoal.id,
+            'custom_trigger_date': '',
+            'custom_trigger_time': '',
+            'custom_trigger_rrule': '',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the Trigger got updated.
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertEqual(ca.custom_trigger.id, custom_trigger.id)
+        self.assertIsNone(ca.custom_trigger.recurrences)
+        self.assertIsNone(ca.custom_trigger.time)
+        self.assertIsNone(ca.custom_trigger.trigger_date)
+
+        # clean up
+        Trigger.objects.filter(id=custom_trigger.id).delete()
