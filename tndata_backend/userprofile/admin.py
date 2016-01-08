@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
 from . import models
 
@@ -13,22 +15,12 @@ def remove_app_data(modeladmin, request, queryset):
     GoalProgress, CategoryProgress, PackageEnrollment, Trigger,
     UserCompletedAction instances as well as their GCMMessages.
 
-    """
-    for obj in queryset:
-        if isinstance(obj, models.UserProfile):
-            obj = obj.user
+    See: userprofile.views.admin_remove_app_data
 
-        obj.useraction_set.all().delete()
-        obj.userbehavior_set.all().delete()
-        obj.usergoal_set.all().delete()
-        obj.usercategory_set.all().delete()
-        obj.trigger_set.all().delete()
-        obj.behaviorprogress_set.all().delete()
-        obj.goalprogress_set.all().delete()
-        obj.categoryprogress_set.all().delete()
-        obj.usercompletedaction_set.all().delete()
-        obj.packageenrollment_set.all().delete()
-        obj.gcmmessage_set.all().delete()
+    """
+    ids = "+".join(str(obj.id) for obj in queryset)
+    url = "{}?ids={}".format(reverse("userprofile:remove-app-data"), ids)
+    return HttpResponseRedirect(url)
 remove_app_data.short_description = "Remove App Data"
 
 

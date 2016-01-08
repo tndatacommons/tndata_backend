@@ -4,6 +4,11 @@ from . import views
 
 urlpatterns = [
     url(
+        r'^remove-app-data/$',
+        views.admin_remove_app_data,
+        name='remove-app-data'
+    ),
+    url(
         r'^(?P<pk>\d+)/update/$',
         views.update_profile,
         name='update'

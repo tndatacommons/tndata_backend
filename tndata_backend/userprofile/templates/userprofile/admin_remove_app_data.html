@@ -1,0 +1,50 @@
+{% extends "admin/change_form.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">Home</a>
+&rsaquo; <a href="/admin/userprofile/">Profiles</a>
+&rsaquo; Remove App Data
+</div>
+{% endblock %}
+{% block content %}
+<div id="content-main">
+  {% if users %}
+    <form action="" method="post">{% csrf_token %}
+      <div>
+        <fieldset class="module aligned">
+          <h2>Remove data for {{ users.count }} users</h2>
+          <ul style="margin:0.5em 1em; padding:1em;">
+          {% for user in users %}
+            <li>
+              <a href="/admin/auth/user/{{ user.id }}/">{{ user.username }}</a>:
+              {{ user.get_full_name }}
+              &lt;{{ user.email }}&gt;
+            </li>
+          {% endfor %}
+          </ul>
+        </fieldset>
+      </div>
+      <div>
+        <fieldset class="module aligned">
+        {% for ot, ot_display, ot_help in object_types %}
+          <div class="form-row field-{{ot}}">
+            <div class="checkbox-row">
+              <input id="id_{{ ot }}" name="{{ ot }}" type="checkbox" checked="checked">
+              <label class="vCheckboxLabel" for="id_{{ ot }}">{{ ot_display }}</label>
+              <p class="help">{{ ot_help }}</p>
+            </div>
+          </div>
+        {% endfor %}
+        </fieldset>
+
+      <div class="submit-row">
+        <input type="submit" value="Remove App Data" class="default" name="_save">
+      </div>
+
+    </form>
+  {% else %}
+    <p>You must first select some users to remove content.</p>
+  {% endif %}
+</div>
+{% endblock %}
