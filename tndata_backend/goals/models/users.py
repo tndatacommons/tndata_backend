@@ -486,7 +486,7 @@ class UserAction(models.Model):
             # If we get to this point and the previous trigger is none,
             # try to back-fill (generate it) using the recurrence, but not
             # for relative reminders
-            if self.prev_trigger_date is None and not self.is_relative:
+            if self.prev_trigger_date is None and not trigger.is_relative:
                 prev = self.trigger.previous(user=self.user)
                 self.prev_trigger_date = to_utc(prev)
 
