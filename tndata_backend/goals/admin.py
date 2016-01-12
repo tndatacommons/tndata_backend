@@ -124,7 +124,10 @@ admin.site.register(models.Goal, GoalAdmin)
 
 
 class TriggerAdmin(UserRelatedModelAdmin):
-    list_display = ('combined', 'email', 'next', 'serialized_recurrences')
+    list_display = (
+        'combined', 'email', 'time', 'trigger_date', 'stop_on_complete',
+        'start_when_selected', 'relative', 'next', 'serialized_recurrences'
+    )
     prepopulated_fields = {"name_slug": ("name", )}
     search_fields = [
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -132,13 +135,21 @@ class TriggerAdmin(UserRelatedModelAdmin):
     ]
     raw_id_fields = ('user', )
 
+    def relative(self, obj):
+        if obj.relative_value:
+            return '{} {}'.format(obj.relative_value, obj.relative_units)
+        return ''
+    relative.admin_order_field = 'relative_value'
+
     def email(self, obj):
         if obj.user:
             return obj.user.email
         return ''
+    email.admin_order_field = 'user.email'
 
     def combined(self, obj):
         return str(obj)
+    combined.admin_order_field = 'name'
 
 admin.site.register(models.Trigger, TriggerAdmin)
 
