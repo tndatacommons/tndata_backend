@@ -1,0 +1,34 @@
+{% extends "goals/base.html" %}
+{% block title %}Delete Package Enrollment{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+  <li><a href="{% url 'goals:package-detail' category.id %}">{{ category }}</a></li>
+  <li><a href="{% url 'goals:package-user-details' category.id package_user.id %}">
+    {{ package_user.get_full_name|default:package_user.email }}</a>
+  </li>
+  <li class="current">Delete</li>
+{% endblock %}
+
+
+{% block content %}
+<p>{{ category }}</p>
+
+<ul>{% for obj in user_goals %}
+  <li>{{ obj }}</li>
+{% endfor %}</ul>
+<ul>{% for obj in user_behaviors %}
+  <li>{{ obj }}</li>
+{% endfor %}</ul>
+<ul>{% for obj in user_actions %}
+  <li>{{ obj }}</li>
+{% endfor %}</ul>
+
+<form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
+  <h1>{{ object }}</h1>
+  {{ object.description|linebreaks }}
+  <hr/>
+  <button type="submit" class="button alert">Delete {{object }}</button>
+</form>
+{% endblock %}

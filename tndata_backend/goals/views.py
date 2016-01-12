@@ -825,9 +825,57 @@ class PackageDetailView(ContentViewerMixin, DetailView):
             self.request.user.has_perm('goals.publish_category'),
             self.request.user in self.object.package_contributors.all()
         ])
+        context['is_editor'] = editor
         if editor:
             context['enrollments'] = self.object.packageenrollment_set.all()
         return context
+
+
+@permission_required(ContentPermissions.editors)
+def package_enrollment_user_details(request, package_id, user_id):
+    User = get_user_model()
+    user =  get_object_or_404(User, pk=user_id)
+    category = get_object_or_404(Category, pk=package_id)
+
+    ctx = {
+        'is_editor': is_content_editor(request.user),
+        'package_user': user,
+        'category': category,
+        'packages': user.packageenrollment_set.all(),
+    }
+    return render(request, "goals/package_enrollment_user_details.html", ctx)
+
+
+class PackageEnrollmentDeleteView(ContentEditorMixin, DeleteView):
+    model = PackageEnrollment
+    success_url = 'package-detail'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        package = self.get_object()
+        # TODO: pull all of the user's related details
+        user = package.user
+        goals = package.goals.values_list('pk', flat=True)
+        user_goals = user.usergoal_set.filter(goal__id__in=goals)
+        user_behaviors = user.userbehavior_set.filter(behavior__goals__id__in=goals)
+        behaviors = user_behaviors.values_list('behavior', flat=True)
+        user_actions = user.useraction_set.filter(action__behavior__id__in=behaviors)
+
+        context['category'] = package.category
+        context['package'] = package
+        context['package_user'] = package.user
+        context['user_goals'] = user_goals
+        context['user_behaviors'] = user_behaviors
+        context['user_actions'] = user_actions
+
+        from clog.clog import clog
+        clog(context)
+
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        # TODO: delete all the related package data (but not not packaged data)
+        return super().delete(request, *args, **kwargs)
 
 
 class PackageEnrollmentView(ContentAuthorMixin, FormView):

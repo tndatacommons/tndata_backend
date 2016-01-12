@@ -1,0 +1,50 @@
+{% extends "goals/base.html" %}
+{% load util_filters %}
+
+{% block title %}Remind Enrollees{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:package-list' %}">Packages</a></li>
+  <li><a href="{% url 'goals:package-detail' category.id %}">{{ category }}</a></li>
+  <li class="current">{{ package_user.get_full_name|default:package_user.email }}</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+  <div class="large-12 small-12 columns">
+
+    <h1>{{ package_user.get_full_name|default:package_user.email }}</h1>
+    <p>Enrolled in the following package:</p>
+    <table>
+    <thead>
+      <tr>
+        <th>Package</th>
+        <th>Goals</th>
+        <th>Accepted</th>
+        <th>Enrolled On</th>
+        <th>&nbsp;</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for pe in packages %}
+      <tr>
+        <td>{{ pe.category }}</td>
+        <td>{{ pe.goals.all|join:"<br/>" }}</td>
+        <td>{{ pe.accepted|iconbool:"True" }}</td>
+        <td>{{ pe.enrolled_on }}</td>
+        <td><a href="{% url 'goals:package-enrollment-delete' pe.id %}"
+               class="button alert">
+            <i class="fa fa-trash"></i> Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">This user is enrolled in any packages</td></tr>
+    {% endfor %}
+    </tbody>
+    </table>
+
+  </div>
+</div> {# end .row #}
+{% endblock %}
