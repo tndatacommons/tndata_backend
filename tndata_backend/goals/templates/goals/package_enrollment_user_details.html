@@ -30,7 +30,13 @@
     <tbody>
     {% for pe in packages %}
       <tr>
-        <td>{{ pe.category }}</td>
+        <td>
+          {% if pe.category == category %}
+            <strong>{{ pe.category }}</strong>
+          {% else %}
+            {{ pe.category }}
+          {% endif %}
+        </td>
         <td>{{ pe.goals.all|join:"<br/>" }}</td>
         <td>{{ pe.accepted|iconbool:"True" }}</td>
         <td>{{ pe.enrolled_on }}</td>

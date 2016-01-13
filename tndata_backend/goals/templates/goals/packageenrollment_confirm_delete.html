@@ -1,4 +1,6 @@
 {% extends "goals/base.html" %}
+{% load util_filters %}
+
 {% block title %}Delete Package Enrollment{% endblock %}
 
 
@@ -13,22 +15,78 @@
 
 
 {% block content %}
-<p>{{ category }}</p>
-
-<ul>{% for obj in user_goals %}
-  <li>{{ obj }}</li>
-{% endfor %}</ul>
-<ul>{% for obj in user_behaviors %}
-  <li>{{ obj }}</li>
-{% endfor %}</ul>
-<ul>{% for obj in user_actions %}
-  <li>{{ obj }}</li>
-{% endfor %}</ul>
-
 <form action="{{ object.get_delete_url }}" method="post">{% csrf_token %}
-  <h1>{{ object }}</h1>
-  {{ object.description|linebreaks }}
-  <hr/>
-  <button type="submit" class="button alert">Delete {{object }}</button>
+  <h1>Enrollment Data</h1>
+
+  <div class="row">
+    <div class="large-6 medium-6 small-12 columns">
+      <table>
+        <caption>Package Enrollment Details</caption>
+        <tbody>
+          <tr><th>Enrollee</th><td>{{ object.user.get_full_name|default:"(no name given)" }} / {{ object.user.email }}</td></tr>
+          <tr><th>Package</th><td>{{ object.category }}</td></tr>
+          <tr><th>Enrollment Accepted</th><td>{{ object.accepted|iconbool}}</td></tr>
+          <tr><th>Included Goals</th><td>{{ object.goals.all|join:"<br/>"}}</td></tr>
+          <tr><th>Prevent Custom Reminders</th><td>{{ object.prevent_custom_triggers}}</td></tr>
+          <tr><th>Enrolled On</th><td>{{ object.enrolled_on }}</td></tr>
+          <tr><th>Enrolled By</th><td>{{ object.enrolled_by }}</td></tr>
+          <tr><th>Last Updated</th><td>{{ object.updated_on}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="large-6 medium-6 small-12 columns">
+      <table>
+        <caption>Related application data</caption>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Values</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Category</td>
+            <td>{{ category }}</td>
+            <td>
+              <strong>{{ category_progresses.count }}</strong> records from:<br/>
+              {{ cp_dates.reported_on__min|date:"M j, Y" }} -
+              {{ cp_dates.reported_on__max|date:"M j, Y" }}
+            </td>
+          </tr>
+          <tr>
+            <td>Goals</td>
+            <td>{{ user_goals|join:"<br/>" }}</td>
+            <td>
+              <strong>{{ goal_progresses.count }}</strong> records from:<br/>
+              {{ gp_dates.reported_on__min|date:"M j, Y" }} -
+              {{ gp_dates.reported_on__max|date:"M j, Y" }}
+            </td>
+          </tr>
+          <tr>
+            <td>Behaviors</td>
+            <td>{{ user_behaviors|join:"<br/>" }}</td>
+            <td>
+              <strong>{{ behavior_progresses.count }}</strong> records from:<br/>
+              {{ bp_dates.reported_on__min|date:"M j, Y" }} -
+              {{ bp_dates.reported_on__max|date:"M j, Y" }}
+            </td>
+          </tr>
+          <tr>
+            <td>Actions</td>
+            <td>{{ user_actions|join:"<br/>" }}</td>
+            <td>
+              Completed: {{ ucas_completed }}<br/>
+              Dismissed: {{ ucas_dismissed}}<br/>
+              Snoozed: {{ ucas_dismissed}}<br/>
+              Total: {{ ucas_count}}<br/>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+
+  <button type="submit" class="button alert">Delete Enrollment Data</button>
 </form>
 {% endblock %}

@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Q, Min, Max
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import timesince
@@ -834,7 +834,7 @@ class PackageDetailView(ContentViewerMixin, DetailView):
 @permission_required(ContentPermissions.editors)
 def package_enrollment_user_details(request, package_id, user_id):
     User = get_user_model()
-    user =  get_object_or_404(User, pk=user_id)
+    user = get_object_or_404(User, pk=user_id)
     category = get_object_or_404(Category, pk=package_id)
 
     ctx = {
@@ -848,18 +848,67 @@ def package_enrollment_user_details(request, package_id, user_id):
 
 class PackageEnrollmentDeleteView(ContentEditorMixin, DeleteView):
     model = PackageEnrollment
-    success_url = 'package-detail'
+    success_url = reverse_lazy('goals:package-list')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        package = self.get_object()
-        # TODO: pull all of the user's related details
+    def get_package_data(self, package):
         user = package.user
+        # UserGoals, UserBehaviors, UserActions
         goals = package.goals.values_list('pk', flat=True)
         user_goals = user.usergoal_set.filter(goal__id__in=goals)
         user_behaviors = user.userbehavior_set.filter(behavior__goals__id__in=goals)
         behaviors = user_behaviors.values_list('behavior', flat=True)
         user_actions = user.useraction_set.filter(action__behavior__id__in=behaviors)
+        # CategoryProgress
+        category_progresses = CategoryProgress.objects.filter(
+            category=package.category,
+            user=user
+        )
+
+        # GoalProgress
+        goal_progresses = GoalProgress.objects.filter(
+            usergoal__in=user_goals
+        )
+
+        # BehaviorProgress
+        behavior_progresses = BehaviorProgress.objects.filter(
+            user_behavior__in=user_behaviors
+        )
+
+        # UserCompletedActions
+        ucas = UserCompletedAction.objects.filter(useraction__in=user_actions)
+
+        return {
+            'user_goals': user_goals,
+            'user_behaviors': user_behaviors,
+            'user_actions': user_actions,
+            'category_progresses': category_progresses,
+            'goal_progresses': goal_progresses,
+            'behavior_progresses': behavior_progresses,
+            'ucas': ucas,
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        package = self.get_object()
+        data = self.get_package_data(package)
+
+        user_goals = data['user_goals']
+        user_behaviors = data['user_behaviors']
+        user_actions = data['user_actions']
+        category_progresses = data['category_progresses']
+        goal_progresses = data['goal_progresses']
+        behavior_progresses = data['behavior_progresses']
+        ucas = data['ucas']
+
+        field = 'reported_on'
+        cp_dates = category_progresses.aggregate(Min(field), Max(field))
+        gp_dates = goal_progresses.aggregate(Min(field), Max(field))
+        bp_dates = behavior_progresses.aggregate(Min(field), Max(field))
+        ucas_count = ucas.count()
+
+        ucas_completed = ucas.filter(state=UserCompletedAction.COMPLETED).count()
+        ucas_dismissed = ucas.filter(state=UserCompletedAction.DISMISSED).count()
+        ucas_snoozed = ucas.filter(state=UserCompletedAction.SNOOZED).count()
 
         context['category'] = package.category
         context['package'] = package
@@ -867,14 +916,28 @@ class PackageEnrollmentDeleteView(ContentEditorMixin, DeleteView):
         context['user_goals'] = user_goals
         context['user_behaviors'] = user_behaviors
         context['user_actions'] = user_actions
-
-        from clog.clog import clog
-        clog(context)
-
+        context['category_progresses'] = category_progresses
+        context['cp_dates'] = cp_dates
+        context['goal_progresses'] = goal_progresses
+        context['gp_dates'] = gp_dates
+        context['behavior_progresses'] = behavior_progresses
+        context['bp_dates'] = bp_dates
+        context['ucas_count'] = ucas_count
+        context['ucas_completed'] = ucas_completed
+        context['ucas_dismissed'] = ucas_dismissed
+        context['ucas_snoozed'] = ucas_snoozed
         return context
 
     def delete(self, request, *args, **kwargs):
-        # TODO: delete all the related package data (but not not packaged data)
+        # Remove the user's selected content that's within the package.
+        package = self.get_object()
+        data = self.get_package_data(package)
+        for obj in data.values():
+            obj.delete()
+        messages.success(
+            request,
+            "The Package Enrollment for {} was removed".format(package.user)
+        )
         return super().delete(request, *args, **kwargs)
 
 
