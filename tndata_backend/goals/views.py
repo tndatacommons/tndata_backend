@@ -41,7 +41,7 @@ from . forms import (
 )
 from . mixins import (
     ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
-    ReviewableUpdateMixin,
+    PackageManagerMixin, ReviewableUpdateMixin,
 )
 from . models import (
     Action,
@@ -831,7 +831,7 @@ class PackageDetailView(ContentViewerMixin, DetailView):
         return context
 
 
-@permission_required(ContentPermissions.editors)
+@permission_required(ContentPermissions.package_managers)
 def package_enrollment_user_details(request, package_id, user_id):
     User = get_user_model()
     user = get_object_or_404(User, pk=user_id)
@@ -846,7 +846,7 @@ def package_enrollment_user_details(request, package_id, user_id):
     return render(request, "goals/package_enrollment_user_details.html", ctx)
 
 
-class PackageEnrollmentDeleteView(ContentEditorMixin, DeleteView):
+class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
     model = PackageEnrollment
     success_url = reverse_lazy('goals:package-list')
 

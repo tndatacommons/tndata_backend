@@ -160,6 +160,22 @@ class ContentEditorMixin:
         return dec(view)
 
 
+class PackageManagerMixin:
+    """A Mixin that requires the user to have the permissions to add, change,
+    or delete PackageEnrollment objects.
+
+    NOTE that the user must have ALL of the permissions specified.
+
+    """
+
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super().as_view(**initkwargs)
+        dec = permission_required(ContentPermissions.package_managers)
+        return dec(view)
+
+
+
 class ReviewableUpdateMixin:
     """This allows users to submit content for review. On POST, we simply check
     for a True `review` value once the object has been saved.
