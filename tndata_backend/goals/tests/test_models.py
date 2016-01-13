@@ -947,6 +947,47 @@ class TestTrigger(TestCase):
             actual = occurs[0].strftime("%c %z")
             self.assertEqual(actual, expected)
 
+    def test_relative_reminder_daily_with_count(self):
+        """A relative reminder that repeats daily for a set number of days"""
+
+        t = Trigger.objects.create(
+            name="Daily with Count",
+            time=time(12, 0),
+            trigger_date=date(2016, 1, 4),  # Monday, Jan 4
+            recurrences='RRULE:FREQ=DAILY;COUNT=3',  # Repeats 3 times
+            start_when_selected=True,
+            stop_on_complete=True,
+            relative_value=1,  # NOTE: 1 day after selected.
+            relative_units='days',
+        )
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # Day of selection: Sat Jan 2, 2016
+            selection_date = tzdt(2016, 1, 2, 14, 30)
+            mock_now.return_value = tzdt(2016, 1, 2, 14, 30)
+            t.trigger_date = selection_date + timedelta(days=1)  # 1 day later
+            t.save()
+
+            # Now selection should start the next day, Jan 3
+            expected = tzdt(2016, 1, 3, 12, 0)
+            self.assertEqual(t.next(), expected)
+
+            # That afternoon, we expect another on the next day
+            mock_now.return_value = tzdt(2016, 1, 3, 20, 22)
+            expected = tzdt(2016, 1, 4, 12, 0)
+            self.assertEqual(t.next(), expected)
+
+            # Jan 5 (day 3 after selection) in the morning
+            mock_now.return_value = tzdt(2016, 1, 5, 9, 0)
+            expected = tzdt(2016, 1, 5, 12, 0)
+            self.assertEqual(t.next(), expected)
+
+            # in the afternoon, we should be done.
+            mock_now.return_value = tzdt(2016, 1, 5, 13, 0)
+            self.assertIsNone(t.next())
+
+        t.delete()  # Clean up
+
 
 class TestBehavior(TestCase):
     """Tests for the `Behavior` model."""
