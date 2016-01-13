@@ -1529,6 +1529,8 @@ class TestUserAction(TestCase):
 
         # Calling this the first time when both values are null...
         mock_trigger.next.return_value = tzdt(2015, 10, 9, 11, 30)
+        mock_trigger.is_relative = False
+
         self.assertIsNone(self.ua.next_trigger_date)
         self.assertIsNone(self.ua.prev_trigger_date)
         self.ua._set_next_trigger_date()
