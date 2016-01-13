@@ -3,6 +3,7 @@ from datetime import time
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase, override_settings
 
@@ -2544,6 +2545,91 @@ class TestActionDeleteView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url)
         self.assertEqual(resp.status_code, 403)
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
+class TestPackageEnrollmentDeleteView(TestCaseWithGroups):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        User = get_user_model()
+        User.objects.all().delete()
+        for model in [Category, Goal, Behavior, Action]:
+            model.objects.all().delete()
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        User = get_user_model()
+
+        # Create a contributor for the class.
+        content_author_group = get_or_create_content_authors()
+        args = ("contributor", "contributor@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(content_author_group)
+
+        # Create permissions for the contirbutor
+        for perm in ContentPermissions.package_managers:
+            perm = Permission.objects.get(codename=perm.split(".")[1])
+            cls.contributor.user_permissions.add(perm)
+
+        # Create the Category and the content hierarchy
+        cls.category = Category.objects.create(
+            packaged_content=True,
+            order=25,
+            title="Test Package Category",
+            state="published",
+            created_by=cls.editor,
+        )
+        cls.category.package_contributors.add(cls.contributor)
+        cls.category.save()
+        cls.goal_a = Goal.objects.create(title="Pkg Goal A", state="published")
+        cls.goal_a.categories.add(cls.category)
+        cls.behavior_a = Behavior.objects.create(title='BA', state="published")
+        cls.behavior_a.goals.add(cls.goal_a)
+        cls.action_a = Action.objects.create(
+            behavior=cls.behavior_a,
+            title="Pkg Action A",
+            state="published"
+        )
+
+        # Set up an enrolled user
+        args = ('user', 'user@example.com', 'pass')
+        user = User.objects.create_user(*args)
+        cls.package = PackageEnrollment.objects.create(
+            user=user,
+            category=cls.category,
+            enrolled_by=cls.contributor
+        )
+        cls.package.goals.add(cls.goal_a)
+        cls.package.accept()
+
+        cls.url = reverse('goals:package-enrollment-delete', args=[cls.package.id])
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_contributor_get(self):
+        self.client.login(username="contributor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/packageenrollment_confirm_delete.html")
+
+    def test_contributor_post(self):
+        self.client.login(username="contributor", password="pass")
+        resp = self.client.post(self.url, {})  # NOTE: no payload
+        self.assertEqual(resp.status_code, 302)
+
+        package = PackageEnrollment.objects.filter(pk=self.package.pk)
+        self.assertFalse(package.exists())
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
