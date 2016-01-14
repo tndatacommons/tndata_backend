@@ -51,9 +51,19 @@ urlpatterns = [
         name='package-enroll'
     ),
     url(
+        r'^packages/(?P<pk>\d+)/delete/$',
+        views.PackageEnrollmentDeleteView.as_view(),
+        name='package-enrollment-delete'
+    ),
+    url(
         r'^packages/(?P<pk>\d+)/calendar/$',
         views.package_calendar,
         name='package-calendar'
+    ),
+    url(
+        r'^packages/(?P<package_id>\d+)/(?P<user_id>\d+)/$',
+        views.package_enrollment_user_details,
+        name='package-user-details'
     ),
     url(
         r'^packages/(?P<pk>\d+)/$',
