@@ -7,7 +7,12 @@ from clog.clog import clog
 
 class DefaultQueryParamVersioning(QueryParameterVersioning):
     """This class includes the default version into requests that do not
-    specify a version."""
+    specify a version.
+
+    NOTE: this should be fixed in DRF 3.3.3 whenever it's released:
+    https://github.com/tomchristie/django-rest-framework/pull/3833
+
+    """
     def determine_version(self, request, *args, **kwargs):
         version = request.query_params.get(
             self.version_param,
