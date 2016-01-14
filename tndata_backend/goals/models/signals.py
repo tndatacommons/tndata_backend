@@ -222,6 +222,19 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
         key = "action-{}".format(instance.state)
         metric(key, category="User Interactions")
 
+    # Kill all of the queued messages that match this action when the trigger's
+    # stop_on_complete is True
+    completed = instance.state == UserCompletedAction.COMPLETED
+
+    # Try to get the trigger (custom or default)
+    trigger = instance.useraction.trigger
+
+    if completed and trigger and trigger.stop_on_complete:
+        messages = instance.user.gcmmessage_set.filter(
+            object_id=instance.action.id,
+            content_type=ContentType.objects.get_for_model(Action)
+        )
+        messages.delete()
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")
 def delete_category_child_goals(sender, instance, using, **kwargs):

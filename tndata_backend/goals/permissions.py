@@ -115,6 +115,15 @@ class ContentPermissions:
         """Just the codenames for viewers."""
         return [p.split(".")[-1] for p in self.viewers]
 
+    @property
+    def package_managers(self):
+        """Have the permissions to add/change/delete package enrollment objects."""
+        return [
+            'goals.delete_packageenrollment',
+            'goals.change_packageenrollment',
+            'goals.add_packageenrollment'
+        ]
+
 ContentPermissions = ContentPermissions()  # make it act like a monad.
 
 
