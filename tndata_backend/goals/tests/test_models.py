@@ -9,6 +9,7 @@ from django.db.models import QuerySet
 from django.utils import timezone
 
 from model_mommy import mommy
+from utils.user_utils import tzdt
 
 from .. models import (
     Action,
@@ -30,26 +31,19 @@ from .. models import (
 User = get_user_model()
 
 
-def tzdt(*args, **kwargs):
-    """Return a timezone-aware datetime object."""
-    tz = kwargs.pop("tz", timezone.utc)
-    dt = datetime(*args)
-    return timezone.make_aware(dt, timezone=tz)
-
-
 class TestCaseDates(TestCase):
     """A test case with additional methods for testing dates and datetimes"""
 
     def assertDatesEqual(self, dt1, dt2):
         self.assertEqual(
-            dt1.strftime("%Y-%m-%d"),
-            dt2.strftime("%Y-%m-%d")
+            dt1.strftime("%Y-%m-%d %z %Z"),
+            dt2.strftime("%Y-%m-%d %z %Z")
         )
 
     def assertDatetimesEqual(self, dt1, dt2):
         self.assertEqual(
-            dt1.strftime("%Y-%m-%d %H:%M:%S"),
-            dt2.strftime("%Y-%m-%d %H:%M:%S")
+            dt1.strftime("%Y-%m-%d %H:%M:%S %z %Z"),
+            dt2.strftime("%Y-%m-%d %H:%M:%S %z %Z")
         )
 
 
@@ -1739,7 +1733,89 @@ class TestUserAction(TestCaseDates):
             # Back up to early in Day 2 (Jan 6)
             mock_now.return_value = tzdt(2016, 1, 6, 9, 0)
             # Add a UserCompletedAction and see if it stops in the middle.
-            uca = UserCompletedAction.objects.create(
+            UserCompletedAction.objects.create(
+                user=user, useraction=ua, action=action, state="completed"
+            )
+            # That should stop any further notifications.
+            self.assertIsNone(ua.next())
+
+        # Clean up
+        action.delete()
+        default.delete()
+        user.delete()
+
+    def test_relative_reminder_daily_with_count_until_stopped_local(self):
+        """A relative reminder that repeats daily for a set number of days, but
+        should stop when completed."""
+
+        # NOTE: triggers will always be in the user's local timezone
+        user = User.objects.create(username="cst", email="c@s.t")
+        profile = user.userprofile
+        profile.timezone = 'America/Chicago'  # CST
+        profile.save()
+        tz = pytz.timezone(profile.timezone)
+
+        default = Trigger.objects.create(
+            name="Daily with Count",
+            time=time(12, 0),
+            trigger_date=date(2016, 1, 1),
+            recurrences='RRULE:FREQ=DAILY;COUNT=3',  # Repeats 3 times
+            start_when_selected=True,  # starts when selected,
+            stop_on_complete=True,  # stops when completed.
+            relative_value=1,  # NOTE: 1 day after selected.
+            relative_units='days',
+        )
+        action = Action.objects.create(title='NEW', behavior=self.behavior)
+        action.default_trigger = default
+        action.save()
+
+        with patch("goals.models.timezone.now") as mock_now:
+            # NOTE: the trigger is for noon == 6pm UTC
+            # Day of selection: Mon, Jan 4 -- 9am CST / 3pm UTC
+            selection_date = tzdt(2016, 1, 4, 9, 0)
+            mock_now.return_value = selection_date
+
+            # When the UserAction is created, the custom trigger gets created
+            # from the `create_relative_reminder` signal handler.
+            ua = UserAction.objects.create(user=user, action=action)
+
+            # Check some initial values
+            self.assertIsNotNone(ua.custom_trigger)
+            self.assertEqual(
+                ua.custom_trigger.trigger_date.strftime("%Y-%m-%d"),
+                "2016-01-05"  # XXX 1 day after
+            )
+
+            # 1st notification, Jan 5
+            mock_now.return_value = tzdt(2016, 1, 5, 1, 0)
+            expected = tzdt(2016, 1, 5, 12, 0, tz=tz)
+            self.assertDatetimesEqual(ua.next(), expected)
+            # after noon, at 1pm
+            mock_now.return_value = tzdt(2016, 1, 5, 19, 0)
+            expected = tzdt(2016, 1, 6, 12, 0, tz=tz)
+            self.assertDatetimesEqual(ua.next(), expected)
+
+            # 2nd notification Jan 6
+            mock_now.return_value = tzdt(2016, 1, 6, 1, 0)
+            expected = tzdt(2016, 1, 6, 12, 0, tz=tz)
+            self.assertDatetimesEqual(ua.next(), expected)
+            # after noon, at 1pm
+            mock_now.return_value = tzdt(2016, 1, 6, 19, 0)
+            expected = tzdt(2016, 1, 7, 12, 0, tz=tz)
+            self.assertDatetimesEqual(ua.next(), expected)
+
+            # 3rd notification Jan 7
+            mock_now.return_value = tzdt(2016, 1, 7, 1, 0)
+            expected = tzdt(2016, 1, 7, 12, 0, tz=tz)
+            self.assertDatetimesEqual(ua.next(), expected)
+            # after noon, at 1pm
+            mock_now.return_value = tzdt(2016, 1, 7, 19, 0)
+            self.assertIsNone(ua.next())
+
+            # Back up to early in Day 2 (Jan 6)
+            mock_now.return_value = tzdt(2016, 1, 6, 1, 0)
+            # Add a UserCompletedAction and see if it stops in the middle.
+            UserCompletedAction.objects.create(
                 user=user, useraction=ua, action=action, state="completed"
             )
             # That should stop any further notifications.
