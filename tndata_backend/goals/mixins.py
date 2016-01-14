@@ -23,37 +23,6 @@ from . permissions import (
 from . utils import num_user_selections
 
 
-# API ViewSet mixins
-# ------------------
-
-class VersionedViewSetMixin:
-    """This mixin adds a api version lookup to a viewset. For this to work,
-    include this mixin on your ViewSet class, and set a `serializer_class_vX`
-    attribute, e.g.:
-
-        serializer_class_v1 = serializers.v1.FooSerializer
-        serializer_class_v2 = serializers.v2.FooSerializer
-
-    If for some reason the class does not include the appropriate serializer
-    class attribute, the default version will be returned.
-
-    """
-    # Mapping of version number to local, expected attribute name
-    _versions = {
-        '1': 'serializer_class_v1',
-        '2': 'serializer_class_v2',
-    }
-
-    def get_serializer_class(self):
-        try:
-            attr_name = self._versions[self.request.versioin]
-            serializer_class = getattr(self, attr_name)
-        except (KeyError, AttributeError):
-            default = settings.REST_FRAMEWORK['DEFAULT_VERSION']
-            serializer_class = getattr(self, default)
-        return serializer_class
-
-
 # Mixins for Views
 # ----------------
 class DeleteMultipleMixin:

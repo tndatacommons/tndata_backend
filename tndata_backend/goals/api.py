@@ -11,11 +11,12 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from redis_metrics import metric
 from utils.user_utils import local_day_range
+from utils.mixins import VersionedViewSetMixin
 
 from . import models
 from . import settings
 from . serializers import v1
-from . mixins import DeleteMultipleMixin, VersionedViewSetMixin
+from . mixins import DeleteMultipleMixin
 
 
 class IsOwner(permissions.BasePermission):
