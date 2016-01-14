@@ -11,19 +11,15 @@ from goals.models import (
     UserCategory,
     UserGoal,
 )
-from goals.serializers import (
+from goals.serializers.v1 import (
     GoalSerializer,
     ReadOnlyUserActionSerializer,
     ReadOnlyUserGoalSerializer,
     SimpleGoalSerializer,
-    SimpleUserActionSerializer,
     SimpleUserBehaviorSerializer,
     SimpleUserCategorySerializer,
-    SimpleUserGoalSerializer,
-    UserActionSerializer,
     UserBehaviorSerializer,
     UserCategorySerializer,
-    UserGoalSerializer,
 )
 from . import models
 from utils import user_utils
