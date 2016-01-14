@@ -975,7 +975,7 @@ class TestTrigger(TestCase):
             relative_units='days',
         )
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # Day of selection: Sat Jan 2, 2016
             selection_date = tzdt(2016, 1, 2, 14, 30)
             mock_now.return_value = tzdt(2016, 1, 2, 14, 30)
@@ -1692,7 +1692,7 @@ class TestUserAction(TestCaseDates):
         # 18 19 20 21 22 23 24
         # 25 26 27 28 29 30 31
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # Day of selection: Mon, Jan 4 -- 9am
             selection_date = tzdt(2016, 1, 4, 9, 0)
             mock_now.return_value = selection_date
@@ -1773,7 +1773,7 @@ class TestUserAction(TestCaseDates):
         action.default_trigger = default
         action.save()
 
-        with patch("goals.models.timezone.now") as mock_now:
+        with patch("goals.models.triggers.timezone.now") as mock_now:
             # NOTE: the trigger is for noon == 6pm UTC
             # Day of selection: Mon, Jan 4 -- 9am CST / 3pm UTC
             selection_date = tzdt(2016, 1, 4, 9, 0)
