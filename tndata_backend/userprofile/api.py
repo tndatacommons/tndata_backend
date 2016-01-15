@@ -570,9 +570,10 @@ def feed_api(request):
 
 @api_view(http_method_names=['GET'])
 def feed_upcoming_actions_api(request):
-    """Additional upcoming actions for the feed.
+    """Additional upcoming actions for the feed (paginated at 5 per page).
 
-    See it at /api/feed/
+    See it at `/api/feed/upcoming/` or hit `/api/feed/upcoming/?page=2` for an
+    additional page of data.
 
     """
     # essentially the paginated amount of data do show for upcoming
@@ -593,13 +594,6 @@ def feed_upcoming_actions_api(request):
 
         stop = (current_page * LIMIT)
         start = (stop - LIMIT)
-        from clog.clog import clog
-        clog({
-            'start': start,
-            'stop': stop,
-            'current': current_page,
-        })
-        #import ipdb;ipdb.set_trace();
         upcoming = user_feed.todays_actions(user)
         upcoming = upcoming[start:stop]
         upcoming = UserActionSerializer(upcoming, many=True).data
