@@ -14,15 +14,16 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from utils.mixins import VersionedViewSetMixin
 
 from . import models
 from . import permissions
-from . import serializers
+from .serializers import v1, v2
 
 logger = logging.getLogger("loggly_logs")
 
 
-class PlaceViewSet(viewsets.ReadOnlyModelViewSet):
+class PlaceViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """Places are named locations. They may be pre-defined or user-defined.
     Each place contains the following fields:
 
@@ -41,10 +42,12 @@ class PlaceViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
     queryset = models.Place.objects.filter(primary=True)
-    serializer_class = serializers.PlaceSerializer
+    serializer_class_v1 = v1.PlaceSerializer
+    serializer_class_v2 = v2.PlaceSerializer
 
 
-class UserPlaceViewSet(mixins.CreateModelMixin,
+class UserPlaceViewSet(VersionedViewSetMixin,
+                       mixins.CreateModelMixin,
                        mixins.ListModelMixin,
                        mixins.RetrieveModelMixin,
                        mixins.UpdateModelMixin,
@@ -93,7 +96,8 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserPlace.objects.all()
-    serializer_class = serializers.UserPlaceSerializer
+    serializer_class_v1 = v1.UserPlaceSerializer
+    serializer_class_v2 = v2.UserPlaceSerializer
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
@@ -135,7 +139,7 @@ class UserPlaceViewSet(mixins.CreateModelMixin,
         return super().update(request, *args, **kwargs)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
     """This endpoint defines methods that allow you to view, create, and update
     User accounts. Additionally, it exposes several bits of user data, therefore
     acting as a decently complete single point of information for a User.
@@ -280,7 +284,8 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
-    serializer_class = serializers.UserSerializer
+    serializer_class_v1 = v1.UserSerializer
+    serializer_class_v2 = v2.UserSerializer
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
@@ -306,7 +311,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return resp
 
 
-class UserDataViewSet(viewsets.ModelViewSet):
+class UserDataViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
     """
     An attempt an a more efficient api to expose user data.
 
@@ -353,7 +358,8 @@ class UserDataViewSet(viewsets.ModelViewSet):
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
-    serializer_class = serializers.UserDataSerializer
+    serializer_class_v1 = v1.UserDataSerializer
+    serializer_class_v2 = v2.UserDataSerializer
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
@@ -362,7 +368,7 @@ class UserDataViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
+class UserFeedViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     The User Feed of information: home-feed data for the user, include:
 
@@ -397,27 +403,30 @@ class UserFeedViewSet(viewsets.ReadOnlyModelViewSet):
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
-    serializer_class = serializers.UserFeedSerializer
+    serializer_class_v1 = v1.UserFeedSerializer
+    serializer_class_v2 = v2.UserFeedSerializer
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
 
 
-class UserAccountViewSet(viewsets.ModelViewSet):
+class UserAccountViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
     """The User's account info.
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = get_user_model().objects.all()
-    serializer_class = serializers.UserAccountSerializer
+    serializer_class_v1 = v1.UserAccountSerializer
+    serializer_class_v2 = v2.UserAccountSerializer
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
 
 
-class UserProfileViewSet(mixins.ListModelMixin,
+class UserProfileViewSet(VersionedViewSetMixin,
+                         mixins.ListModelMixin,
                          mixins.RetrieveModelMixin,
                          mixins.UpdateModelMixin,
                          viewsets.GenericViewSet):
@@ -456,7 +465,8 @@ class UserProfileViewSet(mixins.ListModelMixin,
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserProfile.objects.all()
-    serializer_class = serializers.UserProfileSerializer
+    serializer_class_v1 = v1.UserProfileSerializer
+    serializer_class_v2 = v2.UserProfileSerializer
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
@@ -539,7 +549,8 @@ class ObtainAuthorization(ObtainAuthToken):
     data and receive a JSON-encoded response.
 
     """
-    serializer_class = serializers.AuthTokenSerializer
+    serializer_class_v1 = v1.AuthTokenSerializer
+    serializer_class_v2 = v2.AuthTokenSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
