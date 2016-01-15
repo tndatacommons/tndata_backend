@@ -14,11 +14,15 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from goals import user_feed
+from goals.serializers.v2 import UserActionSerializer, GoalSerializer
 from utils.mixins import VersionedViewSetMixin
 
 from . import models
 from . import permissions
 from .serializers import v1, v2
+
 
 logger = logging.getLogger("loggly_logs")
 
@@ -494,6 +498,75 @@ def api_logout(request):
         logout(request)  # Sends the user_logged_out signal
         return Response(None, status=status.HTTP_200_OK)
     return Response(None, status=status.HTTP_404_NOT_FOUND)
+
+
+# -----------------------------------------------------------------------------
+# FEED Experiments
+# - another view that returns a paginated list of upcoming actions for the
+#   user's feed.
+# -----------------------------------------------------------------------------
+@api_view(http_method_names=['GET'])
+def feed_api(request):
+    """A view that returns a flat list of heterogeneous objects for the feed.
+
+    See it at /api/feed/
+
+    """
+    LIMIT = 5  # essentially the paginated amount of data do show for upcoming
+               # actions and suggested goals.
+
+
+    # This is a read-only endpoint.
+    data = {
+        'count': 0,
+        'next': None,
+        'previous': None,
+        'results': []
+    }
+
+    if request.user.is_authenticated():
+        user = request.user
+
+        # Up next UserAction
+        ua = user_feed.next_user_action(user)
+        next_action = UserActionSerializer(ua).data
+        next_action['object_type'] = 'nextaction'
+        data['results'].append(next_action)
+
+        if ua:
+            # The Action feedback is irrelevant if there's no user action
+            feedback = user_feed.action_feedback(user, ua)
+            feedback['object_type'] = 'actionfeedback'
+            data['results'].append(feedback)
+
+        # Progress for today
+        progress = user_feed.todays_actions_progress(user)
+        progress['object_type'] = 'progress'
+        data['results'].append(progress)
+
+        # Actions to do today.
+        upcoming = user_feed.todays_actions(user)
+        upcoming = upcoming[:LIMIT]
+        upcoming = UserActionSerializer(upcoming, many=True).data
+        upcoming_useractions = {
+            'object_type': 'upcoming',
+            'user_actions': upcoming,
+        }
+        data['results'].append(upcoming_useractions)
+
+        # Goal Suggestions
+        goals = user_feed.suggested_goals(user)
+        goals = GoalSerializer(goals, many=True, user=user).data
+        suggestions = {
+            'goals': goals,
+            'object_type': 'suggestions'
+        }
+        data['results'].append(suggestions)
+
+    # Update our count of objects.
+    data['count'] = len(data['results'])
+    return Response(data, status=status.HTTP_200_OK)
+# -----------------------------------------------------------------------------
 
 
 class ObtainAuthorization(ObtainAuthToken):
