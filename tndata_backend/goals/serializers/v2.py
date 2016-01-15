@@ -31,6 +31,7 @@ from .v1 import (  # flake8: noqa
     PackageEnrollmentSerializer,
     ReadOnlyUserGoalSerializer,
     ReadOnlyUserActionSerializer,
+    TriggerSerializer,
 )
 
 
@@ -54,7 +55,6 @@ class GoalSerializer(ObjectTypeModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
     behaviors_count = serializers.SerializerMethodField()
-    primary_category = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -65,8 +65,7 @@ class GoalSerializer(ObjectTypeModelSerializer):
         model = Goal
         fields = (
             'id', 'title', 'description', 'html_description', 'outcome',
-            'icon_url', 'primary_category', 'categories', 'behaviors_count',
-            'object_type',
+            'icon_url', 'categories', 'behaviors_count', 'object_type',
         )
 
     def get_categories(self, obj):
@@ -77,12 +76,6 @@ class GoalSerializer(ObjectTypeModelSerializer):
         """Return the number of child Behaivors for the given Goal (obj)."""
         return obj.behavior_set.filter(state="published").count()
 
-    def get_primary_category(self, obj):
-        """Include a primary category object for a Goal, when possible"""
-        if self.user:
-            cat = obj.get_parent_category_for_user(self.user)
-            return CategorySerializer(cat).data
-        return None
 
 
 class BehaviorSerializer(ObjectTypeModelSerializer):
@@ -116,7 +109,7 @@ class ActionSerializer(ObjectTypeModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    default_trigger = SimpleTriggerField(read_only=True)
+    default_trigger = SimpleTriggerField(read_only=True)  # TODO: use pre-serialized trigger, with not relative details.
 
     class Meta:
         model = Action
