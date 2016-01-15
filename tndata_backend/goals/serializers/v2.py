@@ -54,8 +54,7 @@ class GoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Goal`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
-    behaviors_count = serializers.SerializerMethodField()
-    categories = serializers.SerializerMethodField()
+    categories = serializers.ReadOnlyField(source="category_ids")
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -68,23 +67,13 @@ class GoalSerializer(ObjectTypeModelSerializer):
             'icon_url', 'categories', 'behaviors_count', 'object_type',
         )
 
-    def get_categories(self, obj):
-        """Return a list of parent category IDs."""
-        return list(obj.categories.values_list('id', flat=True))
-
-    def get_behaviors_count(self, obj):
-        """Return the number of child Behaivors for the given Goal (obj)."""
-        return obj.behavior_set.filter(state="published").count()
-
-
 
 class BehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Behavior`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    actions_count = serializers.SerializerMethodField()
-    goals = serializers.SerializerMethodField()
+    goals = serializers.ReadOnlyField(source="goal_ids")
 
     class Meta:
         model = Behavior
@@ -94,14 +83,6 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
             'icon_url', 'actions_count', 'goals', 'object_type',
         )
         read_only_fields = ("actions_count", )
-
-    def get_actions_count(self, obj):
-        """Return the number of child Actions for the given Behavior (obj)."""
-        return obj.action_set.filter(state="published").count()
-
-    def get_goals(self, obj):
-        """Return a list of parent Goal IDs"""
-        return list(obj.goals.values_list("id", flat=True))
 
 
 class ActionSerializer(ObjectTypeModelSerializer):

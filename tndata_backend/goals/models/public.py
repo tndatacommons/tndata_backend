@@ -258,6 +258,13 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         blank=True,
         help_text="Select the Categories in which this Goal should appear."
     )
+    category_ids = ArrayField(
+        models.IntegerField(blank=True),
+        default=list,
+        blank=True,
+        help_text="Pre-rendered list of parent category IDs"
+    )
+
     title_slug = models.SlugField(max_length=256, null=True)
     title = models.CharField(
         max_length=256, db_index=True, unique=True,
@@ -311,8 +318,14 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         help_text="Add keywords for this goal. These will be used to generate "
                   "suggestions for the user."
     )
+    behaviors_count = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of (published) child Behaviors in this Goal"
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
+
 
     def __str__(self):
         return "{0}".format(self.title)
@@ -348,10 +361,14 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         - Always slugify the title.
         - Always clean keywords (strip & lowercase)
         - Set the updated_by/created_by fields when possible.
+        - Set the category_ids if possible
+        - Set the behaviors_count field.
 
         """
         self.title_slug = slugify(self.title)
         self._clean_keywords()
+        self.category_ids = list(self.categories.values_list("id", flat=True))
+        self.behaviors_count = self.behavior_set.published().count()
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Goal, self).save(*args, **kwargs)
 
@@ -418,6 +435,12 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         blank=True,
         help_text="Select the Goal(s) that this Behavior achieves."
     )
+    goal_ids = ArrayField(
+        models.IntegerField(blank=True),
+        default=list,
+        blank=True,
+        help_text="Pre-rendered list of parent goal IDs"
+    )
     description = models.TextField(
         blank=True,
         help_text="A brief (250 characters) description about this item."
@@ -478,6 +501,11 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         related_name="behaviors_created",
         null=True
     )
+    actions_count = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of (published) child actions in this Behavior"
+    )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -499,6 +527,8 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
+        self.goal_ids = list(self.goals.values_list('id', flat=True))
+        self.actions_count = self.action_set.published().count()
         super().save(*args, **kwargs)
 
     @property
@@ -668,6 +698,8 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         help_text="A trigger/reminder for this behavior",
         related_name="action_default"
     )
+    # TODO: pre-serialize the default trigger for the api?
+
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="actions_updated",
