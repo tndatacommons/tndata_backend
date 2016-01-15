@@ -48,6 +48,7 @@ from userprofile.api import (
     UserProfileViewSet,
     api_logout,
     feed_api,
+    feed_upcoming_actions_api,
     obtain_auth_token,
 )
 from rewards.api import FunContentViewSet
@@ -121,6 +122,7 @@ router.register(r'rewards', FunContentViewSet)
 urlpatterns = [
     url(r'^django-rq/', include('django_rq.urls')),
     url(r'^api/feed/$', feed_api, name="feed-api"),
+    url(r'^api/feed/upcoming/$', feed_upcoming_actions_api, name="feed-upcoming"),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(r'^api/', include(router.urls)),

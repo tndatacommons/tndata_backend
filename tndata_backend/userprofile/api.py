@@ -512,9 +512,9 @@ def feed_api(request):
     See it at /api/feed/
 
     """
-    LIMIT = 5  # essentially the paginated amount of data do show for upcoming
-               # actions and suggested goals.
-
+    # essentially the paginated amount of data do show for upcoming
+    # actions and suggested goals.
+    LIMIT = 5
 
     # This is a read-only endpoint.
     data = {
@@ -565,6 +565,50 @@ def feed_api(request):
 
     # Update our count of objects.
     data['count'] = len(data['results'])
+    return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(http_method_names=['GET'])
+def feed_upcoming_actions_api(request):
+    """Additional upcoming actions for the feed.
+
+    See it at /api/feed/
+
+    """
+    # essentially the paginated amount of data do show for upcoming
+    # actions and suggested goals.
+    LIMIT = 5
+    current_page = int(request.query_params.get('page', 1))  # 1-based paging.
+
+    # This is a read-only endpoint.
+    data = {
+        'count': 0,
+        'next': None,
+        'previous': None,
+        'results': []
+    }
+
+    if request.user.is_authenticated():
+        user = request.user
+
+        stop = (current_page * LIMIT)
+        start = (stop - LIMIT)
+        from clog.clog import clog
+        clog({
+            'start': start,
+            'stop': stop,
+            'current': current_page,
+        })
+        #import ipdb;ipdb.set_trace();
+        upcoming = user_feed.todays_actions(user)
+        upcoming = upcoming[start:stop]
+        upcoming = UserActionSerializer(upcoming, many=True).data
+        upcoming_useractions = {
+            'object_type': 'upcoming',
+            'user_actions': upcoming,
+        }
+        data['results'].append(upcoming_useractions)
+
     return Response(data, status=status.HTTP_200_OK)
 # -----------------------------------------------------------------------------
 
