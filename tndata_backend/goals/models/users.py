@@ -101,31 +101,31 @@ class UserGoal(models.Model):
 
     def _serialize_goal(self):
         if self.goal:
-            from ..serializers import SimpleGoalSerializer
+            from ..serializers.simple import SimpleGoalSerializer
             self.serialized_goal = SimpleGoalSerializer(self.goal, user=self.user).data
 
     def _serialize_goal_progress(self):
         gp = self.goal_progress
         if gp:
-            from ..serializers import GoalProgressSerializer
+            from ..serializers.v1 import GoalProgressSerializer
             self.serialized_goal_progress = GoalProgressSerializer(gp).data
 
     def _serialize_user_categories(self):
         cats = self.get_user_categories()
         if cats:
-            from ..serializers import SimpleCategorySerializer
+            from ..serializers.simple import SimpleCategorySerializer
             self.serialized_user_categories = SimpleCategorySerializer(cats, many=True).data
 
     def _serialize_user_behaviors(self):
         behaviors = self.get_user_behaviors()
         if behaviors:
-            from ..serializers import SimpleBehaviorSerializer
+            from ..serializers.simple import SimpleBehaviorSerializer
             self.serialized_user_behaviors = SimpleBehaviorSerializer(behaviors, many=True).data
 
     def _serialize_primary_category(self):
         cat = self.get_primary_category()
         if cat:
-            from ..serializers import SimpleCategorySerializer
+            from ..serializers.simple import SimpleCategorySerializer
             self.serialized_primary_category = SimpleCategorySerializer(cat).data
 
     @property
@@ -350,24 +350,24 @@ class UserAction(models.Model):
 
     def _serialize_action(self):
         if self.action:
-            from ..serializers import ActionSerializer
+            from ..serializers.v1 import ActionSerializer
             self.serialized_action = ActionSerializer(self.action).data
 
     def _serialize_behavior(self):
         if self.user_behavior and self.user_behavior.behavior:
-            from ..serializers import BehaviorSerializer
+            from ..serializers.v1 import BehaviorSerializer
             behavior = self.user_behavior.behavior
             self.serialized_behavior = BehaviorSerializer(behavior).data
 
     def _serialize_custom_trigger(self):
         if self.custom_trigger:
-            from ..serializers import CustomTriggerSerializer
+            from ..serializers.v1 import CustomTriggerSerializer
             self.serialized_custom_trigger = CustomTriggerSerializer(self.custom_trigger).data
         else:
             self.serialized_custom_trigger = None
 
     def _serialize_primary_goal(self):
-        from ..serializers import SimpleGoalSerializer
+        from ..serializers.simple import SimpleGoalSerializer
         pg = self.get_primary_goal()
         if pg:
             self.serialized_primary_goal = SimpleGoalSerializer(pg, user=self.user).data
@@ -375,7 +375,7 @@ class UserAction(models.Model):
     def _serialize_primary_category(self):
         cat = self.get_primary_category()
         if cat:
-            from ..serializers import SimpleCategorySerializer
+            from ..serializers.simple import SimpleCategorySerializer
             self.serialized_primary_category = SimpleCategorySerializer(cat).data
 
     def _serialize_trigger(self):
@@ -386,7 +386,7 @@ class UserAction(models.Model):
         if self.serialized_custom_trigger:
             self.serialized_trigger = self.serialized_custom_trigger  # Yeah, just a copy :(
         elif self.default_trigger:
-            from ..serializers import CustomTriggerSerializer
+            from ..serializers.v1 import CustomTriggerSerializer
             self.serialized_trigger = CustomTriggerSerializer(self.default_trigger).data
 
     def __str__(self):
