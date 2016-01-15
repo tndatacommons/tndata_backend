@@ -514,8 +514,7 @@ class ObtainAuthorization(ObtainAuthToken):
     data and receive a JSON-encoded response.
 
     """
-    serializer_class_v1 = v1.AuthTokenSerializer
-    serializer_class_v2 = v2.AuthTokenSerializer
+    serializer_class = v1.AuthTokenSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
