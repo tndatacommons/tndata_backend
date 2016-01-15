@@ -86,8 +86,9 @@ class UserFeedSerializer(serializers.ModelSerializer):
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
 
-    user_categories = serializers.SerializerMethodField(read_only=True)
-    user_goals = serializers.SerializerMethodField(read_only=True)
+    # XXX why did we have this info?
+    #user_categories = serializers.SerializerMethodField(read_only=True)
+    #user_goals = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
@@ -98,7 +99,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'token', 'object_type',
             'next_action', 'action_feedback', 'progress',
             'upcoming_actions', 'suggestions',
-            'user_categories', 'user_goals',
+            #'user_categories', 'user_goals',
         )
         read_only_fields = ("id", "username", "email")
 

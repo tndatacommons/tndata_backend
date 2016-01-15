@@ -363,8 +363,6 @@ class UserFeedViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     * `upcoming_actions` -- a list of the `UserAction`s that are relevant for
       today (i.e. the user has a reminder scheduled for today)
     * `suggestions` -- a list of suggested `Goal`s for the user.
-    * `user_categories` -- The user's selected categories.
-    * `user_goals` -- The user's selected goals.
 
 
     """
