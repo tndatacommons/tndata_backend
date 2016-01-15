@@ -285,7 +285,8 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         return self.queryset
 
 
-class UserGoalViewSet(mixins.CreateModelMixin,
+class UserGoalViewSet(VersionedViewSetMixin,
+                      mixins.CreateModelMixin,
                       mixins.ListModelMixin,
                       mixins.RetrieveModelMixin,
                       mixins.DestroyModelMixin,
@@ -448,7 +449,8 @@ class UserGoalViewSet(mixins.CreateModelMixin,
         return super(UserGoalViewSet, self).create(request, *args, **kwargs)
 
 
-class UserBehaviorViewSet(mixins.CreateModelMixin,
+class UserBehaviorViewSet(VersionedViewSetMixin,
+                          mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.DestroyModelMixin,
@@ -676,7 +678,8 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
         return result
 
 
-class UserActionViewSet(mixins.CreateModelMixin,
+class UserActionViewSet(VersionedViewSetMixin,
+                        mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         mixins.DestroyModelMixin,
@@ -1039,7 +1042,8 @@ class UserActionViewSet(mixins.CreateModelMixin,
             )
 
 
-class UserCategoryViewSet(mixins.CreateModelMixin,
+class UserCategoryViewSet(VersionedViewSetMixin,
+                          mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.DestroyModelMixin,
@@ -1152,7 +1156,8 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
         return super(UserCategoryViewSet, self).create(request, *args, **kwargs)
 
 
-class GoalProgressViewSet(mixins.CreateModelMixin,
+class GoalProgressViewSet(VersionedViewSetMixin,
+                          mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.UpdateModelMixin,
@@ -1377,7 +1382,8 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
             )
 
 
-class BehaviorProgressViewSet(mixins.CreateModelMixin,
+class BehaviorProgressViewSet(VersionedViewSetMixin,
+                              mixins.CreateModelMixin,
                               mixins.ListModelMixin,
                               mixins.RetrieveModelMixin,
                               mixins.UpdateModelMixin,
@@ -1509,7 +1515,8 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
         return super().create(request, *args, **kwargs)
 
 
-class PackageEnrollmentViewSet(mixins.ListModelMixin,
+class PackageEnrollmentViewSet(VersionedViewSetMixin,
+                               mixins.ListModelMixin,
                                mixins.RetrieveModelMixin,
                                mixins.UpdateModelMixin,
                                viewsets.GenericViewSet):
@@ -1597,7 +1604,7 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
         return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SearchViewSet(HaystackViewSet):
+class SearchViewSet(VersionedViewSetMixin, HaystackViewSet):
     """This endpoint lists results from our Search Index, which contains content
     from [Goals](/api/goals/) and [Actions](/api/actions/).
 
@@ -1641,7 +1648,8 @@ class SearchViewSet(HaystackViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class CustomGoalViewSet(mixins.CreateModelMixin,
+class CustomGoalViewSet(VersionedViewSetMixin,
+                        mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         mixins.UpdateModelMixin,
@@ -1705,7 +1713,8 @@ class CustomGoalViewSet(mixins.CreateModelMixin,
         return super().update(request, *args, **kwargs)
 
 
-class CustomActionViewSet(mixins.CreateModelMixin,
+class CustomActionViewSet(VersionedViewSetMixin,
+                          mixins.CreateModelMixin,
                           mixins.ListModelMixin,
                           mixins.RetrieveModelMixin,
                           mixins.UpdateModelMixin,
