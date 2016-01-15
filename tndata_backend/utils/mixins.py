@@ -38,9 +38,11 @@ class VersionedViewSetMixin:
 
     def get_serializer_class(self):
         try:
-            attr_name = self._versions[self.request.versioin]
+            attr_name = self._versions[self.request.version]
             serializer_class = getattr(self, attr_name)
         except (KeyError, AttributeError):
             default = settings.REST_FRAMEWORK['DEFAULT_VERSION']
-            serializer_class = getattr(self, default)
+            attr_name = "serializer_class_v{}".format(default)
+            serializer_class = getattr(self, attr_name)
+
         return serializer_class
