@@ -118,15 +118,15 @@ class UserCategorySerializer(ObjectTypeModelSerializer):
 class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
     goal = SimpleGoalField(queryset=Goal.objects.none())
-    goal_progress = GoalProgressSerializer(read_only=True)
+    progress = GoalProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_category = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'goal_progress', 'progress_value',
-            'editable', 'created_on', 'object_type', 'primary_category',
+            'id', 'user', 'goal', 'progress', 'editable', 'created_on',
+             'primary_category', 'object_type',
         )
         read_only_fields = ("id", "created_on")
 
@@ -140,14 +140,14 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
-    behavior_progress = BehaviorProgressSerializer(read_only=True)
+    progress = BehaviorProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
         model = UserBehavior
         fields = (
-            'id', 'user', 'behavior', 'behavior_progress', 'created_on',
-            'editable', 'object_type',
+            'id', 'user', 'behavior', 'progress', 'created_on', 'editable',
+            'object_type',
         )
         read_only_fields = ("id", "created_on", )
 
@@ -166,7 +166,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserAction
         fields = (
-            'id', 'user', 'action', 'behavior', 'trigger', 'next_reminder',
+            'id', 'user', 'action', 'trigger', 'next_reminder',
             'editable', 'created_on', 'primary_goal', 'primary_category',
             'object_type',
         )
