@@ -15,7 +15,7 @@ from utils.mixins import VersionedViewSetMixin
 
 from . import models
 from . import settings
-from . serializers import v1
+from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
 
 
@@ -56,6 +56,7 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Category.objects.published()
     serializer_class_v1 = v1.CategorySerializer
+    serializer_class_v2 = v2.CategorySerializer
 
 
 class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -86,6 +87,7 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Goal.objects.published()
     serializer_class_v1 = v1.GoalSerializer
+    serializer_class_v2 = v2.GoalSerializer
 
     def get_queryset(self):
         if 'category' in self.request.GET:
@@ -124,6 +126,7 @@ class TriggerViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Trigger.objects.default()
     serializer_class_v1 = v1.TriggerSerializer
+    serializer_class_v2 = v2.TriggerSerializer
 
 
 class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -173,6 +176,7 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Behavior.objects.published()
     serializer_class_v1 = v1.BehaviorSerializer
+    serializer_class_v2 = v2.BehaviorSerializer
 
     def get_queryset(self):
         category = self.request.GET.get('category', None)
@@ -246,6 +250,7 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     queryset = models.Action.objects.published()
     serializer_class_v1 = v1.ActionSerializer
+    serializer_class_v2 = v2.ActionSerializer
 
     def get_queryset(self):
         category = self.request.GET.get("category", None)
@@ -407,6 +412,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserGoal.objects.published()
     serializer_class_v1 = v1.UserGoalSerializer
+    serializer_class_v2 = v2.UserGoalSerializer
     permission_classes = [IsOwner]
 
     def get_serializer_class(self):
@@ -418,7 +424,7 @@ class UserGoalViewSet(mixins.CreateModelMixin,
         """
         if self.request.method == "GET" and self.request.version == "1":
             return v1.ReadOnlyUserGoalSerializer
-        return self.serializer_class
+        return super().get_serializer_class()
 
     def get_queryset(self):
         return models.UserGoal.objects.accepted_or_public(user=self.request.user)
@@ -577,6 +583,7 @@ class UserBehaviorViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserBehavior.objects.published()
     serializer_class_v1 = v1.UserBehaviorSerializer
+    serializer_class_v2 = v2.UserBehaviorSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -822,6 +829,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserAction.objects.published()
     serializer_class_v1 = v1.UserActionSerializer
+    serializer_class_v2 = v2.UserActionSerializer
     permission_classes = [IsOwner]
 
     def get_serializer_class(self):
@@ -833,7 +841,7 @@ class UserActionViewSet(mixins.CreateModelMixin,
         """
         if self.request.method == "GET" and self.request.version == "1":
             return v1.ReadOnlyUserActionSerializer
-        return self.serializer_class
+        return super().get_serializer_class()
 
     def get_queryset(self):
         # First, only expose content in Categories/Packages that are either
@@ -1120,6 +1128,7 @@ class UserCategoryViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.UserCategory.objects.published()
     serializer_class_v1 = v1.UserCategorySerializer
+    serializer_class_v2 = v2.UserCategorySerializer
 
     def get_queryset(self):
         return models.UserCategory.objects.accepted_or_public(user=self.request.user)
@@ -1237,6 +1246,7 @@ class GoalProgressViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.GoalProgress.objects.all()
     serializer_class_v1 = v1.GoalProgressSerializer
+    serializer_class_v2 = v2.GoalProgressSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -1428,6 +1438,7 @@ class BehaviorProgressViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.BehaviorProgress.objects.all()
     serializer_class_v1 = v1.BehaviorProgressSerializer
+    serializer_class_v2 = v2.BehaviorProgressSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -1539,6 +1550,7 @@ class PackageEnrollmentViewSet(mixins.ListModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.PackageEnrollment.objects.all()
     serializer_class_v1 = v1.PackageEnrollmentSerializer
+    serializer_class_v2 = v2.PackageEnrollmentSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -1617,6 +1629,7 @@ class SearchViewSet(HaystackViewSet):
     """
     index_models = [models.Goal]
     serializer_class_v1 = v1.SearchSerializer
+    serializer_class_v2 = v2.SearchSerializer
     filter_backends = [HaystackHighlightFilter]
 
     def list(self, request, *args, **kwargs):
@@ -1673,6 +1686,7 @@ class CustomGoalViewSet(mixins.CreateModelMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.CustomGoal.objects.all()
     serializer_class_v1 = v1.CustomGoalSerializer
+    serializer_class_v2 = v2.CustomGoalSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -1776,6 +1790,7 @@ class CustomActionViewSet(mixins.CreateModelMixin,
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     serializer_class_v1 = v1.CustomActionSerializer
+    serializer_class_v2 = v2.CustomActionSerializer
     queryset = models.CustomAction.objects.all()
     permission_classes = [IsOwner]
 
