@@ -352,7 +352,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5')
 
 # Django Rest Framework
 REST_FRAMEWORK = {
-    'PAGE_SIZE': 100,
+    'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
