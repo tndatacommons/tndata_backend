@@ -180,11 +180,13 @@ class UserSerializer(serializers.ModelSerializer):
     behaviors = serializers.SerializerMethodField(read_only=True)
     actions = serializers.SerializerMethodField(read_only=True)
 
-    next_action = serializers.SerializerMethodField(read_only=True)
-    action_feedback = serializers.SerializerMethodField(read_only=True)
-    progress = serializers.SerializerMethodField(read_only=True)
-    upcoming_actions = serializers.SerializerMethodField(read_only=True)
-    suggestions = serializers.SerializerMethodField(read_only=True)
+    # Wrapping all the feed data into an object.
+    feed_data = serializers.SerializerMethodField(read_only=True)
+    #next_action = serializers.SerializerMethodField(read_only=True)
+    #action_feedback = serializers.SerializerMethodField(read_only=True)
+    #progress = serializers.SerializerMethodField(read_only=True)
+    #upcoming_actions = serializers.SerializerMethodField(read_only=True)
+    #suggestions = serializers.SerializerMethodField(read_only=True)
 
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
@@ -195,10 +197,18 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             'token', 'needs_onboarding', "places", "goals", "behaviors",
-            "actions", "categories", "next_action", "action_feedback",
-            "progress", "upcoming_actions", "suggestions",
+            "actions", "categories", "feed_data",
         )
         read_only_fields = ("id", "date_joined", )
+
+    def get_feed_data(self, obj):
+        return {
+            'next_action': self.get_next_action(obj),
+            'action_feedback': self.get_action_feedback(obj),
+            'progress': self.get_progress(obj),
+            'upcoming_actions': self.get_upcoming_actions(obj),
+            'suggestions': self.get_suggestions(obj),
+        }
 
     def _get_feed(self, obj):
         """Assemble all the user feed data at once because it's more efficient."""
