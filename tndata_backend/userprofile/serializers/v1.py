@@ -23,9 +23,10 @@ from goals.serializers.simple import (
     SimpleUserBehaviorSerializer,
     SimpleUserCategorySerializer,
 )
-from . import models
 from utils import user_utils
 from utils.decorators import cached_method
+
+from .. import models
 
 
 class PlaceSerializer(serializers.ModelSerializer):

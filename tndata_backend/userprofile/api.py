@@ -318,42 +318,9 @@ class UserDataViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
     ## Data Fields
 
     Most of the data fields on this endpoint are fairly straightforward, and
-    share a lot of similarities with `/api/users/`. The differences include:
+    share a lot of similarities with `/api/users/`. **This is still a work
+    in progress**.
 
-    - `places` -- all of a user's defined [Places](/api/users/places/).
-    - `categories`, `goals`, `behaviors`, `actions` have fewer nested attributes.
-      This makes the queries to populate this data much less complex (and faster)
-    - a `data_graph` attribute exists here that explains the nested relationship
-      for the user's selected content (see below)
-
-    ## Data Graph
-
-    This attribute contains a list of `[parent_id, object_id]` arrays that
-    show the relationship graph for a user's selected content. Note that these
-    are IDs for the Category, Goal, Behavior, and Action models, and are NOT
-    the User* models (i.e. not the mapping ids).
-
-    The `primary_categories` attribute is a list of each goal's primary category
-    (or null if there are none), while the `primary_goals` attribute is a list
-    of each Action's primary goal (or null).
-
-        {
-            'categories': [
-                [<category_id>, <goal_id>], ...
-            ],
-            'goals': [
-                [<goal_id>, <behavior_id>], ...
-            ],
-            'behaviors': [
-                [<behavior_id>, <action_id>], ...
-            ],
-            'primary_categories': [
-                [<goal_id>, <category_id>], ...
-            ],
-            'primary_goals': [
-                [<action_id>, <goal_id>], ...
-            ],
-        }
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
