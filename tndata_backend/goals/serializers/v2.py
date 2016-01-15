@@ -90,7 +90,7 @@ class ActionSerializer(ObjectTypeModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    default_trigger = SimpleTriggerField(read_only=True)  # TODO: use pre-serialized trigger, with not relative details.
+    default_trigger = serializers.ReadOnlyField(source='serialized_default_trigger')
 
     class Meta:
         model = Action

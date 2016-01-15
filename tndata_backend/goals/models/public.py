@@ -15,6 +15,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from django_fsm import FSMField, transition
+from jsonfield import JSONField
 from markdown import markdown
 from notifications.models import GCMMessage
 from utils import colors
@@ -26,6 +27,7 @@ from .path import (
     _behavior_icon_path,
 )
 from .triggers import Trigger
+from ..encoder import dump_kwargs
 from ..managers import (
     CategoryManager,
     GoalManager,
@@ -325,7 +327,6 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
-
 
     def __str__(self):
         return "{0}".format(self.title)
@@ -698,7 +699,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         help_text="A trigger/reminder for this behavior",
         related_name="action_default"
     )
-    # TODO: pre-serialize the default trigger for the api?
+    # pre-serialize the default trigger for the api, so we can avoid some joins
+    serialized_default_trigger = JSONField(
+        blank=True,
+        default=dict,
+        dump_kwargs=dump_kwargs
+    )
 
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -761,6 +767,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         return "{0}?actiontype={1}".format(
             reverse("goals:action-create"), cls.CUSTOM)
 
+    def _serialize_default_trigger(self):
+        if self.default_trigger:
+            from ..serializers.v2 import TriggerSerializer
+            srs = TriggerSerializer(self.default_trigger)
+            self.serialized_default_trigger = srs.data
+
     def save(self, *args, **kwargs):
         """After saving an Action, we remove any stale GCM Notifications that
         were associated with the action, IF any of the fields used to generate
@@ -769,6 +781,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
         self._set_notification_text()
+        self._serialize_default_trigger()
         super().save(*args, **kwargs)
         self.remove_queued_messages()
 
