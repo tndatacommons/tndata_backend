@@ -55,6 +55,7 @@ class GoalSerializer(ObjectTypeModelSerializer):
     html_description = serializers.ReadOnlyField(source="rendered_description")
     behaviors_count = serializers.SerializerMethodField()
     primary_category = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
@@ -64,8 +65,13 @@ class GoalSerializer(ObjectTypeModelSerializer):
         model = Goal
         fields = (
             'id', 'title', 'description', 'html_description', 'outcome',
-            'icon_url', 'primary_category', 'behaviors_count', 'object_type',
+            'icon_url', 'primary_category', 'categories', 'behaviors_count',
+            'object_type',
         )
+
+    def get_categories(self, obj):
+        """Return a list of parent category IDs."""
+        return list(obj.categories.values_list('id', flat=True))
 
     def get_behaviors_count(self, obj):
         """Return the number of child Behaivors for the given Goal (obj)."""
@@ -85,19 +91,24 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
     actions_count = serializers.SerializerMethodField()
+    goals = serializers.SerializerMethodField()
 
     class Meta:
         model = Behavior
         fields = (
             'id', 'title', 'description', 'html_description', 'more_info',
             'html_more_info', 'external_resource', 'external_resource_name',
-            'icon_url', 'actions_count', 'object_type', 'goals',
+            'icon_url', 'actions_count', 'goals', 'object_type',
         )
         read_only_fields = ("actions_count", )
 
     def get_actions_count(self, obj):
         """Return the number of child Actions for the given Behavior (obj)."""
         return obj.action_set.filter(state="published").count()
+
+    def get_goals(self, obj):
+        """Return a list of parent Goal IDs"""
+        return list(obj.goals.values_list("id", flat=True))
 
 
 class ActionSerializer(ObjectTypeModelSerializer):
