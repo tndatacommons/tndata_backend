@@ -45,4 +45,9 @@ class VersionedViewSetMixin:
             attr_name = "serializer_class_v{}".format(default)
             serializer_class = getattr(self, attr_name)
 
+        doc_file = "goals/api_docs/{}_v{}.md".format(
+            self.__class__.__name__.lower(),
+            self.request.version
+        )
+        self.__class__.__doc__ = open(doc_file).read()
         return serializer_class
