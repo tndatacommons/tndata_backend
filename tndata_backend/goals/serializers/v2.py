@@ -117,7 +117,7 @@ class UserCategorySerializer(ObjectTypeModelSerializer):
 
 class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
-    goal = SimpleGoalField(queryset=Goal.objects.none())
+    goal = GoalSerializer()
     progress = GoalProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_category = serializers.SerializerMethodField(read_only=True)
@@ -139,7 +139,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
-    behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
+    behavior = BehaviorSerializer()
     progress = BehaviorProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
@@ -154,7 +154,7 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
 
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
-    action = SimpleActionField(queryset=Action.objects.all())
+    action = ActionSerializer()
     trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False,
