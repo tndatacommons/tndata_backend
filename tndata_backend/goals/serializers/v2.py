@@ -162,13 +162,12 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
         results = super().to_representation(obj)
         behavior_id = results.get('behavior', None)
         behavior = Behavior.objects.get(pk=behavior_id)
-        results['behavior'] = GoalSerializer(behavior).data
+        results['behavior'] = BehaviorSerializer(behavior).data
         return results
 
 
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
-    action = ActionSerializer()
     trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False,
@@ -185,6 +184,14 @@ class UserActionSerializer(ObjectTypeModelSerializer):
             'object_type',
         )
         read_only_fields = ("id", "created_on", )
+
+    def to_representation(self, obj):
+        """Include a serialized Action object in the result."""
+        results = super().to_representation(obj)
+        action_id = results.get('action', None)
+        action = Action.objects.get(pk=action_id)
+        results['action'] = ActionSerializer(action).data
+        return results
 
     def create(self, validated_data):
         """Handle the primary_goal field correctly; We use `get_primary_goal`
