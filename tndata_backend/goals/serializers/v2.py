@@ -117,7 +117,6 @@ class UserCategorySerializer(ObjectTypeModelSerializer):
 
 class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
-    goal = GoalSerializer()
     progress = GoalProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_category = serializers.SerializerMethodField(read_only=True)
@@ -129,6 +128,14 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
              'primary_category', 'object_type',
         )
         read_only_fields = ("id", "created_on")
+
+    def to_representation(self, obj):
+        """Include a serialized Goal object in the result."""
+        results = super().to_representation(obj)
+        goal_id = results.get('goal', None)
+        goal = Goal.objects.get(pk=goal_id)
+        results['goal'] = GoalSerializer(goal).data
+        return results
 
     def get_primary_category(self, obj):
         cat = obj.get_primary_category()
