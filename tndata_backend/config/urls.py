@@ -6,6 +6,7 @@ from django.contrib.auth.views import login, logout
 from django.views.generic import TemplateView
 from django.views.i18n import javascript_catalog
 
+from axes.decorators import watch_login
 from rest_framework import routers
 
 from goals.api import (
@@ -134,7 +135,7 @@ urlpatterns = [
     url(r'^survey/', include('survey.urls', namespace='survey')),
     url(r'^profile/', include('userprofile.urls', namespace='userprofile')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^login/$', login, name="login"),
+    url(r'^login/$', watch_login(login), name="login"),
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),
     url(r'^utils/', include('utils.urls', namespace='utils')),
     url(r'^jsi18n/$', javascript_catalog, {'packages': ('recurrences')}),

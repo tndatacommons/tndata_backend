@@ -150,6 +150,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd-party apps
+    'axes',
     'cacheops',
     'corsheaders',
     'crispy_forms',
@@ -206,6 +207,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.FailedLoginMiddleware',
     'waffle.middleware.WaffleMiddleware',
     'utils.middleware.TimezoneMiddleware',
     'utils.middleware.ResponseForbiddenMiddleware',
@@ -330,6 +332,12 @@ MESSAGE_TAGS = {
 
 # Rainbow-tests
 TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
+
+# django-axes
+AXES_LOGIN_FAILURE_LIMIT = 1
+AXES_LOCK_OUT_AT_FAILURE = False  # Don't lock accounts.
+AXES_VERBOSE = True
+AXES_USERNAME_FORM_FIELD = 'email'
 
 # rq & django_rq config, See:
 # - http://python-rq.org/docs/workers/

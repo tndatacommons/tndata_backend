@@ -368,8 +368,9 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         """
         self.title_slug = slugify(self.title)
         self._clean_keywords()
-        self.category_ids = list(self.categories.values_list("id", flat=True))
-        self.behaviors_count = self.behavior_set.published().count()
+        if self.id:
+            self.category_ids = list(self.categories.values_list("id", flat=True))
+            self.behaviors_count = self.behavior_set.published().count()
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Goal, self).save(*args, **kwargs)
 
@@ -528,8 +529,9 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
-        self.goal_ids = list(self.goals.values_list('id', flat=True))
-        self.actions_count = self.action_set.published().count()
+        if self.id:
+            self.goal_ids = list(self.goals.values_list('id', flat=True))
+            self.actions_count = self.action_set.published().count()
         super().save(*args, **kwargs)
 
     @property

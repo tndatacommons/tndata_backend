@@ -1313,7 +1313,8 @@ class GoalProgressViewSet(VersionedViewSetMixin,
             gp = models.GoalProgress.objects.get(id=request.data['id'])
             gp.daily_checkin = request.data['daily_checkin']
             gp.save()
-            data = self.serializer_class(gp).data
+            serializer_class = self.get_serializer_class()
+            data = serializer_class(gp).data
             return Response(data=data, status=status.HTTP_200_OK)
         metric('created-goal-progress', category="User Interactions")
         return super().create(request, *args, **kwargs)
@@ -1510,7 +1511,9 @@ class BehaviorProgressViewSet(VersionedViewSetMixin,
             bp = models.BehaviorProgress.objects.get(id=request.data['id'])
             bp.status = request.data['status']
             bp.save()
-            data = self.serializer_class(bp).data
+
+            serializer_class = self.get_serializer_class()
+            data = serializer_class(bp).data
             return Response(data=data, status=status.HTTP_200_OK)
         return super().create(request, *args, **kwargs)
 
@@ -1597,7 +1600,8 @@ class PackageEnrollmentViewSet(VersionedViewSetMixin,
         """
         package_enrollment = self.get_object()
         if request.data.get('accepted', False):
-            srs = self.serializer_class(instance=package_enrollment)
+            serializer_class = self.get_serializer_class()
+            srs = serializer_class(instance=package_enrollment)
             package_enrollment.accept()
             return Response(srs.data)
         msg = {'error': 'invalid data'}
