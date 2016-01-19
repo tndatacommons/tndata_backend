@@ -146,7 +146,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
-    behavior = BehaviorSerializer()
     progress = BehaviorProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
@@ -157,6 +156,14 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
             'object_type',
         )
         read_only_fields = ("id", "created_on", )
+
+    def to_representation(self, obj):
+        """Include a serialized Behavior object in the result."""
+        results = super().to_representation(obj)
+        behavior_id = results.get('behavior', None)
+        behavior = Behavior.objects.get(pk=behavior_id)
+        results['behavior'] = GoalSerializer(behavior).data
+        return results
 
 
 class UserActionSerializer(ObjectTypeModelSerializer):
