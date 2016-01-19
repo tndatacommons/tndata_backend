@@ -251,6 +251,8 @@ def feed_api(request):
 
     See it at /api/feed/
 
+    A paginated result of upcoming actions are at [/api/feed/upcoming/](/api/feed/upcoming/)
+
     """
     # essentially the paginated amount of data do show for upcoming
     # actions and suggested goals.
