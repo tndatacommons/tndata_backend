@@ -24,6 +24,10 @@ TEST_REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': (
         'utils.api.NoThrottle',
     ),
+    'VERSION_PARAM': 'version',
+    'DEFAULT_VERSION': '1',
+    'ALLOWED_VERSIONS': ['1', '2'],
+    'DEFAULT_VERSIONING_CLASS': 'utils.api.DefaultQueryParamVersioning',
 }
 
 
