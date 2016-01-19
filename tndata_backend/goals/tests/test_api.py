@@ -222,7 +222,6 @@ class TestTriggerAPI(APITestCase):
         obj = response.data['results'][0]
         self.assertEqual(obj['id'], self.trigger.id)
         self.assertEqual(obj['name'], self.trigger.name)
-        self.assertEqual(obj['name_slug'], self.trigger.name_slug)
         self.assertEqual(obj['time'], self.trigger.time)
         self.assertEqual(obj['trigger_date'], self.trigger.trigger_date)
         self.assertEqual(obj['recurrences'], self.trigger.recurrences)
