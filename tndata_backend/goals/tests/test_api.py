@@ -226,9 +226,6 @@ class TestTriggerAPI(APITestCase):
         self.assertEqual(obj['trigger_date'], self.trigger.trigger_date)
         self.assertEqual(obj['recurrences'], self.trigger.recurrences)
         self.assertEqual(obj['recurrences_display'], self.trigger.recurrences_as_text())
-        self.assertFalse(obj['stop_on_complete'])
-        self.assertEqual(obj['relative_value'], 0)
-        self.assertIsNone(obj['relative_units'])
         self.assertEqual(obj['next'], self.trigger.next())
 
     def test_post_trigger_list(self):
