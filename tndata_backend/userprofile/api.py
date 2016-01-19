@@ -5,6 +5,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
 
+from axes.models import AccessLog
+from axes.decorators import get_ip
+
 from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication,
@@ -13,6 +16,7 @@ from rest_framework.authentication import (
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from goals import user_feed
@@ -628,22 +632,37 @@ class ObtainAuthorization(ObtainAuthToken):
     serializer_class = v1.AuthTokenSerializer
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.validated_data['user']
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                'token': token.key,
-                'username': user.username,
-                'id': user.id,
-                'user_id': user.id,
-                'userprofile_id': user.userprofile.id,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'full_name': user.get_full_name(),
-                'email': user.email,
-                'needs_onboarding': user.userprofile.needs_onboarding,
-            })
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                user = serializer.validated_data['user']
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({
+                    'token': token.key,
+                    'username': user.username,
+                    'id': user.id,
+                    'user_id': user.id,
+                    'userprofile_id': user.userprofile.id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'full_name': user.get_full_name(),
+                    'email': user.email,
+                    'needs_onboarding': user.userprofile.needs_onboarding,
+                })
+        except ValidationError as e:
+            # Failed login attempt, record with axes
+            username = request.data.get(settings.AXES_USERNAME_FORM_FIELD, None)
+            if username is None:
+                username = request.data.get('username', None)
+            AccessLog.objects.create(
+                user_agent=request.META.get('HTTP_USER_AGENT', '<unknown>')[:255],
+                ip_address=get_ip(request),
+                username=username,
+                http_accept=request.META.get('HTTP_ACCEPT', '<unknown>'),
+                path_info=request.META.get('PATH_INFO', '<unknown>'),
+                trusted=False
+            )
+            raise e
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 obtain_auth_token = ObtainAuthorization.as_view()
