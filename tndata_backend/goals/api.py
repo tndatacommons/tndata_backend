@@ -31,6 +31,7 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Category.objects.published()
     serializer_class_v1 = v1.CategorySerializer
     serializer_class_v2 = v2.CategorySerializer
+    docstring_prefix = "goals/api_docs"
 
 
 class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -38,6 +39,7 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Goal.objects.published()
     serializer_class_v1 = v1.GoalSerializer
     serializer_class_v2 = v2.GoalSerializer
+    docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
         if 'category' in self.request.GET:
@@ -52,6 +54,7 @@ class TriggerViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Trigger.objects.default()
     serializer_class_v1 = v1.TriggerSerializer
     serializer_class_v2 = v2.TriggerSerializer
+    docstring_prefix = "goals/api_docs"
 
 
 class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -59,6 +62,7 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Behavior.objects.published()
     serializer_class_v1 = v1.BehaviorSerializer
     serializer_class_v2 = v2.BehaviorSerializer
+    docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
         category = self.request.GET.get('category', None)
@@ -86,6 +90,7 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Action.objects.published()
     serializer_class_v1 = v1.ActionSerializer
     serializer_class_v2 = v2.ActionSerializer
+    docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
         category = self.request.GET.get("category", None)
@@ -132,6 +137,7 @@ class UserGoalViewSet(VersionedViewSetMixin,
     queryset = models.UserGoal.objects.published()
     serializer_class_v1 = v1.UserGoalSerializer
     serializer_class_v2 = v2.UserGoalSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_serializer_class(self):
@@ -180,6 +186,7 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
     queryset = models.UserBehavior.objects.published()
     serializer_class_v1 = v1.UserBehaviorSerializer
     serializer_class_v2 = v2.UserBehaviorSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -285,6 +292,7 @@ class UserActionViewSet(VersionedViewSetMixin,
     queryset = models.UserAction.objects.published()
     serializer_class_v1 = v1.UserActionSerializer
     serializer_class_v2 = v2.UserActionSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_serializer_class(self):
@@ -506,6 +514,7 @@ class UserCategoryViewSet(VersionedViewSetMixin,
     queryset = models.UserCategory.objects.published()
     serializer_class_v1 = v1.UserCategorySerializer
     serializer_class_v2 = v2.UserCategorySerializer
+    docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
         return models.UserCategory.objects.accepted_or_public(user=self.request.user)
@@ -540,6 +549,7 @@ class GoalProgressViewSet(VersionedViewSetMixin,
     queryset = models.GoalProgress.objects.all()
     serializer_class_v1 = v1.GoalProgressSerializer
     serializer_class_v2 = v2.GoalProgressSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -682,6 +692,7 @@ class BehaviorProgressViewSet(VersionedViewSetMixin,
     queryset = models.BehaviorProgress.objects.all()
     serializer_class_v1 = v1.BehaviorProgressSerializer
     serializer_class_v2 = v2.BehaviorProgressSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -764,6 +775,7 @@ class PackageEnrollmentViewSet(VersionedViewSetMixin,
     queryset = models.PackageEnrollment.objects.all()
     serializer_class_v1 = v1.PackageEnrollmentSerializer
     serializer_class_v2 = v2.PackageEnrollmentSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -816,6 +828,7 @@ class SearchViewSet(VersionedViewSetMixin, HaystackViewSet):
     index_models = [models.Goal]
     serializer_class_v1 = v1.SearchSerializer
     serializer_class_v2 = v2.SearchSerializer
+    docstring_prefix = "goals/api_docs"
     filter_backends = [HaystackHighlightFilter]
 
     def list(self, request, *args, **kwargs):
@@ -839,6 +852,7 @@ class CustomGoalViewSet(VersionedViewSetMixin,
     queryset = models.CustomGoal.objects.all()
     serializer_class_v1 = v1.CustomGoalSerializer
     serializer_class_v2 = v2.CustomGoalSerializer
+    docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -868,6 +882,7 @@ class CustomActionViewSet(VersionedViewSetMixin,
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     serializer_class_v1 = v1.CustomActionSerializer
     serializer_class_v2 = v2.CustomActionSerializer
+    docstring_prefix = "goals/api_docs"
     queryset = models.CustomAction.objects.all()
     permission_classes = [IsOwner]
 
