@@ -86,8 +86,9 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
             params = {'user': request.user, 'device_id': None}
             models.GCMDevice.objects.filter(**params).delete()
 
-        ser = self.serializer_class(device)
-        return Response(ser.data)
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(device)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         """Handles POST requests, but this method also checks for existing
@@ -238,5 +239,6 @@ class GCMMessageViewSet(mixins.ListModelMixin,
         elif snooze is not None:
             obj.snooze(hours=snooze)
 
-        ser = self.serializer_class(obj)
-        return Response(ser.data)
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(obj)
+        return Response(serializer.data)
