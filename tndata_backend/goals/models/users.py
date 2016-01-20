@@ -71,6 +71,13 @@ class UserCategory(models.Model):
 class UserGoal(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     goal = models.ForeignKey(Goal)
+    primary_category = models.ForeignKey(
+        Category,
+        blank=True,
+        null=True,
+        help_text="A primary category associated with the Goal. Typically this "
+                  "is the Category through which the goal was selected."
+    )
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -191,9 +198,13 @@ class UserGoal(models.Model):
     def get_primary_category(self):
         """Return the first user-selected category that is a
         parent of this goal."""
+        if self.primary_category:
+            return self.primary_category
+
         cat = self.get_user_categories().first()
         if cat is None:
             cat = self.goal.categories.first()
+        self.primary_category = cat
         return cat
 
     @property
@@ -321,6 +332,13 @@ class UserAction(models.Model):
         editable=False,
         help_text="The previous date/time that a notification for this action "
                   "was be triggered (this is auto-populated and is in UTC)."
+    )
+    primary_category = models.ForeignKey(
+        Category,
+        blank=True,
+        null=True,
+        help_text="A primary category associated with this action. Typically this "
+                  "is the parent category of the primaary goal."
     )
     primary_goal = models.ForeignKey(
         Goal,
@@ -565,6 +583,9 @@ class UserAction(models.Model):
     def get_primary_category(self):
         """Return a Category (or None) representing the primary category
         associated with this user's selected Action."""
+        if self.primary_category:
+            return self.primary_category
+
         category = None
         goal = self.get_primary_goal()
         if goal:
@@ -578,6 +599,7 @@ class UserAction(models.Model):
             goal = self.action.behavior.goals.first()
             if goal:
                 category = goal.categories.first()
+        self.primary_category = category  # Save this locally
         return category
 
     @property
