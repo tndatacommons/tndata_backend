@@ -211,6 +211,32 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
             kwargs['many'] = True
         return super(UserBehaviorViewSet, self).get_serializer(*args, **kwargs)
 
+    def create_parent_objects(self, request):
+        """If the request includes all 3: category, goal, behavior, then
+        let's try to get or create all of the user's objects at once.
+
+        """
+        # We'll *only* do this if we have all the necessary data.
+        checks = [
+            'category' in request.data and bool(request.data['category']),
+            'goal' in request.data and bool(request.data['goal']),
+            'behavior' in request.data and bool(request.data['behavior']),
+        ]
+        if all(checks):
+            # NOTE: request.data.pop returns a list, and we have to look up
+            # each object individually in order to Create them.
+            cat_id = request.data.pop('category')[0]
+            uc, _ = models.UserCategory.objects.get_or_create(
+                user=request.user,
+                category=models.Category.objects.filter(id=cat_id).first()
+            )
+            goal_id = request.data.pop('goal')[0]
+            ug, _ = models.UserGoal.objects.get_or_create(
+                user=request.user,
+                goal=models.Goal.objects.filter(id=goal_id).first()
+            )
+        return request
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if isinstance(request.data, list):
@@ -219,6 +245,10 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
                 d['user'] = request.user.id
         else:
             request.data['user'] = request.user.id
+
+        # look for category, and goal objects then add them;
+        # otherwise, this doesn't really do anything.
+        request = self.create_parent_objects(request)
         return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
 
     def _include_trigger(self, request, rrule, time):

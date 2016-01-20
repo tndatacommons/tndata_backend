@@ -16,12 +16,24 @@ This endpoint returns resources with the following fields.
   should be able to customize the reminders beneath this content
 * `created_on`: Time at which the user selected this item.
 
-## Adding a Behavior
+## Adding a UserBehavior
 
 To associate a Behavior with a User, POST to `/api/users/behaviors/` with the
 following data:
 
     {'behavior': BEHAVIOR_ID}
+
+## Adding a UserBehavior and all parent objects at once
+
+If you submit a `category`, `goal`, and `behavior`, all in a single payload,
+each object will be added to the user's collection at once; This will simplify
+adding the tree of data. When using this payload, all items are required.
+
+    {
+        'behavior': BEHAVIOR_ID,
+        'goal': GOAL_ID,
+        'category': CATEGORY_ID
+    }
 
 ## Viewing the UserBehavior data
 
