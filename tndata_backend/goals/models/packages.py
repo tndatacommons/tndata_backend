@@ -75,7 +75,7 @@ class PackageEnrollment(models.Model):
         # Enroll the user in the Goals
         goals = self.goals.all()
         for goal in goals:
-            ug = UserGoal.objects.get_or_create(user=self.user, goal=goal)
+            ug, _ = UserGoal.objects.get_or_create(user=self.user, goal=goal)
             ug.primary_category = self.category
             ug.save()
 
@@ -88,7 +88,7 @@ class PackageEnrollment(models.Model):
         actions = Action.objects.published().filter(behavior__in=behaviors)
         actions = actions.distinct()
         for action in actions:
-            ua = UserAction.objects.get_or_create(user=self.user, action=action)
+            ua, _ = UserAction.objects.get_or_create(user=self.user, action=action)
             ua.primary_category = self.category
             ua.primary_goal = ua.get_primary_goal()
             ua.save()
