@@ -94,10 +94,8 @@ class TestCategoryAPI(V2APITestCase):
         self.assertEqual(c['description'], self.category.description)
         self.assertEqual(c['html_description'], self.category.rendered_description)
         self.assertEqual(c['title'], self.category.title)
-        self.assertEqual(c['title_slug'], self.category.title_slug)
         self.assertEqual(c['icon_url'], self.category.get_absolute_icon())
         self.assertEqual(c['image_url'], self.category.get_absolute_image())
-        self.assertEqual(c['goals_count'], self.category.goals.count())
         self.assertFalse(c['packaged_content'])
 
     def test_post_category_list(self):
@@ -156,14 +154,10 @@ class TestGoalAPI(V2APITestCase):
         obj = response.data['results'][0]
         self.assertEqual(obj['id'], self.goal.id)
         self.assertEqual(obj['title'], self.goal.title)
-        self.assertEqual(obj['title_slug'], self.goal.title_slug)
         self.assertEqual(obj['description'], self.goal.description)
         self.assertEqual(obj['html_description'], self.goal.rendered_description)
         self.assertEqual(obj['behaviors_count'], self.goal.behavior_set.count())
-        # Check the SimpleCategorySerializer used with goals
         self.assertIn('categories', obj)
-        self.assertIn("image_url", obj['categories'][0])
-        self.assertIn("icon_url", obj['categories'][0])
 
     def test_goal_list_by_category(self):
         """Ensure we can filter by category."""
@@ -183,7 +177,7 @@ class TestGoalAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)  # Our other goal is here
 
         # Check the filtered result
-        url = "{0}?category={1}".format(url, self.category.id)
+        url = "{0}&category={1}".format(url, self.category.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -305,13 +299,12 @@ class TestBehaviorAPI(V2APITestCase):
         obj = response.data['results'][0]
         self.assertEqual(obj['id'], self.behavior.id)
         self.assertEqual(obj['title'], self.behavior.title)
-        self.assertEqual(obj['title_slug'], self.behavior.title_slug)
         self.assertEqual(obj['description'], self.behavior.description)
         self.assertEqual(obj['html_description'], self.behavior.rendered_description)
         self.assertEqual(obj['more_info'], self.behavior.more_info)
         self.assertEqual(obj['html_more_info'], self.behavior.rendered_more_info)
         self.assertEqual(len(obj['goals']), 1)  # Should have 1 goal
-        self.assertEqual(obj['goals'][0]['title'], self.goal.title)
+        self.assertEqual(obj['goals'][0], self.goal.id)
         self.assertEqual(obj['actions_count'], self.behavior.action_set.count())
 
     def test_behavior_list_by_category_id(self):
@@ -327,7 +320,7 @@ class TestBehaviorAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?category={1}".format(url, self.category.id)
+        url = "{0}&category={1}".format(url, self.category.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -349,7 +342,7 @@ class TestBehaviorAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?category={1}".format(url, self.category.title_slug)
+        url = "{0}&category={1}".format(url, self.category.title_slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -371,7 +364,7 @@ class TestBehaviorAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?goal={1}".format(url, self.goal.id)
+        url = "{0}&goal={1}".format(url, self.goal.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -393,7 +386,7 @@ class TestBehaviorAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?goal={1}".format(url, self.goal.title_slug)
+        url = "{0}&goal={1}".format(url, self.goal.title_slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -480,12 +473,11 @@ class TestActionAPI(V2APITestCase):
         obj = response.data['results'][0]
         self.assertEqual(obj['id'], self.action.id)
         self.assertEqual(obj['title'], self.action.title)
-        self.assertEqual(obj['title_slug'], self.action.title_slug)
         self.assertEqual(obj['description'], self.action.description)
         self.assertEqual(obj['html_description'], self.action.rendered_description)
         self.assertEqual(obj['more_info'], self.action.more_info)
         self.assertEqual(obj['html_more_info'], self.action.rendered_more_info)
-        self.assertEqual(obj['behavior']['id'], self.behavior.id)
+        self.assertEqual(obj['behavior'], self.behavior.id)
 
     def test_action_list_by_category_id(self):
         """Ensure we can filter by category.id."""
@@ -504,7 +496,7 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?category={1}".format(url, self.category.id)
+        url = "{0}&category={1}".format(url, self.category.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -531,7 +523,7 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?category={1}".format(url, self.category.title_slug)
+        url = "{0}&category={1}".format(url, self.category.title_slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -558,7 +550,7 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?goal={1}".format(url, self.goal.id)
+        url = "{0}&goal={1}".format(url, self.goal.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -585,7 +577,7 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?goal={1}".format(url, self.goal.title_slug)
+        url = "{0}&goal={1}".format(url, self.goal.title_slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -612,9 +604,10 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?behavior={1}".format(url, self.behavior.id)
+        url = "{0}&behavior={1}".format(url, self.behavior.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['id'], self.action.id)
 
@@ -639,7 +632,7 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 2)
 
         # Check the filtered result
-        url = "{0}?behavior={1}".format(url, self.behavior.title_slug)
+        url = "{0}&behavior={1}".format(url, self.behavior.title_slug)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
@@ -730,7 +723,7 @@ class TestUserGoalAPI(V2APITestCase):
             response.data['results'][0]['goal']['title'],
             self.goal.title
         )
-        self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
+        self.assertTrue(response.data['results'][0]['editable'])
 
     def test_post_usergoal_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post new UserGoals"""
@@ -950,11 +943,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(response.data['count'], 1)
-        self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
-        self.assertIn("user_categories", response.data['results'][0])
-        self.assertIn("user_goals", response.data['results'][0])
-        self.assertIn("user_actions", response.data['results'][0])
-        self.assertIn("user_actions_count", response.data['results'][0])
+        self.assertTrue(response.data['results'][0]['editable'])
         self.assertEqual(response.data['results'][0]['user'], self.user.id)
         self.assertEqual(
             response.data['results'][0]['behavior']['id'],
@@ -1255,12 +1244,12 @@ class TestUserActionAPI(V2APITestCase):
         self.assertIn('id', ua)
         self.assertIn('user', ua)
         self.assertIn('action', ua)
-        self.assertIn('custom_trigger', ua)
+        self.assertIn('trigger', ua)
         self.assertIn('created_on', ua)
         self.assertEqual(ua['user'], self.user.id)
         self.assertEqual(ua['action']['id'], self.action.id)
         self.assertEqual(ua['action']['title'], self.action.title)
-        self.assertTrue(ua['custom_triggers_allowed'])
+        self.assertTrue(ua['editable'])
 
     def test_get_useraction_list_with_filters(self):
         # Test with goal id
@@ -1756,7 +1745,7 @@ class TestUserCategoryAPI(V2APITestCase):
         # check the fields of a result object.
         self.assertIn("id", response.data['results'][0])
         self.assertIn("category", response.data['results'][0])
-        self.assertIn("custom_triggers_allowed", response.data['results'][0])
+        self.assertIn("editable", response.data['results'][0])
         self.assertIn("order", response.data['results'][0]['category'])
         self.assertIn("title", response.data['results'][0]['category'])
         self.assertIn("title_slug", response.data['results'][0]['category'])
@@ -1776,7 +1765,7 @@ class TestUserCategoryAPI(V2APITestCase):
             response.data['results'][0]['category']['title'],
             self.category.title
         )
-        self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
+        self.assertTrue(response.data['results'][0]['editable'])
         # TODO: it'd be nice if these fields actually had data.
         self.assertEqual(response.data['results'][0]['category']['image_url'], None)
         self.assertEqual(response.data['results'][0]['category']['icon_url'], None)
@@ -2086,7 +2075,7 @@ class TestGoalProgressAPI(V2APITestCase):
         )
 
         # When current > the expected average
-        url = "{0}?current=5".format(self.average_url)
+        url = "{0}&current=5".format(self.average_url)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -2096,7 +2085,7 @@ class TestGoalProgressAPI(V2APITestCase):
         self.assertEqual(response.data['text'], CHECKIN_BETTER)
 
         # When current < the expected average
-        url = "{0}?current=0".format(self.average_url)
+        url = "{0}&current=0".format(self.average_url)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['better'], False)
