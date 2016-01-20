@@ -500,13 +500,25 @@ class PackageEnrollmentAdmin(UserRelatedModelAdmin):
 admin.site.register(models.PackageEnrollment, PackageEnrollmentAdmin)
 
 
+class CustomActionInline(admin.TabularInline):
+    """Inline action form for Custom Goals. This is here so we can create a
+    custom goal + actions in the admin all at once."""
+    model = models.CustomAction
+    raw_id_fields = ('user', 'custom_trigger')
+
+
 class CustomGoalAdmin(UserRelatedModelAdmin):
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'title',
     )
-    list_display = ('title', 'created_on')
+    list_display = ('title', 'full_name', 'created_on')
     raw_id_fields = ('user', )
+    inlines = [CustomActionInline]
+
+    def full_name(self, obj):
+        return obj.user.get_full_name() or obj.user.email
+    full_name.admin_order_field = 'user'
 admin.site.register(models.CustomGoal, CustomGoalAdmin)
 
 

@@ -1,0 +1,22 @@
+{% extends 'admin/change_form.html' %}
+
+
+{% block admin_change_form_document_ready %}
+  {{ block.super }}
+  {# Pre-fill inline user ID fields when the parent is changed. #}
+  <script type="text/javascript">
+  django.jQuery(document).ready(function() {
+
+    var copy_id = function() {
+      var parent_user_id = django.jQuery(this).val();
+      django.jQuery("input[name$='-user']").val(parent_user_id);
+    };
+
+    {# BOO: The change event isn't fired when you select a user, so we add  #}
+    {# all these handlers to make it a little less cumbersome to copy data  #}
+    django.jQuery("#id_user").focus(copy_id);
+    django.jQuery("#id_user").blur(copy_id);
+    django.jQuery("#id_user").change(copy_id);
+  });
+  </script>
+{% endblock %}
