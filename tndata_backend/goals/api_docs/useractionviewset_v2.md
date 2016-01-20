@@ -39,10 +39,24 @@ parent goal and category for the action).
 
     {
         'action': ACTION_ID,
-        'primary_goal': GOAL_ID,
-        'primary_category': CATEGORY_ID
+        'primary_goal': GOAL_ID,         # (optional)
+        'primary_category': CATEGORY_ID  # (optional)
     }
 
+## Adding a UserAction and all parent objects at once
+
+If you submit a `category`, `goal`, `behavior`, and `action` all in a single
+payload, each object will be added to the user's collection at once; This will
+simplify adding the tree of data. When using this payload, all items are required,
+and the given `goal` and `category` IDs will be set as the `primary_goal` and
+`primary_category`:
+
+    {
+        'action': ACTION_ID,
+        'behavior': BEHAVIOR_ID,
+        'goal': GOAL_ID,
+        'category': CATEGORY_ID
+    }
 
 ## Viewing UserActions
 

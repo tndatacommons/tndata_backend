@@ -359,6 +359,40 @@ class UserActionViewSet(VersionedViewSetMixin,
             metric('viewed-useractions', category="User Interactions")
         return super().retrieve(request, *args, **kwargs)
 
+    def create_parent_objects(self, request):
+        """If the request includes all 4: category, goal, behavior, action,
+        let's try to get or create all of the user's objects at once.
+
+        """
+        # We'll *only* do this if we have all the necessary data.
+        checks = [
+            'category' in request.data and bool(request.data['category']),
+            'goal' in request.data and bool(request.data['goal']),
+            'behavior' in request.data and bool(request.data['behavior']),
+            'action' in request.data and bool(request.data['action']),
+        ]
+        if all(checks):
+            # NOTE: request.data.pop returns a list, and we have to look up
+            # each object individually in order to Create them.
+            cat_id = request.data.pop('category')[0]
+            uc, _ = models.UserCategory.objects.get_or_create(
+                user=request.user,
+                category=models.Category.objects.filter(id=cat_id).first()
+            )
+            goal_id = request.data.pop('goal')[0]
+            ug, _ = models.UserGoal.objects.get_or_create(
+                user=request.user,
+                goal=models.Goal.objects.filter(id=goal_id).first()
+            )
+            behavior_id = request.data.pop('behavior')[0]
+            ub, _ = models.UserBehavior.objects.get_or_create(
+                user=request.user,
+                behavior=models.Behavior.objects.filter(id=behavior_id).first()
+            )
+            request.data['primary_category'] = cat_id
+            request.data['primary_goal'] = goal_id
+        return request
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if isinstance(self.request.data, list):
@@ -368,6 +402,10 @@ class UserActionViewSet(VersionedViewSetMixin,
         else:
             # We're creating a single item
             request.data['user'] = request.user.id
+
+        # look for action, category, behavior, goal objects, and add them;
+        # otherwise, this doesn't really do anything.
+        request = self.create_parent_objects(request)
         return super(UserActionViewSet, self).create(request, *args, **kwargs)
 
     def _include_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
