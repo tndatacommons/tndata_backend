@@ -26,7 +26,6 @@ from .v1 import (  # flake8: noqa
     BehaviorProgressSerializer,
     CustomActionSerializer,
     CustomGoalSerializer,
-    SearchSerializer,
     GoalProgressSerializer,
     PackageEnrollmentSerializer,
     ReadOnlyUserGoalSerializer,

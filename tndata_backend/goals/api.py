@@ -823,12 +823,40 @@ class PackageEnrollmentViewSet(VersionedViewSetMixin,
         return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SearchViewSet(VersionedViewSetMixin, HaystackViewSet):
-    """ViewSet for search. See the api_docs/ for more info"""
+class SearchViewSet(HaystackViewSet):
+    """This endpoint lists results from our Search Index, which contains content
+    from [Goals](/api/goals/) and [Actions](/api/actions/).
+
+    ## Searching
+
+    To search this content, simply send a GET request with a `q` parameter
+    containing your search terms. For example:
+
+        {'q': 'wellness'}
+
+    A GET request without a search term will return all Goals indexed.
+
+    ## Results
+
+    A paginated list of results will be returned, and each result will contain
+    the following attributes:
+
+    * `id`: The ID of the object represented
+    * `object_type`: A lowercase string representing the type of object
+      (currently this will always be `goal`)
+    * `title`: The title of the object.
+    * `description`: The full description of the object.
+    * `updated_on`: The date/time on which the object was last updated.
+    * `text`: The full text stored in the search index. This is the content
+      against which search is performed.
+    * `highlighted`: A string containing html-highlighted matches. The
+      highlighted keywords are wrapped with `<em>` tags.
+
+    """
+    # NOTE: This viewset is not versioned; our VersionedViewSetMixin conflics
+    # with the HaystackViewset superclass.
     index_models = [models.Goal]
-    serializer_class_v1 = v1.SearchSerializer
-    serializer_class_v2 = v2.SearchSerializer
-    docstring_prefix = "goals/api_docs"
+    serializer_class = v1.SearchSerializer
     filter_backends = [HaystackHighlightFilter]
 
     def list(self, request, *args, **kwargs):
