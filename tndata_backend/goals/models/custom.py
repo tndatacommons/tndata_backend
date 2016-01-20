@@ -16,10 +16,16 @@ from .triggers import Trigger
 
 class CustomGoal(models.Model):
     """A user-created Goal."""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    title = models.CharField(max_length=128, db_index=True)
-    title_slug = models.SlugField(max_length=128, db_index=True)
-
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        help_text="The user to which this goal belongs"
+    )
+    title = models.CharField(
+        max_length=128,
+        db_index=True,
+        help_text="A title for your Goal."
+    )
+    title_slug = models.SlugField(max_length=128, db_index=True, editable=False)
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -38,12 +44,25 @@ class CustomGoal(models.Model):
 
 class CustomAction(models.Model):
     """A user-created Action; This is their reminder."""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    customgoal = models.ForeignKey(CustomGoal)
-    title = models.CharField(max_length=128, db_index=True)
-    title_slug = models.SlugField(max_length=128, db_index=True)
-    notification_text = models.CharField(max_length=256)
-    custom_trigger = models.ForeignKey(Trigger, blank=True, null=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        help_text="The user to which this action belongs."
+    )
+    customgoal = models.ForeignKey(
+        CustomGoal,
+        help_text="The custom goal to which this action belongs"
+    )
+    title = models.CharField(
+        max_length=128,
+        db_index=True,
+        help_text="A title for your custom action"
+    )
+    title_slug = models.SlugField(max_length=128, db_index=True, editable=False)
+    notification_text = models.CharField(
+        max_length=256,
+        help_text="The text that will be displayed in the app's push notification"
+    )
+    custom_trigger = models.ForeignKey(Trigger, blank=True, null=True, editable=False)
 
     # The next/prev trigger dates operate exactly like those in UserAction
     next_trigger_date = models.DateTimeField(blank=True, null=True, editable=False)
