@@ -118,7 +118,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
     progress = GoalProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-    primary_category = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserGoal
@@ -135,12 +134,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         goal = Goal.objects.get(pk=goal_id)
         results['goal'] = GoalSerializer(goal).data
         return results
-
-    def get_primary_category(self, obj):
-        cat = obj.get_primary_category()
-        if cat:
-            return cat.id
-        return None
 
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
@@ -173,7 +166,6 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     )
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     next_reminder = serializers.ReadOnlyField(source='next')
-    primary_category = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserAction
@@ -202,9 +194,3 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         if primary_goal:
             validated_data['primary_goal'] = primary_goal
         return super().create(validated_data)
-
-    def get_primary_category(self, obj):
-        cat = obj.get_primary_category()
-        if cat:
-            return cat.id
-        return None

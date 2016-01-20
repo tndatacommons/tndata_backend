@@ -35,9 +35,13 @@ This endpoint returns resources with the following fields.
 
 To associate a Action with a User, POST to `/api/users/actions/` with the
 following data (the action the user is selecting, and (optionally) the
-parent goal for the action).
+parent goal and category for the action).
 
-    {'action': ACTION_ID, 'primary_goal': GOAL_ID}
+    {
+        'action': ACTION_ID,
+        'primary_goal': GOAL_ID,
+        'primary_category': CATEGORY_ID
+    }
 
 
 ## Viewing UserActions

@@ -24,6 +24,12 @@ following data:
 
     {'goal': GOAL_ID}
 
+Additionally, you may specify a `primary_category` in order to associate
+this information with a Category:
+
+    {'goal': GOAL_ID, 'primary_category': CATEGORY_ID}
+
+
 ## Viewing the Goal data
 
 Additional information for the Goal mapping is available at
