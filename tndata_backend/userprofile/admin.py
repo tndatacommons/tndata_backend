@@ -55,5 +55,11 @@ admin.site.register(models.UserProfile, UserProfileAdmin)
 class CustomUserAdmin(UserAdmin):
     """Override the default UserAdmin class so we can attach a custom action."""
     actions = [remove_app_data]
+    list_display = ('email', 'full_name', 'is_staff', 'date_joined', 'username')
+
+    def full_name(self, obj):
+        return obj.get_full_name()
+    full_name.admin_order_field = 'first_name'
+
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
