@@ -14,6 +14,19 @@ else:
         pass
 
 
+def pop_first(data, key):
+    """Pop the given key from the given `data` dict, and if the popped item
+    is a list, return the first element.  This is handy for those cases where,
+    in the api, `request.data.pop(whatever)` sometimes gives a list and other
+    times is an object.
+
+    """
+    result = data.pop(key)
+    if isinstance(result, list):
+        result = result[0]
+    return result
+
+
 def num_user_selections(obj):
     """Return a count of the given object's UserXXXX instances (where XXXX is
     the name of one of our content models). This will tell how many users
