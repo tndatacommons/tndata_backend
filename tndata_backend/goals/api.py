@@ -17,7 +17,7 @@ from . import models
 from . import settings
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
-from . utils import pop_first, clog
+from . utils import pop_first
 
 
 class IsOwner(permissions.BasePermission):
@@ -461,7 +461,6 @@ class UserActionViewSet(VersionedViewSetMixin,
             # Also set the category & goal as primary
             request.data['primary_category'] = cat_id
             request.data['primary_goal'] = goal_id
-            clog(request.data)
         return (request, parents)
 
     def create(self, request, *args, **kwargs):
