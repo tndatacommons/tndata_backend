@@ -1730,7 +1730,7 @@ class TestUserActionAPI(V2APITestCase):
             'behavior'
         )
         self.assertIn('action', response.data)
-        self.assertEqual(response.data['action']['title'], 'aa')
+        self.assertEqual(response.data['action']['title'], 'a')
 
         # Clean up.
         action.delete()
