@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
 
 
 class LoginRequiredMixin(object):
@@ -84,10 +83,7 @@ class VersionedViewSetMixin:
                     self.__class__.__name__.lower(),
                     self.request.version
                 )
-                docstring = cache.get(doc_file)
-                if docstring is None:
-                    docstring = open(doc_file).read()
-                    cache.set(doc_file, docstring, timeout=None)
-            except FileNotFoundError:
+                docstring = open(doc_file).read()
+            except FileNotFoundError:  # noqa
                 pass
         return docstring
