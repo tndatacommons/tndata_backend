@@ -149,12 +149,34 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
         )
         read_only_fields = ("id", "created_on", )
 
+    def __init__(self, *args, **kwargs):
+        self.parents = kwargs.pop("parents", False)
+        super().__init__(*args, **kwargs)
+
+    def include_parent_objects(self, results):
+        if self.parents:
+            # Include the parent UserCategory object.
+            uc = UserCategory.objects.filter(
+                user__pk=results['user'],
+                category__pk=self.parents.get('category')
+            ).first()
+            results['parent_usercategory'] = UserCategorySerializer(uc).data
+
+            # Include the parent UserGoal object.
+            ug = UserGoal.objects.filter(
+                user__pk=results['user'],
+                goal__pk=self.parents.get('goal')
+            ).first()
+            results['parent_usergoal'] = UserGoalSerializer(ug).data
+        return results
+
     def to_representation(self, obj):
         """Include a serialized Behavior object in the result."""
         results = super().to_representation(obj)
         behavior_id = results.get('behavior', None)
         behavior = Behavior.objects.get(pk=behavior_id)
         results['behavior'] = BehaviorSerializer(behavior).data
+        results = self.include_parent_objects(results)
         return results
 
 

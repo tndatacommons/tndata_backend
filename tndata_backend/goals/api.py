@@ -216,8 +216,12 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
         """If the request includes all 3: category, goal, behavior, then
         let's try to get or create all of the user's objects at once.
 
+        Returns a tuple containing a possibly modified request object, and a
+        dict of parent object IDs, containing keys for `category` and `goal`.
+
         """
         # We'll *only* do this if we have all the necessary data.
+        parents = {}
         checks = [
             'category' in request.data and bool(request.data['category']),
             'goal' in request.data and bool(request.data['goal']),
@@ -231,12 +235,17 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
                 user=request.user,
                 category=models.Category.objects.filter(id=cat_id).first()
             )
+            parents['category'] = cat_id
+
             goal_id = request.data.pop('goal')[0]
             ug, _ = models.UserGoal.objects.get_or_create(
                 user=request.user,
                 goal=models.Goal.objects.filter(id=goal_id).first()
             )
-        return request
+            ug.primary_category = uc.category  # Set the primary goal.
+            ug.save()
+            parents['goal'] = goal_id
+        return (request, parents)
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
@@ -247,10 +256,26 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
         else:
             request.data['user'] = request.user.id
 
+        # Call out to the superclass to create the UserBehavior for v1...
+        if request.version == "1":
+            return super().create(request, *args, **kwargs)
+
         # look for category, and goal objects then add them;
         # otherwise, this doesn't really do anything.
-        request = self.create_parent_objects(request)
-        return super(UserBehaviorViewSet, self).create(request, *args, **kwargs)
+        request, parents = self.create_parent_objects(request)
+
+        # The rest of this is pulled from DRFs mixins.CreateModelMixin, with
+        # 1 change: We pass in parent object IDs to the serializer so it knows
+        # if parent objets should be included in the response (for v2 of the api).
+        serializer = self.get_serializer(data=request.data, parents=parents)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
     def _include_trigger(self, request, rrule, time):
         """Inserts a Trigger object into the request's payload"""
