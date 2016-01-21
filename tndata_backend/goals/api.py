@@ -445,13 +445,17 @@ class UserActionViewSet(VersionedViewSetMixin,
             # We're creating a single item
             request.data['user'] = request.user.id
 
+        # Call out to the superclass to create the UserAction for v1...
+        if request.version == "1":
+            return super().create(request, *args, **kwargs)
+
         # look for action, category, behavior, goal objects, and add them;
         # otherwise, this doesn't really do anything.
         request, parents = self.create_parent_objects(request)
 
         # The rest of this is pulled from DRFs mixins.CreateModelMixin, with
         # 1 change: We pass in parent object IDs to the serializer so it knows
-        # if parent objets should be included in the respons.
+        # if parent objets should be included in the response (for v2 of the api).
         serializer = self.get_serializer(data=request.data, parents=parents)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
