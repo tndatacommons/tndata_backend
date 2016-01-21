@@ -17,6 +17,7 @@ from . import models
 from . import settings
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
+from . utils import pop_first, clog
 
 
 class IsOwner(permissions.BasePermission):
@@ -409,21 +410,23 @@ class UserActionViewSet(VersionedViewSetMixin,
         if all(checks):
             # NOTE: request.data.pop returns a list, and we have to look up
             # each object individually in order to Create them.
-            cat_id = request.data.pop('category')[0]
+            cat_id = pop_first(request.data, 'category')
             uc, _ = models.UserCategory.objects.get_or_create(
                 user=request.user,
                 category=models.Category.objects.filter(id=cat_id).first()
             )
             parents['category'] = cat_id
 
-            goal_id = request.data.pop('goal')[0]
+            goal_id = pop_first(request.data, 'goal')
             ug, _ = models.UserGoal.objects.get_or_create(
                 user=request.user,
                 goal=models.Goal.objects.filter(id=goal_id).first()
             )
+            ug.primary_category = uc.category  # Set the primary goal.
+            ug.save()
             parents['goal'] = goal_id
 
-            behavior_id = request.data.pop('behavior')[0]
+            behavior_id = pop_first(request.data, 'behavior')
             ub, _ = models.UserBehavior.objects.get_or_create(
                 user=request.user,
                 behavior=models.Behavior.objects.filter(id=behavior_id).first()
@@ -433,6 +436,7 @@ class UserActionViewSet(VersionedViewSetMixin,
             # Also set the category & goal as primary
             request.data['primary_category'] = cat_id
             request.data['primary_goal'] = goal_id
+            clog(request.data)
         return (request, parents)
 
     def create(self, request, *args, **kwargs):

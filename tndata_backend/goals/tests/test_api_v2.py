@@ -1696,6 +1696,48 @@ class TestUserActionAPI(V2APITestCase):
         uca = UserCompletedAction.objects.get(user=self.user, useraction=self.ua)
         self.assertTrue(uca.uncompleted)
 
+    def test_post_useraction_with_parent_data(self):
+        """POSTing to create a UserAction with parent object IDs"""
+        category = mommy.make(Category, title="cat", state="published")
+        goal = mommy.make(Goal, title="goal", state="published")
+        goal.categories.add(self.category)
+        behavior = mommy.make(Behavior, title="behavior", state="published")
+        behavior.goals.add(goal)
+        action = mommy.make(Action, title="a", behavior=behavior, state='published')
+
+        url = self.get_url('useraction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        post_data = {
+            'category': category.id,
+            'goal': goal.id,
+            'behavior': behavior.id,
+            'action': action.id,
+        }
+        response = self.client.post(url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('parent_usercategory', response.data)
+        self.assertEqual(
+            response.data['parent_usercategory']['category']['title'], 'cat')
+        self.assertIn('parent_usergoal', response.data)
+        self.assertEqual(
+            response.data['parent_usergoal']['goal']['title'], 'goal')
+        self.assertIn('parent_userbehavior', response.data)
+        self.assertEqual(
+            response.data['parent_userbehavior']['behavior']['title'],
+            'behavior'
+        )
+        self.assertIn('action', response.data)
+        self.assertEqual(response.data['action']['title'], 'aa')
+
+        # Clean up.
+        action.delete()
+        behavior.delete()
+        goal.delete()
+        category.delete()
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
