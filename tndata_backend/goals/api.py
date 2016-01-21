@@ -230,14 +230,14 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
         if all(checks):
             # NOTE: request.data.pop returns a list, and we have to look up
             # each object individually in order to Create them.
-            cat_id = request.data.pop('category')[0]
+            cat_id = pop_first(request.data, 'category')
             uc, _ = models.UserCategory.objects.get_or_create(
                 user=request.user,
                 category=models.Category.objects.filter(id=cat_id).first()
             )
             parents['category'] = cat_id
 
-            goal_id = request.data.pop('goal')[0]
+            goal_id = pop_first(request.data, 'goal')
             ug, _ = models.UserGoal.objects.get_or_create(
                 user=request.user,
                 goal=models.Goal.objects.filter(id=goal_id).first()
