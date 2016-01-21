@@ -393,8 +393,13 @@ class UserActionViewSet(VersionedViewSetMixin,
         """If the request includes all 4: category, goal, behavior, action,
         let's try to get or create all of the user's objects at once.
 
+        Returns a tuple containing a possibly modified request object, and a
+        dict of parent object IDs, containing keys for `category`, `behavior`,
+        and `goal`.
+
         """
         # We'll *only* do this if we have all the necessary data.
+        parents = {}
         checks = [
             'category' in request.data and bool(request.data['category']),
             'goal' in request.data and bool(request.data['goal']),
@@ -409,19 +414,26 @@ class UserActionViewSet(VersionedViewSetMixin,
                 user=request.user,
                 category=models.Category.objects.filter(id=cat_id).first()
             )
+            parents['category'] = cat_id
+
             goal_id = request.data.pop('goal')[0]
             ug, _ = models.UserGoal.objects.get_or_create(
                 user=request.user,
                 goal=models.Goal.objects.filter(id=goal_id).first()
             )
+            parents['goal'] = goal_id
+
             behavior_id = request.data.pop('behavior')[0]
             ub, _ = models.UserBehavior.objects.get_or_create(
                 user=request.user,
                 behavior=models.Behavior.objects.filter(id=behavior_id).first()
             )
+            parents['behavior'] = behavior_id
+
+            # Also set the category & goal as primary
             request.data['primary_category'] = cat_id
             request.data['primary_goal'] = goal_id
-        return request
+        return (request, parents)
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
@@ -435,8 +447,20 @@ class UserActionViewSet(VersionedViewSetMixin,
 
         # look for action, category, behavior, goal objects, and add them;
         # otherwise, this doesn't really do anything.
-        request = self.create_parent_objects(request)
-        return super(UserActionViewSet, self).create(request, *args, **kwargs)
+        request, parents = self.create_parent_objects(request)
+
+        # The rest of this is pulled from DRFs mixins.CreateModelMixin, with
+        # 1 change: We pass in parent object IDs to the serializer so it knows
+        # if parent objets should be included in the respons.
+        serializer = self.get_serializer(data=request.data, parents=parents)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers
+        )
 
     def _include_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
         """Includes a Trigger object into the request's payload; That means,
