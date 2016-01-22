@@ -2,14 +2,13 @@ from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-User = get_user_model()
-
 
 class TestPasswordResetRequestView(TestCase):
 
     @classmethod
     def setUpTestData(cls):
         super(cls, TestPasswordResetRequestView).setUpTestData()
+        User = get_user_model()
         cls.user = User.objects.create_user("u", "u@example.com", "pass")
         cls.payload = {'email_address': 'u@example.com'}
         cls.url = reverse("utils:password_reset")
@@ -52,13 +51,12 @@ class TestPasswordResetNotificationView(TestCase):
         self.assertEqual(resp.status_code, 200)
 
 
-
-
 class TestSetNewPasswordView(TestCase):
 
     @classmethod
     def setUpTestData(cls):
         super(cls, TestSetNewPasswordView).setUpTestData()
+        User = get_user_model()
         cls.user = User.objects.create_user("u", "u@example.com", "pass")
         cls.payload = {'password': 'foo', 'password_confirmation': 'foo'}
         cls.url = reverse("utils:password_reset")
@@ -72,3 +70,26 @@ class TestSetNewPasswordView(TestCase):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.client.logout()
+
+
+class TestResetPasswordAPI(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        User = get_user_model()
+        cls.user = User.objects.create_user("u", "u@example.com", "pass")
+        cls.payload = {'email': 'u@example.com'}
+        cls.url = reverse("reset-password")
+
+    def test_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 405)
+
+    def test_post(self):
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_post_invalid(self):
+        resp = self.client.post(self.url, {'email': ''})
+        self.assertEqual(resp.status_code, 400)

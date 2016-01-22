@@ -78,6 +78,9 @@ def reset_password(request):
     ----
 
     """
+    # TODO: WE should send a text message with a token in it & have the user
+    # tap something to reset their email.
+
     # Validate the email
     form = EmailForm({'email_address': request.data.get('email')})
     if form.is_valid():
