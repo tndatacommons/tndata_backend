@@ -1,9 +1,13 @@
 from django import http
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, FormView
+
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from userprofile.forms import UserForm
 from .email import send_new_user_request_notification_to_managers
@@ -57,6 +61,48 @@ def signup(request):
         'completed': bool(request.GET.get("c", False)),
     }
     return render(request, "utils/signup.html", context)
+
+
+@api_view(['POST'])
+def reset_password(request):
+    """This defines an API endpoint that allows users to reset their password.
+    To reset a password, simply send a POST request with the following data:
+
+        {email: 'YOUR EMAIL ADDRESS'}
+
+    This will reset the user's password, and temporarily deactivate their
+    accout. Instructions on reseting their password are emailed to them.
+
+    Returns a 200 response upon success, and a 400 response on failure.
+
+    ----
+
+    """
+    # Validate the email
+    form = EmailForm({'email_address': request.data.get('email')})
+    if form.is_valid():
+        logout(request)  # Sends the user_logged_out signal
+
+        User = get_user_model()
+        try:
+            u = User.objects.get(email=form.cleaned_data['email_address'])
+
+            # Set unusuable password and disable account
+            u.set_unusable_password()
+            u.is_active = False
+            u.save()
+
+            # Generate a token for this session and email the user.
+            token = ResetToken(request, u.email)
+            token.generate()
+            token.send_email_notification()
+            msg = {'message': 'Password Reset. Please check your email for instructions'}
+            return Response(msg, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            pass
+
+    error = {"error": "Invalid email address or account"}
+    return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordResetRequestView(FormView):
