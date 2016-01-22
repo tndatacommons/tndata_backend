@@ -60,9 +60,16 @@ class ResetToken:
         # Pull the FQDN from the referer
         url = self.request.META.get('HTTP_REFERER', None)
         if url is None:
+            url = self.request.META['HTTP_HOST']
+        if url is None:
             url = self.request.META['SERVER_NAME']
         path = reverse_lazy("utils:set_new_password", args=[self.token])
-        base_url = "{0.scheme}://{0.netloc}".format(urlsplit(url))
+
+        url_data = urlsplit(url)
+        base_url = "{0}://{1}".format(
+            url_data.scheme or 'http',
+            url_data.netloc or url_data.path
+        )
         url = "{0}{1}".format(base_url, path)
 
         template = "utils/email/password_reset_notification.txt"
