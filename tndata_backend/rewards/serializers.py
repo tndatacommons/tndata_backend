@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from utils.serializers import ObjectTypeModelSerializer
 from . models import FunContent
 
 
-class FunContentSerializer(serializers.ModelSerializer):
+class FunContentSerializer(ObjectTypeModelSerializer):
 
     class Meta:
         model = FunContent

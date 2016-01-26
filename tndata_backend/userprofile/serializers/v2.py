@@ -29,9 +29,10 @@ from .v1 import (  # NOQA
 )
 from utils import user_utils
 from utils.decorators import cached_method
+from utils.serializers import ObjectTypeModelSerializer
 
 
-class UserDataSerializer(serializers.ModelSerializer):
+class UserDataSerializer(ObjectTypeModelSerializer):
     needs_onboarding = serializers.ReadOnlyField(
         source='userprofile.needs_onboarding'
     )
@@ -77,7 +78,7 @@ class UserDataSerializer(serializers.ModelSerializer):
         return serialized.data
 
 
-class UserFeedSerializer(serializers.ModelSerializer):
+class UserFeedSerializer(ObjectTypeModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
 
     next_action = serializers.SerializerMethodField(read_only=True)
@@ -168,7 +169,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
         return self._get_feed(obj)['suggestions']
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ObjectTypeModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')

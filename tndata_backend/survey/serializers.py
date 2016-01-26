@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from utils.serializers import ObjectTypeModelSerializer
 from . models import (
     BinaryQuestion,
     BinaryResponse,
@@ -20,7 +21,7 @@ from . serializer_fields import (
 )
 
 
-class InstrumentSerializer(serializers.ModelSerializer):
+class InstrumentSerializer(ObjectTypeModelSerializer):
     questions = serializers.ReadOnlyField()
 
     class Meta:
@@ -50,7 +51,7 @@ class InstrumentSerializer(serializers.ModelSerializer):
         return ret
 
 
-class BinaryQuestionSerializer(serializers.ModelSerializer):
+class BinaryQuestionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `BinaryQuestion`."""
     options = BinaryOptionsField(read_only=True)
     question_type = serializers.CharField()
@@ -65,7 +66,7 @@ class BinaryQuestionSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class LikertQuestionSerializer(serializers.ModelSerializer):
+class LikertQuestionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `LikertQuestion`."""
     options = LikertOptionsField(read_only=True)
     question_type = serializers.CharField()
@@ -80,7 +81,7 @@ class LikertQuestionSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
+class MultipleChoiceQuestionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `MultipleChoiceQuestion`."""
     options = MultipleChoiceResponseOptionField(many=True, read_only=True)
     question_type = serializers.CharField()
@@ -95,7 +96,7 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class OpenEndedQuestionSerializer(serializers.ModelSerializer):
+class OpenEndedQuestionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `OpenEndedQuestion`."""
     question_type = serializers.CharField()
     response_url = serializers.CharField(source="get_api_response_url")
@@ -110,7 +111,7 @@ class OpenEndedQuestionSerializer(serializers.ModelSerializer):
 
 
 # TODO: VALIDATE the response using the question's input_type?
-class BinaryResponseSerializer(serializers.ModelSerializer):
+class BinaryResponseSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `BinaryResponse` model."""
     selected_option_text = serializers.ReadOnlyField()
     selected_option = BinaryOptionsField(read_only=True)
@@ -125,7 +126,7 @@ class BinaryResponseSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "submitted_on", )
 
 
-class LikertResponseSerializer(serializers.ModelSerializer):
+class LikertResponseSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `LikertResponse` model."""
     selected_option_text = serializers.ReadOnlyField()
     # This isn't really a RelatedField, but I'm not sure how to do this, other
@@ -145,7 +146,7 @@ class LikertResponseSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "submitted_on", )
 
 
-class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
+class MultipleChoiceResponseSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `MultipleChoiceResponse` model."""
     selected_option_text = serializers.ReadOnlyField()
     selected_option = MultipleChoiceResponseOptionField(
@@ -162,7 +163,7 @@ class MultipleChoiceResponseSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "submitted_on", )
 
 
-class OpenEndedResponseSerializer(serializers.ModelSerializer):
+class OpenEndedResponseSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `OpenEndedResponse` model."""
     question = QuestionField(queryset=OpenEndedQuestion.objects.all())
 

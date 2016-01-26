@@ -25,11 +25,12 @@ from goals.serializers.simple import (
 )
 from utils import user_utils
 from utils.decorators import cached_method
+from utils.serializers import ObjectTypeModelSerializer
 
 from .. import models
 
 
-class PlaceSerializer(serializers.ModelSerializer):
+class PlaceSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = models.Place
         fields = ('id', 'name', 'slug', 'primary', 'updated_on', 'created_on')
@@ -49,7 +50,7 @@ class PlaceField(serializers.RelatedField):
         }
 
 
-class UserPlaceSerializer(serializers.ModelSerializer):
+class UserPlaceSerializer(ObjectTypeModelSerializer):
     place = PlaceField(queryset=models.Place.objects.all())
 
     class Meta:
@@ -60,7 +61,7 @@ class UserPlaceSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "updated_on", "created_on", )
 
 
-class UserAccountSerializer(serializers.ModelSerializer):
+class UserAccountSerializer(ObjectTypeModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
@@ -128,7 +129,7 @@ class UserAccountSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ObjectTypeModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
@@ -291,7 +292,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserDataSerializer(serializers.ModelSerializer):
+class UserDataSerializer(ObjectTypeModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
@@ -399,7 +400,7 @@ class UserDataSerializer(serializers.ModelSerializer):
         }
 
 
-class UserFeedSerializer(serializers.ModelSerializer):
+class UserFeedSerializer(ObjectTypeModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
 
     next_action = serializers.SerializerMethodField(read_only=True)
@@ -489,7 +490,7 @@ class UserFeedSerializer(serializers.ModelSerializer):
         return self._get_feed(obj)['suggestions']
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(ObjectTypeModelSerializer):
     bio = serializers.ReadOnlyField(required=False)
 
     class Meta:
