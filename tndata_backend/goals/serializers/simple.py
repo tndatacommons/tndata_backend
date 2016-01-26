@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from utils.serializers import ObjectTypeModelSerializer
 
 from ..models import (
     Action,
@@ -19,7 +20,6 @@ from ..serializer_fields import (
     SimpleCategoryField,
     SimpleGoalField,
 )
-from .base import ObjectTypeModelSerializer
 
 
 User = get_user_model()

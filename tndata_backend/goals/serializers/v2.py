@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from utils.serializers import ObjectTypeModelSerializer
 
 from ..models import (
     Action,
@@ -19,7 +20,6 @@ from ..serializer_fields import (
     SimpleGoalField,
     SimpleTriggerField,
 )
-from .base import ObjectTypeModelSerializer
 
 # XXX: Things we don't want to change from v1
 from .v1 import (  # flake8: noqa

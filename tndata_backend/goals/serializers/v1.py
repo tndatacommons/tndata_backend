@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from drf_haystack.serializers import HaystackSerializer
 from rest_framework import serializers
+from utils.serializers import ObjectTypeModelSerializer
 
 from ..models import (
     Action,
@@ -33,7 +34,6 @@ from ..serializer_fields import (
     SimpleGoalField,
     SimpleTriggerField,
 )
-from .base import ObjectTypeModelSerializer
 
 
 class SearchSerializer(HaystackSerializer):
