@@ -177,10 +177,10 @@ class UserSerializer(ObjectTypeModelSerializer):
     timezone = serializers.ReadOnlyField(source='userprofile.timezone')
     places = serializers.SerializerMethodField(read_only=True)
 
-    categories = serializers.SerializerMethodField(read_only=True)
-    goals = serializers.SerializerMethodField(read_only=True)
-    behaviors = serializers.SerializerMethodField(read_only=True)
-    actions = serializers.SerializerMethodField(read_only=True)
+    user_categories = serializers.SerializerMethodField(read_only=True)
+    user_goals = serializers.SerializerMethodField(read_only=True)
+    user_behaviors = serializers.SerializerMethodField(read_only=True)
+    user_actions = serializers.SerializerMethodField(read_only=True)
 
     # Wrapping all the feed data into an object.
     feed_data = serializers.SerializerMethodField(read_only=True)
@@ -198,8 +198,8 @@ class UserSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
-            'token', 'needs_onboarding', "places", "goals", "behaviors",
-            "actions", "categories", "feed_data",
+            'token', 'needs_onboarding', "places", "user_goals", "user_behaviors",
+            "user_actions", "user_categories", "feed_data",
         )
         read_only_fields = ("id", "date_joined", )
 
