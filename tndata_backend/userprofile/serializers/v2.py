@@ -44,12 +44,14 @@ class UserDataSerializer(ObjectTypeModelSerializer):
     user_goals = serializers.SerializerMethodField(read_only=True)
     user_behaviors = serializers.SerializerMethodField(read_only=True)
     user_actions = serializers.SerializerMethodField(read_only=True)
+    customgoals = serializers.SerializerMethodField(read_only=True)
+    customactions = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'needs_onboarding', 'places', 'user_categories', 'user_goals',
-            'user_behaviors', 'user_actions',
+            'user_behaviors', 'user_actions', 'customgoals', 'customactions',
         )
 
     def get_places(self, obj):
@@ -77,6 +79,16 @@ class UserDataSerializer(ObjectTypeModelSerializer):
     def get_user_actions(self, obj):
         qs = UserAction.objects.accepted_or_public(obj)
         serialized = UserActionSerializer(qs, many=True)
+        return serialized.data
+
+    def get_customgoals(self, obj):
+        qs = obj.customgoal_set.all()
+        serialized = CustomGoalSerializer(qs, many=True)
+        return serialized.data
+
+    def get_customactions(self, obj):
+        qs = obj.customaction_set.all()
+        serialized = CustomActionSerializer(qs, many=True)
         return serialized.data
 
 
