@@ -503,16 +503,18 @@ class CustomGoalSerializer(ObjectTypeModelSerializer):
 
 class CustomActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `CustomAction` model."""
-    custom_trigger = CustomTriggerField(
+    trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
+        source="custom_trigger",
         required=False
     )
+    next_reminder = serializers.ReadOnlyField(source='next_trigger_date')
 
     class Meta:
         model = CustomAction
         fields = (
             'id', 'user', 'customgoal', 'title', 'title_slug',
-            'notification_text', 'custom_trigger', 'next_trigger_date',
-            'prev_trigger_date', 'updated_on', 'created_on', 'object_type',
+            'notification_text', 'trigger', 'next_reminder',
+            'updated_on', 'created_on', 'object_type',
         )
         read_only_fields = ("id", "title_slug", "updated_on", "created_on")
