@@ -37,6 +37,23 @@ def _unaccepted_category_ids(user):
     return ids
 
 
+class CustomActionManager(models.Manager):
+
+    def upcoming(self):
+        """Return a queryset of objects that have an upcoming trigger."""
+        qs = self.get_queryset()
+        return qs.filter(next_trigger_date__gte=timezone.now())
+
+    def stale(self):
+        """Return a queryset of objects whose `next_trigger_date` is either
+        stale or None."""
+        qs = self.get_queryset()
+        return qs.filter(
+            Q(next_trigger_date__lt=timezone.now()) |
+            Q(next_trigger_date=None)
+        )
+
+
 class UserCategoryManager(models.Manager):
 
     def published(self, *args, **kwargs):

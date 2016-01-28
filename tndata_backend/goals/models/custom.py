@@ -7,11 +7,11 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 
-from jsonfield import JSONField
-from utils.user_utils import local_day_range, to_localtime, to_utc
+from utils.user_utils import to_localtime, to_utc
 
 from .progress import UserCompletedAction
 from .triggers import Trigger
+from ..managers import CustomActionManager
 
 
 class CustomGoal(models.Model):
@@ -168,6 +168,8 @@ class CustomAction(models.Model):
             )
             if self.prev_trigger_date is None and in_past:
                 self.prev_trigger_date = self.next_trigger_date
+
+    objects = CustomActionManager()
 
 
 class UserCompletedCustomAction(models.Model):
