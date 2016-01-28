@@ -232,14 +232,11 @@ class UserProfile(models.Model):
             return d.get(answer_key)
         return None
 
-    def _get_survey_instrument_results(self, instrument_id, local_cache):
+    def _get_survey_instrument_results(self, instrument_id):
         # UGH. We shoe-horned this shit into a survey and now there's no
         # clean way to get what *should* be a 1-to-1 relationship between
         # a user an some responses. I'm just hard-coding this for now because
         # i hate future me.
-        if hasattr(self, local_cache):
-            return getattr(self, local_cache)
-
         results = []
         try:
             inst = Instrument.objects.get(pk=instrument_id)
@@ -281,16 +278,15 @@ class UserProfile(models.Model):
         except Instrument.DoesNotExist:
             pass
 
-        setattr(self, local_cache, results)
         return results
 
     @property
     def profile_survey(self):
-        return self._get_survey_instrument_results(6, '_profile_survey')
+        return self._get_survey_instrument_results(6)
 
     @property
     def bio(self):
-        return self._get_survey_instrument_results(4, '_bio_results')
+        return self._get_survey_instrument_results(4)
 
     @property
     def surveys(self):
