@@ -52,6 +52,7 @@ class UserDataSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'needs_onboarding', 'places', 'user_categories', 'user_goals',
             'user_behaviors', 'user_actions', 'customgoals', 'customactions',
+            'object_type',
         )
 
     def get_places(self, obj):
@@ -109,7 +110,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'username', 'email', 'token', 'object_type',
             'action_feedback', 'progress', 'upcoming_actions',
-            'upcoming_customactions', 'suggestions',
+            'upcoming_customactions', 'suggestions', 'object_type',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -199,7 +200,7 @@ class UserSerializer(ObjectTypeModelSerializer):
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             'token', 'needs_onboarding', "places", "user_goals", "user_behaviors",
             "user_actions", "user_categories", 'customgoals', 'customactions',
-            "feed_data",
+            "feed_data", 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
 
