@@ -281,10 +281,10 @@ class TestUsersAPI(V2APITestCase):
 
         # As well as the collections used for the home feed
         self.assertIn('feed_data', response.data['results'][0])
-        self.assertIn('next_action', response.data['results'][0]['feed_data'])
         self.assertIn('action_feedback', response.data['results'][0]['feed_data'])
         self.assertIn('progress', response.data['results'][0]['feed_data'])
         self.assertIn('upcoming_actions', response.data['results'][0]['feed_data'])
+        self.assertIn('upcoming_customactions', response.data['results'][0]['feed_data'])
         self.assertIn('suggestions', response.data['results'][0]['feed_data'])
 
     def test_post_user_list(self):
