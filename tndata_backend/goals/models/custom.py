@@ -88,6 +88,10 @@ class CustomAction(models.Model):
     def trigger(self):
         return self.custom_trigger
 
+    @trigger.setter
+    def trigger(self, value):
+        self.custom_trigger = value
+
     @property
     def next_reminder(self):
         """Returns next_trigger_date in the user's local timezone."""
