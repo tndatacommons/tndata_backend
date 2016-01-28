@@ -44,8 +44,6 @@ Collections of related data for the user, include:
 * `customactions` -- An array of the user's [CustomAction](/api/users/customactions/)
 * `feed_data` -- an object represention information for the app's home feed.
 
-    * `next_action` -- a `UserAction` object (the mapping between a User and
-      an Action`. This is the upcoming activity for the user.
     * `action_feedback` (possibly null) is a object of data for the _feedback card_
       related to the user's `next_action`. It's intention is to _reinforce the user's
       upcoming action with some motivational text_. This content is dynamically
@@ -65,9 +63,12 @@ Collections of related data for the user, include:
     * `progress` -- an object containing the number of actions completed today,
       the number of total actions scheduled for today, and the percentage of
       those completed.
-    * `upcoming_actions` -- an array of the `UserAction`s that are relevant for
+    * `upcoming_actions` -- an array of `Action` IDs that are relevant for
       today (i.e. the user has a reminder scheduled for today)
+    * `upcoming_customactions` -- an array of `CustomAction` IDs that are
+      relevant for today (i.e. the user has a reminder scheduled for today)
     * `suggestions` -- a list of suggested `Goal`s for the user.
+    * `object_type` -- a string. Will always be "feed"
 
 ## Creating a User <a href="#creating-a-user">&para;</a>
 

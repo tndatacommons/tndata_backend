@@ -95,7 +95,6 @@ class UserDataSerializer(ObjectTypeModelSerializer):
 class UserFeedSerializer(ObjectTypeModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
 
-    next_action = serializers.SerializerMethodField(read_only=True)
     action_feedback = serializers.SerializerMethodField(read_only=True)
     progress = serializers.SerializerMethodField(read_only=True)
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
@@ -109,68 +108,52 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'token', 'object_type',
-            'next_action', 'action_feedback', 'progress',
-            'upcoming_actions', 'upcoming_customactions', 'suggestions',
+            'action_feedback', 'progress', 'upcoming_actions',
+            'upcoming_customactions', 'suggestions',
         )
         read_only_fields = ("id", "username", "email")
 
     def get_object_type(self, obj):
         return "feed"
 
-    def get_user_categories(self, obj):
-        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
-        serialized = UserCategorySerializer(qs, many=True)
-        return serialized.data
-
-    def get_user_goals(self, obj):
-        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
-        serialized = UserGoalSerializer(qs, many=True)
-        return serialized.data
-
     def _get_feed(self, obj):
         """Assemble all user feed data at once because it's more efficient."""
         if not hasattr(self, "_feed"):
             self._feed = {
-                'next_action': None,
                 'action_feedback': None,
                 'progress': None,
                 'upcoming_actions': [],
                 'upcoming_customactions': [],
                 'suggestions': [],
+                'object_type': 'feed',
             }
 
             if not obj.is_authenticated():
                 return self._feed
 
-            # Up next UserAction
+            # Find the up next action and it's feedback.
             ua = user_feed.next_user_action(obj)
-            self._feed['next_action'] = UserActionSerializer(ua).data
             if ua:
-                # The Action feedback is irrelevant if there's no user action
                 feedback = user_feed.action_feedback(obj, ua)
                 self._feed['action_feedback'] = feedback
 
-            # Actions to do today.
-            upcoming = user_feed.todays_actions(obj)
-
             # Progress for today
             self._feed['progress'] = user_feed.todays_actions_progress(obj)
-            upcoming = UserActionSerializer(upcoming, many=True).data
-            self._feed['upcoming_actions'] = upcoming
 
-            # Upcoming Custom Actions
+            # Actions / CustomActions to do today.
+            upcoming = user_feed.todays_actions(obj)
+            upcoming = upcoming.values_list("action__id", flat=True)
+            self._feed['upcoming_actions'] = list(upcoming)
+
             upcoming_cas = user_feed.todays_customactions(obj)
-            upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
-            self._feed['upcoming_customactions'] = upcoming_cas
+            upcoming_cas = upcoming_cas.values_list("id", flat=True)
+            self._feed['upcoming_customactions'] = list(upcoming_cas)
 
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
             srz = GoalSerializer(suggestions, many=True, user=obj)
             self._feed['suggestions'] = srz.data
         return self._feed
-
-    def get_next_action(self, obj):
-        return self._get_feed(obj)['next_action']
 
     def get_action_feedback(self, obj):
         return self._get_feed(obj)['action_feedback']
@@ -227,6 +210,7 @@ class UserSerializer(ObjectTypeModelSerializer):
             'upcoming_actions': self.get_upcoming_actions(obj),
             'upcoming_customactions': self.get_upcoming_customactions(obj),
             'suggestions': self.get_suggestions(obj),
+            'object_type': 'feed',
         }
 
     def _get_feed(self, obj):

@@ -20,11 +20,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from goals import user_feed
-from goals.serializers.v2 import (
-    CustomActionSerializer,
-    GoalSerializer,
-    UserActionSerializer,
-)
+from goals.serializers.v2 import GoalSerializer
 from utils.mixins import VersionedViewSetMixin
 
 from . import models
@@ -255,7 +251,8 @@ def feed_api(request):
 
     See it at /api/feed/
 
-    A paginated result of upcoming actions are at [/api/feed/upcoming/](/api/feed/upcoming/)
+    A paginated result of upcoming actions are at
+    [/api/feed/upcoming/](/api/feed/upcoming/)
 
     """
     # essentially the paginated amount of data do show for upcoming
@@ -273,14 +270,10 @@ def feed_api(request):
     if request.user.is_authenticated():
         user = request.user
 
-        # Up next UserAction
+        # Up next UserAction / Action Feedback
+        # The Action feedback is irrelevant if there's no user action
         ua = user_feed.next_user_action(user)
-        next_action = UserActionSerializer(ua).data
-        next_action['object_type'] = 'nextaction'
-        data['results'].append(next_action)
-
         if ua:
-            # The Action feedback is irrelevant if there's no user action
             feedback = user_feed.action_feedback(user, ua)
             feedback['object_type'] = 'actionfeedback'
             data['results'].append(feedback)
@@ -292,8 +285,8 @@ def feed_api(request):
 
         # Actions to do today.
         upcoming = user_feed.todays_actions(user)
-        upcoming = upcoming[:LIMIT]
-        upcoming = UserActionSerializer(upcoming, many=True).data
+        upcoming = upcoming.values_list("action__id", flat=True)
+        upcoming = list(upcoming)[:LIMIT]
         upcoming_useractions = {
             'object_type': 'upcoming',
             'user_actions': upcoming,
@@ -302,8 +295,8 @@ def feed_api(request):
 
         # Custom Actions to do today.
         upcoming_cas = user_feed.todays_customactions(user)
-        upcoming_cas = upcoming_cas[:LIMIT]
-        upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
+        upcoming_cas = upcoming_cas.values_list("id", flat=True)
+        upcoming_cas = list(upcoming_cas)[:LIMIT]
         upcoming_customactions = {
             'object_type': 'upcoming_customactions',
             'custom_actions': upcoming_cas,
@@ -353,8 +346,8 @@ def feed_upcoming_actions_api(request):
 
         # User Actions
         upcoming = user_feed.todays_actions(user)
-        upcoming = upcoming[start:stop]
-        upcoming = UserActionSerializer(upcoming, many=True).data
+        upcoming = upcoming.values_list('action__id', flat=True)
+        upcoming = list(upcoming)[start:stop]
         upcoming_useractions = {
             'object_type': 'upcoming',
             'user_actions': upcoming,
@@ -363,8 +356,8 @@ def feed_upcoming_actions_api(request):
 
         # Custom Actions
         upcoming_cas = user_feed.todays_customactions(user)
-        upcoming_cas = upcoming_cas[start:stop]
-        upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
+        upcoming_cas = upcoming_cas.values_list('id', flat=True)
+        upcoming_cas = list(upcoming_cas)[start:stop]
         upcoming_customactions = {
             'object_type': 'upcoming_customactions',
             'user_actions': upcoming_cas,
