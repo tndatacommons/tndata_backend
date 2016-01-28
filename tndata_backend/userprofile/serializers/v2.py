@@ -99,6 +99,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     action_feedback = serializers.SerializerMethodField(read_only=True)
     progress = serializers.SerializerMethodField(read_only=True)
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
+    upcoming_customactions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
@@ -109,7 +110,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'username', 'email', 'token', 'object_type',
             'next_action', 'action_feedback', 'progress',
-            'upcoming_actions', 'suggestions',
+            'upcoming_actions', 'upcoming_customactions', 'suggestions',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -134,6 +135,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                 'action_feedback': None,
                 'progress': None,
                 'upcoming_actions': [],
+                'upcoming_customactions': [],
                 'suggestions': [],
             }
 
@@ -156,6 +158,11 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             upcoming = UserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 
+            # Upcoming Custom Actions
+            upcoming_cas = user_feed.todays_customactions(obj)
+            upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
+            self._feed['upcoming_customactions'] = upcoming_cas
+
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
             srz = GoalSerializer(suggestions, many=True, user=obj)
@@ -173,6 +180,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
     def get_upcoming_actions(self, obj):
         return self._get_feed(obj)['upcoming_actions']
+
+    def get_upcoming_customactions(self, obj):
+        return self._get_feed(obj)['upcoming_customactions']
 
     def get_suggestions(self, obj):
         return self._get_feed(obj)['suggestions']
@@ -216,6 +226,7 @@ class UserSerializer(ObjectTypeModelSerializer):
             'action_feedback': self.get_action_feedback(obj),
             'progress': self.get_progress(obj),
             'upcoming_actions': self.get_upcoming_actions(obj),
+            'upcoming_customactions': self.get_upcoming_customactions(obj),
             'suggestions': self.get_suggestions(obj),
         }
 
@@ -227,6 +238,7 @@ class UserSerializer(ObjectTypeModelSerializer):
                 'action_feedback': None,
                 'progress': None,
                 'upcoming_actions': [],
+                'upcoming_customactions': [],
                 'suggestions': [],
             }
 
@@ -249,6 +261,11 @@ class UserSerializer(ObjectTypeModelSerializer):
             upcoming = UserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 
+            # Upcoming Custom Actions
+            upcoming_cas = user_feed.todays_customactions(obj)
+            upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
+            self._feed['upcoming_customactions'] = upcoming_cas
+
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
             self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
@@ -262,6 +279,9 @@ class UserSerializer(ObjectTypeModelSerializer):
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']
+
+    def get_upcoming_customactions(self, obj):
+        return self._get_feed(obj)['upcoming_customactions']
 
     def get_upcoming_actions(self, obj):
         return self._get_feed(obj)['upcoming_actions']

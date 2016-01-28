@@ -20,7 +20,11 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from goals import user_feed
-from goals.serializers.v2 import UserActionSerializer, GoalSerializer
+from goals.serializers.v2 import (
+    CustomActionSerializer,
+    GoalSerializer,
+    UserActionSerializer,
+)
 from utils.mixins import VersionedViewSetMixin
 
 from . import models
@@ -296,6 +300,16 @@ def feed_api(request):
         }
         data['results'].append(upcoming_useractions)
 
+        # Custom Actions to do today.
+        upcoming_cas = user_feed.todays_customactions(user)
+        upcoming_cas = upcoming_cas[:LIMIT]
+        upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
+        upcoming_customactions = {
+            'object_type': 'upcoming_customactions',
+            'custom_actions': upcoming_cas,
+        }
+        data['results'].append(upcoming_customactions)
+
         # Goal Suggestions
         goals = user_feed.suggested_goals(user)
         goals = GoalSerializer(goals, many=True, user=user).data
@@ -336,6 +350,8 @@ def feed_upcoming_actions_api(request):
 
         stop = (current_page * LIMIT)
         start = (stop - LIMIT)
+
+        # User Actions
         upcoming = user_feed.todays_actions(user)
         upcoming = upcoming[start:stop]
         upcoming = UserActionSerializer(upcoming, many=True).data
@@ -344,6 +360,16 @@ def feed_upcoming_actions_api(request):
             'user_actions': upcoming,
         }
         data['results'].append(upcoming_useractions)
+
+        # Custom Actions
+        upcoming_cas = user_feed.todays_customactions(user)
+        upcoming_cas = upcoming_cas[start:stop]
+        upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
+        upcoming_customactions = {
+            'object_type': 'upcoming_customactions',
+            'user_actions': upcoming_cas,
+        }
+        data['results'].append(upcoming_customactions)
 
     return Response(data, status=status.HTTP_200_OK)
 
