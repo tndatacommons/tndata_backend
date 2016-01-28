@@ -232,6 +232,10 @@ def todays_actions_progress(user):
     * total is the total number of scheduled actions
     * progress is an integer representing the percentage complete
 
+    --------------------------------------------------------------
+    TODO: incorporate UserCompletedCustomAction data into this.
+    --------------------------------------------------------------
+
     """
     # Start & End of "today", in UTC from the perspective of the user's timezone
     today = local_day_range(user)
