@@ -2570,8 +2570,7 @@ class TestCustomActionAPI(APITestCase):
         self.assertEqual(result['customgoal'], self.customgoal.id)
         self.assertEqual(result['notification_text'], 'Do it'),
         self.assertEqual(result['object_type'], "customaction")
-        self.assertTrue('next_trigger_date' in result)
-        self.assertTrue('prev_trigger_date' in result)
+        self.assertTrue('next_reminder' in result)
         self.assertTrue('updated_on' in result)
         self.assertTrue('created_on' in result)
 
