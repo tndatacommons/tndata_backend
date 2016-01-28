@@ -11,6 +11,8 @@ from goals.models import (
     UserGoal,
 )
 from goals.serializers.v2 import (
+    CustomActionSerializer,
+    CustomGoalSerializer,
     GoalSerializer,
     UserActionSerializer,
     UserGoalSerializer,
@@ -87,10 +89,6 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
 
-    # XXX why did we have this info?
-    #user_categories = serializers.SerializerMethodField(read_only=True)
-    #user_goals = serializers.SerializerMethodField(read_only=True)
-
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
 
@@ -100,7 +98,6 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             'id', 'username', 'email', 'token', 'object_type',
             'next_action', 'action_feedback', 'progress',
             'upcoming_actions', 'suggestions',
-            #'user_categories', 'user_goals',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -181,14 +178,11 @@ class UserSerializer(ObjectTypeModelSerializer):
     user_goals = serializers.SerializerMethodField(read_only=True)
     user_behaviors = serializers.SerializerMethodField(read_only=True)
     user_actions = serializers.SerializerMethodField(read_only=True)
+    customgoals = serializers.SerializerMethodField(read_only=True)
+    customactions = serializers.SerializerMethodField(read_only=True)
 
     # Wrapping all the feed data into an object.
     feed_data = serializers.SerializerMethodField(read_only=True)
-    #next_action = serializers.SerializerMethodField(read_only=True)
-    #action_feedback = serializers.SerializerMethodField(read_only=True)
-    #progress = serializers.SerializerMethodField(read_only=True)
-    #upcoming_actions = serializers.SerializerMethodField(read_only=True)
-    #suggestions = serializers.SerializerMethodField(read_only=True)
 
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
@@ -199,7 +193,8 @@ class UserSerializer(ObjectTypeModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             'token', 'needs_onboarding', "places", "user_goals", "user_behaviors",
-            "user_actions", "user_categories", "feed_data",
+            "user_actions", "user_categories", 'customgoals', 'customactions',
+            "feed_data",
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -268,28 +263,40 @@ class UserSerializer(ObjectTypeModelSerializer):
         serialized = UserPlaceSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_categories", timeout=60)
+    @cached_method(cache_key="{0}-User.get_user_categories", timeout=60)
     def get_user_categories(self, obj):
         qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
         serialized = UserCategorySerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_goals", timeout=60)
+    @cached_method(cache_key="{0}-User.get_user_goals", timeout=60)
     def get_user_goals(self, obj):
         qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
         serialized = UserGoalSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_behaviors", timeout=60)
+    @cached_method(cache_key="{0}-User.get_user_behaviors", timeout=60)
     def get_user_behaviors(self, obj):
         qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
         serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_actions", timeout=60)
+    @cached_method(cache_key="{0}-User.get_user_actions", timeout=60)
     def get_user_actions(self, obj):
         qs = UserAction.objects.accepted_or_public(obj)
         serialized = UserActionSerializer(qs, many=True)
+        return serialized.data
+
+    @cached_method(cache_key="{0}-User.get_customgoals", timeout=60)
+    def get_customgoals(self, obj):
+        qs = obj.customgoal_set.all()
+        serialized = CustomGoalSerializer(qs, many=True)
+        return serialized.data
+
+    @cached_method(cache_key="{0}-User.get_customactions", timeout=60)
+    def get_customactions(self, obj):
+        qs = obj.customaction_set.all()
+        serialized = CustomActionSerializer(qs, many=True)
         return serialized.data
 
     def validate_username(self, value):

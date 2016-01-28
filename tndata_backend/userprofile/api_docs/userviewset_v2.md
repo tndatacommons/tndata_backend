@@ -36,10 +36,12 @@ The following user data is available from this endpoint as an item in the
 Collections of related data for the user, include:
 
 * `places` -- An array of the [user's Places](/api/users/places/)
-* `goals` -- An array of the user's selected Goals, ie. [UserGoals](/api/users/goals/)
-* `behaviors` -- An array of the user's selected Behaviors, ie. [UserBehaviors](/api/users/behaviors/).
-* `actions` -- An array of the user's selected Actions, ie. [UserActions](/api/users/actions/)
-* `categories` -- An array of the user's selected Categories, ie. [UserCategories](/api/users/categories/)
+* `user_goals` -- An array of the user's selected Goals, ie. [UserGoals](/api/users/goals/)
+* `user_behaviors` -- An array of the user's selected Behaviors, ie. [UserBehaviors](/api/users/behaviors/).
+* `user_actions` -- An array of the user's selected Actions, ie. [UserActions](/api/users/actions/)
+* `user_categories` -- An array of the user's selected Categories, ie. [UserCategories](/api/users/categories/)
+* `customgoals` -- An array of the user's [CustomGoal](/api/users/customgoals/)
+* `customactions` -- An array of the user's [CustomAction](/api/users/customactions/)
 * `feed_data` -- an object represention information for the app's home feed.
 
     * `next_action` -- a `UserAction` object (the mapping between a User and
