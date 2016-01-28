@@ -60,9 +60,11 @@ class ResetToken:
         # Pull the FQDN from the referer
         url = self.request.META.get('HTTP_REFERER', None)
         if url is None:
-            url = self.request.META['HTTP_HOST']
+            url = self.request.META.get('HTTP_HOST', None)
         if url is None:
-            url = self.request.META['SERVER_NAME']
+            url = self.request.META.get('SERVER_NAME', None)
+        if url is None:
+            url = "https://app.tndata.org"
         path = reverse_lazy("utils:set_new_password", args=[self.token])
 
         url_data = urlsplit(url)
