@@ -273,10 +273,10 @@ class TestUsersAPI(V2APITestCase):
         self.assertEqual(response.data['count'], 1)
 
         # There should also be a section for categories, goals, behaviors, actions
-        self.assertIn('goals', response.data['results'][0])
-        self.assertIn('behaviors', response.data['results'][0])
-        self.assertIn('actions', response.data['results'][0])
-        self.assertIn('categories', response.data['results'][0])
+        self.assertIn('user_goals', response.data['results'][0])
+        self.assertIn('user_behaviors', response.data['results'][0])
+        self.assertIn('user_actions', response.data['results'][0])
+        self.assertIn('user_categories', response.data['results'][0])
         self.assertIn('places', response.data['results'][0])
 
         # As well as the collections used for the home feed
