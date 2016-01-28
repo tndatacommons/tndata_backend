@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 
 import waffle
 
-from goals.models import Goal, Trigger, UserAction
+from goals.models import CustomAction, Goal, Trigger, UserAction
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
@@ -73,6 +73,28 @@ class Command(BaseCommand):
                 msg = "User {0} has not registered a Device".format(user)
                 self._log_messages.append((msg, ERROR))
 
+    def schedule_customaction_notifications(self):
+        # Schedule upcoming notifications for all CustomActions for users with:
+        # - users that have a GCMDevice registered
+        # - TODO: custom actions that have some text
+        customactions = CustomAction.objects.filter(
+            user__gcmdevice__isnull=False
+        )
+
+        for a in customactions.distinct():
+            if a.trigger:
+                # Will be in the user's timezone
+                deliver_on = a.trigger.next(user=a.user)
+                deliver_on = to_utc(deliver_on)
+
+                self.create_message(
+                    a.user,
+                    a,
+                    a.customgoal.title,
+                    a.notification_text,
+                    deliver_on,
+                )
+
     def schedule_action_notifications(self):
         # Schedule upcoming notifications for all UserActions with:
         # - published Actions (whose parent behavior is also published)
@@ -131,6 +153,8 @@ class Command(BaseCommand):
         # Make sure everything is ok before we run this.
         self.check()
         self.schedule_action_notifications()
+        if waffle.switch_is_active('goals-customactions'):
+            self.schedule_customaction_notifications()
 
         User = get_user_model()
         users = User.objects.filter(gcmdevice__isnull=False).distinct()
