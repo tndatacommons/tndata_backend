@@ -222,7 +222,6 @@ class UserSerializer(ObjectTypeModelSerializer):
 
     def get_feed_data(self, obj):
         return {
-            'next_action': self.get_next_action(obj),
             'action_feedback': self.get_action_feedback(obj),
             'progress': self.get_progress(obj),
             'upcoming_actions': self.get_upcoming_actions(obj),
@@ -234,7 +233,6 @@ class UserSerializer(ObjectTypeModelSerializer):
         """Assemble all the user feed data at once because it's more efficient."""
         if not hasattr(self, "_feed"):
             self._feed = {
-                'next_action': None,
                 'action_feedback': None,
                 'progress': None,
                 'upcoming_actions': [],
@@ -245,11 +243,10 @@ class UserSerializer(ObjectTypeModelSerializer):
             if not obj.is_authenticated():
                 return self._feed
 
-            # Up next UserAction
+            # Up next UserAction is needed to generate the feedback, and the
+            # feedback is irrelevant if there's no user action
             ua = user_feed.next_user_action(obj)
-            self._feed['next_action'] = UserActionSerializer(ua).data
             if ua:
-                # The Action feedback is irrelevant if there's no user action
                 feedback = user_feed.action_feedback(obj, ua)
                 self._feed['action_feedback'] = feedback
 
@@ -258,21 +255,19 @@ class UserSerializer(ObjectTypeModelSerializer):
 
             # Progress for today
             self._feed['progress'] = user_feed.todays_actions_progress(obj)
-            upcoming = UserActionSerializer(upcoming, many=True).data
-            self._feed['upcoming_actions'] = upcoming
 
-            # Upcoming Custom Actions
+            # IDs of upcoming actions/custom actions
+            upcoming = upcoming.values_list("action__id", flat=True)
+            self._feed['upcoming_actions'] = list(upcoming)
+
             upcoming_cas = user_feed.todays_customactions(obj)
-            upcoming_cas = CustomActionSerializer(upcoming_cas, many=True).data
-            self._feed['upcoming_customactions'] = upcoming_cas
+            upcoming_cas = upcoming_cas.values_list("id", flat=True)
+            self._feed['upcoming_customactions'] = list(upcoming_cas)
 
             # Goal Suggestions
             suggestions = user_feed.suggested_goals(obj)
             self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
         return self._feed
-
-    def get_next_action(self, obj):
-        return self._get_feed(obj)['next_action']
 
     def get_action_feedback(self, obj):
         return self._get_feed(obj)['action_feedback']
