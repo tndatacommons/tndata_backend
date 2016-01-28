@@ -158,6 +158,25 @@ def action_feedback(user, useraction, lookback=30):
     return resp
 
 
+def todays_customactions(user):
+    """Return a queryset of CustomActions that are upcoming..."""
+    today = local_day_range(user)  # start/end in UTC wrapping the user's day
+    now = timezone.now()
+
+    # Excluding those that have already been completed
+    completed = user.usercompletedcustomaction_set.filter(
+        updated_on__range=today,
+        state=UserCompletedAction.COMPLETED
+    )
+    completed = completed.values_list('customaction', flat=True)
+    upcoming_cas = user.customaction_set.filter(
+        next_trigger_date__range=(now, today[1])
+    )
+    upcoming_cas = upcoming_cas.exclude(id__in=completed)
+    upcoming_cas = upcoming_cas.order_by('next_trigger_date').distinct()
+    return upcoming_cas
+
+
 def todays_actions(user):
     """Return a QuerySet of UserAction objects that the user should perform
     today, ordered by `next_trigger_date` field (e.g. next up is first in the
