@@ -89,14 +89,13 @@ class ActionSerializer(ObjectTypeModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    default_trigger = serializers.ReadOnlyField(source='serialized_default_trigger')
 
     class Meta:
         model = Action
         fields = (
             'id', 'behavior', 'sequence_order', 'title', 'description',
             'html_description', 'more_info', 'html_more_info',
-            'external_resource', 'external_resource_name', 'default_trigger',
+            'external_resource', 'external_resource_name',
             'notification_text', 'icon_url', 'object_type',
         )
 
