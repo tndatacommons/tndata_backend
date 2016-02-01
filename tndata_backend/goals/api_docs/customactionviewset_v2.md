@@ -72,5 +72,12 @@ endpoint. Submit a POST request with the following information:
 
     {'text': 'User-supplied text'}
 
+
+## Deleting Custom Actions
+
+Send a DELETE request to the custom action's _detail_ endpoint:
+`/api/users/customactions/{customaction_id}/`. Successful deletions return a
+204 No Content response.
+
 ----
 

@@ -31,5 +31,13 @@ containing the information that you wish to update, namely the title.
 
     {'title': 'Updated Title'}
 
+
+## Deleting Custom Goals
+
+Send a DELETE request to the goal's _detail_ endpoint:
+`/api/users/customgoals/{customgoal_id}/`. Note that this will also remove all
+associated `CustomAction` objects. Successful deletions return a 204 No Content
+response.
+
 ----
 
