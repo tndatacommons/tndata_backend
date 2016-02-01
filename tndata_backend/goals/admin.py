@@ -527,7 +527,7 @@ class CustomActionAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'title', 'customgoal__title', 'notification_text'
     )
-    list_display = ('title', 'prev_trigger_date', 'next_trigger_date', 'created_on')
+    list_display = ('title', 'customgoal', 'prev_trigger_date', 'next_trigger_date', 'created_on')
     raw_id_fields = ('user', 'customgoal', 'custom_trigger')
 admin.site.register(models.CustomAction, CustomActionAdmin)
 
