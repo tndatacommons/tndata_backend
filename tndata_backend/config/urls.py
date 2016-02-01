@@ -121,8 +121,16 @@ router.register(r'rewards', FunContentViewSet)
 
 
 urlpatterns = [
-    url(r'^django-rq/', include('django_rq.urls')),
-    url(r'^api/reset-password/$', utils_views.reset_password, name="reset-password"),
+    url(r'^rq/', include('django_rq.urls')),
+    url(
+        r'^notifications/',
+        include('notifications.urls', namespace='notifications')
+    ),
+    url(
+        r'^api/reset-password/$',
+        utils_views.reset_password,
+        name="reset-password"
+    ),
     url(r'^api/feed/$', feed_api, name="feed-api"),
     url(r'^api/feed/upcoming/$', feed_upcoming_actions_api, name="feed-upcoming"),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),

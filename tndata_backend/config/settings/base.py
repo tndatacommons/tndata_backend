@@ -351,7 +351,7 @@ RQ_QUEUES = {
         'DB': RQ_DB,
         'PASSWORD': REDIS_PASSWORD,
         'DEFAULT_TIMEOUT': 360,
-    }
+    },
 }
 
 # Crispy forms

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block head %}
+{# Datatables' Foundation CSS (see bodyjs block for the JS) #}
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.css" />
+{% endblock %}
+
+
+{% block topnav %}
+  <div class="sticky">
+  <nav class="top-bar" data-topbar role="navigation">
+  <ul class="title-area">
+    <li class="name">
+      <h1><a href="/" title="Project Home"><i class="fa fa-home"></i></a></h1>
+    </li>
+    <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+  </ul>
+
+  <section class="top-bar-section">
+    {# Right Nav Section #}
+    <ul class="right">
+      <li class="divider"></li>
+      <li><a href="{% url 'haystack_search' %}">
+        <i class="fa fa-search"></i></a></li>
+      <li class="divider"></li>
+      <li><a href="{% url 'userprofile:index' %}">
+        <i class="fa fa-user"></i> Account</a></li>
+      <li class="divider"></li>
+      <li class="has-dropdown">
+        <a href="/admin/"><i class="fa fa-unlock"></i> Admin</a>
+        <ul class="dropdown">
+          <li><a href="{% url 'goals:debug_progress_aggregates' %}">
+            Progress Aggregates</a></li>
+          <li><a href="{% url 'goals:debug_progress' %}">
+            User Progress</a></li>
+          <li><a href="{% url 'goals:debug_notifications' %}">
+            User Notifications</a></li>
+        </ul>
+      </li>
+      <li class="divider"></li>
+      <li><a href="{% url 'logout' %}">
+        <i class="fa fa-sign-out"></i> Sign Out</a></li>
+    </ul>
+
+    {# Left Nav Section #}
+    <ul class="left">
+      <li class="divider"></li>
+      <li><a href="/rq/">RQ</a></li>
+      <li class="divider"></li>
+    </ul>
+  </section>
+  </nav>
+  </div>
+{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+    {% block content %}{% endblock %}
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  {# Include DataTables Core and Foundation-specific JS #}
+  <script src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+  <script src="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/foundation/dataTables.foundation.js"></script>
+  <script>
+  $(document).ready(function() {
+    // Apply datatables to all .object-list tables.
+    $('table.object-list').DataTable({paging:false});
+  });
+  </script>
+{% endblock %}
