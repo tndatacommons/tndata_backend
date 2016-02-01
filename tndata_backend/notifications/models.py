@@ -106,6 +106,7 @@ class GCMMessage(models.Model):
         null=True,
         help_text="Date/Time when this should expire (UTC)"
     )
+    queue_id = models.CharField(max_length=128, default='', blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

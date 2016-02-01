@@ -73,13 +73,13 @@ class GCMMessageAdmin(admin.ModelAdmin):
     list_filter = (DeliverDayListFilter, 'success', 'content_type')
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
-        'title', 'message', 'content_type__model', 'object_id',
+        'title', 'message', 'content_type__model', 'queue_id', 'object_id',
     ]
     exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
         'success', 'response_code', 'gcm_response',
         'pretty_response_data', 'delivered_to', 'registered_devices',
-        'gcm_diagnostics', 'created_on', 'expire_on',
+        'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
     actions = ['send_notification', 'expire_messages']
 

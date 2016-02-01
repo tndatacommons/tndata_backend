@@ -15,6 +15,7 @@ def send(message_id):
     from . models import GCMMessage
     msg = GCMMessage.objects.get(pk=message_id)
     msg.send()
+    # TODO: Record a metric
 
 
 def enqueue(message, threshold=24):
@@ -27,6 +28,10 @@ def enqueue(message, threshold=24):
     # Only queue up messages for the next 24 hours
     if now < message.deliver_on and message.deliver_on < threshold:
         job = scheduler.enqueue_at(message.deliver_on, send, message.id)
+        message.queue_id = job.id
+        message.save()
+
+    # TODO: Record a metric so we can see queued vs sent?
 
     # TODO: save the job ID on the GCMMessage, so if it gets re-enqueued we
     # can cancel the original?
