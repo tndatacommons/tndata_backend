@@ -40,4 +40,5 @@ django-redis-metrics==1.1.0
 django-cacheops==2.4.3
 rq==0.5.6
 django-rq==0.8.0
+rq-scheduler==0.5.1
 django-axes==1.6.0
