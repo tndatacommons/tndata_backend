@@ -33,7 +33,10 @@ from .. import models
 class PlaceSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = models.Place
-        fields = ('id', 'name', 'slug', 'primary', 'updated_on', 'created_on')
+        fields = (
+            'id', 'name', 'slug', 'primary', 'updated_on', 'created_on',
+            'object_type',
+        )
 
 
 class PlaceField(serializers.RelatedField):
@@ -56,7 +59,8 @@ class UserPlaceSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = models.UserPlace
         fields = (
-            'id', 'user', 'profile', 'place', 'latitude', 'longitude'
+            'id', 'user', 'profile', 'place', 'latitude', 'longitude',
+            'object_type',
         )
         read_only_fields = ("id", "updated_on", "created_on", )
 
