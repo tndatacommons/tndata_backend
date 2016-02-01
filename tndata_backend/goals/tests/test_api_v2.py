@@ -2575,6 +2575,9 @@ class TestCustomGoalAPI(V2APITestCase):
     def test_delete_customgoal_detail(self):
         """Ensure authenticated users can delete."""
         cg = CustomGoal.objects.create(user=self.user, title="DELETE")
+        ca1 = mommy.make(CustomAction, customgoal=cg)
+        ca2 = mommy.make(CustomAction, customgoal=cg)
+
         url = self.get_url('customgoal-detail', args=[cg.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
@@ -2582,6 +2585,10 @@ class TestCustomGoalAPI(V2APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(CustomGoal.objects.filter(title='DELETE').exists())
+
+        # Child actions should have also been deleted
+        self.assertFalse(CustomAction.objects.filter(id=ca1.id).exists())
+        self.assertFalse(CustomAction.objects.filter(id=ca2.id).exists())
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
