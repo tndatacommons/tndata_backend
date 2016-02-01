@@ -10,7 +10,7 @@ class GCMDeviceSerializer(ObjectTypeModelSerializer):
         model = GCMDevice
         fields = (
             'id', 'user','device_name', 'device_id', 'registration_id',
-            'is_active', 'created_on', 'updated_on',
+            'is_active', 'created_on', 'updated_on', 'oject_type',
         )
         read_only_fields = ("id", "created_on", "updated_on")
 
@@ -22,5 +22,5 @@ class GCMMessageSerializer(ObjectTypeModelSerializer):
         model = GCMMessage
         fields = (
             'id', 'user', 'content', 'success', 'response_code',
-            'deliver_on', 'created_on',
+            'deliver_on', 'created_on', 'object_type',
         )
