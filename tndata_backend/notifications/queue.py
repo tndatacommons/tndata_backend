@@ -10,6 +10,9 @@ from utils.slack import post_private_message
 def get_scheduler(queue='default'):
     return django_rq.get_scheduler('default')
 
+
+# XXX: This Module-level scheduler is our interface to putting messages
+#      on the notifications task queue.
 scheduler = get_scheduler()
 
 
@@ -29,7 +32,13 @@ def send(message_id):
 
 
 def enqueue(message, threshold=24):
-    """Given a GCMMessage object, add it to the queue of messages to be sent."""
+    """Given a GCMMessage object, add it to the queue of messages to be sent.
+
+    TODO:
+        - priorities
+        - thresholds: max number of daily messages per user
+
+    """
 
     job = None
     now = timezone.now()
