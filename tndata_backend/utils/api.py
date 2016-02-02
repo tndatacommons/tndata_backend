@@ -23,6 +23,8 @@ class DefaultQueryParamVersioning(QueryParameterVersioning):
 
 
 class BrowsableAPIRendererWithoutForms(BrowsableAPIRenderer):
+    # NOTE: the template for the browesable api is:
+    # template = 'rest_framework/api.html'
 
     def get_context(self, *args, **kwargs):
         ctx = super().get_context(*args, **kwargs)

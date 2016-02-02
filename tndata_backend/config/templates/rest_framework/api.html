@@ -1,0 +1,18 @@
+{% extends "rest_framework/base.html" %}
+{% load static from staticfiles %}
+
+{% block bootstrap_theme %}
+ <link rel="stylesheet" type="text/css" href="{% static "rest_framework/css/bootstrap.min.css" %}"/>
+ <style type="text/css">
+  code { color: #555; background-color: #eee; }
+  span.str { color: #814; }
+ </style>
+{% endblock %}
+
+
+{% block branding %}
+  <a class='navbar-brand' rel="nofollow" href='http://www.django-rest-framework.org'>
+  COMPASS API
+  <small>&mdash;powered by DRF <span class="version">{{ version }}</span></small>
+  </a>
+{% endblock %}
