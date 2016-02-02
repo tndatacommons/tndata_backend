@@ -20,6 +20,7 @@ class GCMDeviceAdmin(admin.ModelAdmin):
         'device_name', 'device_id', 'registration_id', 'device_name',
     ]
     readonly_fields = ('device_name', 'device_id', 'registration_id')
+    raw_id_fields = ('user', )
 
     def user_username(self, obj):
         return obj.user.username
