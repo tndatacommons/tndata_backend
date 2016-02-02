@@ -2856,6 +2856,34 @@ class TestCustomActionAPI(V2APITestCase):
         self.assertEqual(ca.custom_trigger.time, time(9, 30))
         self.assertEqual(ca.custom_trigger.trigger_date, date(2222, 12, 25))
 
+    def test_put_detail_authenticated_with_only_custom_trigger(self):
+        """PUT requests containting ONLY custom trigger details, should create
+        a custom trigger (if that field was previously null) for the
+        CustomAction.
+
+        """
+        url = self.get_url('customaction-detail', args=[self.customaction.id])
+        payload = {
+            'custom_trigger_date': '2222-12-25',
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure it was updated
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertIsNotNone(ca.custom_trigger)
+        self.assertEqual(
+            ca.custom_trigger.recurrences_as_text(),
+            "weekly, each Monday"
+        )
+        self.assertEqual(ca.custom_trigger.time, time(9, 30))
+        self.assertEqual(ca.custom_trigger.trigger_date, date(2222, 12, 25))
+
     def test_put_custom_trigger_udpates(self):
         """When we have an existing custom trigger, putting new values should
         update it."""
@@ -2876,6 +2904,46 @@ class TestCustomActionAPI(V2APITestCase):
             'title': "Updated Title",
             'notification_text': 'A notification',
             'customgoal': self.customgoal.id,
+            'custom_trigger_date': '2222-12-25',
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the Trigger got updated.
+        ca = CustomAction.objects.get(pk=self.customaction.id)
+        self.assertEqual(ca.custom_trigger.id, custom_trigger.id)
+        self.assertEqual(
+            ca.custom_trigger.recurrences_as_text(),
+            "weekly, each Monday"
+        )
+        self.assertEqual(ca.custom_trigger.time, time(9, 30))
+        self.assertEqual(ca.custom_trigger.trigger_date, date(2222, 12, 25))
+
+        # clean up
+        Trigger.objects.filter(id=custom_trigger.id).delete()
+
+    def test_put_custom_trigger_udpates_with_only_trigger_data(self):
+        """When we have an existing custom trigger, putting new values should
+        update it (this time ONLY including the trigger data)."""
+
+        # Create a Custom trigger for our CustomAction
+        custom_trigger = Trigger.objects.create_for_user(
+            user=self.customaction.user,
+            name="custom trigger for customaction-{0}".format(self.customaction.id),
+            time=time(11, 30),
+            date=date(2000, 1, 2),
+            rrule="RRULE:FREQ=DAILY"
+        )
+        self.customaction.custom_trigger = custom_trigger
+        self.customaction.save()
+
+        url = self.get_url('customaction-detail', args=[self.customaction.id])
+        payload = {
             'custom_trigger_date': '2222-12-25',
             'custom_trigger_time': '9:30',
             'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',

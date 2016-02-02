@@ -1098,6 +1098,18 @@ class CustomActionViewSet(VersionedViewSetMixin,
             customaction.custom_trigger = trigger
             customaction.save(update_fields=['custom_trigger'])
             request.data['custom_trigger'] = trigger
+
+        # XXX: to allow us to update *only* the trigger details, we need to
+        # add the title, customgoal, notification_text back in (since the
+        # superclass requires these).
+        if 'title' not in request.data:
+            request.data['title'] = customaction.title
+        if 'customgoal' not in request.data and customaction.customgoal_id:
+            request.data['customgoal'] = customaction.customgoal_id
+        elif customaction.customgoal:
+            request.data['customgoal'] = customaction.customgoal.id
+        if 'notification_text' not in request.data:
+            request.data['notification_text'] = customaction.notification_text
         return request
 
     def _has_custom_trigger_params(self, params):
