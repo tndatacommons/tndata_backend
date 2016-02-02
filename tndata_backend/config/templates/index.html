@@ -6,24 +6,38 @@
   <div class="large-12 medium-12 small-12 columns">
     {% if user.is_authenticated %}
       <h1>TN Data Commons Admin</h1>
-      <div class="panel">
-        <div class="row">
-          <div class="large-6 medium-6 columns">
+      <div class="row">
+        <div class="large-6 medium-6 columns">
+          <div class="panel">
             <p>This is the administration portal for the data library and api.
             Please choose an option from the right.</p>
           </div>
-
-          <div class="large-6 medium-6 columns">
-            <ul>
-              <li><a href="{% url 'goals:index' %}">Manage Goals/Actions</a></li>
-              <li><a href="{% url 'survey:index' %}">Manage Survey Questions</a></li>
-              <li><a href="/api/">Browse the API</a></li>
-              <li><a href="{% url 'userprofile:index' %}">My Account</a></li>
-              <li><a href="{% url 'logout' %}">Sign Out</a></li>
-            </ul>
-          </div>
         </div>
-      </div> {# end .panel #}
+
+        <div class="large-6 medium-6 columns">
+          <h2 class="subheader">Content Authors &amp Editors</h2>
+          <ul>
+            <li><a href="{% url 'goals:index' %}">Manage Goals/Actions</a></li>
+            <li><a href="{% url 'survey:index' %}">Manage Survey Questions</a></li>
+            <li><a href="{% url 'haystack_search' %}">Search</a></li>
+          </ul>
+
+          <h2 class="subheader">My Account</h2>
+          <ul>
+            <li><a href="{% url 'userprofile:index' %}">Account</a></li>
+            <li><a href="{% url 'logout' %}">Sign Out</a></li>
+          </ul>
+
+          <h2 class="subheader">Developers</h2>
+          <ul>
+            <li><a href="/api/">Browse the API</a></li>
+            <li><a href="/metrics/">App Metrics</a></li>
+            <li><a href="/notifications/">Notifications Dashboard</a></li>
+            <li><a href="/rq/">Task Queue</a></li>
+            <li><a href="/admin/">Admin</a></li>
+          </ul>
+        </div>
+      </div>
     {% else %}
       <div class="large-8 large-offset-2 medium-10 medium-offset-1 small-12 columns end">
         <h1>TN Data Commons Admin</h1>
