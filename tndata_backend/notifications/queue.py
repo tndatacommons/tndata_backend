@@ -4,6 +4,8 @@ from django.utils import timezone
 from redis_metrics import metric
 import django_rq
 
+from utils.slack import post_private_message
+
 
 def get_scheduler(queue='default'):
     return django_rq.get_scheduler('default')
@@ -13,9 +15,17 @@ scheduler = get_scheduler()
 
 def send(message_id):
     """Given an ID for a GCMMessage object, send the message via GCM."""
-    from . models import GCMMessage
-    msg = GCMMessage.objects.get(pk=message_id)
-    msg.send()  # NOTE: sets a metric on successful sends.
+    msg = "Trying to send GCMMessage id = {}".format(message_id)
+    post_private_message("bkmontgomery", msg)
+
+    try:
+        from . models import GCMMessage
+        msg = GCMMessage.objects.get(pk=message_id)
+        msg.send()  # NOTE: sets a metric on successful sends.
+        post_private_message("bkmontgomery", "...done!")
+    except Exception as e:
+        msg = "FAILED: {}".format(e)
+        post_private_message("bkmontgomery", msg)
 
 
 def enqueue(message, threshold=24):
