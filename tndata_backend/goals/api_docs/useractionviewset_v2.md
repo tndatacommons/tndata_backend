@@ -124,10 +124,10 @@ To do this, send a PUT request to the detail url
 
 * `custom_trigger_time`: The time at which the reminder should fire, in
   `hh:mm` format, in the user's local time.
-* `custom_trigger_date`: (optional). For a one-time reminder, the this can
+* `custom_trigger_date`: (optional). For a one-time reminder, this can
   include a date string (yyyy-mm-dd) to define the date at which a reminder
   should next fire. The date should be relative to the user's local time.
-* `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &
+* `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &amp;
   frequencies at which the reminder should occur.
 
 ## Filtering

@@ -49,6 +49,24 @@ endpoint, containing the information that you wish to, e.g.:
         'customgoal': {ID of the parent custom goal},
     }
 
+## Including a Custom Trigger
+
+CustomActions may be updated in order to set custom Triggers (aka
+reminders) for the associated action.
+
+To do this, send a PUT request to the detail url
+(`api/users/customactions/{customaction_id}`) with the following information:
+
+* `custom_trigger_time`: The time at which the reminder should fire, in
+  `hh:mm` format, in the user's local time.
+* `custom_trigger_date`: (optional). For a one-time reminder, this can
+  include a date string (yyyy-mm-dd) to define the date at which a reminder
+  should next fire. The date should be relative to the user's local time.
+* `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &amp;
+  frequencies at which the reminder should occur.
+
+
+
 ## Completing Custom Action
 
 You can specify that you've completed a custom action (typically from a
