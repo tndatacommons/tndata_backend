@@ -16,6 +16,7 @@ from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
 )
+from redis_metrics import metric
 
 from . managers import GCMMessageManager
 from . settings import GCM
@@ -301,13 +302,14 @@ class GCMMessage(models.Model):
             # Expire at some point in the future.
             self.expire_on = timezone.now() + timedelta(days=days)
             self.success = True
+            metric('GCM Message Sent', category='Notifications')
 
     def _save_response(self, resp):
         """This method saves response data from GCM. This is mostly good for
         debugging message delivery, and this method will parse out that data
         and populate the following fields:
 
-        * resposne_code
+        * response_code
         * response_text
         * response_data
         * registration_ids

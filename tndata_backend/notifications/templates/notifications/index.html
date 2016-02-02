@@ -1,9 +1,11 @@
 {% extends "notifications/base.html" %}
 {% load tz %}
+{% load redis_metric_tags %}
 
 
 {% block content %}
-  {# TODO display a redis-metrics chart of sent messages ? #}
+  {# display a redis-metrics chart of sent messages #}
+  {% aggregate_history metrics %}
 
   <table class="object-list">
     <caption>{{ jobs|length }} Enqueued Messages</caption>

@@ -1,5 +1,9 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
+from django.utils import timezone
+
 from . import queue
 
 
@@ -9,6 +13,9 @@ def dashboard(request):
 
     jobs = queue.messages()  # Get the enqueued messages
 
-    context = {'jobs': jobs}
+    context = {
+        'jobs': jobs,
+        'metrics': ['GCM Message Sent', 'GCM Message Scheduled', ]
+    }
     return render(request, "notifications/index.html", context)
 
