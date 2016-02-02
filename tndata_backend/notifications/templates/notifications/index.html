@@ -18,6 +18,7 @@
         <th>Created</th>
         <th>User</th>
         <th>Content</th>
+        <th><i class="fa fa-cog"></i></th>
       </tr>
     </thead>
     <tbody>
@@ -39,6 +40,19 @@
           {{ message_data.title }} {{ message_data.message }}
           <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
             target="_blank"><i class="fa fa-external-link-square"></i></a>
+        </td>
+        <td>
+          <form action="{% url 'notifications:cancel-job' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="job_id" value="{{ job.id }}"/>
+            <button type="submit"
+                    class="has-tip button tiny alert"
+                    data-tooltip
+                    aria-haspopup="true"
+                    title="Cancel this Notification">
+              <i class="fa fa-ban"></i>
+            </button>
+          </form>
         </td>
       </tr>
       {% endfor %}

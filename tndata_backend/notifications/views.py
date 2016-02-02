@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import render, redirect
 
 from . import queue
 from .models import GCMMessage
@@ -33,3 +34,16 @@ def dashboard(request):
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled', ]
     }
     return render(request, "notifications/index.html", context)
+
+
+@user_passes_test(lambda u: u.is_staff, login_url='/')
+def cancel_job(request):
+    """Look for an enqueued job with the given ID and cancel it."""
+    job_id = request.POST.get('job_id', None)
+    if request.method == "POST" and job_id:
+        for job, _ in queue.messages():
+            if job.id == job_id:
+                job.cancel()
+                messages.success(request, "That notification has been cancelled")
+                break
+    return redirect("notifications:dashboard")
