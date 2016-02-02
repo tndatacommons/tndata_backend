@@ -12,19 +12,20 @@
     <thead>
       <tr>
         <th>Job ID</th>
-        <th>Args</th>
         <th>Status</th>
         <th>Scheduled</th>
         <th>Enqueued At</th>
         <th>Created</th>
+        <th>User</th>
+        <th>Content</th>
       </tr>
     </thead>
     <tbody>
-      {% for job, scheduled_for in jobs %}
+      {% for job, scheduled_for, message_data in jobs %}
       <tr>
         <td>
-          <a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></td>
-        <td><code>{{ job.args|pprint }}</code></td>
+          <a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a>
+        </td>
         <td>{{ job.status|default:"-" }}</td>
         <td>{{ scheduled_for|localtime }}</td>
         <td>
@@ -33,6 +34,12 @@
           {% endif %}
         </td>
         <td>{{ job.created_at|localtime }}</td>
+        <td>{{ message_data.email }}</td>
+        <td>
+          {{ message_data.title }} {{ message_data.message }}
+          <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
+            target="_blank"><i class="fa fa-external-link-square"></i></a>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
