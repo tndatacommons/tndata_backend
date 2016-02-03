@@ -149,7 +149,7 @@ class BinaryQuestion(BaseQuestion):
 
     @property
     def options(self):
-        return [{"id": o[0], "text": o[1]} for o in self.OPTIONS]
+        return [{"id": o[0], "text": o[1], 'object_type': 'option'} for o in self.OPTIONS]
 
     def get_absolute_url(self):
         return reverse('survey:binary-detail', args=[self.id])
@@ -198,7 +198,10 @@ class MultipleChoiceQuestion(BaseQuestion):
     @property
     def options(self):
         options = self.multiplechoiceresponseoption_set.filter(available=True)
-        return list(options.values('id', 'text'))
+        options = list(options.values('id', 'text'))
+        for opt in options:
+            opt.update({'object_type': 'option'})
+        return options
 
     def get_absolute_url(self):
         return reverse('survey:multiplechoice-detail', args=[self.id])
@@ -368,7 +371,7 @@ class LikertQuestion(BaseQuestion):
         """Kind of a hack, but this follows a similar pattern as in the
         MultipleChoiceQuestion model. Returns the possible options for a
         question."""
-        return [{'id': o[0], 'text': o[1]} for o in self.choices]
+        return [{'id': o[0], 'text': o[1], 'object_type': 'option'} for o in self.choices]
 
     def get_absolute_url(self):
         return reverse('survey:likert-detail', args=[self.id])
