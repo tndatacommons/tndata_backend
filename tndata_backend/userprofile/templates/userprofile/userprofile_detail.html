@@ -9,6 +9,8 @@
         <dt>Last Name:</dt><dd>{{ profile.user.last_name }}</dd>
         <dt>Email:</dt><dd>{{ profile.user.email }}</dd>
         <dt>Timezone:</dt><dd>{{ profile.timezone }}</dd>
+        <dt>Maximum Daily Notifications:</dt>
+          <dd>{{ profile.maximum_daily_notifications }}</dd>
       </dl>
       <p><a href="{{ profile.get_update_url }}"
         class="button">Update Profile</a></p>
