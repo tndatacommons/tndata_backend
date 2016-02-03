@@ -118,8 +118,8 @@ class TestBinaryQuestion(TestCase):
 
     def test_options(self):
         expected_options = [
-            {"id": False, "text": "No"},
-            {"id": True, "text": "Yes"},
+            {"id": False, "text": "No", 'object_type': 'option'},
+            {"id": True, "text": "Yes", 'object_type': 'option'},
         ]
         self.assertEqual(self.question.options, expected_options)
 
@@ -194,7 +194,8 @@ class TestLikertQuestion(TestCase):
 
     def test_options(self):
         expected_options = [
-            {"id": d[0], "text": d[1]} for d in LIKERT_SCALES['5_point_agreement']
+            {"id": d[0], "text": d[1], 'object_type': 'option'}
+            for d in LIKERT_SCALES['5_point_agreement']
         ]
         self.assertEqual(self.question.options, expected_options)
 
@@ -414,8 +415,8 @@ class TestMultipleChoiceQuestion(TestCase):
         )
 
         expected = [
-            {"id": a.id, "text": "A"},
-            {"id": b.id, "text": "B"},
+            {"id": a.id, "text": "A", 'object_type': 'option'},
+            {"id": b.id, "text": "B", 'object_type': 'option'},
         ]
         self.assertEqual(self.question.options, expected)
 
