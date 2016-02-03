@@ -17,53 +17,6 @@ def datetime_utc(*args):
     return timezone.make_aware(datetime(*args), timezone.utc)
 
 
-class TestSendMessages(TestCase):
-    """Tests for the `send_messages` management command."""
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
-        cls.device = GCMDevice.objects.create(
-            user=cls.user,
-            registration_id="REGISTRATIONID"
-        )
-        cls.now = datetime_utc(1999, 2, 1, 13, 30)
-
-        # HACK: We need some object to use as a related, generic FK for the
-        # message. Instead of trying to mock this or pulling in an object
-        # from another app, just use a GCMDevice, here.
-        cls.related_obj = GCMDevice.objects.create(
-            user=User.objects.create_user("asdf", "asdf@x.com", "asdf"),
-            registration_id="FAKE"
-        )
-
-        cls.gcm_message = GCMMessage(
-            user=cls.user,
-            content_object=cls.related_obj,
-            title="Ready Message",
-            message="This is ready for delivery",
-            deliver_on=datetime_utc(1999, 2, 1, 13, 0),
-            expire_on=datetime_utc(1999, 2, 2, 13, 0)
-        )
-        cls.gcm_message.save()
-
-    def test_send_messages(self):
-        log_path = "notifications.management.commands.send_messages.logger"
-        pushjack = "notifications.models.GCMClient"
-        with patch(log_path) as logger:
-            with patch(pushjack) as mock_client:
-                call_command('send_messages')
-
-                # We should have set up a pushjack client
-                api_key = settings.GCM['API_KEY']
-                mock_client.assert_called_with(api_key=api_key)
-
-            # We should have logged a 'finished' message
-            msg = "Finished Sending GCM Notifications"
-            logger.info.assert_called_with(msg)
-
-
-
 class TestExpireMessages(TestCase):
     """Tests for the `expire_messages` management command."""
 
