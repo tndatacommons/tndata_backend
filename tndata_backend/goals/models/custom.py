@@ -169,6 +169,14 @@ class CustomAction(models.Model):
             if self.prev_trigger_date is None and in_past:
                 self.prev_trigger_date = self.next_trigger_date
 
+    def get_user_mapping(self, user):
+        """When notifications are creaated, this method will be called to
+        set an ID mapping this object back to a user. This is needed for
+        goals.UserAction objects, but it's not relevant here, so set to -1.
+
+        """
+        return -1
+
     objects = CustomActionManager()
 
 
