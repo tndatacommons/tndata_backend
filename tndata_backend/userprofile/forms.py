@@ -7,7 +7,7 @@ from .models import UserProfile
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ("timezone", )
+        fields = ("timezone",  'maximum_daily_notifications')
 
 
 class UserForm(forms.ModelForm):
