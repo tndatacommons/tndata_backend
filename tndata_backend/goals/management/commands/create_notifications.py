@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
@@ -46,6 +47,11 @@ class Command(BaseCommand):
                 self.stdout.write(msg)
 
     def create_message(self, user, obj, title, message, delivery_date):
+        # XXX: If we're running in Staging / Dev environments, restrict
+        # notifications to our internal users.
+        staging_or_dev = (settings.STAGING or settings.DEBUG)
+        if staging_or_dev and not user.email.endswith('@tndata.org'):
+            return None
 
         # kwargs to GCMMessage.objects.create
         kwargs = {'obj': None, 'content_type': None}
