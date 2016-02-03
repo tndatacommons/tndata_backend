@@ -36,6 +36,14 @@ be set prior to running the project:
 * REDIS_HOST -- Redis host, e.g. "127.0.0.1"
 * REDIS_CACHE_DB -- The redis DB to use for the cache.
 * REDIS_METRICS_DB -- The redis DB to use for metrics.
+* REDIS_RQ_DB -- The redis DB to use for rq task queues.
+
+    - prod / rq         --> 0
+    - prod / cache      --> 1
+    - prod / metrics    --> 2
+    - staging / cache   --> 3
+    - staging / metrics --> 4
+    - staging / rq      --> 5
 
 * PLAY_APP_URL -- Link to the downloadable app on the play store.
 * SLACK_API_TOKEN -- slack api token
@@ -343,12 +351,11 @@ AXES_USERNAME_FORM_FIELD = 'email'
 # - http://python-rq.org/docs/workers/
 # - https://github.com/ui/django-rq
 # NOTE: To run the worker, do: python manage.py rqworker default
-RQ_DB = 0
 RQ_QUEUES = {
     'default': {
         'HOST': REDIS_HOST,
         'PORT': REDIS_PORT,
-        'DB': RQ_DB,
+        'DB': int(os.environ.get('REDIS_RQ_DB', 0)),
         'PASSWORD': REDIS_PASSWORD,
         'DEFAULT_TIMEOUT': 360,
     },
