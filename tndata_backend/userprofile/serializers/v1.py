@@ -79,7 +79,7 @@ class UserAccountSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
-            'token', 'needs_onboarding',
+            'token', 'needs_onboarding', 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -162,7 +162,7 @@ class UserSerializer(ObjectTypeModelSerializer):
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             'token', 'needs_onboarding', "places", "goals", "behaviors",
             "actions", "categories", "next_action", "action_feedback",
-            "progress", "upcoming_actions", "suggestions",
+            "progress", "upcoming_actions", "suggestions", 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -318,7 +318,7 @@ class UserDataSerializer(ObjectTypeModelSerializer):
             "timezone", "full_name", 'date_joined', 'userprofile_id',
             'token', 'needs_onboarding', 'places',
             'user_categories', 'user_goals', 'user_behaviors', 'user_actions',
-            'data_graph',
+            'data_graph', 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
 
@@ -499,7 +499,10 @@ class UserProfileSerializer(ObjectTypeModelSerializer):
 
     class Meta:
         model = models.UserProfile
-        fields = ('id', 'user', 'timezone', 'needs_onboarding', 'bio')
+        fields = (
+            'id', 'user', 'timezone', 'needs_onboarding', 'bio',
+            'maximum_daily_notifications', 'object_type',
+        )
 
 
 class AuthTokenSerializer(serializers.Serializer):
