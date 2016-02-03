@@ -1,6 +1,6 @@
 from datetime import timedelta
+from django.conf import settings
 from django.utils import timezone
-
 from redis_metrics import metric
 import django_rq
 
@@ -18,7 +18,8 @@ scheduler = get_scheduler()
 
 def send(message_id):
     """Given an ID for a GCMMessage object, send the message via GCM."""
-    msg = "Trying to send GCMMessage id = {}".format(message_id)
+    msg = "Trying to send GCMMessage id = {} from {}"
+    msg = msg.format(message_id, settings.SITE_URL)
     post_private_message("bkmontgomery", msg)
 
     try:
