@@ -26,7 +26,10 @@ class InstrumentSerializer(ObjectTypeModelSerializer):
 
     class Meta:
         model = Instrument
-        fields = ('id', 'title', 'description', 'instructions', 'questions')
+        fields = (
+            'id', 'title', 'description', 'instructions', 'questions',
+            'object_type',
+        )
 
     def to_representation(self, instance):
         """Format the list of questions so they can be serialized appropriately."""
@@ -62,6 +65,7 @@ class BinaryQuestionSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
             'options', 'instructions', 'question_type', 'response_url',
+            'object_type',
         )
         depth = 1
 
@@ -77,6 +81,7 @@ class LikertQuestionSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
             'options', 'instructions', 'question_type', 'response_url',
+            'object_type',
         )
         depth = 1
 
@@ -92,6 +97,7 @@ class MultipleChoiceQuestionSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'order', 'text', 'available', 'updated', 'created',
             'options', 'instructions', 'question_type', 'response_url',
+            'object_type',
         )
         depth = 1
 
@@ -104,8 +110,9 @@ class OpenEndedQuestionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = OpenEndedQuestion
         fields = (
-            'id', 'order', 'input_type', 'text', 'available', 'updated', 'created',
-            'instructions', 'question_type', "response_url",
+            'id', 'order', 'input_type', 'text', 'available', 'updated',
+            'created', 'instructions', 'question_type', "response_url",
+            'object_type',
         )
         depth = 1
 
@@ -120,8 +127,8 @@ class BinaryResponseSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = BinaryResponse
         fields = (
-            'id', 'user', 'question', 'selected_option', 'selected_option_text',
-            'submitted_on'
+            'id', 'user', 'question', 'selected_option',
+            'selected_option_text', 'submitted_on', 'object_type',
         )
         read_only_fields = ("id", "submitted_on", )
 
@@ -140,8 +147,8 @@ class LikertResponseSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = LikertResponse
         fields = (
-            'id', 'user', 'question', 'selected_option', 'selected_option_text',
-            'submitted_on'
+            'id', 'user', 'question', 'selected_option',
+            'selected_option_text', 'submitted_on', 'object_type',
         )
         read_only_fields = ("id", "submitted_on", )
 
@@ -157,8 +164,8 @@ class MultipleChoiceResponseSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = MultipleChoiceResponse
         fields = (
-            'id', 'user', 'question', 'selected_option', 'selected_option_text',
-            'submitted_on'
+            'id', 'user', 'question', 'selected_option',
+            'selected_option_text', 'submitted_on', 'object_type',
         )
         read_only_fields = ("id", "submitted_on", )
 
@@ -170,7 +177,7 @@ class OpenEndedResponseSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = OpenEndedResponse
         fields = (
-            'id', 'user', 'question', 'response', 'submitted_on'
+            'id', 'user', 'question', 'response', 'submitted_on', 'object_type'
         )
         read_only_fields = ("id", "submitted_on", )
 

@@ -404,6 +404,7 @@ class ObtainAuthorization(ObtainAuthToken):
                     'full_name': user.get_full_name(),
                     'email': user.email,
                     'needs_onboarding': user.userprofile.needs_onboarding,
+                    'object_type': 'user',
                 })
         except ValidationError as e:
             # Failed login attempt, record with axes
