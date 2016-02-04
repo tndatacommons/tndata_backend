@@ -58,5 +58,12 @@
       {% endfor %}
     </tbody>
   </table>
-{% endblock %}
 
+  <div class="panel clearfix">
+    <form action="{% url 'notifications:cancel-jobs' %}" method="post">
+      {% csrf_token %}
+      <input type="submit" value="Clear Notification Queue"
+        class="button alert pull-right"/>
+    </form>
+  </div>
+{% endblock %}

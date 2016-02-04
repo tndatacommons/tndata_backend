@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -13,9 +15,10 @@ def dashboard(request):
     jobs = queue.messages()  # Get the enqueued messages
     ids = [job.args[0] for job, _ in jobs]
 
-    message_data = {}
+    message_data = defaultdict(dict)
     fields = ['id', 'title', 'user__email', 'message']
-    messages = GCMMessage.objects.filter(pk__in=ids).values_list(*fields)
+    messages = GCMMessage.objects.ready_for_delivery()
+    messages = messages.filter(pk__in=ids).values_list(*fields)
     for msg in messages:
         mid, title, email, message = msg
         message_data[mid] = {
@@ -46,4 +49,16 @@ def cancel_job(request):
                 job.cancel()
                 messages.success(request, "That notification has been cancelled")
                 break
+    return redirect("notifications:dashboard")
+
+
+@user_passes_test(lambda u: u.is_staff, login_url='/')
+def cancel_all_jobs(request):
+    """Cancels all queued messages."""
+    if request.method == "POST":
+        count = 0
+        for job, _ in queue.messages():
+            job.cancel()
+            count += 1
+        messages.success(request, "Cancelled {} notifications.".format(count))
     return redirect("notifications:dashboard")
