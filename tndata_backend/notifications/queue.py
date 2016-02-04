@@ -70,3 +70,30 @@ def messages():
 
     """
     return scheduler.get_jobs(with_times=True)
+
+
+def cancel(queue_id):
+    """Given a queue id, look up the corresponding job and cancel it. """
+    if queue_id:
+        jobs = (job for job, _ in messages() if job.id == queue_id)
+        for job in jobs:
+            job.cancel()
+
+
+# TODO: PRIORITIES
+# ----------------
+# Idea: Use redis to keep a count of messages that are in the queue. All these
+# keys should expire after 24 hours (maybe)?
+#
+# Keep a set per user per day of high/low priority messages.
+# Keep a string to count number of daily messages scheduled / sent.
+#
+#   e.g: SADD user:ID:2016-02-04:high  ID1, ID2, ID3  -- high-priority messages
+#        SADD user:ID:2016-02-04:low   ID4            -- low-priority messages
+#        SET  user:ID:2016-02-04  4                   -- count for the day
+#
+# - could use ZADD (sorted sets) for messages, to keep order, using delivery time as the score
+# - need to test for membership
+# - need to be able to add or fail to add to the queue
+# - need to be able to bump from the queue for higher-priority messages
+#   - e.g. remove low-priority & cancel the job, add high-priority
