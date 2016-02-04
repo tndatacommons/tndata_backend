@@ -18,18 +18,21 @@ scheduler = get_scheduler()
 
 def send(message_id):
     """Given an ID for a GCMMessage object, send the message via GCM."""
-    msg = "Trying to send GCMMessage id = {} from {}"
-    msg = msg.format(message_id, settings.SITE_URL)
-    post_private_message("bkmontgomery", msg)
 
     try:
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
+
+        log = "Trying to send GCMMessage id = {} from {} to {}"
+        log = log.format(message_id, settings.SITE_URL, msg.user.email)
+        post_private_message("bkmontgomery", log)
+
         msg.send()  # NOTE: sets a metric on successful sends.
+
         post_private_message("bkmontgomery", "...done!")
     except Exception as e:
-        msg = "FAILED: {}".format(e)
-        post_private_message("bkmontgomery", msg)
+        log = "FAILED: {} on {}".format(e, settings.SITE_URL)
+        post_private_message("bkmontgomery", log)
 
 
 def enqueue(message, threshold=24):
