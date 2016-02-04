@@ -8,6 +8,9 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+
 from django.utils import timezone
 
 from jsonfield import JSONField
@@ -337,3 +340,13 @@ class GCMMessage(models.Model):
 
     # Use the Custom Manager for GCMMessage objects.
     objects = GCMMessageManager()
+
+
+@receiver(pre_delete, sender=GCMMessage, dispatch_uid="remove-message-from-queue")
+def remove_message_from_queue(sender, instance, *args, **kwargs):
+    """Prior to deleting a GCMMessage, remove its corresponding task from
+    the work queue/scheduler.
+
+    """
+    from . import queue
+    queue.cancel(instance.queue_id)
