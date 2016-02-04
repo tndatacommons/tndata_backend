@@ -31,7 +31,7 @@ def send(message_id):
 
         post_private_message("bkmontgomery", "...done!")
     except Exception as e:
-        log = "FAILED: {} on {}".format(e, settings.SITE_URL)
+        log = "FAILED: {} on {} for id = {}".format(e, settings.SITE_URL, message_id)
         post_private_message("bkmontgomery", log)
 
 
