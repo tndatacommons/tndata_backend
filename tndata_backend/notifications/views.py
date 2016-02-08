@@ -17,8 +17,7 @@ def dashboard(request):
 
     message_data = defaultdict(dict)
     fields = ['id', 'title', 'user__email', 'message']
-    messages = GCMMessage.objects.ready_for_delivery()
-    messages = messages.filter(pk__in=ids).values_list(*fields)
+    messages = GCMMessage.objects.filter(pk__in=ids).values_list(*fields)
     for msg in messages:
         mid, title, email, message = msg
         message_data[mid] = {
