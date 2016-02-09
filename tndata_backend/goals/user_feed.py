@@ -289,49 +289,57 @@ def suggested_goals(user, limit=5):
     goals = Goal.objects.published()  # excludes goals in packaged content
     goals = goals.exclude(id__in=user_selected_goals)
 
-    # but only those that are in the user's selected categories (if any)
-    cats = user.usercategory_set.filter(category__state='published')
-    cats = cats.values_list('category', flat=True)
-    if cats.count():
-        goals = goals.filter(categories__in=cats)
+    # -------------------------------------------------------------------------
+    # TEMPORARY CHANGE? Forget the categories. Use the profile labels to choose
+    # -------------------------------------------------------------------------
+    # cats = user.usercategory_set.filter(category__state='published')
+    # cats = cats.values_list('category', flat=True)
+
+    # IF we've got sufficient number of categories, we can stick to the things
+    # in the categories the user has chosen. If not, we'll just pull from
+    # selected goals (otherwise there would be no suggestions)
+    # category_goals = goals.filter(categories__in=cats)
+    # if cats.count() and category_goals.count() > limit:
+    #     goals = category_goals
 
     # Excluding the sensitive content
     goals = goals.exclude(keywords__contains=['sensitive']).distinct()
 
-    # Now, use the user's profile data to assemble some keywords. Choose from
-    # the following set:
+    # IF we have a large number of goals left over, use the use's profile data
+    # to figure out which are most relevant. We'll pick from the following set:
     #
     # career, child, female, job, no_child, no_degree, no_job, no_relate,
     # relate, sensitive, tcijuniors, tciseniors, work
-
     profile = user.userprofile
     user_keywords = []
     exclude_keywords = []
+    if goals.count() > limit * 2:
 
-    if profile.has_college_degree:
-        user_keywords.append('degree')
-    else:
-        user_keywords.append('no_degree')
+        if profile.has_college_degree:
+            user_keywords.append('degree')
+        else:
+            user_keywords.append('no_degree')
 
-    if profile.in_relationship:
-        user_keywords.append('relate')
-        exclude_keywords.append('no_relate')
-    else:
-        user_keywords.append('no_relate')
-        exclude_keywords.append('relate')
+        if profile.in_relationship:
+            user_keywords.append('relate')
+            exclude_keywords.append('no_relate')
+        else:
+            user_keywords.append('no_relate')
+            exclude_keywords.append('relate')
 
-    if profile.is_parent:
-        user_keywords.append('child')
-        exclude_keywords.append('no_child')
-    else:
-        user_keywords.append('no_child')
-        exclude_keywords.append('child')
+        if profile.is_parent:
+            user_keywords.append('child')
+            exclude_keywords.append('no_child')
+        else:
+            user_keywords.append('no_child')
+            exclude_keywords.append('child')
 
-    if profile.employed:
-        user_keywords.extend(['career', 'job', 'work'])
-    else:
-        user_keywords.append('no_job')
+        if profile.employed:
+            user_keywords.extend(['career', 'job', 'work'])
+        else:
+            user_keywords.append('no_job')
 
+    # But we always want to use the male/female filter.
     if profile.sex == "Female":
         user_keywords.append('female')
     elif profile.sex == "Male":
@@ -344,8 +352,14 @@ def suggested_goals(user, limit=5):
     ids = list(goals.values_list("id", flat=True))
     if limit < len(ids):
         goals = Goal.objects.filter(id__in=random.sample(ids, limit))
-    else:
+    elif len(ids) > 0:
         goals = Goal.objects.filter(id__in=ids)
+    else:
+        # we filtered too much. Just pick some random things.
+        goals = Goal.objects.published().exclude(id__in=user_selected_goals)
+        goals = goals.exclude(keywords__contains=['sensitive']).distinct()
+        goals = goals.values_list("id", flat=True)
+        goals = Goal.objects.filter(id__in=random.sample(ids, limit))
     return goals[:limit]
 
 
