@@ -54,9 +54,9 @@ def enqueue(message, threshold=24):
     if now < message.deliver_on and message.deliver_on < threshold:
 
         # WANT:
-        job = UserQueue(message).add()
+        #   job = UserQueue(message).add()
         # OR
-        # job = UserQueue(message).add("high")
+        #   job = UserQueue(message).add("high")
 
         # ------------ deprecate the below -----------------------------
         job = scheduler.enqueue_at(message.deliver_on, send, message.id)
