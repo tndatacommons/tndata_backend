@@ -508,7 +508,7 @@ class CustomActionSerializer(ObjectTypeModelSerializer):
         source="custom_trigger",
         required=False
     )
-    next_reminder = serializers.ReadOnlyField(source='next_trigger_date')
+    next_reminder = serializers.ReadOnlyField(source='next')
 
     class Meta:
         model = CustomAction
