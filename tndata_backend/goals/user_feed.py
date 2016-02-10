@@ -359,7 +359,7 @@ def suggested_goals(user, limit=5):
         goals = Goal.objects.published().exclude(id__in=user_selected_goals)
         goals = goals.exclude(keywords__contains=['sensitive']).distinct()
         goals = goals.values_list("id", flat=True)
-        goals = Goal.objects.filter(id__in=random.sample(ids, limit))
+        goals = Goal.objects.filter(id__in=random.sample(goals, limit))
     return goals[:limit]
 
 
