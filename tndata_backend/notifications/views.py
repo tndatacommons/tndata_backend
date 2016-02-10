@@ -27,10 +27,10 @@ def dashboard(request):
             'message': message,
         }
 
-    jobs = (
+    jobs = [
         (job, scheduled_for, message_data[job.args[0]])
         for job, scheduled_for in jobs
-    )
+    ]
     context = {
         'jobs': jobs,
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled', ]
