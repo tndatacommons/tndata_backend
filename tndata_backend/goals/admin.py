@@ -162,7 +162,6 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description',
-        'case', 'outcome', 'notification_text',
     ]
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
@@ -239,7 +238,7 @@ class ActionAdmin(ContentWorkflowAdmin):
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description',
-        'case', 'outcome', 'notification_text',
+        'notification_text',
     ]
     list_filter = ('state', )
     prepopulated_fields = {"title_slug": ("title", )}
@@ -270,7 +269,6 @@ class ActionAdmin(ContentWorkflowAdmin):
                         notes=action.notes,
                         more_info=action.more_info,
                         description=action.description,
-                        case=action.case,
                         outcome=action.outcome,
                         external_resource=action.external_resource,
                         default_trigger=action.default_trigger,
@@ -529,6 +527,7 @@ class CustomActionAdmin(UserRelatedModelAdmin):
     )
     list_display = ('title', 'customgoal', 'prev_trigger_date', 'next_trigger_date', 'created_on')
     raw_id_fields = ('user', 'customgoal', 'custom_trigger')
+    readonly_fields = ('next_trigger_date', 'prev_trigger_date')
 admin.site.register(models.CustomAction, CustomActionAdmin)
 
 
