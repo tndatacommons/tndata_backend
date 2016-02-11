@@ -55,17 +55,17 @@ def enqueue(message, threshold=24):
 
         # WANT:
         #   job = UserQueue(message).add()
-        # OR
+        # OR, for high-priority messages?
         #   job = UserQueue(message).add("high")
 
         # ------------ deprecate the below -----------------------------
         job = scheduler.enqueue_at(message.deliver_on, send, message.id)
-        # --------------------------------------------------------------
 
         # Save the job ID on the GCMMessage, so if it gets re-enqueued we
         # can cancel the original?
         message.queue_id = job.id
         message.save()
+        # --------------------------------------------------------------
 
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')
@@ -114,38 +114,45 @@ def cancel(queue_id):
 
 
 class UserQueue:
-    """A single user's view of their own notification queue. It provides an
-    interface for:
+    """A single user's view of their own notification queue. It operates on a
+    single GCM message at a time to do one of the following:
 
-    - number of messages in their queue
-    - list of messsages (in order they'll be sent)
+    - Add it to a queue / schedule for delivery (tentatively)
+    - Remove it from a queue
 
-    And the ability to:
-
-    - determine if their daily limit has been met
-    - pop items in their queue
-    - add items to their queue
-    - tell us if their queue is full?
-
-    Priorities (coming soon)
-    - high
-    - low
+    TODO: Priorities (coming soon)
+    - low  (all behavior libs)
+    - medium (custom actions & user-defined triggers?)
+    - high (reserved for packaged content?)
 
     """
 
     def __init__(self, message, limit=10, queue='default', send_func=send):
         self.conn = django_rq.get_connection('default')
         self.send_func = send_func
-        self.limit = limit
+        self.limit = limit  # TODO Get from the User's profile?
         self.message = message
         self.user = message.user
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
 
-        # Expire all new keys in ~24 hours
+        # TODO: Expire all new keys in ~24 hours?
         exp = (message.deliver_on + timedelta(days=1)) - timezone.now()
         self.expire = int(exp.total_seconds())
 
     def _key(self, name):
+        """Construct a redis key for the given name. Keys are of the form:
+
+            uq:{user_id}:{date_string}:{name}
+
+        For example:
+
+            uq:1:2016-02-10:count   -- Total daily message count.
+            uq:1:2016-02-10:low     -- Key for the low-priority queue.
+            uq:1:2016-02-10:high    -- Key for the high-priority queue.
+
+        Returns a string.
+
+        """
         return "uq:{user_id}:{date_string}:{name}".format(
             user_id=self.user.id,
             date_string=self.date_string,
@@ -158,11 +165,20 @@ class UserQueue:
         return int(self.conn.get(k) or 0)
 
     def full(self):
-        """Is the queue full for this date? Returns True or False"""
+        """Is the user's daily queue full? Returns True or False"""
         return self.count() >= self.limit
 
-    def add(self, priority="high"):
-        """Adds the message to the queue *if* there's room"""
+    def add(self, priority="low"):
+        """Adds the message to the queue *if* there's room. IF the message was
+        added, it's `queue_id` gets set, and it gets saved.
+
+        Returns the scheduled Job object (or None if the job was not added).
+
+        """
+
+        # TODO: check all the priorities and the user's limit to determine
+        # if we can schedule this message for delivery.
+
         job = None
         if not self.full():
             # Enqueue the job...
@@ -171,6 +187,8 @@ class UserQueue:
                 self.send_func,
                 self.message.id
             )
+            self.message.queue_id = job.id
+            self.message.save()
 
             # Keep up with a list of job ids for the day
             # TODO: We need to keep a separate list for each priority, so we
@@ -183,12 +201,35 @@ class UserQueue:
 
         return job
 
-    def list(self, priority='high'):
+    def list(self, priority='low'):
         """Return a list of today's Jobs scheduled as a particular priority."""
         k = self._key(priority)
         num_items = self.conn.llen(k)
+
+        # Get all the job ids stored at the given priority.
         job_ids = self.conn.lrange(k, 0, num_items)
+
+        # Redis returns data in bytes, so we need to decode to utf-8
+        job_ids = [job_id.decode('utf8') for job_id in job_ids]
         return [job for job in scheduler.get_jobs() if job.id in job_ids]
 
-    def remove(self, message):
-        pass  # TODO: remove a message (eg: when deleteing GCMMessage)
+    def remove(self, priority='low'):
+        """Remove the message (eg: when deleteing GCMMessage)"""
+
+        # Remove the item from the priority queue
+        k = self._key(priority)
+        num_items = self.conn.llen(k)
+
+        job_ids = []  # the ones we want to keep:
+        for i in range(num_items):
+            job_id = self.conn.lpop(k)
+            job_id = job_id.decode('utf8')
+
+            if job_id != self.message.queue_id:
+                job_ids.append(job_id)
+
+        for job_id in job_ids:
+            self.conn.rpush(k, job_id)
+
+        # Decrement the total count.
+        self.conn.decr(self._key("count"))
