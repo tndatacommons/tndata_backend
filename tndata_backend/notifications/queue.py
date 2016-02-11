@@ -159,6 +159,23 @@ class UserQueue:
             name=name
         )
 
+    @staticmethod
+    def clear(user, date=None):
+        """Clear all of the redis queue data associated with the given user."""
+        if date is None:
+            date = datetime.today()
+        date_string = date.strftime("%Y-%m-%d")
+        conn = django_rq.get_connection('default')
+
+        # Redis keys for the count, and all queues.
+        keys = [
+            'uq:{user_id}:{date_string}:count',
+            'uq:{user_id}:{date_string}:low',
+            'uq:{user_id}:{date_string}:medium',
+            'uq:{user_id}:{date_string}:high',
+        ]
+        conn.delete(*keys)
+
     def count(self):
         """Return the number of messages that are queued up for the day."""
         k = self._key("count")
