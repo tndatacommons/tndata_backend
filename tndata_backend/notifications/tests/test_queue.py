@@ -26,12 +26,17 @@ class TestUserQueue(TestCase):
         )
         cls.deliver_date = timezone.now() + timedelta(days=1)
 
+    def tearDown(self):
+        # Clear all the redis keys after each test.
+        UserQueue.clear(self.user, date=self.deliver_date)
+        for msg in GCMMessage.objects.all():
+            msg.delete()
+
     def test__key(self):
         msg = GCMMessage.objects.create(self.user, "A", "A", self.deliver_date)
         expected = "uq:1:{}:test".format(self.deliver_date.strftime("%Y-%m-%d"))
-        actual = UserQueue(self.msg)._key("test")
+        actual = UserQueue(msg)._key("test")
         self.assertEqual(expected, actual)
-        msg.delete()  # clean up
 
     def test_count(self):
         msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
@@ -47,15 +52,13 @@ class TestUserQueue(TestCase):
 
     def test_full(self):
         # When the queue is empty
-        self.assertFalse(UserQueue(self.msg).full())
+        self.assertFalse(UserQueue(None).full())
 
         # When we're over the limit (temporarily set to 1)
-        msg = GCMMessage.objects.create(self.user, "A", "A", self.deliver_date)
+        msg = GCMMessage.objects.create(self.user, "B", "B", self.deliver_date)
         uq = UserQueue(msg, limit=1)
         uq.add()
         self.assertTrue(uq.full())
-
-        msg.delete()  # clean up
 
     def test_add(self):
         # when the queue is not full.
@@ -68,19 +71,17 @@ class TestUserQueue(TestCase):
         job = UserQueue(b, limit=1).add()
         self.assertIsNone(job)
 
-        # clean up
-        a.delete()
-        b.delete()
-
     def test_list(self):
         msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
         uq = UserQueue(msg)
         job = uq.add()
         self.assertIn(job, uq.list())
 
-        msg.delete()  # clean up
-
     def test_remove(self):
         msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
-        UserQueue(msg).remove()  # TODO: this doesn't do anything
-        msg.delete()  # clean up
+        uq = UserQueue(msg)
+        job = uq.add()
+
+        uq.remove()
+        self.assertEqual(uq.list(), [])
+        self.assertEqual(uq.count(), 0)
