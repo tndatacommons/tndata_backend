@@ -289,18 +289,15 @@ def suggested_goals(user, limit=5):
     goals = Goal.objects.published()  # excludes goals in packaged content
     goals = goals.exclude(id__in=user_selected_goals)
 
-    # -------------------------------------------------------------------------
-    # TEMPORARY CHANGE? Forget the categories. Use the profile labels to choose
-    # -------------------------------------------------------------------------
-    # cats = user.usercategory_set.filter(category__state='published')
-    # cats = cats.values_list('category', flat=True)
+    cats = user.usercategory_set.filter(category__state='published')
+    cats = cats.values_list('category', flat=True)
 
     # IF we've got sufficient number of categories, we can stick to the things
     # in the categories the user has chosen. If not, we'll just pull from
     # selected goals (otherwise there would be no suggestions)
-    # category_goals = goals.filter(categories__in=cats)
-    # if cats.count() and category_goals.count() > limit:
-    #     goals = category_goals
+    category_goals = goals.filter(categories__in=cats)
+    if cats.count() and category_goals.count() > limit:
+        goals = category_goals
 
     # Excluding the sensitive content
     goals = goals.exclude(keywords__contains=['sensitive']).distinct()
@@ -350,16 +347,11 @@ def suggested_goals(user, limit=5):
 
     # Pick a random sample of suggestions (or the leftover goals)...
     ids = list(goals.values_list("id", flat=True))
-    if limit < len(ids):
+    if len(ids) > limit:
         goals = Goal.objects.filter(id__in=random.sample(ids, limit))
-    elif len(ids) > 0:
-        goals = Goal.objects.filter(id__in=ids)
     else:
-        # we filtered too much. Just pick some random things.
-        goals = Goal.objects.published().exclude(id__in=user_selected_goals)
-        goals = goals.exclude(keywords__contains=['sensitive']).distinct()
-        goals = list(goals.values_list("id", flat=True))
-        goals = Goal.objects.filter(id__in=random.sample(goals, limit))
+        goals = Goal.objects.filter(id__in=ids)
+
     return goals[:limit]
 
 
