@@ -9,4 +9,5 @@ class FunContentSerializer(ObjectTypeModelSerializer):
         model = FunContent
         fields = (
             'id', 'message_type', 'message', 'author', 'keywords',
+            'object_type',
         )
