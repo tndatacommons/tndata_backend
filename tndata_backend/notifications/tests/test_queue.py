@@ -34,7 +34,10 @@ class TestUserQueue(TestCase):
 
     def test__key(self):
         msg = GCMMessage.objects.create(self.user, "A", "A", self.deliver_date)
-        expected = "uq:1:{}:test".format(self.deliver_date.strftime("%Y-%m-%d"))
+        expected = "uq:{user_id}:{date}:test".format(
+            user_id=self.user.id,
+            date=self.deliver_date.strftime("%Y-%m-%d")
+        )
         actual = UserQueue(msg)._key("test")
         self.assertEqual(expected, actual)
 
@@ -47,15 +50,12 @@ class TestUserQueue(TestCase):
         uq.add()
         self.assertEqual(uq.count(), 1)
 
-        msg.delete()  # clean up
-        self.assertEqual(uq.count(), 0)
-
     def test_full(self):
-        # When the queue is empty
-        self.assertFalse(UserQueue(None).full())
+        # When the queue is not full
+        msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
+        self.assertFalse(UserQueue(msg).full())
 
         # When we're over the limit (temporarily set to 1)
-        msg = GCMMessage.objects.create(self.user, "B", "B", self.deliver_date)
         uq = UserQueue(msg, limit=1)
         uq.add()
         self.assertTrue(uq.full())

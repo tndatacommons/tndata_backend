@@ -226,6 +226,7 @@ class TestGCMMessage(TestCase):
                 "object_type": "gcm device",
                 "object_id": self.device.id,
                 "user_mapping_id": None,
+                "production": not (settings.DEBUG or settings.STAGING),
             }
         )
 
@@ -245,6 +246,7 @@ class TestGCMMessage(TestCase):
                 "object_type": None,
                 "object_id": None,
                 "user_mapping_id": None,
+                "production": not (settings.DEBUG or settings.STAGING),
             }
         )
 
@@ -265,6 +267,7 @@ class TestGCMMessage(TestCase):
             "object_type": None,
             "object_id": None,
             "user_mapping_id": None,
+            "production": not (settings.DEBUG or settings.STAGING),
         })
         self.assertEqual(msg.content_json, expected)
 
