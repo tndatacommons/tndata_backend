@@ -260,6 +260,7 @@ class GCMMessage(models.Model):
             "object_type": object_type,
             "object_id": self.object_id,
             "user_mapping_id": user_mapping_id,
+            "production": not (settings.DEBUG or settings.STAGING),
         })
 
     @property
