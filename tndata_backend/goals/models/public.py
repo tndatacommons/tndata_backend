@@ -369,7 +369,8 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         self.title_slug = slugify(self.title)
         self._clean_keywords()
         if self.id:
-            self.category_ids = list(self.categories.values_list("id", flat=True))
+            parents = self.categories.published().values_list("id", flat=True)
+            self.category_ids = list(parents)
             self.behaviors_count = self.behavior_set.published().count()
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Goal, self).save(*args, **kwargs)
