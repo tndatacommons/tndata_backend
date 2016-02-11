@@ -336,13 +336,18 @@ def suggested_goals(user, limit=5):
         else:
             user_keywords.append('no_job')
 
-    # But we always want to use the male/female filter.
-    if profile.sex == "Female":
-        user_keywords.append('female')
-    elif profile.sex == "Male":
+        if profile.sex == "Female":
+            user_keywords.append('female')
+
+        # note: if user_keywords is empty, this result will be empty
+        if len(user_keywords) > 0:
+            goals = goals.filter(keywords__overlap=user_keywords)
+
+    # But we always want to exclude female things for men.
+    if profile.sex == "Male":
         exclude_keywords.append('female')
 
-    goals = goals.filter(keywords__overlap=user_keywords)
+    # note: excluding an empty list shouldn't change anything.
     goals = goals.exclude(keywords__overlap=exclude_keywords)
 
     # Pick a random sample of suggestions (or the leftover goals)...
