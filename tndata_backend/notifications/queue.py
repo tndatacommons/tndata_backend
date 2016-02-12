@@ -22,14 +22,7 @@ def send(message_id):
     try:
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
-
-        log = "Trying to send GCMMessage id = {} from {} to {}"
-        log = log.format(message_id, settings.SITE_URL, msg.user.email)
-        post_private_message("bkmontgomery", log)
-
         msg.send()  # NOTE: sets a metric on successful sends.
-
-        post_private_message("bkmontgomery", "...done!")
     except Exception as e:
         args = (e, settings.SITE_URL, message_id)
         log = "FAILED: {} on {} for id = {}".format(*args)
