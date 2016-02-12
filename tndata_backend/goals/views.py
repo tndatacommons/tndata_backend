@@ -37,6 +37,7 @@ from . forms import (
     EnrollmentReminderForm,
     GoalForm,
     PackageEnrollmentForm,
+    TitlePrefixForm,
     UploadImageForm,
 )
 from . mixins import (
@@ -1351,6 +1352,25 @@ def admin_batch_assign_keywords(request):
         'goals': goals,
     }
     return render(request, 'goals/admin_batch_assign_keywords.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
+def duplicate_content(request, pk, title_slug):
+    category = get_object_or_404(Category, pk=pk, title_slug=title_slug)
+    if request.method == "POST":
+        form = TitlePrefixForm(request.POST)
+        if form.is_valid():
+            category = category.duplicate_content(form.cleaned_data['prefix'])
+            messages.success(request, "Your content has been duplicated")
+            return redirect(category.get_absolute_url())
+    else:
+        form = TitlePrefixForm()
+
+    context = {
+        'category': category,
+        'form': form,
+    }
+    return render(request, 'goals/duplicate_content.html', context)
 
 
 @user_passes_test(staff_required, login_url='/')

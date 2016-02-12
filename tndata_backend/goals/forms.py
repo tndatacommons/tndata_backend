@@ -700,3 +700,10 @@ class UploadImageForm(forms.Form):
 
     """
     file = forms.ImageField()
+
+
+class TitlePrefixForm(forms.Form):
+    prefix = forms.CharField(
+        help_text="Prefix text for all new Titles",
+        required=True,
+    )

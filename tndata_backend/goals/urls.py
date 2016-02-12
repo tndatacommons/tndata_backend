@@ -253,6 +253,11 @@ urlpatterns = [
         name='category-delete'
     ),
     url(
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate-all/$',
+        views.duplicate_content,
+        name='duplicate-content'
+    ),
+    url(
         r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate/$',
         views.CategoryDuplicateView.as_view(),
         name='category-duplicate'

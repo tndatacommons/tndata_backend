@@ -1,0 +1,39 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}Duplicate Content{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
+  <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
+  <li class="current">Duplicate Content</li>
+{% endblock %}
+
+
+{% block content %}
+<h1>Duplicate</h1>
+<div class="row">
+  <div class="large-6 small-12 columns">
+    <p>You are about to duplicate all content within {{ category }}. This will
+    result in a copy of all Goals, Behaviors, and Actions within the Category. To
+    proceed, you must specify a new <em>prefix</em> for the title of each content
+    item.</p>
+  </div>
+  <div class="large-6 small-12 columns">
+    <form action="{% url 'goals:duplicate-content' category.id category.title_slug %}" method="post">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <p>
+        <input
+          type="submit"
+          class="button"
+          value="Duplicate"
+          onclick="$(this).val('Please wait...')" />
+        <span class="helptext">Duplicating content may take a while.</span>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}
