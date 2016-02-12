@@ -249,6 +249,7 @@ class UserProfile(models.Model):
                     'response_url': question.get_api_response_url(),
                     'question_url': question.get_survey_question_url(),
                     'response_id': None,
+                    'object_type': "surveyresult"
                 }
                 option_types = [
                     'binaryquestion', 'likertquestion', 'multiplechoicequestion'
