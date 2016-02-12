@@ -19,6 +19,7 @@ from jsonfield import JSONField
 from markdown import markdown
 from notifications.models import GCMMessage
 from utils import colors
+from utils.db import get_max_order
 
 from .path import (
     _category_icon_path,
@@ -242,6 +243,94 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     def get_package_calendar_url(self):
         if self.packaged_content:
             return reverse("goals:package-calendar", args=[self.id])
+
+    def duplicate_content(self, prefix="Copy of"):
+        """This method will duplicate all of the content stored within this
+        Category. That is, we'll create copies of all Goal, Behavior, and
+        Action objects that are children for this category.
+
+        Every newly created object will be a clone, except for the title, which
+        will be prefixed with the given text.
+
+        XXX: This is a potentially slow & inefficient method! Handle with care.
+
+        Returns a copy of the new category.
+
+        """
+        new_category = Category.objects.create(
+            order=get_max_order(Category),
+            title="{} {}".format(prefix, self.title),
+            description=self.description,
+            icon=self.icon,
+            image=self.image,
+            notes=self.notes,
+            color=self.color,
+            secondary_color=self.secondary_color,
+            packaged_content=self.packaged_content,
+            consent_summary=self.consent_summary,
+            consent_more=self.consent_more,
+            prevent_custom_triggers_default=self.prevent_custom_triggers_default,
+            display_prevent_custom_triggers_option=self.display_prevent_custom_triggers_option,
+        )
+
+        for goal in self.goals:
+            new_goal, _ = Goal.objects.update_or_create(
+                title="{} {}".format(prefix, goal.title),
+                description=goal.description,
+                subtitle=goal.subtitle,
+                outcome=goal.outcome,
+                notes=goal.notes,
+                more_info=goal.more_info,
+                icon=goal.icon,
+                keywords=goal.keywords,
+            )
+            new_goal.categories.add(new_category)
+            new_goal.save()
+
+            for behavior in goal.behavior_set.all():
+                new_behavior, _ = Behavior.objects.update_or_create(
+                    title="{} {}".format(prefix, behavior.title),
+                    description=behavior.description,
+                    informal_list=behavior.informal_list,
+                    source_link=behavior.source_link,
+                    source_notes=behavior.source_notes,
+                    more_info=behavior.more_info,
+                    external_resource=behavior.external_resource,
+                    external_resource_name=behavior.external_resource_name,
+                    icon=behavior.icon,
+                )
+                new_behavior.save()
+                new_behavior.goals.add(new_goal)
+
+                for action in behavior.action_set.all():
+                    default_trigger = None
+                    if action.default_trigger:
+                        default_trigger = action.default_trigger
+                        default_trigger.pk = None
+                        default_trigger.name = "{} {}".format(
+                            prefix,
+                            action.default_trigger.name
+                        )
+                        default_trigger.save()
+
+                    Action.objects.update_or_create(
+                        title="{} {}".format(prefix, action.title),
+                        behavior=new_behavior,
+                        action_type=action.action_type,
+                        sequence_order=action.sequence_order,
+                        source_link=action.source_link,
+                        source_notes=action.source_notes,
+                        notes=action.notes,
+                        more_info=action.more_info,
+                        description=action.description,
+                        external_resource=action.external_resource,
+                        external_resource_name=action.external_resource_name,
+                        notification_text=action.notification_text,
+                        icon=action.icon,
+                        default_trigger=default_trigger,
+                    )
+
+        return new_category
 
     objects = CategoryManager()
 
