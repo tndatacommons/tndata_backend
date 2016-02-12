@@ -1,9 +1,9 @@
-import logging
-
+from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 import waffle
 
@@ -16,6 +16,8 @@ from goals.settings import (
 )
 from notifications.models import GCMDevice, GCMMessage
 from utils.user_utils import to_utc
+
+import logging
 
 logger = logging.getLogger("loggly_logs")
 ERROR = True
@@ -47,6 +49,13 @@ class Command(BaseCommand):
                 self.stdout.write(msg)
 
     def create_message(self, user, obj, title, message, delivery_date):
+
+        # Only create messages that should be delivered within the next 24 hours
+        now = timezone.now()
+        threshold = timezone.now() + timedelta(hours=24)
+        if delivery_date < now or delivery_date > threshold:
+            return None  # The message is either too old or to far out.
+
         # XXX: If we're running in Staging / Dev environments, restrict
         # notifications to our internal users.
         staging_or_dev = (settings.STAGING or settings.DEBUG)
