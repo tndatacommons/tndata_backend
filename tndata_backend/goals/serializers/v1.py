@@ -47,7 +47,7 @@ class SearchSerializer(HaystackSerializer):
         # NOTE: instance is a SearchResult object.
         result = super().to_representation(instance)
         result.update({
-            'object_type': instance.model_name,
+            'object_type': "search-{}".format(instance.model_name),
             'id': instance.pk,
         })
         if 'highlighted' in result:
