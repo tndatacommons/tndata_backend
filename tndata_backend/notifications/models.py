@@ -72,6 +72,15 @@ class GCMDevice(models.Model):
 
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
+    LOW = 'low'
+    MEDIUM = 'medium'
+    HIGH = 'high'
+    PRIORITIES = (
+        (LOW, 'Low Priority'),
+        (MEDIUM, 'Medium Priority'),
+        (HIGH, 'High Priority'),
+    )
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         help_text="The owner of this message."
@@ -111,13 +120,19 @@ class GCMMessage(models.Model):
         help_text="Date/Time when this should expire (UTC)"
     )
     queue_id = models.CharField(max_length=128, default='', blank=True)
+    priority = models.CharField(
+        max_length=32,
+        default=LOW,
+        choices=PRIORITIES,
+        db_index=True
+    )
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return "{0} on {1}".format(self.title, self.deliver_on)
 
     class Meta:
-        ordering = ['-success', 'deliver_on', '-created_on']
+        ordering = ['-success', 'deliver_on', 'priority', '-created_on']
         unique_together = ("user", "title", "message", "deliver_on")
         verbose_name = "GCM Message"
         verbose_name_plural = "GCM Messages"
