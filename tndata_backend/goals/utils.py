@@ -177,3 +177,32 @@ def debug_user_data(user):
     print("\nOrphaned data")
     for t, items in orphans.items():
         print("{0}: {1}".format(t, ", ".join(items)))
+
+
+def delete_content(prefix):
+    """Delete content whose title/name starts with the given prefix."""
+
+    from goals.models import Action, Behavior, Category, Goal, Trigger
+    print("Deleting content that startswith='{}'".format(prefix))
+
+    actions = Action.objects.filter(title__startswith=prefix)
+    print("Deleting {} Actions...".format(actions.count()))
+    actions.delete()
+
+    triggers = Trigger.objects.filter(name__startswith=prefix)
+    print("Deleting {} Triggers...".format(triggers.count()))
+    triggers.delete()
+
+    behaviors = Behavior.objects.filter(title__startswith=prefix)
+    print("Deleting {} Behaviors...".format(behaviors.count()))
+    behaviors.delete()
+
+    goals = Goal.objects.filter(title__startswith=prefix)
+    print("Deleting {} Goals...".format(goals.count()))
+    goals.delete()
+
+    cats = Category.objects.filter(title__startswith=prefix)
+    print("Deleting {} Categories...".format(cats.count()))
+    cats.delete()
+
+    print("...done.")
