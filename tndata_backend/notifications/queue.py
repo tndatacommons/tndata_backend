@@ -38,13 +38,14 @@ def enqueue(message, threshold=24):
     - thresholds: max number of daily messages per user
 
     """
-
     job = None
-    now = timezone.now()
-    threshold = now + timedelta(hours=threshold)
 
     # Only queue up messages for the next 24 hours
-    if now < message.deliver_on and message.deliver_on < threshold:
+    now = timezone.now()
+    threshold = now + timedelta(hours=threshold)
+    is_upcoming = now < message.deliver_on and message.deliver_on < threshold
+
+    if message.user and is_upcoming:
 
         # WANT:
         #   job = UserQueue(message).add()
@@ -83,40 +84,35 @@ def cancel(queue_id):
             job.cancel()
 
 
-# -------------------------------
-# TODO: PRIORITIES & Daily limits
-# -------------------------------
-# Idea: Use redis to keep a count of messages that are in the queue. All these
-# keys should expire after 24 hours (maybe)?
-#
-# Keep a string to count number of daily messages scheduled / sent.
-#
-# e.g. SET  user:ID:2016-02-04  4 -- count for the day
-#
-# Keep a set per user per day of high/low priority messages?
-#
-# e.g: SADD user:ID:2016-02-04:high  ID1, ID2, ID3  -- high-priority messages
-#      SADD user:ID:2016-02-04:low   ID4            -- low-priority messages
-#
-# - could use ZADD (sorted sets) for messages, to keep order, using delivery
-#   time as the score
-# - need to test for membership
-# - need to be able to add or fail to add to the queue
-# - need to be able to bump from the queue for higher-priority messages
-#   - e.g. remove low-priority & cancel the job, add high-priority
-
-
 class UserQueue:
-    """A single user's view of their own notification queue. It operates on a
-    single GCM message at a time to do one of the following:
+    """This class implements a single user's view of their own queue of
+    notifications (GCMMessages) for a given day. It stores details in redis,
+    and knows how to schedule a message for delivery using rq-scheduler.
 
-    - Add it to a queue / schedule for delivery (tentatively)
-    - Remove it from a queue
+    ## Priorities.
 
-    TODO: Priorities (coming soon)
-    - low  (all behavior libs)
-    - medium (custom actions & user-defined triggers?)
-    - high (reserved for packaged content?)
+    A GCMMessage has a priority, and the UserQueue (this class) will respect
+    that, queueing up messages for delivery at the correct priority, while
+    respeciting the overall limit (total number of messages to be sent for
+    the day). For example, we currently support the following queues:
+
+    - low: typically these messages are the least important, and will be the
+      first messages bumped from delivery once the limit is met.
+    - medium: ...
+    - high: ... High-priority queues are reserved for the **most important**
+      messages that must be delivered. This queue ignores the daily limit, so
+      it's possible to go over the limit (use as a last resort).
+
+    ## Methods
+
+    - count: Total number of messages queued up for delivery for the day.
+    - full : Boolean: are we at (or over) the daily limit
+    - add: Add a message to the queue and schedule it for delivery, returning
+      a Job or None (if adding failed)
+    - list: Return a list of job IDs
+    - remove: Remove the message from the queue.
+
+    ## Examples: TODO
 
     """
 
@@ -129,8 +125,8 @@ class UserQueue:
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
 
         # TODO: Expire all new keys in ~24 hours?
-        exp = (message.deliver_on + timedelta(days=1)) - timezone.now()
-        self.expire = int(exp.total_seconds())
+        # exp = (message.deliver_on + timedelta(days=1)) - timezone.now()
+        # self.expire = int(exp.total_seconds())
 
     def _key(self, name):
         """Construct a redis key for the given name. Keys are of the form:
@@ -231,7 +227,7 @@ class UserQueue:
         k = self._key(priority)
         num_items = self.conn.llen(k)
 
-        job_ids = []  # the ones we want to keep:
+        job_ids = []  # Save a the ones we want to keep, and re-add them later
         for i in range(num_items):
             job_id = self.conn.lpop(k)
             job_id = job_id.decode('utf8')
@@ -244,3 +240,6 @@ class UserQueue:
 
         # Decrement the total count.
         self.conn.decr(self._key("count"))
+
+        # And cancel the job (it's ok if this already happened)
+        cancel(self.message.queue_id)
