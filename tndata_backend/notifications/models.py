@@ -365,6 +365,5 @@ def remove_message_from_queue(sender, instance, *args, **kwargs):
 
     """
     from . import queue
-    # TODO: Call UserQueue(message).remove() <--- should this call job.cancel?
-    queue.cancel(instance.queue_id)
-
+    queue.UserQueue(instance).remove()  # Remove it from the queue
+    queue.cancel(instance.queue_id)  # Cancel the scheduled Job
