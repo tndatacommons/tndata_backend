@@ -32,10 +32,8 @@ def send(message_id):
 def enqueue(message, threshold=24):
     """Given a GCMMessage object, add it to the queue of messages to be sent.
 
-    TODO: Include support for:
-
-    - priorities
-    - thresholds: max number of daily messages per user
+    - message: An instance of a GCMMessage
+    - threshold: Number of hours in advance that we schedule notifications.
 
     """
     job = None
@@ -47,7 +45,7 @@ def enqueue(message, threshold=24):
 
     if message.user and is_upcoming:
 
-        # WANT: job = UserQueue(message).add()
+        # TODO: job = UserQueue(message).add()
 
         # ------------ deprecate the below -----------------------------
         job = scheduler.enqueue_at(message.deliver_on, send, message.id)
@@ -148,7 +146,8 @@ class UserQueue:
 
     @staticmethod
     def clear(user, date=None):
-        """Clear all of the redis queue data associated with the given user."""
+        """Clear all of the redis queue data associated with the given user
+        for the given date (or today)."""
         if date is None:
             date = timezone.now()
         date_string = date.strftime("%Y-%m-%d")
@@ -164,14 +163,48 @@ class UserQueue:
         keys = [k.format(user_id=user.id, date_string=date_string) for k in keys]
         conn.delete(*keys)
 
+    @property
+    def num_low(self):
+        return self.conn.llen(self._key("low"))
+
+    @property
+    def num_medium(self):
+        return self.conn.llen(self._key("medium"))
+
+    @property
+    def num_high(self):
+        return self.conn.llen(self._key("high"))
+
     def count(self):
-        """Return the number of messages that are queued up for the day."""
-        k = self._key("count")
-        return int(self.conn.get(k) or 0)
+        """Return the *total* number of messages that are queued up for the day."""
+        return int(self.conn.get(self._key('count')) or 0)
 
     def full(self):
         """Is the user's daily queue full? Returns True or False"""
         return self.count() >= self.limit
+
+    def _enqueue(self):
+        """Put the message in the appropriate queue and schedule for delivery,
+        taking care to update the total count. This method also adds the Job's
+        ID to the message & saves it."""
+        # Enqueue the job...
+        job = scheduler.enqueue_at(
+            self.message.deliver_on,
+            self.send_func,
+            self.message.id
+        )
+        self.message.queue_id = job.id
+        self.message.save()
+
+        # Keep up with a list of job ids for the day.
+        # We need to keep a separate list for each priority, so we
+        # can figure out whenter to drop some and add others once the
+        # limit is met.
+        self.conn.rpush(self._key(self.priority), job.id)
+
+        # And count the total number of items queued up for the day.
+        self.conn.incr(self._key("count"))
+        return job
 
     def add(self):
         """Adds the message to the queue *if* there's room. IF the message was
@@ -180,30 +213,21 @@ class UserQueue:
         Returns the scheduled Job object (or None if the job was not added).
 
         """
-
-        # TODO: check all the priorities and the user's limit to determine
-        # if we can schedule this message for delivery.
+        # Scenarios:
+        #
+        # Queue is not full. Schedule it.
+        # Queue is full, msg is high priority. Schedule it.
+        # Queue is full, msg is medium priority, try to bump a low priority msg,
+        #   then schedule.
+        # Queue is full, msg is low priority, ignore.
 
         job = None
         if not self.full() or self.priority == 'high':
-            # Enqueue the job...
-            job = scheduler.enqueue_at(
-                self.message.deliver_on,
-                self.send_func,
-                self.message.id
-            )
-            self.message.queue_id = job.id
-            self.message.save()
-
-            # Keep up with a list of job ids for the day.
-            # We need to keep a separate list for each priority, so we
-            # can figure out whenter to drop some and add others once the
-            # limit is met.
-            self.conn.rpush(self._key(self.priority), job.id)
-
-            # And count the total number of items queued up for the day.
-            self.conn.incr(self._key("count"))
-
+            job = self._enqueue()
+        elif self.priority == 'medium' and self.num_low > 0:
+            # Bump a lower-priority message
+            self.bump_from_queue('low')
+            job = self._enqueue()
         return job
 
     def list(self):
@@ -218,6 +242,24 @@ class UserQueue:
         # Redis returns data in bytes, so we need to decode to utf-8
         job_ids = [job_id.decode('utf8') for job_id in job_ids]
         return [job for job in scheduler.get_jobs() if job.id in job_ids]
+
+    def bump_from_queue(self, priority='low'):
+        """Bump a message from a queue (ie. remove an already-queued message in
+        favor of a higher-priority one.
+
+        This removes the items from the end of the given priority queue, and
+        cancels it's scheduled delivery.
+
+        """
+        # Remove the item from the priority queue
+        job_id = self.conn.rpop(self._key(priority))
+        job_id = job_id.decode('utf8')
+
+        # Decrement the total count.
+        self.conn.decr(self._key("count"))
+
+        # And cancel the job (it's ok if this already happened)
+        cancel(job_id)
 
     def remove(self):
         """Remove the message (eg: when deleteing GCMMessage)"""
