@@ -84,28 +84,19 @@ class TotalCounter:
     This class persists its value in redis, but gives us a nicer interface
     for changing the value."""
 
-    def __init__(self, key=None, conn=None):
-        self.key = key  # The redis key
-        self.conn = conn  # The redis connection
-
-        # Initialize & sanitize the current count. It should never go below 0.
-        count = int(self.conn.get(self.key) or 0)
-        self._count = count if count >= 0 else 0
-
-    def _save(self):
-        """Save the current count back to redis."""
-        self.conn.set(self.key, self._count)
+    def __init__(self):
+        self.conn = django_rq.get_connection('default')
 
     def __get__(self, instance, owner):
-        return self._count
+        # Use the instance's key to retrieve the value.
+        count = int(self.conn.get(instance._key("count")) or 0)
+        return count if count > 0 else 0  # Never drop lower than zero
 
     def __set__(self, instance, value):
-        if value < 0:
-            self._count = 0
-        else:
-            self._count = value
-        self._save()
-        return self._count
+        if value <= 0:
+            value = 0
+        self.conn.set(instance._key("count"), value)
+        return value
 
 
 class UserQueue:
@@ -139,6 +130,8 @@ class UserQueue:
     ## Examples: TODO
 
     """
+    # Total Counter for all daily messages
+    count = TotalCounter()
 
     def __init__(self, message, limit=10, queue='default', send_func=send):
         self.conn = django_rq.get_connection('default')
@@ -148,9 +141,6 @@ class UserQueue:
         self.priority = getattr(message, 'priority', 'low')
         self.user = message.user
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
-
-        # Total Counter for all daily messages
-        self.count = TotalCounter(key=self._key('count'), conn=self.conn)
 
         # TODO: Expire all new keys in ~24 hours?
         # exp = (message.deliver_on + timedelta(days=1)) - timezone.now()
@@ -291,21 +281,19 @@ class UserQueue:
 
     def remove(self):
         """Remove the message (eg: when deleteing GCMMessage)"""
-
-        # Remove the item from the priority queue
         k = self._key(self.priority)
-        num_items = self.conn.llen(k)
 
-        job_ids = []  # Save a the ones we want to keep, and re-add them later
-        for i in range(num_items):
-            job_id = self.conn.lpop(k)
-            job_id = job_id.decode('utf8')
+        # Pull all the job ids off the queue (we'll re-add them later), keeping
+        # the ones we're not removing
+        job_ids = [
+            job_id for job_id in self.list()
+            if job_id != self.message.queue_id
+        ]
 
-            if job_id != self.message.queue_id:
-                job_ids.append(job_id)
-
-        for job_id in job_ids:
-            self.conn.rpush(k, job_id)
+        # Then delete the queue, and re-add the keepers.
+        self.conn.delete(k)
+        if len(job_ids) > 0:
+            self.conn.rpush(k, *job_ids)
 
         # Decrement the total count.
         self.count -= 1
