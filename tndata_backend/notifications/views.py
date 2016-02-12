@@ -38,6 +38,10 @@ def dashboard(request):
     return render(request, "notifications/index.html", context)
 
 
+# TODO: Add a class that returns the user's data in a queue for a give
+# date, e.g.: UserQueue.get_data(user, date)
+
+
 @user_passes_test(lambda u: u.is_staff, login_url='/')
 def cancel_job(request):
     """Look for an enqueued job with the given ID and cancel it."""
