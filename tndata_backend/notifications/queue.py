@@ -47,10 +47,7 @@ def enqueue(message, threshold=24):
 
     if message.user and is_upcoming:
 
-        # WANT:
-        #   job = UserQueue(message).add()
-        # OR, for high-priority messages?
-        #   job = UserQueue(message).add("high")
+        # WANT: job = UserQueue(message).add()
 
         # ------------ deprecate the below -----------------------------
         job = scheduler.enqueue_at(message.deliver_on, send, message.id)
@@ -121,6 +118,7 @@ class UserQueue:
         self.send_func = send_func
         self.limit = limit  # TODO Get from the User's profile?
         self.message = message
+        self.priority = getattr(message, 'priority', 'low')
         self.user = message.user
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
 
@@ -175,7 +173,7 @@ class UserQueue:
         """Is the user's daily queue full? Returns True or False"""
         return self.count() >= self.limit
 
-    def add(self, priority="low"):
+    def add(self):
         """Adds the message to the queue *if* there's room. IF the message was
         added, it's `queue_id` gets set, and it gets saved.
 
@@ -187,7 +185,7 @@ class UserQueue:
         # if we can schedule this message for delivery.
 
         job = None
-        if not self.full():
+        if not self.full() or self.priority == 'high':
             # Enqueue the job...
             job = scheduler.enqueue_at(
                 self.message.deliver_on,
@@ -197,20 +195,21 @@ class UserQueue:
             self.message.queue_id = job.id
             self.message.save()
 
-            # Keep up with a list of job ids for the day
-            # TODO: We need to keep a separate list for each priority, so we
+            # Keep up with a list of job ids for the day.
+            # We need to keep a separate list for each priority, so we
             # can figure out whenter to drop some and add others once the
             # limit is met.
-            self.conn.rpush(self._key(priority), job.id)
+            self.conn.rpush(self._key(self.priority), job.id)
 
             # And count the total number of items queued up for the day.
             self.conn.incr(self._key("count"))
 
         return job
 
-    def list(self, priority='low'):
-        """Return a list of today's Jobs scheduled as a particular priority."""
-        k = self._key(priority)
+    def list(self):
+        """Return a list of today's Jobs scheduled at the same priority as
+        the current Message."""
+        k = self._key(self.priority)
         num_items = self.conn.llen(k)
 
         # Get all the job ids stored at the given priority.
@@ -220,11 +219,11 @@ class UserQueue:
         job_ids = [job_id.decode('utf8') for job_id in job_ids]
         return [job for job in scheduler.get_jobs() if job.id in job_ids]
 
-    def remove(self, priority='low'):
+    def remove(self):
         """Remove the message (eg: when deleteing GCMMessage)"""
 
         # Remove the item from the priority queue
-        k = self._key(priority)
+        k = self._key(self.priority)
         num_items = self.conn.llen(k)
 
         job_ids = []  # Save a the ones we want to keep, and re-add them later
