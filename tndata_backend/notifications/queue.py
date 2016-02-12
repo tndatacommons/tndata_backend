@@ -186,6 +186,29 @@ class UserQueue:
         keys = [k.format(user_id=user.id, date_string=date_string) for k in keys]
         conn.delete(*keys)
 
+    @staticmethod
+    def get_data(user, date=None):
+        """Return a dict of data (redis keys/values) for the UserQueue for the
+        given date."""
+        if date is None:
+            date = timezone.now()
+        date_string = date.strftime("%Y-%m-%d")
+        conn = django_rq.get_connection('default')
+
+        # Redis keys for the count, and all queues.
+        keys = [
+            'uq:{user_id}:{date_string}:count',
+            'uq:{user_id}:{date_string}:low',
+            'uq:{user_id}:{date_string}:medium',
+            'uq:{user_id}:{date_string}:high',
+        ]
+        keys = [k.format(user_id=user.id, date_string=date_string) for k in keys]
+
+        # Get the list values...
+        data = {k: conn.lrange(k, 0, 100) for i, k in enumerate(keys) if i > 0}
+        data[keys[0]] = conn.get(keys[0])  # then include the count
+        return data
+
     @property
     def num_low(self):
         return self.conn.llen(self._key("low"))
