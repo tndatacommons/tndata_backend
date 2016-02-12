@@ -79,6 +79,35 @@ def cancel(queue_id):
             job.cancel()
 
 
+class TotalCounter:
+    """Descriptor to count total number of queued messages for the UserQueue.
+    This class persists its value in redis, but gives us a nicer interface
+    for changing the value."""
+
+    def __init__(self, key=None, conn=None):
+        self.key = key  # The redis key
+        self.conn = conn  # The redis connection
+
+        # Initialize & sanitize the current count. It should never go below 0.
+        count = int(self.conn.get(self.key) or 0)
+        self._count = count if count >= 0 else 0
+
+    def _save(self):
+        """Save the current count back to redis."""
+        self.conn.set(self.key, self._count)
+
+    def __get__(self, instance, owner):
+        return self._count
+
+    def __set__(self, instance, value):
+        if value < 0:
+            self._count = 0
+        else:
+            self._count = value
+        self._save()
+        return self._count
+
+
 class UserQueue:
     """This class implements a single user's view of their own queue of
     notifications (GCMMessages) for a given day. It stores details in redis,
@@ -119,6 +148,9 @@ class UserQueue:
         self.priority = getattr(message, 'priority', 'low')
         self.user = message.user
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
+
+        # Total Counter for all daily messages
+        self.count = TotalCounter(key=self._key('count'), conn=self.conn)
 
         # TODO: Expire all new keys in ~24 hours?
         # exp = (message.deliver_on + timedelta(days=1)) - timezone.now()
@@ -175,13 +207,9 @@ class UserQueue:
     def num_high(self):
         return self.conn.llen(self._key("high"))
 
-    def count(self):
-        """Return the *total* number of messages that are queued up for the day."""
-        return int(self.conn.get(self._key('count')) or 0)
-
     def full(self):
         """Is the user's daily queue full? Returns True or False"""
-        return self.count() >= self.limit
+        return self.count >= self.limit
 
     def _enqueue(self):
         """Put the message in the appropriate queue and schedule for delivery,
@@ -203,7 +231,7 @@ class UserQueue:
         self.conn.rpush(self._key(self.priority), job.id)
 
         # And count the total number of items queued up for the day.
-        self.conn.incr(self._key("count"))
+        self.count += 1
         return job
 
     def add(self):
@@ -256,7 +284,7 @@ class UserQueue:
         job_id = job_id.decode('utf8')
 
         # Decrement the total count.
-        self.conn.decr(self._key("count"))
+        self.count -= 1
 
         # And cancel the job (it's ok if this already happened)
         cancel(job_id)
@@ -280,7 +308,7 @@ class UserQueue:
             self.conn.rpush(k, job_id)
 
         # Decrement the total count.
-        self.conn.decr(self._key("count"))
+        self.count -= 1
 
         # And cancel the job (it's ok if this already happened)
         cancel(self.message.queue_id)
