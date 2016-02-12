@@ -44,11 +44,11 @@ class TestUserQueue(TestCase):
     def test_count(self):
         msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
         uq = UserQueue(msg)
-        self.assertEqual(uq.count(), 0)
+        self.assertEqual(uq.count, 0)
 
         # now add the message to the queue
         uq.add()
-        self.assertEqual(uq.count(), 1)
+        self.assertEqual(uq.count, 1)
 
     def test_full(self):
         # When the queue is not full
@@ -84,4 +84,4 @@ class TestUserQueue(TestCase):
 
         uq.remove()
         self.assertEqual(uq.list(), [])
-        self.assertEqual(uq.count(), 0)
+        self.assertEqual(uq.count, 0)

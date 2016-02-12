@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from redis_metrics import metric
 import django_rq
+import waffle
 
 from utils.slack import post_private_message
 
@@ -44,17 +45,18 @@ def enqueue(message, threshold=24):
     is_upcoming = now < message.deliver_on and message.deliver_on < threshold
 
     if message.user and is_upcoming:
+        if waffle.switch_is_active('notifications-user-userqueue'):
+            # Enqueue messages through the UserQueue.
+            job = UserQueue(message).add()
+        else:
+            # --------- TODO: deprecate the below -----------------------------
+            job = scheduler.enqueue_at(message.deliver_on, send, message.id)
 
-        # TODO: job = UserQueue(message).add()
-
-        # ------------ deprecate the below -----------------------------
-        job = scheduler.enqueue_at(message.deliver_on, send, message.id)
-
-        # Save the job ID on the GCMMessage, so if it gets re-enqueued we
-        # can cancel the original?
-        message.queue_id = job.id
-        message.save()
-        # --------------------------------------------------------------
+            # Save the job ID on the GCMMessage, so if it gets re-enqueued we
+            # can cancel the original?
+            message.queue_id = job.id
+            message.save()
+            # --------------------------------------------------------------
 
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')
@@ -130,8 +132,7 @@ class UserQueue:
     ## Examples: TODO
 
     """
-    # Total Counter for all daily messages
-    count = TotalCounter()
+    count = TotalCounter()  # Total Counter for all daily messages
 
     def __init__(self, message, limit=10, queue='default', send_func=send):
         self.conn = django_rq.get_connection('default')
