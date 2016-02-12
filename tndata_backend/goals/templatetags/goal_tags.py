@@ -10,7 +10,7 @@ def action_creation_menu():
     return {'action_model': Action}
 
 
-@register.inclusion_tag("utils/_object_controls.html", takes_context=True)
+@register.inclusion_tag("goals/_object_controls.html", takes_context=True)
 def goal_object_controls(context, obj):
     """Compile custom permissions for Goal objects, and render the util's
     _object_controls template."""
@@ -58,6 +58,8 @@ def goal_object_controls(context, obj):
             user.is_superuser,
             hasattr(obj, "created_by") and obj.created_by == user,
         ])
+        # And We have a "duplicate all" command for Category objects.
+        result['is_category'] = isinstance(obj, Category)
     return result
 
 
