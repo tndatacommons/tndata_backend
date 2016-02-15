@@ -19,6 +19,11 @@ class TestUserQueue(TestCase):
     def setUpTestData(cls):
         User = get_user_model()
         cls.user = User.objects.create_user('uq', 'uq@example.com', 'pass')
+
+        cls.profile = cls.user.userprofile
+        cls.profile.maximum_daily_notifications = 10
+        cls.profile.save()
+
         cls.device = GCMDevice.objects.create(
             user=cls.user,
             registration_id="REGISTRATIONID",
@@ -31,6 +36,10 @@ class TestUserQueue(TestCase):
         UserQueue.clear(self.user, date=self.deliver_date)
         for msg in GCMMessage.objects.all():
             msg.delete()
+
+        # Reset the user's daily message limit
+        self.profile.maximum_daily_notifications = 10
+        self.profile.save()
 
     def test__key(self):
         msg = GCMMessage.objects.create(self.user, "A", "A", self.deliver_date)
@@ -56,9 +65,14 @@ class TestUserQueue(TestCase):
         self.assertFalse(UserQueue(msg).full())
 
         # When we're over the limit (temporarily set to 1)
-        uq = UserQueue(msg, limit=1)
+        self.profile.maximum_daily_notifications = 1
+        self.profile.save()
+
+        uq = UserQueue(msg)
         uq.add()
         self.assertTrue(uq.full())
+        self.user.userprofile.maximum_daily_notifications = 10
+        self.user.userprofile.save()
 
     def test_add(self):
         # when the queue is not full.
@@ -66,9 +80,13 @@ class TestUserQueue(TestCase):
         job = UserQueue(a).add()
         self.assertIsNotNone(job)
 
+        # temporarily set user-limit to 1
+        self.profile.maximum_daily_notifications = 1
+        self.profile.save()
+
         # when the queue is full.
         b = GCMMessage.objects.create(self.user, "B", "B", self.deliver_date)
-        job = UserQueue(b, limit=1).add()
+        job = UserQueue(b).add()
         self.assertIsNone(job)
 
     def test_list(self):
@@ -80,7 +98,7 @@ class TestUserQueue(TestCase):
     def test_remove(self):
         msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
         uq = UserQueue(msg)
-        job = uq.add()
+        uq.add()
 
         uq.remove()
         self.assertEqual(uq.list(), [])
