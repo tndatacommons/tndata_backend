@@ -12,30 +12,27 @@
     <thead>
       <tr>
         <th>Job ID</th>
-        <th>Status</th>
-        <th>Scheduled</th>
-        <th>Enqueued At</th>
-        <th>Created</th>
+        <th>Deliver</th>
+        <th>Age</th>
         <th>User</th>
         <th>Content</th>
-        <th><i class="fa fa-cog"></i></th>
+        <th>Delete</th>
       </tr>
     </thead>
     <tbody>
       {% for job, scheduled_for, message_data in jobs %}
       <tr>
-        <td>
-          <a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a>
-        </td>
-        <td>{{ job.status|default:"-" }}</td>
+        <td><a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></td>
         <td>{{ scheduled_for|localtime }}</td>
+        <td>{{ job.created_at|localtime|timesince }}</td>
         <td>
-          {% if job.enqueued_at %}
-            {{ job.enqueued_at|localtime }}
+          {# Clicking the user's email shows their queue for the date #}
+          {% if message_data.email %}
+          <a href="{% url 'notifications:userqueue' message_data.user_id message_data.date_string %}" class="userqueue">
+            {{ message_data.email }}
+          </a>
           {% endif %}
         </td>
-        <td>{{ job.created_at|localtime }}</td>
-        <td>{{ message_data.email }}</td>
         <td>
           {{ message_data.title }} {{ message_data.message }}
           <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
@@ -66,4 +63,52 @@
         class="button alert pull-right"/>
     </form>
   </div>
+
+  <div id="queueModal" class="reveal-modal"
+       data-reveal aria-labelledby="modalTitle"
+       aria-hidden="true" role="dialog">
+    <h2 id="modalTitle"></h2>
+    <dl>
+      <dt>Total</dt><dd id="queueTotal"></dd>
+      <dt>Low</dt><dd><ul id="queueLow"></ul></dd>
+      <dt>Medium</dt><dd><ul id="queueMedium"></ul></dd>
+      <dt>High</dt><dd><ul id="queueHigh"></ul></dd>
+    </dl>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+  </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript">
+
+  var makeQueueList = function(items) {
+    // Given an array of items, return an HTML string contining <li>-items
+    var content = '';
+      for(var i=0; i < items.length; i++) {
+        content += '<li><a href="/rq/queues/0/' +
+          items[i] + '/">' + items[i] + '</a></li>';
+    }
+    return content;
+  }
+
+  $(document).ready(function() {
+    $(".userqueue").click(function(e) {
+      e.preventDefault();
+      $.get($(this).prop('href'), function(data) {
+        console.log(data);
+        if(data) {
+          $("#modalTitle").text(data.user + " " + data.date);
+          $("#queueTotal").text(data.count);
+          $("#queueLow").html(makeQueueList(data.low));
+          $("#queueMedium").html(makeQueueList(data.medium));
+          $("#queueMedium").html(makeQueueList(data.high));
+          $('#queueModal').foundation('reveal', 'open');
+        }
+      });
+    });
+  });
+  </script>
+
 {% endblock %}

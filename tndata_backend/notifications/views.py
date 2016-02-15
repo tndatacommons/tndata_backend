@@ -1,8 +1,11 @@
 from collections import defaultdict
+from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render, redirect
 
 from . import queue
 from .models import GCMMessage
@@ -16,15 +19,17 @@ def dashboard(request):
     ids = [job.args[0] for job, _ in jobs]
 
     message_data = defaultdict(dict)
-    fields = ['id', 'title', 'user__email', 'message']
+    fields = ['id', 'title', 'user__id', 'user__email', 'message', 'deliver_on']
     messages = GCMMessage.objects.filter(pk__in=ids).values_list(*fields)
     for msg in messages:
-        mid, title, email, message = msg
+        mid, title, user_id, email, message, deliver_on = msg
         message_data[mid] = {
             'id': mid,
             'title': title,
+            'user_id': user_id,
             'email': email,
             'message': message,
+            'date_string': deliver_on.strftime("%Y-%m-%d"),
         }
 
     jobs = [
@@ -38,8 +43,29 @@ def dashboard(request):
     return render(request, "notifications/index.html", context)
 
 
-# TODO: Add a class that returns the user's data in a queue for a give
-# date, e.g.: UserQueue.get_data(user, date)
+@user_passes_test(lambda u: u.is_staff, login_url='/')
+def userqueue(request, user_id, date):
+    """Return UserQueue details; i.e. the sheduled notifications/jobs for the
+    user for a given date.
+    """
+    user = get_object_or_404(get_user_model(), pk=user_id)
+    date = datetime.strptime(date, '%Y-%m-%d')
+    data = queue.UserQueue.get_data(user, date)
+
+    # massage that data a bit.
+    results = {}
+    for key, values in data.items():
+        if 'count' in key:
+            results['count'] = values
+        elif 'low' in key:
+            results['low'] = values
+        elif 'medium' in key:
+            results['medium'] = values
+        elif 'high' in key:
+            results['high'] = values
+    results['date'] = date.strftime("%Y-%m-%d")
+    results['user'] = user.get_full_name()
+    return JsonResponse(results)
 
 
 @user_passes_test(lambda u: u.is_staff, login_url='/')
