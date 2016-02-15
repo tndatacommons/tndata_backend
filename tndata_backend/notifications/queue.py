@@ -204,9 +204,11 @@ class UserQueue:
         ]
         keys = [k.format(user_id=user.id, date_string=date_string) for k in keys]
 
-        # Get the list values...
+        # Get the list values, and convert them from bytes to utf
         data = {k: conn.lrange(k, 0, 100) for i, k in enumerate(keys) if i > 0}
-        data[keys[0]] = conn.get(keys[0])  # then include the count
+        for key, values in data.items():
+            data[key] = [v.decode('utf8') for v in values]
+        data[keys[0]] = int(conn.get(keys[0])) # then include the count
         return data
 
     @property
