@@ -70,6 +70,7 @@ class TestGCMMessage(TestCase):
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
         try:
             cls.user.userprofile.timezone = 'America/Chicago'
+            cls.user.userprofile.maximum_daily_notifications = 10
             cls.user.userprofile.save()
         except ValueError:
             pass
@@ -91,6 +92,10 @@ class TestGCMMessage(TestCase):
             self.msg.__str__(),
             "{0} on {1}".format(self.msg.title, self.msg.deliver_on)
         )
+
+    def test_get_daily_message_limit(self):
+        """Ensure this method fetchs the UserProfile value."""
+        self.assertEqual(self.msg.get_daily_message_limit(), 10)
 
     def test_snooze_hours(self):
         """Ensure deliver_on gets updated correctly when we snooze for an hour"""
