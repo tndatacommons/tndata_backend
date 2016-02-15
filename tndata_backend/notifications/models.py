@@ -354,6 +354,12 @@ class GCMMessage(models.Model):
         self._set_expiration()
         self.save()
 
+    def get_daily_message_limit(self):
+        try:
+            return self.user.userprofile.maximum_daily_notifications
+        except (models.ObjectDoesNotExist, AttributeError, ValueError):
+            return 20
+
     # Use the Custom Manager for GCMMessage objects.
     objects = GCMMessageManager()
 

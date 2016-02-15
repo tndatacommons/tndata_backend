@@ -100,7 +100,9 @@ class TotalCounter:
     def __set__(self, instance, value):
         if value <= 0:
             value = 0
-        self.conn.set(instance._key("count"), value)
+        key = instance._key("count")
+        self.conn.set(key, value)
+        self.conn.expire(key, timedelta(days=2))
         return value
 
 
@@ -137,18 +139,19 @@ class UserQueue:
     """
     count = TotalCounter()  # Total Counter for all daily messages
 
-    def __init__(self, message, limit=10, queue='default', send_func=send):
+    def __init__(self, message, queue='default', send_func=send):
         self.conn = django_rq.get_connection('default')
         self.send_func = send_func
-        self.limit = limit  # TODO Get from the User's profile?
         self.message = message
+        self.limit = message.get_daily_message_limit()
         self.priority = getattr(message, 'priority', 'low')
         self.user = message.user
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
 
-        # TODO: Expire all new keys in ~24 hours?
-        # exp = (message.deliver_on + timedelta(days=1)) - timezone.now()
-        # self.expire = int(exp.total_seconds())
+        # Since we only queue up messages 24 hours in advance, we can
+        # auto-expire any values after a couple days. This can be a timedelta
+        # object;
+        self.expire = timedelta(days=2)
 
     def _key(self, name):
         """Construct a redis key for the given name. Keys are of the form:
@@ -211,7 +214,7 @@ class UserQueue:
         data = {k: conn.lrange(k, 0, 100) for i, k in enumerate(keys) if i > 0}
         for key, values in data.items():
             data[key] = [v.decode('utf8') for v in values]
-        data[keys[0]] = int(conn.get(keys[0])) # then include the count
+        data[keys[0]] = int(conn.get(keys[0]))  # then include the count
         return data
 
     @property
@@ -247,7 +250,9 @@ class UserQueue:
         # We need to keep a separate list for each priority, so we
         # can figure out whenter to drop some and add others once the
         # limit is met.
-        self.conn.rpush(self._key(self.priority), job.id)
+        key = self._key(self.priority)
+        self.conn.rpush(key, job.id)
+        self.conn.expire(key, self.expire)
 
         # And count the total number of items queued up for the day.
         self.count += 1
