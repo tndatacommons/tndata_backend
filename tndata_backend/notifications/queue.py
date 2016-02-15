@@ -25,6 +25,9 @@ def send(message_id):
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
     except Exception as e:
+        # NOTE: If for soem reason, a message got queued up, but something
+        # happend to the original GCMMessage, and it's pre-delete signal handler
+        # failed, we'd get this exception.
         args = (e, settings.SITE_URL, message_id)
         log = "FAILED: {} on {} for id = {}".format(*args)
         post_private_message("bkmontgomery", log)
