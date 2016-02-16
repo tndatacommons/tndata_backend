@@ -20,13 +20,14 @@ https://trello.com/c/zKedLoZe/170-initial-home-feed
 """
 import random
 
+from collections import Counter
 from datetime import timedelta
 from django.core.cache import cache
 from django.db.models import Q
 from django.utils import timezone
 from utils.user_utils import local_day_range
 
-from .models import Goal, UserCompletedAction
+from .models import Goal, UserCompletedAction, UserCompletedCustomAction
 
 
 # Some Cache keys.
@@ -212,6 +213,56 @@ def todays_actions(user):
     return upcoming
 
 
+def todays_customactions_progress(user):
+    """Return some stats indicating to user's progress toward completing their
+    custom actions that were scheduled for 'today'.
+
+    * user -- the user for whom we're calculating stats.
+
+    Returns a dict of the form (just like `todays_actions_progress`
+
+        {
+            'completed': X,
+            'total': X,
+            'progress': X,
+        }
+
+    where
+
+    * completed is the number of CustomActions the user completed.
+    * total is the total number of scheduled CustomActions
+    * progress is an integer representing the percentage complete
+
+    """
+    # Start & End of "today", in UTC from the perspective of the user's timezone
+    today = local_day_range(user)
+
+    # Query for the items that should have been scheduled today PLUS
+    # anything that actually got marked as completed today
+    actions = UserCompletedCustomAction.objects.filter(
+        updated_on__range=today,
+        user=user
+    )
+    customaction_ids = actions.values_list('customaction', flat=True)
+
+    # e.g. you've completed X / Y actions for today.
+    completed = actions.filter(state=UserCompletedAction.COMPLETED).count()
+
+    # NOTE: The `next_trigger_date` field gets refreshed automatically
+    # every so often. So, to get a picture of the whole day at a time, we need
+    # to consider both it and the previous trigger date.
+    total = user.customaction_set.filter(
+        Q(prev_trigger_date__range=today) |
+        Q(next_trigger_date__range=today) |
+        Q(id__in=customaction_ids)
+    ).distinct().count()
+
+    progress = 0
+    if total > 0:
+        progress = int(completed/total * 100)
+    return {'completed': completed, 'total': total, 'progress': progress}
+
+
 def todays_actions_progress(user):
     """Return some stats indicating to user's progress toward completing their
     actions that were scheduled for 'today'.
@@ -231,10 +282,6 @@ def todays_actions_progress(user):
     * completed is the number of Actions the user completed.
     * total is the total number of scheduled actions
     * progress is an integer representing the percentage complete
-
-    --------------------------------------------------------------
-    TODO: incorporate UserCompletedCustomAction data into this.
-    --------------------------------------------------------------
 
     """
     # Start & End of "today", in UTC from the perspective of the user's timezone
@@ -261,6 +308,23 @@ def todays_actions_progress(user):
     if total > 0:
         progress = int(completed/total * 100)
     return {'completed': completed, 'total': total, 'progress': progress}
+
+
+def todays_progress(user):
+    """A combination of todays progress on Actions + Custom Actions.  This
+    combines the results of the following:
+
+    * todays_actions_progress
+    * todays_customactions_progress
+
+    """
+    results = todays_actions_progress(user)
+    custom = todays_customactions_progress(user)
+
+    # Add the values together using a counter
+    results = Counter(results)
+    results.update(custom)
+    return dict(results)
 
 
 def next_user_action(user):
