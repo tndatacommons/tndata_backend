@@ -62,7 +62,7 @@ class CustomAction(models.Model):
         max_length=256,
         help_text="The text that will be displayed in the app's push notification"
     )
-    custom_trigger = models.ForeignKey(Trigger, blank=True, null=True, editable=False)
+    custom_trigger = models.ForeignKey(Trigger, blank=True, null=True)
 
     # The next/prev trigger dates operate exactly like those in UserAction
     next_trigger_date = models.DateTimeField(blank=True, null=True, editable=False)
