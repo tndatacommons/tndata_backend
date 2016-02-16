@@ -64,8 +64,26 @@
     </p>
     </h2>
     <div class="panel">
+      <h3>Public/Packaged Actions</h3>
       <ul>
       {% for uca in completed %}
+        <li>
+          ({{uca.id}}) {{ uca.action }}: <em>{{ uca.state|upper }}</em><br/>
+          <small>
+          Updated: <span class="label info">
+            {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
+          Created: <span class="label info">
+            {{ uca.created_on|localtime|date:"M j Y P e" }}</span>
+          </small>
+        </li>
+      {% empty %}
+        <li>no completed actions for this day</li>
+      {% endfor %}
+      </ul>
+
+      <h3>Custom Actions</h3>
+      <ul>
+      {% for uca in completed_custom %}
         <li>
           ({{uca.id}}) {{ uca.action }}: <em>{{ uca.state|upper }}</em><br/>
           <small>

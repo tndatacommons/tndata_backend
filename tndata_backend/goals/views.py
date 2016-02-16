@@ -55,6 +55,7 @@ from . models import (
     PackageEnrollment,
     Trigger,
     UserCompletedAction,
+    UserCompletedCustomAction,
     UserGoal,
     popular_actions,
     popular_behaviors,
@@ -1405,6 +1406,17 @@ def debug_notifications(request):
                 user=user,
                 updated_on__range=today
             )
+
+            # Custom Actions
+            customactions = user.customaction_set.filter(
+                Q(prev_trigger_date__range=today) |
+                Q(next_trigger_date__range=today)
+            ).order_by("next_trigger_date").distinct()
+            completed_custom = UserCompletedCustomAction.objects.filter(
+                user=user,
+                updated_on__range=today
+            )
+
             progress = user_feed.todays_progress(user)
             next_user_action = user_feed.next_user_action(user)
             upcoming = user_feed.todays_actions(user)
@@ -1424,6 +1436,8 @@ def debug_notifications(request):
         'email': email,
         'useractions': useractions,
         'completed': completed,
+        'customactions': customactions,
+        'completed_custom': completed_custom,
         'progress': progress,
         'next_user_action': next_user_action,
         'upcoming': upcoming,
