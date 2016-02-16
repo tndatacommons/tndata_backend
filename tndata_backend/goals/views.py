@@ -1405,11 +1405,14 @@ def debug_notifications(request):
                 user=user,
                 updated_on__range=today
             )
-            progress = user_feed.todays_actions_progress(user)
+            progress = user_feed.todays_progress(user)
             next_user_action = user_feed.next_user_action(user)
             upcoming = user_feed.todays_actions(user)
             for ua in useractions:
                 ua.upcoming = ua in upcoming
+
+            # TODO: display custom actions
+            # TODO: chart daily progress values?
 
             all_useractions = user.useraction_set.all()
             all_useractions = all_useractions.order_by("next_trigger_date")

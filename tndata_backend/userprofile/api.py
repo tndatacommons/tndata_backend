@@ -279,7 +279,7 @@ def feed_api(request):
             data['results'].append(feedback)
 
         # Progress for today
-        progress = user_feed.todays_actions_progress(user)
+        progress = user_feed.todays_progress(user)
         progress['object_type'] = 'progress'
         data['results'].append(progress)
 

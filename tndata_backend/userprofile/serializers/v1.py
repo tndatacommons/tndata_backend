@@ -192,7 +192,7 @@ class UserSerializer(ObjectTypeModelSerializer):
             upcoming = user_feed.todays_actions(obj)
 
             # Progress for today
-            self._feed['progress'] = user_feed.todays_actions_progress(obj)
+            self._feed['progress'] = user_feed.todays_progress(obj)
             upcoming = ReadOnlyUserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 
@@ -468,7 +468,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             upcoming = user_feed.todays_actions(obj)
 
             # Progress for today
-            self._feed['progress'] = user_feed.todays_actions_progress(obj)
+            self._feed['progress'] = user_feed.todays_progress(obj)
             upcoming = ReadOnlyUserActionSerializer(upcoming, many=True).data
             self._feed['upcoming_actions'] = upcoming
 

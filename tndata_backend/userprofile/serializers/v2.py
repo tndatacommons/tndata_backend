@@ -139,7 +139,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                 self._feed['action_feedback'] = feedback
 
             # Progress for today
-            self._feed['progress'] = user_feed.todays_actions_progress(obj)
+            self._feed['progress'] = user_feed.todays_progress(obj)
 
             # Actions / CustomActions to do today.
             upcoming = user_feed.todays_actions(obj)
@@ -239,7 +239,7 @@ class UserSerializer(ObjectTypeModelSerializer):
             upcoming = user_feed.todays_actions(obj)
 
             # Progress for today
-            self._feed['progress'] = user_feed.todays_actions_progress(obj)
+            self._feed['progress'] = user_feed.todays_progress(obj)
 
             # IDs of upcoming actions/custom actions
             upcoming = upcoming.values_list("action__id", flat=True)
