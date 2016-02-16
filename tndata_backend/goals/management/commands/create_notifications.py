@@ -50,10 +50,17 @@ class Command(BaseCommand):
 
     def create_message(self, user, obj, title, message, delivery_date):
 
+        if delivery_date is None:
+            msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
+            self._log_messages.append((msg, ERROR))
+            return None
+
         # Only create messages that should be delivered within the next 24 hours
         now = timezone.now()
         threshold = timezone.now() + timedelta(hours=24)
-        if delivery_date < now or delivery_date > threshold:
+        if delivery_date and delivery_date < now or delivery_date > threshold:
+            msg = "{0}-{1} delivery date not within 24 hours".format(obj.__class__.__name__, obj.id)
+            self._log_messages.append((msg, ERROR))
             return None  # The message is either too old or to far out.
 
         # XXX: If we're running in Staging / Dev environments, restrict
@@ -71,22 +78,18 @@ class Command(BaseCommand):
         else:
             kwargs['obj'] = obj
 
-        if delivery_date is None:
-            msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
+        try:
+            if len(title) > 256:
+                title = "{0}...".format(title[:253])
+
+            args = (user, title, message, delivery_date)
+            m = GCMMessage.objects.create(*args, **kwargs)
+
+            if m is not None:
+                self._messages_created += 1
+        except GCMDevice.DoesNotExist:
+            msg = "User {0} has not registered a Device".format(user)
             self._log_messages.append((msg, ERROR))
-        else:
-            try:
-                if len(title) > 256:
-                    title = "{0}...".format(title[:253])
-
-                args = (user, title, message, delivery_date)
-                m = GCMMessage.objects.create(*args, **kwargs)
-
-                if m is not None:
-                    self._messages_created += 1
-            except GCMDevice.DoesNotExist:
-                msg = "User {0} has not registered a Device".format(user)
-                self._log_messages.append((msg, ERROR))
 
     def schedule_customaction_notifications(self):
         # Schedule upcoming notifications for all CustomActions for users with:
