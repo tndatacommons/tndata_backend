@@ -7,15 +7,16 @@
 
 {% block content %}
 
-<p>We have a request for a new user account from the following:</p>
+<p>The following user just signed up:</p>
 <p>
   Name: {{ user.get_full_name }}<br/>
   Email: {{ user.email }}<br/>
   Joined: {{ user.date_joined }}
 </p>
 
-<p>To activate this account, edit the user's admin entry and check the
-<strong>Active</strong> option.</p>
+<p>Their account is active and they've been added to the "Content Viewers" group;
+To change their account or give them additional permissions, visit the following
+link:</p>
 
 {% endblock %}
 

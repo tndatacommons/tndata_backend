@@ -1,6 +1,7 @@
 from django import http
 from django.contrib import messages
-from django.contrib.auth import get_user_model, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, FormView
@@ -9,8 +10,12 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from goals.permissions import CONTENT_VIEWERS
 from userprofile.forms import UserForm
-from .email import send_new_user_request_notification_to_managers
+from . email import (
+    send_new_user_request_notification_to_managers,
+    send_new_user_welcome,
+)
 from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
 from . slack import post_message
@@ -33,13 +38,26 @@ def signup(request):
             except User.DoesNotExist:
                 u = form.save(commit=False)
                 u.username = username_hash(u.email)
-                u.is_active = False
                 u.set_password(password_form.cleaned_data['password'])
-                u.save()
 
-                # Email Managers about the new user. They will need to
-                # activate the account.
+                # By default, ensure accounts are active and that they have
+                # permissions to view content.
+                u.is_active = True
+                u.save()
+                for group in Group.objects.filter(name=CONTENT_VIEWERS):
+                    u.groups.add(group)
+
+                # Log the user in
+                u = authenticate(
+                    username=u.username,
+                    password=password_form.cleaned_data['password']
+                )
+                login(request, u)
+                messages.success(request, "Welcome! Your account has been created.")
+
+                # Send some email notifications...
                 send_new_user_request_notification_to_managers(u)
+                send_new_user_welcome(u)
 
                 # Ping slack so this doesn't go unnoticed.
                 msg = (
@@ -47,7 +65,7 @@ def signup(request):
                     "Activate at: https://app.tndata.org/admin/auth/user/{id}/"
                 )
                 post_message("#tech", msg.format(user=u, id=u.id))
-                return redirect(reverse("utils:signup") + "?c=1")
+                return redirect('/')
         else:
             messages.error(request, "We could not process your request. "
                                     "Please see the details, below.")

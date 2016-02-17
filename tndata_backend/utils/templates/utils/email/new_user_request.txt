@@ -1,17 +1,16 @@
 
-We have a request for a new user account from the following:
+The following user just signed up:
 
 Name: {{ user.get_full_name }}
 Email: {{ user.email }}
 Joined: {{ user.date_joined }}
 
-To activate this account, visit the following link and check the "Active" option:
+Their account is active and they've been added to the "Content Viewers" group;
+To change their account or give them additional permissions, visit the following
+link:
 
 {{ cta_text }}: {{ cta_link }}
 
-
-To allow users to create content, give them the 'Content Author' and
-'Content Viewer' permissions.
 
 See this screenshot for reference: http://i.imgur.com/8LUGOky.jpg
 

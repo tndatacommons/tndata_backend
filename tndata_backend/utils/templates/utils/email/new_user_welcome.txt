@@ -1,0 +1,10 @@
+
+Welcome to app.tndata.org!
+
+You can now log in to your account, here:
+{{ cta_text }}: {{ cta_link }}
+
+
+If you have any questions or need help just reply to this email.
+
+

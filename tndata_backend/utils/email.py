@@ -42,11 +42,8 @@ def send_mass_html_mail(datatuple, fail_silently=False, auth_user=None,
 
 
 def send_new_user_request_notification_to_managers(user):
-    """When a user signs up, we require admin/manager intervention to activate
-    their account. This email sends managers that notification.
-
-    """
-    subject = "New User Request"
+    """When a user signs up, alert an admin/manager."""
+    subject = "New User Signup"
     ctx = {
         'user': user,
         'alert': subject,
@@ -55,4 +52,19 @@ def send_new_user_request_notification_to_managers(user):
     }
     message = render_to_string('utils/email/new_user_request.txt', ctx)
     html_message = render_to_string('utils/email/new_user_request.html', ctx)
+    return mail_managers(subject, message, html_message=html_message)
+
+
+
+def send_new_user_welcome(user):
+    """When a user signs up via the web app, send them a welcome email."""
+    subject = "Welcome to app.tndata.org"
+    ctx = {
+        'user': user,
+        'alert': subject,
+        'cta_link': 'https://app.tndata.org/',
+        'cta_text': 'Log In',
+    }
+    message = render_to_string('utils/email/new_user_welcome.txt', ctx)
+    html_message = render_to_string('utils/email/new_user_welcome.html', ctx)
     return mail_managers(subject, message, html_message=html_message)
