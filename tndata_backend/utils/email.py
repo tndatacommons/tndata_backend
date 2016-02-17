@@ -1,4 +1,5 @@
-from django.core.mail import get_connection, mail_managers
+from django.conf import settings
+from django.core.mail import get_connection, mail_managers, send_mail
 from django.core.mail.message import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
@@ -67,4 +68,10 @@ def send_new_user_welcome(user):
     }
     message = render_to_string('utils/email/new_user_welcome.txt', ctx)
     html_message = render_to_string('utils/email/new_user_welcome.html', ctx)
-    return mail_managers(subject, message, html_message=html_message)
+    return send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=html_message
+    )
