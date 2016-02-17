@@ -96,6 +96,19 @@ class TestGoalManager(TestCase):
         results = Goal.objects.published()
         self.assertEqual(list(results), [self.g2])
 
+    def test_published_with_multiple_categories(self):
+        """Test the case when a goal is part of a published Category AND
+        is also in a published Package (Category). The .pubished() method should
+        still return the goal.
+        """
+        # Create a goal that's in both a published package and category
+        goal = Goal.objects.create(title='Dual Goal', state='published')
+        goal.categories.add(self.published_category)
+        goal.categories.add(self.packaged_category)
+
+        # The goal should be in the set of published goals.
+        self.assertIn(goal, Goal.objects.published())
+
     def test_packages(self):
         """The packages method should only return packaged content.
         It should also accept queryest parameters."""

@@ -363,8 +363,13 @@ class GoalManager(WorkflowManager):
         """Returns Goals that are published and are contained within non-packaged
         categories (that are also published)."""
         goals = super().published()
-        goals = goals.filter(categories__state='published')
-        goals = goals.exclude(categories__packaged_content=True)
+        # We want to omit goals that are *only* in packages, but not those that
+        # might be in both public categories & packages; Therefore we need to
+        # use `categories__packaged_content=False` rather than .exclude(...)
+        goals = goals.filter(
+            categories__state='published',
+            categories__packaged_content=False
+        )
         return goals.distinct()
 
     def packages(self, *args, **kwargs):
