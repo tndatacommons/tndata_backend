@@ -3,9 +3,11 @@ Models for user-created, Custom Goals & Actions.
 
 """
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+
 
 from utils.user_utils import to_localtime, to_utc
 
@@ -177,10 +179,15 @@ class CustomAction(models.Model):
         """
         return -1
 
-    # TODO: Add a GenericRelation back to GCMMessage to do something like
-    # def queued_notifications(self):
-        # """Return a queryset of related GCMMessage objects. """
-        # self.gcmmessages.all()
+    def queued_notifications(self):
+        """Return a queryset of related GCMMessage objects. """
+        ct = ContentType.objects.get_by_natural_key('goals', 'customaction')
+        msgs = self.user.gcmmessage_set.filter(
+            content_type=ct,
+            object_id=self.id,
+        )
+        msgs = msgs.order_by('-deliver_on').distinct()
+        return msgs
 
     objects = CustomActionManager()
 
