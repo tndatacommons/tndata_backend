@@ -1381,13 +1381,15 @@ def debug_notifications(request):
 
     """
     User = get_user_model()
+    customactions = None
     useractions = None
-    completed = None
+    completed_useractions = None
+    completed_customactions = None
     progress = None
     next_user_action = None
     today = None
-    upcoming = []
-    all_useractions = []
+    upcoming_useractions = []
+    upcoming_customactions = []
     email = request.GET.get('email_address', None)
 
     if email is None:
@@ -1397,37 +1399,28 @@ def debug_notifications(request):
         try:
             user = User.objects.get(email__icontains=email)
             today = local_day_range(user)
-            useractions = user.useraction_set.filter(
-                Q(prev_trigger_date__range=today) |
-                Q(next_trigger_date__range=today)
-            ).order_by("next_trigger_date").distinct()
-
-            completed = UserCompletedAction.objects.filter(
+            useractions = user.useraction_set.all().order_by("next_trigger_date").distinct()
+            completed_useractions = UserCompletedAction.objects.filter(
                 user=user,
                 updated_on__range=today
             )
 
             # Custom Actions
-            customactions = user.customaction_set.filter(
-                Q(prev_trigger_date__range=today) |
-                Q(next_trigger_date__range=today)
-            ).order_by("next_trigger_date").distinct()
-            completed_custom = UserCompletedCustomAction.objects.filter(
+            customactions = user.customaction_set.all().order_by("next_trigger_date").distinct()
+            completed_customactions = UserCompletedCustomAction.objects.filter(
                 user=user,
                 updated_on__range=today
             )
 
             progress = user_feed.todays_progress(user)
             next_user_action = user_feed.next_user_action(user)
-            upcoming = user_feed.todays_actions(user)
+            upcoming_useractions = user_feed.todays_actions(user)
+            upcoming_customactions = user_feed.todays_customactions(user)
             for ua in useractions:
-                ua.upcoming = ua in upcoming
+                ua.upcoming = ua in upcoming_useractions
+            for ca in customactions:
+                ca.upcoming = ca in upcoming_customactions
 
-            # TODO: display custom actions
-            # TODO: chart daily progress values?
-
-            all_useractions = user.useraction_set.all()
-            all_useractions = all_useractions.order_by("next_trigger_date")
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
@@ -1435,14 +1428,14 @@ def debug_notifications(request):
         'form': form,
         'email': email,
         'useractions': useractions,
-        'completed': completed,
         'customactions': customactions,
-        'completed_custom': completed_custom,
+        'completed_useractions': completed_useractions,
+        'completed_customactions': completed_customactions,
         'progress': progress,
         'next_user_action': next_user_action,
-        'upcoming': upcoming,
+        'upcoming_useractions': upcoming_useractions,
+        'upcoming_customactions': upcoming_customactions,
         'today': today,
-        'all_useractions': all_useractions,
     }
     return render(request, 'goals/debug_notifications.html', context)
 
