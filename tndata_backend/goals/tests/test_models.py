@@ -1830,6 +1830,28 @@ class TestUserAction(TestCaseDates):
         default.delete()
         user.delete()
 
+    def test_queued_notifications(self):
+        """UserAction.queued_notifications should return the right thing"""
+        from notifications.models import GCMDevice, GCMMessage
+        GCMDevice.objects.get_or_create(user=self.user, registration_id="x")
+
+        # When there are no messages (should be the default)
+        self.assertEqual(list(self.ua.queued_notifications()), [])
+
+        # When there is a message
+        # create(self, user, title, message, deliver_on, obj=None, content_type=None):
+        msg = GCMMessage.objects.create(
+            self.user,
+            'test title',
+            'test message',
+            timezone.now(),
+            obj=self.action,
+        )
+        self.assertEqual(self.ua.queued_notifications().count(), 1)
+
+        # Clean up
+        msg.delete()
+
 
 class TestUserCompletedAction(TestCase):
     """Tests for the `UserCompletedAction` model."""
@@ -2363,6 +2385,28 @@ class TestCustomAction(TestCase):
         customaction.save()
         self.assertEqual(customaction.title_slug, "new-cg")
         customaction.delete()  # Clean up.
+
+    def test_queued_notifications(self):
+        """CustomAction.queued_notifications should return the right thing"""
+        from notifications.models import GCMDevice, GCMMessage
+        GCMDevice.objects.get_or_create(user=self.user, registration_id="x")
+
+        # When there are no messages (should be the default)
+        self.assertEqual(list(self.customaction.queued_notifications()), [])
+
+        # When there is a message
+        # create(self, user, title, message, deliver_on, obj=None, content_type=None):
+        msg = GCMMessage.objects.create(
+            self.user,
+            'test title',
+            'test message',
+            timezone.now(),
+            obj=self.customaction,
+        )
+        self.assertEqual(self.customaction.queued_notifications().count(), 1)
+
+        # clean up
+        msg.delete()
 
     # TODO: test trigger-related stuff
 
