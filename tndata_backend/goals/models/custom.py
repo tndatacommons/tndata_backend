@@ -177,6 +177,11 @@ class CustomAction(models.Model):
         """
         return -1
 
+    # TODO: Add a GenericRelation back to GCMMessage to do something like
+    # def queued_notifications(self):
+        # """Return a queryset of related GCMMessage objects. """
+        # self.gcmmessages.all()
+
     objects = CustomActionManager()
 
 
