@@ -3,9 +3,9 @@
 {% block title %}{{ title }} | {{ site_title|default:_('Admin') }}{% endblock %}
 
 {% block branding %}
-<h1 id="site-name"{% if staging %} style="background-color:#7d4700;padding:.5em 3em;box-shadow: 10px 5px 26px -9px #000000;"{% endif %}>
+<h1 id="site-name"{% if staging or debug %} style="background-color:{% if debug %}#7d0000{% else %}#7d4700{% endif %};padding:.5em 3em;box-shadow: 10px 5px 26px -9px #000000;"{% endif %}>
   <a href="{% url 'admin:index' %}">
-    {% if staging %}STAGING:{% else %}TNDATA:{% endif %}
+    {% if staging %}STAGING:{% elif debug %}DEBUG{% else %}TNDATA:{% endif %}
     {{ site_header|default:_('TN Data Admin') }}
   </a>
 </h1>
