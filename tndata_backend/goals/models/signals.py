@@ -319,4 +319,5 @@ def notify_for_new_package(sender, instance, created, **kwargs):
             message="Welcome to {0}".format(instance.category.title),
             deliver_on=timezone.now(),
             obj=instance,
+            priority=GCMMessage.HIGH
         )
