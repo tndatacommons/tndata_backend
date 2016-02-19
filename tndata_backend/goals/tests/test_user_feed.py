@@ -11,12 +11,15 @@ from .. models import (
     Action,
     Behavior,
     Category,
+    CustomAction,
+    CustomGoal,
     Goal,
     Trigger,
     UserAction,
     UserBehavior,
     UserCategory,
     UserCompletedAction,
+    UserCompletedCustomAction,
     UserGoal,
 )
 from .. import user_feed
@@ -396,6 +399,63 @@ class TestUserFeed(TestCase):
                 action=cls.action,
                 custom_trigger=cls.trigger
             )
+
+    def test__customaction_feedback(self):
+        """ensure the user_feed model has a `_customaction_feedback` function
+        that's used for calculating stats for a single CustomAction."""
+        dt = timezone.now()
+        goal = CustomGoal.objects.create(user=self.user, title="CG")
+        act = CustomAction.objects.create(
+            user=self.user,
+            customgoal=goal,
+            title="ACT",
+            notification_text="go do it"
+        )
+
+        # First, let's test then without any completion...
+        expected = {
+            'total': 0,
+            'completed': 0,
+            'percentage': 0,
+            'incomplete': 0,
+            'title': 'CG'
+        }
+        results = user_feed._customaction_feedback(act, dt)
+        self.assertDictEqual(results, expected)
+
+        # Now, let's complete it.
+        UserCompletedCustomAction.objects.create(
+            user=self.user,
+            customaction=act,
+            customgoal=goal,
+            state=UserCompletedAction.COMPLETED,
+        )
+        expected = {
+            'total': 1,
+            'completed': 1,
+            'percentage': 100,
+            'incomplete': 0,
+            'title': 'CG'
+        }
+        results = user_feed._customaction_feedback(act, dt)
+        self.assertDictEqual(results, expected)
+
+        # Clean up
+        act.delete()
+        goal.delete()
+
+    def test__useraction_feedback(self):
+        """ensure the user_feed model has a `_useraction_feedback` function
+        that's used for calculating stats for a single UserAction."""
+        expected = {
+            'total': 0,
+            'completed': 0,
+            'percentage': 0,
+            'incomplete': 0,
+            'title': 'test goal'
+        }
+        results = user_feed._useraction_feedback(self.ua, timezone.now())
+        self.assertDictEqual(results, expected)
 
     def test_action_feedback(self):
         # We have no UserCompletedAction objects, so this should be < 20%

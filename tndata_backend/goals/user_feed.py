@@ -27,7 +27,13 @@ from django.db.models import Q
 from django.utils import timezone
 from utils.user_utils import local_day_range
 
-from .models import Goal, UserCompletedAction, UserCompletedCustomAction
+from .models import (
+    CustomAction,
+    Goal,
+    UserAction,
+    UserCompletedAction,
+    UserCompletedCustomAction
+)
 
 
 # Some Cache keys.
@@ -35,9 +41,76 @@ TODAYS_ACTIONS = "todays_actions_{userid}"
 TODAYS_ACTIONS_TIMEOUT = 30
 
 
-def action_feedback(user, useraction, lookback=30):
+def _useraction_feedback(useraction, dt):
+    """Aggregate total, completed, and percetage values for the given
+    UserAction on the given date (dt).
+
+    Returns a dict of the form:
+
+        {
+            total: X,
+            completed: X,
+            percentage: X,
+            incomplete: X,
+            title: GOAL_TITLE,
+        }
+
+    """
+    qs = useraction.usercompletedaction_set.filter(updated_on__gt=dt)
+    total = qs.count()
+    completed = qs.filter(state="completed").count()
+    percentage = 0
+    if total > 0:
+        percentage = round((completed / total) * 100)
+
+    goal_title = "achieve my goal"
+    goal = useraction.get_primary_goal()
+    if goal:
+        goal_title = goal.title.lower()
+
+    return {
+        'total': total,
+        'completed': completed,
+        'percentage': percentage,
+        'incomplete': total - completed,
+        'title': goal_title,
+    }
+
+
+def _customaction_feedback(customaction, dt):
+    """Aggregate total, completed, and percetage values for the given
+    CustomAction on the given date (dt).
+
+    Returns a dict of the form:
+
+        {
+            total: X,
+            completed: X,
+            percentage: X,
+            incomplete: X,
+            title: GOAL_TITLE,
+        }
+
+    """
+    qs = customaction.usercompletedcustomaction_set.filter(updated_on__gte=dt)
+    total = qs.count()
+    completed = qs.filter(state="completed").count()
+    percentage = 0
+    if total > 0:
+        percentage = round((completed / total) * 100)
+
+    return {
+        'total': total,
+        'completed': completed,
+        'percentage': percentage,
+        'incomplete': total - completed,
+        'title': customaction.customgoal.title or "my goal",
+    }
+
+
+def action_feedback(user, obj, lookback=30):
     """This function assembles data for *feedback* on the user's upcoming
-    action. See: https://goo.gl/7UUjzq
+    action or custom action. See: https://goo.gl/7UUjzq
 
     This is essentially just a bit of encouragment for the user, but the content
     of that encouragement is based on their previous activity. Roughly:
@@ -55,7 +128,7 @@ def action_feedback(user, useraction, lookback=30):
     Parameters:
 
     * user - the user for which this data is assembled.
-    * useraction - the user's next action (a UserAction instance)
+    * obj - the user's next action (a UserAction or CustomAction instance)
     * lookback - number of days to look back for their completed history.
 
     Returns a dict of the form:
@@ -97,48 +170,35 @@ def action_feedback(user, useraction, lookback=30):
     # - icons indicate which icon in the app should be displayed:
     #   1: footsteps, 2: thumbs-up, 3: ribbon, 4: trophy (when all are completed)
 
-    # NOTE: UserAction's always get updated with the *next up* trigger date
+    # NOTE: UserActions always get updated with the *next up* trigger date
     # so we can't use them to calculate the above. For now, we'll just use
-    # the UserCompletedAction model, but that will only work if the user has
-    # the version of the app that records incomplete as well as completed actions.
-    dt = timezone.now() - timedelta(days=lookback)
-    qs = UserCompletedAction.objects.filter(
-        user=user,
-        useraction=useraction,
-        updated_on__gt=dt
-    )
-    total = qs.count()
-    completed = qs.filter(state="completed").count()
-    if total > 0:
-        percentage = round((completed / total) * 100)
-    else:
-        percentage = 0
-    goal = useraction.get_primary_goal()
-    if goal:
-        goal_title = goal.title.lower()
-    else:
-        goal_title = "achieve my goal"
-
+    # the UserCompletedAction model, but that will only work if the user has the
+    # version of the app that records incomplete as well as completed actions.
     resp = {
         'title': '',
         'subtitle': '',
-        'total': total,
-        'completed': completed,
-        'incomplete': total - completed,
-        'percentage': percentage,
+        'total': 0,
+        'completed': 0,
+        'incomplete': 0,
+        'percentage': 0,
         'icon': 1,
     }
+    dt = timezone.now() - timedelta(days=lookback)
+    if isinstance(obj, UserAction):
+        resp.update(_useraction_feedback(obj, dt))
+    elif isinstance(obj, CustomAction):
+        resp.update(_customaction_feedback(obj, dt))
 
-    if percentage <= 20:
-        title = feedback['low']['title'].format(goal=goal_title)
+    if resp['percentage'] <= 20:
+        title = feedback['low']['title'].format(goal=resp['title'])
         resp.update({
             'title': title,
             'subtitle': feedback['low']['subtitle'],
             'icon': feedback['low']['icon'],
         })
-    elif percentage >= 60:
+    elif resp['percentage'] >= 60:
         title = feedback['hi']['title'].format(
-            goal=goal_title, num=completed, total=total
+            goal=resp['title'], num=resp['completed'], total=resp['total']
         )
         resp.update({
             'title': title,
@@ -146,14 +206,15 @@ def action_feedback(user, useraction, lookback=30):
             'icon': feedback['hi']['icon'],
         })
     else:
-        title = feedback['med']['title'].format(goal=goal_title, num=completed)
+        title = feedback['med']['title'].format(
+            goal=resp['title'], num=resp['completed']
+        )
         resp.update({
             'title': title,
             'subtitle': feedback['med']['subtitle'],
             'icon': feedback['med']['icon'],
         })
 
-    # If wev'e
     if resp['incomplete'] == 0:
         resp['icon'] = 4
     return resp
