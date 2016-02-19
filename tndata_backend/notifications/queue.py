@@ -42,8 +42,9 @@ def enqueue(message, threshold=24):
     """
     job = None
 
-    # Only queue up messages for the next 24 hours
-    now = timezone.now()
+    # Only queue up messages for the next 24 hours (or messages that should
+    # have been sent within the past hour)
+    now = timezone.now() - timedelta(hours=1)
     threshold = now + timedelta(hours=threshold)
     is_upcoming = now < message.deliver_on and message.deliver_on < threshold
 
