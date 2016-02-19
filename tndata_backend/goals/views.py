@@ -1399,14 +1399,18 @@ def debug_notifications(request):
         try:
             user = User.objects.get(email__icontains=email)
             today = local_day_range(user)
-            useractions = user.useraction_set.all().order_by("next_trigger_date").distinct()
+            useractions = user.useraction_set.all()
+            useractions = useractions.order_by("next_trigger_date").distinct()
             completed_useractions = UserCompletedAction.objects.filter(
                 user=user,
                 updated_on__range=today
             )
 
             # Custom Actions
-            customactions = user.customaction_set.all().order_by("next_trigger_date").distinct()
+            customactions = user.customaction_set.all()
+            customactions = customactions.order_by("next_trigger_date")
+            customactions = customactions.distinct()
+
             completed_customactions = UserCompletedCustomAction.objects.filter(
                 user=user,
                 updated_on__range=today
