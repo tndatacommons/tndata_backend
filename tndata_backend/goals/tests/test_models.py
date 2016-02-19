@@ -1276,17 +1276,17 @@ class TestAction(TestCase):
         self.action.notification_text = "read this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "Remember to read this."
+            "I'll read this."
         )
         self.action.notification_text = "Read this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "Remember to read this."
+            "I'll read this."
         )
         self.action.notification_text = "READ this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "Remember to READ this."
+            "I'll READ this."
         )
 
 
