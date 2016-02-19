@@ -88,9 +88,27 @@ class TestGCMMessageManager(TestCase):
         self.assertIsNotNone(msg)
         self.assertEqual(GCMMessage.objects.filter(title="New").count(), 1)
 
+        # Default priority is LOW
+        self.assertEqual(msg.priority, GCMMessage.LOW)
+
         # Clean up
         msg.delete()
         other_device.delete()
+
+    def test_create_with_priority(self):
+        """Ensure a priority gets set appropriately."""
+        msg = GCMMessage.objects.create(
+            self.user,
+            "Hello",
+            "World",
+            datetime_utc(2000, 1, 1, 1, 0),
+            priority="high"
+        )
+        self.assertIsNotNone(msg)
+        self.assertEqual(msg.priority, GCMMessage.HIGH)
+
+        # Clean up
+        msg.delete()
 
     def test_create_fails_without_device(self):
         """Ensure a user without a registered device cannot create a message"""

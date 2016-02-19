@@ -52,7 +52,11 @@ class GCMMessageManager(models.Manager):
             criteria['content_type'] = ct
         return self.filter(**criteria).exists()
 
-    def create(self, user, title, message, deliver_on, obj=None, content_type=None):
+    def _valid_priorities(self):
+        return [self.model.LOW, self.model.MEDIUM, self.model.HIGH]
+
+    def create(self, user, title, message, deliver_on,
+               obj=None, content_type=None, priority='low'):
         """Creates an instance of a GCMMessage. Requires the following data:
 
         * user: an auth.User instance.
@@ -64,6 +68,8 @@ class GCMMessageManager(models.Manager):
 
         * obj: An object to which this message will be related.
         * content_type: A `ContentType` to which this message will be related.
+        * priority: The priority with which the GCMMessage will be created
+          (default is LOW)
 
         This method first checks for duplicates, and will not create a duplicate
         version of a message.
@@ -96,6 +102,9 @@ class GCMMessageManager(models.Manager):
                     'message': message,
                     'deliver_on': deliver_on,
                 }
+                if priority in self._valid_priorities():
+                    kwargs['priority'] = priority
+
                 if content_type is not None:
                     kwargs['content_type'] = content_type
                 if obj is not None:
