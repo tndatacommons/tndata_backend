@@ -235,6 +235,25 @@ class TestGCMMessage(TestCase):
             }
         )
 
+    def test_content_when_content_object_mapping_is_an_int(self):
+        """If the content_object.get_user_mapping returns an integer"""
+        # Add a mock 'get_user_mapping' to our content_object for this test...
+        self.msg.content_object.get_user_mapping = Mock(return_value=-1)
+        self.assertEqual(
+            self.msg.content,
+            {
+                "id": self.msg.id,
+                "title": "Test",
+                "message": "A test message",
+                "object_type": 'gcm device',
+                "object_id": self.device.id,
+                "user_mapping_id": -1,  # Mocked value
+                "production": not (settings.DEBUG or settings.STAGING),
+            }
+        )
+        # Remove the mocked method.
+        del self.msg.content_object.get_user_mapping
+
     def test_content_with_no_content_object(self):
         msg = GCMMessage.objects.create(
             self.user,

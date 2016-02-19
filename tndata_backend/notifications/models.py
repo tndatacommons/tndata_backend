@@ -264,9 +264,14 @@ class GCMMessage(models.Model):
             object_type = self.content_type.name.lower()
 
         user_mapping_id = None
-        if self.content_object and hasattr(self.content_object, "get_user_mapping"):
-            user_mapping = self.content_object.get_user_mapping(self.user)
-            user_mapping_id = user_mapping.id if user_mapping else None
+        has_get_user_mapping = hasattr(self.content_object, "get_user_mapping")
+        if self.content_object and has_get_user_mapping:
+            try:
+                user_mapping = self.content_object.get_user_mapping(self.user)
+                user_mapping_id = user_mapping.id if user_mapping else None
+            except AttributeError:
+                # The returned value may have been an int or None-type
+                user_mapping_id = user_mapping
 
         return self._checkin({
             "id": self.id,
