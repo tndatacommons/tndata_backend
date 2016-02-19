@@ -83,6 +83,13 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             # Filter by Goal.title_slug
             self.queryset = self.queryset.filter(goals__title_slug=goal)
 
+        # WE Want to exclude values from this endpoint that the user has already
+        # selected (if the user is authenticated AND we're hitting api v2)
+        user = self.request.user
+        if self.request.version == '2' and user.is_authenticated():
+            chosen = user.userbehavior_set.values_list('behavior__id', flat=True)
+            self.queryset = self.queryset.exclude(id__in=chosen)
+
         return self.queryset
 
 
@@ -122,6 +129,13 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(behavior__pk=behavior)
         elif behavior is not None:
             self.queryset = self.queryset.filter(behavior__title_slug=behavior)
+
+        # WE Want to exclude values from this endpoint that the user has already
+        # selected (if the user is authenticated AND we're hitting api v2)
+        user = self.request.user
+        if self.request.version == '2' and user.is_authenticated():
+            chosen = user.useraction_set.values_list('action__id', flat=True)
+            self.queryset = self.queryset.exclude(id__in=chosen)
 
         return self.queryset
 
