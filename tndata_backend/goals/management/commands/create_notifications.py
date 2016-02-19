@@ -48,7 +48,7 @@ class Command(BaseCommand):
                 logger.warning(msg)
                 self.stdout.write(msg)
 
-    def create_message(self, user, obj, title, message, delivery_date):
+    def create_message(self, user, obj, title, message, delivery_date, priority=None):
 
         if delivery_date is None:
             msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
@@ -70,7 +70,8 @@ class Command(BaseCommand):
             return None
 
         # kwargs to GCMMessage.objects.create
-        kwargs = {'obj': None, 'content_type': None}
+        # TODO: How to decide on message priority, if it's not already set?
+        kwargs = {'obj': None, 'content_type': None, 'priority': priority}
 
         # obj can be None, a model instance, or a ContentType
         if isinstance(obj, ContentType):
@@ -111,6 +112,7 @@ class Command(BaseCommand):
                     a.customgoal.title,
                     a.notification_text,
                     deliver_on,
+                    priority=GCMMessage.MEDIUM
                 )
 
     def schedule_action_notifications(self):
