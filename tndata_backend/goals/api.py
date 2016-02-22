@@ -1,6 +1,11 @@
+import waffle
+
 from datetime import timedelta
+
+from django.conf import settings as project_settings
 from django.db.models import Avg, Q
 from django.utils import timezone
+
 from drf_haystack.viewsets import HaystackViewSet
 from drf_haystack.filters import HaystackHighlightFilter
 from rest_framework import mixins, permissions, status, viewsets
@@ -8,8 +13,10 @@ from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
 from rest_framework.decorators import detail_route, list_route
+from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
+
 from utils.user_utils import local_day_range
 from utils.mixins import VersionedViewSetMixin
 
@@ -18,6 +25,34 @@ from . import settings
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
 from . utils import pop_first
+
+
+class PublicViewSetPagination(PageNumberPagination):
+    """This is a pagination class for publicly accessable, read-only viewsets
+    (e.g. the content library). It enables the following:
+
+    1. checks for a switch and then lowers the default page size
+    2. enables a client-specified page size using the `page_size` query param
+
+    """
+    page_size = 5  # XXX: Smaller than the globally-specified page size.
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+    def get_page_size(self, request):
+        if self.page_size_query_param:
+            try:
+                return _positive_int(
+                    request.query_params[self.page_size_query_param],
+                    strict=True,
+                    cutoff=self.max_page_size
+                )
+            except (KeyError, ValueError):
+                pass
+
+        if waffle.switch_is_active("small-api-paging"):
+            return self.page_size
+        return project_settings.REST_FRAMEWORK.get('PAGE_SIZE', 25)
 
 
 class IsOwner(permissions.BasePermission):
@@ -32,6 +67,7 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Category.objects.published()
     serializer_class_v1 = v1.CategorySerializer
     serializer_class_v2 = v2.CategorySerializer
+    pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
 
@@ -40,6 +76,7 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Goal.objects.published()
     serializer_class_v1 = v1.GoalSerializer
     serializer_class_v2 = v2.GoalSerializer
+    pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
@@ -55,6 +92,7 @@ class TriggerViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Trigger.objects.default()
     serializer_class_v1 = v1.TriggerSerializer
     serializer_class_v2 = v2.TriggerSerializer
+    pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
 
@@ -63,6 +101,7 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Behavior.objects.published()
     serializer_class_v1 = v1.BehaviorSerializer
     serializer_class_v2 = v2.BehaviorSerializer
+    pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
@@ -98,6 +137,7 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     queryset = models.Action.objects.published()
     serializer_class_v1 = v1.ActionSerializer
     serializer_class_v2 = v2.ActionSerializer
+    pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
     def get_queryset(self):
