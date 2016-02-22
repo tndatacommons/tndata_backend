@@ -393,6 +393,11 @@ class ObtainAuthorization(ObtainAuthToken):
             if serializer.is_valid(raise_exception=True):
                 user = serializer.validated_data['user']
                 token, created = Token.objects.get_or_create(user=user)
+
+                gender = user.userprofile.sexA
+                if gender:
+                    gender = gender.lower()
+
                 return Response({
                     'token': token.key,
                     'username': user.username,
@@ -403,6 +408,7 @@ class ObtainAuthorization(ObtainAuthToken):
                     'last_name': user.last_name,
                     'full_name': user.get_full_name(),
                     'email': user.email,
+                    'gender': gender,
                     'needs_onboarding': user.userprofile.needs_onboarding,
                     'object_type': 'user',
                 })
