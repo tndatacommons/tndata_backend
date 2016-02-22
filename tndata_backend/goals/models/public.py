@@ -711,8 +711,8 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     default_icon = "img/compass-grey.png"
 
     # String formatting patters for notifications
-    _notification_title = "To {}:"  # Fill with the primary goal.
-    _notification_text = "I'll {}"  # Fill with the notification_text
+    _notification_title = "To {}"  # Fill with the primary goal.
+    _notification_text = "I can {}"  # Fill with the notification_text
 
     # Data Fields
     title = models.CharField(
