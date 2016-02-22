@@ -23,6 +23,7 @@ This endpoint returns resources with the following fields.
       - `time`: Time at which the trigger should fire
       - `recurrences`: an RFC 2445 RRULE string (or null)
       - `recurrences_display`: a human-readable version of recurrences
+      - `disabled`: whether or not the trigger is disabled.
 
 * `editable`: A boolean that indicates whether or not a user
   should be able to customize the reminders for this action.
@@ -129,6 +130,8 @@ To do this, send a PUT request to the detail url
   should next fire. The date should be relative to the user's local time.
 * `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &amp;
   frequencies at which the reminder should occur.
+* `custom_trigger_disabled`: (optional) A `true` or `false` value; if `true`
+  the trigger will be disabled.
 
 ## Filtering
 

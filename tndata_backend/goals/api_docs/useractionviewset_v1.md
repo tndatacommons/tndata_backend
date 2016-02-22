@@ -79,6 +79,8 @@ with the following information:
   should next fire. The date should be relative to the user's local time.
 * `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &
   frequencies at which the reminder should occur.
+* `custom_trigger_disabled`: (optional) A `true` or `false` value; if `true`
+  the trigger will be disabled.
 
 ## Filtering
 
