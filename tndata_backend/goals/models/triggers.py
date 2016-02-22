@@ -78,6 +78,12 @@ class Trigger(models.Model):
         default=False,
         help_text="Should reminders stop after the action has been completed?"
     )
+    disabled = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="When disabled, a Trigger will stop generating new events."
+    )
+
     # Relative reminders examples:
     #
     # - 1 day after action selected
@@ -109,7 +115,7 @@ class Trigger(models.Model):
         return self.name if self.name else "Unnamed Trigger"
 
     class Meta:
-        ordering = ['name', 'id']
+        ordering = ['disabled', 'name', 'id']
         verbose_name = "Trigger"
         verbose_name_plural = "Triggers"
         permissions = (
@@ -239,7 +245,10 @@ class Trigger(models.Model):
         return alert_time
 
     def get_occurences(self, begin=None, days=30):
-        """Get some dates in this series of reminders."""
+        """Get some dates in this series of reminders. Returns a list of datetime objects"""
+        if self.disabled:
+            return []
+
         tz = self.get_tz()
         if begin is None:
             begin = self.get_alert_time(tz)  # "today's" alert time.
@@ -313,7 +322,7 @@ class Trigger(models.Model):
         user; otherwise, the date will be in UTC.
 
         """
-        if self._stopped_by_completion(user):
+        if self._stopped_by_completion(user) or self.disabled:
             return None
 
         tz = self.get_tz(user=user)
