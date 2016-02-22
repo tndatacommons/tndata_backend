@@ -1558,8 +1558,36 @@ class TestUserActionAPI(V2APITestCase):
         )
         self.assertEqual(ua.custom_trigger.time, time(9, 30))
         self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
+        self.assertFalse(ua.custom_trigger.disabled)
 
-    def test_put_useraction_custom_trigger_udpates(self):
+    def test_put_useraction_detail_disable_custom_trigger(self):
+        """PUT requests should be able to disable a custom trigger"""
+        url = self.get_url('useraction-detail', args=[self.ua.id])
+        payload = {
+            'custom_trigger_disabled': True,
+            'custom_trigger_date': '2222-12-25',
+            'custom_trigger_time': '9:30',
+            'custom_trigger_rrule': 'RRULE:FREQ=WEEKLY;BYDAY=MO',
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Test that the other trigger fields are unchanged.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        self.assertIsNotNone(ua.custom_trigger)
+        self.assertEqual(ua.get_custom_trigger_name(), ua.custom_trigger.name)
+        self.assertEqual(
+            ua.custom_trigger.recurrences_as_text(),
+            "weekly, each Monday"
+        )
+        self.assertEqual(ua.custom_trigger.time, time(9, 30))
+        self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
+        self.assertTrue(ua.custom_trigger.disabled)
+
+    def test_put_useraction_custom_trigger_updates(self):
         """When we have an existing custom trigger, putting new values should
         update it."""
 
@@ -1597,11 +1625,46 @@ class TestUserActionAPI(V2APITestCase):
         )
         self.assertEqual(ua.custom_trigger.time, time(9, 30))
         self.assertEqual(ua.custom_trigger.trigger_date, date(2222, 12, 25))
+        self.assertFalse(ua.custom_trigger.disabled)
 
         # clean up
         Trigger.objects.filter(id=custom_trigger.id).delete()
 
     def test_put_useraction_custom_trigger_disable(self):
+        """PUT requests can disable custom triggers."""
+        # Create a Custom trigger for our UserAction
+        custom_trigger = Trigger.objects.create_for_user(
+            user=self.ua.user,
+            name="custom trigger for useraction-{0}".format(self.ua.id),
+            time=time(11, 30),
+            date=date(2000, 1, 2),
+            rrule="RRULE:FREQ=DAILY",
+            disabled=False
+        )
+        self.ua.custom_trigger = custom_trigger
+        self.ua.save()
+
+        # Ensure the trigger is enabled by default.
+        self.assertFalse(self.ua.custom_trigger.disabled)
+
+        url = self.get_url('useraction-detail', args=[self.ua.id])
+        payload = {
+            'custom_trigger_disabled': True
+        }
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify that the Trigger got updated.
+        ua = UserAction.objects.get(pk=self.ua.id)
+        self.assertTrue(ua.custom_trigger.disabled)
+
+        # clean up
+        Trigger.objects.filter(id=ua.custom_trigger.id).delete()
+
+    def test_put_useraction_empty_custom_trigger_disable(self):
         """When we have an existing custom trigger, PUTing blank values for the
         trigger details should disable it."""
 

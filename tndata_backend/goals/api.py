@@ -508,7 +508,25 @@ class UserActionViewSet(VersionedViewSetMixin,
             headers=headers
         )
 
-    def _include_trigger(self, request, trigger_rrule, trigger_time, trigger_date):
+    def _toggle_custom_trigger(self, request, disabled):
+        """Enables or Disables the custom trigger. NOTE: This *only* works
+        on a custom trigger (not a default trigger). """
+        if isinstance(disabled, list) and len(disabled) > 0:
+            disabled = disabled[0]
+
+        ua = self.get_object()
+        request.data['user'] = ua.user.id
+        request.data['action'] = ua.action.id
+        try:
+            # Attempt disabling the trigger
+            ua.custom_trigger.disabled = bool(disabled)
+            ua.custom_trigger.save()
+        except AttributeError:
+            pass  # This object didn't have a custom trigger
+        return request
+
+    def _include_trigger(self, request, trigger_rrule, trigger_time,
+                         trigger_date, disabled=None):
         """Includes a Trigger object into the request's payload; That means,
         if we're updating a UserAction, but the Custom Trigger is getting
         created or updated, we'll make that change, here, then include the
@@ -531,6 +549,8 @@ class UserActionViewSet(VersionedViewSetMixin,
             trigger_time = trigger_time[0]
         if isinstance(trigger_date, list) and len(trigger_date) > 0:
             trigger_date = trigger_date[0]
+        if disabled is not None and isinstance(disabled, list):
+            disabled = disabled[0]
 
         ua = self.get_object()
         request.data['user'] = ua.user.id
@@ -548,12 +568,15 @@ class UserActionViewSet(VersionedViewSetMixin,
             'time': trigger_time,
             'name': tname,
             'rrule': trigger_rrule,
-            'date': trigger_date
+            'date': trigger_date,
+            'disabled': bool(disabled)
         }
         trigger_serializer = v1.CustomTriggerSerializer(
             instance=trigger,
             data=trigger_data
         )
+
+        # Create/Update the custom trigger object.
         if trigger_serializer.is_valid(raise_exception=True):
             trigger = trigger_serializer.save()
         if hasattr(ua, 'custom_trigger'):
@@ -572,21 +595,30 @@ class UserActionViewSet(VersionedViewSetMixin,
         )
 
     def update(self, request, *args, **kwargs):
-        """Allow setting/creating a custom trigger using only two pieces of
+        """Allow setting/creating a custom trigger using the following
         information:
 
         * custom_trigger_rrule
         * custom_trigger_time
         * custom_trigger_date
+        * custom_trigger_disabled (optional)
 
         """
+        disabled = request.data.pop('custom_trigger_disabled', None)
+
+        # Update the custom trigger date/time/recurrence
         if self._has_custom_trigger_params(request.data.keys()):
             request = self._include_trigger(
                 request,
                 trigger_rrule=request.data.pop("custom_trigger_rrule", None),
                 trigger_time=request.data.pop("custom_trigger_time", None),
-                trigger_date=request.data.pop("custom_trigger_date", None)
+                trigger_date=request.data.pop("custom_trigger_date", None),
+                disabled=disabled
             )
+        elif disabled is not None:
+            # Enable/Disable the custom trigger
+            request = self._toggle_custom_trigger(request, disabled)
+
         result = super(UserActionViewSet, self).update(request, *args, **kwargs)
         return result
 
