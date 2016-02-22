@@ -394,7 +394,7 @@ class ObtainAuthorization(ObtainAuthToken):
                 user = serializer.validated_data['user']
                 token, created = Token.objects.get_or_create(user=user)
 
-                gender = user.userprofile.sexA
+                gender = user.userprofile.sex
                 if gender:
                     gender = gender.lower()
 
