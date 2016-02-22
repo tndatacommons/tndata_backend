@@ -301,7 +301,8 @@ class TriggerManager(models.Manager):
         """
         return self.get_queryset().filter(user=user)
 
-    def create_for_user(self, user, name, time, date, rrule, obj=None):
+    def create_for_user(self, user, name, time, date, rrule,
+                        obj=None, disabled=False):
         """Creates a time-type trigger based on the given RRule data."""
         # Ensure that we associate any new Triggers with a related object
         # (e.g. UserAction.custom_trigger?)
@@ -312,6 +313,7 @@ class TriggerManager(models.Manager):
             time=time,
             trigger_date=date,
             recurrences=rrule,
+            disabled=disabled,
         )
 
         if obj is not None and hasattr(obj, 'custom_trigger'):
