@@ -118,7 +118,7 @@ class TriggerSerializer(ObjectTypeModelSerializer):
         model = Trigger
         fields = (
             'id', 'name', 'time', 'trigger_date', 'recurrences',
-            'recurrences_display', 'next', 'object_type',
+            'recurrences_display', 'disabled', 'next', 'object_type',
         )
         read_only_fields = ("id", "next")
 
@@ -144,6 +144,7 @@ class CustomTriggerSerializer(serializers.Serializer):
       begin to fire. (e.g. 1 week after selection). Must be an integer value.
     * relative_units: a string representing a unit of time. Must be one of:
       'days', 'weeks', 'months', 'years'
+    * disabled: whether or not the trigger has been disabled
 
     Calling this serializer's `save` method will either update or create
     a `Trigger` instance.
@@ -167,6 +168,7 @@ class CustomTriggerSerializer(serializers.Serializer):
     stop_on_complete = serializers.BooleanField(default=False)
     relative_value = serializers.IntegerField(default=0)
     relative_units = serializers.CharField(required=False)
+    disabled = serializers.BooleanField(default=False)
 
     def is_valid(self, *args, **kwargs):
         """Ensure that the user for the given user_id actually exists."""
@@ -188,7 +190,8 @@ class CustomTriggerSerializer(serializers.Serializer):
             name=validated_data['name'],
             time=validated_data.get('time'),
             date=validated_data.get('date'),
-            rrule=validated_data.get('rrule')
+            rrule=validated_data.get('rrule'),
+            disabled=validated_data.get('disabled', False)
         )
 
     def update(self, instance, validated_data):
@@ -198,6 +201,9 @@ class CustomTriggerSerializer(serializers.Serializer):
         )
         instance.recurrences = self.validated_data.get(
             'rrule', instance.recurrences
+        )
+        instance.disabled = self.validated_data.get(
+            'disabled', instance.disabled
         )
         instance.save()
         return instance

@@ -101,6 +101,7 @@ class CustomTriggerField(serializers.RelatedField):
             'stop_on_complete': value.stop_on_complete,
             'relative_value': value.relative_value,
             'relative_units': value.relative_units,
+            'disabled': value.disabled,
         }
 
 
@@ -253,6 +254,7 @@ class SimpleTriggerField(serializers.RelatedField):
             'stop_on_complete': value.stop_on_complete,
             'relative_value': value.relative_value,
             'relative_units': value.relative_units,
+            'disabled': value.disabled,
         }
 
 
