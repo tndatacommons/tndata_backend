@@ -380,6 +380,11 @@ class TestTrigger(TestCase):
             # No date or time should return None
             self.assertIsNone(Trigger().get_alert_time())
 
+    def test_get_occurences_when_disabled(self):
+        trigger = mommy.make(Trigger, disabled=True)
+        self.assertEqual(trigger.get_occurences(), [])
+        trigger.delete()
+
     def test__stopped_by_completion__default_trigger(self):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
@@ -445,6 +450,16 @@ class TestTrigger(TestCase):
             state='completed'
         )
         self.assertTrue(trigger._stopped_by_completion(user))
+
+    def test_next_when_disabled(self):
+        trigger = mommy.make(
+            Trigger,
+            name="A disabled Trigger",
+            time=time(12, 34),
+            recurrences="RRULE:FREQ=DAILY",
+            disabled=True
+        )
+        self.assertIsNone(trigger.next())
 
     def test_next_when_no_time_or_date(self):
         """Ensure that next none when there's no time, recurrence, or date"""
@@ -1259,34 +1274,34 @@ class TestAction(TestCase):
         goal = Mock(title='Pass tests')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "To pass tests:"
+            "To pass tests"
         )
         goal = Mock(title='PASS tests')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "To PASS tests:"
+            "To PASS tests"
         )
         goal = Mock(title='WE are fine')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "To WE are fine:"
+            "To WE are fine"
         )
 
     def test_get_notification_text(self):
         self.action.notification_text = "read this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "I'll read this."
+            "I can read this."
         )
         self.action.notification_text = "Read this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "I'll read this."
+            "I can read this."
         )
         self.action.notification_text = "READ this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "I'll READ this."
+            "I can READ this."
         )
 
 
