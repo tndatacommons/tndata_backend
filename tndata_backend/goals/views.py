@@ -8,7 +8,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Avg, Count, Q, Min, Max
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import (
+    HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
+    HttpResponseNotFound, JsonResponse
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import timesince
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
@@ -1776,3 +1779,30 @@ def report_triggers(request):
         'custom_recurrences': custom_recurrences.most_common(20),
     }
     return render(request, 'goals/report_triggers.html', context)
+
+
+def fake_api(request, option=None):
+    """Return a 'fake' api response. This is a view that returns fake/dummy
+    data for api endpoints that we may have removed; This will prevent an
+    older version of the app from crashing when it tries to hit an endpoint.
+    """
+    if option in ['goalprogress', 'behaviorprogress']:
+        # /api/users/behaviors/progress/
+        # /api/users/goals/progress/
+        return JsonResponse({
+            "count": 0,
+            "next": None,
+            "previous": None,
+            "results": []
+        })
+
+    elif option == 'goalprogressaverage':
+        # /api/api/users/goals/progress/average/
+        return JsonResponse({
+            "text": "Great job! You're doing well!",
+            "daily_checkin_avg": 0,
+            "weekly_checkin_avg": 0,
+            "better": True
+        })
+
+    return HttpResponseNotFound()

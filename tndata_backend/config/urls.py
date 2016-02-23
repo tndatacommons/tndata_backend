@@ -26,6 +26,7 @@ from goals.api import (
     UserCategoryViewSet,
     UserGoalViewSet,
 )
+from goals import views as goal_views
 from notifications.api import GCMDeviceViewSet, GCMMessageViewSet
 from survey.api import (
     BinaryQuestionViewSet,
@@ -135,6 +136,24 @@ urlpatterns = [
     url(r'^api/feed/upcoming/$', feed_upcoming_actions_api, name="feed-upcoming"),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
+    url(
+        r'^api/users/behaviors/progress/$',
+        goal_views.fake_api,
+        kwargs={'option': 'behaviorprogress'},
+        name="goals:fake-api"
+    ),
+    url(
+        r'^api/users/goals/progress/average/$',
+        goal_views.fake_api,
+        kwargs={'option': 'goalprogress'},
+        name="goals:fake-api"
+    ),
+    url(
+        r'^api/users/goals/progress/$',
+        goal_views.fake_api,
+        kwargs={'option': 'goalprogressaverage'},
+        name="goals:fake-api"
+    ),
     url(r'^api/', include(router.urls)),
     url(
         r'^api/auth/',
