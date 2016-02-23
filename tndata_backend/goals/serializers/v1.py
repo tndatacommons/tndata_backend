@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth import get_user_model
 from drf_haystack.serializers import HaystackSerializer
 from rest_framework import serializers
@@ -40,7 +41,10 @@ class SearchSerializer(HaystackSerializer):
     class Meta:
         index_classes = [GoalIndex]
         # Fields that are *on* the search index, only.
-        fields = ['title', 'description', 'url', 'updated_on', 'text']
+        fields = [
+            'title', 'description', 'url', 'updated_on', 'text',
+            'serialized_object'
+        ]
         field_aliases = {'q': 'text'}
 
     def to_representation(self, instance):
@@ -53,6 +57,10 @@ class SearchSerializer(HaystackSerializer):
         if 'highlighted' in result:
             highlighted = result['highlighted']
             result['highlighted'] = highlighted.strip().replace("\n\n", "\n")
+
+        # Check to see if we have a serialized object in the search result
+        if 'serialized_object' in result:
+            result['serialized_object'] = json.loads(result['serialized_object'])
         return result
 
 

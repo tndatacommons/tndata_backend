@@ -1,3 +1,4 @@
+import json
 from haystack import indexes
 from goals.models import Action, Behavior, Category, Goal
 
@@ -27,6 +28,13 @@ class GoalIndex(indexes.SearchIndex, indexes.Indexable):
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
     updated_on = indexes.DateTimeField(model_attr='updated_on')
+    serialized_object = indexes.CharField()  # Serialized object details.
+
+    def prepare_serialized_object(self, obj):
+        # This sucks; serializers import models, as do indexes, but serializers
+        # also import the index, so we've got a circular dependency.
+        from goals.serializers import v2
+        return json.dumps(v2.GoalSerializer(obj).data)
 
     def get_model(self):
         return Goal
@@ -43,6 +51,13 @@ class CategoryIndex(indexes.SearchIndex, indexes.Indexable):
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
     updated_on = indexes.DateTimeField(model_attr='updated_on')
+    serialized_object = indexes.CharField()  # Serialized object details.
+
+    def prepare_serialized_object(self, obj):
+        # This sucks; serializers import models, as do indexes, but serializers
+        # also import the index, so we've got a circular dependency.
+        from goals.serializers import v2
+        return json.dumps(v2.CategorySerializer(obj).data)
 
     def get_model(self):
         return Category
@@ -59,6 +74,13 @@ class BehaviorIndex(indexes.SearchIndex, indexes.Indexable):
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
     updated_on = indexes.DateTimeField(model_attr='updated_on')
+    serialized_object = indexes.CharField()  # Serialized object details.
+
+    def prepare_serialized_object(self, obj):
+        # This sucks; serializers import models, as do indexes, but serializers
+        # also import the index, so we've got a circular dependency.
+        from goals.serializers import v2
+        return json.dumps(v2.BehaviorSerializer(obj).data)
 
     def get_model(self):
         return Behavior
@@ -75,6 +97,13 @@ class ActionIndex(indexes.SearchIndex, indexes.Indexable):
     description = indexes.CharField(model_attr='description')
     url = indexes.CharField(model_attr='get_absolute_url')
     updated_on = indexes.DateTimeField(model_attr='updated_on')
+    serialized_object = indexes.CharField()  # Serialized object details.
+
+    def prepare_serialized_object(self, obj):
+        # This sucks; serializers import models, as do indexes, but serializers
+        # also import the index, so we've got a circular dependency.
+        from goals.serializers import v2
+        return json.dumps(v2.ActionSerializer(obj).data)
 
     def get_model(self):
         return Action
