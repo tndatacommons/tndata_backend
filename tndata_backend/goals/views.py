@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Count, Q, Min, Max
+from django.db.models import Count, Q
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseNotFound, JsonResponse
@@ -878,11 +878,9 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         user_goals = data['user_goals']
         user_behaviors = data['user_behaviors']
         user_actions = data['user_actions']
+
         ucas = data['ucas']
-
-        field = 'reported_on'
         ucas_count = ucas.count()
-
         ucas_completed = ucas.filter(state=UserCompletedAction.COMPLETED).count()
         ucas_dismissed = ucas.filter(state=UserCompletedAction.DISMISSED).count()
         ucas_snoozed = ucas.filter(state=UserCompletedAction.SNOOZED).count()
@@ -893,9 +891,6 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         context['user_goals'] = user_goals
         context['user_behaviors'] = user_behaviors
         context['user_actions'] = user_actions
-        context['cp_dates'] = cp_dates
-        context['gp_dates'] = gp_dates
-        context['bp_dates'] = bp_dates
         context['ucas_count'] = ucas_count
         context['ucas_completed'] = ucas_completed
         context['ucas_dismissed'] = ucas_dismissed

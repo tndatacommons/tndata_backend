@@ -36,7 +36,6 @@ class TestUserProgress(TestCase):
     """This test case sets up data for the user, and then proceeds to verify
     their progress info. It focuses on the following functions:
 
-    * it runs the `aggregate_progress` management command
     * user_feed.action_feedback - Today's feedback data for an action.
     * user_feed.todays_actions_progress - The progress stats for today's
       scheduled actions.
@@ -126,19 +125,6 @@ class TestUserProgress(TestCase):
                 mock_timezone.now.return_value = dt
                 call_command('refresh_useractions')
 
-    @patch('sys.stderr')
-    @patch('sys.stdout')
-    def _run_aggregate_progress(self, mock_stderr, mock_stdout, dt=None):
-        """Calls the `aggregate_progress` management command`."""
-        timezone_path = 'goals.management.commands.aggregate_progress.timezone'
-        log_path = "goals.management.commands.aggregate_progress.logger"
-        with patch(log_path):
-            with patch(timezone_path) as mock_timezone:
-                if dt is None:
-                    dt = self.dt  # today, 9am
-                mock_timezone.now.return_value = dt
-                call_command('aggregate_progress')
-
     def test_action_feedback_zero_percent(self):
         # Create some UserCompletedAction history for a single Action (10 days)
         with patch('goals.models.progress.timezone.now') as mock_now:
@@ -153,7 +139,6 @@ class TestUserProgress(TestCase):
                 mock_now.return_value = self.dt - timedelta(days=d)
                 UserCompletedAction.objects.create(**params)
 
-        self._run_aggregate_progress()
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
             'title': "I've done some work to gtitle this month!",
@@ -184,7 +169,6 @@ class TestUserProgress(TestCase):
                 mock_now.return_value = self.dt - timedelta(days=d)
                 UserCompletedAction.objects.create(**params)
 
-        self._run_aggregate_progress()
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
             'title': "I've done 5 activities to gtitle this month!",
@@ -213,7 +197,6 @@ class TestUserProgress(TestCase):
                 mock_now.return_value = self.dt - timedelta(days=d)
                 UserCompletedAction.objects.create(**params)
 
-        self._run_aggregate_progress()
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
             'title': "I've done 6 out of 10 activities to gtitle this month!",
@@ -257,7 +240,6 @@ class TestUserProgress(TestCase):
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
-            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
@@ -276,7 +258,6 @@ class TestUserProgress(TestCase):
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
-            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
@@ -295,7 +276,6 @@ class TestUserProgress(TestCase):
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
-            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
@@ -315,7 +295,6 @@ class TestUserProgress(TestCase):
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
-            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 2,
@@ -335,7 +314,6 @@ class TestUserProgress(TestCase):
             mock_tz.utc = timezone.utc
 
             self._run_refresh_useractions(dt=now)
-            self._run_aggregate_progress(dt=now)
             progress = user_feed.todays_actions_progress(self.user)
             expected = {
                 'completed': 0,

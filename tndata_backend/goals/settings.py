@@ -5,10 +5,6 @@ Custom settings for the Goals app.
 from django.conf import settings as default_settings
 
 
-# Feedback text for daily check-ins
-CHECKIN_BETTER = "Great job! You're doing well!"
-CHECKIN_WORSE = "Keep it up! You can reach your goals if you try."
-
 # We should always have a default Trigger for all Behaviors.
 # By convention, it's name is 'Default Behavior Reminder', but this can
 # be configured with the following setting.
