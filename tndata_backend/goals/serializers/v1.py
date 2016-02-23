@@ -7,12 +7,10 @@ from utils.serializers import ObjectTypeModelSerializer
 from ..models import (
     Action,
     Behavior,
-    BehaviorProgress,
     Category,
     CustomGoal,
     CustomAction,
     Goal,
-    GoalProgress,
     PackageEnrollment,
     Trigger,
     UserAction,
@@ -240,37 +238,6 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
         return obj.action_set.filter(state="published").count()
 
 
-class BehaviorProgressSerializer(ObjectTypeModelSerializer):
-    """A Serializer for `BehaviorProgress`."""
-
-    class Meta:
-        model = BehaviorProgress
-        fields = (
-            'id', 'user', 'user_behavior', 'status', 'status_display',
-            'daily_actions_total', 'daily_actions_completed',
-            'daily_action_progress', 'daily_action_progress_percent',
-            'reported_on', 'object_type',
-        )
-
-
-class GoalProgressSerializer(ObjectTypeModelSerializer):
-    """A Serializer for `GoalProgress`."""
-
-    class Meta:
-        model = GoalProgress
-        fields = (
-            'id', 'user', 'goal', 'usergoal',
-            'current_score', 'current_total', 'max_total',
-            'daily_checkin', 'weekly_checkin', 'monthly_checkin',
-            'daily_actions_total', 'daily_actions_completed',
-            'daily_action_progress', 'daily_action_progress_percent',
-            'weekly_actions_total', 'weekly_actions_completed',
-            'weekly_action_progress', 'weekly_action_progress_percent',
-            'actions_total', 'actions_completed', 'action_progress',
-            'action_progress_percent', 'reported_on',
-        )
-
-
 class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
@@ -305,7 +272,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         read_only=True,
     )
     goal = SimpleGoalField(queryset=Goal.objects.none())
-    goal_progress = GoalProgressSerializer(read_only=True)
     custom_triggers_allowed = serializers.ReadOnlyField()
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_category = SimpleCategoryField(
@@ -375,7 +341,6 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
         read_only=True,
     )
     behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
-    behavior_progress = BehaviorProgressSerializer(read_only=True)
     custom_trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False

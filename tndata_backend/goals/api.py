@@ -1,9 +1,7 @@
 import waffle
 
-from datetime import timedelta
-
 from django.conf import settings as project_settings
-from django.db.models import Avg, Q
+from django.db.models import Q
 from django.utils import timezone
 
 from drf_haystack.viewsets import HaystackViewSet
@@ -12,7 +10,7 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import detail_route
 from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
@@ -21,7 +19,6 @@ from utils.user_utils import local_day_range
 from utils.mixins import VersionedViewSetMixin
 
 from . import models
-from . import settings
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
 from . utils import pop_first
@@ -746,233 +743,6 @@ class UserCategoryViewSet(VersionedViewSetMixin,
             # We're creating a single items.
             request.data['user'] = request.user.id
         return super(UserCategoryViewSet, self).create(request, *args, **kwargs)
-
-
-class GoalProgressViewSet(VersionedViewSetMixin,
-                          mixins.CreateModelMixin,
-                          mixins.ListModelMixin,
-                          mixins.RetrieveModelMixin,
-                          mixins.UpdateModelMixin,
-                          viewsets.GenericViewSet):
-    """ViewSet for GoalProgress. See the api_docs/ for more info"""
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.GoalProgress.objects.all()
-    serializer_class_v1 = v1.GoalProgressSerializer
-    serializer_class_v2 = v2.GoalProgressSerializer
-    docstring_prefix = "goals/api_docs"
-    permission_classes = [IsOwner]
-
-    def get_queryset(self):
-        return self.queryset.filter(user__id=self.request.user.id)
-
-    def _parse_request_data(self, request):
-        """This method does a few things to modify any request data:
-
-        - ensure we only create objects for the authenticated user
-        - add the id of the GoalProgress if we already have one for today
-        - if a Goal id is submitted, try to include the UserGoal id
-
-        """
-        if not request.user.is_authenticated():
-            return request
-
-        # Set the authenticated user's ID
-        request.data['user'] = request.user.id
-
-        if request.method == "POST":
-            # If a goal is provided, attempt to retrieve the UserGoal object
-            if 'goal' in request.data and 'usergoal' not in request.data:
-                try:
-                    goal = request.data.get('goal', [])
-                    request.data['usergoal'] = models.UserGoal.objects.filter(
-                        user=request.user,
-                        goal__id=goal
-                    ).values_list('id', flat=True)[0]
-                except (models.UserGoal.DoesNotExist, IndexError):
-                    pass  # Creating will fail
-
-            # If we already have a GoalProgress for "today", include its ID
-            try:
-                today = local_day_range(self.request.user)
-                params = {
-                    'user': request.user.id,
-                    'reported_on__range': today,
-                }
-                if 'usergoal' in request.data:
-                    params['usergoal'] = request.data['usergoal']
-                if 'goal' in request.data:
-                    params['goal'] = request.data['goal']
-                qs = models.GoalProgress.objects.filter(**params)
-                request.data['id'] = qs.latest().id
-            except models.GoalProgress.DoesNotExist:
-                pass
-        return request
-
-    def update(self, request, *args, **kwargs):
-        request = self._parse_request_data(request)
-        metric('updated-goal-progress', category="User Interactions")
-        return super().update(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        request = self._parse_request_data(request)
-
-        # If we've got a GoalProgress ID, we need to update instead of create
-        if 'id' in request.data:
-            gp = models.GoalProgress.objects.get(id=request.data['id'])
-            gp.daily_checkin = request.data['daily_checkin']
-            gp.save()
-            serializer_class = self.get_serializer_class()
-            data = serializer_class(gp).data
-            return Response(data=data, status=status.HTTP_200_OK)
-        metric('created-goal-progress', category="User Interactions")
-        return super().create(request, *args, **kwargs)
-
-    @list_route(permission_classes=[IsOwner], url_path='average')
-    def average(self, request, pk=None):
-        """Returns some average progress values for the user + some feedback
-        text comparing any given `current` value with the daily average.
-
-        Accepts a GET parameter for `current`: The user's current daily
-        checking average (i.e. the average value for all goals that the user
-        is currently checking in.)
-
-        Returns:
-
-        * `daily_checkin_avg` - Average of _all_ GoalProgress.daily_checkin
-          values for the user for _today_.
-        * `weekly_checkin_avg` - Average GoalProgress.daily_checkin values over
-          the past 7 days.
-        * `better`: True if current is > daily_checkin_avg, False otherwise.
-        * `text`: Some display text based on the value of `better`.
-
-        """
-        if not request.user.is_authenticated():
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            user = request.user
-            today = local_day_range(self.request.user)
-            week_threshold = timezone.now() - timedelta(days=7)
-            current = int(request.GET.get('current', 0))
-
-            # Average for Today's progress; all goals.
-            daily = models.GoalProgress.objects.filter(
-                daily_checkin__gt=0,
-                reported_on__range=today,
-                user=user
-            ).aggregate(Avg('daily_checkin'))
-            daily = round((daily.get('daily_checkin__avg', 0) or 0), 2)
-
-            # Average of daily checkins for all goals this week
-            weekly = models.GoalProgress.objects.filter(
-                daily_checkin__gt=0,
-                reported_on__gte=week_threshold,
-                user=user
-            ).aggregate(Avg('daily_checkin'))
-            weekly = round((weekly.get('daily_checkin__avg', 0) or 0), 2)
-
-            better = current >= daily
-            if better:
-                text = settings.CHECKIN_BETTER
-            else:
-                text = settings.CHECKIN_WORSE
-            data = {
-                'daily_checkin_avg': daily,
-                'weekly_checkin_avg': weekly,
-                'better': better,
-                'text': text,
-            }
-            status_code = status.HTTP_200_OK
-            return Response(data=data, status=status_code)
-        except Exception as e:
-            return Response(
-                data={'error': "{0}".format(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-
-class BehaviorProgressViewSet(VersionedViewSetMixin,
-                              mixins.CreateModelMixin,
-                              mixins.ListModelMixin,
-                              mixins.RetrieveModelMixin,
-                              mixins.UpdateModelMixin,
-                              viewsets.GenericViewSet):
-    """ViewSet for BehaviorProgress. See the api_docs/ for more info"""
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.BehaviorProgress.objects.all()
-    serializer_class_v1 = v1.BehaviorProgressSerializer
-    serializer_class_v2 = v2.BehaviorProgressSerializer
-    docstring_prefix = "goals/api_docs"
-    permission_classes = [IsOwner]
-
-    def get_queryset(self):
-        return self.queryset.filter(user__id=self.request.user.id)
-
-    def _parse_request_data(self, request):
-        """This method does a few things to modify any request data:
-
-        - ensure we only create objects for the authenticated user
-        - add the id of the BehaviorProgress if we already have one for today
-        - if a Behavior id is submitted, try to include the UserBehavior id
-
-        """
-        if not request.user.is_authenticated():
-            return request
-
-        # Set the authenticated user's ID
-        request.data['user'] = request.user.id
-
-        # If a behavior is provided, attempt to retrieve the UserBehavior object
-        if request.method == "POST":
-            if 'behavior' in request.data and 'user_behavior' not in request.data:
-                try:
-                    behavior = request.data.pop('behavior', [])
-                    if isinstance(behavior, list):
-                        behavior = behavior[0]
-                    request.data['user_behavior'] = models.UserBehavior.objects.filter(
-                        user=request.user,
-                        behavior__id=behavior
-                    ).values_list('id', flat=True)[0]
-                except (models.UserBehavior.DoesNotExist, IndexError):
-                    pass  # Creating will fail
-
-            # If we already have a BehaviorProgress for "today", include its ID
-            try:
-                now = timezone.now()
-                params = {
-                    'user': request.user.id,
-                    'reported_on__year': now.year,
-                    'reported_on__month': now.month,
-                    'reported_on__day': now.day,
-                }
-                if 'user_behavior' in request.data:
-                    params['user_behavior'] = request.data['user_behavior']
-                else:
-                    params['behavior'] = request.data['behavior']
-                qs = models.BehaviorProgress.objects.filter(**params)
-                request.data['id'] = qs.latest().id
-            except models.BehaviorProgress.DoesNotExist:
-                pass
-
-        return request
-
-    def update(self, request, *args, **kwargs):
-        request = self._parse_request_data(request)
-        return super().update(request, *args, **kwargs)
-
-    def create(self, request, *args, **kwargs):
-        request = self._parse_request_data(request)
-
-        # If we've got a BehaviorProgress ID, we need to update instead of create
-        if 'id' in request.data:
-            bp = models.BehaviorProgress.objects.get(id=request.data['id'])
-            bp.status = request.data['status']
-            bp.save()
-
-            serializer_class = self.get_serializer_class()
-            data = serializer_class(bp).data
-            return Response(data=data, status=status.HTTP_200_OK)
-        return super().create(request, *args, **kwargs)
 
 
 class PackageEnrollmentViewSet(VersionedViewSetMixin,

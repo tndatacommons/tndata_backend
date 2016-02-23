@@ -23,10 +23,8 @@ from ..serializer_fields import (
 
 # XXX: Things we don't want to change from v1
 from .v1 import (  # flake8: noqa
-    BehaviorProgressSerializer,
     CustomActionSerializer,
     CustomGoalSerializer,
-    GoalProgressSerializer,
     PackageEnrollmentSerializer,
     ReadOnlyUserGoalSerializer,
     ReadOnlyUserActionSerializer,
@@ -115,7 +113,6 @@ class UserCategorySerializer(ObjectTypeModelSerializer):
 
 class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
-    progress = GoalProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
@@ -137,7 +134,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
-    progress = BehaviorProgressSerializer(read_only=True)
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
 
     class Meta:
