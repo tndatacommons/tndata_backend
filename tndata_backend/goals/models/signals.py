@@ -15,7 +15,7 @@ from notifications.signals import notification_snoozed
 from redis_metrics import metric
 
 from .packages import PackageEnrollment
-from .progress import UserCompletedAction, BehaviorProgress, GoalProgress
+from .progress import UserCompletedAction
 from .public import Action, Behavior, Category, Goal
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from .triggers import Trigger
@@ -287,22 +287,6 @@ def bust_cache(sender, instance, raw, using, **kwargs):
     if cache_key:
         cache_key = cache_key.format(instance.user.id)
         cache.delete(cache_key)
-
-
-@receiver(post_save, sender=BehaviorProgress, dispatch_uid="recalc_goal_progress")
-def recalculate_goal_progress(sender, instance, created, **kwargs):
-    """This signal handler will re-calculate the most recent GoalProgress
-    instance when a BehaviorProgress is created."""
-    if created:
-        # Get all possible goal ids associated with the user
-        for gid in instance.user_behavior.behavior.goals.values_list("id", flat=True):
-            try:
-                # Recalculate the score from all related BehaviorProgress objects
-                gp = GoalProgress.objects.filter(user=instance.user, goal__id=gid).latest()
-                gp.recalculate_score()
-                gp.save()
-            except GoalProgress.DoesNotExist:
-                pass
 
 
 @receiver(post_save, sender=PackageEnrollment, dispatch_uid="notifiy_for_new_package")

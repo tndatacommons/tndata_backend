@@ -59,12 +59,7 @@ class UserCategory(models.Model):
 
     @property
     def progress_value(self):
-        from .progress import CategoryProgress
-        try:
-            qs = self.category.categoryprogress_set.filter(user=self.user)
-            return qs.latest().current_score
-        except CategoryProgress.DoesNotExist:
-            return 0.0
+        return 0.0
 
     objects = UserCategoryManager()
 
@@ -101,7 +96,6 @@ class UserGoal(models.Model):
 
     def save(self, *args, **kwargs):
         self._serialize_goal()
-        self._serialize_goal_progress()
         self._serialize_user_behaviors()
         self._serialize_user_categories()
         self._serialize_primary_category()
@@ -111,12 +105,6 @@ class UserGoal(models.Model):
         if self.goal:
             from ..serializers.simple import SimpleGoalSerializer
             self.serialized_goal = SimpleGoalSerializer(self.goal, user=self.user).data
-
-    def _serialize_goal_progress(self):
-        gp = self.goal_progress
-        if gp:
-            from ..serializers.v1 import GoalProgressSerializer
-            self.serialized_goal_progress = GoalProgressSerializer(gp).data
 
     def _serialize_user_categories(self):
         cats = self.get_user_categories()
@@ -138,13 +126,7 @@ class UserGoal(models.Model):
 
     @property
     def goal_progress(self):
-        """Returns the most recent GoalProgress instance related to this Goal."""
-        from .progress import GoalProgress
-        try:
-            params = {'user': self.user, 'goal': self.goal}
-            return GoalProgress.objects.filter(**params).latest()
-        except GoalProgress.DoesNotExist:
-            return None
+        return None
 
     @property
     def custom_triggers_allowed(self):
@@ -164,37 +146,9 @@ class UserGoal(models.Model):
         """Returns a QuerySet of published Categories related to this Goal, but
         restricts those categories to those which the user has selected.
 
-        NOTE: This method also looks up the user's `CategoryProgress` for
-        each category, and appends a `progress_value` attribute.
         """
-        from .progress import CategoryProgress
-        # XXX: Not actually using this (category progress) at the moment.
         cids = self.user.usercategory_set.values_list('category__id', flat=True)
-        results = self.goal.categories.filter(id__in=cids, state='published')
-        for category in results:
-            category.progress_value = 0
-        return results
-
-        # Tombstone for Dead Code
-        tombstone = ("This Code should be dead, since we're not using "
-                     "Category Progress values anymore")
-        assert False, tombstone
-
-        # Find all the lastest CategoryProgress objects for each user/category
-        scores = {}
-        for cid in cids:
-            try:
-                scores[cid] = CategoryProgress.objects.filter(
-                    user=self.user,
-                    category__id=cid
-                ).latest().current_score
-            except CategoryProgress.DoesNotExist:
-                scores[cid] = 0.0
-
-        results = self.goal.categories.filter(id__in=cids, state='published')
-        for category in results:
-            category.progress_value = scores.get(category.id, 0.0)
-        return results
+        return self.goal.categories.filter(id__in=cids, state='published')
 
     def get_primary_category(self):
         """Return the first user-selected category that is a
@@ -210,12 +164,7 @@ class UserGoal(models.Model):
 
     @property
     def progress_value(self):
-        from .progress import GoalProgress
-        try:
-            qs = self.goal.goalprogress_set.filter(user=self.user)
-            return qs.latest().current_score
-        except GoalProgress.DoesNotExist:
-            return 0.0
+        return 0.0
 
     objects = UserGoalManager()
 
@@ -249,12 +198,7 @@ class UserBehavior(models.Model):
 
     @property
     def behavior_progress(self):
-        """Returns the most recent GoalProgress instance related to this Goal."""
-        from .progress import BehaviorProgress
-        try:
-            return self.behaviorprogress_set.latest()
-        except BehaviorProgress.DoesNotExist:
-            return None
+        return None
 
     @property
     def custom_triggers_allowed(self):

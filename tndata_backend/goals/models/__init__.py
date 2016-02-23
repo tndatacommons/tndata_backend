@@ -12,14 +12,7 @@ from .misc import (  # NOQA
 )
 from .packages import PackageEnrollment  # NOQA
 from .public import Action, Behavior, Category, Goal  # NOQA
-from .progress import (  # NOQA
-    UserCompletedAction,
-    BehaviorProgress,
-    GoalProgressManager,
-    GoalProgress,
-    CategoryProgressManager,
-    CategoryProgress,
-)
+from .progress import UserCompletedAction
 from .path import (  # NOQA -- we need these to satisfy old migrations.
     _category_icon_path,
     _catetgory_image_path,
@@ -40,7 +33,6 @@ from .signals import (  # NOQA
     delete_model_icon,
     delete_model_image,
     notify_for_new_package,
-    recalculate_goal_progress,
     remove_action_reminders,
     remove_behavior_reminders,
     reset_next_trigger_date_when_snoozed,
