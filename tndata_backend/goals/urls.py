@@ -278,11 +278,6 @@ urlpatterns = [
         name='debug_notifications'
     ),
     url(
-        r'^debug-progress-aggregates/$',
-        views.debug_progress_aggregates,
-        name='debug_progress_aggregates'
-    ),
-    url(
         r'^debug-progress/$',
         views.debug_progress,
         name='debug_progress'

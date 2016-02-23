@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Avg, Count, Q, Min, Max
+from django.db.models import Count, Q, Min, Max
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseNotFound, JsonResponse
@@ -50,11 +50,8 @@ from . mixins import (
 from . models import (
     Action,
     Behavior,
-    BehaviorProgress,
     Category,
-    CategoryProgress,
     Goal,
-    GoalProgress,
     PackageEnrollment,
     Trigger,
     UserCompletedAction,
@@ -862,21 +859,6 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         user_behaviors = user.userbehavior_set.filter(behavior__goals__id__in=goals)
         behaviors = user_behaviors.values_list('behavior', flat=True)
         user_actions = user.useraction_set.filter(action__behavior__id__in=behaviors)
-        # CategoryProgress
-        category_progresses = CategoryProgress.objects.filter(
-            category=package.category,
-            user=user
-        )
-
-        # GoalProgress
-        goal_progresses = GoalProgress.objects.filter(
-            usergoal__in=user_goals
-        )
-
-        # BehaviorProgress
-        behavior_progresses = BehaviorProgress.objects.filter(
-            user_behavior__in=user_behaviors
-        )
 
         # UserCompletedActions
         ucas = UserCompletedAction.objects.filter(useraction__in=user_actions)
@@ -885,9 +867,6 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
             'user_goals': user_goals,
             'user_behaviors': user_behaviors,
             'user_actions': user_actions,
-            'category_progresses': category_progresses,
-            'goal_progresses': goal_progresses,
-            'behavior_progresses': behavior_progresses,
             'ucas': ucas,
         }
 
@@ -899,15 +878,9 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         user_goals = data['user_goals']
         user_behaviors = data['user_behaviors']
         user_actions = data['user_actions']
-        category_progresses = data['category_progresses']
-        goal_progresses = data['goal_progresses']
-        behavior_progresses = data['behavior_progresses']
         ucas = data['ucas']
 
         field = 'reported_on'
-        cp_dates = category_progresses.aggregate(Min(field), Max(field))
-        gp_dates = goal_progresses.aggregate(Min(field), Max(field))
-        bp_dates = behavior_progresses.aggregate(Min(field), Max(field))
         ucas_count = ucas.count()
 
         ucas_completed = ucas.filter(state=UserCompletedAction.COMPLETED).count()
@@ -920,11 +893,8 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         context['user_goals'] = user_goals
         context['user_behaviors'] = user_behaviors
         context['user_actions'] = user_actions
-        context['category_progresses'] = category_progresses
         context['cp_dates'] = cp_dates
-        context['goal_progresses'] = goal_progresses
         context['gp_dates'] = gp_dates
-        context['behavior_progresses'] = behavior_progresses
         context['bp_dates'] = bp_dates
         context['ucas_count'] = ucas_count
         context['ucas_completed'] = ucas_completed
@@ -1469,97 +1439,6 @@ def debug_progress(request):
     days_ago = int(request.GET.get('days_ago', 30))
     from_date = today - timedelta(days=days_ago)
 
-    # Category Progress Avg Score
-    categories = Category.objects.values_list('id', 'title')
-    cat_ids = [t[0] for t in categories]
-    cat_labels = [t[1] for t in categories]
-    cat_datasets = []
-    avg_scores = []
-    for cid in cat_ids:
-        params = {
-            'category__id': cid,
-            'reported_on__range': (from_date, today),
-            'user': user,
-        }
-        results = CategoryProgress.objects.filter(**params)
-        results = results.aggregate(Avg('current_score'))
-        avg_scores.append(round(results['current_score__avg'] or 0, 1))
-
-    cat_datasets.append({
-        "label": "Average Score",
-        "data": avg_scores,
-    })
-
-    # Behavior Progress Avg Score
-    behavior_labels = []
-    behavior_datasets = []
-    status_scores = []
-    ap_scores = []
-    for day in dates_range(days_ago):
-        behavior_labels.append(day.strftime("%F"))
-        params = {
-            'user': user,
-            'reported_on__year': day.year,
-            'reported_on__month': day.month,
-            'reported_on__day': day.day,
-        }
-        results = BehaviorProgress.objects.filter(**params)
-        results = results.aggregate(Avg('status'), Avg('daily_actions_completed'))
-        status_scores.append(round(results['status__avg'] or 0, 2))
-        ap_scores.append(round(results['daily_actions_completed__avg'] or 0, 2))
-
-    status_data = {'label': 'Behavior Checkin', 'data': status_scores}
-    ap_data = {'label': 'Actions Completed', 'data': ap_scores}
-    behavior_datasets.append((status_data, ap_data))
-
-    # Goal Progress Scores
-    goal_progress_labels = []
-    goal_progress_datasets = []
-    goal_progress_scores = []
-    for day in dates_range(days_ago):
-        goal_progress_labels.append(day.strftime("%F"))
-        params = {
-            'user': user,
-            'reported_on__year': day.year,
-            'reported_on__month': day.month,
-            'reported_on__day': day.day,
-        }
-        results = GoalProgress.objects.filter(**params)
-        results = results.aggregate(Avg('current_score'))
-        goal_progress_scores.append(round(results['current_score__avg'] or 0, 2))
-
-    goal_progress_data = {'label': 'Goal Progress', 'data': goal_progress_scores}
-    goal_progress_datasets.append(goal_progress_data)
-
-    # Goal Action Scores
-    goal_actions_labels = []
-    goal_actions_datasets = []
-    daily = []
-    weekly = []
-    monthly = []
-    for day in dates_range(days_ago):
-        goal_actions_labels.append(day.strftime("%F"))
-        params = {
-            'user': user,
-            'reported_on__year': day.year,
-            'reported_on__month': day.month,
-            'reported_on__day': day.day,
-        }
-        results = GoalProgress.objects.filter(**params)
-        results = results.aggregate(
-            Avg('daily_action_progress'),
-            Avg('weekly_action_progress'),
-            Avg('action_progress')
-        )
-        daily.append(round(results['daily_action_progress__avg'] or 0, 2))
-        weekly.append(round(results['weekly_action_progress__avg'] or 0, 2))
-        monthly.append(round(results['action_progress__avg'] or 0, 2))
-
-    daily_data = {'label': 'Goal Daily Actions', 'data': daily}
-    weekly_data = {'label': 'Goal Weekly Actions', 'data': weekly}
-    monthly_data = {'label': 'Goal Montly Actions', 'data': monthly}
-    goal_actions_datasets.append((daily_data, weekly_data, monthly_data))
-
     # User Completed Actions?
     uca_labels = []
     completed = []
@@ -1577,6 +1456,7 @@ def debug_progress(request):
         completed.append(results.filter(state=UserCompletedAction.COMPLETED).count())
         snoozed.append(results.filter(state=UserCompletedAction.SNOOZED).count())
         dismissed.append(results.filter(state=UserCompletedAction.DISMISSED).count())
+
     completed_data = {'label': 'Completed Actions', 'data': completed}
     snoozed_data = {'label': 'Snoozed Actions', 'data': snoozed}
     dismissed_data = {'label': 'Dismissed Actions', 'data': dismissed}
@@ -1589,150 +1469,10 @@ def debug_progress(request):
         'days_ago': days_ago,
         'today': today,
         'from_date': from_date,
-        'cat_labels': cat_labels,
-        'cat_datasets': cat_datasets,
-        'behavior_labels': behavior_labels,
-        'behavior_datasets': behavior_datasets,
-        'goal_progress_labels': goal_progress_labels,
-        'goal_progress_datasets': goal_progress_datasets,
-        'goal_actions_labels': goal_actions_labels,
-        'goal_actions_datasets': goal_actions_datasets,
         'uca_labels': uca_labels,
         'uca_datasets': uca_datasets,
     }
     return render(request, 'goals/debug_progress.html', context)
-
-
-@user_passes_test(staff_required, login_url='/')
-def debug_progress_aggregates(request):
-    today = timezone.now()
-    days_ago = int(request.GET.get('days_ago', 30))
-    from_date = today - timedelta(days=days_ago)
-
-    # Category Progress Avg Score
-    categories = Category.objects.values_list('id', 'title')
-    cat_ids = [t[0] for t in categories]
-    cat_labels = [t[1] for t in categories]
-    cat_datasets = []
-    avg_scores = []
-    for cid in cat_ids:
-        params = {
-            'category__id': cid,
-            'reported_on__range': (from_date, today),
-        }
-        results = CategoryProgress.objects.filter(**params)
-        results = results.aggregate(Avg('current_score'))
-        avg_scores.append(round(results['current_score__avg'] or 0, 1))
-
-    cat_datasets.append({
-        "label": "Average Score",
-        "data": avg_scores,
-    })
-
-    # Behavior Progress Avg Score
-    behavior_labels = []
-    behavior_datasets = []
-    status_scores = []
-    ap_scores = []
-    for day in dates_range(days_ago):
-        behavior_labels.append(day.strftime("%F"))
-        params = {
-            'reported_on__year': day.year,
-            'reported_on__month': day.month,
-            'reported_on__day': day.day,
-        }
-        results = BehaviorProgress.objects.filter(**params)
-        results = results.aggregate(Avg('status'), Avg('daily_actions_completed'))
-        status_scores.append(round(results['status__avg'] or 0, 2))
-        ap_scores.append(round(results['daily_actions_completed__avg'] or 0, 2))
-
-    status_data = {'label': 'Behavior Checkin', 'data': status_scores}
-    ap_data = {'label': 'Actions Completed', 'data': ap_scores}
-    behavior_datasets.append((status_data, ap_data))
-
-    # Goal Progress Scores
-    goal_progress_labels = []
-    goal_progress_datasets = []
-    goal_progress_scores = []
-    for day in dates_range(days_ago):
-        goal_progress_labels.append(day.strftime("%F"))
-        params = {
-            'reported_on__year': day.year,
-            'reported_on__month': day.month,
-            'reported_on__day': day.day,
-        }
-        results = GoalProgress.objects.filter(**params)
-        results = results.aggregate(Avg('current_score'))
-        goal_progress_scores.append(round(results['current_score__avg'] or 0, 2))
-
-    goal_progress_data = {'label': 'Goal Progress', 'data': goal_progress_scores}
-    goal_progress_datasets.append(goal_progress_data)
-
-    # Goal Actions Scores
-    goal_actions_labels = []
-    goal_actions_datasets = []
-    daily = []
-    weekly = []
-    monthly = []
-    for day in dates_range(days_ago):
-        goal_actions_labels.append(day.strftime("%F"))
-        params = {
-            'reported_on__year': day.year,
-            'reported_on__month': day.month,
-            'reported_on__day': day.day,
-        }
-        results = GoalProgress.objects.filter(**params)
-        results = results.aggregate(
-            Avg('daily_action_progress'),
-            Avg('weekly_action_progress'),
-            Avg('action_progress')
-        )
-        daily.append(round(results['daily_action_progress__avg'] or 0, 2))
-        weekly.append(round(results['weekly_action_progress__avg'] or 0, 2))
-        monthly.append(round(results['action_progress__avg'] or 0, 2))
-
-    daily_data = {'label': 'Goal Daily Actions', 'data': daily}
-    weekly_data = {'label': 'Goal Weekly Actions', 'data': weekly}
-    monthly_data = {'label': 'Goal Montly Actions', 'data': monthly}
-    goal_actions_datasets.append((daily_data, weekly_data, monthly_data))
-
-    # User Completed Actions?
-    uca_labels = []
-    completed = []
-    snoozed = []
-    dismissed = []
-    for day in dates_range(days_ago):
-        uca_labels.append(day.strftime("%F"))
-        params = {
-            'updated_on__year': day.year,
-            'updated_on__month': day.month,
-            'updated_on__day': day.day,
-        }
-        results = UserCompletedAction.objects.filter(**params)
-        completed.append(results.filter(state=UserCompletedAction.COMPLETED).count())
-        snoozed.append(results.filter(state=UserCompletedAction.SNOOZED).count())
-        dismissed.append(results.filter(state=UserCompletedAction.DISMISSED).count())
-    completed_data = {'label': 'Completed Actions', 'data': completed}
-    snoozed_data = {'label': 'Snoozed Actions', 'data': snoozed}
-    dismissed_data = {'label': 'Dismissed Actions', 'data': dismissed}
-    uca_datasets = [(completed_data, snoozed_data, dismissed_data), ]
-
-    context = {
-        'days_ago': days_ago,
-        'today': today,
-        'from_date': from_date,
-        'cat_labels': cat_labels,
-        'cat_datasets': cat_datasets,
-        'behavior_labels': behavior_labels,
-        'behavior_datasets': behavior_datasets,
-        'goal_progress_labels': goal_progress_labels,
-        'goal_progress_datasets': goal_progress_datasets,
-        'goal_actions_labels': goal_actions_labels,
-        'goal_actions_datasets': goal_actions_datasets,
-        'uca_labels': uca_labels,
-        'uca_datasets': uca_datasets,
-    }
-    return render(request, 'goals/debug_progress_aggregates.html', context)
 
 
 @user_passes_test(staff_required, login_url='/')
