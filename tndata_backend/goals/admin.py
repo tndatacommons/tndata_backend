@@ -335,7 +335,7 @@ class UserGoalAdmin(UserRelatedModelAdmin):
     )
     raw_id_fields = ("user", "goal")
     readonly_fields = [
-        'serialized_goal', 'serialized_goal_progress', 'serialized_user_behaviors',
+        'serialized_goal', 'serialized_user_behaviors',
         'serialized_user_categories', 'serialized_primary_category',
     ]
 
@@ -439,48 +439,6 @@ class UserCompletedActionAdmin(UserRelatedModelAdmin):
     actions = [tablib_export_user_completed_actions]
 
 admin.site.register(models.UserCompletedAction, UserCompletedActionAdmin)
-
-
-class BehaviorProgressAdmin(UserRelatedModelAdmin):
-    list_display = (
-        'id', 'user', 'behavior', 'status',
-        'daily_action_progress', 'daily_actions_completed', 'daily_actions_total',
-        'reported_on',
-    )
-    search_fields = (
-        'user__username', 'user__email', 'user__first_name', 'user__last_name',
-    )
-    raw_id_fields = ("user", "user_behavior")
-
-admin.site.register(models.BehaviorProgress, BehaviorProgressAdmin)
-
-
-class GoalProgressAdmin(UserRelatedModelAdmin):
-    list_display = (
-        'id', 'user_email', 'goal', 'current_total', 'max_total', 'current_score',
-        'text_glyph', 'daily_action_progress', 'weekly_action_progress',
-        'action_progress', 'reported_on'
-    )
-    search_fields = (
-        'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'goal__id', 'goal__title',
-    )
-    raw_id_fields = ("user", "goal", "usergoal")
-
-admin.site.register(models.GoalProgress, GoalProgressAdmin)
-
-
-class CategoryProgressAdmin(UserRelatedModelAdmin):
-    list_display = (
-        'user', 'category', 'current_score', 'text_glyph', 'reported_on'
-    )
-    search_fields = (
-        'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'category__id', 'category__title',
-    )
-    raw_id_fields = ("user", 'category')
-
-admin.site.register(models.CategoryProgress, CategoryProgressAdmin)
 
 
 class PackageEnrollmentAdmin(UserRelatedModelAdmin):
