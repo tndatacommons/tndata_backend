@@ -1,10 +1,12 @@
 import urllib
+from pprint import pformat
 
 from django.contrib import admin
 from django.contrib.messages import ERROR
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError, transaction
 from django.http import HttpResponse, HttpResponseRedirect
+from django.utils.text import mark_safe
 
 import tablib
 from django_fsm import TransitionNotAllowed
@@ -508,3 +510,22 @@ class UserCompletedCustomActionAdmin(UserRelatedModelAdmin):
     list_filter = ('state', )
     raw_id_fields = ('user', 'customaction', 'customgoal')
 admin.site.register(models.UserCompletedCustomAction, UserCompletedCustomActionAdmin)
+
+
+class DailyProgressAdmin(UserRelatedModelAdmin):
+    search_fields = (
+        'user__username', 'user__email', 'user__first_name', 'user__last_name',
+    )
+    list_display = ('user', 'actions_total', 'behaviors_total', 'created_on')
+    raw_id_fields = ('user', )
+    exclude = ('behaviors_status', )
+    readonly_fields = (
+        'actions_total', 'actions_completed', 'actions_snoozed',
+        'actions_dismissed', 'customactions_total', 'customactions_completed',
+        'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
+        'behaviors_status_details', 'updated_on', 'created_on'
+    )
+
+    def behaviors_status_details(self, obj):
+        return mark_safe("<pre>{0}</pre>".format(pformat(obj.behaviors_status)))
+admin.site.register(models.DailyProgress, DailyProgressAdmin)

@@ -131,7 +131,7 @@ class DailyProgress(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{0}".format(self.action.title)
+        return "{0}".format(self.user)
 
     class Meta:
         ordering = ['-updated_on', 'user']
