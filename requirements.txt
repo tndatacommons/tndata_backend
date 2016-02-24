@@ -26,7 +26,7 @@ django-crispy-forms==1.5.1
 crispy-forms-foundation==0.5.2
 coverage==4.0.1
 django-debug-toolbar==1.3
-django-rainbowtests==0.4.0
+django-rainbowtests==0.5.1
 django-querycount==0.4.1
 -e git+https://github.com/tndatacommons/django-waffle.git@master#egg=waffle
 -e git+https://github.com/bradmontgomery/clog.git@master#egg=clog-dev
