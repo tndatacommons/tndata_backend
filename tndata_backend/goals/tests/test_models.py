@@ -18,6 +18,7 @@ from .. models import (
     CustomAction,
     CustomActionFeedback,
     CustomGoal,
+    DailyProgress,
     Goal,
     PackageEnrollment,
     Trigger,
@@ -2222,3 +2223,53 @@ class TestCustomActionFeedback(TestCase):
         expected = self.customaction.title
         actual = "{}".format(self.caf)
         self.assertEqual(expected, actual)
+
+
+class TestDailyProgress(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = mommy.make(User)
+        cls.behavior = mommy.make(Behavior, id=1)
+
+        status = {'behavior-1': 'TEST'}
+        cls.progress = mommy.make(
+            DailyProgress,
+            user=cls.user,
+            actions_total=4,
+            actions_completed=1,
+            actions_snoozed=2,
+            actions_dismissed=1,
+            customactions_total=1,
+            customactions_completed=0,
+            customactions_snoozed=0,
+            customactions_dismissed=1,
+            behaviors_total=1,
+            behaviors_status=status,
+        )
+
+    def test_actions(self):
+        expected = {
+            'total': 4,
+            'snoozed': 2,
+            'completed': 1,
+            'dismissed': 1,
+        }
+        self.assertDictEqual(self.progress.actions, expected)
+
+    def test_customactions(self):
+        expected = {
+            'total': 1,
+            'snoozed': 0,
+            'completed': 0,
+            'dismissed': 1,
+        }
+        self.assertDictEqual(self.progress.customactions, expected)
+
+    def test_get_status(self):
+        self.assertEqual(self.progress.get_status(self.behavior), 'TEST')
+
+    def test_set_status(self):
+        behavior = Mock(id=2)
+        self.progress.set_status(behavior, 'FOO')
+        self.assertEqual(self.progress.behaviors_status['behavior-2'], 'FOO')

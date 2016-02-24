@@ -12,7 +12,7 @@ from .misc import (  # NOQA
 )
 from .packages import PackageEnrollment  # NOQA
 from .public import Action, Behavior, Category, Goal  # NOQA
-from .progress import UserCompletedAction
+from .progress import DailyProgress, UserCompletedAction  # NOQA
 from .path import (  # NOQA -- we need these to satisfy old migrations.
     _category_icon_path,
     _catetgory_image_path,
