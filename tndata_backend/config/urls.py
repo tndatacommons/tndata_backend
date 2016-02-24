@@ -141,13 +141,13 @@ urlpatterns = [
     url(
         r'^api/users/goals/progress/average/$',
         goal_views.fake_api,
-        kwargs={'option': 'goalprogress'},
+        kwargs={'option': 'goalprogressaverage'},
         name="goals:fake-api"
     ),
     url(
         r'^api/users/goals/progress/$',
         goal_views.fake_api,
-        kwargs={'option': 'goalprogressaverage'},
+        kwargs={'option': 'goalprogress'},
         name="goals:fake-api"
     ),
     url(r'^api/', include(router.urls)),
