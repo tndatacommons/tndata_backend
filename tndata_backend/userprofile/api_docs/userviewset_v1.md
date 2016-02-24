@@ -61,12 +61,10 @@ Collections of related data for the user, include:
 * `suggestions` -- a list of suggested `Goal`s for the user.
 
 * `places` -- An array of the [user's Places](/api/users/places/)
-* `goals` -- An array of the user's selected [Goals](/api/users/goals/). Each
-  of these objects also contains data representing the user's `GoalProgress`
-  data. See the [UserGoal documentation](/api/users/goals/) for more info.
+* `goals` -- An array of the user's selected [Goals](/api/users/goals/). See the
+  [UserGoal documentation](/api/users/goals/) for more info.
 * `behaviors` -- An array of the user's selected [Behaviors](/api/users/behaviors/).
-  Each of these objects also contains data representing the user's
-  `BehaviorProgress`. See the [UserBehavior documentation](/api/users/behaviors/)
+  See the [UserBehavior documentation](/api/users/behaviors/)
   for more info.
 * `actions` -- An array of the user's selected [Actions](/api/users/actions/)
 * `categories` -- An array of the user's [Categories](/api/users/categories/)

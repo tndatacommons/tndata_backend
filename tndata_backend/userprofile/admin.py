@@ -10,10 +10,9 @@ from utils.admin import UserRelatedModelAdmin
 
 
 def remove_app_data(modeladmin, request, queryset):
-    """Remove a user's selected content from the mobile app. This essentiall
-    deletes their: UserAction, UserBehavior, UserCategory, BehaviorProgress,
-    GoalProgress, CategoryProgress, PackageEnrollment, Trigger,
-    UserCompletedAction instances as well as their GCMMessages.
+    """Remove a user's selected content from the mobile app. This essentialy
+    deletes their: UserAction, UserBehavior, UserCategory, PackageEnrollment,
+    Trigger, UserCompletedAction instances as well as their GCMMessages.
 
     See: userprofile.views.admin_remove_app_data
 

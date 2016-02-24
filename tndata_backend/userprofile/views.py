@@ -79,12 +79,6 @@ def admin_remove_app_data(request):
             "Remove the user's selected Categories. This will also force them"
             " through onboarding again"),
         ('trigger', 'Triggers', "Remove the user's custom triggers"),
-        ('behaviorprogress', 'Behavior Progress',
-            "Remove the user's behavior progress data"),
-        ('goalprogress', 'Goal Progress',
-            "Remove the user's goal progress data"),
-        ('categoryprogress', 'Category Progress',
-            "Remove the user's category progress data"),
         ('usercompletedaction', 'Completed Actions',
             "Remove the user's history of completed actions"),
         ('packageenrollment', 'Package Enrollment',
