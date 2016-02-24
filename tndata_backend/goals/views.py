@@ -51,6 +51,7 @@ from . models import (
     Action,
     Behavior,
     Category,
+    DailyProgress,
     Goal,
     PackageEnrollment,
     Trigger,
@@ -1415,7 +1416,7 @@ def debug_notifications(request):
 @user_passes_test(staff_required, login_url='/')
 def debug_progress(request):
     """A view to allow searching by email addresss then view and
-    analyze their Category/Goal/Behavior progress data.
+    analyze their DailyProgress info.
 
     """
     User = get_user_model()
@@ -1426,46 +1427,25 @@ def debug_progress(request):
         user = User.objects.get(email__icontains=email)
     except (User.DoesNotExist, User.MultipleObjectsReturned):
         messages.error(request, "Could not find that user")
-        return redirect(reverse('debug_progress'))
+        return redirect(reverse('goals:debug_progress'))
     except ValueError:
         user = None
 
     today = timezone.now()
-    days_ago = int(request.GET.get('days_ago', 30))
-    from_date = today - timedelta(days=days_ago)
-
-    # User Completed Actions?
-    uca_labels = []
-    completed = []
-    snoozed = []
-    dismissed = []
-    for day in dates_range(days_ago):
-        uca_labels.append(day.strftime("%F"))
-        params = {
-            'user': user,
-            'updated_on__year': day.year,
-            'updated_on__month': day.month,
-            'updated_on__day': day.day,
-        }
-        results = UserCompletedAction.objects.filter(**params)
-        completed.append(results.filter(state=UserCompletedAction.COMPLETED).count())
-        snoozed.append(results.filter(state=UserCompletedAction.SNOOZED).count())
-        dismissed.append(results.filter(state=UserCompletedAction.DISMISSED).count())
-
-    completed_data = {'label': 'Completed Actions', 'data': completed}
-    snoozed_data = {'label': 'Snoozed Actions', 'data': snoozed}
-    dismissed_data = {'label': 'Dismissed Actions', 'data': dismissed}
-    uca_datasets = [(completed_data, snoozed_data, dismissed_data), ]
-
+    since = int(request.GET.get('since', 30))
+    from_date = today - timedelta(days=since)
+    daily_progresses = DailyProgress.objects.filter(
+        user=user,
+        updated_on__gte=from_date
+    )
     context = {
-        'searched_user': user,
-        'form': form,
         'email': email,
-        'days_ago': days_ago,
+        'searched_user': user,
+        'since': since,
+        'form': form,
         'today': today,
         'from_date': from_date,
-        'uca_labels': uca_labels,
-        'uca_datasets': uca_datasets,
+        'daily_progresses': daily_progresses,
     }
     return render(request, 'goals/debug_progress.html', context)
 
