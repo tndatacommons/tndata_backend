@@ -1,10 +1,24 @@
 This endpoint represents a user's selected Actions. That is, an object that
 defines a mapping between [Users](/api/users/) and [Actions](/api/actions/).
 
-GET requests to this page will simply list this `UserAction` objects belonging
+GET requests to this page will list the `UserAction` objects belonging
 to the authenticated user.
 
-## Fields
+## Contents
+
+* <a href="#fields">Fields </a>
+* <a href="#adding-a-useraction">Adding a UserAction</a>
+* <a href="#adding-a-useraction-and-all-parent-objects-at-once">Adding a UserAction and all parent objects at once</a>
+* <a href="#viewing-useractions">Viewing UserActions</a>
+* <a href="#deleting-a-useraction">Deleting a UserAction</a>
+* <a href="#update-a-useraction">Update a UserAction / Custom Triggers</a>
+* <a href="#filtering">Filtering  </a>
+* <a href="#additional-information">Additional information</a>
+* <a href="#completing-actions-or-not">Completing Actions (or not)</a>
+
+----
+
+## Fields <a href="#fields">&para;</a>
 
 This endpoint returns resources with the following fields.
 
@@ -32,7 +46,7 @@ This endpoint returns resources with the following fields.
 * `created_on`: Time at which the user selected this item.
 * `object_type`: A string that will always be `useraction`
 
-## Adding a UserAction
+## Adding a UserAction <a href="#adding-a-useraction">&para;</a>
 
 To associate a Action with a User, POST to `/api/users/actions/` with the
 following data (the action the user is selecting, and (optionally) the
@@ -44,7 +58,7 @@ parent goal and category for the action).
         'primary_category': CATEGORY_ID  # (optional)
     }
 
-## Adding a UserAction and all parent objects at once
+## Adding a UserAction and all parent objects at once <a href="#adding-a-useraction-and-all-parent-objects-at-once">&para;</a>
 
 If you submit a `category`, `goal`, `behavior`, and `action` all in a single
 payload, each object will be added to the user's collection at once; This will
@@ -104,18 +118,18 @@ the following:
     }
 
 
-## Viewing UserActions
+## Viewing UserActions  <a href="#viewing-useractions">&para;</a>
 
 Additional information for the UserAction is available at
 `/api/users/actions/{useraction_id}/`. In this case, `{useraction_id}`
 is the database id for the mapping between a user and a action.
 
-## Deleting a UserAction
+## Deleting a UserAction <a href="#deleting-a-useraction">&para;</a>
 
 Send a DELETE request to the useraction endpoint:
 `/api/users/actions/{useraction_id}/`.
 
-## Update a UserAction / Custom Triggers
+## Update a UserAction / Custom Triggers <a href="#update-a-useraction">&para;</a>
 
 UserActions may be updated in order to set custom Triggers (aka
 reminders) for the associated action.
@@ -133,7 +147,7 @@ To do this, send a PUT request to the detail url
 * `custom_trigger_disabled`: (optional) A `true` or `false` value; if `true`
   the trigger will be disabled.
 
-## Filtering
+## Filtering  <a href="#filtering">&para;</a>
 
 UserActions can be filtered using a query string parameter. Currently,
 filtering is availble for Goals, Behaviors, Actions, and for Actions
@@ -143,35 +157,28 @@ To filter for actions scheduled _today_, use the following:
 
 * `/api/users/actions/?today=1`
 
-For the following examples, you may filter using an ID or a slug.
+For the following examples, you may filter using a numeric ID or a titl slug.
+UserActions may be filtered by their parent Category, Goal, Behavior or by
+the associated Action. Examples:
 
-To retrieve all UserActions that belong to a particular Goal, use
-one of the following:
-
-* `/api/users/actions/?goal={goal_id}` or by slug
+* `/api/users/actions/?category={category_id}`
+* `/api/users/actions/?category={category_title_slug}`
+* `/api/users/actions/?goal={goal_id}`
 * `/api/users/actions/?goal={goal_title_slug}`
-
-To retrieve all UserActions that belong to a particular Behavior, use
-one of the following:
-
-* `/api/users/actions/?behavior={behavior_id}` or by slug
+* `/api/users/actions/?behavior={behavior_id}`
 * `/api/users/actions/?behavior={behavior_title_slug}`
-
-To retrive all UserActionss that belong to a particular Action, use one
-of the following:
-
-* `/api/users/actions/?action={action_id}` or by slug
+* `/api/users/actions/?action={action_id}`
 * `/api/users/actions/?action={action_title_slug}`
 
-**NOTE**: Action titles are not unique, so filtering by the `title_slug`
-may return a number of results.
+**NOTE**: Action titles are not unique, so filtering by the `Action.title_slug`
+may return multiple results.
 
-## Additional information
+## Additional information <a href="#additional-information">&para;</a>
 
 The Actions that a User has selected are also available through the
 `/api/users/` endpoint as a `actions` object on the user.
 
-## Completing Actions (or not)
+## Completing Actions (or not)  <a href="#completing-actions-or-not">&para;</a>
 
 A User may wish to indicate that they have performed (or completed),
 dismissed, snoozed, or have decided not to complete an action. To save this

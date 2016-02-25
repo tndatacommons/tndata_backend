@@ -1293,6 +1293,36 @@ class TestUserActionAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
+        # Test with category title_slug filter
+        url = self.get_url('useraction-list')
+        url = "{0}&category={1}".format(url, self.category.title_slug)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with category id filter
+        url = self.get_url('useraction-list')
+        url = "{0}&category={1}".format(url, self.category.id)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with WRONG category id filter
+        url = self.get_url('useraction-list')
+        url = "{0}&category=99999".format(url)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
         # Test with goal title_slug
         url = self.get_url('useraction-list')
         url = "{0}&goal={1}".format(url, self.goal.title_slug)

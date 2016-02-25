@@ -416,23 +416,35 @@ class UserActionViewSet(VersionedViewSetMixin,
     def get_queryset(self):
         # First, only expose content in Categories/Packages that are either
         # public or in which we've accepted the terms/consent form.
-        self.queryset = models.UserAction.objects.accepted_or_public(self.request.user)
+        self.queryset = models.UserAction.objects.accepted_or_public(
+            self.request.user)
 
-        # Now, filter on category or goal if necessary
+        # Now, filter on category, goal, behavior, action if necessary
         filter_on_today = bool(self.request.GET.get('today', False))
+        category = self.request.GET.get('category', None)
         goal = self.request.GET.get('goal', None)
         behavior = self.request.GET.get('behavior', None)
         action = self.request.GET.get('action', None)
 
+        if category is not None and category.isnumeric():
+            self.queryset = self.queryset.filter(
+                action__behavior__goals__categories__id=category)
+        elif category is not None:
+            self.queryset = self.queryset.filter(
+                action__behavior__goals__categories__title_slug=category)
+
         if goal is not None and goal.isnumeric():
-            self.queryset = self.queryset.filter(action__behavior__goals__id=goal)
+            self.queryset = self.queryset.filter(
+                action__behavior__goals__id=goal)
         elif goal is not None:
-            self.queryset = self.queryset.filter(action__behavior__goals__title_slug=goal)
+            self.queryset = self.queryset.filter(
+                action__behavior__goals__title_slug=goal)
 
         if behavior is not None and behavior.isnumeric():
             self.queryset = self.queryset.filter(action__behavior__id=behavior)
         elif behavior is not None:
-            self.queryset = self.queryset.filter(action__behavior__title_slug=behavior)
+            self.queryset = self.queryset.filter(
+                action__behavior__title_slug=behavior)
         if action is not None and action.isnumeric():
             self.queryset = self.queryset.filter(action__id=action)
         elif action is not None:
