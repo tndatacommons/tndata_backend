@@ -54,6 +54,15 @@ class CustomActionManager(models.Manager):
         )
 
 
+class DailyProgressManager(models.Manager):
+
+    def for_today(self, user):
+        """Get/Create the current day's DailyProgress instance for the user"""
+        start, end = user_utils.local_day_range(user)
+        obj, _ = self.get_or_create(user=user, created_on__range=(start, end))
+        return obj
+
+
 class UserCategoryManager(models.Manager):
 
     def published(self, *args, **kwargs):
