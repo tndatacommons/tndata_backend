@@ -49,10 +49,11 @@ class Trigger(models.Model):
     )
     name = models.CharField(
         max_length=128,
+        blank=True,
         db_index=True,
         help_text="A human-friendly name for this trigger"
     )
-    name_slug = models.SlugField(max_length=128, db_index=True)
+    name_slug = models.SlugField(max_length=128, blank=True, db_index=True)
     time = models.TimeField(
         blank=True,
         null=True,
