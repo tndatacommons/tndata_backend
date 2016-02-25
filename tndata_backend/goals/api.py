@@ -84,13 +84,36 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         return self.queryset
 
 
-class TriggerViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class TriggerViewSet(VersionedViewSetMixin,
+                     mixins.CreateModelMixin,
+                     mixins.ListModelMixin,
+                     mixins.RetrieveModelMixin,
+                     mixins.DestroyModelMixin,
+                     mixins.UpdateModelMixin,
+                     viewsets.GenericViewSet):
     """ViewSet for Triggers. See the api_docs/ for more info"""
-    queryset = models.Trigger.objects.default()
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.Trigger.objects.none()
     serializer_class_v1 = v1.TriggerSerializer
     serializer_class_v2 = v2.TriggerSerializer
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        return models.Trigger.objects.for_user(self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        if not request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+        request.data['user'] = request.user.id
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+        return super().update(request, *args, **kwargs)
 
 
 class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):

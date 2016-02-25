@@ -202,45 +202,25 @@ class TestGoalAPI(APITestCase):
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 @override_settings(CACHES=TEST_CACHES)
 class TestTriggerAPI(APITestCase):
+    """Since v1 is technically going to be depricated, and this endpoint was
+    never really used, this is just a smoke-screen test for unauthed access."""
 
-    def setUp(self):
-        self.trigger = Trigger.objects.create(name="Test Trigger")
-
-    def tearDown(self):
-        Trigger.objects.filter(id=self.trigger.id).delete()
-
-    def test_trigger_list(self):
-        url = reverse('trigger-list')
-        response = self.client.get(url)
+    def test_get_trigger_list(self):
+        response = self.client.get(reverse('trigger-list'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertEqual(response.data['count'], 1)
-        obj = response.data['results'][0]
-        self.assertEqual(obj['id'], self.trigger.id)
-        self.assertEqual(obj['name'], self.trigger.name)
-        self.assertEqual(obj['time'], self.trigger.time)
-        self.assertEqual(obj['trigger_date'], self.trigger.trigger_date)
-        self.assertEqual(obj['recurrences'], self.trigger.recurrences)
-        self.assertEqual(obj['recurrences_display'], self.trigger.recurrences_as_text())
-        self.assertEqual(obj['next'], self.trigger.next())
 
     def test_post_trigger_list(self):
         """Ensure this endpoint is read-only."""
-        url = reverse('trigger-list')
-        response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        response = self.client.post(reverse('trigger-list'), {})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_trigger_detail(self):
-        url = reverse('trigger-detail', args=[self.trigger.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], self.trigger.id)
+        response = self.client.get(reverse('trigger-detail', args=[1]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_post_trigger_detail(self):
-        """Ensure this endpoint is read-only."""
-        url = reverse('trigger-detail', args=[self.trigger.id])
-        response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    def test_put_trigger_detail(self):
+        response = self.client.put(reverse('trigger-detail', args=[1]), {})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)

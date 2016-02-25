@@ -208,16 +208,41 @@ class TestGoalAPI(V2APITestCase):
 class TestTriggerAPI(V2APITestCase):
 
     def setUp(self):
-        self.trigger = Trigger.objects.create(name="Test Trigger")
+        User = get_user_model()
+        self.user = User.objects.create(
+            username="test",
+            email="test@example.com",
+        )
+        self.default_trigger = Trigger.objects.create(name="Default")
+        self.trigger = Trigger.objects.create(
+            user=self.user,
+            name='Test'
+        )
+        self.payload = {
+            'name': 'Custom Trigger',
+            'time': '14:30',
+            'trigger_date': '2016-02-25',
+            'recurrences': 'RRULE:FREQ=DAILY',
+        }
 
     def tearDown(self):
-        Trigger.objects.filter(id=self.trigger.id).delete()
+        Trigger.objects.all().delete()
 
-    def test_trigger_list(self):
+    def test_get_trigger_list(self):
+        """Anon users see no triggers. Auth'd users should see their own"""
         url = self.get_url('trigger-list')
+
+        # Anonymous requests...
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
 
+        # Authenticated requests...
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         obj = response.data['results'][0]
         self.assertEqual(obj['id'], self.trigger.id)
@@ -225,26 +250,54 @@ class TestTriggerAPI(V2APITestCase):
         self.assertEqual(obj['time'], self.trigger.time)
         self.assertEqual(obj['trigger_date'], self.trigger.trigger_date)
         self.assertEqual(obj['recurrences'], self.trigger.recurrences)
-        self.assertEqual(obj['recurrences_display'], self.trigger.recurrences_as_text())
+        self.assertEqual(
+            obj['recurrences_display'],
+            self.trigger.recurrences_as_text()
+        )
         self.assertEqual(obj['next'], self.trigger.next())
 
-    def test_post_trigger_list(self):
-        """Ensure this endpoint is read-only."""
+    def test_post_trigger_list_unauthd(self):
+        """un-Auth'd users should not be able to create a new trigger."""
         url = self.get_url('trigger-list')
-        response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_get_trigger_detail(self):
+    def test_post_trigger_list_authd(self):
+        """POST should be allowed for authenticated users"""
+        url = self.get_url('trigger-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_trigger_detail_unauthd(self):
         url = self.get_url('trigger-detail', args=[self.trigger.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], self.trigger.id)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_post_trigger_detail(self):
-        """Ensure this endpoint is read-only."""
+    def test_get_trigger_detail_authd(self):
         url = self.get_url('trigger-detail', args=[self.trigger.id])
-        response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_put_trigger_detail_unauthd(self):
+        url = self.get_url('trigger-detail', args=[self.trigger.id])
+        response = self.client.put(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_put_trigger_list_authd(self):
+        """PUT should be allowed for authenticated users"""
+        url = self.get_url('trigger-detail', args=[self.trigger.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, {'disabled': True})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(Trigger.objects.get(pk=self.trigger.id).disabled)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
