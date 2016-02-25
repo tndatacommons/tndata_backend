@@ -299,7 +299,9 @@ class TriggerManager(models.Manager):
         Trigger.objects.for_user(some_user)
 
         """
-        return self.get_queryset().filter(user=user)
+        if user.is_authenticated():
+            return self.get_queryset().filter(user=user)
+        return self.get_queryset().none()
 
     def create_for_user(self, user, name, time, date, rrule,
                         obj=None, disabled=False):
