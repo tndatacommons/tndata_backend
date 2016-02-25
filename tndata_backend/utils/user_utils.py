@@ -21,7 +21,10 @@ def user_timezone(user, timeout=3600):
     key = "usertz-{}".format(user.id)
     tz = cache.get(key)
     if tz is None:
-        tz = user.userprofile.timezone
+        try:
+            tz = user.userprofile.timezone
+        except ObjectDoesNotExist:
+            tz = "America/Chicago"
         cache.set(key, tz, timeout)
     return tz
 
