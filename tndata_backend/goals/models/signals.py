@@ -28,13 +28,25 @@ from ..utils import clean_title, clean_notification, strip
 @receiver(post_save, sender=UserBehavior, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserAction, dispatch_uid="coru_daily_progress")
 def create_or_update_daily_progress(sender, instance, created, raw, using, **kwargs):
-    """When a useraction or a userbehavior is created, we want to update the
-    day's DailyProgress for the user.
+    """When a CustomAction, UserAction or UserBehavior is created, we want to
+    create (if necessary) or update the day's DailyProgress for the user.
     """
     if created:
         dp = DailyProgress.objects.for_today(instance.user)
         dp.update_stats()
         dp.save()
+
+
+@receiver(post_delete, sender=CustomAction, dispatch_uid="coru_daily_progress")
+@receiver(post_delete, sender=UserBehavior, dispatch_uid="coru_daily_progress")
+@receiver(post_delete, sender=UserAction, dispatch_uid="coru_daily_progress")
+def update_daily_progress(sender, instance, using, **kwargs):
+    """When a CustomAction, UserAction or UserBehavior is deleted, we want to
+    update the day's DailyProgress again to reflect the change.
+    """
+    dp = DailyProgress.objects.for_today(instance.user)
+    dp.update_stats()
+    dp.save()
 
 
 @receiver(post_save, sender=Trigger, dispatch_uid="custom-trigger-updated")
