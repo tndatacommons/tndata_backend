@@ -2,10 +2,14 @@
 """
 from django.conf import settings
 from django.db import models
+from django.db.models import Min
 from jsonfield import JSONField
 
 from .public import Action
 from .users import UserAction
+from ..managers import DailyProgressManager
+
+from utils.user_utils import local_day_range
 
 
 class UserCompletedAction(models.Model):
@@ -166,3 +170,60 @@ class DailyProgress(models.Model):
     def get_status(self, behavior):
         key = 'behavior-{}'.format(behavior.id)
         return self.behaviors_status[key]
+
+    def _update_useraction_stats(self):
+        start, end = local_day_range(self.user, dt=self.created_on)
+        from_date = self.user.useraction_set.aggregate(Min('created_on'))
+        from_date = from_date['created_on__min'] or start
+
+        # Count the UserActions selected.
+        self.actions_total = self.user.useraction_set.filter(
+            created_on__range=(from_date, end)).count()
+
+        # count the stats for UserCompletedActions
+        ucas = self.user.usercompletedaction_set.filter(
+            created_on__range=(from_date, end))
+        self.actions_completed = ucas.filter(
+            state=UserCompletedAction.COMPLETED).count()
+        self.actions_snoozed = ucas.filter(
+            state=UserCompletedAction.SNOOZED).count()
+        self.actions_dismissed = ucas.filter(
+            state=UserCompletedAction.DISMISSED).count()
+
+    def _update_userbehavior_stats(self):
+        start, end = local_day_range(self.user, dt=self.created_on)
+        from_date = self.user.userbehavior_set.aggregate(Min('created_on'))
+        from_date = from_date['created_on__min'] or start
+
+        # Count the UserBehaviors selected
+        self.behaviors_total = self.user.userbehavior_set.filter(
+            created_on__range=(from_date, end)).count()
+
+    def _update_customaction_stats(self):
+        start, end = local_day_range(self.user, dt=self.created_on)
+        from_date = self.user.customaction_set.aggregate(Min('created_on'))
+        from_date = from_date['created_on__min'] or start
+
+        # Check on number of CustomAction objects we have today.
+        self.customactions_total = self.user.customaction_set.filter(
+            created_on__range=(from_date, end)).count()
+
+        # Count status of UserCompletedAction data for today
+        uccas = self.user.usercompletedcustomaction_set.filter(
+            created_on__range=(from_date, end)
+        )
+        self.customactions_completed = uccas.filter(
+            state=UserCompletedAction.COMPLETED).count()
+        self.customactions_snoozed = uccas.filter(
+            state=UserCompletedAction.SNOOZED).count()
+        self.customactions_dismissed = uccas.filter(
+            state=UserCompletedAction.DISMISSED).count()
+
+    def update_stats(self):
+        self._update_userbehavior_stats()
+        self._update_useraction_stats()
+        self._update_customaction_stats()
+
+    # The DailyProgress manager has custom convenience methods:
+    # - for_user(user) -- Gets or creates an instance for "today"
+    objects = DailyProgressManager()
