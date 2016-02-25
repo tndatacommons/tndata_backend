@@ -14,13 +14,27 @@ from django.utils import timezone
 from notifications.signals import notification_snoozed
 from redis_metrics import metric
 
+from .custom import CustomAction
 from .packages import PackageEnrollment
-from .progress import UserCompletedAction
+from .progress import DailyProgress, UserCompletedAction
 from .public import Action, Behavior, Category, Goal
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from .triggers import Trigger
 
 from ..utils import clean_title, clean_notification, strip
+
+
+@receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
+@receiver(post_save, sender=UserBehavior, dispatch_uid="coru_daily_progress")
+@receiver(post_save, sender=UserAction, dispatch_uid="coru_daily_progress")
+def create_or_update_daily_progress(sender, instance, created, raw, using, **kwargs):
+    """When a useraction or a userbehavior is created, we want to update the
+    day's DailyProgress for the user.
+    """
+    if created:
+        dp = DailyProgress.objects.for_today(instance.user)
+        dp.update_stats()
+        dp.save()
 
 
 @receiver(post_save, sender=Trigger, dispatch_uid="custom-trigger-updated")
@@ -235,6 +249,7 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
             content_type=ContentType.objects.get_for_model(Action)
         )
         messages.delete()
+
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")
 def delete_category_child_goals(sender, instance, using, **kwargs):
