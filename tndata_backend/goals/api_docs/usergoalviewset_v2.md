@@ -5,7 +5,17 @@ that defines a mapping between [Users](/api/users/) and
 GET requests to this page will simply list this mapping for the authenticated
 user.
 
-## Fields
+## Contents
+
+* <a href="#fields">Fields</a>
+* <a href="#adding-a-goal">Adding a Goal </a>
+* <a href="#viewing-the-goal-data">Viewing the Goal data </a>
+* <a href="#filtering">Filtering </a>
+* <a href="#removing-a-goal-from-the-users-list">Removing a Goal from the user's list.</a>
+* <a href="#update-a-goal-mapping">Update a Goal Mapping. </a>
+* <a href="#additional-information">Additional information</a>
+
+## Fields <a href="#fields">&para;</a>
 
 This endpoint returns resources with the following fields.
 
@@ -17,7 +27,7 @@ This endpoint returns resources with the following fields.
 * `editable`: A boolean that indicates whether or not a user
   should be able to customize the reminders beneath this content
 
-## Adding a Goal
+## Adding a Goal <a href="#adding-a-goal">&para;</a>
 
 To associate a Goal with a User, POST to `/api/users/goals/` with the
 following data:
@@ -30,22 +40,30 @@ this information with a Category:
     {'goal': GOAL_ID, 'primary_category': CATEGORY_ID}
 
 
-## Viewing the Goal data
+## Viewing the Goal data <a href="#viewing-the-goal-data">&para;</a>
 
 Additional information for the Goal mapping is available at
 `/api/users/goals/{usergoal_id}/`. In this case, `{usergoal_id}` is the
 database id for the mapping between a user and a goal.
 
-## Removing a Goal from the user's list.
+## Filtering <a href="#filtering">&para;</a>
+
+UserGoals can be filtered using a query string parameter. To filter for selected
+goals that have an action scheduled _today_, use the following:
+
+* `/api/users/goals/?today=1`
+
+
+## Removing a Goal from the user's list. <a href="#removing-a-goal-from-the-users-list">&para;</a>
 
 Send a DELETE request to the usergoal mapping endpoint:
 `/api/users/goals/{usergoal_id}/`.
 
-## Update a Goal Mapping.
+## Update a Goal Mapping. <a href="#update-a-goal-mapping">&para;</a>
 
 Updating a goal mapping is currently not supported.
 
-## Additional information
+## Additional information <a href="#additional-information">&para;</a>
 
 The Goals that a User has selected are also available through the
 `/api/users/` endpoint as a `goals` object on the user.
