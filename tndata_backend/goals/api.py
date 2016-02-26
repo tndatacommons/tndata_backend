@@ -230,7 +230,6 @@ class UserGoalViewSet(VersionedViewSetMixin,
         self.queryset = models.UserGoal.objects.accepted_or_public(
             user=self.request.user
         )
-
         # If we're trying to filter goals that are only relevant for
         # notifications (actions) delivered today, we need to first look
         # up those actions, then query for their parent behviors' goals.
@@ -244,7 +243,7 @@ class UserGoalViewSet(VersionedViewSetMixin,
             )
             goal_ids = useractions.values_list(
                 "action__behavior__goals__id", flat=True)
-            self.queryset = self.queryset.filter(id__in=goal_ids)
+            self.queryset = self.queryset.filter(goal__id__in=goal_ids)
         return self.queryset
 
     def get_serializer(self, *args, **kwargs):
