@@ -83,6 +83,21 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             )
         return self.queryset
 
+    def retrieve(self, request, *args, **kwargs):
+        """If we're dealing with an authenticated user, AND that user has
+        selected the goal with the given ID, we should return some details
+        (even if the goal is not in a public package."""
+        if request.user.is_authenticated():
+            ug = models.UserGoal.objects.filter(
+                user=request.user,
+                goal__id=kwargs.get('pk', None),
+                goal__state='published'
+            )
+            if ug.exists():
+                serializer = self.get_serializer(ug.get().goal)
+                return Response(serializer.data)
+        return super().retrieve(request, *args, **kwargs)
+
 
 class TriggerViewSet(VersionedViewSetMixin,
                      mixins.CreateModelMixin,
