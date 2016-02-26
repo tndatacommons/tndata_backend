@@ -229,9 +229,13 @@ class UserProfile(models.Model):
         question_id = 12  # My sex is:
         answer_key = 'selected_option_text'
         qtype = 'multiplechoicequestion'
+        result = None
         for d in self._get_profile_survey_responses(qtype, question_id):
-            return d.get(answer_key)
-        return None
+            if d.get(answer_key):
+                result = d.get(answer_key)
+        if result is None:  # Fall back to gender
+            result = self.gender
+        return result
 
     def _get_survey_instrument_results(self, instrument_id):
         # UGH. We shoe-horned this shit into a survey and now there's no
