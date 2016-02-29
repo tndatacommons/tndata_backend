@@ -56,6 +56,16 @@ class CustomActionManager(models.Manager):
 
 class DailyProgressManager(models.Manager):
 
+    def exists_today(self, user):
+        """Check to see if there's already a progress object for today. If so,
+        return it's ID (or None)"""
+        try:
+            start, end = user_utils.local_day_range(user)
+            obj = self.filter(user=user, created_on__range=(start, end)).get()
+            return obj.id
+        except self.model.DoesNotExist:
+            return None
+
     def for_today(self, user):
         """Get/Create the current day's DailyProgress instance for the user"""
         start, end = user_utils.local_day_range(user)
