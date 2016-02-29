@@ -52,7 +52,7 @@ class PublicViewSetPagination(PageNumberPagination):
         return project_settings.REST_FRAMEWORK.get('PAGE_SIZE', 25)
 
 
-class IsOwner(permissions.BasePermission):
+class IsOwner(permissions.IsAuthenticated):
     """Only allow owners of an object to view/edit it."""
 
     def has_object_permission(self, request, view, obj):
