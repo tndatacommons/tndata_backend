@@ -10,6 +10,7 @@ from ..models import (
     Category,
     CustomGoal,
     CustomAction,
+    DailyProgress,
     Goal,
     PackageEnrollment,
     Trigger,
@@ -33,6 +34,16 @@ from ..serializer_fields import (
     SimpleGoalField,
     SimpleTriggerField,
 )
+
+
+class DailyProgressSerializer(ObjectTypeModelSerializer):
+
+    class Meta:
+        model = DailyProgress
+        fields = (
+            'id', 'user', 'actions_total', 'actions_completed', 'actions_snoozed',
+            'actions_dismissed', 'updated_on', 'created_on', 'object_type',
+        )
 
 
 class SearchSerializer(HaystackSerializer):

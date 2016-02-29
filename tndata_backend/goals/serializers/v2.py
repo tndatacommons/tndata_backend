@@ -5,6 +5,7 @@ from ..models import (
     Action,
     Behavior,
     Category,
+    DailyProgress,
     Goal,
     Trigger,
     UserAction,
@@ -30,6 +31,19 @@ from .v1 import (  # flake8: noqa
     ReadOnlyUserActionSerializer,
     TriggerSerializer,
 )
+
+
+class DailyProgressSerializer(ObjectTypeModelSerializer):
+
+    class Meta:
+        model = DailyProgress
+        fields = (
+            'id', 'user', 'actions_total', 'actions_completed', 'actions_snoozed',
+            'actions_dismissed', 'customactions_total', 'customactions_completed',
+            'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
+            'behaviors_status', 'goal_status', 'updated_on', 'created_on',
+            'object_type',
+        )
 
 
 class CategorySerializer(ObjectTypeModelSerializer):
