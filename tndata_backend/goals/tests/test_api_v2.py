@@ -15,6 +15,7 @@ from .. models import (
     CustomAction,
     CustomActionFeedback,
     CustomGoal,
+    DailyProgress,
     Goal,
     PackageEnrollment,
     Trigger,
@@ -2851,3 +2852,101 @@ class TestCustomActionAPI(V2APITestCase):
 
         # clean up
         Trigger.objects.filter(id=custom_trigger.id).delete()
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+@override_settings(CACHES=TEST_CACHES)
+class TestDailyProgressAPI(V2APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user('dp', 'dp@example.com', 'dp-asdf')
+        self.dp = DailyProgress.objects.create(user=self.user)
+        self.payload = {'actions_completed': 1}
+
+    def tearDown(self):
+        DailyProgress.objects.filter(id=self.dp.id).delete()
+
+    def test_get_dailyprogress_list_anon(self):
+        url = self.get_url('dailyprogress-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_dailyprogress_list(self):
+        url = self.get_url('dailyprogress-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_post_dailyprogress_list_unauthed(self):
+        """Ensure this endpoint is read-only."""
+        url = self.get_url('dailyprogress-list')
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_dailyprogress_list(self):
+        """Ensure this endpoint is read-only."""
+        url = self.get_url('dailyprogress-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # It shouldn't get created, it should just update the existing object
+        self.assertEqual(response.data['id'], self.dp.id)
+        self.assertEqual(response.data['actions_completed'], 1)
+
+    def test_get_dailyprogress_detail_anon(self):
+        url = self.get_url('dailyprogress-detail', args=[self.dp.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_dailyprogress_detail(self):
+        url = self.get_url('dailyprogress-detail', args=[self.dp.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.dp.id)
+
+    def test_post_dailyprogress_detail(self):
+        url = self.get_url('dailyprogress-detail', args=[self.dp.id])
+        # Not allowed for anon...
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # nor for authenticated users
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, self.payload)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_post_dailyprogress_checkin_anon(self):
+        url = self.get_url('dailyprogress-checkin')
+        response = self.client.post(url, {'goal': 1, 'daily_checkin': 1})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_dailyprogress_checkin(self):
+        url = self.get_url('dailyprogress-checkin')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        # The user must have adopted this goal for this to work
+        goal = Goal.objects.create(title="Checkin", subtitle="...")
+        goal.publish()
+        goal.save()
+        UserGoal.objects.create(goal=goal, user=self.user)
+
+        payload = {'goal': goal.id, 'daily_checkin': 4}
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected = {'goal-{}'.format(goal.id): 4}
+        self.assertEqual(response.data['goal_status'], expected)
