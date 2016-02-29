@@ -12,6 +12,7 @@ from .. models import (
     Action,
     Behavior,
     Category,
+    DailyProgress,
     Goal,
     Trigger,
     UserAction,
@@ -58,6 +59,37 @@ class TestCategoryManager(TestCase):
         self.assertIn(self.published_category, results)
         self.assertNotIn(self.packaged_category, results)
         self.assertNotIn(self.draft_category, results)
+
+
+class TestDailyProgressManager(TestCase):
+    """Tests for the `DailyProgressManager` manager."""
+
+    def test_exists_today(self):
+        # When a user has no data
+        u = User.objects.create_user('dp-exists', 'dp-exists@example.com', 'x')
+        self.assertIsNone(DailyProgress.objects.exists_today(u))
+
+        # When a user does have a DailyProgress instance
+        dp = DailyProgress.objects.create(user=u)
+        self.assertEqual(dp.id, DailyProgress.objects.exists_today(u))
+
+        # clean up
+        u.delete()
+        dp.delete()
+
+    def for_today(self):
+        # When a user has no data
+        u = User.objects.create_user('dp-exists', 'dp-exists@example.com', 'x')
+        dp = DailyProgress.objects.for_today(u)
+        self.assertEqual(dp.user, u)
+
+        # When we fetch it again, it should return the same instance.
+        other_dp = DailyProgress.objects.for_today(u)
+        self.assertEqual(dp.id, other_dp.id)
+
+        # clean up
+        u.delete()
+        dp.delete()
 
 
 class TestGoalManager(TestCase):
