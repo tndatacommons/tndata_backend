@@ -10,7 +10,7 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
@@ -1158,3 +1158,80 @@ class CustomActionViewSet(VersionedViewSetMixin,
             data={'error': error_msg},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class DailyProgressViewSet(VersionedViewSetMixin,
+                           mixins.CreateModelMixin,
+                           mixins.ListModelMixin,
+                           mixins.RetrieveModelMixin,
+                           mixins.UpdateModelMixin,
+                           viewsets.GenericViewSet):
+    """ViewSet for DailyProgress. See the api_docs/ for more info"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.DailyProgress.objects.all()
+    serializer_class_v1 = v1.DailyProgressSerializer
+    serializer_class_v2 = v2.DailyProgressSerializer
+    docstring_prefix = "goals/api_docs"
+    permission_classes = [IsOwner]
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated():
+            return self.queryset.none()
+        qs = super().get_queryset()
+        return qs.filter(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        """Ensure our user id gets set correctly."""
+        request.data['user'] = request.user.id
+        return super().update(request, *args, **kwargs)
+
+    def create(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
+        # Ensure we don't create duplicates for a day. If the thing exists
+        # for today, fetch it an update instead.
+        obj_id = models.DailyProgress.objects.exists_today(request.user)
+        if obj_id:
+            request.data['id'] = obj_id
+            kwargs['pk'] = obj_id  # XXX: We can't just set this in kwargs...
+            self.kwargs = kwargs  # XXX: we have to also save it on the class
+            return self.update(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
+
+    @list_route(methods=['post'], permission_classes=[IsOwner], url_path='checkin')
+    def set_progress(self, request, pk=None):
+        """A route that allows us to set daily checkin values related to
+        a user's goal(s). (the end-of-the-day checkin in the app).
+
+        Expected Data:
+
+            {
+              "goal": <goal_id>
+              "daily_checkin": <number>
+            }
+
+        This endpoint, which only accepts POST requests is available at:
+
+            /api/users/progress/checkin/
+
+        """
+        err_msg = ""
+        if not self.request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            # Ensure the data we're getting is valid
+            value = int(request.data.get('daily_checkin', None))
+            goal_id = request.data.get('goal', None)
+            assert request.user.usergoal_set.filter(goal__id=goal_id).exists()
+
+            dp = models.DailyProgress.objects.for_today(request.user)
+            dp.set_goal_status(goal_id, value)
+            dp.save()
+            serializer = self.get_serializer(dp)
+            return Response(serializer.data)
+        except (ValueError, TypeError):
+            err_msg = "Invalid value: {}".format(request.data.get('daily_checkin'))
+        except AssertionError:
+            err_msg = "User has no goal with id: {}".format(request.data.get('goal'))
+
+        return Response(data={'error': err_msg}, status=status.HTTP_400_BAD_REQUEST)
