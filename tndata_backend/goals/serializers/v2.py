@@ -45,6 +45,14 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
             'object_type',
         )
 
+    def to_representation(self, obj):
+        results = super().to_representation(obj)
+        # The goal_status and behavior_status should just be simple dicts
+        # but the built-in serialization wants to leave them as strings.
+        results['behaviors_status'] = obj.behaviors_status
+        results['goal_status'] = obj.goal_status
+        return results
+
 
 class CategorySerializer(ObjectTypeModelSerializer):
     """A Serializer for `Category`."""
