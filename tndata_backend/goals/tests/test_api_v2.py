@@ -235,8 +235,7 @@ class TestTriggerAPI(V2APITestCase):
 
         # Anonymous requests...
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Authenticated requests...
         self.client.credentials(
@@ -275,7 +274,7 @@ class TestTriggerAPI(V2APITestCase):
     def test_get_trigger_detail_unauthd(self):
         url = self.get_url('trigger-detail', args=[self.trigger.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_trigger_detail_authd(self):
         url = self.get_url('trigger-detail', args=[self.trigger.id])
@@ -753,8 +752,7 @@ class TestUserGoalAPI(V2APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = self.get_url('usergoal-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_usergoal_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -780,7 +778,7 @@ class TestUserGoalAPI(V2APITestCase):
         """Unauthenticated requests should not be allowed to post new UserGoals"""
         url = self.get_url('usergoal-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_usergoal_list_athenticated(self):
         """Authenticated users Should be able to create a UserGoal."""
@@ -840,7 +838,7 @@ class TestUserGoalAPI(V2APITestCase):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('usergoal-detail', args=[self.ug.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_usergoal_detail(self):
         """Ensure authenticated users can view this endpoint."""
@@ -855,7 +853,7 @@ class TestUserGoalAPI(V2APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = self.get_url('usergoal-detail', args=[self.ug.id])
         response = self.client.post(url, {'goal': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -868,7 +866,7 @@ class TestUserGoalAPI(V2APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = self.get_url('usergoal-detail', args=[self.ug.id])
         response = self.client.put(url, {'goal': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -881,7 +879,7 @@ class TestUserGoalAPI(V2APITestCase):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('usergoal-detail', args=[self.ug.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_usergoal_detail(self):
         """Ensure authenticated users can deelte."""
@@ -905,7 +903,7 @@ class TestUserGoalAPI(V2APITestCase):
         ]
 
         response = self.client.delete(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Clean up.
         other_ug.delete()
@@ -981,8 +979,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = self.get_url('userbehavior-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_userbehavior_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -1030,7 +1027,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         """Unauthenticated requests should not be allowed to post"""
         url = self.get_url('userbehavior-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_userbehavior_list_athenticated(self):
         """Authenticated users Should be able to create a UserBehavior."""
@@ -1081,7 +1078,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('userbehavior-detail', args=[self.ub.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_userbehavior_detail(self):
         """Ensure authenticated users can view this endpoint."""
@@ -1096,7 +1093,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = self.get_url('userbehavior-detail', args=[self.ub.id])
         response = self.client.post(url, {'behavior': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -1109,7 +1106,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = self.get_url('userbehavior-detail', args=[self.ub.id])
         response = self.client.put(url, {'behavior': 1})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_put_userbehavior_detail_authenticated(self):
         """PUT requests should update a UserBehavior (sorta). While this is
@@ -1164,7 +1161,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('userbehavior-detail', args=[self.ub.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_userbehavior_detail(self):
         """Ensure authenticated users can deelte."""
@@ -1191,7 +1188,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         ]
 
         response = self.client.delete(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Clean up.
         other_ub.delete()
@@ -1310,8 +1307,7 @@ class TestUserActionAPI(V2APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = self.get_url('useraction-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_useraction_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -1422,7 +1418,7 @@ class TestUserActionAPI(V2APITestCase):
         """Unauthenticated requests should not be allowed to post"""
         url = self.get_url('useraction-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_useraction_list_athenticated(self):
         """Authenticated users should be able to create a UserAction."""
@@ -1528,7 +1524,7 @@ class TestUserActionAPI(V2APITestCase):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('useraction-detail', args=[self.ua.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_useraction_detail_authenticated(self):
         """Ensure authenticated users can view this endpoint."""
@@ -1543,7 +1539,7 @@ class TestUserActionAPI(V2APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = self.get_url('useraction-detail', args=[self.ua.id])
         response = self.client.post(url, {'action': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -1557,7 +1553,7 @@ class TestUserActionAPI(V2APITestCase):
         unauthenticated users."""
         url = self.get_url('useraction-detail', args=[self.ua.id])
         response = self.client.put(url, {'action': 1})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_put_useraction_detail_authenticated_with_no_data(self):
         """PUT requests should update a UserAction (sorta). While this is
@@ -1788,7 +1784,7 @@ class TestUserActionAPI(V2APITestCase):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('useraction-detail', args=[self.ua.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_useraction_detail_authenticated(self):
         """Ensure authenticated users can deelte."""
@@ -1815,7 +1811,7 @@ class TestUserActionAPI(V2APITestCase):
         ]
 
         response = self.client.delete(url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Clean up.
         other_ua.delete()
@@ -1949,8 +1945,7 @@ class TestUserCategoryAPI(V2APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = self.get_url('usercategory-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_usercategory_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -1994,7 +1989,7 @@ class TestUserCategoryAPI(V2APITestCase):
         """POST should not be allowed for unauthenticated users"""
         url = self.get_url('usercategory-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_usercategory_list_authenticated(self):
         """POST should be allowed for authenticated users"""
@@ -2050,7 +2045,7 @@ class TestUserCategoryAPI(V2APITestCase):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('usercategory-detail', args=[self.uc.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_usercategory_detail_authenticated(self):
         """Ensure authenticated users can view this endpoint."""
@@ -2065,7 +2060,7 @@ class TestUserCategoryAPI(V2APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = self.get_url('usercategory-detail', args=[self.uc.id])
         response = self.client.post(url, {'category': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2078,7 +2073,7 @@ class TestUserCategoryAPI(V2APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = self.get_url('usercategory-detail', args=[self.uc.id])
         response = self.client.put(url, {'category': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2091,7 +2086,7 @@ class TestUserCategoryAPI(V2APITestCase):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('usercategory-detail', args=[self.uc.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_usercategory_detail_authenticated(self):
         """Ensure authenticated users can deelte."""
@@ -2115,7 +2110,7 @@ class TestUserCategoryAPI(V2APITestCase):
         ]
 
         response = self.client.delete(url, uc_data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Clean up.
         other_uc.delete()
@@ -2197,8 +2192,7 @@ class TestPackageEnrollmentAPI(V2APITestCase):
     def test_get_list_unauthenticated(self):
         """Ensure un-authenticated requests don't expose any results."""
         response = self.client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -2212,7 +2206,7 @@ class TestPackageEnrollmentAPI(V2APITestCase):
     def test_post_list_unauthenticated(self):
         """Creating objects via the api is not allowed."""
         response = self.client.post(self.url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_list_authenticated(self):
         """Creating objects via the api is not allowed."""
@@ -2225,7 +2219,7 @@ class TestPackageEnrollmentAPI(V2APITestCase):
     def test_get_detail_unauthenticated(self):
         """Ensure un-authenticated requests don't expose any results."""
         response = self.client.get(self.detail_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_detail_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -2294,7 +2288,7 @@ class TestPackageEnrollmentAPI(V2APITestCase):
     def test_put_detail_unauthenticated(self):
         """Ensure updates are not allowed when unauthenticated."""
         response = self.client.put(self.detail_url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_put_detail_updates_accept(self):
         """Updating PackageEnrollment should work when authenticated."""
@@ -2327,8 +2321,7 @@ class TestCustomGoalAPI(V2APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = self.get_url('customgoal-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_customgoal_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -2355,7 +2348,7 @@ class TestCustomGoalAPI(V2APITestCase):
         CustomGoals"""
         url = self.get_url('customgoal-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_customgoal_list_athenticated(self):
         """Authenticated users should be able to create a CustomGoal."""
@@ -2371,7 +2364,7 @@ class TestCustomGoalAPI(V2APITestCase):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('customgoal-detail', args=[self.customgoal.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_customgoal_detail(self):
         """Ensure authenticated users can view this endpoint."""
@@ -2386,7 +2379,7 @@ class TestCustomGoalAPI(V2APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = self.get_url('customgoal-detail', args=[self.customgoal.id])
         response = self.client.post(url, {'title': 'foo'})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2399,7 +2392,7 @@ class TestCustomGoalAPI(V2APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = self.get_url('customgoal-detail', args=[self.customgoal.id])
         response = self.client.put(url, {'title': 'Altered'})
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_put_customgoal_detail(self):
         """Ensure PUTing to the detail endpoint updates."""
@@ -2416,7 +2409,7 @@ class TestCustomGoalAPI(V2APITestCase):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('customgoal-detail', args=[self.customgoal.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_customgoal_detail(self):
         """Ensure authenticated users can delete."""
@@ -2470,8 +2463,7 @@ class TestCustomActionAPI(V2APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = self.get_url('customaction-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_customaction_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -2501,7 +2493,7 @@ class TestCustomActionAPI(V2APITestCase):
         CustomActions"""
         url = self.get_url('customaction-list')
         response = self.client.post(url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_customaction_list_athenticated(self):
         """Authenticated users should be able to create a CustomAction."""
@@ -2517,7 +2509,7 @@ class TestCustomActionAPI(V2APITestCase):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('customaction-detail', args=[self.customaction.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_customaction_detail(self):
         """Ensure authenticated users can view this endpoint."""
@@ -2532,7 +2524,7 @@ class TestCustomActionAPI(V2APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = self.get_url('customaction-detail', args=[self.customaction.id])
         response = self.client.post(url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2545,7 +2537,7 @@ class TestCustomActionAPI(V2APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = self.get_url('customaction-detail', args=[self.customaction.id])
         response = self.client.put(url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_put_customaction_detail(self):
         """Ensure PUTing to the detail endpoint updates."""
@@ -2567,7 +2559,7 @@ class TestCustomActionAPI(V2APITestCase):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('customaction-detail', args=[self.customaction.id])
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_customaction_detail(self):
         """Ensure authenticated users can delete."""
@@ -2587,12 +2579,12 @@ class TestCustomActionAPI(V2APITestCase):
     def test_get_complete_unathenticated(self):
         url = self.get_url('customaction-complete', args=[self.customaction.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_complete_unathenticated(self):
         url = self.get_url('customaction-complete', args=[self.customaction.id])
         response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_complete(self):
         """POSTing to the complete url should crate an UserCompletedCustomAction
