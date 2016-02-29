@@ -131,6 +131,15 @@ class DailyProgress(models.Model):
         help_text="Describes the user's status on work toward this behavior"
     )
 
+    # This is where we store the daily progress feedback for goals. It's a
+    # dict of the form: {'goal-<id>': int_value}, where each value is the
+    # user's self-reported feedback.
+    goal_status = JSONField(
+        blank=True,
+        default=dict,
+        help_text="User feedback on their progress toward achieving goals"
+    )
+
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -162,6 +171,12 @@ class DailyProgress(models.Model):
             'completed': self.customactions_completed,
             'dismissed': self.customactions_dismissed,
         }
+
+    def set_goal_status(self, goal_id, value):
+        if all([goal_id, value]):
+            key = 'goal-{}'.format(goal_id)
+            self.goal_status[key] = value
+        return self.goal_status
 
     def set_status(self, behavior, status):
         key = 'behavior-{}'.format(behavior.id)
