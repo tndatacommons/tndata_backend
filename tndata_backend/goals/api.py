@@ -789,6 +789,7 @@ class UserCategoryViewSet(VersionedViewSetMixin,
     serializer_class_v1 = v1.UserCategorySerializer
     serializer_class_v2 = v2.UserCategorySerializer
     docstring_prefix = "goals/api_docs"
+    permission_classes = [IsOwner]
 
     def get_queryset(self):
         return models.UserCategory.objects.accepted_or_public(user=self.request.user)
