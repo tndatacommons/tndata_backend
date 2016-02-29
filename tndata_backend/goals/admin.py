@@ -518,14 +518,18 @@ class DailyProgressAdmin(UserRelatedModelAdmin):
     )
     list_display = ('user', 'actions_total', 'behaviors_total', 'created_on')
     raw_id_fields = ('user', )
-    exclude = ('behaviors_status', )
+    exclude = ('behaviors_status', 'goal_status')
     readonly_fields = (
         'actions_total', 'actions_completed', 'actions_snoozed',
         'actions_dismissed', 'customactions_total', 'customactions_completed',
         'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
-        'behaviors_status_details', 'updated_on', 'created_on'
+        'behaviors_status_details', 'goal_status_details', 'updated_on', 'created_on'
     )
 
     def behaviors_status_details(self, obj):
         return mark_safe("<pre>{0}</pre>".format(pformat(obj.behaviors_status)))
+
+    def goal_status_details(self, obj):
+        return mark_safe("<pre>{0}</pre>".format(pformat(obj.goal_status)))
+
 admin.site.register(models.DailyProgress, DailyProgressAdmin)
