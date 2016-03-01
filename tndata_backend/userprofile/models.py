@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from django.conf import settings
-from django.core.urlresolvers import reverse_lazy
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.signals import post_save
 from django.db.models import ObjectDoesNotExist
@@ -104,19 +104,23 @@ class UserProfile(models.Model):
             self.save()
 
     def get_absolute_url(self):
-        return reverse_lazy("userprofile:detail", args=[self.pk])
+        return reverse("userprofile:detail", args=[self.pk])
 
     def get_update_url(self):
-        return reverse_lazy("userprofile:update", args=[self.pk])
+        return reverse("userprofile:update", args=[self.pk])
 
     def _response(self, question):
+        """Given a Question, return the user's latest response."""
         m = {
             'binaryquestion': 'binaryresponse_set',
             'likertquestion': 'likertresponse_set',
             'multiplechoicequestion': 'multiplechoiceresponse_set',
             'openendedquestion': 'openendedresponse_set'
         }
-        return getattr(question, m[question.question_type]).latest()
+        # Get the responses for the given type of question, then filter
+        # those for the current user, and return the latest
+        responses = getattr(question, m[question.question_type])
+        return responses.filter(user=self.user).latest()
 
     def _get_bio_responses(self, question_type, question_id):
         qid = 'question_id'
@@ -240,7 +244,7 @@ class UserProfile(models.Model):
     def _get_survey_instrument_results(self, instrument_id):
         # UGH. We shoe-horned this shit into a survey and now there's no
         # clean way to get what *should* be a 1-to-1 relationship between
-        # a user an some responses. I'm just hard-coding this for now because
+        # a user and some responses. I'm just hard-coding this for now because
         # i hate future me.
         results = []
         try:
