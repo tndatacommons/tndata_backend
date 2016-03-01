@@ -153,10 +153,13 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             # ordering of the results, like: [0, 1, 0, 0], where  0's mean
             # pluck from actions, 1 customactions
 
-            fields = ["next_trigger_date"]
+            fields = ["next_trigger_date", "action__id"]
             ordering = [t + (0, ) for t in upcoming.values_list(*fields)]
+
+            fields = ["next_trigger_date", "id"]
             ordering += [t + (1, ) for t in upcoming_cas.values_list(*fields)]
-            self._feed['ordering'] = [t[1] for t in sorted(ordering)]
+            #self._feed['ordering'] = [t[1] for t in sorted(ordering)]
+            self._feed['ordering'] = sorted(ordering)
 
             # Flatten the upcoming Actions/CustomActions into IDs
             upcoming = upcoming.values_list("action__id", flat=True)
