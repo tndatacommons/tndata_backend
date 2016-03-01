@@ -101,6 +101,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     upcoming_actions = serializers.SerializerMethodField(read_only=True)
     upcoming_customactions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
+    ordering = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
@@ -110,7 +111,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'username', 'email', 'token', 'object_type',
             'action_feedback', 'progress', 'upcoming_actions',
-            'upcoming_customactions', 'suggestions', 'object_type',
+            'upcoming_customactions', 'ordering', 'suggestions', 'object_type',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -125,6 +126,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                 'progress': None,
                 'upcoming_actions': [],
                 'upcoming_customactions': [],
+                'ordering': [],
                 'suggestions': [],
                 'object_type': 'feed',
             }
@@ -143,11 +145,23 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
             # Actions / CustomActions to do today.
             upcoming = user_feed.todays_actions(obj)
-            upcoming = upcoming.values_list("action__id", flat=True)
-            self._feed['upcoming_actions'] = list(upcoming)
-
             upcoming_cas = user_feed.todays_customactions(obj)
+
+            # Figure out the ordering.
+            # This is a little confusing, but since the app cannot handle
+            # heterogeneous lists, we'll construct a list that tells us the
+            # ordering of the results, like: [0, 1, 0, 0], where  0's mean
+            # pluck from actions, 1 customactions
+
+            fields = ["next_trigger_date"]
+            ordering = [t + (0, ) for t in upcoming.values_list(*fields)]
+            ordering += [t + (1, ) for t in upcoming_cas.values_list(*fields)]
+            self._feed['ordering'] = [t[1] for t in sorted(ordering)]
+
+            # Flatten the upcoming Actions/CustomActions into IDs
+            upcoming = upcoming.values_list("action__id", flat=True)
             upcoming_cas = upcoming_cas.values_list("id", flat=True)
+            self._feed['upcoming_actions'] = list(upcoming)
             self._feed['upcoming_customactions'] = list(upcoming_cas)
 
             # Goal Suggestions
@@ -155,6 +169,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             srz = GoalSerializer(suggestions, many=True, user=obj)
             self._feed['suggestions'] = srz.data
         return self._feed
+
+    def get_ordering(self, obj):
+        return self._get_feed(obj)['ordering']
 
     def get_action_feedback(self, obj):
         return self._get_feed(obj)['action_feedback']
