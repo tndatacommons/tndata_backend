@@ -2488,6 +2488,31 @@ class TestCustomActionAPI(V2APITestCase):
         self.assertTrue('updated_on' in result)
         self.assertTrue('created_on' in result)
 
+    def test_customaction_list_filtered(self):
+        """Ensure results can be filtered by custom goal id or title slug."""
+        url = self.get_url('customaction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+
+        # Filter by parent goal ID.
+        filtered_url = url + "&customgoal={}".format(self.customgoal.id)
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Filter by parent goal title slug.
+        filtered_url = url + "&customgoal={}".format(self.customgoal.title_slug)
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Filter by Non-existing parent goal ID (should return 0 results)
+        filtered_url = url + "&customgoal=9999999"
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
     def test_post_customaction_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post new
         CustomActions"""

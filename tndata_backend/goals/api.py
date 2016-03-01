@@ -963,9 +963,16 @@ class CustomActionViewSet(VersionedViewSetMixin,
     permission_classes = [IsOwner]
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
-            return models.CustomAction.objects.filter(user=self.request.user)
-        return models.CustomAction.objects.none()
+        self.queryset = models.CustomAction.objects.filter(user=self.request.user)
+
+        # Filter on CustomGoals
+        cg = self.request.GET.get('customgoal', None)
+        if cg and cg.isnumeric():
+            self.queryset = self.queryset.filter(customgoal__id=cg)
+        elif cg:
+            self.queryset = self.queryset.filter(customgoal__title_slug=cg)
+
+        return self.queryset
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""

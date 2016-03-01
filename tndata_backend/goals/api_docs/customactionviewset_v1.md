@@ -19,6 +19,14 @@ GET requests return an array of results containing the following:
 * `created_on`: Date the action was created.
 * `object_type`: Will always be the string, `customaction`.
 
+## Filtering
+
+You may filter the result of listing custom actions by their parent goals. To
+do so, include a querystring parameter of `customgoal` that includes either
+the goal's database ID or title slug.
+
+* `/api/users/customactions/?customgoal={id}`
+* `/api/users/customactions/?customgoal={title_slug}`
 
 ## Creating Custom Actions
 
@@ -64,8 +72,6 @@ To do this, send a PUT request to the detail url
   should next fire. The date should be relative to the user's local time.
 * `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &amp;
   frequencies at which the reminder should occur.
-
-
 
 ## Completing Custom Action
 
