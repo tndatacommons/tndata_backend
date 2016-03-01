@@ -207,7 +207,7 @@ class TestTriggerAPI(APITestCase):
 
     def test_get_trigger_list(self):
         response = self.client.get(reverse('trigger-list'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_trigger_list(self):
         """Ensure this endpoint is read-only."""
@@ -216,7 +216,7 @@ class TestTriggerAPI(APITestCase):
 
     def test_get_trigger_detail(self):
         response = self.client.get(reverse('trigger-detail', args=[1]))
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_put_trigger_detail(self):
         response = self.client.put(reverse('trigger-detail', args=[1]), {})
@@ -702,7 +702,7 @@ class TestUserGoalAPI(APITestCase):
         """Unauthenticated requests should not be allowed to post new UserGoals"""
         url = reverse('usergoal-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_usergoal_list_athenticated(self):
         """Authenticated users Should be able to create a UserGoal."""
@@ -777,7 +777,7 @@ class TestUserGoalAPI(APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = reverse('usergoal-detail', args=[self.ug.id])
         response = self.client.post(url, {'goal': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -790,7 +790,7 @@ class TestUserGoalAPI(APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = reverse('usergoal-detail', args=[self.ug.id])
         response = self.client.put(url, {'goal': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -956,7 +956,7 @@ class TestUserBehaviorAPI(APITestCase):
         """Unauthenticated requests should not be allowed to post"""
         url = reverse('userbehavior-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_userbehavior_list_athenticated(self):
         """Authenticated users Should be able to create a UserBehavior."""
@@ -1022,7 +1022,7 @@ class TestUserBehaviorAPI(APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = reverse('userbehavior-detail', args=[self.ub.id])
         response = self.client.post(url, {'behavior': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -1287,7 +1287,7 @@ class TestUserActionAPI(APITestCase):
         """Unauthenticated requests should not be allowed to post"""
         url = reverse('useraction-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_useraction_list_athenticated(self):
         """Authenticated users should be able to create a UserAction."""
@@ -1408,7 +1408,7 @@ class TestUserActionAPI(APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = reverse('useraction-detail', args=[self.ua.id])
         response = self.client.post(url, {'action': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -1824,7 +1824,7 @@ class TestUserCategoryAPI(APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = reverse('usercategory-detail', args=[self.uc.id])
         response = self.client.post(url, {'category': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -1837,7 +1837,7 @@ class TestUserCategoryAPI(APITestCase):
         """Ensure PUTing to the detail endpoint is not allowed."""
         url = reverse('usercategory-detail', args=[self.uc.id])
         response = self.client.put(url, {'category': 1})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2085,8 +2085,7 @@ class TestCustomGoalAPI(APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = reverse('customgoal-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_customgoal_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -2113,7 +2112,7 @@ class TestCustomGoalAPI(APITestCase):
         CustomGoals"""
         url = reverse('customgoal-list')
         response = self.client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_customgoal_list_athenticated(self):
         """Authenticated users should be able to create a CustomGoal."""
@@ -2144,7 +2143,7 @@ class TestCustomGoalAPI(APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = reverse('customgoal-detail', args=[self.customgoal.id])
         response = self.client.post(url, {'title': 'foo'})
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2221,8 +2220,7 @@ class TestCustomActionAPI(APITestCase):
         """Ensure un-authenticated requests don't expose any results."""
         url = reverse('customaction-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_customaction_list_authenticated(self):
         """Ensure authenticated requests DO expose results."""
@@ -2252,7 +2250,7 @@ class TestCustomActionAPI(APITestCase):
         CustomActions"""
         url = reverse('customaction-list')
         response = self.client.post(url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_customaction_list_athenticated(self):
         """Authenticated users should be able to create a CustomAction."""
@@ -2283,7 +2281,7 @@ class TestCustomActionAPI(APITestCase):
         """Ensure POSTing to the detail endpoint is not allowed."""
         url = reverse('customaction-detail', args=[self.customaction.id])
         response = self.client.post(url, self.payload)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # Even if you're authenticated
         self.client.credentials(
@@ -2338,12 +2336,12 @@ class TestCustomActionAPI(APITestCase):
     def test_get_complete_unathenticated(self):
         url = reverse('customaction-complete', args=[self.customaction.id])
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_complete_unathenticated(self):
         url = reverse('customaction-complete', args=[self.customaction.id])
         response = self.client.post(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_complete(self):
         """POSTing to the complete url should crate an UserCompletedCustomAction
