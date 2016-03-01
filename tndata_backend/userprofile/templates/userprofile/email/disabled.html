@@ -1,0 +1,19 @@
+{% extends 'email/base_email.html' %}
+{% load util_filters %}
+
+{% block title %}{{ alert }}{% endblock %}
+
+{% block content %}
+<p>Hi,<br/><br/>
+
+<p>Your account has been disabled. Compass is only available to those who are
+14 years of age or older. If you think this has been done in error, please
+reply to this message and let us know.</p>
+
+{% endblock %}
+
+{% block post_cta %}
+  <p>Thank you!<br/><br/>-- The Compass Team</p>
+{% endblock %}
+
+{% block footer %}{% endblock %}
