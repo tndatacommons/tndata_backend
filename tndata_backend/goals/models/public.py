@@ -696,10 +696,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     ACTION_TYPE_CHOICES = (
         (STARTER, 'Starter Step'),
         (TINY, 'Tiny Version'),
-        (RESOURCE, 'Resource'),
+        (RESOURCE, 'Resource Notification'),
         (NOW, 'Do it now'),
         (LATER, 'Do it later'),
-        (CUSTOM, 'Custom'),
+        (CUSTOM, 'Custom Notification'),
     )
 
     # URLMixin attributes
