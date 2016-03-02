@@ -90,6 +90,11 @@ def form_buttons(obj, object_name=None):
         disabled = True
     else:
         disabled = False
+
+    # We're publicly referring to actions as notifications now.
+    if object_name == "Action":
+        object_name = "Notification"
+
     return {
         "obj": obj,  # The object
         "object_name": object_name,  # The object's friendly name

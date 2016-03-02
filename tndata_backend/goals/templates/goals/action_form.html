@@ -1,12 +1,15 @@
 {% extends "goals/base.html" %}
 {% load goal_tags %}
 {% load crispy_forms_tags %}
-{% block title %}Action Form{% endblock %}
+{% block title %}Notification Form{% endblock %}
 
 {% block head %}
   {{ block.super }}
   {# Custom CSS for behavior lists in the side panel #}
-  <style type="text/css">#behavior-info{display: none;}</style>
+  <style type="text/css">
+    #behavior-info{display: none;}
+    .existing-action{ display:none;}
+  </style>
   {{ form.media }}
   {{ trigger_form.media }}  {# load the recurrences widget #}
   <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' %}"></script>
@@ -26,23 +29,24 @@
   ul.until-count {display:block;}
   ul.until-count li.until,
   ul.until-count li.count {display:block; padding:0 !important;}
+
   </style>
 {% endblock %}
 
 
 {% block breadcrumbs %}
-  <li><a href="{% url 'goals:action-list' %}">Actions</a></li>
+  <li><a href="{% url 'goals:action-list' %}">Notifications</a></li>
   <li class="current">
-    {% if object %}{{ action }}{% else %}New Action {% endif %}
+    {% if object %}{{ action }}{% else %}New Notification{% endif %}
   </li>
 {% endblock %}
 
 {% block content %}
 <h1>
 {% if object %}
-  Update {{acton_type|title}} Action: {{object }}
+  Update {{acton_type_name}} {{object }}
 {% else %}
-  Create {{action_type|title}} Action
+  Create {{action_type_name}}
 {% endif %}
 </h1>
 
@@ -56,7 +60,7 @@
 
 {% if form.errors or trigger_form.errors %}
   <div class="alert-box alert">
-    <i class="fa fa-warning"></i> <strong>Action not saved</strong><br/>
+    <i class="fa fa-warning"></i> <strong>Notification not saved</strong><br/>
     There was a problem saving your action. See the messages below.
   </div>
 {% endif %}
@@ -68,13 +72,41 @@
   enctype="multipart/form-data">{% csrf_token %}
 <div class="row">
   <div class="large-6 small-12 columns">
-    <p>An <strong>Action</strong> is the unit of activity in which
-    users will engage.</p>
+    <p>A <strong>Notification</strong> is a container for information that
+    is delivered to a user. It also contains information regarding the frequency
+    with which notifications are delivered.</p>
     {% include "goals/_form_fields_sans_notes.html" %}
     {% crispy trigger_form %}
     {% form_buttons object "Action" %}
   </div>
   <div class="large-6 small-12 columns">
+    <div class="panel">
+    <p><i class="fa fa-info-circle"></i> Notifications are related to other
+    pieces of data in the following manner. Categories contain goals, goals
+    contain behaviors, and behavior may have numerous notifications.</p>
+    <hr/>
+    <pre>
+Category
+  - Goal
+  -- Behavior
+  --- Notification
+    </pre>
+    </div>
+    <p class="panel">
+      {{ form.notes.label_tag }}
+      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
+    </p>
+
+    {% with icon=object.get_absolute_icon %}
+      {% if icon %}
+        <p class="panel" style="text-align: center;">
+          Current Icon:<br/>
+          <a href="{{ icon }}" target="_blank">
+          <img src="{{ icon }}" alt="{{ object}} icon" /></a>
+        </p>
+      {% endif %}
+    {% endwith %}
+
     <div id="behavior-info" class="panel">
       <h2>Behavior</h2>
       {% for behavior in behaviors %}
@@ -93,37 +125,15 @@
         </div>
       {% endfor %}
     </div>
-    <p>The structure of our data looks something like the following:</p>
-    <pre class="panel">
-Category
-  - Goal
-  -- Behavior
-  --- Action 1
-  --- Action 2
-    </pre>
-    <p class="panel">
-      {{ form.notes.label_tag }}
-      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
-    </p>
-
-    {% with icon=object.get_absolute_icon %}
-      {% if icon %}
-        <p class="panel" style="text-align: center;">
-          Current Icon:<br/>
-          <a href="{{ icon }}" target="_blank">
-          <img src="{{ icon }}" alt="{{ object}} icon" /></a>
-        </p>
-      {% endif %}
-    {% endwith %}
 
     <table>
-      <caption>Existing Actions</caption>
+      <caption>Existing Notifications within the selected behavior</caption>
       <thead>
         <tr><th>Order</th><th>Behavior</th><th>Title</th></tr>
       </thead>
       <tbody>
       {% for action in actions %}
-        <tr>
+        <tr class="existing-action behavior-{{action.behavior_id }}">
           <td>{{ action.sequence_order }}</td>
           <td>{{ action.behavior }}</td>
           <td><a href="{{ action.get_absolute_url }}">{{ action }}</a></td>

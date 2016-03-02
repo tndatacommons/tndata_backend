@@ -36,6 +36,8 @@ $(document).ready(function() {
         $(".behaviors").hide(); // hide all other behaviors.
         $(selector).show(); // show the selected one.
         $("#behavior-info h2").text($("#id_behavior option:selected").text());
+        $('.existing-action').hide();
+        $('.existing-action.'+selector.replace("#", "")).show();
     };
 
     // We we select a Behavior, display some of it's info.

@@ -157,7 +157,7 @@ form.dropzone {
         <li class="divider"></li>
         {% with addobj=perms.goals.add_action %}
         <li{% if addobj %} class="has-dropdown"{% endif %}>
-          <a href="{% url 'goals:action-list' %}">Actions</a>
+          <a href="{% url 'goals:action-list' %}">Notifications</a>
           {% if addobj %}
             <ul class="dropdown">
             {% action_creation_menu %}
