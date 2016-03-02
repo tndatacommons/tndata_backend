@@ -1,3 +1,7 @@
+import logging
+import sys
+import traceback
+
 from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
@@ -6,6 +10,9 @@ import django_rq
 import waffle
 
 from utils.slack import post_private_message
+
+
+logger = logging.getLogger("loggly_logs")
 
 
 def get_scheduler(queue='default'):
@@ -25,11 +32,19 @@ def send(message_id):
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
     except Exception as e:
-        # NOTE: If for soem reason, a message got queued up, but something
+        # NOTE: If for some reason, a message got queued up, but something
         # happend to the original GCMMessage, and it's pre-delete signal handler
-        # failed, we'd get this exception.
+        # failed, we'd get this exception. OR if something happend during
+        # delivery to GCM, we'd get here.
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+
         args = ("notifications.queue.send()", e, settings.SITE_URL, message_id)
         log = "FAILED: {}\n{} on {} for id = {}".format(*args)
+        logger.error(log.replace("\n", ""))
+
+        # Include the traceback in the slack message.
+        tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        log = "{}\n```{}```".format(log, "\n".join(tb))
         post_private_message("bkmontgomery", log)
 
 
