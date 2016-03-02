@@ -191,13 +191,13 @@ class DailyProgress(models.Model):
         from_date = self.user.useraction_set.aggregate(Min('created_on'))
         from_date = from_date['created_on__min'] or start
 
-        # Count the UserActions selected.
+        # Count the total number of UserActions selected (ever)
         self.actions_total = self.user.useraction_set.filter(
             created_on__range=(from_date, end)).count()
 
-        # count the stats for UserCompletedActions
+        # Count the stats for today's UserCompletedActions
         ucas = self.user.usercompletedaction_set.filter(
-            created_on__range=(from_date, end))
+            created_on__range=(start, end))
         self.actions_completed = ucas.filter(
             state=UserCompletedAction.COMPLETED).count()
         self.actions_snoozed = ucas.filter(
@@ -210,7 +210,7 @@ class DailyProgress(models.Model):
         from_date = self.user.userbehavior_set.aggregate(Min('created_on'))
         from_date = from_date['created_on__min'] or start
 
-        # Count the UserBehaviors selected
+        # Count the total number of UserBehaviors selected (ever)
         self.behaviors_total = self.user.userbehavior_set.filter(
             created_on__range=(from_date, end)).count()
 
@@ -219,13 +219,13 @@ class DailyProgress(models.Model):
         from_date = self.user.customaction_set.aggregate(Min('created_on'))
         from_date = from_date['created_on__min'] or start
 
-        # Check on number of CustomAction objects we have today.
+        # Count the total number of CustomAction objects (ever)
         self.customactions_total = self.user.customaction_set.filter(
             created_on__range=(from_date, end)).count()
 
         # Count status of UserCompletedAction data for today
         uccas = self.user.usercompletedcustomaction_set.filter(
-            created_on__range=(from_date, end)
+            created_on__range=(start, end)
         )
         self.customactions_completed = uccas.filter(
             state=UserCompletedAction.COMPLETED).count()
