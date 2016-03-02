@@ -604,12 +604,17 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
     action_type = Action.CUSTOM
+    action_type_name = 'Custom Notification'
     trigger_date = None
 
     def _set_action_type(self, action_type):
         """Ensure the provided action type is valid."""
         if action_type in [at[0] for at in Action.ACTION_TYPE_CHOICES]:
             self.action_type = action_type
+            self.action_type_name = [
+                at[1] for at in Action.ACTION_TYPE_CHOICES
+                if action_type == at[0]
+            ][0]
 
     def _set_trigger_date(self, date):
         if date:
@@ -665,6 +670,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
         context['action_type'] = self.action_type
+        context['action_type_name'] = self.action_type_name
 
         # We also list all existing actions & link to them.
         context['actions'] = Action.objects.all().select_related("behavior__title")
