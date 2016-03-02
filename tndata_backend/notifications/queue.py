@@ -28,8 +28,8 @@ def send(message_id):
         # NOTE: If for soem reason, a message got queued up, but something
         # happend to the original GCMMessage, and it's pre-delete signal handler
         # failed, we'd get this exception.
-        args = (e, settings.SITE_URL, message_id)
-        log = "FAILED: {} on {} for id = {}".format(*args)
+        args = ("notifications.queue.send()", e, settings.SITE_URL, message_id)
+        log = "FAILED: {}\n{} on {} for id = {}".format(*args)
         post_private_message("bkmontgomery", log)
 
 
