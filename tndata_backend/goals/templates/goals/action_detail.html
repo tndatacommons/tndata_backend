@@ -33,11 +33,10 @@
         {% endif %}
 
         {% with trigger=action.default_trigger %}
-        {% if trigger %}
-        <dt>Default Trigger</dt>
-          <dd>
-            {# A simple form to disable the trigger #}
+          {% if trigger %}
+            <dt>Default Trigger</dt><dd>
             {% if user|is_editor %}
+              {# A simple form to disable the trigger #}
               <form action="{{ action.get_disable_trigger_url }}"
                     method="post"
                     class="pull-right">
@@ -47,22 +46,8 @@
                 <i class="fa fa-bell-slash"></i> Disable</button>
               </form>
             {% endif %}
-            {% if trigger.time %}{{ trigger.time }}{% endif %}
-            {% if trigger.trigger_date %}{{ trigger.trigger_date }}{% endif %}
-            {% if trigger.recurrences %}
-              <br/><em>{{ trigger.recurrences_as_text }}</em>
-            {% endif %}
-            {% if trigger.is_relative and trigger.relative_value %}
-              <br/>Starts {{ trigger.relative_value }} {{ trigger.relative_units }}
-              after selection.
-            {% elif trigger.is_relative %}
-              <br/>Starts when selected.
-            {% endif %}
-            {% if trigger.stop_on_complete %}
-              <br/>This trigger stops once the user marks the action as completed.
-            {% endif %}
-          </dd>
-        {% endif %}
+            {{trigger|linebreaks}}</dd>
+          {% endif %}
         {% endwith %}
 
         <dt>Icon</dt>
