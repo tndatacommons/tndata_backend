@@ -331,9 +331,9 @@ class ActionTriggerForm(forms.ModelForm):
     class Meta:
         model = Trigger
         fields = [
-            'start_when_selected', 'stop_on_complete', 'time', 'trigger_date',
-            'relative_value', 'relative_units',
-            'recurrences',
+            'time_of_day', 'frequency', 'start_when_selected',
+            'stop_on_complete', 'time', 'trigger_date',
+            'relative_value', 'relative_units', 'recurrences',
         ]
         widgets = {
             "time": TimeSelectWidget(include_empty=True),
@@ -344,6 +344,12 @@ class ActionTriggerForm(forms.ModelForm):
             "trigger_date": "Reminder Date",
         }
 
+    class Media:
+        js = (
+            "foundation/js/vendor/jquery.js",
+            "js/action_trigger_form.js",
+        )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # If there's a trigger instance, include a button to disable it. This
@@ -353,7 +359,7 @@ class ActionTriggerForm(forms.ModelForm):
                 disable_button = HTML(
                     '<button type="button" id="disable-trigger-button" '
                     ' class="button info tiny pull-right">'
-                    '<i class="fa fa-bell-slash"></i> Disable Trigger</button>'
+                    '<i class="fa fa-bell-slash"></i> Remove Trigger</button><hr/>'
                 )
         except ObjectDoesNotExist:
             disable_button = HTML('')
@@ -375,42 +381,59 @@ class ActionTriggerForm(forms.ModelForm):
             Fieldset(
                 _("Reminder Details"),
                 disable_button,
+                'time_of_day',
+                'frequency',
+                # NOTE: advanced options are hidden by default and may
+                #       override the above dynamic/automatic notifications.
+                # -------------------------------------------------------------
+                HTML('<hr/><strong>Advanced Options</strong>'),
+                HTML('<a class="button tiny secondary right" id="advanced" '
+                     'data-status="hidden"><i class="fa fa-chevron-right"></i>'
+                     ' Show</a>'),
                 Div(
+                    HTML("<hr/><p class='alert-box warning'>"
+                         "<i class='fa fa-warning'></i> These options may "
+                         "override any options set above</p>"),
+                    Div(
+                        Div('time', css_class="large-6 columns"),
+                        Div('trigger_date', css_class="large-6 columns"),
+                    ),
+                    Div(
+                        Field(
+                            'stop_on_complete',
+                            data_tooltip=None,
+                            aria_haspopup="true",
+                            title=("Reminders will cease to fire once the user "
+                                   "has completed this action."),
+                            css_class="has-tip tip-top"
+                        ),
+                    ),
                     Field(
-                        'stop_on_complete',
+                        'start_when_selected',
                         data_tooltip=None,
                         aria_haspopup="true",
-                        title=("Reminders will cease to fire once the user "
-                               "has completed this action."),
+                        title=("If selected the reminder date will be automatically "
+                               "be set when the user adds this action."),
                         css_class="has-tip tip-top"
                     ),
-                ),
-                'time',
-                'trigger_date',
-                Field(
-                    'start_when_selected',
-                    data_tooltip=None,
-                    aria_haspopup="true",
-                    title=("If selected the reminder date will be automatically "
-                           "be set when the user adds this action."),
-                    css_class="has-tip tip-top"
-                ),
-                Div(
-                    Div('relative_value', css_class="large-6 columns"),
-                    Div('relative_units', css_class="large-6 columns"),
-                    css_class="row"
-                ),
-                Div(
                     Div(
-                        HTML('<div class="hint">Relative reminders will fire '
-                             'based on when the user adopts an action. Select '
-                             'the amount time after the user adds the action '
-                             'that this reminder should start</div>'),
-                        css_class="large-12 columns"
+                        Div('relative_value', css_class="large-6 columns"),
+                        Div('relative_units', css_class="large-6 columns"),
+                        css_class="row"
                     ),
-                    css_class="row"
-                ),
-                'recurrences',
+                    Div(
+                        Div(
+                            HTML('<div class="hint">Relative reminders will fire '
+                                 'based on when the user adopts an action. Select '
+                                 'the amount time after the user adds the action '
+                                 'that this reminder should start</div>'),
+                            css_class="large-12 columns"
+                        ),
+                        css_class="row"
+                    ),
+                    'recurrences',
+                    css_class="trigger-form-advanced"
+                )
             )
         )
 
