@@ -353,6 +353,14 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
             parents['goal'] = goal_id
         return (request, parents)
 
+    def create_child_objects(self, instance):
+        try:
+            instance.add_actions()
+        except AttributeError:
+            # If we added multiple behaviors, instance will be a list;
+            for item in instance:
+                item.add_actions()
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if isinstance(request.data, list):
@@ -381,7 +389,7 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
         # As of v2 of the api, we also want to create UserActions for all
         # content within the selected behavior.
         # ... at this point the created UserBehavior is `serializer.instance`
-        serializer.instance.add_actions()
+        self.create_child_objects(serializer.instance)
 
         return Response(
             serializer.data,
