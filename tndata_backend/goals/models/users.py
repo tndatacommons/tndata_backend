@@ -172,8 +172,12 @@ class UserGoal(models.Model):
 class UserBehavior(models.Model):
     """A Mapping between Users and the Behaviors they've selected.
 
-    NOTE: notifications for this are scheduled by the `create_notifications`
-    management command.
+    - notifications for this are scheduled by the `create_notifications`
+      management command.
+    - As of the API version 2, when a user selects a behavior (i.e. an instance
+      of UserBehavior is created), we also create UserAction objects for all
+      of the Behavior's child Actions.
+
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     behavior = models.ForeignKey(Behavior)
@@ -243,6 +247,27 @@ class UserBehavior(models.Model):
         """
         uids = self.user.useraction_set.values_list('action_id', flat=True)
         return self.behavior.action_set.filter(id__in=uids, state='published')
+
+    def add_actions(self, primary_category=None, primary_goal=None):
+        """Create UserAction instances for all of the published Actions within
+        the associated behavior. This method will not create duplicate instances
+        of UserAction."""
+
+        defaults = {
+            'primary_goal': primary_goal,
+            'primary_category': primary_category
+        }
+        if primary_goal is None:
+            defaults['primary_goal'] = self.get_user_goals().first()
+        if primary_category is None:
+            defaults['primary_category'] = self.get_user_categories().first()
+
+        for action in Action.objects.published(behavior=self.behavior):
+            UserAction.objects.update_or_create(
+                user=self.user,
+                action=action,
+                defaults=defaults
+            )
 
     objects = UserBehaviorManager()
 
