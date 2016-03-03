@@ -35,6 +35,21 @@ class Trigger(models.Model):
     https://django-recurrence.readthedocs.org
 
     """
+    TOD_CHOICES = (
+        ('early', 'Early Morning'),
+        ('morning', 'Mid-Late Morning'),
+        ('noonish', 'Around Noon'),
+        ('afternoon', 'Afternoon'),
+        ('evening', 'Evening'),
+        ('late', 'During the night'),
+    )
+    FREQUENCY_CHOICES = (
+        ('daily', 'Daily'),
+        ('weekends', 'During the weekend'),
+        ('biweekly', 'A couple times a week'),
+        ('weekly', 'Once a week'),
+        ('monthly', 'Once a month'),
+    )
     RELATIVE_UNIT_CHOICES = (
         ('days', 'Days'),
         ('weeks', 'Weeks'),
@@ -54,6 +69,28 @@ class Trigger(models.Model):
         help_text="A human-friendly name for this trigger"
     )
     name_slug = models.SlugField(max_length=128, blank=True, db_index=True)
+
+    # Automatic/Dynamic delivery options
+    # ----------------------------------
+    time_of_day = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=TOD_CHOICES,
+        help_text="Select a time of day, and a notification will be sent at "
+                  "some point during that time."
+    )
+    frequency = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=FREQUENCY_CHOICES,
+        help_text="Select a frequency to determine how often a reminder "
+                  "should be sent."
+    )
+
+    # Specific Delivery options
+    # -------------------------
     time = models.TimeField(
         blank=True,
         null=True,
@@ -103,14 +140,6 @@ class Trigger(models.Model):
         null=True,
         choices=RELATIVE_UNIT_CHOICES,
     )
-
-    # TODO: Add support for recurrences of the form: repeat until occurs x times
-    #       AFTER the user selects an action.
-    #
-    # - requires some flag to opt into that
-    # - involves setting the `trigger_date` automatically when the user selects
-    #   the action (like we do with other relative reminders)
-    # - Needs tests, first?
 
     def __str__(self):
         return self.name if self.name else "Unnamed Trigger"
