@@ -374,7 +374,7 @@ admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'prev_trigger_date', 'next_trigger_date', 'notification',
-        'action', 'created_on',
+        'action', 'behavior', 'created_on',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -386,6 +386,10 @@ class UserActionAdmin(UserRelatedModelAdmin):
         'serialized_primary_goal', 'serialized_primary_category',
     ]
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
+
+    def behavior(self, obj):
+        return obj.action.behavior.title
+    behavior.admin_order_field = 'action__behavior_id'
 
     def action_state(self, obj):
         return obj.action.state
