@@ -352,7 +352,8 @@ class WorkflowManager(models.Manager):
     """
 
     def published(self, *args, **kwargs):
-        return self.get_queryset().filter(state='published')
+        kwargs['state'] = 'published'
+        return self.get_queryset().filter(**kwargs)
 
 
 class CategoryManager(WorkflowManager):
