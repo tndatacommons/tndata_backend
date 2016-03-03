@@ -377,6 +377,12 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+
+        # As of v2 of the api, we also want to create UserActions for all
+        # content within the selected behavior.
+        # ... at this point the created UserBehavior is `serializer.instance`
+        serializer.instance.add_actions()
+
         return Response(
             serializer.data,
             status=status.HTTP_201_CREATED,
