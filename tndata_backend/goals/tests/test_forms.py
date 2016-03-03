@@ -26,7 +26,7 @@ class TestActionTriggerForm(TestCase):
         fields = sorted([
             'start_when_selected', 'stop_on_complete', 'time', 'trigger_date',
             'relative_value', 'relative_units', 'recurrences',
-            'time_of_daty', 'frequency',
+            'time_of_day', 'frequency',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
