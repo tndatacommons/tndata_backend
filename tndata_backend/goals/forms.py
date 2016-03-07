@@ -27,7 +27,7 @@ from utils.user_utils import date_hash
 from utils.widgets import TextareaWithMarkdownHelperWidget
 
 from . models import Action, Behavior, Category, Goal, Trigger
-from . permissions import ContentPermissions
+from . permissions import ContentPermissions, is_content_editor
 from . utils import read_uploaded_csv
 from . widgets import TimeSelectWidget
 
@@ -125,7 +125,7 @@ class ActionForm(forms.ModelForm):
             'notification_text', 'sequence_order', 'behavior', 'title',
             'description', 'more_info', 'external_resource',
             'external_resource_name', 'source_link', 'source_notes',
-            'notes', 'icon', 'action_type',
+            'notes', 'icon', 'action_type', 'priority',
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {
@@ -139,10 +139,31 @@ class ActionForm(forms.ModelForm):
             "js/action_form.js",
         )
 
+    def _get_priority_options(self):
+        if self.user is None:
+            return Action.PRIORITY_CHOICES[0:1]  # Only LOW
+        elif is_content_editor(self.user):
+            return Action.PRIORITY_CHOICES  # All priorities.
+        else:
+            return Action.PRIORITY_CHOICES[0:2]  # LOW - MEDIUM
+
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         notify_label = Action._notification_text.replace(" {}", "")
         self.fields['notification_text'].label = notify_label
+
+        # Restrict priority options based on the user's permissions.
+        self.fields['priority'].choices = self._get_priority_options()
+
+    def clean_priority(self):
+        """Ensure we have a legit priority."""
+        priority = self.cleaned_data['priority']
+        valid_options = [t[0] for t in self._get_priority_options()]
+        if priority not in valid_options:
+            err = "%(value)s is not a valid priority"
+            raise ValidationError(err, params={"value": priority})
+        return priority
 
 
 class BehaviorForm(forms.ModelForm):

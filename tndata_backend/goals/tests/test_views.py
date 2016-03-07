@@ -2075,6 +2075,7 @@ class TestActionCreateView(TestCaseWithGroups):
             'trigger-stop_on_complete': '',
             'trigger-relative_value': '0',
             'trigger-relative_units': '',
+            'priority': Action.LOW,
         }
 
     def test_anon_get(self):
@@ -2324,6 +2325,7 @@ class TestActionUpdateView(TestCaseWithGroups):
             'trigger-stop_on_complete': False,
             'trigger-relative_value': '0',
             'trigger-relative_units': '',
+            'priority': Action.LOW,
         }
 
     def setUp(self):

@@ -173,7 +173,7 @@ class TestActionForm(TestCase):
         fields = sorted([
             'sequence_order', 'behavior', 'title', 'description', 'action_type',
             'more_info', 'external_resource', 'external_resource_name', 'icon',
-            'notification_text', 'source_link', 'source_notes', 'notes',
+            'notification_text', 'source_link', 'source_notes', 'notes', 'priority',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -191,6 +191,7 @@ class TestActionForm(TestCase):
             'source_notes': '',
             'notes': '',
             'action_type': 'custom',
+            'priority': Action.LOW,
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())
@@ -213,6 +214,7 @@ class TestActionForm(TestCase):
             'source_notes': '',
             'notes': '',
             'action_type': 'custom',
+            'priority': Action.LOW,
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())

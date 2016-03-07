@@ -642,6 +642,13 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         else:
             return self.form_invalid(form, trigger_form)
 
+    def get_form(self, form_class=None):
+        """Include the user as a keyword arg for the form class."""
+        form_class = form_class or self.get_form_class()
+        kwargs = self.get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return form_class(**kwargs)
+
     def form_valid(self, form, trigger_form):
         self.object = form.save()
         default_trigger = trigger_form.save(commit=False)
@@ -750,6 +757,13 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
             return self.form_valid(form, trigger_form)
         else:
             return self.form_invalid(form, trigger_form)
+
+    def get_form(self, form_class=None):
+        """Include the user as a keyword arg for the form class."""
+        form_class = form_class or self.get_form_class()
+        kwargs = self.get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return form_class(**kwargs)
 
     def form_valid(self, form, trigger_form):
         self.object = form.save()
