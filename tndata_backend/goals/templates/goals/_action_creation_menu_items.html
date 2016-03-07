@@ -1,6 +1,22 @@
-<li><a href="{{ action_model.get_create_custom_action_url}}"><i class="fa fa-plus-circle"></i> Custom Notification</a></li>
-<li><a href="{{ action_model.get_create_tiny_action_url}}"><i class="fa fa-plus-circle"></i> Tiny Version</a></li>
-<li><a href="{{ action_model.get_create_starter_action_url }}"><i class="fa fa-plus-circle"></i> Starter Step</a></li>
-<li><a href="{{ action_model.get_create_resource_action_url}}"><i class="fa fa-plus-circle"></i> Resource Notification</a></li>
-<li><a href="{{ action_model.get_create_now_action_url}}"><i class="fa fa-plus-circle"></i> Do it now</a></li>
-<li><a href="{{ action_model.get_create_later_action_url}}"><i class="fa fa-plus-circle"></i> Do it later</a></li>
+<li><a href="{{ action_model.get_create_prep_action_url}}">
+  <i class="fa fa-plus-circle"></i> Preparatory Notification</a></li>
+<li><a href="{{ action_model.get_create_core_action_url}}">
+  <i class="fa fa-plus-circle"></i> Core Notification</a></li>
+<li><a href="{{ action_model.get_create_checkup_action_url}}">
+  <i class="fa fa-plus-circle"></i> Checkup Notification</a></li>
+
+<li class="has-dropdown">
+  <a href="#"><i class="fa fa-plus-circle"></i> Helper Notification</a>
+  <ul class="dropdown">
+    <li><a href="{{ action_model.get_create_tiny_action_url}}">
+      <i class="fa fa-plus-circle"></i> Tiny Version</a></li>
+    <li><a href="{{ action_model.get_create_starter_action_url }}">
+      <i class="fa fa-plus-circle"></i> Starter Step</a></li>
+    <li><a href="{{ action_model.get_create_resource_action_url}}">
+      <i class="fa fa-plus-circle"></i> Resource Notification</a></li>
+    <li><a href="{{ action_model.get_create_now_action_url}}">
+      <i class="fa fa-plus-circle"></i> Do it now</a></li>
+    <li><a href="{{ action_model.get_create_later_action_url}}">
+      <i class="fa fa-plus-circle"></i> Do it later</a></li>
+  </ul>
+</li>

@@ -104,9 +104,9 @@ class ActionForm(forms.ModelForm):
             ),
             'action_type': Action.LATER,
         },
-        Action.CUSTOM: {
-            'action_type': Action.CUSTOM,
-        },
+        Action.CORE: {'action_type': Action.CORE},
+        Action.PREP: {'action_type': Action.PREP},
+        Action.CHECKUP: {'action_type': Action.CHECKUP},
     }
 
     behavior = forms.ModelChoiceField(
