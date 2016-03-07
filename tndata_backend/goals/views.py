@@ -45,7 +45,7 @@ from . forms import (
 )
 from . mixins import (
     ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
-    PackageManagerMixin, ReviewableUpdateMixin,
+    PackageManagerMixin, ReviewableUpdateMixin, StateFilterMixin,
 )
 from . models import (
     Action,
@@ -292,7 +292,7 @@ class IndexView(ContentViewerMixin, TemplateView):
         return self.render_to_response(context)
 
 
-class CategoryListView(ContentViewerMixin, ListView):
+class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Category
     context_object_name = 'categories'
     template_name = "goals/category_list.html"
@@ -376,7 +376,7 @@ class CategoryDeleteView(ContentEditorMixin, ContentDeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class GoalListView(ContentViewerMixin, ListView):
+class GoalListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Goal
     context_object_name = 'goals'
 
@@ -474,7 +474,7 @@ class TriggerDetailView(ContentEditorMixin, DetailView):
     slug_url_kwarg = "name_slug"
 
 
-class BehaviorListView(ContentViewerMixin, ListView):
+class BehaviorListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Behavior
     context_object_name = 'behaviors'
 
@@ -570,21 +570,12 @@ class BehaviorDeleteView(ContentEditorMixin, ContentDeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class ActionListView(ContentViewerMixin, ListView):
+class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Action
     context_object_name = 'actions'
 
-    def get(self, request, *args, **kwargs):
-        self.state_filter = request.GET.get('state', 'draft')
-        return super().get(request, *args, **kwargs)
-
     def get_queryset(self):
         queryset = super().get_queryset()
-
-        states = ['draft', 'published', 'pending-review', 'declined']
-        if self.state_filter in states:
-            queryset = queryset.filter(state=self.state_filter)
-
         queryset = queryset.annotate(Count('useraction'))
         return queryset.select_related(
             "behavior__title",
@@ -593,10 +584,6 @@ class ActionListView(ContentViewerMixin, ListView):
             'default_trigger__recurrences'
         )
 
-    def get_context_data(self, *args, **kwargs):
-        ctx = super().get_context_data(*args, **kwargs)
-        ctx['state_filter'] = self.state_filter
-        return ctx
 
 class ActionDetailView(ContentViewerMixin, DetailView):
     queryset = Action.objects.all()

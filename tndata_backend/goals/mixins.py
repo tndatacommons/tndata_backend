@@ -47,6 +47,26 @@ class DeleteMultipleMixin:
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class StateFilterMixin:
+    """A mixin that provides a default filter for objects with a `state`."""
+
+    def get(self, request, *args, **kwargs):
+        self.state_filter = request.GET.get('state', 'draft')
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        states = ['draft', 'published', 'pending-review', 'declined']
+        if self.state_filter in states:
+            queryset = queryset.filter(state=self.state_filter)
+        return queryset
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        ctx['state_filter'] = self.state_filter
+        return ctx
+
+
 class SuperuserRequiredMixin:
     """A Mixin that requires the user to be a superuser in order to access
     the view.

@@ -1,0 +1,14 @@
+{# NOTE: This template is used by views that include the StateFilterMixin #}
+<dl class="sub-nav">
+  <dt>Filter:</dt>
+  <dd{% if state_filter == "all" %} class="active"{% endif %}>
+    <a href="?state=all">All</a></dd>
+  <dd{% if state_filter == "draft" %} class="active"{% endif %}>
+    <a href="?state=draft">Draft</a></dd>
+  <dd{% if state_filter == "published" %} class="active"{% endif %}>
+    <a href="?state=published">Published</a></dd>
+  <dd class="{% if state_filter == "pending-review" %}active {% endif %}
+    hide-for-small-only"><a href="?state=pending-review">Pending</a></dd>
+  <dd class="{% if state_filter == "declined" %}active {% endif %}
+    hide-for-small-only"><a href="?state=declined">Declined</a></dd>
+</dl>
