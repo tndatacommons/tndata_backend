@@ -1160,6 +1160,23 @@ class TestAction(TestCase):
         action.save()
         self.assertEqual(action.title_slug, "new-name")
 
+    def test_is_helper(self):
+        self.assertFalse(self.action.is_helper)  # default is core.
+
+        self.action.action_type = Action.CORE
+        self.assertFalse(self.action.is_helper)
+
+        self.action.action_type = Action.PREP
+        self.assertFalse(self.action.is_helper)
+
+        self.action.action_type = Action.CHECKUP
+        self.assertFalse(self.action.is_helper)
+
+        # Test the Helpers...
+        for at in Action.HELPERS:
+            self.action.action_type = at
+            self.assertTrue(self.action.is_helper)
+
     def test_save_created_by(self):
         """Allow passing an `created_by` param into save."""
         u = User.objects.create_user('user', 'u@example.com', 'secret')
@@ -1224,10 +1241,22 @@ class TestAction(TestCase):
             "/goals/new/action/?actiontype={0}".format(Action.LATER)
         )
 
-    def test_get_create_custom_action_url(self):
+    def test_get_create_prep_action_url(self):
         self.assertEqual(
-            Action.get_create_custom_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.CUSTOM)
+            Action.get_create_prep_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.PREP)
+        )
+
+    def test_get_create_core_action_url(self):
+        self.assertEqual(
+            Action.get_create_core_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.CORE)
+        )
+
+    def test_get_create_checkup_action_url(self):
+        self.assertEqual(
+            Action.get_create_checkup_action_url(),
+            "/goals/new/action/?actiontype={0}".format(Action.CHECKUP)
         )
 
     def test_default_state(self):

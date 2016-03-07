@@ -677,13 +677,22 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     """Actions are things that people do, and are typically the bit of
     information to which a user will set a reminder (e.g. a Trigger).
 
-    Actions can be of different types, i.e.:
+    Actions can be of different types or classes. Broadly, these include:
 
-    * Starter Step
-    * Tiny Version
-    * Resource
-    * Right now
-    * Custom
+    * Preparatory: Intro-style notifications that help the user learn about
+      things they can do to build a behavior.
+    * Core: Notifications sent when they've learned the basics and just need
+      to keep working toward their goal
+    * Helper: Things to help get you back on track or give you an additional
+      nudge. These include the:
+        * Starter Step
+        * Tiny Version
+        * Resource
+        * Right now / Later
+    * Success / Checkup: for when they've completed a number of actions, and
+      reported that they're on track toward their goals. These are delivered
+      less frequently, and ask the user how they're doing, potentially giving
+      them a way to re-start the helper/core notifications.
 
     """
     STARTER = "starter"
@@ -691,15 +700,21 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     RESOURCE = "resource"
     NOW = "now"
     LATER = "later"
-    CUSTOM = "custom"
+    HELPERS = [STARTER, TINY, RESOURCE, NOW, LATER]
+
+    PREP = "prep"
+    CORE = "core"
+    CHECKUP = "checkup"
 
     ACTION_TYPE_CHOICES = (
+        (PREP, 'Preparatory Notification'),
+        (CORE, 'Core Notification'),
         (STARTER, 'Starter Step'),
         (TINY, 'Tiny Version'),
         (RESOURCE, 'Resource Notification'),
         (NOW, 'Do it now'),
         (LATER, 'Do it later'),
-        (CUSTOM, 'Custom Notification'),
+        (CHECKUP, 'Checkup Notification'),
     )
 
     # Priorities. Lower number means higher priority, so we can sort.
@@ -736,7 +751,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     action_type = models.CharField(
         max_length=32,
-        default=CUSTOM,
+        default=CORE,
         choices=ACTION_TYPE_CHOICES,
         db_index=True,
     )
@@ -846,6 +861,16 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             self.notification_text = self.title
 
     @classmethod
+    def get_create_prep_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse("goals:action-create"), cls.PREP)
+
+    @classmethod
+    def get_create_core_action_url(cls):
+        return "{0}?actiontype={1}".format(
+            reverse("goals:action-create"), cls.CORE)
+
+    @classmethod
     def get_create_starter_action_url(cls):
         return "{0}?actiontype={1}".format(
             reverse("goals:action-create"), cls.STARTER)
@@ -871,9 +896,9 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             reverse("goals:action-create"), cls.LATER)
 
     @classmethod
-    def get_create_custom_action_url(cls):
+    def get_create_checkup_action_url(cls):
         return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.CUSTOM)
+            reverse("goals:action-create"), cls.CHECKUP)
 
     def _serialize_default_trigger(self):
         if self.default_trigger:
@@ -892,6 +917,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self._serialize_default_trigger()
         super().save(*args, **kwargs)
         self.remove_queued_messages()
+
+    @property
+    def is_helper(self):
+        return self.action_type in self.HELPERS
 
     @property
     def rendered_description(self):
