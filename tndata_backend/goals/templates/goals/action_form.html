@@ -8,6 +8,7 @@
   {# Custom CSS for behavior lists in the side panel #}
   <style type="text/css">
     #behavior-info{display: none;}
+    #behaviors-table{display:none;width:100%;}
     .existing-action{ display:none;}
   </style>
   {{ form.media }}
@@ -29,7 +30,6 @@
   ul.until-count {display:block;}
   ul.until-count li.until,
   ul.until-count li.count {display:block; padding:0 !important;}
-
   </style>
 {% endblock %}
 
@@ -42,42 +42,19 @@
 {% endblock %}
 
 {% block content %}
-<h1>
-{% if object %}
-  Update {{acton_type_name}} {{object }}
-{% else %}
-  Create {{action_type_name}}
-{% endif %}
-</h1>
 
-{% if num_user_selections %}
-  <div data-alert class="alert-box">
-    <i class="fa fa-hand-o-right"></i>
-    {{ num_user_selections }} users have selected this item. Please keep
-    this in mind when making changes. <a href="#" class="close">&times;</a>
-  </div>
-{% endif %}
-
-{% if form.errors or trigger_form.errors %}
-  <div class="alert-box alert">
-    <i class="fa fa-warning"></i> <strong>Notification not saved</strong><br/>
-    There was a problem saving your action. See the messages below.
-  </div>
-{% endif %}
-<form
-  {# Disable Garlic for custom types, otherwise we have stuff in the wrong place #}
-  {% if action_type == "custom" %}data-persist="garlic"{% endif %}
-  action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
-  method="post"
-  enctype="multipart/form-data">{% csrf_token %}
 <div class="row">
   <div class="large-6 small-12 columns">
+    <h1>
+    {% if object %}
+      Update {{acton_type_name}} {{object }}
+    {% else %}
+      Create {{action_type_name}}
+    {% endif %}
+    </h1>
     <p>A <strong>Notification</strong> is a container for information that
     is delivered to a user. It also contains information regarding the frequency
     with which notifications are delivered.</p>
-    {% include "goals/_form_fields_sans_notes.html" %}
-    {% crispy trigger_form %}
-    {% form_buttons object "Action" %}
   </div>
   <div class="large-6 small-12 columns">
     <div class="panel">
@@ -92,21 +69,31 @@ Category
   --- Notification
     </pre>
     </div>
-    <p class="panel">
-      {{ form.notes.label_tag }}
-      {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>
-    </p>
+  </div>
+</div>
 
-    {% with icon=object.get_absolute_icon %}
-      {% if icon %}
-        <p class="panel" style="text-align: center;">
-          Current Icon:<br/>
-          <a href="{{ icon }}" target="_blank">
-          <img src="{{ icon }}" alt="{{ object}} icon" /></a>
-        </p>
-      {% endif %}
-    {% endwith %}
+<div class="row">
+  <div class="large-12 columns">
+  {% if num_user_selections %}
+    <div data-alert class="alert-box">
+      <i class="fa fa-hand-o-right"></i>
+      {{ num_user_selections }} users have selected this item. Please keep
+      this in mind when making changes. <a href="#" class="close">&times;</a>
+    </div>
+  {% endif %}
 
+  {% if form.errors or trigger_form.errors %}
+    <div class="alert-box alert">
+      <i class="fa fa-warning"></i> <strong>Notification not saved</strong><br/>
+      There was a problem saving your action. See the messages below.
+    </div>
+  {% endif %}
+  </div>
+</div> {# end .row #}
+
+
+<div class="row">
+  <div class="large-6 small-12 columns">
     <div id="behavior-info" class="panel">
       <h2>Behavior</h2>
       {% for behavior in behaviors %}
@@ -125,8 +112,9 @@ Category
         </div>
       {% endfor %}
     </div>
-
-    <table>
+  </div>
+  <div class="large-6 small-12 columns">
+    <table id="behaviors-table">
       <caption>Existing Notifications within the selected behavior</caption>
       <thead>
         <tr><th>Order</th><th>Behavior</th><th>Title</th></tr>
@@ -142,7 +130,40 @@ Category
       </tbody>
     </table>
   </div>
-</div>
+</div> {# end .row #}
+
+
+<form
+  {# Disable Garlic for custom types, otherwise we have stuff in the wrong place #}
+  {% if action_type == "custom" %}data-persist="garlic"{% endif %}
+  action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
+  method="post"
+  enctype="multipart/form-data">{% csrf_token %}
+
+  {% crispy form %}
+
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      {% crispy trigger_form %}
+      {#{% form_buttons object "Action" %}#}
+    </div>
+    <div class="large-6 small-12 columns">
+      {% with icon=object.get_absolute_icon %}
+        {% if icon %}
+          <p class="panel" style="text-align: center;">
+            Current Icon:<br/>
+            <a href="{{ icon }}" target="_blank">
+            <img src="{{ icon }}" alt="{{ object}} icon" /></a>
+          </p>
+        {% endif %}
+      {% endwith %}
+    </div> {# end .columns #}
+  </div> {# end .row #}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      {% form_buttons object "Action" %}
+    </div>
+  </div>
 </form>
 
 {# NOTE: We can't have forms within forms, so this has to be down here. #}

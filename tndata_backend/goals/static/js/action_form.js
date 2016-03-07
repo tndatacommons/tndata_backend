@@ -33,6 +33,7 @@ $(document).ready(function() {
     // Function to toggle the selected Behavior's details.
     var toggle_behavior_details = function(selector) {
         $("#behavior-info").show();
+        $("#behaviors-table").show();
         $(".behaviors").hide(); // hide all other behaviors.
         $(selector).show(); // show the selected one.
         $("#behavior-info h2").text($("#id_behavior option:selected").text());
@@ -53,4 +54,17 @@ $(document).ready(function() {
         toggle_behavior_details(selected_id);
     }
 
+    // Display the resource fieldset when we have a Resource action
+    $("#id_action_type").change(function() {
+        if($(this).val() === "resource") {
+            $(".resource-fieldset").show();
+        } else {
+            $(".resource-fieldset").hide();
+        }
+    });
+    if($("#id_action_type").val() === "resource") {
+        $(".resource-fieldset").show();
+    } else {
+        $(".resource-fieldset").hide();
+    }
 });

@@ -113,12 +113,6 @@ class ActionForm(forms.ModelForm):
         queryset=Behavior.objects.all().order_by("title")
     )
 
-    # Note: this field's value should always get in the initial data
-    action_type = forms.CharField(
-        max_length=32,
-        widget=forms.HiddenInput(),
-    )
-
     class Meta:
         model = Action
         fields = [
@@ -139,6 +133,11 @@ class ActionForm(forms.ModelForm):
             "js/action_form.js",
         )
 
+    @property
+    def action_type(self):
+        """Returns the value of the forms' initial action_type"""
+        return self.initial.get('action_type', None)
+
     def _get_priority_options(self):
         if self.user is None:
             return Action.PRIORITY_CHOICES[0:1]  # Only LOW
@@ -150,11 +149,56 @@ class ActionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        # Set the label for the notifcation_text based on the prefix that
+        # would be used when the notification is sent.
         notify_label = Action._notification_text.replace(" {}", "")
         self.fields['notification_text'].label = notify_label
 
         # Restrict priority options based on the user's permissions.
         self.fields['priority'].choices = self._get_priority_options()
+
+        # Configure crispy forms.
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Fieldset(
+                        _("Notification Details"),
+                        "notification_text",
+                        "behavior",
+                        "title",
+                        "description",
+                        "more_info",
+                        "sequence_order",
+                    ),
+                    Fieldset(
+                        _("Resource Details"),
+                        "external_resource_name",
+                        "external_resource",
+                        css_class="resource-fieldset"
+                    ),
+                    css_class="large-6 small-12 columns"
+                ),
+                Div(
+                    Fieldset(
+                        _("Scratchpad"),
+                        "notes",
+                    ),
+                    Fieldset(
+                        _("Meta Details"),
+                        "priority",
+                        "action_type",
+                        "source_link",
+                        "source_notes",
+                        "icon",
+                    ),
+                    css_class="large-6 small-12 columns"
+                ),
+                css_class="row"
+            ),
+        )
 
     def clean_priority(self):
         """Ensure we have a legit priority."""
