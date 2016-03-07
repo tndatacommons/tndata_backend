@@ -702,6 +702,17 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         (CUSTOM, 'Custom Notification'),
     )
 
+    # Priorities. Lower number means higher priority, so we can sort.
+    LOW = 3
+    MEDIUM = 2
+    HIGH = 1
+
+    PRIORITY_CHOICES = (
+        (LOW, "Default"),
+        (MEDIUM, "Medium"),
+        (HIGH, "High"),
+    )
+
     # URLMixin attributes
     urls_fields = ['pk', 'title_slug']
     urls_app_namespace = "goals"
@@ -784,6 +795,11 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         help_text="A square icon for this item in the app, preferrably 512x512."
     )
     state = FSMField(default="draft")
+    priority = models.PositiveIntegerField(
+        default=LOW,
+        choices=PRIORITY_CHOICES,
+        help_text="Priority determine how notifications get queued for delivery"
+    )
     default_trigger = models.OneToOneField(
         Trigger,
         blank=True,

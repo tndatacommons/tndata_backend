@@ -1132,13 +1132,17 @@ class TestBehavior(TestCase):
 class TestAction(TestCase):
     """Tests for the `Action` model."""
 
+    @classmethod
+    def setUpTestData(cls):
+        pub = 'published'
+        cls.cat = mommy.make(Category, title="Cat", state=pub)
+        cls.goal = mommy.make(Goal, title="Goal", state=pub)
+        cls.goal.categories.add(cls.cat)
+
     def setUp(self):
-        self.behavior = Behavior.objects.create(
-            title='Test Behavior'
-        )
-        self.action = Action.objects.create(
-            behavior=self.behavior,
-            title="Test Action",
+        self.behavior = mommy.make(Behavior, title='Test Behavior')
+        self.action = mommy.make(
+            Action, behavior=self.behavior, title="Test Action"
         )
 
     def tearDown(self):
