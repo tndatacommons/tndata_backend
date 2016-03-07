@@ -31,6 +31,25 @@ def label_state(obj):
     return mark_safe(markup.format(obj.state_label, obj.state_title))
 
 
+@register.filter("priority_label", is_safe=True)
+def label_priority(obj):
+    """Generate markup for a Foundation-based label using the object's current
+    priority. Values can be one of the following: 1 (high), 2 (medium), 3 (low).
+    Usage example:
+
+        {{ action.priority|label }}
+
+    """
+    labels = {
+        1: 'alert',
+        2: 'warning',
+        3: 'secondary',
+    }
+    priority_text = obj.get_priority_display()
+    markup = '<span class="{0} label">{1} Priority</span>'
+    return mark_safe(markup.format(labels[obj.priority], priority_text))
+
+
 @register.filter("details", is_safe=True)
 def image_details(img_file):
     """Display some details for a given ImageFieldFile object. This should
