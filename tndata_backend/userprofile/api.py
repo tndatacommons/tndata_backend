@@ -247,12 +247,11 @@ def api_logout(request):
 # -----------------------------------------------------------------------------
 @api_view(http_method_names=['GET'])
 def feed_api(request):
-    """A view that returns a flat list of heterogeneous objects for the feed.
+    """This was an experiment to create a faster, easier-to-use feed. It
+    is currently disabled.
 
-    See it at /api/feed/
-
-    A paginated result of upcoming actions are at
-    [/api/feed/upcoming/](/api/feed/upcoming/)
+    **For the paginated list of upcoming actions, see:
+    [/api/feed/upcoming/](/api/feed/upcoming/)**
 
     """
     # essentially the paginated amount of data do show for upcoming
@@ -267,53 +266,53 @@ def feed_api(request):
         'results': []
     }
 
-    if request.user.is_authenticated():
-        user = request.user
-
-        # Up next UserAction / Action Feedback
-        # The Action feedback is irrelevant if there's no user action
-        ua = user_feed.next_user_action(user)
-        if ua:
-            feedback = user_feed.action_feedback(user, ua)
-            feedback['object_type'] = 'actionfeedback'
-            data['results'].append(feedback)
-
-        # Progress for today
-        progress = user_feed.todays_progress(user)
-        progress['object_type'] = 'progress'
-        data['results'].append(progress)
-
-        # Actions to do today.
-        upcoming = user_feed.todays_actions(user)
-        upcoming = upcoming.values_list("action__id", flat=True)
-        upcoming = list(upcoming)[:LIMIT]
-        upcoming_useractions = {
-            'object_type': 'upcoming',
-            'user_actions': upcoming,
-        }
-        data['results'].append(upcoming_useractions)
-
-        # Custom Actions to do today.
-        upcoming_cas = user_feed.todays_customactions(user)
-        upcoming_cas = upcoming_cas.values_list("id", flat=True)
-        upcoming_cas = list(upcoming_cas)[:LIMIT]
-        upcoming_customactions = {
-            'object_type': 'upcoming_customactions',
-            'custom_actions': upcoming_cas,
-        }
-        data['results'].append(upcoming_customactions)
-
-        # Goal Suggestions
-        goals = user_feed.suggested_goals(user)
-        goals = GoalSerializer(goals, many=True, user=user).data
-        suggestions = {
-            'goals': goals,
-            'object_type': 'suggestions'
-        }
-        data['results'].append(suggestions)
-
-    # Update our count of objects.
-    data['count'] = len(data['results'])
+#    if request.user.is_authenticated():
+#        user = request.user
+#
+#        # Up next UserAction / Action Feedback
+#        # The Action feedback is irrelevant if there's no user action
+#        ua = user_feed.next_user_action(user)
+#        if ua:
+#            feedback = user_feed.action_feedback(user, ua)
+#            feedback['object_type'] = 'actionfeedback'
+#            data['results'].append(feedback)
+#
+#        # Progress for today
+#        progress = user_feed.todays_progress(user)
+#        progress['object_type'] = 'progress'
+#        data['results'].append(progress)
+#
+#        # Actions to do today.
+#        upcoming = user_feed.todays_actions(user)
+#        upcoming = upcoming.values_list("action__id", flat=True)
+#        upcoming = list(upcoming)[:LIMIT]
+#        upcoming_useractions = {
+#            'object_type': 'upcoming',
+#            'user_actions': upcoming,
+#        }
+#        data['results'].append(upcoming_useractions)
+#
+#        # Custom Actions to do today.
+#        upcoming_cas = user_feed.todays_customactions(user)
+#        upcoming_cas = upcoming_cas.values_list("id", flat=True)
+#        upcoming_cas = list(upcoming_cas)[:LIMIT]
+#        upcoming_customactions = {
+#            'object_type': 'upcoming_customactions',
+#            'custom_actions': upcoming_cas,
+#        }
+#        data['results'].append(upcoming_customactions)
+#
+#        # Goal Suggestions
+#        goals = user_feed.suggested_goals(user)
+#        goals = GoalSerializer(goals, many=True, user=user).data
+#        suggestions = {
+#            'goals': goals,
+#            'object_type': 'suggestions'
+#        }
+#        data['results'].append(suggestions)
+#
+#    # Update our count of objects.
+#    data['count'] = len(data['results'])
     return Response(data, status=status.HTTP_200_OK)
 
 
@@ -323,6 +322,19 @@ def feed_upcoming_actions_api(request):
 
     See it at `/api/feed/upcoming/` or hit `/api/feed/upcoming/?page=2` for an
     additional page of data.
+
+    Results look like:
+
+        {
+            "action": "action title",
+            "goal": "goal title",
+            "category_color": "#FF782C",
+            "trigger": "trigger display time",
+            "action_id": "action mapping id",
+            "goal_id": "goal mapping id",
+            "type": "useraction|customaction",
+            "object_type": "upcoming_item"
+        }
 
     """
     # essentially the paginated amount of data do show for upcoming
@@ -348,21 +360,31 @@ def feed_upcoming_actions_api(request):
         upcoming = user_feed.todays_actions(user)
         upcoming = upcoming.values_list('action__id', flat=True)
         upcoming = list(upcoming)[start:stop]
-        upcoming_useractions = {
-            'object_type': 'upcoming',
-            'user_actions': upcoming,
-        }
-        data['results'].append(upcoming_useractions)
+
+        related = ('action', 'primary_goal', 'primary_category')
+        useractions = user.useraction_set.select_related(*related)
+        for ua in useractions.filter(action__id__in=upcoming):
+            obj = {
+                'action': ua.action.title,
+                'goal': ua.primary_goal.title,
+                'category_color': ua.primary_category.color,
+                'trigger': "{}".format(ua.next_reminder),
+                'action_id': ua.action_id,
+                'goal_id': ua.primary_goal.id,
+                'type': 'useraction',
+                'object_type': 'upcoming_item',
+            }
+            data['results'].append(obj)
 
         # Custom Actions
-        upcoming_cas = user_feed.todays_customactions(user)
-        upcoming_cas = upcoming_cas.values_list('id', flat=True)
-        upcoming_cas = list(upcoming_cas)[start:stop]
-        upcoming_customactions = {
-            'object_type': 'upcoming_customactions',
-            'user_actions': upcoming_cas,
-        }
-        data['results'].append(upcoming_customactions)
+        #upcoming_cas = user_feed.todays_customactions(user)
+        #upcoming_cas = upcoming_cas.values_list('id', flat=True)
+        #upcoming_cas = list(upcoming_cas)[start:stop]
+        #upcoming_customactions = {
+            #'object_type': 'upcoming_customactions',
+            #'user_actions': upcoming_cas,
+        #}
+        #data['results'].append(upcoming_customactions)
 
     return Response(data, status=status.HTTP_200_OK)
 
