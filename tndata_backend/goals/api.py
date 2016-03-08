@@ -61,6 +61,7 @@ class IsOwner(permissions.IsAuthenticated):
 
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Categories. See the api_docs/ for more info"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.Category.objects.published()
     serializer_class_v1 = v1.CategorySerializer
     serializer_class_v2 = v2.CategorySerializer
@@ -70,6 +71,7 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
 class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Goals. See the api_docs/ for more info"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.Goal.objects.published()
     serializer_class_v1 = v1.GoalSerializer
     serializer_class_v2 = v2.GoalSerializer
@@ -133,6 +135,7 @@ class TriggerViewSet(VersionedViewSetMixin,
 
 class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Behaviors. See the api_docs/ for more info"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.Behavior.objects.published()
     serializer_class_v1 = v1.BehaviorSerializer
     serializer_class_v2 = v2.BehaviorSerializer
@@ -169,6 +172,7 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
 class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Actions. See the api_docs/ for more info"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = models.Action.objects.published()
     serializer_class_v1 = v1.ActionSerializer
     serializer_class_v2 = v2.ActionSerializer
