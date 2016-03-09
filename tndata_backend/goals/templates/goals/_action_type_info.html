@@ -1,0 +1,34 @@
+{% if action_type == Action.REINFORCING %}
+<p><i class="fa fa-info-circle"></i> <strong>Reinforcing</strong> notifications
+reward and recognize a a person for their commitment to a behavior. These
+messages get delivered at the beginning of a program.</p>
+{% endif %}
+
+{% if action_type == Action.ENABLING %}
+<p><i class="fa fa-info-circle"></i> <strong>Enabling</strong> notifications
+are supportive or persuasive. They seek to make the behavior more relevant and
+accessible to the user. Enabling messages get delivered interspersed with
+<em>showing</em> messages.</p>
+{% endif %}
+
+
+{% if action_type == "showing" %}
+<p><i class="fa fa-info-circle"></i> <strong>Showing</strong> notifications
+should provide actionable examples of the behavior the user can choose to do.
+These messages are delivered alongside "enabling" messages.</p>
+{% endif %}
+
+
+{% if action_type in Action.HELPERS %}
+<p><i class="fa fa-info-circle"></i> <strong>Helping</strong> notifications
+provide granular examples or access to outside resources. These are messages
+are mad available when the user requests more help.</p>
+{% endif %}
+
+
+{% if action_type == Action.ASKING %}
+<p><i class="fa fa-info-circle"></i> <strong>Status</strong> notifications
+are delivered very infrequently once a user has completed a program. They're
+essentially a <em>checkup</em>, and allow the user to start over or wait until
+the next checkup.</p>
+{% endif %}

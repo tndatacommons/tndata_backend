@@ -676,6 +676,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
 
     def get_context_data(self, **kwargs):
         context = super(ActionCreateView, self).get_context_data(**kwargs)
+        context['Action'] = self.model
         context['action_type'] = self.action_type
         context['action_type_name'] = self.action_type_name
 
@@ -783,6 +784,8 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)
+        context['Action'] = self.model
+
         # We also list all existing actions & link to them.
         context['actions'] = Action.objects.all().select_related("behavior__title")
 
