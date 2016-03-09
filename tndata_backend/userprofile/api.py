@@ -318,29 +318,28 @@ def feed_api(request):
 
 @api_view(http_method_names=['GET'])
 def feed_upcoming_actions_api(request):
-    """Additional upcoming actions for the feed (paginated at 5 per page).
+    """All upcoming `UserAction` and `CustomAction` objects for the feed.
 
-    See it at `/api/feed/upcoming/` or hit `/api/feed/upcoming/?page=2` for an
-    additional page of data.
+    This endpoint provides an array of objects containing the following items:
 
-    Results look like:
+    - `action_id`: Integer ID for the `UserAction` or `CustomAction` object
+    - `action`: A String; the title of the `Action`/`CustomAction` object.
+    - `goal_id`: Integer ID for the action's parent `Goal`/`CustomGoal`.
+    - `goal`: A String; the parent goal's title.
+    - `category_color`: A string containing the category's hex color.
+    - `trigger`: A string containing the date/time of the next scheduled reminder.
+    - `type`: A string; will be 'useraction' or 'customaction'
+    - `object_type`: A string; will always be 'upcoming_item'
 
-        {
-            "action": "action title",
-            "goal": "goal title",
-            "category_color": "#FF782C",
-            "trigger": "trigger display time",
-            "action_id": "action mapping id",
-            "goal_id": "goal mapping id",
-            "type": "useraction|customaction",
-            "object_type": "upcoming_item"
-        }
+    (NOTE: This is currently NOT paginated due to the fact that we'd have to
+     fetch all of the days actions/custom actions before we can decide how
+     to break it into pages).
 
     """
     # essentially the paginated amount of data do show for upcoming
     # actions and suggested goals.
-    LIMIT = 5
-    current_page = int(request.query_params.get('page', 1))  # 1-based paging.
+    #LIMIT = int(request.query_params.get('page_size', 3))
+    #current_page = int(request.query_params.get('page', 1))  # 1-based paging.
 
     # This is a read-only endpoint.
     data = {
@@ -353,39 +352,62 @@ def feed_upcoming_actions_api(request):
     if request.user.is_authenticated():
         user = request.user
 
-        stop = (current_page * LIMIT)
-        start = (stop - LIMIT)
+        #stop = (current_page * LIMIT)
+        #start = (stop - LIMIT)
 
         # User Actions
-        upcoming = user_feed.todays_actions(user)
-        upcoming = upcoming.values_list('action__id', flat=True)
-        upcoming = list(upcoming)[start:stop]
+        upcoming_uas = user_feed.todays_actions(user)
+        upcoming_uas = upcoming_uas.values_list('id', flat=True)
+        #upcoming_uas = list(upcoming_uas)[start:stop]
+        upcoming_uas = list(upcoming_uas)
 
         related = ('action', 'primary_goal', 'primary_category')
         useractions = user.useraction_set.select_related(*related)
-        for ua in useractions.filter(action__id__in=upcoming):
+        for ua in useractions.filter(id__in=upcoming_uas):
+            primary_category = ua.get_primary_category()
+            primary_goal = ua.get_primary_goal()
             obj = {
+                'action_id': ua.id,
                 'action': ua.action.title,
-                'goal': ua.primary_goal.title,
-                'category_color': ua.primary_category.color,
+                'goal_id': primary_goal.id,
+                'goal': primary_goal.title,
+                'category_color': primary_category.color,
                 'trigger': "{}".format(ua.next_reminder),
-                'action_id': ua.action_id,
-                'goal_id': ua.primary_goal.id,
                 'type': 'useraction',
                 'object_type': 'upcoming_item',
             }
             data['results'].append(obj)
 
         # Custom Actions
-        #upcoming_cas = user_feed.todays_customactions(user)
-        #upcoming_cas = upcoming_cas.values_list('id', flat=True)
+        upcoming_cas = user_feed.todays_customactions(user)
+        upcoming_cas = upcoming_cas.values_list('id', flat=True)
         #upcoming_cas = list(upcoming_cas)[start:stop]
-        #upcoming_customactions = {
-            #'object_type': 'upcoming_customactions',
-            #'user_actions': upcoming_cas,
-        #}
-        #data['results'].append(upcoming_customactions)
+        upcoming_cas = list(upcoming_cas)
 
+        related = ('customgoal', 'custom_trigger')
+        customactions = user.customaction_set.select_related(*related)
+        for ca in customactions.filter(id__in=upcoming_cas):
+            obj = {
+                'action_id': ca.id,
+                'action': ca.title,
+                'goal_id': ca.customgoal.id,
+                'goal': ca.customgoal.title,
+                'category_color': '#176CC4',
+                'trigger': "{}".format(ca.next_reminder),
+                'type': 'customaction',
+                'object_type': 'upcoming_item',
+            }
+            data['results'].append(obj)
+
+    # sort results (which contain UserAction/CustomAction data) by trigger
+    data['results'] = sorted(data['results'], key=lambda d: d['trigger'])
+
+    # TODO: pagination...slice by page size, BUT how will I know if/what
+    # page each group of objects is going to fit into? I'd have to fetch
+    # every object on every request anyway. to determin next/prev pages.
+    # TODO: update next/previous if we have pages?
+
+    data['count'] = len(data['results'])
     return Response(data, status=status.HTTP_200_OK)
 
 
