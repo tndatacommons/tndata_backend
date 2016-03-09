@@ -45,9 +45,10 @@ class Trigger(models.Model):
     )
     FREQUENCY_CHOICES = (
         ('daily', 'Daily'),
-        ('weekends', 'During the weekend'),
-        ('biweekly', 'A couple times a week'),
         ('weekly', 'Once a week'),
+        ('biweekly', 'A couple times a week'),
+        ('multiweekly', 'Three - four times a week'),
+        ('weekends', 'During the weekend'),
         ('monthly', 'Once a month'),
     )
     RELATIVE_UNIT_CHOICES = (

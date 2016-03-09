@@ -695,26 +695,56 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
       them a way to re-start the helper/core notifications.
 
     """
+
+    # Action Types are just labels. They denote different "classes" of content
+    # and are used by content authors to group similar kinds of messages
+    REINFORCING = 'reinforcing'
+    ENABLING = 'enabling'
+    SHOWING = 'showing'
     STARTER = "starter"
     TINY = "tiny"
     RESOURCE = "resource"
     NOW = "now"
     LATER = "later"
-    HELPERS = [STARTER, TINY, RESOURCE, NOW, LATER]
+    ASKING = 'asking'  # Asking the user about their current status
 
-    PREP = "prep"
-    CORE = "core"
-    CHECKUP = "checkup"
+    # We group Action Types into "buckets" that determine the group of
+    # notifications they'll be sent over time.
+    PREP = 'prep'
+    CORE = 'core'
+    HELPER = 'helper'
+    CHECKUP = 'checkup'
+
+    # A mapping from action_type to bucket
+    BUCKET_MAPPING = {
+        REINFORCING: PREP,
+        ENABLING: CORE,
+        SHOWING: CORE,
+        STARTER: HELPER,
+        TINY: HELPER,
+        RESOURCE: HELPER,
+        NOW: HELPER,
+        LATER: HELPER,
+        ASKING: CHECKUP,
+    }
+
+    BUCKET_CHOICES = (  # The notification buckets.
+        ('prep', 'Preparatory'),
+        ('core', 'Core'),
+        ('helper', 'Helper'),
+        ('checkup', 'Checkup'),
+    )
 
     ACTION_TYPE_CHOICES = (
-        (PREP, 'Preparatory Notification'),
-        (CORE, 'Core Notification'),
+        (REINFORCING, ''),
+        (ENABLING, ''),
+        (SHOWING, ''),
         (STARTER, 'Starter Step'),
         (TINY, 'Tiny Version'),
         (RESOURCE, 'Resource Notification'),
         (NOW, 'Do it now'),
         (LATER, 'Do it later'),
-        (CHECKUP, 'Checkup Notification'),
+        (ASKING, 'Checkup Notification'),
     )
 
     # Priorities. Lower number means higher priority, so we can sort.
@@ -751,7 +781,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     behavior = models.ForeignKey(Behavior, verbose_name="behavior")
     action_type = models.CharField(
         max_length=32,
-        default=CORE,
+        default=SHOWING,
         choices=ACTION_TYPE_CHOICES,
         db_index=True,
     )
@@ -815,6 +845,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         choices=PRIORITY_CHOICES,
         help_text="Priority determine how notifications get queued for delivery"
     )
+    bucket = models.CharField(
+        max_length=32,
+        blank=True,
+        default=CORE,
+        help_text='The "bucket" from which this object is selected when '
+                  'queueing up notifications.'
+    )
     default_trigger = models.OneToOneField(
         Trigger,
         blank=True,
@@ -860,45 +897,9 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         if not self.notification_text:
             self.notification_text = self.title
 
-    @classmethod
-    def get_create_prep_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.PREP)
-
-    @classmethod
-    def get_create_core_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.CORE)
-
-    @classmethod
-    def get_create_starter_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.STARTER)
-
-    @classmethod
-    def get_create_tiny_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.TINY)
-
-    @classmethod
-    def get_create_resource_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.RESOURCE)
-
-    @classmethod
-    def get_create_now_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.NOW)
-
-    @classmethod
-    def get_create_later_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.LATER)
-
-    @classmethod
-    def get_create_checkup_action_url(cls):
-        return "{0}?actiontype={1}".format(
-            reverse("goals:action-create"), cls.CHECKUP)
+    def _set_bucket(self):
+        """Set this object's bucket based on it's action type."""
+        self.bucket = self.BUCKET_MAPPING.get(self.action_type, self.CORE)
 
     def _serialize_default_trigger(self):
         if self.default_trigger:
@@ -913,6 +914,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         """
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
+        self._set_bucket()
         self._set_notification_text()
         self._serialize_default_trigger()
         super().save(*args, **kwargs)
@@ -1022,3 +1024,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         pass
 
     objects = WorkflowManager()
+
+
+# Add get_create_XXX_action_url methods for all of the different action_type
+# options that we currently have.
+for action_type in Action.BUCKET_MAPPING.keys():
+    func_name = 'get_create_{}_action_url'.format(action_type)
+    def _create_action_url(cls):
+        url = "{0}?actiontype={1}"
+        return url.format(reverse("goals:action-create"), action_type)
+    setattr(Action, func_name, classmethod(_create_action_url))
