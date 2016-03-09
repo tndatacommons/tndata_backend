@@ -736,9 +736,9 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     )
 
     ACTION_TYPE_CHOICES = (
-        (REINFORCING, ''),
-        (ENABLING, ''),
-        (SHOWING, ''),
+        (REINFORCING, 'Reinforcing'),
+        (ENABLING, 'Enabling'),
+        (SHOWING, 'Showing'),
         (STARTER, 'Starter Step'),
         (TINY, 'Tiny Version'),
         (RESOURCE, 'Resource Notification'),
