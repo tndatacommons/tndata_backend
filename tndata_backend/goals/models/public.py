@@ -673,6 +673,16 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
     objects = WorkflowManager()
 
 
+def _action_type_url_function(action_type):
+    """Return a function that reverses the Create Action url, but includes the
+    given action type. The returned function expects one argument (the class)
+    and can be used as a @classmethod."""
+    def _reverse_url(cls):
+        url = reverse('goals:action-create')
+        return "{}?actiontype={}".format(url, action_type)
+    return _reverse_url
+
+
 class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     """Actions are things that people do, and are typically the bit of
     information to which a user will set a reminder (e.g. a Trigger).
@@ -714,6 +724,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     CORE = 'core'
     HELPER = 'helper'
     CHECKUP = 'checkup'
+    HELPERS = [STARTER, TINY, RESOURCE, NOW, LATER]
 
     # A mapping from action_type to bucket
     BUCKET_MAPPING = {
@@ -890,6 +901,20 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             ("publish_action", "Can Publish Actions"),
         )
 
+    @classmethod
+    def _add_action_type_creation_urls_to_action(cls):
+        """Add the get_create_ACTION_TYPE_action_url methods for all of the
+        different action_type options that we currently have defined on the
+        Action model.
+
+        This method is called in the app's config, GoalsConfig.ready.
+
+        """
+        for action_type in cls.BUCKET_MAPPING.keys():
+            func_name = 'get_create_{}_action_url'.format(action_type)
+            func = _action_type_url_function(action_type)
+            setattr(cls, func_name, classmethod(func))
+
     def __str__(self):
         return "{0}".format(self.title)
 
@@ -1024,13 +1049,3 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         pass
 
     objects = WorkflowManager()
-
-
-# Add get_create_XXX_action_url methods for all of the different action_type
-# options that we currently have.
-for action_type in Action.BUCKET_MAPPING.keys():
-    func_name = 'get_create_{}_action_url'.format(action_type)
-    def _create_action_url(cls):
-        url = "{0}?actiontype={1}"
-        return url.format(reverse("goals:action-create"), action_type)
-    setattr(Action, func_name, classmethod(_create_action_url))

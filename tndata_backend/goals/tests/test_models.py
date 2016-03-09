@@ -1149,6 +1149,14 @@ class TestAction(TestCase):
         Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
+    def test__set_bucket(self):
+        """Ensure that _set_bucket puts an action in the correct bucket"""
+        action = Action(self.behavior, title='BUCKET-TEST')
+        for action_type, bucket in Action.BUCKET_MAPPING.items():
+            action.action_type = action_type
+            action._set_bucket()
+            self.assertEqual(action.bucket, bucket)
+
     def test__str__(self):
         expected = "Test Action"
         actual = "{}".format(self.action)
@@ -1163,13 +1171,16 @@ class TestAction(TestCase):
     def test_is_helper(self):
         self.assertFalse(self.action.is_helper)  # default is core.
 
-        self.action.action_type = Action.CORE
+        self.action.action_type = Action.REINFORCING
         self.assertFalse(self.action.is_helper)
 
-        self.action.action_type = Action.PREP
+        self.action.action_type = Action.ENABLING
         self.assertFalse(self.action.is_helper)
 
-        self.action.action_type = Action.CHECKUP
+        self.action.action_type = Action.SHOWING
+        self.assertFalse(self.action.is_helper)
+
+        self.action.action_type = Action.ASKING
         self.assertFalse(self.action.is_helper)
 
         # Test the Helpers...
@@ -1211,53 +1222,13 @@ class TestAction(TestCase):
             "/goals/actions/{0}-test-action/delete/".format(self.action.id)
         )
 
-    def test_get_create_starter_action_url(self):
-        self.assertEqual(
-            Action.get_create_starter_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.STARTER)
-        )
-
-    def test_get_create_tiny_action_url(self):
-        self.assertEqual(
-            Action.get_create_tiny_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.TINY)
-        )
-
-    def test_get_create_resource_action_url(self):
-        self.assertEqual(
-            Action.get_create_resource_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.RESOURCE)
-        )
-
-    def test_get_create_now_action_url(self):
-        self.assertEqual(
-            Action.get_create_now_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.NOW)
-        )
-
-    def test_get_create_later_action_url(self):
-        self.assertEqual(
-            Action.get_create_later_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.LATER)
-        )
-
-    def test_get_create_prep_action_url(self):
-        self.assertEqual(
-            Action.get_create_prep_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.PREP)
-        )
-
-    def test_get_create_core_action_url(self):
-        self.assertEqual(
-            Action.get_create_core_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.CORE)
-        )
-
-    def test_get_create_checkup_action_url(self):
-        self.assertEqual(
-            Action.get_create_checkup_action_url(),
-            "/goals/new/action/?actiontype={0}".format(Action.CHECKUP)
-        )
+    def test_create_action_classmethod_urls(self):
+        """Ensure the auto-magically created classmethod urls work."""
+        for action_type in Action.BUCKET_MAPPING.keys():
+            meth = 'get_create_{}_action_url'.format(action_type)
+            url = getattr(Action, meth)()
+            expected = '/goals/new/action/?actiontype={}'.format(action_type)
+            self.assertEqual(url, expected)
 
     def test_default_state(self):
         """Ensure that the default state is 'draft'."""
