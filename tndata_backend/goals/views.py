@@ -603,8 +603,8 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
-    action_type = Action.CORE
-    action_type_name = 'Core Notification'
+    action_type = Action.SHOWING
+    action_type_name = 'Showing'
     trigger_date = None
 
     def _set_action_type(self, action_type):
