@@ -759,11 +759,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     # progress.UserCompletedAction model.
     #
     # PREP -> CORE -> (HELPER only if they ask?) -> CHECKUP
+    BUCKET_ORDER = [PREP, CORE, HELPER, CHECKUP]
     BUCKET_PROGRESSION = {
         PREP: CORE,
         CORE: CHECKUP,
         HELPER: CHECKUP,
         CHECKUP: None,
+        None: PREP,
     }
 
     BUCKET_CHOICES = (  # The notification buckets.
@@ -929,8 +931,39 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         )
 
     @classmethod
-    def next_bucket(cls, bucket):
-        return cls.BUCKET_PROGRESSION[bucket]
+    def next_bucket(cls, bucket_progress):
+        """This classmethod can be used to determine the next bucket from
+        which actions should be delivered. It can be provided a bucket name
+        or a dict of bucket progress values (see UserBehavior.bucket_progress).
+
+        Usage:
+
+            Action.next_bucket(Action.PREP) --> Action.CORE
+
+        or:
+
+            Action.next_behavior({Action.PREP: True}) --> Action.CORE
+
+        """
+        # If bucket_progress is actually the name of the bucket, then just
+        # return the next bucket in the progression.
+        # If bucket_progress is a dict, we'll get an 'unhashable type' error
+        try:
+            return cls.BUCKET_PROGRESSION[bucket_progress]
+        except TypeError:
+            pass
+
+        # Othewise, we expect bucket progress to be a dict of bucket:completed
+        # values, so we need to look up the order based on which ones have been
+        # completed.
+        result = None  # Which bucket is next
+        result_index = -1  # the order in which the buckets should be completed.
+        for bucket, completed in bucket_progress.items():
+            bucket_index = cls.BUCKET_ORDER.index(bucket)
+            if completed and bucket_index > result_index:
+                result = bucket
+                result_index = bucket_index
+        return cls.BUCKET_PROGRESSION[result]
 
     @classmethod
     def _add_action_type_creation_urls_to_action(cls):

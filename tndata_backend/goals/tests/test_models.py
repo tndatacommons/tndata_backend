@@ -1150,10 +1150,33 @@ class TestAction(TestCase):
         Action.objects.filter(id=self.action.id).delete()
 
     def test_next_bucket(self):
+        # When the method is provided a bucket name.
         self.assertEqual(Action.next_bucket(Action.PREP), Action.CORE)
         self.assertEqual(Action.next_bucket(Action.CORE), Action.CHECKUP)
         self.assertEqual(Action.next_bucket(Action.HELPER), Action.CHECKUP)
         self.assertEqual(Action.next_bucket(Action.CHECKUP), None)
+        self.assertEqual(Action.next_bucket(None), Action.PREP)
+
+        # When the method is provided a dict of bucket progress
+        data = {
+            Action.PREP: False,
+            Action.CORE: False,
+            Action.HELPER: False,
+            Action.CHECKUP: False
+        }
+        self.assertEqual(Action.next_bucket(data), Action.PREP)
+
+        data[Action.PREP] = True
+        self.assertEqual(Action.next_bucket(data), Action.CORE)
+
+        data[Action.CORE] = True
+        self.assertEqual(Action.next_bucket(data), Action.CHECKUP)
+
+        data[Action.HELPER] = True
+        self.assertEqual(Action.next_bucket(data), Action.CHECKUP)
+
+        data[Action.CHECKUP] = True
+        self.assertEqual(Action.next_bucket(data), None)
 
     def test__set_bucket(self):
         """Ensure that _set_bucket puts an action in the correct bucket"""
