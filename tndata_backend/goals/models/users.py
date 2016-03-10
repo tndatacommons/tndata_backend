@@ -10,6 +10,8 @@ Mappings between users and their selected public content.
                         [ User ]
 
 """
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -199,6 +201,48 @@ class UserBehavior(models.Model):
         unique_together = ("user", "behavior")
         verbose_name = "User Behavior"
         verbose_name_plural = "User Behaviors"
+
+    def bucket_progress(self):
+        """Calculates bucket progress for all actions within the related
+        Behavior. This returns a dict of the form:
+
+            {bucket: boolean}
+
+        Which tells us whether or not the user has "completed" the bucket.
+
+        """
+        from .progress import UserCompletedAction
+
+        # Organize child actions by bucket. This is a dict of the form:
+        # {bucket: [action, ... ]
+        buckets = self.behavior.action_buckets()
+
+        # Create a dict to store progress (completion state) for each action
+        # in each bucket. This is a cit of the form:
+        # {bucket: ['completed', 'snoozed', ...]}
+        progress = defaultdict(list)
+
+        for bucket, action_list in buckets.items():
+            for action in action_list:
+                try:
+                    # Check the user's state for each action in their behavior.
+                    uca = UserCompletedAction.objects.filter(
+                        user=self.user,
+                        action=action
+                    ).latest()
+                    progress[bucket].append(uca.state)
+                except UserCompletedAction.DoesNotExist:
+                    progress[bucket].append(UserCompletedAction.UNSET)
+
+        # Now, create a status dict for each bucket, tellinus whether or not
+        # the user has completed all of the actions within the bucket.
+        status = {}  # {bucket: True|False}
+        for bucket in progress.keys():
+            status[bucket] = all([
+                state == UserCompletedAction.COMPLETED
+                for state in progress[bucket]
+            ])
+        return status
 
     @property
     def behavior_progress(self):
