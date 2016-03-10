@@ -43,6 +43,7 @@ class Command(BaseCommand):
         for user in users:
             progress = DailyProgress.objects.for_today(user)
             progress.update_stats()
+            progress.update_behavior_buckets()
             progress.save()
             count += 1
         msg = 'Saved DailyProgress snapshots for {} users'.format(count)
