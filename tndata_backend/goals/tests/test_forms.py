@@ -190,7 +190,7 @@ class TestActionForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
-            'action_type': 'core',
+            'action_type': Action.SHOWING,
             'priority': Action.LOW,
         }
         form = ActionForm(data)
@@ -213,7 +213,7 @@ class TestActionForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
-            'action_type': 'core',
+            'action_type': Action.SHOWING,
             'priority': Action.LOW,
         }
         form = ActionForm(data)
