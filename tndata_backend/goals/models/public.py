@@ -7,6 +7,8 @@ Behavior content. They're organized as follows:
 Actions are the things we want to help people to do.
 
 """
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
@@ -669,6 +671,18 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
 
         """
         return self.userbehavior_set.filter(user=user, behavior=self).first()
+
+    def action_buckets(self):
+        """Return a dictionary of this Behavior's published Actions organized
+        by bucket. The dict is of the form:
+
+            {bucket: [Action, ...]}
+
+        """
+        buckets = defaultdict(list)
+        for action in self.action_set.published():
+            buckets[action.bucket].append(action)
+        return dict(buckets)
 
     objects = WorkflowManager()
 
