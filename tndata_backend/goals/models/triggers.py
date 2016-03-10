@@ -3,6 +3,7 @@ The Trigger model encapsulates reminder schedules & information.
 
 """
 import pytz
+import random
 
 from datetime import datetime, timedelta
 
@@ -143,11 +144,14 @@ class Trigger(models.Model):
     )
 
     def __str__(self):
+        if self.is_dynamic:
+            result = "{} in the {}".format(
+                self.get_frequency_display(),
+                self.get_time_of_day_display()
+            )
+            return result
+
         result = "{}".format(self.name if self.name else "Unnamed Trigger")
-        if self.time_of_day:
-            result = "{}\n{}".format(result, self.time_of_day)
-        if self.frequency:
-            result = "{}\n{}".format(result, self.frequency)
         if self.time:
             result = "{}\n{}".format(result, self.time)
         if self.trigger_date:
@@ -197,6 +201,70 @@ class Trigger(models.Model):
         self._localize_time()
         self._strip_rdate_data()
         super(Trigger, self).save(*args, **kwargs)
+
+    @property
+    def is_dynamic(self):
+        return all([bool(self.time_of_day), bool(self.frequency)])
+
+    def dynamic_trigger_date(self, user=None):
+        random.seed()  # Seed our generator...
+        # ---------------------------------------------------------------------
+        # TODO: generate a dynamic trigger date based on the values for:
+        # - time of day
+        # - frequency
+        # ---------------------------------------------------------------------
+        # this is all fine, but...
+        #
+        # 1. We only queue up notifications 24-hours in advance. So the further
+        #    dates will always get ignored.
+        # 2. This is based on "now". So every time it's run it'll schedule a
+        #    weekly item 7 days away (which would never go out)
+        # 3. Can I use probabilities instead to determine if the thing should
+        #    be scheduled today|tomorrow
+        # ---------------------------------------------------------------------
+
+        if not self.is_dynamic:
+            return None
+
+        user = user or self.user
+        if user is None:
+            raise AssertionError("Dynamic triggers require a user")
+
+        # We need to an hour that corresponds to the selected Time of Day
+        hours = {
+            'early': [6, 7, 8],
+            'morning': [9, 10, 11],
+            'noonish': [11, 12, 13],
+            'afternoon': [13, 14, 15, 16, 17],
+            'evening': [17, 18, 19, 20, 21],
+            'late': [22, 23, 0, 1, 2],
+        }
+        hour = random.choice(hours[self.time_of_day])
+        minute = random.choice(range(1, 59))
+
+        # We need a current time, and we need to know if it's the weekend.
+        today = timezone.now()
+        is_weekend = today.isoweekday() in [5, 6, 7]  # Fri, Sat, Sun
+
+        # Probability that a message should be delivered today.
+        probabilities = {
+            'daily': 0.95,       # 95% chance it fires today
+            'weekly': 1/7,       # 1/7 chance.
+            'biweekly': 2/7,     # 2/7 chance.
+            'multiweekly': 3/7,  # 3/7 chance.
+            'weekends': 0.5 if is_weekend else 0,  # 50% chance on weekends.
+            'monthly': 1 / 30,  # 1 / 30 chance
+        }
+
+        # XXX: If we run this method several times a day, are these values
+        # still accurate (I think not); we need to divide by the number of times
+        # we call this method / day?
+        if random.random() < (probabilities[self.frequency] / 1440):
+            # Create a date for "tomorrow"; include our hour/minute
+            dt = today + timedelta(days=1)
+            dt = dt.replace(hour=hour, minute=minute)
+            return dt
+        return None
 
     @property
     def is_relative(self):
@@ -373,6 +441,9 @@ class Trigger(models.Model):
         """
         if self._stopped_by_completion(user) or self.disabled:
             return None
+
+        if self.is_dynamic:
+            return self.dynamic_trigger_date(user=user)
 
         tz = self.get_tz(user=user)
         alert_on = self.get_alert_time(tz)
