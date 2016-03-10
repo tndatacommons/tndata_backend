@@ -684,25 +684,25 @@ def _action_type_url_function(action_type):
 
 
 class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
-    """Actions are things that people do, and are typically the bit of
-    information to which a user will set a reminder (e.g. a Trigger).
+    """Actions are essentially the content of a Notification. They are things
+    that we ask people to do or that reinforce a Behavior.
 
-    Actions can be of different types or classes. Broadly, these include:
+    Actions have an `action_type` which is a just a label for a content author.
+    For example, the `REINFORCING` action type will contain contant that
+    reinforces some behavior while the `SHOWING` action type should contain
+    content that models how to do something specific.
 
-    * Preparatory: Intro-style notifications that help the user learn about
-      things they can do to build a behavior.
-    * Core: Notifications sent when they've learned the basics and just need
-      to keep working toward their goal
-    * Helper: Things to help get you back on track or give you an additional
-      nudge. These include the:
-        * Starter Step
-        * Tiny Version
-        * Resource
-        * Right now / Later
-    * Success / Checkup: for when they've completed a number of actions, and
-      reported that they're on track toward their goals. These are delivered
-      less frequently, and ask the user how they're doing, potentially giving
-      them a way to re-start the helper/core notifications.
+    Actions are also placed within a "bucket", and this defines how an autotmatic
+    nofication will get queued up and delivered. The buckets include:
+
+    * PREP (Preparatory) notifications are all delivered first, and help the
+      user learn about things they can do to build a behavior.
+    * CORE notifications are sent when the user has compelted the PREP actions.
+      These help the user to keep working toward their goal
+    * HELPER notifications are delivered if the user asks for more help.
+      These are intended to help get you back on track or give an extra nudge.
+    * CHECKUP notifications are delivered infrequently, and ask the user how
+      they're doing or if they want to re-start the helper/core notifications.
 
     """
 
@@ -737,6 +737,19 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         NOW: HELPER,
         LATER: HELPER,
         ASKING: CHECKUP,
+    }
+
+    # A mapping of current -> next bucket. We have the buckets, but we need
+    # a way to determine their progression. When a user "positively" completes
+    # all actions within a bucket, we move on to the next. See the
+    # progress.UserCompletedAction model.
+    #
+    # PREP -> CORE -> (HELPER only if they ask?) -> CHECKUP
+    BUCKET_PROGRESSION = {
+        PREP: CORE,
+        CORE: CHECKUP,
+        HELPER: CHECKUP,
+        CHECKUP: None,
     }
 
     BUCKET_CHOICES = (  # The notification buckets.
@@ -900,6 +913,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             ("decline_action", "Can Decline Actions"),
             ("publish_action", "Can Publish Actions"),
         )
+
+    @classmethod
+    def next_bucket(cls, bucket):
+        return cls.BUCKET_PROGRESSION[bucket]
 
     @classmethod
     def _add_action_type_creation_urls_to_action(cls):

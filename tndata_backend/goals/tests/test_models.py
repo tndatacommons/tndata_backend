@@ -1149,6 +1149,12 @@ class TestAction(TestCase):
         Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
+    def test_next_bucket(self):
+        self.assertEqual(Action.next_bucket(Action.PREP), Action.CORE)
+        self.assertEqual(Action.next_bucket(Action.CORE), Action.CHECKUP)
+        self.assertEqual(Action.next_bucket(Action.HELPER), Action.CHECKUP)
+        self.assertEqual(Action.next_bucket(Action.CHECKUP), None)
+
     def test__set_bucket(self):
         """Ensure that _set_bucket puts an action in the correct bucket"""
         action = Action(self.behavior, title='BUCKET-TEST')
