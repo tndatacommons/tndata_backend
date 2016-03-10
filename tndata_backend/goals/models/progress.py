@@ -181,12 +181,15 @@ class DailyProgress(models.Model):
         return self.goal_status
 
     def set_status(self, behavior, status):
+        """Sets the status/current bucket for a given behavior. This method
+        will add an entry to the `behaviors_status` field."""
         # NOTE: Action.PREP is an example of a bucket of actions/notifications.
-        # TODO: how to figure out what should create/set this value.
         key = 'behavior-{}'.format(behavior.id)
         self.behaviors_status[key] = status
 
     def get_status(self, behavior):
+        """Given a behavior, returns the user's current status; i.e. the bucket
+        from which actions should be delivered."""
         key = 'behavior-{}'.format(behavior.id)
         return self.behaviors_status[key]
 
