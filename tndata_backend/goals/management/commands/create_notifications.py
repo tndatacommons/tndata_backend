@@ -7,7 +7,7 @@ from django.utils import timezone
 
 import waffle
 
-from goals.models import CustomAction, Goal, Trigger, UserAction
+from goals.models import CustomAction, DailyProgress, Goal, Trigger
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
@@ -115,29 +115,57 @@ class Command(BaseCommand):
                     priority=GCMMessage.MEDIUM
                 )
 
-    def schedule_action_notifications(self):
-        # Schedule upcoming notifications for all UserActions with:
-        # - published Actions (whose parent behavior is also published)
-        # - users that have a GCMDevice registered
-        useractions = UserAction.objects.filter(
-            action__state='published',
-            action__behavior__state='published',
-            user__gcmdevice__isnull=False
-        )
-        for ua in useractions.distinct():
-            user_trigger = ua.trigger
-            if user_trigger:
-                # Will be in the user's timezone
-                deliver_on = user_trigger.next(user=ua.user)
-                deliver_on = to_utc(deliver_on)
+    def schedule_action_notifications(self, users):
+        """Given a queryset of users, we first:
 
-                self.create_message(
-                    ua.user,
-                    ua.action,
-                    ua.get_notification_title(),
-                    ua.get_notification_text(),
-                    deliver_on,
-                )
+        1. Schedule all of their dynamic notifications;
+            - iterate over their selected behaiors (UserBehaviors)
+            - find their current bucket
+            - retrive a queryset of UserActions in that bucket
+            - create gcm messages
+        2. Schedule their non-dynamic (e.g. recurring) notifications.
+
+        """
+        for user in users:
+            # For each user's behavior...
+            for ub in user.userbehavior_set.published():
+                try:
+                    # Figure out which bucket they're in
+                    dp = user.dailyprogress_set.latest()
+                    bucket = dp.get_status(ub.behavior)
+
+                    # pluck the next useraction from the bucket (this excludes
+                    # things they've already received).
+                    for ua in user.useraction_set.select_from_bucket(bucket):
+                        # Retrive the `next_reminder`, which will be in the
+                        # user's timezone, and may have been created weeks or
+                        # months ago.
+                        # XXX: this is slightlly differnt from other UserActions,
+                        # because we don't re-generate these on the fly
+                        deliver_on = to_utc(ua.next_reminder)
+                        self.create_message(
+                            user,
+                            ua.action,
+                            ua.get_notification_title(),
+                            ua.get_notification_text(),
+                            deliver_on,
+                        )
+                except DailyProgress.DoesNotExist:
+                    pass
+
+            # XXX; Very inefficient;
+            # schedule the non-dynamic notifications.
+            for ua in user.useraction_set.accepted_or_public(user).distinct():
+                if ua.trigger and not ua.trigger.is_dynamic:
+                    # Will be in the user's timezone
+                    deliver_on = to_utc(ua.trigger.next(user=user))
+                    self.create_message(
+                        user,
+                        ua.action,
+                        ua.get_notification_title(),
+                        ua.get_notification_text(),
+                        deliver_on,
+                    )
 
     def schedule_morning_goal_notifications(self, users):
         trigger = Trigger.objects.get_default_morning_goal_trigger()
@@ -172,12 +200,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Make sure everything is ok before we run this.
         self.check()
-        self.schedule_action_notifications()
-        if waffle.switch_is_active('goals-customactions'):
-            self.schedule_customaction_notifications()
 
+        # Find all the users that have GCM Devices.
         User = get_user_model()
         users = User.objects.filter(gcmdevice__isnull=False).distinct()
+
+        # Schedules both dynamic notifications & non-dynamic ones.
+        self.schedule_action_notifications(users)
+
+        if waffle.switch_is_active('goals-customactions'):
+            self.schedule_customaction_notifications()
 
         if waffle.switch_is_active('goals-morning-checkin'):
             self.schedule_morning_goal_notifications(users)
