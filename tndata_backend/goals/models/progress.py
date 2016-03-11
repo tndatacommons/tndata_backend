@@ -189,9 +189,16 @@ class DailyProgress(models.Model):
 
     def get_status(self, behavior):
         """Given a behavior, returns the user's current status; i.e. the bucket
-        from which actions should be delivered."""
-        key = 'behavior-{}'.format(behavior.id)
-        return self.behaviors_status[key]
+        from which actions should be delivered.
+
+        Returns None if the behavior cannot be found.
+
+        """
+        try:
+            key = 'behavior-{}'.format(behavior.id)
+            return self.behaviors_status[key]
+        except KeyError:
+            return None
 
     def _update_useraction_stats(self):
         start, end = local_day_range(self.user, dt=self.created_on)
