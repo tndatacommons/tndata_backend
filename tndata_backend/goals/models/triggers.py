@@ -211,6 +211,8 @@ class Trigger(models.Model):
         selected values of `frequency` and `time_of_day`. Both fields must be
         set, and if either is None this function will return None.
 
+        Returns a datetime object in the user's local timezone.
+
         Since this method is based on the current time, all returned values will
         be at least a day in the future of the calling date.
 
@@ -258,6 +260,7 @@ class Trigger(models.Model):
         days = random.choice(days_from_now[self.frequency])
         dt = today + timedelta(days=days)
         dt = dt.replace(hour=hour, minute=minute)
+        dt = to_localtime(dt, user)  # in the user's local timezone.
         return dt
 
     @property

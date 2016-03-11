@@ -458,8 +458,8 @@ class TestTrigger(TestCase):
         self.assertFalse(self.trigger.is_dynamic)
 
         # True when there is both frequency or time_of_day
-        trigger = mommy.make(Trigger, frequencey='daily', time_of_day='early')
-        self.assertIsTrue(trigger.is_dynamic)
+        trigger = mommy.make(Trigger, frequency='daily', time_of_day='early')
+        self.assertTrue(trigger.is_dynamic)
 
     def test_dynamic_trigger_date(self):
         # is None when not dynamic
@@ -472,7 +472,8 @@ class TestTrigger(TestCase):
 
         trigger.user = mommy.make(User)
         trigger.save()
-        self.assertIsNotNone(self.trigger.dynamic_trigger_date())
+        self.assertIsNotNone(trigger.dynamic_trigger_date())
+        trigger.delete()
 
     def test_next_when_disabled(self):
         trigger = mommy.make(
