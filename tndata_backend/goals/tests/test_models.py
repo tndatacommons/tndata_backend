@@ -453,6 +453,27 @@ class TestTrigger(TestCase):
         )
         self.assertTrue(trigger._stopped_by_completion(user))
 
+    def test_is_dynamic(self):
+        # False when there's no frequency or time_of_day
+        self.assertFalse(self.trigger.is_dynamic)
+
+        # True when there is both frequency or time_of_day
+        trigger = mommy.make(Trigger, frequencey='daily', time_of_day='early')
+        self.assertIsTrue(trigger.is_dynamic)
+
+    def test_dynamic_trigger_date(self):
+        # is None when not dynamic
+        self.assertIsNone(self.trigger.dynamic_trigger_date())
+
+        # raises an exception when there's no user
+        trigger = mommy.make(Trigger, frequency="daily", time_of_day='early')
+        with self.assertRaises(AssertionError):
+            trigger.dynamic_trigger_date()
+
+        trigger.user = mommy.make(User)
+        trigger.save()
+        self.assertIsNotNone(self.trigger.dynamic_trigger_date())
+
     def test_next_when_disabled(self):
         trigger = mommy.make(
             Trigger,
