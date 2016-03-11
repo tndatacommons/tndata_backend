@@ -233,6 +233,33 @@ class UserActionManager(models.Manager):
             action__default_trigger__isnull=False,
         )
 
+    def select_from_bucket(self, bucket, *args, **kwargs):
+        """Returns a queryset of UserActions that are listed within the given
+        bucket. This method also restricts its results to published Actions.
+
+        - bucket: The bucket from which to pull a UserAction (ss Action.bucket)
+        - exclude_completed: A boolean, if provided as a keyword argument,
+          this will excluded actions that have a corresponding
+          UserCompletedAction whose status is COMPLETED. The default is True.
+
+        Usage:
+
+            UserAction.objects.select_from_bucket('core', user=some_user)
+        or:
+            user.useraction_set.select_from_bucket('core')
+
+        """
+        from .models import UserCompletedAction as UCA
+        exclude_completed = kwargs.pop('exclude_completed', True)
+
+        # The accepted or public UserActions that are in the given bucket
+        qs = self.get_queryset().filter(*args, **kwargs)
+        qs = qs.filter(action__state='published', action__bucket=bucket)
+
+        if exclude_completed:
+            qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
+        return qs
+
 
 class TriggerManager(models.Manager):
     """A simple manager for the Trigger model. This class adds a few convenience
