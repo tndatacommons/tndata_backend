@@ -467,8 +467,7 @@ class TestTrigger(TestCase):
 
         # raises an exception when there's no user
         trigger = mommy.make(Trigger, frequency="daily", time_of_day='early')
-        with self.assertRaises(AssertionError):
-            trigger.dynamic_trigger_date()
+        self.assertIsNone(trigger.dynamic_trigger_date())
 
         trigger.user = mommy.make(User)
         trigger.save()

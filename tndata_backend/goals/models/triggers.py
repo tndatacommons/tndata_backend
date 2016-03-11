@@ -217,7 +217,8 @@ class Trigger(models.Model):
         be at least a day in the future of the calling date.
 
         This method also *must* either be given a user or the trigger must
-        have a user instance. Otherwise, an AssertionError will be raised.
+        have a user instance. If called without a user, this method will
+        return None (e.g. listings that display a trigger will show None)
 
         """
         random.seed()  # Seed our generator...
@@ -227,7 +228,7 @@ class Trigger(models.Model):
 
         user = user or self.user
         if user is None:
-            raise AssertionError("Dynamic triggers require a user")
+            return None
 
         # We need to an hour that corresponds to the selected Time of Day
         hours = {
