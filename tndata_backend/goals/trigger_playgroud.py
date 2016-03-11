@@ -145,3 +145,64 @@ def print_triggers():
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
         print("------------------------------------")
     t.delete()
+
+
+
+def dynamic_triggers():
+
+    # PRINT this calendar with: calendar.prmonth(2016, 3)
+    # ---------------------------------------------------
+    #      March 2016
+    # Mo Tu We Th Fr Sa Su
+    #     1  2  3  4  5  6
+    #  7  8  9 10 11 12 13
+    # 14 15 16 17 18 19 20
+    # 21 22 23 24 25 26 27
+    # 28 29 30 31
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    user = User.objects.get(pk=1)
+
+    YEAR = 2016
+    MONTH = 3
+    START_DAY = 1  # Day of month to start on.
+    NUM_DAYS = 10  # Number of days to test.
+
+    Trigger.objects.filter(name="testing").delete()
+    t = Trigger.objects.create(
+        user=user,
+        name="testing",
+        frequency="weekly",
+        time_of_day='noonish'
+    )
+
+    # Time format
+    tf = "%a %x %X %Z"
+    tf = "%c %Z"
+
+    for i in range(NUM_DAYS):
+        day = START_DAY + i
+        with patch("goals.models.triggers.timezone.now") as now:
+            # Early morning
+            now.return_value = tzdt(YEAR, MONTH, day, 6, 0)
+            now_string = now().strftime(tf)
+            next_time = t.next()
+            next_string = next_time.strftime(tf) if next_time else "None"
+            print("Now: {0} --> Next: {1}".format(now_string, next_string))
+
+            # Late morning
+            now.return_value = tzdt(YEAR, MONTH, day, 11, 0)
+            now_string = now().strftime(tf)
+            next_time = t.next()
+            next_string = next_time.strftime(tf) if next_time else "None"
+            print("Now: {0} --> Next: {1}".format(now_string, next_string))
+
+            # Afternoon
+            now.return_value = tzdt(YEAR, MONTH, day, 13, 30)
+            now_string = now().strftime(tf)
+            next_time = t.next()
+            next_string = next_time.strftime(tf) if next_time else "None"
+            print("Now: {0} --> Next: {1}".format(now_string, next_string))
+        print("------------------------------------")
+    t.delete()
