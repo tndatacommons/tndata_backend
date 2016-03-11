@@ -370,15 +370,21 @@ class UserAction(models.Model):
     )
 
     # Pre-rendered FK Fields.
-    serialized_action = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_behavior = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_action = JSONField(blank=True, default=dict,
+                                  dump_kwargs=dump_kwargs)
+    serialized_behavior = JSONField(blank=True, default=dict,
+                                    dump_kwargs=dump_kwargs)
     # TODO: deprecate this field in favor of only using `serialized_trigger`
-    serialized_custom_trigger = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_primary_goal = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_primary_category = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_custom_trigger = JSONField(blank=True, default=dict,
+                                          dump_kwargs=dump_kwargs)
+    serialized_primary_goal = JSONField(blank=True, default=dict,
+                                        dump_kwargs=dump_kwargs)
+    serialized_primary_category = JSONField(blank=True, default=dict,
+                                            dump_kwargs=dump_kwargs)
     # This serialized trigger is a read-only field for either the default or
     # custom trigger.
-    serialized_trigger = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
+    serialized_trigger = JSONField(blank=True, default=dict,
+                                   dump_kwargs=dump_kwargs)
     created_on = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -473,14 +479,27 @@ class UserAction(models.Model):
         or None. This method will either return the value of `next_trigger_date`
         or the next date/time generated from the trigger, whichever is *next*."""
 
+        now = timezone.now()
         trigger_times = []
-        if self.next_trigger_date and self.next_trigger_date > timezone.now():
-            # Convert to the user's timezone.
+        trigger = self.trigger
+        is_dynamic = trigger and trigger.is_dynamic
+
+        # If we have a dynamic trigger, let's first determine wether or not
+        # we need to re-generate a time; i.e. if the next_trigger_date is in
+        # the past.
+        if is_dynamic and self.next_trigger_date < now:
+            trigger_times.append(trigger.next(user=self.user))
+
+        elif self.next_trigger_date and self.next_trigger_date > now:
+            # Check to see if we can re-use the existing trigger date,
+            # converting it back to the users local timezone
             trigger_times.append(to_localtime(self.next_trigger_date, self.user))
 
-        if self.trigger:
-            trigger_times.append(self.trigger.next(user=self.user))
+        # For all non-dynmic triggers, we just regenerate a time.
+        if trigger and not is_dynamic:
+            trigger_times.append(trigger.next(user=self.user))
 
+        # Pick the "next up" trigger from our list of possibilities.
         trigger_times = list(filter(None, trigger_times))
         if len(trigger_times) > 0:
             return min(trigger_times)
