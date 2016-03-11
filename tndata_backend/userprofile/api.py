@@ -15,7 +15,7 @@ from rest_framework.authentication import (
 )
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -246,6 +246,7 @@ def api_logout(request):
 #   user's feed.
 # -----------------------------------------------------------------------------
 @api_view(http_method_names=['GET'])
+@authentication_classes((TokenAuthentication, SessionAuthentication))
 def feed_api(request):
     """This was an experiment to create a faster, easier-to-use feed. It
     is currently disabled.
@@ -317,6 +318,7 @@ def feed_api(request):
 
 
 @api_view(http_method_names=['GET'])
+@authentication_classes((TokenAuthentication, SessionAuthentication))
 def feed_upcoming_actions_api(request):
     """All upcoming `UserAction` and `CustomAction` objects for the feed.
 
