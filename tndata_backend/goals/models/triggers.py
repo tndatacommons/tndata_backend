@@ -207,21 +207,18 @@ class Trigger(models.Model):
         return all([bool(self.time_of_day), bool(self.frequency)])
 
     def dynamic_trigger_date(self, user=None):
+        """This method dynamically generates a future datetime based on the
+        selected values of `frequency` and `time_of_day`. Both fields must be
+        set, and if either is None this function will return None.
+
+        Since this method is based on the current time, all returned values will
+        be at least a day in the future of the calling date.
+
+        This method also *must* either be given a user or the trigger must
+        have a user instance. Otherwise, an AssertionError will be raised.
+
+        """
         random.seed()  # Seed our generator...
-        # ---------------------------------------------------------------------
-        # TODO: generate a dynamic trigger date based on the values for:
-        # - time of day
-        # - frequency
-        # ---------------------------------------------------------------------
-        # this is all fine, but...
-        #
-        # 1. We only queue up notifications 24-hours in advance. So the further
-        #    dates will always get ignored.
-        # 2. This is based on "now". So every time it's run it'll schedule a
-        #    weekly item 7 days away (which would never go out)
-        # 3. Can I use probabilities instead to determine if the thing should
-        #    be scheduled today|tomorrow
-        # ---------------------------------------------------------------------
 
         if not self.is_dynamic:
             return None
@@ -244,27 +241,24 @@ class Trigger(models.Model):
 
         # We need a current time, and we need to know if it's the weekend.
         today = timezone.now()
-        is_weekend = today.isoweekday() in [5, 6, 7]  # Fri, Sat, Sun
+        isoweekday = today.isoweekday()
+        saturday = 6 - isoweekday
+        sunday = 7 - isoweekday
 
-        # Probability that a message should be delivered today.
-        probabilities = {
-            'daily': 0.95,       # 95% chance it fires today
-            'weekly': 1/7,       # 1/7 chance.
-            'biweekly': 2/7,     # 2/7 chance.
-            'multiweekly': 3/7,  # 3/7 chance.
-            'weekends': 0.5 if is_weekend else 0,  # 50% chance on weekends.
-            'monthly': 1 / 30,  # 1 / 30 chance
+        # Choose a random number of days in the future based on the frequency;
+        # This is when we'd like to queue up a message.
+        days_from_now = {
+            'daily': [1],
+            'weekly': [6, 7],
+            'biweekly': [3, 5],
+            'multiweekly': [2, 5, 7],
+            'weekends': [saturday, sunday],
+            'monthly': [28, 29, 30],
         }
-
-        # XXX: If we run this method several times a day, are these values
-        # still accurate (I think not); we need to divide by the number of times
-        # we call this method / day?
-        if random.random() < (probabilities[self.frequency] / 1440):
-            # Create a date for "tomorrow"; include our hour/minute
-            dt = today + timedelta(days=1)
-            dt = dt.replace(hour=hour, minute=minute)
-            return dt
-        return None
+        days = random.choice(days_from_now[self.frequency])
+        dt = today + timedelta(days=days)
+        dt = dt.replace(hour=hour, minute=minute)
+        return dt
 
     @property
     def is_relative(self):
