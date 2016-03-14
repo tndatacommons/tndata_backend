@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 
 from django.utils import timezone
@@ -21,6 +21,7 @@ from goals.settings import (
 )
 from redis_metrics import metric
 
+from . import queue
 from . managers import GCMMessageManager
 from . settings import GCM
 from . signals import notification_snoozed
@@ -375,6 +376,14 @@ def remove_message_from_queue(sender, instance, *args, **kwargs):
     the work queue/scheduler.
 
     """
-    from . import queue
     queue.UserQueue(instance).remove()  # Remove it from the queue
     queue.cancel(instance.queue_id)  # Cancel the scheduled Job
+
+
+@receiver(post_save, sender=GCMMessage, dispatch_uid="requeue-message")
+def requeue(sender, instance, created, raw, using, **kwargs):
+    """When a GCMMessage is saved (and presumably edited), remove it from
+    the queue, and re-enque it."""
+    queue.UserQueue(instance).remove()  # Remove it from the queue
+    queue.cancel(instance.queue_id)  # Cancel the scheduled Job
+    queue.enqueue(instance)  # Re-add it to the queue.
