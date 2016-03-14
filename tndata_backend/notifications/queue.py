@@ -15,6 +15,10 @@ from utils.slack import post_private_message
 logger = logging.getLogger("loggly_logs")
 
 
+def _log_slack(msg):
+    post_private_message('bkmontgomery', msg)
+
+
 def get_scheduler(queue='default'):
     return django_rq.get_scheduler('default')
 
@@ -27,13 +31,17 @@ scheduler = get_scheduler()
 def send(message_id):
     """Given an ID for a GCMMessage object, send the message via GCM."""
     if settings.STAGING:
-        post_private_message("STAGING: Sending {}".format(message_id))
+        msg = "STAGING: Sending {}".format(message_id)
+        _log_slack(msg)
+    elif settings.DEBUG:
+        msg = "DEBUG: Sending {}".format(message_id)
+        _log_slack(msg)
 
     try:
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
-        post_private_message("Success! {}".format(msg))
+        _log_slack("Success! {}".format(msg))
 
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
@@ -49,7 +57,7 @@ def send(message_id):
         # Include the traceback in the slack message.
         tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
         log = "{}\n```{}```".format(log, "\n".join(tb))
-        post_private_message("bkmontgomery", log)
+        _log_slack(log)
 
 
 def enqueue(message, threshold=24):

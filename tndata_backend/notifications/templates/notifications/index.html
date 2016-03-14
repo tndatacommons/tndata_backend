@@ -11,19 +11,23 @@
     <caption>{{ jobs|length }} Enqueued Messages</caption>
     <thead>
       <tr>
-        <th>Job ID</th>
-        <th>Deliver</th>
-        <th>Age</th>
+        <th>Deliver In</th>
+        <th>Queued</th>
         <th>User</th>
         <th>Content</th>
+        <th>Job ID</th>
         <th>Delete</th>
       </tr>
     </thead>
     <tbody>
       {% for job, scheduled_for, message_data in jobs %}
       <tr>
-        <td><a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></td>
-        <td>{{ scheduled_for|localtime }}</td>
+        <td>
+          {% with deliver_on=scheduled_for|localtime %}
+            {{ deliver_on|timeuntil }}<br/>
+            <small>{{ deliver_on }}</small>
+          {% endwith %}
+        </td>
         <td>{{ job.created_at|localtime|timesince }}</td>
         <td>
           {# Clicking the user's email shows their queue for the date #}
@@ -38,6 +42,7 @@
           <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
             target="_blank"><i class="fa fa-external-link-square"></i></a>
         </td>
+        <td><a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></td>
         <td>
           <form action="{% url 'notifications:cancel-job' %}" method="post">
             {% csrf_token %}

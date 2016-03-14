@@ -230,8 +230,12 @@ class GCMMessage(models.Model):
         )
 
     def save(self, *args, **kwargs):
+        if self.id is None:
+            super(GCMMessage, self).save(*args, **kwargs)
+
         self._localize()
-        self._enqueue()
+        self._enqueue() #XXX?  Not saving the correct info on 1st save
+
         super(GCMMessage, self).save(*args, **kwargs)
 
     def _get_gcm_client(self):
