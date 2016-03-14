@@ -207,15 +207,17 @@ class GCMMessage(models.Model):
         if self.expire_on and self.expire_on.tzinfo is None:
             self.expire_on = pytz.utc.localize(self.expire_on)
 
-    def _requeue(self):
-        """When a GCMMessage is saved (and presumably edited), remove it from
-        the queue, and re-enque it."""
+    def _enqueue(self):
+        """Handle enqueueing our messages for delivery when saved."""
         if self.queue_id:
-            queue.UserQueue(self).remove()  # Remove it from the queue
-            queue.cancel(self.queue_id)  # Cancel the scheduled Job
+            # If we already have a queue ID, we need to re-enqueue, so cancel
+            # those prior jobs.
+            queue.UserQueue(self).remove()
+            queue.cancel(self.queue_id)
 
-        job = queue.enqueue(self, save=False)  # Re-add it to the queue.
-        if job:  # save the queue id, but only if we have one.
+        # Add the message to the queue, and save it's job ID (if any)
+        job = queue.enqueue(self)
+        if job:
             self.queue_id = job.id
 
     def send_notification_snoozed(self):
@@ -229,7 +231,7 @@ class GCMMessage(models.Model):
 
     def save(self, *args, **kwargs):
         self._localize()
-        self._requeue()
+        self._enqueue()
         super(GCMMessage, self).save(*args, **kwargs)
 
     def _get_gcm_client(self):

@@ -5,8 +5,6 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from . import queue
-
 logger = logging.getLogger("loggly_logs")
 
 
@@ -112,10 +110,7 @@ class GCMMessageManager(models.Manager):
 
                 with transaction.atomic():
                     msg = self.model(**kwargs)
-                    msg.save()
-
-                # Enqueue it!
-                queue.enqueue(msg)
+                    msg.save()  # NOTE: .save() enqueues a message for delivery
 
                 log_msg = "Created GCMMessage (id = %s) for delivery on: %s"
                 logger.info(log_msg, msg.id, deliver_on)
