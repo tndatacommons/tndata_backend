@@ -26,11 +26,15 @@ scheduler = get_scheduler()
 
 def send(message_id):
     """Given an ID for a GCMMessage object, send the message via GCM."""
+    if settings.STAGING:
+        post_private_message("STAGING: Sending {}".format(message_id))
 
     try:
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
+        post_private_message("Success! {}".format(msg))
+
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
         # happend to the original GCMMessage, and it's pre-delete signal handler
