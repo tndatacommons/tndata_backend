@@ -48,11 +48,12 @@ def send(message_id):
         post_private_message("bkmontgomery", log)
 
 
-def enqueue(message, threshold=24):
+def enqueue(message, threshold=24, save=True):
     """Given a GCMMessage object, add it to the queue of messages to be sent.
 
     - message: An instance of a GCMMessage
     - threshold: Number of hours in advance that we schedule notifications.
+    - save: (boolean) should we save the message after we add the job id?
 
     """
     job = None
@@ -66,16 +67,15 @@ def enqueue(message, threshold=24):
     if message.user and is_upcoming:
         if waffle.switch_is_active('notifications-user-userqueue'):
             # Enqueue messages through the UserQueue.
-            job = UserQueue(message).add()
+            job = UserQueue(message).add(save=save)
         else:
-            # --------- TODO: deprecate the below -----------------------------
             job = scheduler.enqueue_at(message.deliver_on, send, message.id)
 
-            # Save the job ID on the GCMMessage, so if it gets re-enqueued we
-            # can cancel the original?
+        # Save the job ID on the GCMMessage, so if it gets re-enqueued we
+        # can cancel the original?
+        if save:
             message.queue_id = job.id
             message.save()
-            # --------------------------------------------------------------
 
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')
@@ -249,7 +249,7 @@ class UserQueue:
         """Is the user's daily queue full? Returns True or False"""
         return self.count >= self.limit
 
-    def _enqueue(self):
+    def _enqueue(self, save=True):
         """Put the message in the appropriate queue and schedule for delivery,
         taking care to update the total count. This method also adds the Job's
         ID to the message & saves it."""
@@ -259,8 +259,9 @@ class UserQueue:
             self.send_func,
             self.message.id
         )
-        self.message.queue_id = job.id
-        self.message.save()
+        if save:
+            self.message.queue_id = job.id
+            self.message.save()
 
         # Keep up with a list of job ids for the day.
         # We need to keep a separate list for each priority, so we
@@ -274,9 +275,10 @@ class UserQueue:
         self.count += 1
         return job
 
-    def add(self):
+    def add(self, save=True):
         """Adds the message to the queue *if* there's room. IF the message was
-        added, it's `queue_id` gets set, and it gets saved.
+        added, it's `queue_id` gets set, and it gets saved (by default). This
+        behavior can be turned off by passing `save=False`
 
         Returns the scheduled Job object (or None if the job was not added).
 
@@ -291,11 +293,11 @@ class UserQueue:
 
         job = None
         if not self.full() or self.priority == 'high':
-            job = self._enqueue()
+            job = self._enqueue(save=save)
         elif self.priority == 'medium' and self.num_low > 0:
             # Bump a lower-priority message
             self.bump_from_queue('low')
-            job = self._enqueue()
+            job = self._enqueue(save=save)
         return job
 
     def list(self):
