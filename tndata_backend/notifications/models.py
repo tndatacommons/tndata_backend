@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
 from django.utils import timezone
@@ -207,6 +207,15 @@ class GCMMessage(models.Model):
         if self.expire_on and self.expire_on.tzinfo is None:
             self.expire_on = pytz.utc.localize(self.expire_on)
 
+    def _requeue(self):
+        """When a GCMMessage is saved (and presumably edited), remove it from
+        the queue, and re-enque it."""
+        if self.queue_id:
+            queue.UserQueue(self).remove()  # Remove it from the queue
+            queue.cancel(self.queue_id)  # Cancel the scheduled Job
+        job = queue.enqueue(self, save=False)  # Re-add it to the queue.
+        self.queue_id = job.id
+
     def send_notification_snoozed(self):
         notification_snoozed.send(
             sender=self.__class__,
@@ -218,6 +227,7 @@ class GCMMessage(models.Model):
 
     def save(self, *args, **kwargs):
         self._localize()
+        self._requeue()
         super(GCMMessage, self).save(*args, **kwargs)
 
     def _get_gcm_client(self):
@@ -378,12 +388,3 @@ def remove_message_from_queue(sender, instance, *args, **kwargs):
     """
     queue.UserQueue(instance).remove()  # Remove it from the queue
     queue.cancel(instance.queue_id)  # Cancel the scheduled Job
-
-
-@receiver(post_save, sender=GCMMessage, dispatch_uid="requeue-message")
-def requeue(sender, instance, created, raw, using, **kwargs):
-    """When a GCMMessage is saved (and presumably edited), remove it from
-    the queue, and re-enque it."""
-    queue.UserQueue(instance).remove()  # Remove it from the queue
-    queue.cancel(instance.queue_id)  # Cancel the scheduled Job
-    queue.enqueue(instance)  # Re-add it to the queue.
