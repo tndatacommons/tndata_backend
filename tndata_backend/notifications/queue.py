@@ -77,8 +77,12 @@ def enqueue(message, threshold=24, save=True):
             message.queue_id = job.id
             message.save()
 
+    if job:
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')
+    else:
+        # Record a metric so we can see queued vs sent?
+        metric('Message Scheduling Failed', category='Notifications')
 
     return job
 
