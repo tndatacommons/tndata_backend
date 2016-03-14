@@ -12,6 +12,9 @@ class Command(BaseCommand):
     help = 'Sends messages to GCM'
 
     def handle(self, *args, **options):
+        # NOTE: IF this switch is active, we rely on rq-scheduler to deliver
+        # notifications; otherwise, this script runs periodically and will
+        # query for items that need to be delivered (directly from GCMMessages)
         if waffle.switch_is_active('use-rqscheduler'):
             self.stderr.write("This command has been deprecated")
         else:
