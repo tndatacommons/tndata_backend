@@ -213,8 +213,10 @@ class GCMMessage(models.Model):
         if self.queue_id:
             queue.UserQueue(self).remove()  # Remove it from the queue
             queue.cancel(self.queue_id)  # Cancel the scheduled Job
+
         job = queue.enqueue(self, save=False)  # Re-add it to the queue.
-        self.queue_id = job.id
+        if job:  # save the queue id, but only if we have one.
+            self.queue_id = job.id
 
     def send_notification_snoozed(self):
         notification_snoozed.send(
