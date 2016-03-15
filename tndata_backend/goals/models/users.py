@@ -19,6 +19,7 @@ from django.utils import timezone
 
 from jsonfield import JSONField
 from utils.user_utils import local_day_range, to_localtime, to_utc
+from notifications.models import GCMMessage
 
 from .misc import _custom_triggers_allowed
 from .public import Action, Behavior, Category, Goal
@@ -440,6 +441,24 @@ class UserAction(models.Model):
     def _completed(self, state):
         """Return the UserCompletedAction objects for this UserAction."""
         return self.usercompletedaction_set.filter(state=state)
+
+    @property
+    def priority(self):
+        """Returns a string representation of the object's priority, suitable
+        for sending a message via GCM.
+
+        ----
+
+        doh. GCMMessage objects expect a string 'low', 'medium', 'high',
+        while I've built Action's with an integer priority :-/
+        """
+        # Action (int) --> GCMMessage (string)
+        priorities = {
+            Action.LOW: GCMMessage.LOW,
+            Action.MEDIUM: GCMMessage.MEDIUM,
+            Action.HIGH: GCMMessage.HIGH
+        }
+        return priorities.get(self.action.priority, GCMMessage.LOW)
 
     @property
     def num_completed(self):

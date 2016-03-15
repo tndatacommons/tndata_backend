@@ -8,7 +8,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 
-
+from notifications.models import GCMMessage
 from utils.user_utils import to_localtime, to_utc
 
 from .progress import UserCompletedAction
@@ -85,6 +85,10 @@ class CustomAction(models.Model):
         self.title_slug = slugify(self.title)
         self._set_next_trigger_date()
         super().save(*args, **kwargs)
+
+    @property
+    def priority(self):
+        return GCMMessage.MEDIUM
 
     @property
     def trigger(self):
