@@ -17,11 +17,14 @@ def dashboard(request):
     User = get_user_model()
 
     # If we have specified a user, show their Queue details.
+    date = request.GET.get('date', None) or None
+    if date:
+        date = datetime.strptime(date, "%Y-%m-%d").date()
     user = request.GET.get('user', None)
     user_queue = None
     try:
         user = User.objects.get(email__icontains=user)
-        user_queue = queue.UserQueue.get_data(user)
+        user_queue = queue.UserQueue.get_data(user, date=date)
     except (User.DoesNotExist, ValueError):
         if user is not None:
             user_queue = "No data found for '{}'".format(user)
@@ -53,6 +56,7 @@ def dashboard(request):
     context = {
         'jobs': jobs,
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled'],
+        'selected_date': date,
         'selected_user': user,
         'user_queue': user_queue,
     }

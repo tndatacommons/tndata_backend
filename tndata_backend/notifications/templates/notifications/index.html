@@ -12,6 +12,8 @@
           <input type="text" placeholder="user@email.com"
                  id="id_user" name="user"
                  value="{{ selected_user.email|default:'' }}"/>
+          <input type="date" id="id_date" name="date"
+                 value="{{ selected_date|date:"Y-m-d" }}"/>
           <button type="submit" class="button">Display</button>
         </div>
         <div class="large-6 medium-6 small-12 columns">
