@@ -44,10 +44,10 @@ class CustomActionManager(models.Manager):
         qs = self.get_queryset()
         return qs.filter(next_trigger_date__gte=timezone.now())
 
-    def stale(self):
+    def stale(self, **kwargs):
         """Return a queryset of objects whose `next_trigger_date` is either
         stale or None."""
-        qs = self.get_queryset()
+        qs = self.get_queryset().filter(**kwargs)
         return qs.filter(
             Q(next_trigger_date__lt=timezone.now()) |
             Q(next_trigger_date=None)
@@ -180,10 +180,10 @@ class UserActionManager(models.Manager):
         qs = self.get_queryset()
         return qs.filter(next_trigger_date__gte=timezone.now())
 
-    def stale(self):
+    def stale(self, **kwargs):
         """Return a queryset of UserActions whose `next_trigger_date` is either
         stale or None."""
-        qs = self.get_queryset()
+        qs = self.get_queryset().filter(**kwargs)
         return qs.filter(
             Q(next_trigger_date__lt=timezone.now()) |
             Q(next_trigger_date=None)
