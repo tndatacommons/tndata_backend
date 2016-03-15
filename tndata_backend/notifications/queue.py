@@ -35,7 +35,12 @@ def send(message_id):
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
-        _log_slack("Success! {}".format(msg), msg.user.username == "bkmontgomery")
+
+        m = "[{}] Success! {}".format(message_id, msg)
+        _log_slack(m, msg.user.username == "bkmontgomery")
+
+# TODO: the same message keeps getting sent every minute... are we supposed
+# to cleanup the job?
 
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
