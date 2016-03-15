@@ -100,19 +100,19 @@ class Command(BaseCommand):
             user__gcmdevice__isnull=False
         )
 
-        for a in customactions.distinct():
-            if a.trigger:
+        for customaction in customactions.distinct():
+            if customaction.trigger:
                 # Will be in the user's timezone
-                deliver_on = a.trigger.next(user=a.user)
+                deliver_on = customaction.trigger.next(user=customaction.user)
                 deliver_on = to_utc(deliver_on)
 
                 self.create_message(
-                    a.user,
-                    a,
-                    a.customgoal.title,
-                    a.notification_text,
+                    customaction.user,
+                    customaction,
+                    customaction.customgoal.title,
+                    customaction.notification_text,
                     deliver_on,
-                    priority=GCMMessage.MEDIUM
+                    priority=customaction.priority
                 )
 
     def schedule_action_notifications(self, users):
@@ -149,6 +149,7 @@ class Command(BaseCommand):
                             ua.get_notification_title(),
                             ua.get_notification_text(),
                             deliver_on,
+                            priority=ua.priority
                         )
                 except DailyProgress.DoesNotExist:
                     pass
@@ -165,6 +166,7 @@ class Command(BaseCommand):
                         ua.get_notification_title(),
                         ua.get_notification_text(),
                         deliver_on,
+                        priority=ua.priority
                     )
 
     def schedule_morning_goal_notifications(self, users):
@@ -179,7 +181,8 @@ class Command(BaseCommand):
                 ContentType.objects.get_for_model(Goal),
                 DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
                 DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
-                deliver_on
+                deliver_on,
+                priority=GCMMessage.LOW
             )
 
     def schedule_evening_goal_notifications(self, users):
@@ -194,7 +197,8 @@ class Command(BaseCommand):
                 ContentType.objects.get_for_model(Goal),
                 DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE,
                 DEFAULT_EVENING_GOAL_NOTIFICATION_TEXT,
-                deliver_on
+                deliver_on,
+                priority=GCMMessage.LOW
             )
 
     def handle(self, *args, **options):
