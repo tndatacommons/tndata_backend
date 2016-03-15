@@ -251,7 +251,11 @@ class UserQueue:
         data = {k: conn.lrange(k, 0, 100) for i, k in enumerate(keys) if i > 0}
         for key, values in data.items():
             data[key] = [v.decode('utf8') for v in values]
-        data[keys[0]] = int(conn.get(keys[0]))  # then include the count
+        try:
+            data[keys[0]] = int(conn.get(keys[0]))  # then include the count
+        except TypeError:
+            # If `count` is None
+            data[keys[0]] = 0
         return data
 
     @property
