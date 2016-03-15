@@ -230,11 +230,14 @@ class GCMMessage(models.Model):
         )
 
     def save(self, *args, **kwargs):
+        # Note: we need to save this so we have FK associates before we
+        # can enqueue it into rq.
         if self.id is None:
             super(GCMMessage, self).save(*args, **kwargs)
 
         self._localize()
-        self._enqueue() #XXX?  Not saving the correct info on 1st save
+        if not self.success:  # Don't re-enqueue successfully sent messages
+            self._enqueue()
 
         super(GCMMessage, self).save(*args, **kwargs)
 
