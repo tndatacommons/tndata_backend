@@ -15,9 +15,25 @@
           <button type="submit" class="button">Display</button>
         </div>
         <div class="large-6 medium-6 small-12 columns">
-          {% if user_queue %}
-            <pre>{{ user_queue|pprint }}</pre>
-          {% endif %}
+        {% if user_queue %}
+          {# Display the count key first. #}
+          {% for key, values in user_queue.items %}
+            {% if 'count' in key %}
+              <h3>{{ key|cut:":count" }} <small>{{ values }} items</small></h3>
+            {% endif %}
+          {% endfor %}
+
+          {# then the rest #}
+          {% for key, values in user_queue.items %}
+            {% if 'count' not in key %}
+              <p><strong>{{ key }}
+                <small>{{ values|length }} items</small></strong></p>
+              <ul>
+              {% for value in values %}<li>{{ value }}</li>{% endfor %}
+              </ul>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
         </div>
       </div>
     </fieldset>
@@ -30,8 +46,8 @@
     <caption>{{ jobs|length }} Enqueued Messages</caption>
     <thead>
       <tr>
-        <th>Deliver In</th>
-        <th>Queued</th>
+        <th>Deliver</th>
+        <th>Age</th>
         <th>User</th>
         <th>Content</th>
         <th>Job ID</th>
@@ -43,8 +59,8 @@
       <tr>
         <td>
           {% with deliver_on=scheduled_for|localtime %}
-            {{ deliver_on|timeuntil }}<br/>
-            <small>{{ deliver_on }}</small>
+            {{ deliver_on|date:"Y-m-d H:i"}}<br/>
+            <small>{{ deliver_on|timeuntil }}</small>
           {% endwith %}
         </td>
         <td>{{ job.created_at|localtime|timesince }}</td>
