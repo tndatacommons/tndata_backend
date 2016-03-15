@@ -4,6 +4,25 @@
 
 
 {% block content %}
+  {# Ask for UserQueue data #}
+  <form method="get">
+    <fieldset><legend>User Queue Details</legend>
+      <div class="row">
+        <div class="large-6 medium-6 small-12 columns">
+          <input type="text" placeholder="user@email.com"
+                 id="id_user" name="user"
+                 value="{{ selected_user.email|default:'' }}"/>
+          <button type="submit" class="button">Display</button>
+        </div>
+        <div class="large-6 medium-6 small-12 columns">
+          {% if user_queue %}
+            <pre>{{ user_queue|pprint }}</pre>
+          {% endif %}
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
   {# display a redis-metrics chart of sent messages #}
   {% aggregate_history metrics %}
 

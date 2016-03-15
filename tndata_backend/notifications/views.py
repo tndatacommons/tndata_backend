@@ -14,6 +14,19 @@ from .models import GCMMessage
 @user_passes_test(lambda u: u.is_staff, login_url='/')
 def dashboard(request):
     """A simple dashboard for enqueued GCM notifications."""
+    User = get_user_model()
+
+    # If we have specified a user, show their Queue details.
+    user = request.GET.get('user', None)
+    user_queue = None
+    try:
+        user = User.objects.get(email__icontains=user)
+        user_queue = queue.UserQueue.get_data(user)
+    except (User.DoesNotExist, ValueError):
+        if user is not None:
+            user_queue = "No data found for '{}'".format(user)
+    except User.MultipleObjectsReturned:
+        user_queue = "Multiple Users found for '{}'".format(user)
 
     jobs = queue.messages()  # Get the enqueued messages
     ids = [job.args[0] for job, _ in jobs]
@@ -38,7 +51,9 @@ def dashboard(request):
     ]
     context = {
         'jobs': jobs,
-        'metrics': ['GCM Message Sent', 'GCM Message Scheduled', ]
+        'metrics': ['GCM Message Sent', 'GCM Message Scheduled'],
+        'selected_user': user,
+        'user_queue': user_queue,
     }
     return render(request, "notifications/index.html", context)
 
