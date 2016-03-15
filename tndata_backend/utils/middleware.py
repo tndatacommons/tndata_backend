@@ -95,3 +95,24 @@ class IgnoreRequestMiddleware(object):
             resp = HttpResponse(teapot)
             resp.status_code = 418
             return resp
+
+
+class DebugMedia404Middleware(object):
+    """Catch media requests that return 404 and return an image instead."""
+
+    def __init__(self, *args, **kwargs):
+        # pre-load our default image & create a response
+        with open("utils/static/img/x.png", 'rb') as f:
+            self._fallback_response = HttpResponse(
+                f.read(),
+                content_type="image/png",
+            )
+            self._fallback_response.status_code = 200
+        super().__init__(*args, **kwargs)
+
+    def process_response(self, request, response):
+        # Only check if there's a 404 for the original response
+        media_request = request.path.startswith(settings.MEDIA_URL)
+        if settings.DEBUG and media_request and response.status_code == 404:
+                return self._fallback_response
+        return response

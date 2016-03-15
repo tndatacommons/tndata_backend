@@ -220,6 +220,7 @@ MIDDLEWARE_CLASSES = (
     'utils.middleware.TimezoneMiddleware',
     'utils.middleware.ResponseForbiddenMiddleware',
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
+    'utils.middleware.DebugMedia404Middleware',
 )
 
 ROOT_URLCONF = 'config.urls'
