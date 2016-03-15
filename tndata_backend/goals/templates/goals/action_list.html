@@ -24,11 +24,9 @@
           State
         </th>
         <th>Order</th>
+        <th>Type</th>
         <th>Title</th>
         <th>Notification</th>
-        <th>Trigger Time</th>
-        <th>Trigger Date</th>
-        <th>Trigger Repeat</th>
         <th>Behavior</th>
         <th>Icon</th>
         <th>Selected By</th>
@@ -45,16 +43,12 @@
             {% endif %}
           </td>
           <td>{{ action.sequence_order }}</td>
+          <td>{{ action.get_action_type_display }}</td>
           <td>
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
           <td>{{ action.notification_text }}</td>
-          {% with trigger=action.default_trigger %}
-            <td>{{ trigger.time|default:"-"}}</td>
-            <td>{{ trigger.trigger_date|default:"-" }}</td>
-            <td>{{ trigger.recurrences_as_text|default:"-" }}</td>
-          {% endwith %}
           <td>{{ action.behavior }}</td>
           <td class="gray">
             {% with icon=action.get_absolute_icon %}

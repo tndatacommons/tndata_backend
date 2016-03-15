@@ -577,12 +577,7 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.annotate(Count('useraction'))
-        return queryset.select_related(
-            "behavior__title",
-            'default_trigger__time',
-            'default_trigger__trigger_date',
-            'default_trigger__recurrences'
-        )
+        return queryset.select_related("behavior__title")
 
 
 class ActionDetailView(ContentViewerMixin, DetailView):
