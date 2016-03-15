@@ -202,6 +202,10 @@ class Command(BaseCommand):
             )
 
     def handle(self, *args, **options):
+        # This switch allows us to completely disable creation of notifications
+        if not waffle.switch_is_active('goals-create_notifications'):
+            return None
+
         # Make sure everything is ok before we run this.
         self.check()
 
