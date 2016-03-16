@@ -25,12 +25,22 @@
     {% endfor %}
   {% endif %}
 
-  <p>
-    <a href="{{ app_url }}" class="button large success">
-      <i class="fa fa-cloud-download"></i> Get the app!</a>
-  </p>
+  {% comment %}
+  <p><a href="{{ app_url }}" class="button large success">
+      <i class="fa fa-android"></i> Get the app!</a></p>
+  {% endcomment %}
 
-  </div>
+  </div> {# end .panel #}
+  </div> {# end. columns #}
+</div> {# end .row #}
+<div class="row">
+  <div class="large-6 large-offset-3 medium-6 medium-offset-3 small-8 small-offset-2 columns">
+
+    <div class="download">
+    <span class="android">
+    <a href="https://play.google.com/store/apps/details?id=org.tndata.android.compass&utm_source=global_co&utm_medium=prtnr&utm_content=Mar2515&utm_campaign=PartBadge&pcampaignid=MKT-AC-global-none-all-co-pr-py-PartBadges-Oct1515-1"><img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/apps/en-play-badge.png" /></a>
+    </span>
+    </div>
   </div>
 </div> {# end .row #}
 {% endblock %}
