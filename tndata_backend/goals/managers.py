@@ -248,6 +248,19 @@ class UserActionManager(models.Manager):
         or:
             user.useraction_set.select_from_bucket('core')
 
+        ----
+
+        **Support for `Action.sequence_order`**
+
+        This method respects the Action.sequence_order value, in that it will
+        filter results based on the lowest-value from un-completed Actions. For
+        example, we will only return items whose sequence_order is 0, until all
+        those are completed, at which point this method will only return results
+        whose sequence_order is 1, etc.
+
+        This filter is applied _after_ the bucket filter, so we still only
+        pull from a single bucket at a time.
+
         """
         from .models import UserCompletedAction as UCA
         exclude_completed = kwargs.pop('exclude_completed', True)
@@ -258,6 +271,14 @@ class UserActionManager(models.Manager):
 
         if exclude_completed:
             qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
+
+        # Respect Action.sequence_order.
+        # Look at the `sequence_order` values (which should be ordered,
+        # low-to-high), and pick the first value and filter on that.
+        sequences = qs.values_list('action__sequence_order', flat=True)
+        if len(sequences) > 0:
+            qs = qs.filter(action__sequence_order=sequences[0])
+
         return qs
 
 
