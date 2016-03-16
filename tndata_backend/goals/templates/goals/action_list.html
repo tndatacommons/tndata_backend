@@ -24,7 +24,7 @@
           State
         </th>
         <th>Order</th>
-        <th>Type</th>
+        <th>Type/Bucket</th>
         <th>Title</th>
         <th>Notification</th>
         <th>Behavior</th>
@@ -43,7 +43,10 @@
             {% endif %}
           </td>
           <td>{{ action.sequence_order }}</td>
-          <td>{{ action.get_action_type_display }}</td>
+          <td>
+            {{ action.get_action_type_display }} /
+            <em>{{ action.get_bucket_display }}</em>
+          </td>
           <td>
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
