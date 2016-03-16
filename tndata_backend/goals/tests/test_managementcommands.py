@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
 
+from waffle.testutils import override_switch
+
 from .. models import (
     Action,
     Behavior,
@@ -17,6 +19,7 @@ from .. models import (
 class TestCreateNotifications(TestCase):
     """Tests for the `create_notifications` management command."""
 
+    @override_switch('goals-create_notifications', active=True)
     def test_create_notifications_no_content(self):
         log_path = "goals.management.commands.create_notifications.logger"
         with patch(log_path) as logger:
@@ -25,6 +28,7 @@ class TestCreateNotifications(TestCase):
             # We should have logged a 'finished' message
             logger.warning.assert_called_with("Created 0 notifications.")
 
+    @override_switch('goals-create_notifications', active=True)
     def test_create_notifications_with_content(self):
         User = get_user_model()
         user = User.objects.create_user('x', 'x@example.com', 'pass')
