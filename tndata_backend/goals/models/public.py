@@ -1111,6 +1111,11 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
-        pass
+        """When an action is published, we need to auto-enroll all the users
+        that have selected the parent behavior."""
 
+        # For everyone that's selected this action's parent Behavior:
+        for ub in self.behavior.userbehavior_set.all():
+            # Add this new action.
+            ub.add_actions(action_id=self.id)
     objects = WorkflowManager()

@@ -293,10 +293,20 @@ class UserBehavior(models.Model):
         uids = self.user.useraction_set.values_list('action_id', flat=True)
         return self.behavior.action_set.filter(id__in=uids, state='published')
 
-    def add_actions(self, primary_category=None, primary_goal=None):
+    def add_actions(self, primary_category=None, primary_goal=None, action_id=None):
         """Create UserAction instances for all of the published Actions within
         the associated behavior. This method will not create duplicate instances
-        of UserAction."""
+        of UserAction.
+
+        - primary_category: If specified, will be set as the UserAction's
+          primary_category field. If omitted, this value is looked up.
+        - primary_goal: If specified, will be set as the UserAction's
+          primary_goal field. If omitted, this value is looked up.
+        - action_id: If specified, we only create a UserAction whose action
+          field matches the given value (e.g. if we only want to add a single
+          action).
+
+        """
 
         defaults = {
             'primary_goal': primary_goal,
@@ -307,7 +317,13 @@ class UserBehavior(models.Model):
         if primary_category is None:
             defaults['primary_category'] = self.get_user_categories().first()
 
-        for action in Action.objects.published(behavior=self.behavior):
+        if action_id:
+            # Note: may not be saved as "published", yet, but that's OK
+            actions = Action.objects.filter(id=action_id)
+        else:
+            actions = Action.objects.published(behavior=self.behavior)
+
+        for action in actions:
             UserAction.objects.update_or_create(
                 user=self.user,
                 action=action,
