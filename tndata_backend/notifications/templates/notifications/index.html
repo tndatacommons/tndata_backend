@@ -76,8 +76,10 @@
         </td>
         <td>
           {{ message_data.title }} {{ message_data.message }}
+          {% if message_data.id %}
           <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
             target="_blank"><i class="fa fa-external-link-square"></i></a>
+          {% endif %}
         </td>
         <td><a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></td>
         <td>
@@ -99,11 +101,16 @@
   </table>
 
   <div class="panel clearfix">
+    <div class="pull-right">
     <form action="{% url 'notifications:cancel-jobs' %}" method="post">
       {% csrf_token %}
       <input type="submit" value="Clear Notification Queue"
-        class="button alert pull-right"/>
+        class="button alert"/>
+      <label for="id_orphaned">Orphaned Only?
+        <input type="checkbox" name="orphaned" id="id_orphaned" />
+      </label>
     </form>
+    </div>
   </div>
 
   <div id="queueModal" class="reveal-modal"

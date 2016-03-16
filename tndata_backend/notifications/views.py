@@ -103,11 +103,21 @@ def cancel_job(request):
 
 @user_passes_test(lambda u: u.is_staff, login_url='/')
 def cancel_all_jobs(request):
-    """Cancels all queued messages."""
-    if request.method == "POST":
-        count = 0
+    """Cancels queued messages."""
+
+    count = 0
+    if request.method == "POST" and request.POST.get('orphaned') == 'on':
+        # Sometimes we end up with orphaned jobs (e.g. a user is deleted, but
+        # GCMMessage's delete signal handler doesn't fire).
+        queue_ids = list(GCMMessage.objects.values_list('queue_id', flat=True))
+        jobs = [job for job, _ in queue.messages() if job.id not in queue_ids]
+        for job in jobs:
+            job.cancel()
+            count += 1
+    elif request.method == "POST":
         for job, _ in queue.messages():
             job.cancel()
             count += 1
-        messages.success(request, "Cancelled {} notifications.".format(count))
+
+    messages.success(request, "Cancelled {} notifications.".format(count))
     return redirect("notifications:dashboard")
