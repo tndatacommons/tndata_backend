@@ -353,11 +353,12 @@ AXES_USERNAME_FORM_FIELD = 'email'
 # - http://python-rq.org/docs/workers/
 # - https://github.com/ui/django-rq
 # NOTE: To run the worker, do: python manage.py rqworker default
+REDIS_RQ_DB = int(os.environ.get('REDIS_RQ_DB'))
 RQ_QUEUES = {
     'default': {
         'HOST': REDIS_HOST,
         'PORT': REDIS_PORT,
-        'DB': int(os.environ.get('REDIS_RQ_DB')),
+        'DB': REDIS_RQ_DB,
         'PASSWORD': REDIS_PASSWORD,
         'DEFAULT_TIMEOUT': 360,
     },
