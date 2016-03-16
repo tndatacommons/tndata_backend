@@ -128,6 +128,11 @@
                   <li>
                     <div class="pull-right">{{ba|label}}</div>
                     <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
+                    {% with trigger=ba.default_trigger %}
+                      {% if trigger %}
+                        <small>{{ trigger.time_details }}</small>
+                      {% endif %}
+                    {% endwith %}
                   </li>
                 {% empty %}
                   <li><em>There are no actions in this behavior</em></li>

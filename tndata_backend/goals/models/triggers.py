@@ -144,6 +144,13 @@ class Trigger(models.Model):
     )
 
     def __str__(self):
+        result = "{}".format(self.name if self.name else "Unnamed Trigger")
+        result = "{}\n{}".format(result, self.time_details)
+        return result
+
+    @property
+    def time_details(self):
+        """Return a string representation of this trigger's time details"""
         if self.is_dynamic:
             result = "{} in the {}".format(
                 self.get_frequency_display(),
@@ -151,7 +158,7 @@ class Trigger(models.Model):
             )
             return result
 
-        result = "{}".format(self.name if self.name else "Unnamed Trigger")
+        result = ""
         if self.time:
             result = "{}\n{}".format(result, self.time)
         if self.trigger_date:
@@ -164,7 +171,7 @@ class Trigger(models.Model):
         elif self.is_relative:
             result = "{}\nStarts when selected".format(result)
         if self.stop_on_complete:
-            result = "{}\nStops when complete".format(result)
+            result = "{}\nStops when completed".format(result)
         return result
 
     class Meta:
