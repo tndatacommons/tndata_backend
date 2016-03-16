@@ -889,6 +889,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         max_length=32,
         blank=True,
         default=CORE,
+        choices=BUCKET_CHOICES,
         help_text='The "bucket" from which this object is selected when '
                   'queueing up notifications.'
     )
