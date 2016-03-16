@@ -159,8 +159,7 @@ admin.site.register(models.Trigger, TriggerAdmin)
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'state', 'num_actions', 'selected_by_users', 'in_categories',
-        'in_goals', 'get_absolute_icon', 'get_absolute_image',
-        'created_by', 'created_on', 'updated_by', 'updated_on',
+        'in_goals', 'updated_on',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description',
@@ -234,17 +233,16 @@ admin.site.register(models.Behavior, BehaviorAdmin)
 
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'selected_by_users', 'behavior', 'sequence_order',
-        'get_absolute_icon', 'get_absolute_image',
-        'created_by', 'created_on', 'updated_by', 'updated_on',
+        'title', 'sequence_order', 'bucket', 'action_type', 'state',
+        'priority', 'selected_by_users',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description',
         'notification_text',
     ]
-    list_filter = ('state', )
+    list_filter = ('state', 'bucket', 'action_type', 'priority', 'behavior')
     prepopulated_fields = {"title_slug": ("title", )}
-    raw_id_fields = ('behavior', 'updated_by', 'created_by')
+    raw_id_fields = ('behavior', 'default_trigger', 'updated_by', 'created_by')
     actions = ['convert_to_behavior']
 
     def selected_by_users(self, obj):
