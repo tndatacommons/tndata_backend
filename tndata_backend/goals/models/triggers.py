@@ -144,8 +144,8 @@ class Trigger(models.Model):
     )
 
     def __str__(self):
-        result = "{}".format(self.name if self.name else "Unnamed Trigger")
-        result = "{}\n{}".format(result, self.time_details)
+        result = "{}\n".format(self.name if self.name else "Unnamed Trigger")
+        result = "{}{}".format(result, self.time_details)
         return result
 
     @property
@@ -160,18 +160,18 @@ class Trigger(models.Model):
 
         result = ""
         if self.time:
-            result = "{}\n{}".format(result, self.time)
+            result = "{}{}\n".format(result, self.time)
         if self.trigger_date:
-            result = "{}\n{}".format(result, self.trigger_date)
+            result = "{}{}\n".format(result, self.trigger_date)
         if self.recurrences:
-            result = "{}\n{}".format(result, self.recurrences_as_text())
+            result = "{}{}\n".format(result, self.recurrences_as_text())
         if self.is_relative and self.relative_value:
-            result = "{}\nStarts {} {} after selection".format(
+            result = "{}Starts {} {} after selection\n".format(
                 result, self.relative_value, self.relative_units)
         elif self.is_relative:
-            result = "{}\nStarts when selected".format(result)
+            result = "{}Starts when selected\n".format(result)
         if self.stop_on_complete:
-            result = "{}\nStops when completed".format(result)
+            result = "{}Stops when completed\n".format(result)
         return result
 
     class Meta:

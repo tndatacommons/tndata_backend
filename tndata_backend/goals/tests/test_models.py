@@ -298,9 +298,16 @@ class TestTrigger(TestCase):
     def test__str__(self):
         expected = (
             "Test Trigger\n12:34:00+00:00\n"
-            "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday"
+            "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday\n"
         )
         self.assertEqual("{}".format(self.trigger), expected)
+
+    def test_time_details(self):
+        expected = (
+            "12:34:00+00:00\n"
+            "weekly, each Monday, Tuesday, Wednesday, Thursday, Friday\n"
+        )
+        self.assertEqual(self.trigger.time_details, expected)
 
     def test__localize_time(self):
         t = Trigger(name="X", time=time(12, 34))
