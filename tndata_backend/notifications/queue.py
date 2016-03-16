@@ -39,9 +39,6 @@ def send(message_id):
         m = "[{}] Success! {}".format(message_id, msg)
         _log_slack(m, msg.user.username == "bkmontgomery")
 
-# TODO: the same message keeps getting sent every minute... are we supposed
-# to cleanup the job?
-
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
         # happend to the original GCMMessage, and it's pre-delete signal handler
@@ -112,10 +109,10 @@ def messages():
     return scheduler.get_jobs(with_times=True)
 
 
-def cancel(queue_id):
-    """Given a queue id, look up the corresponding job and cancel it. """
-    if queue_id:
-        jobs = (job for job, _ in messages() if job.id == queue_id)
+def cancel(job_id):
+    """Cancel a scheduled job, given its ID."""
+    if job_id:
+        jobs = (job for job, _ in messages() if job.id == job_id)
         for job in jobs:
             job.cancel()
 
@@ -180,7 +177,7 @@ class UserQueue:
         self.send_func = send_func
         self.message = message
         self.limit = message.get_daily_message_limit()
-        self.priority = getattr(message, 'priority', 'low')
+        self.priority = getattr(message, 'priority', message.LOW)
         self.user = message.user
         self.date_string = message.deliver_on.date().strftime("%Y-%m-%d")
 
@@ -323,8 +320,8 @@ class UserQueue:
         return job
 
     def list(self):
-        """Return a list of today's Jobs scheduled at the same priority as
-        the current Message."""
+        """Return a list of today's Jobs (Job instances) scheduled at the same
+        priority as the current Message."""
         k = self._key(self.priority)
         num_items = self.conn.llen(k)
 
@@ -360,8 +357,8 @@ class UserQueue:
         # Pull all the job ids off the queue (we'll re-add them later), keeping
         # the ones we're not removing
         job_ids = [
-            job_id for job_id in self.list()
-            if job_id != self.message.queue_id
+            job.id for job in self.list()
+            if job.id != self.message.queue_id
         ]
 
         # Then delete the queue, and re-add the keepers.
