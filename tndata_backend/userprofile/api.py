@@ -328,6 +328,8 @@ def feed_upcoming_actions_api(request):
     - `action`: A String; the title of the `Action`/`CustomAction` object.
     - `goal_id`: Integer ID for the action's parent `Goal`/`CustomGoal`.
     - `goal`: A String; the parent goal's title.
+    - `category_id`: Integer value of an ID for the parent `Category`. This will
+      be `-1` for custom actions.
     - `category_color`: A string containing the category's hex color.
     - `trigger`: A string containing the date/time of the next scheduled reminder.
     - `type`: A string; will be 'useraction' or 'customaction'
@@ -374,6 +376,7 @@ def feed_upcoming_actions_api(request):
                 'goal_id': primary_goal.id,
                 'goal': primary_goal.title,
                 'category_color': primary_category.color,
+                'category_id': primary_category.id,
                 'trigger': "{}".format(ua.next_reminder),
                 'type': 'useraction',
                 'object_type': 'upcoming_item',
@@ -395,6 +398,7 @@ def feed_upcoming_actions_api(request):
                 'goal_id': ca.customgoal.id,
                 'goal': ca.customgoal.title,
                 'category_color': '#176CC4',
+                'category_id': '-1',
                 'trigger': "{}".format(ca.next_reminder),
                 'type': 'customaction',
                 'object_type': 'upcoming_item',
