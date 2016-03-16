@@ -208,7 +208,7 @@ class GCMMessage(models.Model):
             self.expire_on = pytz.utc.localize(self.expire_on)
 
     def _enqueue(self):
-        """Handle enqueueing our messages for delivery when saved."""
+        """Handle enqueuing our messages for delivery when saved."""
         if self.queue_id:
             # If we already have a queue ID, we need to re-enqueue, so cancel
             # those prior jobs.
