@@ -3,8 +3,11 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
+from waffle.testutils import override_switch
+
 from .. models import GCMDevice, GCMMessage
 from .. queue import UserQueue
+from .. import queue
 
 
 def datetime_utc(*args):
@@ -29,7 +32,9 @@ class TestUserQueue(TestCase):
             registration_id="REGISTRATIONID",
             device_id="DEVICEID"
         )
-        cls.deliver_date = timezone.now() + timedelta(days=1)
+
+        # Choose some arbitrary delivery date that's < 24hours from now.
+        cls.deliver_date = timezone.now() + timedelta(hours=4)
 
     def tearDown(self):
         # Clear all the redis keys after each test.
@@ -95,11 +100,11 @@ class TestUserQueue(TestCase):
         job = uq.add()
         self.assertIn(job, uq.list())
 
+    @override_switch('notifications-user-userqueue', active=True)
     def test_remove(self):
+        # Note: GCMMessage.objects.create will enqueue the message.
         msg = GCMMessage.objects.create(self.user, "X", "X", self.deliver_date)
-        uq = UserQueue(msg)
-        uq.add()
+        self.assertIn(msg.queue_id, [job.id for job, _ in queue.messages()])
 
-        uq.remove()
-        self.assertEqual(uq.list(), [])
-        self.assertEqual(uq.count, 0)
+        UserQueue(msg).remove()
+        self.assertNotIn(msg.queue_id, [job.id for job, _ in queue.messages()])
