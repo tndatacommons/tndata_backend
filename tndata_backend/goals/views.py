@@ -190,6 +190,8 @@ class PublishView(View):
                     obj.draft()
                     obj.save(updated_by=request.user)
                     messages.success(request, "{0} is now in Draft".format(obj))
+            return redirect(obj.get_absolute_url())
+
         except self.model.DoesNotExist:
             messages.error(
                 request, "Could not find the specified {0}".format(self.model)
@@ -355,6 +357,7 @@ class CategoryTransferView(BaseTransferView):
     model = Category
     pk_field = "pk"
     owner_field = "created_by"
+    success_url = reverse_lazy('goals:category-list')
 
 
 class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
@@ -362,6 +365,7 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     form_class = CategoryForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+    success_url = reverse_lazy('goals:category-list')
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
@@ -445,6 +449,7 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = GoalForm
+    success_url = reverse_lazy('goals:goal-list')
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
@@ -556,6 +561,7 @@ class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = BehaviorForm
+    success_url = reverse_lazy('goals:behavior-list')
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
@@ -739,6 +745,7 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
     form_class = ActionForm
+    success_url = reverse_lazy('goals:action-list')
 
     def post(self, request, *args, **kwargs):
         # Handle dealing with 2 forms.
