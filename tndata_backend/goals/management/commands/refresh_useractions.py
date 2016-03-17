@@ -42,7 +42,7 @@ class Command(BaseCommand):
         count = 0
         kwargs = self._user_kwargs(options['user'])
 
-        for ua in UserAction.objects.stale(**kwargs):
+        for ua in UserAction.objects.stale(**kwargs).published():
             count += 1
             ua.save(update_triggers=True)  # fields get refreshed on save.
 
