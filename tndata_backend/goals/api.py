@@ -24,6 +24,11 @@ from . mixins import DeleteMultipleMixin
 from . utils import pop_first
 
 
+
+class PageSizePagination(PageNumberPagination):
+    page_size_query_param = 'page_size'
+
+
 class PublicViewSetPagination(PageNumberPagination):
     """This is a pagination class for publicly accessable, read-only viewsets
     (e.g. the content library). It enables the following:
@@ -233,6 +238,7 @@ class UserGoalViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.UserGoalSerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_serializer_class(self):
         """
@@ -299,6 +305,7 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.UserBehaviorSerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_queryset(self):
         # First, only expose content in Categories/Packages that are either
@@ -474,6 +481,7 @@ class UserActionViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.UserActionSerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_serializer_class(self):
         """
@@ -808,6 +816,7 @@ class UserCategoryViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.UserCategorySerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_queryset(self):
         return models.UserCategory.objects.accepted_or_public(user=self.request.user)
@@ -843,6 +852,7 @@ class PackageEnrollmentViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.PackageEnrollmentSerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
@@ -948,6 +958,7 @@ class CustomGoalViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.CustomGoalSerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_queryset(self):
         if self.request.user.is_authenticated():
@@ -979,6 +990,7 @@ class CustomActionViewSet(VersionedViewSetMixin,
     docstring_prefix = "goals/api_docs"
     queryset = models.CustomAction.objects.all()
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_queryset(self):
         self.queryset = models.CustomAction.objects.filter(user=self.request.user)
@@ -1199,6 +1211,7 @@ class DailyProgressViewSet(VersionedViewSetMixin,
     serializer_class_v2 = v2.DailyProgressSerializer
     docstring_prefix = "goals/api_docs"
     permission_classes = [IsOwner]
+    pagination_class = PageSizePagination
 
     def get_queryset(self):
         if not self.request.user.is_authenticated():
