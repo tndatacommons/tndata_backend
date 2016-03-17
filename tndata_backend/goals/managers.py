@@ -164,30 +164,45 @@ class UserBehaviorManager(models.Manager):
         return qs.exclude(behavior__goals__categories__in=ids)
 
 
+class UserActionQuerySet(models.QuerySet):
+    """QuerySet methods to filter UserActions; these are accessed through
+    the UserActionManager, but implemented as a QuserySet subclass so they
+    can be chained.
+
+    """
+    def published(self, **kwargs):
+        qs = self.filter(action__state='published').filter(**kwargs)
+        return qs.distinct()
+
+    def upcoming(self):
+        return self.filter(next_trigger_date__gte=timezone.now())
+
+    def stale(self, **kwargs):
+        return self.filter(**kwargs).filter(
+            Q(next_trigger_date__lt=timezone.now()) |
+            Q(next_trigger_date=None)
+        )
+
 class UserActionManager(models.Manager):
 
-    def published(self, *args, **kwargs):
+    def get_queryset(self):
+        return UserActionQuerySet(self.model, using=self._db)
+
+    def published(self, **kwargs):
         """Return a QuerySet of UserAction objects with at least one
         published Action.
 
         """
-        qs = super().get_queryset()
-        qs = qs.filter(action__state='published')
-        return qs.filter(**kwargs).distinct()
+        return self.get_queryset().published(**kwargs)
 
     def upcoming(self):
         """Return a queryset UserActions that have an upcoming trigger."""
-        qs = self.get_queryset()
-        return qs.filter(next_trigger_date__gte=timezone.now())
+        return self.get_queryset().upcoming()
 
     def stale(self, **kwargs):
         """Return a queryset of UserActions whose `next_trigger_date` is either
         stale or None."""
-        qs = self.get_queryset().filter(**kwargs)
-        return qs.filter(
-            Q(next_trigger_date__lt=timezone.now()) |
-            Q(next_trigger_date=None)
-        )
+        return self.get_queryset().stale(**kwargs)
 
     def accepted_or_public(self, user):
         """Return UserAction instances for actions that are in public or

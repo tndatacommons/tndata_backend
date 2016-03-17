@@ -33,6 +33,22 @@ from .. settings import (
 User = get_user_model()
 
 
+class TestUserActionManager(TestCase):
+
+    def test_smoke(self):
+        """A smoke test to ensure that chaining methods doesn't blow up."""
+        self.assertEqual(list(UserAction.objects.published()), [])
+        self.assertEqual(list(UserAction.objects.upcoming()), [])
+        self.assertEqual(list(UserAction.objects.stale()), [])
+
+        # And that chaining is possible
+        qs = UserAction.objects.published().stale()
+        self.assertEqual(list(qs), [])
+
+        qs = UserAction.objects.published().upcoming()
+        self.assertEqual(list(qs), [])
+
+
 class TestCategoryManager(TestCase):
     """Tests for the `CategoryManager` manager."""
 
