@@ -468,7 +468,19 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     @transition(field=state, source="*", target='draft')
     def draft(self):
-        pass
+        """Drafting a Goal will also set it's child Behaviors to draft IFF
+        they have no other published parent goals; this in turn will cause
+        the Actions within that behavior (if drafted) to also be drafted.
+
+        """
+        # Fetch all child behaviors...
+        for behavior in self.behavior_set.all():
+            # If they have any other parent goals that are published, just
+            # skip over them; other wise unpublish them.
+            other_parents = behavior.goals.exclude(id=self.id)
+            if not other_parents.filter(state='published').exists():
+                behavior.draft()
+                behavior.save()  # drafting a behavior will draft it's Actions.
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
