@@ -638,7 +638,8 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
 
     @transition(field=state, source="*", target='draft')
     def draft(self):
-        pass
+        """Setting a behavior to draft will also draft it's child Actions."""
+        self.action_set.filter(state='published').update(state='draft')
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
