@@ -221,7 +221,19 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
 
     @transition(field=state, source="*", target='draft')
     def draft(self):
-        pass
+        """Drafting a Category will also set its child Goals to draft IFF
+        they have no other published parent categories; this in turn will cause
+        the Behaviors & Actions within that Goal (if drafted) to also be drafted.
+
+        """
+        # Fetch all child goals...
+        for goal in self.goal_set.filter(state='published'):
+            # If they have any other parent categories that are published, just
+            # skip over them; other wise unpublish them.
+            other_parents = goal.categories.exclude(id=self.id)
+            if not other_parents.filter(state='published').exists():
+                goal.draft()
+                goal.save()  # drafting a goal will draft its child behaviors
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
@@ -468,19 +480,19 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     @transition(field=state, source="*", target='draft')
     def draft(self):
-        """Drafting a Goal will also set it's child Behaviors to draft IFF
-        they have no other published parent goals; this in turn will cause
+        """Drafting a Goal will also set its published child Behaviors to draft
+        IFF they have no other published parent goals; this in turn will cause
         the Actions within that behavior (if drafted) to also be drafted.
 
         """
         # Fetch all child behaviors...
-        for behavior in self.behavior_set.all():
+        for behavior in self.behavior_set.filter(state='published'):
             # If they have any other parent goals that are published, just
             # skip over them; other wise unpublish them.
             other_parents = behavior.goals.exclude(id=self.id)
             if not other_parents.filter(state='published').exists():
                 behavior.draft()
-                behavior.save()  # drafting a behavior will draft it's Actions.
+                behavior.save()  # drafting a behavior will draft its Actions.
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
