@@ -17,7 +17,7 @@ from redis_metrics import metric
 from .custom import CustomAction
 from .packages import PackageEnrollment
 from .progress import DailyProgress, UserCompletedAction
-from .public import Action, Behavior, Category, Goal
+from .public import Action, Behavior, Category, Goal, action_unpublished
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from .triggers import Trigger
 
@@ -211,10 +211,10 @@ def reset_next_trigger_date_when_snoozed(sender, message, user,
 
 
 @receiver(post_delete, sender=UserAction)
+@receiver(action_unpublished, sender=UserAction)
 def remove_action_reminders(sender, instance, using, **kwargs):
-    """If a user deletes one of their UserAction instances, we should also
-    remove the GCMMessage associated with it, so they don't get a
-    notification.
+    """If a user deletes one of their UserAction instances, or if an Action
+    is unpublished, we need to delete the GCMMessage associated with it.
 
     NOTE: GCMMessages have a generic relationship to the Action
     """

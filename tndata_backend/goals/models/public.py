@@ -9,6 +9,7 @@ Actions are the things we want to help people to do.
 """
 from collections import defaultdict
 
+import django.dispatch
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
@@ -1124,7 +1125,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
     @transition(field=state, source="*", target='draft')
     def draft(self):
-        pass
+        """When an Action is reverted to draft (i.e. unpublished) we should
+        send a signal so any queued notifications can be deleted."""
+        action_unpublished.send(
+            sender=self.__class__,
+            message=self,
+            using='default'
+        )
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
@@ -1144,3 +1151,11 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             # Add this new action.
             ub.add_actions(action_id=self.id)
     objects = WorkflowManager()
+
+
+# This is a signal that gets fired when an action is unpublished (i.e. reverted
+# to a `draft` state. This is implemented as a signal, since we already have a
+# signal handler that delete relevant GCM Messages and we want to do the same
+# when an Action is unpublished.
+_unpublished_args = ['sender', 'instance', 'using']  # same as post-delete
+action_unpublished = django.dispatch.Signal(providing_args=_unpublished_args)
