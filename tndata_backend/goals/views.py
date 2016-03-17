@@ -169,6 +169,9 @@ class PublishView(View):
     def post(self, request, *args, **kwargs):
         try:
             obj = self.get_object(kwargs)
+            selections = num_user_selections(obj)
+            confirmed = request.POST.get('confirmed', False) or selections <= 0
+
             if request.POST.get('publish', False):
                 obj.publish()
                 obj.save(updated_by=request.user)
@@ -177,19 +180,13 @@ class PublishView(View):
                 obj.decline()
                 obj.save(updated_by=request.user)
                 messages.success(request, "{0} has been declined".format(obj))
-            elif request.POST.get('draft', False):
-                selections = num_user_selections(obj)
-                if selections > 0:
-                    msg = (
-                        "{0} cannot be reverted to Draft, since {1} users "
-                        "have selected it in the app."
-                    )
-                    messages.warning(request, msg.format(obj, selections))
-                    return redirect(obj.get_absolute_url())
-                else:
-                    obj.draft()
-                    obj.save(updated_by=request.user)
-                    messages.success(request, "{0} is now in Draft".format(obj))
+            elif confirmed and request.POST.get('draft', False):
+                obj.draft()
+                obj.save(updated_by=request.user)
+                messages.success(request, "{0} is now in Draft".format(obj))
+            elif request.POST.get('draft', False) and selections > 0:
+                context = {'selections': selections, 'object': obj}
+                return render(request, 'goals/confirm_state_change.html', context)
             return redirect(obj.get_absolute_url())
 
         except self.model.DoesNotExist:

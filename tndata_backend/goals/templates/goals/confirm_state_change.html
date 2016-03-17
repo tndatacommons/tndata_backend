@@ -1,0 +1,93 @@
+{% extends "goals/base.html" %}
+
+{% block title %}Un-publish{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+  <li class="current">Un-publish</li>
+{% endblock %}
+
+{% block content %}
+
+  {% comment %}
+  ---------------------------------------------------------------------------
+
+    NOTE: This form is currently only for reverting to draft when an
+    object has user-selections; otherwise the state-change just happens
+    immediately.
+
+  ---------------------------------------------------------------------------
+  {% endcomment %}
+
+  <div data-alert class="alert-box warning">
+    <strong><i class="fa fa-warning"></i> Are you sure?</strong><br/>
+    This item has been selected by {{ selections }} user{{ selections|pluralize }}.
+    If you revert it to draft, they will no longer see the item in their app
+    nor will they receive notifications for it.
+    <a href="#" class="close">&times;</a>
+  </div>
+
+  <div>
+    <h2>{{ object.title }}</h2>
+    {{ object.description|linebreaks }}
+
+    {# for Categories #}
+    {% if object.goal_set.exists %}
+      <h3>Also affects the following Goals &amp; Behaviors</h3>
+      <p>The folowing Goals, Behaviors and their Notifcations may also
+         be un-published.</p>
+      <ul>
+      {% for goal in object.goal_set.all %}
+        <li>{{ goal }}
+          <ul>
+          {% for behavior in goal.behavior_set.all %}
+            <li>{{ behavior }}
+              <ul>
+              {% for action in behavior.action_set.all %}
+                <li>{{ action }}</li>
+              {% endfor %}
+              </ul>
+            </li>
+          {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+
+    {# for Goals #}
+    {% if object.behavior_set.exists %}
+      <h3>Also affects the following Behaviors</h3>
+      <p>The folowing Behaviors and Notifcations may also be un-published.</p>
+      <ul>
+      {% for behavior in object.behavior_set.all %}
+        <li>{{ behavior }}
+          <ul>
+          {% for action in behavior.action_set.all %}
+            <li>{{ action }}</li>
+          {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+
+    {# for Behaviors #}
+    {% if object.action_set.exists %}
+      <h3>Also affects the following Notifications</h3>
+      <p>The folowing Notifcations may also be un-published.</p>
+      <ul>
+      {% for action in object.action_set.all %}
+        <li>{{ action }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+    <hr/>
+  </div>
+  <form action="{{ object.get_publish_url }}" method="post">{% csrf_token %}
+  <input type="hidden" name="draft" value="Draft" />
+  <input type="hidden" name="confirmed" value="1" />
+  <a href="{{ object.get_absolute_url }}" class="button secondary">Cancel</a>
+  <button type="submit" class="button">Revert to Draft</button>
+  </form>
+{% endblock %}
