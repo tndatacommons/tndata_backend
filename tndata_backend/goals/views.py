@@ -275,12 +275,22 @@ class IndexView(ContentViewerMixin, TemplateView):
             context[key] = func(conditions)
 
         # Evaluate to see if the curent user has any content available
-        context['has_my_content'] = any([
-            context['my_categories'].exists(),
-            context['my_goals'].exists(),
-            context['my_behaviors'].exists(),
-            context['my_actions'].exists(),
+        total_items = sum([
+            context['my_categories'].count(),
+            context['my_goals'].count(),
+            context['my_behaviors'].count(),
+            context['my_actions'].count(),
         ])
+        context['has_my_content'] = total_items > 0
+        context['total_my_content'] = total_items
+
+        # IF the result is too big, limit the results...
+        if total_items > 40:
+            for key, func in mapping.items():
+                context[key] = context[key][0:10]
+        context['num_my_content'] = sum(
+            len(context[key]) for key in mapping.keys()
+        )
 
         # Most popular content.
         context['popular_categories'] = popular_categories()
@@ -288,6 +298,49 @@ class IndexView(ContentViewerMixin, TemplateView):
         context['popular_behaviors'] = popular_behaviors()
         context['popular_actions'] = popular_actions()
 
+        return self.render_to_response(context)
+
+
+class MyContentView(ContentViewerMixin, TemplateView):
+    """A list of all content 'owned' by the authenticated users.
+    This information is abbreviated in the IndexView, but if the user has
+    a lot of content this view lets them see it all at once.
+    """
+    template_name = "goals/my_content.html"
+
+    def get(self, request, *args, **kwargs):
+        """Includes all content "owned" by the authenticated users into
+        the context; e.g. the author's "my content"
+
+        """
+        context = self.get_context_data(**kwargs)
+
+        # Only the fields needed for Category, Goal, Behavior, Action objects
+        # on this page.
+        only_fields = [
+            'id', 'title', 'title_slug', 'updated_on', 'updated_by',
+            'created_by', 'state',
+        ]
+        # List content created/updated by the current user.
+        conditions = Q(created_by=request.user) | Q(updated_by=request.user)
+        mapping = {
+            'my_categories': Category.objects.filter,
+            'my_goals': Goal.objects.only(*only_fields).filter,
+            'my_behaviors': Behavior.objects.only(*only_fields).filter,
+            'my_actions': Action.objects.only(*only_fields).filter,
+        }
+        for key, func in mapping.items():
+            context[key] = func(conditions)
+
+        total_items = sum([
+            context['my_categories'].count(),
+            context['my_goals'].count(),
+            context['my_behaviors'].count(),
+            context['my_actions'].count(),
+        ])
+        context['has_my_content'] = total_items > 0
+        context['total_my_content'] = total_items
+        context['num_my_content'] = total_items
         return self.render_to_response(context)
 
 

@@ -242,6 +242,47 @@ class TestIndexView(TestCaseWithGroups):
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
+class TestMyContentView(TestCaseWithGroups):
+    # NOTE: tests are named with this convention:
+    # test_[auth-group]_[http-verb]
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:my-content")
+
+    def test_admin_get(self):
+        self.client.login(username="admin", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_author_get(self):
+        self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_editor_get(self):
+        self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_viewer_get(self):
+        self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.client.logout()
+
+    def test_anon_get(self):
+        resp = self.ua_client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(CACHES=TEST_CACHES)
 class TestCategoryListView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
     # test_[auth-group]_[http-verb]

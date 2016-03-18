@@ -2,6 +2,14 @@
 {% load goal_tags %}
 
 <h2>My Content</h2>
+
+{% if num_my_content < total_my_content %}
+<p>Showing the most recent {{ num_my_content }} of {{ total_my_content }} items.
+<a href="{% url 'goals:my-content' %}">View them all</a>.</p>
+{% elif num_my_content == total_my_content %}
+<p>Displaying {{ total_my_content }} items.</p>
+{% endif %}
+
 {% if has_my_content %}
 <table class="object-list"
   summary="Content you've either created or recently updated">

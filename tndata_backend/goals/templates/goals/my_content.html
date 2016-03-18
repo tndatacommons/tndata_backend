@@ -1,0 +1,23 @@
+{% extends "goals/base.html" %}
+{% comment %}
+{% load static from staticfiles %}
+{% load goal_filters %}
+{% load goal_tags %}
+{% load util_tags %}
+{% endcomment %}
+
+
+{% block content %}
+{% comment %}
+
+  NOTE: This loads the same template displayed in index.html, but (possibly)
+  with more data.
+
+{% endcomment %}
+<div class="row">
+  <div class="large-12 medium-12 small-12 columns">
+    {% include "goals/_index_author_content.html" %}</div>
+  </div>
+</div>
+{% endblock %}
+

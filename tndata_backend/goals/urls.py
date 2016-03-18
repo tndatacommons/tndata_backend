@@ -8,6 +8,11 @@ urlpatterns = [
         views.IndexView.as_view(),
         name='index'
     ),
+    url(
+        r'^my-content/$',
+        views.MyContentView.as_view(),
+        name='my-content'
+    ),
 
     # Async file upload url
     # format:  /goals/<object_type>/<pk>/upload/
