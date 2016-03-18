@@ -8,6 +8,7 @@ from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
 from rest_framework.response import Response
+from utils.user_utils import hash_value
 
 from . import models
 from . import serializers
@@ -23,14 +24,26 @@ class IsOwner(permissions.BasePermission):
 class GCMDeviceViewSet(mixins.CreateModelMixin,
                        mixins.ListModelMixin,
                        viewsets.GenericViewSet):
-    """This endpoint allows an Android client to register a User's device so
-    for notifications via
+    """This endpoint allows an Android client to register a User's device for
+    notifications via
     [Google Cloud Messaging](https://developer.android.com/google/gcm).
 
-    To create a message, you must POST the following information to
-    `/api/notifications/devices`:
+    To register a device, you must POST the following information to
+    `/api/notifications/devices/`:
 
-    * `device_name`: (optional) a name for the device
+    * `device_name`: (optional) a name for the device. It's best to provide
+      this information if possible.
+    * `registration_id`: This is the device's registration ID. For more info,
+      see the [Register for GCM](https://developer.android.com/google/gcm/client.html#sample-register) section in the android developer documentation.
+    * `is_active`: (optional) Defaults to True; whether or not the device accepts
+      notifications.
+
+    GET requests to this enpoint will list a user's registered devices, including
+    the following information:
+
+    * `id`: A unique Database ID for the device.
+    * `user`: The device owner's database ID
+    * `device_name`: The supplied name for the device
     * `device_id`: A unique identifier for the device. This is used along with
       the user's information to uniquely identify a device, and to update the
       registration id when it changes.
@@ -38,6 +51,9 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
       see the [Register for GCM](https://developer.android.com/google/gcm/client.html#sample-register) section in the android developer documentation.
     * `is_active`: (optional) Defaults to True; whether or not the device accepts
       notifications.
+    * `created_on`: The date the device data was created
+    * `updated_on`: The date the device data was last updated
+    * `object_type`: Will always be the string "gcmdevice"
 
     ----
 
@@ -50,7 +66,7 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
     def get_queryset(self):
         return self.queryset.filter(user__id=self.request.user.id)
 
-    def _update(self, request):
+    def _update(self, request, device_id=None):
         """Update the user's registration ID for the given device_id. If not
         device ID is given, or if the device ID is not found, this method will
         update any of the user's GCMDevice entries, and remove those without
@@ -58,7 +74,6 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
 
         """
         device = None
-        device_id = request.data.get('device_id', None)
         device_name = request.data.get('device_name', '')
         active = request.data.get('is_active', True)
         registration_id = request.data.get('registration_id', None)
@@ -93,9 +108,15 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
     def create(self, request, *args, **kwargs):
         """Handles POST requests, but this method also checks for existing
         instances of a device, and calls `update` when appropriate."""
+
         # Only do this for authenticated users.
         if request.user.is_authenticated():
             request.data['user'] = request.user.id
+
+            # Generate the device id (a hash of device name + user email)
+            device_name = request.data.get('device_name', 'unkown')
+            device_id = hash_value("{}+{}".format(request.user.email, device_name))
+            request.data['device_id'] = device_id
 
             # Check to see if this already exists:
             reg_id = request.data.get('registration_id', None)
@@ -103,13 +124,13 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
             if reg_id and models.GCMDevice.objects.filter(**params).exists():
                 return Response(None, status=status.HTTP_304_NOT_MODIFIED)
 
+            # Otherwise, calculate our device id hash and see if that exists.
             devices = models.GCMDevice.objects.filter(user=request.user).filter(
-                Q(device_id=request.data.get('device_id')) |
-                Q(device_id=None)
+                Q(device_id=device_id) | Q(device_id=None)
             )
             if devices.exists():
                 # The user's device already exists, let's update instead.
-                return self._update(request)
+                return self._update(request, device_id=device_id)
 
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
 

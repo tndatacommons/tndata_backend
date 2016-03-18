@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
+from utils.user_utils import hash_value
 
 from .. models import (
     GCMDevice,
@@ -40,8 +41,8 @@ class TestGCMDeviceAPI(APITestCase):
         cls.device = GCMDevice.objects.create(
             user=cls.user,
             registration_id="REGISTRATIONID",
-            device_name='My Device',
-            device_id='MYDEVICE'
+            device_name='MYDEVICE',
+            device_id=hash_value('gcm@example.com+MYDEVICE'),
         )
         cls.url = reverse('gcmdevice-list')
 
@@ -77,18 +78,18 @@ class TestGCMDeviceAPI(APITestCase):
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        post_data = {'registration_id': 'NEWREGID', 'device_id': 'NEWDEVICE'}
+        post_data = {'registration_id': 'NEWREGID', 'device_name': 'OTHERDEVICE'}
         response = self.client.post(self.url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         qs = GCMDevice.objects.filter(user=self.user, registration_id='NEWREGID')
         self.assertTrue(qs.exists())
 
-    def test_post_device_list_updating_device_id(self):
+    def test_post_device_list_updating_device_name(self):
         """Test Updating a Device."""
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        post_data = {'registration_id': 'NEWREGID', 'device_id': 'MYDEVICE'}
+        post_data = {'registration_id': 'NEWREGID', 'device_name': 'MYDEVICE'}
         response = self.client.post(self.url, post_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         qs = GCMDevice.objects.filter(user=self.user, registration_id='NEWREGID')
