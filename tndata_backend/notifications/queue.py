@@ -46,8 +46,8 @@ def send(message_id):
         # delivery to GCM, we'd get here.
         exc_type, exc_value, exc_traceback = sys.exc_info()
 
-        args = ("notifications.queue.send()", e, settings.SITE_URL, message_id)
-        log = "FAILED: {}\n{} on {} for id = {}".format(*args)
+        args = (message_id, "queue.send()", e, settings.SITE_URL)
+        log = "[{}] FAILED: {}: {} ({})".format(*args)
         logger.error(log.replace("\n", ""))
 
         # Include the traceback in the slack message.
