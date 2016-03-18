@@ -14,6 +14,7 @@ from .. user_utils import (
     to_localtime,
     to_utc,
     tzdt,
+    hash_value,
     username_hash,
 )
 
@@ -145,6 +146,9 @@ class TestUserUtils(TestCase):
             expected = tzdt(2015, 1, 15, 23, 0, tz=self.tz)
             result = local_now(self.user)
             self.assertEqual(result.strftime("%c"), expected.strftime("%c"))
+
+    def test_hash_value(self):
+        self.assertEqual(hash_value('asdf'), '912ec803b2ce49e4a541068d495ab570')
 
     def test_username_hash(self):
         self.assertEqual(

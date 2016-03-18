@@ -117,11 +117,16 @@ def date_hash():
     return hashlib.md5(datetime.now().strftime("%c").encode("utf8")).hexdigest()
 
 
+def hash_value(input_string):
+    """Given some input string, hash it with md5 and return a hexdigest"""
+    m = hashlib.md5()
+    m.update(input_string.encode("utf8"))
+    return m.hexdigest()
+
+
 def username_hash(email, max_length=30):
     """Generates a Username hash from an email address."""
-    m = hashlib.md5()
-    m.update(email.encode("utf8"))
-    return m.hexdigest()[:max_length]
+    return hash_value(email)[:max_length]
 
 
 def create_inactive_user(email):
