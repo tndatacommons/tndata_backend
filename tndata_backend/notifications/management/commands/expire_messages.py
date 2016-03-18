@@ -1,6 +1,7 @@
-from datetime import datetime
 import logging
+import waffle
 
+from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -71,6 +72,9 @@ class Command(BaseCommand):
             raise CommandError(msg)
 
     def handle(self, *args, **options):
+        # Check to see if we've disabled this, prior to expiring anything.
+        if not waffle.switch_is_active('notifications-expire'):
+            return None
 
         if options['user']:
             # If given a user, remove all of the user's messages.
