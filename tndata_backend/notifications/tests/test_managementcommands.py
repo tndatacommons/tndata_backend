@@ -7,6 +7,8 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
+from waffle.testutils import override_switch
+
 from .. models import GCMDevice, GCMMessage
 
 User = get_user_model()
@@ -48,6 +50,7 @@ class TestExpireMessages(TestCase):
         )
         cls.expired_message.save()
 
+    @override_switch('notifications-expire', active=True)
     def test_expire_messages(self):
         log_path = "notifications.management.commands.expire_messages.logger"
         with patch(log_path) as logger:
