@@ -17,7 +17,8 @@
           <button type="submit" class="button">Display</button>
         </div>
         <div class="large-6 medium-6 small-12 columns">
-        {% if user_queue %}
+        {% for user_queue in user_queues %}
+          <div class="panel">
           {# Display the count key first. #}
           {% for key, values in user_queue.items %}
             {% if 'count' in key %}
@@ -41,7 +42,8 @@
               </ul>
             {% endif %}
           {% endfor %}
-        {% endif %}
+          </div>
+        {% endfor %}
         </div>
       </div>
     </fieldset>

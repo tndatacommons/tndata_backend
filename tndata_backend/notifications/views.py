@@ -1,11 +1,12 @@
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
 
 from . import queue
 from .models import GCMMessage
@@ -18,26 +19,30 @@ def dashboard(request):
 
     # If we have specified a user, show their Queue details.
     date = request.GET.get('date', None) or None
-    if date:
+    if date is None:
+        date = timezone.now().date()
+    else:
         date = datetime.strptime(date, "%Y-%m-%d").date()
     user = request.GET.get('user', None)
-    user_queue = None
+    user_queues = []
     try:
         user = User.objects.get(email__icontains=user)
-        user_queue = queue.UserQueue.get_data(user, date=date)
-    except (User.DoesNotExist, ValueError):
+        user_queues.append(queue.UserQueue.get_data(user, date=date))
+        date = date + timedelta(days=1)
+        user_queues.append(queue.UserQueue.get_data(user, date=date))
+    except (User.DoesNotExist, ValueError, TypeError):
         if user is not None:
-            user_queue = "No data found for '{}'".format(user)
+            messages.warning(request, "No data found for '{}'".format(user))
     except User.MultipleObjectsReturned:
-        user_queue = "Multiple Users found for '{}'".format(user)
+        messages.warning(request, "Multiple Users found for '{}'".format(user))
 
     jobs = queue.messages()  # Get the enqueued messages
     ids = [job.args[0] for job, _ in jobs]
 
     message_data = defaultdict(dict)
     fields = ['id', 'title', 'user__id', 'user__email', 'message', 'deliver_on']
-    messages = GCMMessage.objects.filter(pk__in=ids).values_list(*fields)
-    for msg in messages:
+    notifs = GCMMessage.objects.filter(pk__in=ids).values_list(*fields)
+    for msg in notifs:
         mid, title, user_id, email, message, deliver_on = msg
         message_data[mid] = {
             'id': mid,
@@ -58,7 +63,7 @@ def dashboard(request):
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled'],
         'selected_date': date,
         'selected_user': user,
-        'user_queue': user_queue,
+        'user_queues': user_queues,
     }
     return render(request, "notifications/index.html", context)
 
