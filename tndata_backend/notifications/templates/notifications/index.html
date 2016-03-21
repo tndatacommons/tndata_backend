@@ -31,7 +31,13 @@
               <p><strong>{{ key }}
                 <small>{{ values|length }} items</small></strong></p>
               <ul>
-              {% for value in values %}<li>{{ value }}</li>{% endfor %}
+              {% for value in values %}
+                <li>
+                  <a target="_blank"
+                       href="/admin/notifications/gcmmessage/?q={{ value }}">
+                  {{ value }}</a>
+                </li>
+              {% endfor %}
               </ul>
             {% endif %}
           {% endfor %}
