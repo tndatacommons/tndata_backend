@@ -1513,6 +1513,11 @@ def debug_progress(request):
         user=user,
         updated_on__gte=from_date
     )
+    try:
+        latest_dp = daily_progresses.latest()
+    except DailyProgress.DoesNotExist:
+        latest_dp = None
+
     context = {
         'email': email,
         'searched_user': user,
@@ -1521,6 +1526,7 @@ def debug_progress(request):
         'today': today,
         'from_date': from_date,
         'daily_progresses': daily_progresses,
+        'latest_dp': latest_dp,
     }
     return render(request, 'goals/debug_progress.html', context)
 

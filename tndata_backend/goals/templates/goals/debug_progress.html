@@ -97,7 +97,18 @@
   </div>
 </div> {# end .row #}
 {% endcomment %}
-
+{% if latest_dp %}
+<div class="row">
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Latest Behavior Status</h3>
+    <pre>{{ latest_dp.behaviors_status }}</pre>
+  </div>
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Latest Goal Status</h3>
+    <pre>{{ latest_dp.goal_status }}</pre>
+  </div>
+</div>
+{% endif %}
 <div class="row">
   <div class="large-12 small-12 columns">
     <table>
