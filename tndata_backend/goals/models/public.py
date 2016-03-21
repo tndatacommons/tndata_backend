@@ -795,10 +795,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     }
 
     BUCKET_CHOICES = (  # The notification buckets.
-        ('prep', 'Preparatory'),
-        ('core', 'Core'),
-        ('helper', 'Helper'),
-        ('checkup', 'Checkup'),
+        (PREP, 'Preparatory'),
+        (CORE, 'Core'),
+        (HELPER, 'Helper'),
+        (CHECKUP, 'Checkup'),
     )
 
     ACTION_TYPE_CHOICES = (

@@ -24,7 +24,6 @@ from . mixins import DeleteMultipleMixin
 from . utils import pop_first
 
 
-
 class PageSizePagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
@@ -1274,3 +1273,60 @@ class DailyProgressViewSet(VersionedViewSetMixin,
             err_msg = "User has no goal with id: {}".format(request.data.get('goal'))
 
         return Response(data={'error': err_msg}, status=status.HTTP_400_BAD_REQUEST)
+
+    # -------------------------------------------------------------------------
+    # TODO: Allow users to view their bucket for a bheavior and to manually set
+    # their bucket/status (DailyProgress.set_status)
+    # -------------------------------------------------------------------------
+    @list_route(methods=['get', 'post'], permission_classes=[IsOwner], url_path='behaviors')
+    def behavior_status(self, request, pk=None):
+        """Set or list the status of your behaviors (i.e. their current bucket)
+        based on the latest DailyProgress data.
+
+        Endpoint: [/api/users/progress/behaviors/](/api/users/progress/behaviors/)
+
+        GET requests return data of the form:
+
+            {
+                'behavior-<id>': <bucket-name>
+            }
+
+        A successful POST request will return the same data, but expects a
+        payload of the form:
+
+            {
+                'behavior':<id>
+                'bucket': <bucket-name>
+            }
+
+        Bucket names must be one of: `prep`, `core`, `helper`, `checkup`.
+
+        """
+        results = {}
+        if not self.request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            dp = models.DailyProgress.objects.filter(user=request.user).latest()
+
+            # POST request: update the bucket and THEN show the list
+            if request.method == "POST":
+                bid = request.data.get('behavior', None)
+                bucket_name = request.data.get('bucket', None)
+                assert bucket_name in models.Action.BUCKET_ORDER
+                ub = request.user.userbehavior_set.get(behavior__id=bid)
+                dp.set_status(ub.behavior, bucket_name)
+                dp.save()
+
+            # GET requests: show a list of behavior / bucket info?
+            # Posts return the same data.
+            results = dp.behaviors_status
+
+        except (models.UserBehavior.DoesNotExist, AssertionError) as e:
+            err_msg = "{}".format(e)  # NOTE: AssertionError has not message.
+            data = {'error': err_msg or "Invalid bucket name"}
+            return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        except models.DailyProgress.DoesNotExist:
+            pass
+
+        return Response(data=results, status=status.HTTP_200_OK)
