@@ -13,7 +13,6 @@ from goals.models import (
 from goals.serializers.v2 import (
     CustomActionSerializer,
     CustomGoalSerializer,
-    GoalSerializer,
     UserActionSerializer,
     UserGoalSerializer,
     UserBehaviorSerializer,
@@ -166,10 +165,10 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             self._feed['upcoming_actions'] = list(upcoming)
             self._feed['upcoming_customactions'] = list(upcoming_cas)
 
-            # Goal Suggestions
-            suggestions = user_feed.suggested_goals(obj)
-            srz = GoalSerializer(suggestions, many=True, user=obj)
-            self._feed['suggestions'] = srz.data
+            # Goal Suggestions -- XXX: Disabled for now.
+            # suggestions = user_feed.suggested_goals(obj)
+            # srz = GoalSerializer(suggestions, many=True, user=obj)
+            # self._feed['suggestions'] = srz.data
         return self._feed
 
     def get_ordering(self, obj):
@@ -188,7 +187,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         return self._get_feed(obj)['upcoming_customactions']
 
     def get_suggestions(self, obj):
-        return self._get_feed(obj)['suggestions']
+        return []   # XXX Disabled: self._get_feed(obj)['suggestions']
 
 
 class UserSerializer(ObjectTypeModelSerializer):
@@ -268,9 +267,9 @@ class UserSerializer(ObjectTypeModelSerializer):
             upcoming_cas = upcoming_cas.values_list("id", flat=True)
             self._feed['upcoming_customactions'] = list(upcoming_cas)
 
-            # Goal Suggestions
-            suggestions = user_feed.suggested_goals(obj)
-            self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
+            # Goal Suggestions -- XXX DIsabled
+            # suggestions = user_feed.suggested_goals(obj)
+            # self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
         return self._feed
 
     def get_action_feedback(self, obj):
@@ -286,7 +285,7 @@ class UserSerializer(ObjectTypeModelSerializer):
         return self._get_feed(obj)['upcoming_actions']
 
     def get_suggestions(self, obj):
-        return self._get_feed(obj)['suggestions']
+        return []  # XXX Disabled: self._get_feed(obj)['suggestions']
 
     @cached_method(cache_key="{0}-User.get_places", timeout=60)
     def get_places(self, obj):
