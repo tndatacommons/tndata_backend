@@ -9,8 +9,9 @@ Some possible data in the user's feed:
 - Up Next: The Action that is up next for the user.
 - Progress: Provide some sort of information regarding their progress toward
   selected goals (possibly related to the action that is _up next_).
-- Suggested Goals: If a user has no (or _few_) selected goals, give them a few
-  suggestions based on their selected categories and/or demographics
+- TEMPORARILY DISABLED Suggested Goals: If a user has no (or _few_) selected
+  goals, give them a few suggestions based on their selected categories and/or
+  demographics
 - Selected Goals: All of the user's selected Goals.
 
 
@@ -409,6 +410,9 @@ def suggested_goals(user, limit=5):
     This function excludes goals from Packaged content.
 
     """
+    # XXX: Temporarily disabled suggestions.
+    return []
+
     # From the goals the user has _not_ selected (that are public)...
     user_selected_goals = user.usergoal_set.values_list("goal__id", flat=True)
     goals = Goal.objects.published()  # excludes goals in packaged content
