@@ -487,7 +487,7 @@ class TestUserFeed(TestCase):
 
         # User should receive it as a suggestion
         suggestions = user_feed.suggested_goals(self.user)
-        self.assertEqual(list(suggestions), [goal])
+        self.assertEqual(list(suggestions), [])  # XXX: because these are disabled
 
     def test_selected_goals(self):
         self.assertEqual(
