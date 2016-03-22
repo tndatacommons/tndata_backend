@@ -258,6 +258,7 @@ class UserGoalViewSet(VersionedViewSetMixin,
         # notifications (actions) delivered today, we need to first look
         # up those actions, then query for their parent behviors' goals.
         filter_on_today = bool(self.request.GET.get('today', False))
+
         if self.request.user.is_authenticated() and filter_on_today:
             today = local_day_range(self.request.user)
             useractions = models.UserAction.objects.filter(user=self.request.user)
@@ -268,6 +269,12 @@ class UserGoalViewSet(VersionedViewSetMixin,
             goal_ids = useractions.values_list(
                 "action__behavior__goals__id", flat=True)
             self.queryset = self.queryset.filter(goal__id__in=goal_ids)
+
+        # We may also filter this list of content by a goal id
+        goal_filter = self.request.GET.get('goal', None)
+        if goal_filter:
+            self.queryset = self.queryset.filter(goal__id=goal_filter)
+
         return self.queryset
 
     def get_serializer(self, *args, **kwargs):

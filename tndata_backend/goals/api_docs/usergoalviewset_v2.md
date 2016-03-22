@@ -48,10 +48,12 @@ database id for the mapping between a user and a goal.
 
 ## Filtering <a href="#filtering">&para;</a>
 
-UserGoals can be filtered using a query string parameter. To filter for selected
-goals that have an action scheduled _today_, use the following:
+UserGoals can be filtered using a query string parameter.
 
-* `/api/users/goals/?today=1`
+* To filter for selected goals that have an action scheduled _today_, use the
+  following:  `/api/users/goals/?today=1`
+* To filter for specific selected goals, you may provide a goal ID, for
+  example: `/api/users/goals/?goal=42`
 
 
 ## Removing a Goal from the user's list. <a href="#removing-a-goal-from-the-users-list">&para;</a>
