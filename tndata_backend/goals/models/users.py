@@ -526,6 +526,33 @@ class UserAction(models.Model):
                 return self.action.bucket == Action.BUCKET_ORDER[0]
         return True  # non-dynamic triggers would always be current.
 
+    def _print_next_details(self):
+        dp = self.user.dailyprogress_set.latest()
+        current_bucket = dp.get_status(self.action.behavior)
+
+        # Is this UserAction included in the available set from the user's
+        # currently selected bucket.
+        qs = self.user.useraction_set.select_from_bucket(current_bucket)
+        qs = qs.filter(pk=self.id)
+        included = qs.exists()
+
+        output = ("ID: {id}\n"
+                  "{current_bucket} | {behavior}\n"
+                  "{bucket} | {action}\n"
+                  "Included: {included}\n"
+                  "Next: {next_trigger}"
+                  "----------------------------")
+        output = output.format(
+            id=self.id,
+            behavior=self.action.behavior,
+            current_bucket=current_bucket,
+            bucket=self.action.bucket,
+            action=self.action.title,
+            included="YES" if included else "NO",
+            next_trigger=self.next()
+        )
+        return output
+
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
         or None. This method will either return the value of `next_trigger_date`
@@ -543,9 +570,10 @@ class UserAction(models.Model):
         # If we have a dynamic trigger, let's first determine wether or not
         # we need to re-generate a time; i.e. if the next_trigger_date is in
         # the past.
-        if is_dynamic and self.next_trigger_date < now:
+        if is_dynamic and self.next_trigger_date is None:
             trigger_times.append(trigger.next(user=self.user))
-
+        elif is_dynamic and self.next_trigger_date < now:
+            trigger_times.append(trigger.next(user=self.user))
         elif self.next_trigger_date and self.next_trigger_date > now:
             # Check to see if we can re-use the existing trigger date,
             # converting it back to the users local timezone
@@ -583,8 +611,7 @@ class UserAction(models.Model):
         if trigger:
             # This trigger retuns the date in the user's timezone, so convert
             # it back to UTC.
-            next_date = trigger.next(user=self.user)
-            next_date = to_utc(next_date)
+            next_date = to_utc(self.next())
 
             # Save the previous trigger date, but don't overwrite on subsequent
             # saves; Only save when `next_trigger_date` changes (and is not None)
