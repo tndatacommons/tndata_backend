@@ -191,14 +191,16 @@ class DailyProgress(models.Model):
         """Given a behavior, returns the user's current status; i.e. the bucket
         from which actions should be delivered.
 
-        Returns None if the behavior cannot be found.
+        If the behavior cannot be found, it means a user hasn't set their
+        status for that behavior, yet. So, this method returns the default
+        first status/bucket (ie. the first item from Action.BUCKET_ORDER).
 
         """
         try:
             key = 'behavior-{}'.format(behavior.id)
             return self.behaviors_status[key]
         except KeyError:
-            return None
+            return Action.BUCKET_ORDER[0]
 
     def _update_useraction_stats(self):
         start, end = local_day_range(self.user, dt=self.created_on)
