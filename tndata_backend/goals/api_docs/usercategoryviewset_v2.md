@@ -17,6 +17,13 @@ This endpoint returns resources with the following fields.
   edit triggers within the category. (formerly: `custom_triggers_allowed`)
 * `object_type`: Will always be the string `usercategory`
 
+## Filtering <a href="#filtering">&para;</a>
+
+UserCategory objects can be filtered using a query string parameter.
+
+* To filter for specific selected categoiries, you may provide a category ID,
+  for example: `/api/users/categories/?category=42`
+
 ## Adding a Category
 
 To associate a Category with a User, POST to `/api/users/categories/` with the

@@ -825,7 +825,12 @@ class UserCategoryViewSet(VersionedViewSetMixin,
     pagination_class = PageSizePagination
 
     def get_queryset(self):
-        return models.UserCategory.objects.accepted_or_public(user=self.request.user)
+        qs = models.UserCategory.objects.accepted_or_public(user=self.request.user)
+        # We may also filter this list of content by a category id
+        category = self.request.GET.get('category', None)
+        if category:
+            qs = qs.filter(id=category)
+        return qs
 
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing
