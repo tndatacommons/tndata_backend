@@ -98,6 +98,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     action_feedback = serializers.SerializerMethodField(read_only=True)
     progress = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
+    upcoming = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
@@ -105,7 +106,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = get_user_model()
         fields = (
-            'id', 'username', 'email', 'token', 'object_type',
+            'id', 'username', 'email', 'token', 'object_type', 'upcoming',
             'action_feedback', 'progress', 'suggestions', 'object_type',
         )
         read_only_fields = ("id", "username", "email")
@@ -115,12 +116,14 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
     def _get_feed(self, obj):
         """Assemble all user feed data at once because it's more efficient."""
+        # note: obj == a user
         if not hasattr(self, "_feed"):
             self._feed = {
                 'action_feedback': None,
                 'progress': None,
                 'suggestions': [],
                 'object_type': 'feed',
+                'upcoming': [],
             }
 
             if not obj.is_authenticated():
@@ -136,9 +139,59 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             self._feed['progress'] = user_feed.todays_progress(obj)
 
             # Goal Suggestions -- XXX: Disabled for now.
+            # ------------------------------------------------------
             # suggestions = user_feed.suggested_goals(obj)
             # srz = GoalSerializer(suggestions, many=True, user=obj)
             # self._feed['suggestions'] = srz.data
+            # ------------------------------------------------------
+
+            # Upcoming info (UserActions/CustomActions)
+            # First, the User Actions
+            upcoming_uas = user_feed.todays_actions(obj)
+            upcoming_uas = upcoming_uas.values_list('id', flat=True)
+            upcoming_uas = list(upcoming_uas)
+
+            related = ('action', 'primary_goal', 'primary_category')
+            useractions = obj.useraction_set.select_related(*related)
+            for ua in useractions.filter(id__in=upcoming_uas):
+                primary_category = ua.get_primary_category()
+                primary_goal = ua.get_primary_goal()
+                self._feed['upcoming'].append({
+                    'action_id': ua.id,
+                    'action': ua.action.title,
+                    'goal_id': primary_goal.id,
+                    'goal': primary_goal.title,
+                    'category_color': primary_category.color,
+                    'category_id': primary_category.id,
+                    'trigger': "{}".format(ua.next_reminder),
+                    'type': 'useraction',
+                    'object_type': 'upcoming_item',
+                })
+
+            # Custom Actions
+            upcoming_cas = user_feed.todays_customactions(obj)
+            upcoming_cas = upcoming_cas.values_list('id', flat=True)
+            upcoming_cas = list(upcoming_cas)
+
+            related = ('customgoal', 'custom_trigger')
+            customactions = obj.customaction_set.select_related(*related)
+            for ca in customactions.filter(id__in=upcoming_cas):
+                self._feed['upcoming'].append({
+                    'action_id': ca.id,
+                    'action': ca.title,
+                    'goal_id': ca.customgoal.id,
+                    'goal': ca.customgoal.title,
+                    'category_color': '#176CC4',
+                    'category_id': '-1',
+                    'trigger': "{}".format(ca.next_reminder),
+                    'type': 'customaction',
+                    'object_type': 'upcoming_item',
+                })
+
+            # Sort upcoming data (UserActions/CustomActions) by trigger
+            results = self._feed['upcoming']
+            results = sorted(results, key=lambda d: d['trigger'])
+            self._feed['upcoming'] = results
         return self._feed
 
     def get_action_feedback(self, obj):
@@ -146,6 +199,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']
+
+    def get_upcoming(self, obj):
+        return self._get_feed(obj)['upcoming']
 
     def get_suggestions(self, obj):
         return []   # XXX Disabled: self._get_feed(obj)['suggestions']
