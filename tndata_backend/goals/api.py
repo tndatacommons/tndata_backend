@@ -829,7 +829,7 @@ class UserCategoryViewSet(VersionedViewSetMixin,
         # We may also filter this list of content by a category id
         category = self.request.GET.get('category', None)
         if category:
-            qs = qs.filter(id=category)
+            qs = qs.filter(category__id=category)
         return qs
 
     def get_serializer(self, *args, **kwargs):
