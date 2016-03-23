@@ -371,8 +371,8 @@ admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'prev_trigger_date', 'next_trigger_date', 'notification',
-        'action', 'behavior', 'created_on',
+        'user_email', 'prev_trigger_date', 'next_trigger_date',
+        'notification', 'action', 'behavior', 'created_on',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
