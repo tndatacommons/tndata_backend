@@ -795,7 +795,9 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
     form_class = ActionForm
-    success_url = reverse_lazy('goals:action-list')
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
 
     def post(self, request, *args, **kwargs):
         # Handle dealing with 2 forms.
@@ -828,6 +830,7 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
         self.object.save(updated_by=self.request.user)
         # call up to the superclass's method to handle state transitions
         super().form_valid(form)
+        messages.success(self.request, "Your notification has been saved")
         return redirect(self.get_success_url())
 
     def form_invalid(self, form, trigger_form):
