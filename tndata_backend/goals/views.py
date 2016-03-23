@@ -761,7 +761,11 @@ class ActionDuplicateView(ActionCreateView):
                 "behavior": obj.behavior.id,
                 "description": obj.description,
                 "more_info": obj.more_info,
+                "notification_text": obj.notification_text,
                 "external_resource": obj.external_resource,
+                "external_resource_name": obj.external_resource_name,
+                "priority": obj.priority,
+                "bucket": obj.bucket,
             })
         except self.model.DoesNotExist:
             pass
