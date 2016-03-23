@@ -72,6 +72,14 @@ def admin_remove_app_data(request):
 
     # Info to populate select fields for the types of objects to delete.
     object_types = [
+        ('customgoal', 'Custom Goals', "Delete all of the user's custom goals"),
+        ('customaction', 'Custom Actions',
+            "Delete all of the user's custom actions"),
+        ('usercompletedcustomaction', 'Completed Custom Actions',
+            "Delete all of the user's history of completed custom actions"),
+        ('customactionfeedback', 'Custom Action Feedback',
+            "Delete all of the user-supplied feedback associated with their "
+            "custom actions"),
         ('useraction', 'Actions', "Remove the user's selected Action data"),
         ('userbehavior', 'Behaviors', "Remove the user's selected Behavior data"),
         ('usergoal', 'Goals', "Remove the user's selected Goal data"),
@@ -81,14 +89,11 @@ def admin_remove_app_data(request):
         ('trigger', 'Triggers', "Remove the user's custom triggers"),
         ('usercompletedaction', 'Completed Actions',
             "Remove the user's history of completed actions"),
+        ('dailyprogress', 'Daily Progress',
+            "Remove the user's daily progress snapshots"),
         ('packageenrollment', 'Package Enrollment',
             "Remove the user from all packages"),
         ('gcmmessage', 'GCM Messages', "Delete all queued GCM Messages"),
-
-        # TODO: Custom goals,
-        # TODO: Custom actions,
-        # TODO: Custom completed actions,
-        # TODO: Custom feedback,
     ]
 
     if request.method == "POST":
