@@ -1666,6 +1666,8 @@ class TestUserAction(TestCaseDates):
 
         # Calling this the first time when both values are null...
         mock_trigger.next.return_value = tzdt(2015, 10, 9, 11, 30)
+        self.ua.next = mock_trigger.next
+
         mock_trigger.is_relative = False
 
         self.assertIsNone(self.ua.next_trigger_date)
@@ -1677,6 +1679,8 @@ class TestUserAction(TestCaseDates):
         # Calling this a second time should change the prev_trigger_date
         mock_trigger.reset_mock()
         mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)  # next day
+        self.ua.next = mock_trigger.next
+
         self.ua._set_next_trigger_date()
         self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
         self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 9, 11, 30))
@@ -1688,6 +1692,7 @@ class TestUserAction(TestCaseDates):
         self.ua.next_trigger_date = tzdt(2015, 10, 9, 11, 30)
 
         mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)
+        self.ua.next = mock_trigger.next
         self.ua._set_next_trigger_date()
 
         # both next/prev dates should have gotten updated.
@@ -1706,8 +1711,9 @@ class TestUserAction(TestCaseDates):
         # Set some initial values for the next/prev trigger fields.
         self.ua.prev_trigger_date = tzdt(2015, 10, 8, 11, 30)
         self.ua.next_trigger_date = None
-
         mock_trigger.next.return_value = tzdt(2015, 10, 10, 11, 30)
+        self.ua.next = mock_trigger.next
+
         self.ua._set_next_trigger_date()
 
         # Next should have gotten updated, but prev should stay the same
@@ -2334,6 +2340,12 @@ class TestDailyProgress(TestCase):
             'dismissed': 1,
         }
         self.assertDictEqual(self.progress.customactions, expected)
+
+    def test_get_status_when_empty(self):
+        """When there's no data, the get_status method should return the first
+        bucket, as defined on Action.BUCKET_ORDER"""
+        dp = DailyProgress()
+        self.assertEqual(dp.get_status(self.behavior), Action.BUCKET_ORDER[0])
 
     def test_get_status(self):
         self.assertEqual(self.progress.get_status(self.behavior), 'TEST')
