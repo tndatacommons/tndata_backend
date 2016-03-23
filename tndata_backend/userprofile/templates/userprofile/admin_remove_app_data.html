@@ -27,11 +27,14 @@
       </div>
       <div>
         <fieldset class="module aligned">
-        {% for ot, ot_display, ot_help in object_types %}
+        {% for ot, ot_display, ot_help, count in object_types %}
           <div class="form-row field-{{ot}}">
             <div class="checkbox-row">
               <input id="id_{{ ot }}" name="{{ ot }}" type="checkbox" checked="checked">
-              <label class="vCheckboxLabel" for="id_{{ ot }}">{{ ot_display }}</label>
+              <label class="vCheckboxLabel" for="id_{{ ot }}">
+                {{ ot_display }}
+                ({{ count }} objects)
+              </label>
               <p class="help">{{ ot_help }}</p>
             </div>
           </div>

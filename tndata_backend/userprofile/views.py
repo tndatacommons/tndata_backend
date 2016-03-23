@@ -109,6 +109,12 @@ def admin_remove_app_data(request):
                 user.userprofile.save()
 
         return HttpResponseRedirect("/admin/auth/user/")
+    else:
+        counts = {t[0]: 0 for t in object_types}
+        for user in users:
+            for ot in object_types:
+                counts[ot[0]] += getattr(user, ot[0] + "_set").count()
+        object_types = [t + (counts[t[0]], ) for t in object_types]
 
     # GET requests
     context = {
