@@ -97,10 +97,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
     action_feedback = serializers.SerializerMethodField(read_only=True)
     progress = serializers.SerializerMethodField(read_only=True)
-    upcoming_actions = serializers.SerializerMethodField(read_only=True)
-    upcoming_customactions = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
-    ordering = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
@@ -109,8 +106,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'token', 'object_type',
-            'action_feedback', 'progress', 'upcoming_actions',
-            'upcoming_customactions', 'ordering', 'suggestions', 'object_type',
+            'action_feedback', 'progress', 'suggestions', 'object_type',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -123,9 +119,6 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             self._feed = {
                 'action_feedback': None,
                 'progress': None,
-                'upcoming_actions': [],
-                'upcoming_customactions': [],
-                'ordering': [],
                 'suggestions': [],
                 'object_type': 'feed',
             }
@@ -142,49 +135,17 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             # Progress for today
             self._feed['progress'] = user_feed.todays_progress(obj)
 
-            # Actions / CustomActions to do today.
-            upcoming = user_feed.todays_actions(obj)
-            upcoming_cas = user_feed.todays_customactions(obj)
-
-            # Figure out the ordering.
-            # This is a little confusing, but since the app cannot handle
-            # heterogeneous lists, we'll construct a list that tells us the
-            # ordering of the results, like: [0, 1, 0, 0], where  0's mean
-            # pluck from actions, 1 customactions
-
-            fields = ["next_trigger_date", "action__id"]
-            ordering = [t + (0, ) for t in upcoming.values_list(*fields)]
-
-            fields = ["next_trigger_date", "id"]
-            ordering += [t + (1, ) for t in upcoming_cas.values_list(*fields)]
-            self._feed['ordering'] = [t[2] for t in sorted(ordering)]
-
-            # Flatten the upcoming Actions/CustomActions into IDs
-            upcoming = upcoming.values_list("action__id", flat=True)
-            upcoming_cas = upcoming_cas.values_list("id", flat=True)
-            self._feed['upcoming_actions'] = list(upcoming)
-            self._feed['upcoming_customactions'] = list(upcoming_cas)
-
             # Goal Suggestions -- XXX: Disabled for now.
             # suggestions = user_feed.suggested_goals(obj)
             # srz = GoalSerializer(suggestions, many=True, user=obj)
             # self._feed['suggestions'] = srz.data
         return self._feed
 
-    def get_ordering(self, obj):
-        return self._get_feed(obj)['ordering']
-
     def get_action_feedback(self, obj):
         return self._get_feed(obj)['action_feedback']
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']
-
-    def get_upcoming_actions(self, obj):
-        return self._get_feed(obj)['upcoming_actions']
-
-    def get_upcoming_customactions(self, obj):
-        return self._get_feed(obj)['upcoming_customactions']
 
     def get_suggestions(self, obj):
         return []   # XXX Disabled: self._get_feed(obj)['suggestions']
@@ -205,9 +166,6 @@ class UserSerializer(ObjectTypeModelSerializer):
     customgoals = serializers.SerializerMethodField(read_only=True)
     customactions = serializers.SerializerMethodField(read_only=True)
 
-    # Wrapping all the feed data into an object.
-    feed_data = serializers.SerializerMethodField(read_only=True)
-
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
 
@@ -218,74 +176,9 @@ class UserSerializer(ObjectTypeModelSerializer):
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
             'token', 'needs_onboarding', "places", "user_goals", "user_behaviors",
             "user_actions", "user_categories", 'customgoals', 'customactions',
-            "feed_data", 'object_type',
+            'object_type',
         )
         read_only_fields = ("id", "date_joined", )
-
-    def get_feed_data(self, obj):
-        return {
-            'action_feedback': self.get_action_feedback(obj),
-            'progress': self.get_progress(obj),
-            'upcoming_actions': self.get_upcoming_actions(obj),
-            'upcoming_customactions': self.get_upcoming_customactions(obj),
-            'suggestions': self.get_suggestions(obj),
-            'object_type': 'feed',
-        }
-
-    def _get_feed(self, obj):
-        """Assemble all the user feed data at once because it's more efficient."""
-        if not hasattr(self, "_feed"):
-            self._feed = {
-                'action_feedback': None,
-                'progress': None,
-                'upcoming_actions': [],
-                'upcoming_customactions': [],
-                'suggestions': [],
-            }
-
-            if not obj.is_authenticated():
-                return self._feed
-
-            # Up next UserAction is needed to generate the feedback, and the
-            # feedback is irrelevant if there's no user action
-            ua = user_feed.next_user_action(obj)
-            if ua:
-                feedback = user_feed.action_feedback(obj, ua)
-                self._feed['action_feedback'] = feedback
-
-            # Actions to do today.
-            upcoming = user_feed.todays_actions(obj)
-
-            # Progress for today
-            self._feed['progress'] = user_feed.todays_progress(obj)
-
-            # IDs of upcoming actions/custom actions
-            upcoming = upcoming.values_list("action__id", flat=True)
-            self._feed['upcoming_actions'] = list(upcoming)
-
-            upcoming_cas = user_feed.todays_customactions(obj)
-            upcoming_cas = upcoming_cas.values_list("id", flat=True)
-            self._feed['upcoming_customactions'] = list(upcoming_cas)
-
-            # Goal Suggestions -- XXX DIsabled
-            # suggestions = user_feed.suggested_goals(obj)
-            # self._feed['suggestions'] = GoalSerializer(suggestions, many=True).data
-        return self._feed
-
-    def get_action_feedback(self, obj):
-        return self._get_feed(obj)['action_feedback']
-
-    def get_progress(self, obj):
-        return self._get_feed(obj)['progress']
-
-    def get_upcoming_customactions(self, obj):
-        return self._get_feed(obj)['upcoming_customactions']
-
-    def get_upcoming_actions(self, obj):
-        return self._get_feed(obj)['upcoming_actions']
-
-    def get_suggestions(self, obj):
-        return []  # XXX Disabled: self._get_feed(obj)['suggestions']
 
     @cached_method(cache_key="{0}-User.get_places", timeout=60)
     def get_places(self, obj):

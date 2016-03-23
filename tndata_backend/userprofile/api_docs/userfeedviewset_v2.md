@@ -20,18 +20,7 @@ The User Feed of information: home-feed data for the user, include:
 * `progress` -- an object containing the number of actions completed today,
   the number of total actions scheduled for today, and the percentage of
   those completed.
-* `upcoming_actions` -- a list of the `UserAction`s that are relevant for
-  today (i.e. the user has a reminder scheduled for today)
-
-* `upcoming_actions` -- an array of `Action` IDs that are relevant for
-  today (i.e. the user has a reminder scheduled for today)
-* `upcoming_customactions` -- an array of `CustomAction` IDs that are
-  relevant for today (i.e. the user has a reminder scheduled for today)
-* `ordering` -- an array of integers (0's and 1's) that specify the order
-  in which mixed upcomign actions and upcoming customactions should be displayed.
-    - 0 corresponds to the next item in the `upcoming_actions` list, while
-    - 1 corresponds to the next item in the `upcoming_customactions` list.
-* `suggestions` -- a list of suggested `Goal`s for the user.
+* `suggestions` -- (currently disabled)
 * `object_type` -- a string. Will always be "feed"
 
 ----
