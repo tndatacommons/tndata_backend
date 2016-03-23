@@ -509,6 +509,23 @@ class UserAction(models.Model):
             return to_localtime(self.next_trigger_date, self.user)
         return self.next()
 
+    def _in_current_bucket(self):
+        """Return True if this action/trigger is a dynamic notifcation and
+        is part of the user's currently-active behavior bucket."""
+        if self.trigger.is_dynamic:
+            try:
+                # Check the user's current bucket, and do a lookup to see
+                # if this action is part of the currently-selected bucket.
+                # If so, return True (otherwise return False)
+                dp = self.user.dailyprogress_set.latest()
+                bucket = dp.get_status(self.action.behavior)
+                uas = self.user.useraction_set.select_from_bucket(bucket)
+                return uas.filter(pk=self.id).exists()
+            except self.user.dailyprogress_set.model.DoesNotExist:
+                # no progress? Are we in the first bucket?
+                return self.action.bucket == Action.BUCKET_ORDER[0]
+        return True  # non-dynamic triggers would always be current.
+
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
         or None. This method will either return the value of `next_trigger_date`
@@ -518,6 +535,10 @@ class UserAction(models.Model):
         trigger_times = []
         trigger = self.trigger
         is_dynamic = trigger and trigger.is_dynamic
+
+        # Return None if we're not in the right bucket or sequence
+        if is_dynamic and not self._in_current_bucket():
+            return None  # don't schedule a notification
 
         # If we have a dynamic trigger, let's first determine wether or not
         # we need to re-generate a time; i.e. if the next_trigger_date is in
