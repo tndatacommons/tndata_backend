@@ -344,10 +344,9 @@ class GCMMessage(models.Model):
         The script that does the deletion runs nightly.
 
         """
-        if self.response_code == 200:
+        if self.success:
             # Expire at some point in the future.
             self.expire_on = timezone.now() + timedelta(days=days)
-            self.success = True
             metric('GCM Message Sent', category='Notifications')
 
     def _save_response(self, resp):
@@ -378,6 +377,25 @@ class GCMMessage(models.Model):
         # Save the whole chunk of response data
         self.response_data = resp.data
 
+        # Inspect the response data for a failure message; response data
+        # may look like this:
+        # [ {'canonical_ids': 0,
+        #    'failure': 1,
+        #    'multicast_id': 6059042386405224298,
+        #    'results': [{'error': 'NotRegistered'}],
+        #    'success': 0}]
+        self.success = True
+        if any([d.get('failure', False) for d in self.response_data]):
+            self.success = False
+
+        # If we failed set the response text
+        if not self.success:
+            msg = ""
+            for item in self.response_data:
+                msg += item.get('results', [{}])[0].get('error', '')
+            self.response_text = msg
+
+        # Now set an expiration date
         self._set_expiration()
         self.save()
 
