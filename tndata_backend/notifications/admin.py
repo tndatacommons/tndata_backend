@@ -69,7 +69,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     date_hierarchy = 'deliver_on'
     list_display = (
         'user_email', 'user_username', 'title', 'message_teaser',
-        'content_type', 'object_id', 'deliver_on', 'success', 'created_on',
+        'content_type', 'object_id', 'deliver_on', 'success', 'response_text',
     )
     list_filter = (DeliverDayListFilter, 'success', 'content_type')
     search_fields = [
@@ -78,7 +78,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     ]
     exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
-        'success', 'response_code', 'gcm_response',
+        'success', 'response_text', 'response_code', 'gcm_response',
         'pretty_response_data', 'delivered_to', 'registered_devices',
         'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
