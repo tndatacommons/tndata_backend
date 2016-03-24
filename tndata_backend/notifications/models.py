@@ -378,21 +378,29 @@ class GCMMessage(models.Model):
         self.response_data = resp.data
 
         # Inspect the response data for a failure message; response data
-        # may look like this:
+        # may look like this, and may have both failures and successes.
+        #
         # [ {'canonical_ids': 0,
         #    'failure': 1,
         #    'multicast_id': 6059042386405224298,
         #    'results': [{'error': 'NotRegistered'}],
         #    'success': 0}]
-        self.success = True
-        if any([d.get('failure', False) for d in self.response_data]):
+        #
+        # If we have any success, consider this message succesfully sent
+        successes = [d.get('success', False) for d in self.response_data]
+        failures = [d.get('failure', False) for d in self.response_data]
+        if any(successes):
+            self.success = True
+        elif any(failures):
             self.success = False
 
         # If we failed set the response text
         if not self.success:
             msg = ""
             for item in self.response_data:
-                msg += item.get('results', [{}])[0].get('error', '')
+                for result in item.get('results', []):
+                    if 'error' in result:
+                        msg += result['error']
             self.response_text = msg
 
         # Now set an expiration date

@@ -342,11 +342,68 @@ class TestGCMMessage(TestCase):
         other_device.delete()
 
     def test__save_response(self):
+        """Ensure that success=True, and the response_text includes expected
+        data (from the GCM response)"""
+        resp = Mock(status_code=200, reason='OK', url="FOO")
+        # This mock response includes an example of GCM data that we'd get
+        # when a message is delivered successfully.
+        mock_resp = Mock(
+            responses=[resp],
+            messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            data=[{
+                'canonical_ids': 0,
+                'failure': 0,
+                'multicast_id': 5629976388209913698,
+                'results': [{'message_id': '0:1458839695947903%96e94613f9fd7ecd'}],
+                'success': 1
+            }]
+        )
+        self.msg._save_response(mock_resp)
+        expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
+
+        self.assertTrue(self.msg.success)
+        self.assertEqual(self.msg.response_text, expected_text)
+        self.assertEqual(self.msg.response_code, 200)
+        self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
+        self.assertEqual(self.msg.response_data, mock_resp.data)
+
+    def test__save_response_when_error(self):
+        """Ensure that success=False, and our response_text includes the GCM
+        error message."""
         resp = Mock(status_code=200, reason='OK', url="FOO")
         mock_resp = Mock(
             responses=[resp],
             messages=[{'registration_ids': ['REGISTRATION_ID']}],
-            data=[{'some': 'data'}]
+            data=[{
+                'canonical_ids': 0,
+                'failure': 1,
+                'multicast_id': 8056733761717334109,
+                'results': [{'error': 'NotRegistered'}],
+                'success': 0
+            }]
+        )
+        self.msg._save_response(mock_resp)
+
+        self.assertEqual(self.msg.response_text, "NotRegistered")
+        self.assertEqual(self.msg.response_code, 200)
+        self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
+        self.assertEqual(self.msg.response_data, mock_resp.data)
+
+    def test__save_response_when_success_and_error(self):
+        """If we get both a success and a failure in the GCM result data,
+        record the message as a success."""
+        resp = Mock(status_code=200, reason='OK', url="FOO")
+        mock_resp = Mock(
+            responses=[resp],
+            messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            data=[{
+                'canonical_ids': 0,
+                'failure': 1,
+                'multicast_id': 8176922708522956541,
+                'results': [{'message_id': '0:1458842868372097%96e94613f9fd7ecd'},
+                            {'error': 'NotRegistered'}],
+                'success': 1
+            }]
         )
         self.msg._save_response(mock_resp)
 
@@ -354,4 +411,4 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_text, expected_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
-        self.assertEqual(self.msg.response_data, [{'some': 'data'}])
+        self.assertEqual(self.msg.response_data, mock_resp.data)
