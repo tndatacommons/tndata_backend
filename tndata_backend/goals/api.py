@@ -72,6 +72,24 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
+    def retrieve(self, request, pk=None):
+        """When an authenticated user requests a category by ID, we may need
+        to check if the user has access to it (since it may be a package or
+        a non-public category).
+
+        If so, this will return details for the category, otherwise this
+        method will call out to the superclass.
+
+        """
+        authed = request.user.is_authenticated()
+        kwargs = {'category__pk': pk, 'user': request.user if authed else None}
+        exists = models.UserCategory.objects.filter(**kwargs).exists()
+        if authed and exists:
+            obj = models.UserCategory.objects.get(**kwargs)
+            srs = self.get_serializer_class()(obj.category)
+            return Response(srs.data)
+        return super().retrieve(request, pk=pk)
+
 
 class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Goals. See the api_docs/ for more info"""

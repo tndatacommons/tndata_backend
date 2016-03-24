@@ -96,17 +96,45 @@ class TestCategoryAPI(V2APITestCase):
         self.assertEqual(c['image_url'], self.category.get_absolute_image())
         self.assertFalse(c['packaged_content'])
 
+    def test_get_category_detail(self):
+        """Test the Detail endpoint for regular, published categories"""
+        url = self.get_url('category-detail', args=[self.category.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.category.id)
+
+    def test_get_category_detail_package(self):
+        """Test the detail endpoint for packages. Should not be exposed
+        for unauthenticated users, but *should* be exposed if the user has
+        been enrolled in the package.
+        """
+        cat = Category.objects.create(order=2, title='P', packaged_content=True)
+        url = self.get_url('category-detail', args=[cat.id])
+
+        # Regular requests to this should yield a 404
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # when the user is associated with the package, we should get a 200
+        User = get_user_model()
+        user = User.objects.create(username="a", email="a@b.co")
+        uc = UserCategory.objects.create(user=user, category=cat)
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Clean up
+        uc.delete()
+        cat.delete()
+        user.delete()
+
     def test_post_category_list(self):
         """Ensure this endpoint is read-only."""
         url = self.get_url('category-list')
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_get_category_detail(self):
-        url = self.get_url('category-detail', args=[self.category.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['id'], self.category.id)
 
     def test_post_category_detail(self):
         """Ensure this endpoint is read-only."""
