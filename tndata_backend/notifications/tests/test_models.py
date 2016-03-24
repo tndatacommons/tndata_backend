@@ -323,13 +323,13 @@ class TestGCMMessage(TestCase):
             other_device,  # HACK: we need some object.
         )
 
-        # When no response code is set:
+        # When the message has not be marked a "success" (the default)
         self.assertIsNone(msg.expire_on)
         msg._set_expiration()
         self.assertIsNone(msg.expire_on)  # Should be unchanged
 
-        # When there is a resposne code (of 200)
-        msg.response_code = 200
+        # When it *is* successful
+        msg.success = True
         msg.save()
         with patch("notifications.models.timezone") as mock_tz:
             date = datetime_utc(2015, 5, 16, 15, 30)
