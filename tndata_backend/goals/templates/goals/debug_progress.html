@@ -111,6 +111,7 @@
 {% endif %}
 <div class="row">
   <div class="large-12 small-12 columns">
+
     <table>
       <caption>Daily Progress for the past {{ since }} days</caption>
       <thead>
@@ -125,6 +126,7 @@
           <th>Dismissed</th>
           <th>Selected Behaviors</th>
           <th>Updated</th>
+          <th>UserCompleted Actions</th>
       </thead>
       <tbody>
         {% for dp in daily_progresses %}
@@ -139,6 +141,13 @@
           <td>{{ dp.customactions_dismissed }}</td>
           <td>{{ dp.behaviors_total }}</td>
           <td>{{ dp.updated_on|timesince }}</td>
+          <td>
+            <ul>
+            {% for uca in dp.completed_actions %}
+              <li>{{ uca.action }} -- {{ uca.state }}</li>
+            {% endfor %}
+            </ul>
+          </td>
           </tr>
         {% endfor %}
       </tbody>

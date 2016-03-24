@@ -269,6 +269,13 @@ class DailyProgress(models.Model):
             bucket = Action.next_bucket(bucket_progress)
             self.set_status(ub.behavior, bucket)
 
+    def usercompletedactions(self):
+        """Return a queryset of UserCompletedAction objects that were updated
+        during the same day that this instance was created.
+        """
+        day_range = local_day_range(dp.user, dt=self.created_on)
+        return self.user.usercompletedaction_set.filter(updated_on__range=day_range)
+
     # The DailyProgress manager has custom convenience methods:
     # - for_user(user) -- Gets or creates an instance for "today"
     objects = DailyProgressManager()
