@@ -48,8 +48,6 @@ from userprofile.api import (
     UserPlaceViewSet,
     UserProfileViewSet,
     api_logout,
-    feed_api,
-    feed_upcoming_actions_api,
     obtain_auth_token,
 )
 from rewards.api import FunContentViewSet
@@ -130,8 +128,6 @@ urlpatterns = [
         utils_views.reset_password,
         name="reset-password"
     ),
-    url(r'^api/feed/$', feed_api, name="feed-api"),
-    url(r'^api/feed/upcoming/$', feed_upcoming_actions_api, name="feed-upcoming"),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
     url(
