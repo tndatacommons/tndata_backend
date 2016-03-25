@@ -412,3 +412,34 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
+
+    def test__save_response_when_muldiple_successes(self):
+        """If we get multiple successes in the GCM result data, record the
+        message as a success."""
+
+        resp = Mock(status_code=200, reason='OK', url="FOO")
+        # This mock response includes an example of GCM data that we'd get
+        # when a message is delivered successfully.
+        mock_resp = Mock(
+            responses=[resp],
+            messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            data=[{
+                'canonical_ids': 0,
+                'failure': 0,
+                'multicast_id': 7793705921315893230,
+                'results': [
+                    {'message_id': '0:1458839695947903%96e94613f9fd7ecd'},
+                    {'message_id': '0:2458839695947903%96e94613f9fd7ecd'}
+                ],
+                'success': 2
+            }]
+        )
+
+        self.msg._save_response(mock_resp)
+        expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
+
+        self.assertTrue(self.msg.success)
+        self.assertEqual(self.msg.response_text, expected_text)
+        self.assertEqual(self.msg.response_code, 200)
+        self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
+        self.assertEqual(self.msg.response_data, mock_resp.data)
