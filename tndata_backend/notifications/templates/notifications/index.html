@@ -56,11 +56,10 @@
     <caption>{{ jobs|length }} Enqueued Messages</caption>
     <thead>
       <tr>
+        <th>User</th>
         <th>Deliver</th>
         <th>Age</th>
-        <th>User</th>
         <th>Content</th>
-        <th>Job ID</th>
         <th>Delete</th>
       </tr>
     </thead>
@@ -68,28 +67,30 @@
       {% for job, scheduled_for, message_data in jobs %}
       <tr>
         <td>
+          {# Clicking the user's email shows their queue for the date #}
+          {% if message_data.email %}
+          <a href="{% url 'notifications:userqueue' message_data.user_id message_data.date_string %}" class="userqueue">
+            {{ message_data.email|truncatechars:15 }}
+          </a>
+          {% endif %}
+        </td>
+        <td>
           {% with deliver_on=scheduled_for|localtime %}
-            {{ deliver_on|date:"Y-m-d H:i"}}<br/>
+            {{ deliver_on}}
             <small>{{ deliver_on|timeuntil }}</small>
           {% endwith %}
         </td>
         <td>{{ job.created_at|localtime|timesince }}</td>
         <td>
-          {# Clicking the user's email shows their queue for the date #}
-          {% if message_data.email %}
-          <a href="{% url 'notifications:userqueue' message_data.user_id message_data.date_string %}" class="userqueue">
-            {{ message_data.email }}
-          </a>
-          {% endif %}
-        </td>
-        <td>
           {{ message_data.title }} {{ message_data.message }}
           {% if message_data.id %}
-          <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
-            target="_blank"><i class="fa fa-external-link-square"></i></a>
+            <small>(
+            <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
+              target="_blank"><i class="fa fa-external-link-square"></i> admin</a>
+            )</small>
           {% endif %}
+          <br/>Job ID: <a href="/rq/queues/0/{{ job.id }}">{{ job.id|truncatechars:15 }}</a>
         </td>
-        <td><a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></td>
         <td>
           <form action="{% url 'notifications:cancel-job' %}" method="post">
             {% csrf_token %}
