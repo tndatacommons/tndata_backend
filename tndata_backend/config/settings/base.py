@@ -326,7 +326,7 @@ DATETIME_FORMAT = "N j, Y g:iaO e"  # Jan. 3, 2015 5:30pm+200 CDT
 SHORT_DATE_FORMAT = "m/d/Y"  # 01/03/2015
 SHORT_DATETIME_FORMAT = "H:iO"  # 17:30+200
 USE_I18N = True
-USE_L10N = True
+USE_L10N = False
 USE_TZ = True
 
 # Messages tags: Updated to represent Foundation alert classes.
