@@ -167,6 +167,54 @@ class TestGCMMessage(TestCase):
         obj.delete()
         msg.delete()
 
+    def test_sending_doesnt_reenque_on_success(self):
+        """INTEGRATION: Send to GCM, get a response, and save the object ...
+        this should not re-enque the message if it was successful.
+
+        """
+        msg = GCMMessage.objects.create(
+            self.user,
+            "Test",
+            "A test message",
+            timezone.now(),
+            self.device  # HACK so we have a related object
+        )
+        self.assertNotEqual(msg.queue_id, '')  # should ahve a queue id
+
+        # Set up a mock response from GCM
+        mock_resp = Mock(
+            responses=[Mock(status_code=200, reason='OK', url="FOO")],
+            messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            data=[{
+                'canonical_ids': 0,
+                'failure': 0,
+                'multicast_id': 7793705921315893230,
+                'results': [{'message_id': '0:1458839695947903%96e94613f9fd7ecd'}],
+                'success': 1,
+            }]
+        )
+
+        # Set up a mock client so we dont' actually Send to GCM
+        mock_client = Mock()
+        mock_client.send.return_value = mock_resp
+        msg._get_gcm_client = Mock(return_value=mock_client)
+
+        # 1. call send() / whose internals are mocked
+        # 2. it'll call _save_response
+        # 3. which will call save()
+        # 4. which should not re-enque the message.
+        original_queue_id = msg.queue_id
+        msg.send()
+
+        self.assertEqual(msg.queue_id, original_queue_id)
+        self.assertTrue(msg.success)
+        self.assertEqual(msg.response_code, 200)
+        self.assertEqual(msg.registration_ids, "REGISTRATION_ID")
+        self.assertEqual(msg.response_data, mock_resp.data)
+
+        # Clean up.
+        msg.delete()
+
     def test__get_gcm_client(self):
         client = self.msg._get_gcm_client()
         self.assertIsInstance(client, GCMClient)
