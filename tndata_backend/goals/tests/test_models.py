@@ -476,14 +476,74 @@ class TestTrigger(TestCase):
         # is None when not dynamic
         self.assertIsNone(self.trigger.dynamic_trigger_date())
 
-        # raises an exception when there's no user
+        # returns None there's no user
         trigger = mommy.make(Trigger, frequency="daily", time_of_day='early')
         self.assertIsNone(trigger.dynamic_trigger_date())
 
+        # Returns a datetime object when there is a user.
         trigger.user = mommy.make(User)
         trigger.save()
         self.assertIsNotNone(trigger.dynamic_trigger_date())
         trigger.delete()
+
+    def test_dynamic_trigger_date_hours(self):
+        """Ensure that this method returns the correct values for different
+        time_of_day values based on the user's selected timezone."""
+
+        user = mommy.make(User)
+        user.userprofile.timezone = "America/Chicago"
+        user.userprofile.save()
+
+        kwargs = {'frequency': 'daily', 'time_of_day': 'early', 'user': user}
+        trigger = mommy.make(Trigger, **kwargs)
+
+        # Ensure the result is in the user's local timezone.
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        timezones = set([t.tzname() for t in times])
+        self.assertTrue(timezones.issubset({'CDT', 'CST'}))
+
+        # Ensure early times are in [6, 7, 8]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {6, 7, 8})
+
+        # Ensure morning times are in [9, 10, 11]
+        kwargs['time_of_day'] = 'morning'
+        trigger = mommy.make(Trigger, **kwargs)
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {9, 10, 11})
+
+        # Ensure noonish times are in [11, 12, 13]
+        kwargs['time_of_day'] = 'noonish'
+        trigger = mommy.make(Trigger, **kwargs)
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {11, 12, 13})
+
+        # Ensure afternoon times are in [13, 14, 15, 16, 17]
+        kwargs['time_of_day'] = 'afternoon'
+        trigger = mommy.make(Trigger, **kwargs)
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {13, 14, 15, 16, 17})
+
+        # Ensure evening times are in [17, 18, 19, 20, 21]
+        kwargs['time_of_day'] = 'evening'
+        trigger = mommy.make(Trigger, **kwargs)
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {17, 18, 19, 20, 21})
+
+        # Ensure late times are in [22, 23, 0, 1, 2]
+        kwargs['time_of_day'] = 'late'
+        trigger = mommy.make(Trigger, **kwargs)
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {22, 23, 0, 1, 2})
+
+        # clean up
+        trigger.delete()
+        user.delete()
 
     def test_next_when_disabled(self):
         trigger = mommy.make(
