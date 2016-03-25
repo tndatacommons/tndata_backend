@@ -206,3 +206,38 @@ def dynamic_triggers():
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
         print("------------------------------------")
     t.delete()
+
+
+def debug_useraction_dates(useraction):
+    """Given a UserAction object, lets' print out all the various ways it
+    may generate a notification date."""
+
+    def _tf(dt):
+        return dt.strftime("%a %x %X %Z") if dt else 'None'
+
+    useraction.save()  # updates some of the item's time fields.
+
+    # key = field/method that generates the date
+    # value = tuple of (datetime, expected_timezone)
+    attrs = {
+        "next_trigger_date": (_tf(useraction.next_trigger_date), "UTC"),
+        "next_reminder": (_tf(useraction.next_reminder), "local"),
+        "next()": (_tf(useraction.next()), "local"),
+        "_set_next_trigger_date()": (_tf(useraction._set_next_trigger_date()), "UTC"),
+        "trigger.next(user=self.user)": (_tf(useraction.trigger.next(user=useraction.user)), "local"),
+    }
+
+    print("-" * 78)
+    print("{: <28s} | {: <25s} | Expected Timzone".format("Method", "Result"))
+    print("-" * 78)
+    for attr, results in attrs.items():
+        dt, expected_tz = results
+        print("{: <28s} | {: <25s} | {}".format(attr, dt, expected_tz))
+
+
+def sample_trigger_times(useraction, number=100):
+
+    times = [useraction.trigger.dynamic_trigger_date(user=useraction.user) for n in range(number)]
+    print("Hours: {}".format(set([t.hour for t in times])))
+
+    return times

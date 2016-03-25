@@ -641,6 +641,7 @@ class UserAction(models.Model):
             )
             if self.prev_trigger_date is None and in_past:
                 self.prev_trigger_date = self.next_trigger_date
+        return self.next_trigger_date
 
     def save(self, *args, **kwargs):
         """Adds a hook to update the prev_trigger_date & next_trigger_date
