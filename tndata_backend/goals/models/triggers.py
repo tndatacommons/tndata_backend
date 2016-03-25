@@ -17,7 +17,7 @@ from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from recurrence import serialize as serialize_recurrences
 from recurrence.fields import RecurrenceField
-from utils.user_utils import local_day_range, to_localtime, user_timezone
+from utils.user_utils import local_day_range, local_now, to_localtime, user_timezone
 
 from ..managers import TriggerManager
 
@@ -250,7 +250,7 @@ class Trigger(models.Model):
         minute = random.choice(range(1, 59))
 
         # We need a current time, and we need to know if it's the weekend.
-        today = timezone.now()
+        today = local_now(user)  # NOTE this is in the user's timezone
         isoweekday = today.isoweekday()
         saturday = 6 - isoweekday
         sunday = 7 - isoweekday
@@ -268,8 +268,7 @@ class Trigger(models.Model):
         days = random.choice(days_from_now[self.frequency])
         dt = today + timedelta(days=days)
         dt = dt.replace(hour=hour, minute=minute)
-        dt = to_localtime(dt, user)  # in the user's local timezone.
-        return dt
+        return dt  # will be in the user's tz because we used local_now
 
     @property
     def is_relative(self):
@@ -438,10 +437,13 @@ class Trigger(models.Model):
         return False
 
     def next(self, user=None):
-        """Generate the next date for this Trigger. For recurring triggers,
-        this will return a datetime object for the next time the trigger should
-        fire in the user's local time if, this object is associated with a
-        user; otherwise, the date will be in UTC.
+        """Generate the next date for this Trigger.
+
+        This will return a datetime object for the next time the trigger should
+        fire in the user's local time if this object is associated with a
+        user or if a user is provided. Otherwise, the date will be in UTC.
+
+        This method may return None if the trigger should not fire.
 
         """
         if self._stopped_by_completion(user) or self.disabled:
