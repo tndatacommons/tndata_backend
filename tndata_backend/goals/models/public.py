@@ -832,10 +832,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     urls_image_field = "image"
     default_icon = "img/compass-grey.png"
 
-    # String formatting patters for notifications
-    _notification_title = "To {}"  # Fill with the primary goal.
-    _notification_text = "I can {}"  # Fill with the notification_text
-
     # Data Fields
     title = models.CharField(
         max_length=256,
@@ -1107,21 +1103,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             self._removed_queued_messages = True
 
     def get_notification_title(self, goal):
-        # Let's try to un-capitalize the first character, but only if:
-        # 1. it's not already lowercase, and
-        # 2. the 2nd character isn't lowercase.
-        title = goal.title
-        if len(title) > 2 and not title[0:2].isupper():
-            title = "{}{}".format(title[0].lower(), title[1:])
-            return self._notification_title.format(title)
-        return self._notification_title.format(title)
+        return goal.title
 
     def get_notification_text(self):
-        text = self.notification_text
-        if len(text) > 2 and not text[0:2].isupper():
-            text = "{}{}".format(text[0].lower(), text[1:])
-            return self._notification_text.format(text)
-        return self._notification_text.format(text)
+        return self.notification_text
 
     @transition(field=state, source="*", target='draft')
     def draft(self):

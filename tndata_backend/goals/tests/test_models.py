@@ -1401,34 +1401,14 @@ class TestAction(TestCase):
         goal = Mock(title='Pass tests')
         self.assertEqual(
             self.action.get_notification_title(goal),
-            "To pass tests"
-        )
-        goal = Mock(title='PASS tests')
-        self.assertEqual(
-            self.action.get_notification_title(goal),
-            "To PASS tests"
-        )
-        goal = Mock(title='WE are fine')
-        self.assertEqual(
-            self.action.get_notification_title(goal),
-            "To WE are fine"
+            goal.title
         )
 
     def test_get_notification_text(self):
-        self.action.notification_text = "read this."
+        self.action.notification_text = "You can read this."
         self.assertEqual(
             self.action.get_notification_text(),
-            "I can read this."
-        )
-        self.action.notification_text = "Read this."
-        self.assertEqual(
-            self.action.get_notification_text(),
-            "I can read this."
-        )
-        self.action.notification_text = "READ this."
-        self.assertEqual(
-            self.action.get_notification_text(),
-            "I can READ this."
+            self.action.notification_text
         )
 
 

@@ -151,11 +151,6 @@ class ActionForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        # Set the label for the notifcation_text based on the prefix that
-        # would be used when the notification is sent.
-        notify_label = Action._notification_text.replace(" {}", "")
-        self.fields['notification_text'].label = notify_label
-
         # Restrict priority options based on the user's permissions.
         self.fields['priority'].choices = self._get_priority_options()
 
@@ -168,8 +163,8 @@ class ActionForm(forms.ModelForm):
                     Fieldset(
                         _("Notification Details"),
                         "notification_text",
-                        "behavior",
                         "title",
+                        "behavior",
                         "description",
                         "more_info",
                         "sequence_order",
