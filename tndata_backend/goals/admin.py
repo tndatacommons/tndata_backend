@@ -233,11 +233,11 @@ admin.site.register(models.Behavior, BehaviorAdmin)
 
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'sequence_order', 'bucket', 'action_type', 'state',
-        'priority', 'selected_by_users',
+        'title', 'notification_text', 'state', 'action_type',
+        'selected_by_users',
     )
     search_fields = [
-        'title', 'source_notes', 'notes', 'more_info', 'description',
+        'id', 'title', 'source_notes', 'notes', 'more_info', 'description',
         'notification_text',
     ]
     list_filter = ('state', 'bucket', 'action_type', 'priority', 'behavior')
