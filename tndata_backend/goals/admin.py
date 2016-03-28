@@ -308,7 +308,7 @@ class UserCategoryAdmin(UserRelatedModelAdmin):
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'category__title', 'category__id'
+        'category__title', 'category__id', 'id',
     )
     raw_id_fields = ("user", "category")
 
@@ -331,7 +331,7 @@ class UserGoalAdmin(UserRelatedModelAdmin):
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'goal__title', 'goal__id',
+        'goal__title', 'goal__id', 'id',
     )
     raw_id_fields = ("user", "goal")
     readonly_fields = [
@@ -355,7 +355,7 @@ class UserBehaviorAdmin(UserRelatedModelAdmin):
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'behavior__id', 'behavior__title',
+        'behavior__id', 'behavior__title', 'id',
     )
     raw_id_fields = ("user", "behavior")
 
@@ -376,7 +376,7 @@ class UserActionAdmin(UserRelatedModelAdmin):
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'action__id', 'action__title', 'action__notification_text',
+        'action__id', 'action__title', 'action__notification_text', 'id',
     )
     readonly_fields = [
         'prev_trigger_date', 'next_trigger_date', 'serialized_action',
