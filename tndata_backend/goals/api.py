@@ -269,9 +269,8 @@ class UserGoalViewSet(VersionedViewSetMixin,
         return super().get_serializer_class()
 
     def get_queryset(self):
-        self.queryset = models.UserGoal.objects.accepted_or_public(
-            user=self.request.user
-        )
+        self.queryset = super().get_queryset().filter(user=self.request.user)
+
         # If we're trying to filter goals that are only relevant for
         # notifications (actions) delivered today, we need to first look
         # up those actions, then query for their parent behviors' goals.
@@ -334,7 +333,7 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
     def get_queryset(self):
         # First, only expose content in Categories/Packages that are either
         # public or in which we've accepted the terms/consent form.
-        self.queryset = models.UserBehavior.objects.accepted_or_public(self.request.user)
+        self.queryset = super().get_queryset().filter(user=self.request.user)
 
         # Now, filter on category or goal if necessary
         goal = self.request.GET.get('goal', None)
@@ -521,8 +520,7 @@ class UserActionViewSet(VersionedViewSetMixin,
     def get_queryset(self):
         # First, only expose content in Categories/Packages that are either
         # public or in which we've accepted the terms/consent form.
-        self.queryset = models.UserAction.objects.accepted_or_public(
-            self.request.user)
+        self.queryset = super().get_queryset().filter(user=self.request.user)
 
         # Now, filter on category, goal, behavior, action if necessary
         filter_on_today = bool(self.request.GET.get('today', False))
@@ -843,12 +841,14 @@ class UserCategoryViewSet(VersionedViewSetMixin,
     pagination_class = PageSizePagination
 
     def get_queryset(self):
-        qs = models.UserCategory.objects.accepted_or_public(user=self.request.user)
+        self.queryset = super().get_queryset().filter(user=self.request.user)
+
         # We may also filter this list of content by a category id
         category = self.request.GET.get('category', None)
         if category:
-            qs = qs.filter(category__id=category)
-        return qs
+            self.queryset = self.queryset.filter(category__id=category)
+
+        return self.queryset
 
     def get_serializer(self, *args, **kwargs):
         """Ensure we pass `many=True` into the serializer if we're dealing

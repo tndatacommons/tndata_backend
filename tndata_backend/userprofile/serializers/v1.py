@@ -222,25 +222,25 @@ class UserSerializer(ObjectTypeModelSerializer):
 
     @cached_method(cache_key="{0}-User.get_categories", timeout=60)
     def get_categories(self, obj):
-        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
+        qs = UserCategory.objects.published(user=obj).select_related('category')
         serialized = UserCategorySerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_goals", timeout=60)
     def get_goals(self, obj):
-        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        qs = UserGoal.objects.published(user=obj).select_related('goal')
         serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_behaviors", timeout=60)
     def get_behaviors(self, obj):
-        qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
+        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
         serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_actions", timeout=60)
     def get_actions(self, obj):
-        qs = UserAction.objects.accepted_or_public(obj)
+        qs = UserAction.objects.published(user=obj)
         serialized = ReadOnlyUserActionSerializer(qs, many=True)
         return serialized.data
 
@@ -326,22 +326,22 @@ class UserDataSerializer(ObjectTypeModelSerializer):
         return serialized.data
 
     def get_user_categories(self, obj):
-        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
+        qs = UserCategory.objects.published(user=obj).select_related('category')
         serialized = SimpleUserCategorySerializer(qs, many=True)
         return serialized.data
 
     def get_user_goals(self, obj):
-        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        qs = UserGoal.objects.published(user=obj).select_related('goal')
         serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 
     def get_user_behaviors(self, obj):
-        qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
+        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
         serialized = SimpleUserBehaviorSerializer(qs, many=True)
         return serialized.data
 
     def get_user_actions(self, obj):
-        qs = UserAction.objects.accepted_or_public(obj)
+        qs = UserAction.objects.published(user=obj)
         serialized = ReadOnlyUserActionSerializer(qs, many=True)
         return serialized.data
 
@@ -431,12 +431,12 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         return "feed"
 
     def get_user_categories(self, obj):
-        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
+        qs = UserCategory.objects.published(user=obj).select_related('category')
         serialized = SimpleUserCategorySerializer(qs, many=True)
         return serialized.data
 
     def get_user_goals(self, obj):
-        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        qs = UserGoal.objects.published(user=obj).select_related('goal')
         serialized = ReadOnlyUserGoalSerializer(qs, many=True)
         return serialized.data
 

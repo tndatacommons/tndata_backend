@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
-from django.core.cache import cache
 from django.db import models
 from django.db.models import Q
 from django.template.defaultfilters import slugify
@@ -20,21 +19,6 @@ from .settings import (
 )
 
 from utils import user_utils
-
-
-def _unaccepted_category_ids(user):
-    """Return Category IDs taht have NOT been accepted by the user. This is
-    cached for a short period of time (30s) so that it's results get re-used,
-    since this is often called multiple times."""
-    key = "unaccepted-category-ids-{}".format(user.id)
-    results = cache.get(key)
-    if results is not None:
-        return results
-
-    ids = user.packageenrollment_set.filter(accepted=False)
-    ids = ids.values_list("category", flat=True)
-    cache.set(key, ids, timeout=30)
-    return ids
 
 
 class CustomActionManager(models.Manager):
@@ -86,25 +70,6 @@ class UserCategoryManager(models.Manager):
         qs = qs.filter(category__state='published')
         return qs.filter(**kwargs).distinct()
 
-    def accepted_or_public(self, user):
-        """Return UserCategory instances for Categories that are,
-
-        1. Public (the user opted into)
-        2. Packages that the user has accepted.
-
-        """
-        if not user.is_authenticated():
-            return self.get_queryset().none()
-
-        # The user's UserCategory instances
-        qs = self.published().filter(user=user)
-
-        # Category IDs that have NOT been accepted by the user
-        ids = _unaccepted_category_ids(user)
-
-        # Result: Exclude those un-accepted categories
-        return qs.exclude(category__id__in=ids)
-
 
 class UserGoalManager(models.Manager):
 
@@ -117,23 +82,6 @@ class UserGoalManager(models.Manager):
         qs = qs.filter(goal__state='published')
         return qs.filter(**kwargs).distinct()
 
-    def accepted_or_public(self, user):
-        """Return UserGoal instances for goals that are in public or accepted
-        categories/packages.
-
-        """
-        if not user.is_authenticated():
-            return self.get_queryset().none()
-
-        # The user's selected Goal instances
-        qs = self.published().filter(user=user)
-
-        # Category IDs that have NOT been accepted by the user
-        ids = _unaccepted_category_ids(user)
-
-        # Result: Exclude those un-accepted categories
-        return qs.exclude(goal__categories__id__in=ids)
-
 
 class UserBehaviorManager(models.Manager):
 
@@ -145,23 +93,6 @@ class UserBehaviorManager(models.Manager):
         qs = super().get_queryset()
         qs = qs.filter(behavior__state='published')
         return qs.filter(**kwargs).distinct()
-
-    def accepted_or_public(self, user):
-        """Return UserBehavior instances for behaviors that are in public or
-        accepted categories/packages.
-
-        """
-        if not user.is_authenticated():
-            return self.get_queryset().none()
-
-        # The user's selected Behavior instances
-        qs = self.published().filter(user=user)
-
-        # Category IDs that have NOT been accepted by the user
-        ids = _unaccepted_category_ids(user)
-
-        # Result: Exclude those un-accepted categories
-        return qs.exclude(behavior__goals__categories__in=ids)
 
 
 class UserActionQuerySet(models.QuerySet):
@@ -183,6 +114,7 @@ class UserActionQuerySet(models.QuerySet):
             Q(next_trigger_date=None)
         )
 
+
 class UserActionManager(models.Manager):
 
     def get_queryset(self):
@@ -203,23 +135,6 @@ class UserActionManager(models.Manager):
         """Return a queryset of UserActions whose `next_trigger_date` is either
         stale or None."""
         return self.get_queryset().stale(**kwargs)
-
-    def accepted_or_public(self, user):
-        """Return UserAction instances for actions that are in public or
-        accepted categories/packages.
-
-        """
-        if not user.is_authenticated():
-            return self.get_queryset().none()
-
-        # The user's selected Action instances
-        qs = self.published().filter(user=user)
-
-        # Category IDs that have NOT been accepted by the user
-        ids = _unaccepted_category_ids(user)
-
-        # Result: Exclude those un-accepted categories
-        return qs.exclude(action__behavior__goals__categories__in=ids)
 
     def with_custom_triggers(self):
         """Returns a queryset of UserAction objets whose custom_trigger field

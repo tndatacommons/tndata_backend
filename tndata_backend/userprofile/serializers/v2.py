@@ -60,24 +60,24 @@ class UserDataSerializer(ObjectTypeModelSerializer):
         return serialized.data
 
     def get_user_categories(self, obj):
-        qs = UserCategory.objects.accepted_or_public(obj)
+        qs = UserCategory.objects.published(user=obj)
         qs = qs.select_related('category')
         serialized = UserCategorySerializer(qs, many=True)
         return serialized.data
 
     def get_user_goals(self, obj):
-        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        qs = UserGoal.objects.published(user=obj).select_related('goal')
         serialized = UserGoalSerializer(qs, many=True)
         return serialized.data
 
     def get_user_behaviors(self, obj):
-        qs = UserBehavior.objects.accepted_or_public(obj)
+        qs = UserBehavior.objects.published(user=obj)
         qs = qs.select_related('behavior')
         serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
     def get_user_actions(self, obj):
-        qs = UserAction.objects.accepted_or_public(obj)
+        qs = UserAction.objects.published(user=obj)
         serialized = UserActionSerializer(qs, many=True)
         return serialized.data
 
@@ -244,25 +244,25 @@ class UserSerializer(ObjectTypeModelSerializer):
 
     @cached_method(cache_key="{0}-User.get_user_categories", timeout=60)
     def get_user_categories(self, obj):
-        qs = UserCategory.objects.accepted_or_public(obj).select_related('category')
+        qs = UserCategory.objects.published(user=obj).select_related('category')
         serialized = UserCategorySerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_user_goals", timeout=60)
     def get_user_goals(self, obj):
-        qs = UserGoal.objects.accepted_or_public(obj).select_related('goal')
+        qs = UserGoal.objects.published(user=obj).select_related('goal')
         serialized = UserGoalSerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_user_behaviors", timeout=60)
     def get_user_behaviors(self, obj):
-        qs = UserBehavior.objects.accepted_or_public(obj).select_related('behavior')
+        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
         serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
     @cached_method(cache_key="{0}-User.get_user_actions", timeout=60)
     def get_user_actions(self, obj):
-        qs = UserAction.objects.accepted_or_public(obj)
+        qs = UserAction.objects.published(user=obj)
         serialized = UserActionSerializer(qs, many=True)
         return serialized.data
 

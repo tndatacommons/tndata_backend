@@ -156,7 +156,7 @@ class Command(BaseCommand):
 
             # XXX; Very inefficient;
             # schedule the non-dynamic notifications.
-            for ua in user.useraction_set.accepted_or_public(user).distinct():
+            for ua in user.useraction_set.published().distinct():
                 if ua.trigger and not ua.trigger.is_dynamic:
                     # Will be in the user's timezone
                     deliver_on = to_utc(ua.trigger.next(user=user))
