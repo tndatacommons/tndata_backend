@@ -66,7 +66,7 @@ class UserPlaceViewSet(VersionedViewSetMixin,
     def create(self, request, *args, **kwargs):
         place = request.data.get('place')
         if place:
-            place, _ = models.Place.objects.get_or_create(name=place.title())
+            place, _ = models.Place.objects.get_or_create(name=place)
             request.data['longitude'] = self._quant(request, 'longitude')
             request.data['latitude'] = self._quant(request, 'latitude')
             request.data['place'] = place.id
@@ -80,7 +80,7 @@ class UserPlaceViewSet(VersionedViewSetMixin,
         up = self.get_object()
         place = request.data.get('place')
         if place:
-            place, _ = models.Place.objects.get_or_create(name=place.title())
+            place, _ = models.Place.objects.get_or_create(name=place)
             request.data['place'] = place.id
         else:
             request.data['place'] = up.place.id
