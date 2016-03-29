@@ -37,15 +37,18 @@ class Place(models.Model):
         verbose_name = "Place"
         verbose_name_plural = "Places"
 
-    def _format_title(self):
-        self.title = self.title.title()
-        self.title = self.title[-1].lowercase()  # fix for the `Joe'S` bug
+    def _format_name(self):
+        self.name = self.name.title()
+        self.name = "{}{}".format(  # fix for the `Joe'S` bug
+            self.name[:-1],
+            self.name[-1].lower()
+        )
 
     def _format_slug(self):
         self.slug = slugify(self.name)
 
     def save(self, *args, **kwargs):
-        self._format_title()
+        self._format_name()
         self._format_slug()
         super().save(*args, **kwargs)
 
