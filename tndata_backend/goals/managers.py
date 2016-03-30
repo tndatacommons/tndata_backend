@@ -197,7 +197,11 @@ class UserActionManager(models.Manager):
 
         # The accepted or public UserActions that are in the given bucket
         qs = self.get_queryset().filter(*args, **kwargs)
-        qs = qs.filter(action__state='published', action__bucket=bucket)
+        qs = qs.filter(
+            action__state='published',
+            action__behavior__state='published',
+            action__bucket=bucket
+        )
 
         if exclude_completed:
             qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
