@@ -33,7 +33,8 @@ from .models import (
     Goal,
     UserAction,
     UserCompletedAction,
-    UserCompletedCustomAction
+    UserCompletedCustomAction,
+    UserGoal,
 )
 
 
@@ -265,7 +266,7 @@ def todays_actions(user):
     cids = cids.values_list('useraction', flat=True)
 
     # The `next_trigger_date` should always be saved as UTC
-    upcoming = user.useraction_set.select_related('action')
+    upcoming = user.useraction_set.published().select_related('action')
     upcoming = upcoming.filter(next_trigger_date__range=(now, today[1]))
     upcoming = upcoming.exclude(id__in=cids)
     upcoming = upcoming.order_by('next_trigger_date')
@@ -360,7 +361,7 @@ def todays_actions_progress(user):
     # NOTE: The UserAction.next_trigger_date field gets refreshed automatically
     # every two hours. So, to get a picture of the whole day at a time, we need
     # to consider both it and the previous trigger date.
-    total = user.useraction_set.filter(
+    total = user.useraction_set.published().filter(
         Q(prev_trigger_date__range=today) |
         Q(next_trigger_date__range=today) |
         Q(id__in=useraction_ids)
@@ -499,6 +500,6 @@ def selected_goals(user):
 
     For now: Sorted by progress value (low-to-high)
     """
-    user_goals = user.usergoal_set.all()
+    user_goals = UserGoal.objects.published(user=user)
     user_goals = sorted(user_goals, key=_usergoal_sorter)
     return [(ug.progress_value, ug) for ug in user_goals]
