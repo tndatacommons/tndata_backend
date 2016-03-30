@@ -1,3 +1,5 @@
+import waffle
+
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -22,6 +24,10 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        # Check to see if we've disabled this, prior to expiring anything.
+        if not waffle.switch_is_active('goals-daily-progress-snapshot'):
+            return None
+
         User = get_user_model()
         if options['user']:
             try:
