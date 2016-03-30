@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -42,7 +43,14 @@ class Command(BaseCommand):
         count = 0
         kwargs = self._user_kwargs(options['user'])
 
-        for ua in UserAction.objects.stale(**kwargs).published():
+        # Fetch the set of UserActions to refresh.
+        useractions = UserAction.objects.stale(**kwargs).published()
+
+        # If we're in staging or dev, only do this for our accounts.
+        if settings.STAGING or settings.DEBUG:
+            useractions = useractions.filter(user__email__icontains="@tndata.org")
+
+        for ua in useractions:
             count += 1
             ua.save(update_triggers=True)  # fields get refreshed on save.
 

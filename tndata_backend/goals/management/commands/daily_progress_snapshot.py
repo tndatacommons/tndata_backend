@@ -1,5 +1,6 @@
 import waffle
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -41,6 +42,10 @@ class Command(BaseCommand):
             except User.DoesNotExist:
                 msg = "Could not find user: {0}".format(options['user'])
                 raise CommandError(msg)
+
+        elif settings.STAGING or settings.DEBUG:
+            users = User.objects.filter(email__icontains='@tndata.org')
+
         else:
             users = User.objects.filter(is_active=True)
 
