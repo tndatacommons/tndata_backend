@@ -49,11 +49,11 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'title_slug', 'state', 'order', 'get_absolute_icon',
-        'created_by', 'created_on', 'updated_by', 'updated_on',
+        'title', 'state', 'created_by', 'updated_on', 'created_on',
+        'packaged_content',
     )
-    search_fields = ['title', 'description', 'notes']
-    list_filter = ('state', )
+    search_fields = ['title', 'description', 'notes', 'id']
+    list_filter = ('state', 'packaged_content',)
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
 
@@ -101,13 +101,30 @@ class ArrayFieldListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class CategoryListFilter(admin.SimpleListFilter):
+    """Admin Filter that lists categories in alpha-order by title."""
+    title = "By Category"
+    parameter_name = 'category'
+
+    def lookups(self, request, model_admin):
+        return models.Category.objects.values_list('id', 'title').order_by('title')
+
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(categories__id=category_id)
+        return queryset
+
+
 class GoalAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'title_slug', 'state', 'in_categories', 'get_absolute_icon',
-        'created_by', 'created_on', 'updated_by', 'updated_on',
+        'title', 'state', 'in_categories', 'created_by',
+        'created_on', 'updated_on',
     )
-    search_fields = ['title', 'subtitle', 'description', 'outcome', 'keywords']
-    list_filter = ('state', ArrayFieldListFilter)
+    search_fields = [
+        'title', 'subtitle', 'description', 'more_info', 'keywords', 'id'
+    ]
+    list_filter = ('state', ArrayFieldListFilter, CategoryListFilter)
     prepopulated_fields = {"title_slug": ("title", )}
     filter_horizontal = ('categories', )
     actions = ['add_keywords', ]
@@ -156,15 +173,39 @@ class TriggerAdmin(UserRelatedModelAdmin):
 admin.site.register(models.Trigger, TriggerAdmin)
 
 
+class GoalListFilter(admin.SimpleListFilter):
+    """Admin Filter that lists goals in alpha-order by title."""
+    title = "By Goal"
+    parameter_name = 'goal'
+
+    def lookups(self, request, model_admin):
+        return models.Goal.objects.values_list('id', 'title').order_by('title')
+
+    def queryset(self, request, queryset):
+        goal_id = self.value()
+        if goal_id:
+            queryset = queryset.filter(goals__id=goal_id)
+        return queryset
+
+
+class BehaviorCategoryListFilter(CategoryListFilter):
+    """Filters behaviors by their parent goal's category."""
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(goals__categories__id=category_id)
+        return queryset
+
+
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'num_actions', 'selected_by_users', 'in_categories',
-        'in_goals', 'updated_on',
+        'title', 'state', 'in_goals', 'updated_on',
+        'num_actions', 'selected_by_users',
     )
     search_fields = [
-        'title', 'source_notes', 'notes', 'more_info', 'description',
+        'title', 'source_notes', 'notes', 'more_info', 'description', 'id',
     ]
-    list_filter = ('state', )
+    list_filter = ('state', BehaviorCategoryListFilter, GoalListFilter)
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
@@ -231,6 +272,15 @@ class BehaviorAdmin(ContentWorkflowAdmin):
 admin.site.register(models.Behavior, BehaviorAdmin)
 
 
+class ActionCategoryListFilter(CategoryListFilter):
+    """Filters actions by their parent behavior's parent goal's category."""
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(behavior__goals__categories__id=category_id)
+        return queryset
+
+
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'notification_text', 'state', 'action_type',
@@ -238,9 +288,11 @@ class ActionAdmin(ContentWorkflowAdmin):
     )
     search_fields = [
         'id', 'title', 'source_notes', 'notes', 'more_info', 'description',
-        'notification_text',
+        'notification_text', 'behavior__title',
     ]
-    list_filter = ('state', 'bucket', 'action_type', 'priority', 'behavior')
+    list_filter = (
+        'state', 'bucket', 'action_type', 'priority', ActionCategoryListFilter
+    )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('behavior', 'default_trigger', 'updated_by', 'created_by')
     actions = ['convert_to_behavior']
