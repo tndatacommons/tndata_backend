@@ -61,10 +61,12 @@ def signup(request):
 
                 # Ping slack so this doesn't go unnoticed.
                 msg = (
-                    "Hey @bkmontgomery, {user} just registered for an account. "
-                    "Activate at: https://app.tndata.org/admin/auth/user/{id}/"
+                    ":warnign: @bkmontgomery, {user} <{email}> just registered "
+                    "for an account. Update their permissions at: "
+                    "https://app.tndata.org/admin/auth/user/{id}/"
                 )
-                post_message("#tech", msg.format(user=u, id=u.id))
+                msg = msg.format(user=u.get_full_name, email=u.email, id=u.id)
+                post_message("#tech", msg)
                 return redirect('/')
         else:
             messages.error(request, "We could not process your request. "
