@@ -356,11 +356,10 @@ class CategoryManager(WorkflowManager):
 
         """
         published = kwargs.pop("published", True)
-        qs = super().get_queryset()
+        qs = super().get_queryset().filter(packaged_content=True)
         if published:
-            return qs.filter(packaged_content=True, state="published")
-        else:
-            return qs.filter(packaged_content=True)
+            qs = qs.filter(packaged_content=True, state="published")
+        return qs.distinct()
 
 
 class GoalManager(WorkflowManager):
@@ -393,7 +392,7 @@ class GoalManager(WorkflowManager):
             qs = qs.filter(categories__packaged_content=True, state="published")
         else:
             qs = qs.filter(categories__packaged_content=True)
-        return qs.filter(**kwargs)
+        return qs.filter(**kwargs).distinct()
 
 
 class PackageEnrollmentManager(models.Manager):
