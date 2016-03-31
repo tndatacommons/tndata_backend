@@ -109,6 +109,13 @@ def messages():
     return scheduler.get_jobs(with_times=True)
 
 
+def clear():
+    """Clear ALL scheduled jobs in the queue."""
+    scheduler = get_scheduler()
+    for job in scheduler.get_jobs():
+        job.cancel()
+
+
 def cancel(job_id):
     """Cancel a scheduled job, given its ID."""
     if job_id:
