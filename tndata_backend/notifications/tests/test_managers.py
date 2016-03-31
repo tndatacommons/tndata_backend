@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
+from .. import queue
 from .. models import GCMDevice, GCMMessage
 
 User = get_user_model()
@@ -17,6 +18,11 @@ def datetime_utc(*args):
 
 class TestGCMMessageManager(TestCase):
     """Tests for the `GCMMessageManager`."""
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
 
     @classmethod
     def setUpTestData(cls):

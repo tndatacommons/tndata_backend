@@ -19,6 +19,11 @@ class TestUserQueue(TestCase):
     """Tests for the `GCMDevice` model."""
 
     @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
+
+    @classmethod
     def setUpTestData(cls):
         User = get_user_model()
         cls.user = User.objects.create_user('uq', 'uq@example.com', 'pass')

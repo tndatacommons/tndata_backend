@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from pushjack import GCMClient
 from .. models import GCMDevice, GCMMessage
-
+from .. import queue
 
 User = get_user_model()
 
@@ -31,6 +31,11 @@ class TestGCMDevice(TestCase):
             registration_id="REGISTRATIONID",
             device_id="DEVICEID"
         )
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
 
     def test__str__(self):
         # With default values
@@ -64,6 +69,11 @@ class TestGCMDevice(TestCase):
 
 class TestGCMMessage(TestCase):
     """Tests for the `GCMMessage` model."""
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
 
     @classmethod
     def setUpTestData(cls):

@@ -1,7 +1,6 @@
 from datetime import datetime
 from unittest.mock import patch
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase
@@ -9,6 +8,7 @@ from django.utils import timezone
 
 from waffle.testutils import override_switch
 
+from .. import queue
 from .. models import GCMDevice, GCMMessage
 
 User = get_user_model()
@@ -21,6 +21,11 @@ def datetime_utc(*args):
 
 class TestExpireMessages(TestCase):
     """Tests for the `expire_messages` management command."""
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
 
     @classmethod
     def setUpTestData(cls):

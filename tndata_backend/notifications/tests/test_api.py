@@ -12,6 +12,8 @@ from .. models import (
     GCMDevice,
     GCMMessage,
 )
+from .. import queue
+
 
 User = get_user_model()
 
@@ -34,6 +36,11 @@ TEST_REST_FRAMEWORK = {
 
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestGCMDeviceAPI(APITestCase):
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
 
     @classmethod
     def setUpTestData(cls):
@@ -113,6 +120,11 @@ class TestGCMDeviceAPI(APITestCase):
 
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestGCMMessageAPI(APITestCase):
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        queue.clear()
 
     @classmethod
     def setUpTestData(cls):
