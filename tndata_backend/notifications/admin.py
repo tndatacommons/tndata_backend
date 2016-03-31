@@ -78,11 +78,19 @@ class GCMMessageAdmin(admin.ModelAdmin):
     ]
     exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
+        'pretty_payload',
         'success', 'response_text', 'response_code', 'gcm_response',
         'pretty_response_data', 'delivered_to', 'registered_devices',
         'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
     actions = ['send_notification', 'expire_messages']
+
+    def pretty_payload(self, obj):
+        """pretty-printed version of the `content_json` attribute delivered as
+        a payload to GCM."""
+        return mark_safe("<br/><pre>{0}</pre>".format(pformat(obj.content)))
+    pretty_payload.short_description = "GCM Payload"
+    pretty_payload.allow_tags = True
 
     def gcm_diagnostics(self, obj):
         """Print links to the GCM Diagnostics page."""
@@ -104,14 +112,14 @@ class GCMMessageAdmin(admin.ModelAdmin):
     def pretty_response_data(self, obj):
         """pretty-printed response data"""
         data = pformat(obj.response_data)
-        return mark_safe("<pre>{0}</pre>".format(data))
+        return mark_safe("<br/><pre>{0}</pre>".format(data))
     pretty_response_data.short_description = "GCM Response Data"
     pretty_response_data.allow_tags = True
 
     def delivered_to(self, obj):
         """This is the list of registration_ids that we get back from GCM
         after sending the message"""
-        return mark_safe("<pre>{0}</pre>".format(obj.registration_ids))
+        return mark_safe("<br/><pre>{0}</pre>".format(obj.registration_ids))
     delivered_to.short_description = "Delivered to"
     delivered_to.allow_tags = True
 
@@ -119,14 +127,14 @@ class GCMMessageAdmin(admin.ModelAdmin):
         """List all the registration IDs owned by the user."""
         if obj.user:
             ids = "\n".join(obj.registered_devices)
-            return mark_safe("<pre>{0}</pre>".format(ids))
+            return mark_safe("<br/><pre>{0}</pre>".format(ids))
         return ''
     registered_devices.short_description = "Registered Devices"
     registered_devices.allow_tags = True
 
     def gcm_response(self, obj):
         """Formatting for the response_text that GCM sets."""
-        return mark_safe("<pre>{0}</pre>".format(obj.response_text))
+        return mark_safe("<br/><pre>{0}</pre>".format(obj.response_text))
     gcm_response.short_description = "GCM Response"
     gcm_response.allow_tags = True
 
