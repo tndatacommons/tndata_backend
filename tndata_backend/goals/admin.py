@@ -18,7 +18,10 @@ from . import models
 class ContentWorkflowAdmin(admin.ModelAdmin):
     """This class adds action methods for changing the state of content."""
 
-    actions = ['set_draft', 'set_review', 'set_declined', 'set_published']
+    actions = [
+        'set_draft', 'set_review', 'set_declined', 'set_published',
+        'publish_children',
+    ]
 
     def _transition_to(self, request, queryset, method, message):
         try:
@@ -45,6 +48,32 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
     def set_published(self, request, queryset):
         self._transition_to(request, queryset, "publish", "Items Published")
     set_published.short_description = "Publish"
+
+    def publish_children(self, request, queryset):
+        count = 0  # Track total number of items published.
+
+        # publish the selected objects:
+        for obj in queryset:
+            if obj.is_draft or obj.is_pending:
+                obj.publish()
+                obj.save()
+                count += 1
+
+        # Now, publish all the children
+        children = [obj.publish_children() for obj in queryset]
+        children = [val for sublist in children for val in sublist]
+        count += len(children)
+        print("Published:\n- {}".format("\n- ".join([str(obj) for obj in children])))
+
+        # and the children's children
+        while len(children) > 0:
+            children = [obj.publish_children() for obj in children]
+            children = [val for sublist in children for val in sublist]
+            count += len(children)
+            print("Published:\n- {}".format("\n- ".join([str(obj) for obj in children])))
+        print("Count: {}".format(count))
+        self.message_user(request, "Published {} objects.".format(count))
+    publish_children.short_description = "Publish selected item and all child content"
 
 
 class CategoryAdmin(ContentWorkflowAdmin):

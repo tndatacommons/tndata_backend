@@ -303,6 +303,32 @@ class StateMixin:
     def is_published(self):
         return self.state == "published"
 
+    def get_children(self):
+        """Return a queryset of all child objects for the model."""
+        children = {
+            'Category': 'goals',
+            'Goal': 'behavior_set',
+            'Behavior': 'action_set'
+        }
+        if self.__class__.__name__ in children.keys():
+            attr = children[self.__class__.__name__]
+            return getattr(self, attr).all()
+        return []
+
+    def publish_children(self):
+        """Calls the .publish() method for all of the object's children that
+        are in draft/pending-review.
+
+        Returns a queryset of the object's chilren.
+        """
+        children = self.get_children()
+        # only publish draft/pending children, but return the whole set
+        if len(children) > 0:
+            for obj in children.filter(state__in=['draft', 'pending-review']):
+                obj.publish()
+                obj.save()
+        return children
+
 
 class ModifiedMixin:
     def _check_updated_or_created_by(self, **kwargs):
