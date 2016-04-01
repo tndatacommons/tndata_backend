@@ -219,6 +219,7 @@ MIDDLEWARE_CLASSES = (
     'waffle.middleware.WaffleMiddleware',
     'utils.middleware.TimezoneMiddleware',
     'utils.middleware.ResponseForbiddenMiddleware',
+    'utils.middleware.APIMetricsMiddleware',
     'staticflatpages.middleware.StaticFlatpageFallbackMiddleware',
     'utils.middleware.DebugMedia404Middleware',
 )
