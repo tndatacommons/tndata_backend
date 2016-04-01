@@ -63,9 +63,10 @@ class GCMDevice(models.Model):
 
     class Meta:
         ordering = ['user', '-created_on', 'registration_id']
-        unique_together = ("registration_id", "user")
+        unique_together = ("registration_id", "user", "device_id")
         verbose_name = "GCM Device"
         verbose_name_plural = "GCM Devices"
+        get_latest_by = 'updated_on'
 
     def __str__(self):
         return self.device_name or self.registration_id

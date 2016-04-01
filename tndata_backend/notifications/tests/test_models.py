@@ -59,10 +59,12 @@ class TestGCMDevice(TestCase):
         self.assertTrue(self.device.is_active)
 
     def test_constraints(self):
-        """Ensure that (user, registration_id) define a unique constraint."""
+        """Ensure that (user, device_id, registration_id) define a unique
+        constraint."""
         with self.assertRaises(IntegrityError):
             GCMDevice.objects.create(
                 user=self.user,
+                device_id="DEVICEID",
                 registration_id='REGISTRATIONID'
             )
 
