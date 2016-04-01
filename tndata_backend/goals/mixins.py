@@ -51,7 +51,13 @@ class StateFilterMixin:
     """A mixin that provides a default filter for objects with a `state`."""
 
     def get(self, request, *args, **kwargs):
-        self.state_filter = request.GET.get('state', 'draft')
+        current_state_filter = request.session.get('state-filter', 'draft')
+        self.state_filter = request.GET.get('state', current_state_filter)
+
+        # If the filter has changed, save it as the current state in the session
+        if self.state_filter != current_state_filter:
+            request.session['state-filter'] = self.state_filter
+
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
