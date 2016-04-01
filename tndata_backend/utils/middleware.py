@@ -1,4 +1,5 @@
 import pytz
+import re
 import time
 
 from django.conf import settings
@@ -22,6 +23,18 @@ class APIMetricsMiddleware:
       with an average response time.
 
     """
+    def _get_request_key(self, request):
+        key = None   # ONLY track api metrics
+        if request.path.startswith("/api/"):
+            # Nicely format our api (essentially slugify them)
+            key = request.path.strip('/').replace('/', '-')
+
+            # Replace any specific detail endpoints (e.g. those containig a
+            # numeric DB id) with a 'detail' key.
+            # e.g.  api-users-123 becomes api-users-detail
+            key = re.sub('\d+', 'detail', key)
+        return key
+
     def _current_average_response_time(self):
         # Assume `_start_time` and `_end_time` are set, retrieve the current
         # gauge value (if any), average the current response time, and return
@@ -38,15 +51,12 @@ class APIMetricsMiddleware:
         return current
 
     def process_request(self, request):
-        self._key = None
-
-        # ONLY track api usage.
-        if request.path.startswith("/api/"):
+        self._key = self._get_request_key(request)
+        if self._key is not None:
             self._start_time = time.time()
-            self._key = request.path.strip('/').replace('/', '-')
 
     def process_response(self, request, response):
-        if self._key:
+        if self._key and self._start_time:
             # Capture the ending time and update our gauge
             self._end_time = time.time()
 
