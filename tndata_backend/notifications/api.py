@@ -118,18 +118,17 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
             device_id = hash_value("{}+{}".format(request.user.email, device_name))
             request.data['device_id'] = device_id
 
-            # Check to see if this already exists:
+            # Check to see if the Registration ID already exists:
             reg_id = request.data.get('registration_id', None)
             params = {'user': request.user, 'registration_id': reg_id}
             if reg_id and models.GCMDevice.objects.filter(**params).exists():
                 return Response(None, status=status.HTTP_304_NOT_MODIFIED)
 
-            # Otherwise, calculate our device id hash and see if that exists.
+            # Otherwise, look for this device, and update its registration id
             devices = models.GCMDevice.objects.filter(user=request.user).filter(
                 Q(device_id=device_id) | Q(device_id=None)
             )
             if devices.exists():
-                # The user's device already exists, let's update instead.
                 return self._update(request, device_id=device_id)
 
         return super(GCMDeviceViewSet, self).create(request, *args, **kwargs)
