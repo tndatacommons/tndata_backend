@@ -61,11 +61,11 @@ def signup(request):
 
                 # Ping slack so this doesn't go unnoticed.
                 msg = (
-                    ":warnign: @bkmontgomery, {user} <{email}> just registered "
+                    ":warning: @bkmontgomery, {user} <{email}> just registered "
                     "for an account. Update their permissions at: "
                     "https://app.tndata.org/admin/auth/user/{id}/"
                 )
-                msg = msg.format(user=u.get_full_name, email=u.email, id=u.id)
+                msg = msg.format(user=u.get_full_name(), email=u.email, id=u.id)
                 post_message("#tech", msg)
                 return redirect('/')
         else:
