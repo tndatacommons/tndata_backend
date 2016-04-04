@@ -42,8 +42,9 @@ admin.site.register(models.UserPlace, UserPlaceAdmin)
 
 class UserProfileAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user', 'user_email', 'user_first', 'user_last', 'timezone',
-        'needs_onboarding'
+        'user_email', 'user_first', 'user_last', 'timezone',
+        'needs_onboarding', 'zipcode', 'birthday', 'sex', 'employed',
+        'is_parent', 'in_relationship', 'has_degree',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',

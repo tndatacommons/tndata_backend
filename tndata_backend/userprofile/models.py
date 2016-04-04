@@ -81,11 +81,13 @@ class UserProfile(models.Model):
     about a user or their account. It also serves as a way to aggregate and
     expose some data for a user.
 
-    For example:
-
-    Bio-8: Storing answers to 8 biographical questions: http://goo.gl/CSzRZp
-
     """
+    SEX_CHOICES = (
+        ('female', 'Female'),
+        ('male', 'Male'),
+        ('no-answer', 'Prefer not to answer'),
+    )
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         help_text="The user to whom this profile belongs"
@@ -98,6 +100,22 @@ class UserProfile(models.Model):
     )
     maximum_daily_notifications = models.IntegerField(default=10, blank=True)
     needs_onboarding = models.BooleanField(default=True, blank=True)
+
+    # Profile fields.
+    zipcode = models.CharField(max_length=32, blank=True, null=True)
+    birthday = models.DateField(blank=True, null=True)
+    sex = models.CharField(
+        max_length=32,
+        blank=True,
+        null=True,
+        choices=SEX_CHOICES
+    )
+    employed = models.BooleanField(default=False, blank=True)
+    is_parent = models.BooleanField(default=False, blank=True)
+    in_relationship = models.BooleanField(default=False, blank=True)
+    has_degree = models.BooleanField(default=False, blank=True)
+
+    # Timestamps
     updated_on = models.DateTimeField(auto_now=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -153,7 +171,7 @@ class UserProfile(models.Model):
     # Bio/Onboarding survey responses.
     # -------------------------------------------------------------------------
     @property
-    def zipcode(self):
+    def survey_zipcode(self):
         question_id = 2  # My zip code is
         answer_key = 'response'
         for d in self._get_bio_responses('openendedquestion', question_id):
@@ -203,7 +221,7 @@ class UserProfile(models.Model):
     # Initial Profile survey responses.
     # -------------------------------------------------------------------------
     @property
-    def employed(self):
+    def survey_employed(self):
         """Returns True or False. """
         question_id = 13  # I am currently employed.
         answer_key = 'selected_option'
@@ -212,7 +230,7 @@ class UserProfile(models.Model):
         return False
 
     @property
-    def in_relationship(self):
+    def survey_in_relationship(self):
         """Returns True or False. """
         question_id = 14  # I am currently in a romantic relationship.
         answer_key = 'selected_option'
@@ -221,7 +239,7 @@ class UserProfile(models.Model):
         return False
 
     @property
-    def is_parent(self):
+    def survey_is_parent(self):
         """Returns True or False. """
         question_id = 16  # I am a parent.
         answer_key = 'selected_option'
@@ -230,7 +248,7 @@ class UserProfile(models.Model):
         return False
 
     @property
-    def has_college_degree(self):
+    def survey_has_degree(self):
         """Returns True or False. """
         question_id = 12  # I have a college degree.
         answer_key = 'selected_option'
@@ -239,7 +257,7 @@ class UserProfile(models.Model):
         return False
 
     @property
-    def sex(self):
+    def survey_sex(self):
         """Returns a string: 'Male' or 'Female' or None. """
         question_id = 12  # My sex is:
         answer_key = 'selected_option_text'
