@@ -138,6 +138,17 @@ class UserProfile(models.Model):
     def get_update_url(self):
         return reverse("userprofile:update", args=[self.pk])
 
+    @property
+    def age(self):
+        # NOTE: uses the birthday field, not the old survey.
+        if self.birthday:
+            delta = datetime.today() - self.birthday
+            return int(delta.days / 365)
+        return None
+
+    # ------------------------------------------------
+    # TODO: Kill off all these survey-related fields.
+    # ------------------------------------------------
     def _response(self, question):
         """Given a Question, return the user's latest response."""
         m = {
@@ -192,22 +203,8 @@ class UserProfile(models.Model):
         return birthdate
 
     @property
-    def age(self):
-        bday = self.survey_birthday
-        if bday:
-            delta = datetime.today() - bday
-            return int(delta.days / 365)
-        return None
-
-    @property
     def has_relationship(self):
-        question_id = 3  # Relationships: I am currently...
-        answer_key = 'selected_option_text'
-        options = ['In a relationship', 'Married', 'Single and looking']
-        for d in self._get_bio_responses('multiplechoicequestion', question_id):
-            if d.get(answer_key) in options:
-                return True
-        return None
+        return self.in_relationship
 
     @property
     def gender(self):
