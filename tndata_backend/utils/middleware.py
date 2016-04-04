@@ -23,6 +23,12 @@ class APIMetricsMiddleware:
       with an average response time.
 
     """
+    def __init__(self, *args, **kwargs):
+        self._key = None   # ONLY track api metrics
+        self._start_time = None
+        self._end_time = None
+        super().__init__(*args, **kwargs)
+
     def _get_request_key(self, request):
         key = None   # ONLY track api metrics
         if request.path.startswith("/api/"):
