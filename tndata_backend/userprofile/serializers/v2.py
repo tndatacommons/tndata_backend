@@ -33,6 +33,25 @@ from utils.decorators import cached_method
 from utils.serializers import ObjectTypeModelSerializer
 
 
+class SimpleProfileSerializer(ObjectTypeModelSerializer):
+
+    object_type = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = models.UserProfile
+        fields = (
+            'id', 'user',  "timezone", 'maximum_daily_notifications',
+            'needs_onboarding', 'zipcode', 'birthday', 'sex', 'employed',
+            'is_parent', 'in_relationship', 'has_degree', 'updated_on',
+            'created_on', 'object_type',
+        )
+        read_only_fields = (
+            "id", "user", "needs_onboarding", "updated_on", "created_on",
+        )
+
+    def get_object_type(self, obj):
+        return 'profile'
+
+
 class UserDataSerializer(ObjectTypeModelSerializer):
     needs_onboarding = serializers.ReadOnlyField(
         source='userprofile.needs_onboarding'

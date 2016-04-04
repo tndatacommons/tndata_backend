@@ -15,12 +15,9 @@ from rest_framework.authentication import (
 )
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-
-from goals import user_feed
-from goals.serializers.v2 import GoalSerializer
 from utils.mixins import VersionedViewSetMixin
 
 from . import models
@@ -163,6 +160,28 @@ class UserAccountViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(id=self.request.user.id)
+
+
+class SimpleProfileViewSet(VersionedViewSetMixin,
+                           mixins.ListModelMixin,
+                           mixins.RetrieveModelMixin,
+                           mixins.UpdateModelMixin,
+                           viewsets.GenericViewSet):
+    """A simpler viewset for the UserProfile model."""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.UserProfile.objects.all()
+    serializer_class_v1 = v2.SimpleProfileSerializer
+    serializer_class_v2 = v2.SimpleProfileSerializer
+    docstring_prefix = "userprofile/api_docs"
+    permission_classes = [permissions.IsSelf]
+
+    def get_queryset(self):
+        self.queryset = super().get_queryset().filter(user=self.request.user)
+        return self.queryset
+
+    def update(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
+        return super().update(request, *args, **kwargs)
 
 
 class UserProfileViewSet(VersionedViewSetMixin,
