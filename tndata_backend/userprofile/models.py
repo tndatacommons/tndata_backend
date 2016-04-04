@@ -269,7 +269,7 @@ class UserProfile(models.Model):
     @property
     def survey_sex(self):
         """Returns a string: 'Male' or 'Female' or None. """
-        question_id = 12  # My sex is:
+        question_id = 8  # My sex is:
         answer_key = 'selected_option_text'
         qtype = 'multiplechoicequestion'
         result = None
