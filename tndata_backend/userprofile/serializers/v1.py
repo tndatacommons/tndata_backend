@@ -498,8 +498,9 @@ class UserProfileSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = models.UserProfile
         fields = (
-            'id', 'user', 'timezone', 'needs_onboarding', 'bio',
-            'maximum_daily_notifications', 'object_type',
+            'id', 'user', 'timezone', 'maximum_daily_notifications',
+            'needs_onboarding', 'zipcode', 'birthday', 'sex', 'employed',
+            'is_parent', 'in_relationship', 'has_degree', 'bio', 'object_type',
         )
 
 
