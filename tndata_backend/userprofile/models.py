@@ -179,14 +179,24 @@ class UserProfile(models.Model):
         return None
 
     @property
-    def age(self):
+    def survey_birthday(self):
         question_id = 1  # I was born on
         answer_key = 'response'
-        for d in self._get_bio_responses('openendedquestion', question_id):
-            if d.get(answer_key):
-                birthdate = datetime.strptime(d[answer_key], "%Y-%m-%d")
-                delta = datetime.today() - birthdate
-                return int(delta.days / 365)
+        birthdate = None
+        try:
+            for d in self._get_bio_responses('openendedquestion', question_id):
+                if d.get(answer_key):
+                    birthdate = datetime.strptime(d[answer_key], "%Y-%m-%d")
+        except:
+            pass
+        return birthdate
+
+    @property
+    def age(self):
+        bday = self.survey_birthday
+        if bday:
+            delta = datetime.today() - bday
+            return int(delta.days / 365)
         return None
 
     @property
