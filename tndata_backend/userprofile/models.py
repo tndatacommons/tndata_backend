@@ -107,7 +107,7 @@ class UserProfile(models.Model):
     sex = models.CharField(
         max_length=32,
         blank=True,
-        null=True,
+        default="",
         choices=SEX_CHOICES
     )
     employed = models.BooleanField(default=False, blank=True)
