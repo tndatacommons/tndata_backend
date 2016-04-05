@@ -4,10 +4,13 @@ triggers; it's faster than running unit tests and lets me see a chunk of
 dates all at once.
 
 """
-from unittest.mock import patch
-from goals.models import Trigger
 from datetime import date, datetime, time
+from unittest.mock import patch
+
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+
+from goals.models import Action, Trigger
 
 
 def tzdt(*args, **kwargs):
@@ -96,7 +99,6 @@ def print_triggers():
     # 24 25 26 27 28 29 30
     # 31
 
-    from django.contrib.auth import get_user_model
     User = get_user_model()
     user = User.objects.get(pk=1)
 
@@ -160,7 +162,6 @@ def dynamic_triggers():
     # 21 22 23 24 25 26 27
     # 28 29 30 31
 
-    from django.contrib.auth import get_user_model
     User = get_user_model()
     user = User.objects.get(pk=1)
 
@@ -241,3 +242,25 @@ def sample_trigger_times(useraction, number=100):
     print("Hours: {}".format(set([t.hour for t in times])))
 
     return times
+
+
+def teen_np():
+    User = get_user_model()
+    user = User.objects.get(username='bkmontgomery')
+    actions = Action.objects.filter(
+        behavior__goals__categories__id=35,
+        default_trigger__frequency='monthly'
+    )
+
+    now = timezone.now()
+
+    with patch("goals.models.triggers.timezone.now") as now:
+        # Early morning
+        now.return_value = tzdt(2016, 4, 15, 7, 0)
+
+        for action in actions:
+            t = action.default_trigger.next(user=user)
+            delta = t - now()
+            print("{}, {} days & {} hours from now".format(
+                t.strftime("%c"), delta.days, int(delta.seconds / 3600)))
+
