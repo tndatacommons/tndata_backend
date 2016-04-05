@@ -55,14 +55,6 @@ class Command(BaseCommand):
             self._log_messages.append((msg, ERROR))
             return None
 
-        # Only create messages that should be delivered within the next 24 hours
-        now = timezone.now()
-        threshold = timezone.now() + timedelta(hours=24)
-        if delivery_date and delivery_date < now or delivery_date > threshold:
-            msg = "{0}-{1} delivery date not within 24 hours".format(obj.__class__.__name__, obj.id)
-            self._log_messages.append((msg, ERROR))
-            return None  # The message is either too old or to far out.
-
         # XXX: If we're running in Staging / Dev environments, restrict
         # notifications to our internal users.
         staging_or_dev = (settings.STAGING or settings.DEBUG)
@@ -70,7 +62,6 @@ class Command(BaseCommand):
             return None
 
         # kwargs to GCMMessage.objects.create
-        # TODO: How to decide on message priority, if it's not already set?
         kwargs = {'obj': None, 'content_type': None, 'priority': priority}
 
         # obj can be None, a model instance, or a ContentType

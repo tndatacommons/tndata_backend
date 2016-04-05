@@ -56,13 +56,12 @@ def send(message_id):
         _log_slack(log, True)
 
 
-def enqueue(message, threshold=24):
+def enqueue(message):
     """Given a GCMMessage object, add it to the queue of messages to be sent.
 
     - message: An instance of a GCMMessage
-    - threshold: Number of hours in advance that we schedule notifications.
 
-    Returns a rq Job instance (see job.id) or None if the message could not
+    Returns an rq Job instance (see job.id) or None if the message could not
     be scheduled.
 
     NOTE: This function records one of the following metrics:
@@ -77,11 +76,10 @@ def enqueue(message, threshold=24):
     """
     job = None
 
-    # Only queue up messages for the next 24 hours (or messages that should
-    # have been sent within the past hour)
+    # Only queue up messages for the future or messages that should
+    # have been sent within the past hour
     now = timezone.now() - timedelta(hours=1)
-    threshold = now + timedelta(hours=threshold)
-    is_upcoming = now < message.deliver_on and message.deliver_on < threshold
+    is_upcoming = now < message.deliver_on
 
     if message.user and is_upcoming:
         if waffle.switch_is_active('notifications-user-userqueue'):
