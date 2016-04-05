@@ -85,7 +85,7 @@ class UserProfile(models.Model):
     SEX_CHOICES = (
         ('female', 'Female'),
         ('male', 'Male'),
-        ('no-answer', 'Prefer not to answer'),
+        ('', 'Prefer not to answer'),
     )
 
     user = models.OneToOneField(
