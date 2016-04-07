@@ -10,14 +10,20 @@ import django_rq
 import waffle
 
 from utils.slack import post_private_message
+from utils.user_utils import to_localtime
 
 
 logger = logging.getLogger("loggly_logs")
 
 
-def _log_slack(msg, really=False):
-    if really:
-        post_private_message('bkmontgomery', msg)
+def _log_slack(msg, username):
+    SLACK_USERS = {
+        # Local account: slack username
+        'bkmontgomery': 'bkmontgomery',
+        'ringram': 'ringram',
+    }
+    if SLACK_USERS.get(username):
+        post_private_message(SLACK_USERS[username], msg)
 
 
 def get_scheduler(queue='default'):
@@ -36,8 +42,13 @@ def send(message_id):
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
 
-        m = "[{}] Success! {}".format(message_id, msg)
-        _log_slack(m, msg.user.username == "bkmontgomery")
+        log_msg = "[DELIVERED] {}) {} / '{}' on {}".format(
+            message_id,
+            msg.title,
+            msg.message,
+            to_localtime(msg.deliver_on, msg.user).strftime("%c %Z")
+        )
+        _log_slack(log_msg, msg.user.username)
 
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
@@ -53,7 +64,7 @@ def send(message_id):
         # Include the traceback in the slack message.
         tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
         log = "{}\n```{}```".format(log, "\n".join(tb))
-        _log_slack(log, True)
+        _log_slack(log, 'bkmontgomery')
 
 
 def enqueue(message):
@@ -87,6 +98,16 @@ def enqueue(message):
             job = UserQueue(message).add()
         else:
             job = scheduler.enqueue_at(message.deliver_on, send, message.id)
+
+        # Log to slack when things are scheduled, too
+        local_deliver_on = to_localtime(message.deliver_on, message.user)
+        log_msg = "[SCHEDULED]: {}) '{} / {}' for delivery on '{}'".format(
+            message.id,
+            message.title,
+            message.message,
+            local_deliver_on.strftime("%c %Z")
+        )
+        _log_slack(log_msg, message.user.username)
 
     if job:
         # Record a metric so we can see queued vs sent?
