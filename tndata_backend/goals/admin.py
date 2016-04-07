@@ -174,7 +174,8 @@ admin.site.register(models.Goal, GoalAdmin)
 class TriggerAdmin(UserRelatedModelAdmin):
     list_display = (
         'combined', 'email', 'time', 'trigger_date', 'stop_on_complete',
-        'start_when_selected', 'relative', 'next', 'serialized_recurrences'
+        'start_when_selected', 'relative', 'dynamic', 'next',
+        'rrule'
     )
     prepopulated_fields = {"name_slug": ("name", )}
     search_fields = [
@@ -182,6 +183,13 @@ class TriggerAdmin(UserRelatedModelAdmin):
         'name',
     ]
     raw_id_fields = ('user', )
+
+    def rrule(self, obj):
+        return obj.serialized_recurrences()
+
+    def dynamic(self, obj):
+        return obj.is_dynamic
+    dynamic.boolean = True
 
     def relative(self, obj):
         if obj.relative_value:
