@@ -1,9 +1,8 @@
-from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 
 import waffle
 
@@ -47,6 +46,37 @@ class Command(BaseCommand):
             else:
                 logger.warning(msg)
                 self.stdout.write(msg)
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--user',
+            action='store',
+            dest='user',
+            default=None,
+            help=("Restrict this command to the given User. "
+                  "Accepts a username, email, or id")
+        )
+
+    def _get_users(self, options):
+        User = get_user_model()
+
+        # Check to see if we're just running this for a specific user
+        if options.get('user', False):
+            user = options['user']
+            try:
+                if user.isnumeric():
+                    criteria = Q(id=user)
+                else:
+                    criteria = (Q(username=user) | Q(email=user))
+                # Return an iterable, but use .get() to raise an exception
+                # if there's not matching user.
+                user = User.objects.get(criteria)
+                return [user]
+            except User.DoesNotExist:
+                raise CommandError("Could not find user: {0}".format(user))
+
+        # Else: Find all the users that have GCM Devices.
+        return User.objects.filter(gcmdevice__isnull=False).distinct()
 
     def create_message(self, user, obj, title, message, delivery_date, priority=None):
 
@@ -200,9 +230,8 @@ class Command(BaseCommand):
         # Make sure everything is ok before we run this.
         self.check()
 
-        # Find all the users that have GCM Devices.
-        User = get_user_model()
-        users = User.objects.filter(gcmdevice__isnull=False).distinct()
+        # Get the group of users for whom we're creating notifications
+        users = self._get_users(options)
 
         # Schedules both dynamic notifications & non-dynamic ones.
         self.schedule_action_notifications(users)
