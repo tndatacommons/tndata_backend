@@ -29,9 +29,20 @@ class GCMMessageManager(models.Manager):
             deliver_on__lte=timezone.now()
         )
 
-    def _message_exists(self, user, title, message, deliver_on, obj, content_type):
+    def _message_exists(self, user, title, message, deliver_on, obj, content_type,
+                        date_range=None):
         """Check to see if a GCMMessage already exists; used to prevent creating
         duplicate messages.
+
+        - user: the User who should receive the push notification
+        - title: the notification's title
+        - message: the message of the notification
+        - deliver_on: the datetime on which the message should be delivered
+        - obj: A related object (could be None)
+        - content_type: The related objects' content type
+        - date_range: (default is None). If given, it should be a tuple of
+          datetiem objects, (start, end) during which we should look for
+          duplicate messages.
 
         Return True or False.
 
@@ -40,10 +51,15 @@ class GCMMessageManager(models.Manager):
             'user': user,
             'title': title,
             'message': message,
-            'deliver_on__startswith': deliver_on.date(),
             'object_id': obj.id if obj else None,
             'content_type': content_type,
         }
+        # Include the appropriate date range lookup.
+        if date_range and len(date_range) == 2:
+            criteria['deliver_on__range'] = date_range
+        else:
+            criteria['deliver_on__startswith'] = deliver_on.date()
+
         # If there's a provided object, use it's content_type (which may be None)
         if obj:
             ct = ContentType.objects.get_for_model(obj.__class__)
@@ -54,7 +70,7 @@ class GCMMessageManager(models.Manager):
         return [self.model.LOW, self.model.MEDIUM, self.model.HIGH]
 
     def create(self, user, title, message, deliver_on,
-               obj=None, content_type=None, priority='low'):
+               obj=None, content_type=None, priority='low', valid_range=None):
         """Creates an instance of a GCMMessage. Requires the following data:
 
         * user: an auth.User instance.
@@ -68,6 +84,9 @@ class GCMMessageManager(models.Manager):
         * content_type: A `ContentType` to which this message will be related.
         * priority: The priority with which the GCMMessage will be created
           (default is LOW)
+        * valid_range: A tuple containing a range of dates (start, end) for which
+          this notification is valid. This can be used to look up an existing
+          GCMMessage.
 
         This method first checks for duplicates, and will not create a duplicate
         version of a message.
@@ -88,7 +107,7 @@ class GCMMessageManager(models.Manager):
 
         try:
             # Don't create Duplicate messages:
-            args = (user, title, message, deliver_on, obj, content_type)
+            args = (user, title, message, deliver_on, obj, content_type, valid_range)
             if not self._message_exists(*args):
                 # Convert any times to UTC
                 if timezone.is_naive(deliver_on):
