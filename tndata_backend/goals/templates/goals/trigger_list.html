@@ -31,8 +31,11 @@
       <thead>
       <tr>
         <th>Name</th>
-        <th>Time</th>
+        <th>Time/Date</th>
         <th>Recurrence</th>
+        <th>Relative</th>
+        <th>Dynamic</th>
+        <th>Action</th>
       </tr>
       </thead>
       <tbody>
@@ -43,12 +46,23 @@
             {# no get_absolute_url because we don't have a full trigger obj #}
             <a href="/goals/triggers/{{trigger.id}}/">{{ trigger.name }}</a>
           </td>
-          <td>{{ trigger.time|default:"-" }}</td>
+          <td>
+            {% if trigger.tim or trigger.date %}
+              {{ trigger.time|default:"-" }} / {{ trigger.date|default:"-" }}
+            {% endif %}
+          </td>
           <td>
             {% if trigger.recurrences %}
               <kb>{{ trigger.recurrences }}</kb>
             {% endif %}
           </td>
+          <td>
+            {% if trigger.relative_value %}
+              {{ trigger.relative_value }} {{ trigger.relative_units }}
+            {% endif %}
+          </td>
+          <td>{{ trigger.time_of_day }} {{ trigger.frequency }}</td>
+          <td>{{ trigger.action_default }}</td>
         </tr>
       {% endfor %}
       </tbody>
