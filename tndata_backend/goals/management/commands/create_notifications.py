@@ -78,7 +78,8 @@ class Command(BaseCommand):
         # Else: Find all the users that have GCM Devices.
         return User.objects.filter(gcmdevice__isnull=False).distinct()
 
-    def create_message(self, user, obj, title, message, delivery_date, priority=None):
+    def create_message(self, user, obj, title, message, delivery_date,
+                       priority=None, trigger=None):
 
         if delivery_date is None:
             msg = "{0}-{1} has no trigger date".format(obj.__class__.__name__, obj.id)
@@ -93,6 +94,10 @@ class Command(BaseCommand):
 
         # kwargs to GCMMessage.objects.create
         kwargs = {'obj': None, 'content_type': None, 'priority': priority}
+
+        # Include the valid date range for dynamic triggers
+        if trigger and trigger.is_dynamic:
+            kwargs['valid_range'] = trigger.dynamic_range()
 
         # obj can be None, a model instance, or a ContentType
         if isinstance(obj, ContentType):
@@ -170,7 +175,8 @@ class Command(BaseCommand):
                             ua.get_notification_title(),
                             ua.get_notification_text(),
                             deliver_on,
-                            priority=ua.priority
+                            priority=ua.priority,
+                            trigger=ua.trigger
                         )
                 except DailyProgress.DoesNotExist:
                     pass
