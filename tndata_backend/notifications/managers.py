@@ -40,7 +40,7 @@ class GCMMessageManager(models.Manager):
             'user': user,
             'title': title,
             'message': message,
-            'deliver_on': deliver_on,
+            'deliver_on__startswith': deliver_on.date(),
             'object_id': obj.id if obj else None,
             'content_type': content_type,
         }
