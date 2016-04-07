@@ -213,6 +213,33 @@ class Trigger(models.Model):
     def is_dynamic(self):
         return all([bool(self.time_of_day), bool(self.frequency)])
 
+    def dynamic_range(self, user=None):
+        """Returns a tuple of the form (start_date, end_date) for a range
+        during which a dynamic notification may be valid. Both dates are in
+        UTC. This is used to help prevent creating duplicate notifications
+        for a single message.
+
+        XXX: this is only valid for dynamic notifcations, and will return
+        None for all others.
+        """
+        if not self.is_dynamic:
+            return None
+
+        user = user or self.user
+        if user is None:
+            return None
+
+        today = local_now(user)  # NOTE this is in the user's timezone
+        days_from_now = {
+            'daily': 1,
+            'weekly': 7,
+            'biweekly': 5,
+            'multiweekly': 5,
+            'weekends': 7 - today.isoweekday(),
+            'monthly': 30,
+        }
+        return local_day_range(user, today, days=days_from_now[self.frequency])
+
     def dynamic_trigger_date(self, user=None):
         """This method dynamically generates a future datetime based on the
         selected values of `frequency` and `time_of_day`. Both fields must be

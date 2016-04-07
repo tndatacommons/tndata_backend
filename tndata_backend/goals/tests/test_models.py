@@ -472,6 +472,58 @@ class TestTrigger(TestCase):
         trigger = mommy.make(Trigger, frequency='daily', time_of_day='early')
         self.assertTrue(trigger.is_dynamic)
 
+    def test_dynamic_range(self):
+        """Ensure we get the correct range of valid dates for dynamic triggers"""
+
+        # None when not dynamic
+        self.assertIsNone(self.trigger.dynamic_range())
+
+        # None when no user
+        trigger = mommy.make(Trigger, frequency='daily', time_of_day='early')
+        self.assertIsNone(trigger.dynamic_range())
+
+        # When we have a user...
+        trigger.user = mommy.make(User)
+        trigger.save()
+
+        with patch("goals.models.triggers.local_now") as mock_now:
+            mock_now.return_value = tzdt(2016, 4, 1, 12, 34, 56)
+
+            # Daily - 1 day
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 3, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Weekly - 7 days
+            trigger.frequency = 'weekly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 9, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Biweekly - 5 days
+            trigger.frequency = 'biweekly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 7, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Multiweekly - 5 days
+            trigger.frequency = 'multiweekly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 7, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Weekends - Depends on the day, but encompases the updcoming weekend.
+            # April, 2016, 1st = Friday, Sunday = 3rd
+            trigger.frequency = 'weekends'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 4, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Monthly - 30 days
+            trigger.frequency = 'monthly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 5, 2, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
     def test_dynamic_trigger_date(self):
         # is None when not dynamic
         self.assertIsNone(self.trigger.dynamic_trigger_date())

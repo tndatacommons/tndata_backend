@@ -172,6 +172,23 @@ class TestUserUtils(TestCase):
             )
             self.assertEqual(result, expected)
 
+            # With a provided datetime.
+            result = local_day_range(self.user, dt=tzdt(2016, 3, 1, 15, 30))
+            expected = (
+                tzdt(2016, 3, 1, 6, 0),
+                tzdt(2016, 3, 2, 5, 59, 59, 999999)
+            )
+            self.assertEqual(result, expected)
+
+            # With a provided datetime AND a number of days
+            dt = tzdt(2016, 3, 1, 15, 30)
+            result = local_day_range(self.user, dt=dt, days=3)
+            expected = (
+                tzdt(2016, 3, 1, 6, 0),
+                tzdt(2016, 3, 5, 5, 59, 59, 999999)
+            )
+            self.assertEqual(result, expected)
+
     def test_create_inactive_user(self):
         user = create_inactive_user("somenewuser@example.com")
         self.assertFalse(user.is_active)

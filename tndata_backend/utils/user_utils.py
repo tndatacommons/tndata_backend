@@ -1,7 +1,7 @@
 import hashlib
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.db.models import ObjectDoesNotExist
@@ -71,13 +71,15 @@ def local_now(user):
     return to_localtime(now, user)
 
 
-def local_day_range(user, dt=None):
+def local_day_range(user, dt=None, days=None):
     """Return a tuple of the form (start, end), containing datetime objects
     in utc time that represents the range for the user's full day.
 
     * user: a User instance. The User whom we're considering.
     * dt: (optional). If given, this is the datetime around which the range
       is constructed.
+    * days = (optional) Number of days over which the range should spread. The
+      default behavior is for the range to encompass a single day.
 
     This is useful to query for objects that were updated or created during the
     user's day; e.g.
@@ -92,6 +94,8 @@ def local_day_range(user, dt=None):
 
     start = dt.replace(hour=0, minute=0, second=0, microsecond=0)
     end = dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+    if days:
+        end = end + timedelta(days=days)
     return (start.astimezone(timezone.utc), end.astimezone(timezone.utc))
 
 
