@@ -286,10 +286,6 @@ class ObtainAuthorization(ObtainAuthToken):
                 user = serializer.validated_data['user']
                 token, created = Token.objects.get_or_create(user=user)
 
-                gender = user.userprofile.sex
-                if gender:
-                    gender = gender.lower()
-
                 return Response({
                     'token': token.key,
                     'username': user.username,
@@ -300,7 +296,15 @@ class ObtainAuthorization(ObtainAuthToken):
                     'last_name': user.last_name,
                     'full_name': user.get_full_name(),
                     'email': user.email,
-                    'gender': gender,
+                    'zipcode': user.userprofile.zipcode,
+                    'birthday': user.userprofile.birthday,  # TODO: serialize
+                    'sex': user.userprofile.sex,
+                    'gender': user.userprofile.sex,
+                    'employed': user.userprofile.employed,
+                    'is_parent': user.userprofile.is_parent,
+                    'in_relationship': user.userprofile.in_relationship,
+                    'has_degree': user.userprofile.has_degree,
+                    'maximum_daily_notifications': user.userprofile.maximum_daily_notifications,
                     'needs_onboarding': user.userprofile.needs_onboarding,
                     'object_type': 'user',
                 })
