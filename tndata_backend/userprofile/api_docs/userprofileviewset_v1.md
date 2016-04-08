@@ -1,7 +1,7 @@
 # DEPRECATED
 
 **This api endpoint has been deprecated. Please
-use [/api/users/profiles/](/api/users/profiles/) instead.**
+use [/api/users/profile/](/api/users/profile/?version=2) instead.**
 
 This defines methods for viewing and updating a User's _Profile_. User
 Profiles are created automatically after a user account is created.
