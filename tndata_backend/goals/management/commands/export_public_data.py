@@ -27,9 +27,10 @@ class Command(BaseCommand):
 
             goals = []
             categories = []
-            for goal in action.behavior.goals.published():
+
+            for goal in action.behavior.goals.filter(state='published'):
                 goals.append(goal.title)
-                for category in goal.categories.published():
+                for category in goal.categories.filter(state='published'):
                     categories.append(category.title)
 
             row.append("\n".join(goals))
