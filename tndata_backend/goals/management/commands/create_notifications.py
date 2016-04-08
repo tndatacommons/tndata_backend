@@ -14,6 +14,7 @@ from goals.settings import (
     DEFAULT_EVENING_GOAL_NOTIFICATION_TEXT,
 )
 from notifications.models import GCMDevice, GCMMessage
+from utils.slack import post_private_message
 from utils.user_utils import to_utc
 
 import logging
@@ -179,7 +180,13 @@ class Command(BaseCommand):
                             trigger=ua.trigger
                         )
                 except DailyProgress.DoesNotExist:
-                    pass
+                    # XXX ping BRAD on slack so we know if this is happening.
+                    err_msg = (
+                        "NO DailyProgress object for user {}/{}. They won't get "
+                        "dynamic notifications."
+                    )
+                    err_msg = err_msg.format(user.id, user.email)
+                    post_private_message('bkmontgomery', err_msg)
 
             # XXX; Very inefficient;
             # schedule the non-dynamic notifications.
