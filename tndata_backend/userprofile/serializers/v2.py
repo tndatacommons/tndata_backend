@@ -45,7 +45,7 @@ class SimpleProfileSerializer(ObjectTypeModelSerializer):
             'created_on', 'object_type',
         )
         read_only_fields = (
-            "id", "user", "needs_onboarding", "updated_on", "created_on",
+            "id", "user", "updated_on", "created_on", "object_type",
         )
 
     def get_object_type(self, obj):
