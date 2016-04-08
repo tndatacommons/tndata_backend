@@ -176,7 +176,11 @@ class SimpleProfileViewSet(VersionedViewSetMixin,
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
-        self.queryset = super().get_queryset().filter(user=self.request.user)
+        self.queryset = super().get_queryset()
+        if self.request.user.is_authenticated():
+            self.queryset = self.queryset.filter(user=self.request.user)
+        else:
+            self.queryset = self.queryset.none()
         return self.queryset
 
     def update(self, request, *args, **kwargs):
