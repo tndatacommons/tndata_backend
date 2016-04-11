@@ -3,6 +3,9 @@
 
 {% if is_editor %}
 <h2>Content for Review</h2>
+<p>The following content needs to be reviewed either for publication or because
+the content requires your action.</p>
+
 <table class="object-list">
 <thead>
   <tr>
@@ -23,10 +26,18 @@
       <td><a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a></td>
       <td>
         {{ behavior.updated_on|date:"n-j-Y" }}<br/>
-        by: {{ behavior.created_by|default:behavior.updated_by }}<br/>
+        by
+        {% if behavior.created_by %}
+          {{ behavior.created_by.email|truncatechars:15 }}
+        {% elif behavior.updated_by %}
+          {{ behavior.updated_by.email|truncatechars:15 }}
+        {% else %}
+          nobody
+        {% endif %}
+        <br/>
         <small class="label secondary">
           {{ behavior.updated_on|timesince }} ago</small>
-      </tr>
+      </td>
     </tr>
   {% endfor %}
   {% for obj in categories %}
