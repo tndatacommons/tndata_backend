@@ -67,6 +67,13 @@ def remove_queued_messages(sender, instance, *args, **kwargs):
         pass
 
 
+@receiver(post_save, sender=Action, dispatch_uid="set-parent-behavior-action-counts")
+def update_parent_behavior_action_counts(sender, instance, *args, **kwargs):
+    """When an action is saved, we need to tell its parent Behavior to update
+    it's count of all child actions (for dynamic behaviors)."""
+    instance.behavior.save()
+
+
 @receiver(pre_save, sender=Action)
 @receiver(pre_save, sender=Behavior)
 @receiver(pre_save, sender=Goal)

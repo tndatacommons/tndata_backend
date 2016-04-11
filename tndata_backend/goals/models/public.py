@@ -689,12 +689,6 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
             self.action_buckets_helper = qs.filter(bucket=Action.HELPER).count()
             self.action_buckets_checkup = qs.filter(bucket=Action.CHECKUP).count()
 
-    # -------------------------------------------------------------------------
-    # TODO: How to populate the actions counting stuff? And keep it up-to-date
-    # TODO: Trigger a behavior.save() when an action is saved?
-    # TODO: Data migration to populate these values?
-    # -------------------------------------------------------------------------
-
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
