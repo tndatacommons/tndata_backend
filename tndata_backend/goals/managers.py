@@ -338,6 +338,21 @@ class WorkflowManager(models.Manager):
         return self.get_queryset().filter(**kwargs)
 
 
+class BehaviorManager(WorkflowManager):
+
+    def contains_dynamic(self):
+        """Return a queryset of Behaviors that contain dynamic notifications,
+        i.e. Actions that have a bucket, and whose default trigger contains
+        a time_of_day and frequency value.
+
+        NOTE: These behaviors may also contain some NON-Dynamic actions, as well.
+
+        """
+        return self.filter(
+            action__default_trigger__time_of_day__isnull=False,
+            action__default_trigger__frequency__isnull=False
+        ).distinct()
+
 class CategoryManager(WorkflowManager):
     """Updated WorkflowManager for Categories; we want to exclude packaged
     content from the list of published Categories."""

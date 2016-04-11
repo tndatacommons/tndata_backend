@@ -33,6 +33,7 @@ from .path import (
 from .triggers import Trigger
 from ..encoder import dump_kwargs
 from ..managers import (
+    BehaviorManager,
     CategoryManager,
     GoalManager,
     WorkflowManager
@@ -761,7 +762,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
             buckets[action.bucket].append(action)
         return dict(buckets)
 
-    objects = WorkflowManager()
+    objects = BehaviorManager()
 
 
 def _action_type_url_function(action_type):
