@@ -263,6 +263,14 @@ class IndexView(ContentViewerMixin, TemplateView):
             for key, func in mapping.items():
                 context[key] = func(state='pending-review').order_by("-updated_on")
 
+            # List all the Behaviors that need a `prep` action.
+            dynamic_behaviors = Behavior.objects.contains_dynamic()
+            dynamic_behaviors = dynamic_behaviors.filter(
+                action_buckets_core__gt=0,
+                action_buckets_prep=0
+            ).distinct()
+            context['dynamic_behaviors'] = dynamic_behaviors
+
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
         mapping = {

@@ -13,6 +13,22 @@
   </tr>
 </thead>
 <tbody>
+  {% for behavior in dynamic_behaviors %}
+    <tr>
+      <td>
+        <span class="label warning" data-tooltip aria-haspopup="true"
+              title="This Behavior contains Dynamic Notifications, and requires at least one Reinforcing Notification"><i class="fa fa-warning"></i> Action Required</span>
+      </td>
+      <td><span class="label secondary">Behavior</span></td>
+      <td><a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a></td>
+      <td>
+        {{ behavior.updated_on|date:"n-j-Y" }}<br/>
+        by: {{ behavior.created_by|default:behavior.updated_by }}<br/>
+        <small class="label secondary">
+          {{ behavior.updated_on|timesince }} ago</small>
+      </tr>
+    </tr>
+  {% endfor %}
   {% for obj in categories %}
     <tr>
       <td>{% publish_deny_form obj "dropdown" %}</td>
