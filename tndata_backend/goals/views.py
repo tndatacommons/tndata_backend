@@ -291,13 +291,6 @@ class IndexView(ContentViewerMixin, TemplateView):
         context['num_my_content'] = sum(
             len(context[key]) for key in mapping.keys()
         )
-
-        # Most popular content.
-        context['popular_categories'] = popular_categories()
-        context['popular_goals'] = popular_goals()
-        context['popular_behaviors'] = popular_behaviors()
-        context['popular_actions'] = popular_actions()
-
         return self.render_to_response(context)
 
 
