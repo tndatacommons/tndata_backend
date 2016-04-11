@@ -552,6 +552,16 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Determine if this Behavior contains dynamic notifications
+        obj = context['object']
+        qs = Behavior.objects.contains_dynamic().filter(pk=obj.id)
+        context['contains_dynamic'] = qs.exists()
+        context['action_url'] = Action.get_create_reinforcing_action_url()
+        return context
+
 
 class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
     model = Behavior

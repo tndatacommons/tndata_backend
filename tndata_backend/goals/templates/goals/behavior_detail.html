@@ -15,6 +15,17 @@
   <div class="row">
     <div class="large-6 small-12 columns">
       <h1>{{ behavior }} {% goal_object_controls behavior %}</h1>
+
+      {% if contains_dynamic and behavior.action_buckets_prep == 0 %}
+        <div data-alert class="alert-box warning">
+          <i class="fa fa-warning"></i> This Behavior contains Dynamic
+          Notifications, but does not contain any Reinforcing Notifications. This
+          will prevent users from receiving notifications in their proper order.
+          Please add a <a href="{{ action_url }}">
+          Reinforcing Notification</a>. <a href="#" class="close">&times;</a>
+        </div>
+      {% endif %}
+
       <dl>
         <dt>State</dt><dd>{{ behavior|label }}</dd>
         <dt>Sequence Order</dt><dd>{{ behavior.sequence_order }}</dd>
@@ -94,8 +105,10 @@
       <ul>
       {% for action in behavior.action_set.all %}
         <li>
-          {{ action|label }}
+          {{ action|label }} <span class="label secondary">
+            {{ action.get_action_type_display }}</span>
           <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+          <small>{{ action.default_trigger.time_details }}</small>
         </li>
       {% empty %}
         <li><em>This behavior does not contain any actions.</em></li>
