@@ -1,0 +1,28 @@
+{% extends "goals/base.html" %}
+
+{% block breadcrumbs %}
+  <li class="current">Reports</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+  <div class="large-12 medium-12 small-12 columns">
+    <h1>Reports</h1>
+
+    <p class="lead">The following are available reports on content,
+    user-adoption, and various aspects of the system</p>
+
+    <dl>
+      <dt><a href="{% url 'goals:report-popular' %}">Popular Content</a></dt>
+      <dd>This report includes the most popular types of content. That is,
+      the most-selected items in the public library of content within the app.</dd>
+
+      <dt><a href="{% url 'goals:report-triggers' %}">Triggers</a></dt>
+      <dd>A breakdown of all the types of triggers in use in the system. This
+      includes users' custom triggers as well as the default triggers associated
+      with notifications.</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

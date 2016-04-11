@@ -92,6 +92,15 @@ form.dropzone {
         <i class="fa fa-user"></i> Account</a></li>
       <li class="divider"></li>
       <li class="has-dropdown">
+        <a href="#"><i class="fa fa-line-chart"></i> Reports</a>
+        <ul class="dropdown">
+          <li><a href="#">Popular Content</a></li>
+          <li><a href="#">Temporary Placeholder</a></li>
+        </ul>
+      </li>
+      {% if user.is_staff %}
+      <li class="divider"></li>
+      <li class="has-dropdown">
         <a href="/admin/"><i class="fa fa-unlock"></i> Admin</a>
         <ul class="dropdown">
           <li><a href="{% url 'goals:debug_progress' %}">
@@ -102,6 +111,7 @@ form.dropzone {
             Notification Dashboard</a></li>
         </ul>
       </li>
+      {% endif %}
       <li class="divider"></li>
       <li><a href="{% url 'logout' %}">
         <i class="fa fa-sign-out"></i> Sign Out</a></li>

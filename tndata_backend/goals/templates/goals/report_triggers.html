@@ -23,6 +23,11 @@
 {% endblock %}
 
 
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:reports' %}">Reports</a></li>
+  <li class="current">Triggers</li>
+{% endblock %}
+
 {% block content %}
 <h1>Trigger Stats</h1>
 

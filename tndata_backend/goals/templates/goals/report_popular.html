@@ -1,0 +1,183 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load goal_filters %}
+{% load goal_tags %}
+{% load util_tags %}
+
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+    canvas {
+      display: block;
+      margin: .5em auto;
+      width: 200px;
+      height: 200px;
+    }
+  </style>
+{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:reports' %}">Reports</a></li>
+  <li class="current">Popular Content</li>
+{% endblock %}
+
+
+{% block content %}
+<h1>Popular Content</h1>
+<p class="lead">The most popular content, as selected by users</p>
+
+<div class="row">
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Categories
+      <small><a href="#" data-reveal-id="pop-cat-modal">Data</a></small>
+    </h3>
+
+    {# Modal showing category table w/ numbers #}
+    <div id="pop-cat-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Categories</h2>
+        <table style="width:100%">
+          <thead><tr><th>Category</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_categories %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    <canvas id="popular-categories"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-categories").getContext("2d");
+    var data = [
+      {% for name, count in popular_categories %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name|safe }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+    <p>The 10 most commonly selected categories.</p>
+  </div>
+
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Goals
+      <small><a href="#" data-reveal-id="pop-goal-modal">Data</a></small>
+    </h3>
+    <div id="pop-goal-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Goals</h2>
+        <table style="width:100%">
+          <thead><tr><th>Goal</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_goals %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    <canvas id="popular-goals"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-goals").getContext("2d");
+    var data = [
+      {% for name, count in popular_goals %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name|safe }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+    <p>The 10 most commonly selected goals within the app.</p>
+  </div> {# end .columns #}
+
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Behaviors
+      <small><a href="#" data-reveal-id="pop-beh-modal">Data</a></small>
+    </h3>
+    <div id="pop-beh-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Behaviors</h2>
+        <table style="width:100%">
+          <thead><tr><th>Behavior</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_behaviors %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    <canvas id="popular-behaviors"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-behaviors").getContext("2d");
+    var data = [
+      {% for name, count in popular_behaviors %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name|safe }}"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+    <p>The 10 most commonly selected behaviors within the app.</p>
+  </div>
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Actions
+      <small><a href="#" data-reveal-id="pop-act-modal">Data</a></small>
+    </h3>
+
+    <div id="pop-act-modal" class="reveal-modal"
+         data-reveal aria-labelledby="cat-title" aria-hidden="true" role="dialog">
+      <h2 id="cat-title">Top 10 Actions</h2>
+        <table style="width:100%">
+          <thead><tr><th>Action</th><th>Number of Users</th></tr></thead>
+          <tbody>
+          {% for name, count in popular_actions %}
+            <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    <canvas id="popular-actions"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("popular-actions").getContext("2d");
+    var data = [
+      {% for name, count in popular_actions %}
+        {
+            value: {{ count }},
+            color: "{% random_color %}",
+            highlight: "#FF5A5E",
+            label: "{{ name|safe }}",
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+    <p>The 10 most used actions within the app.</p>
+  </div> {# end .columns #}
+</div> {# end .rows #}
+{% endblock %}

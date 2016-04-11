@@ -1555,6 +1555,25 @@ def debug_progress(request):
     return render(request, 'goals/debug_progress.html', context)
 
 
+class ReportsView(ContentViewerMixin, TemplateView):
+    """This view simply renders a template that lists the available reports
+    with a short description of each."""
+    template_name = "goals/reports.html"
+
+
+class ReportPopularView(ContentViewerMixin, TemplateView):
+    template_name = "goals/report_popular.html"
+
+    def get(self, request, *args, **kwargs):
+        """Include the most popular content in the conext prior to rendering"""
+        context = self.get_context_data(**kwargs)
+        context['popular_categories'] = popular_categories()
+        context['popular_goals'] = popular_goals()
+        context['popular_behaviors'] = popular_behaviors()
+        context['popular_actions'] = popular_actions()
+        return self.render_to_response(context)
+
+
 @user_passes_test(staff_required, login_url='/')
 def report_triggers(request):
     triggers = Trigger.objects.all()
