@@ -750,6 +750,20 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         """
         return self.userbehavior_set.filter(user=user, behavior=self).first()
 
+    def contains_dynamic(self):
+        """Returns True or False; This method tells us if this Behavior
+        contains any dynamic notifications; i.e. Actions that have a bucket,
+        and whose default trigger contains a time_of_day and frequency value.
+
+        NOTE: This behavior may also contain some NON-Dynamic actions, as well.
+
+        """
+        actions = self.action_set.filter(
+            default_trigger__time_of_day__isnull=False,
+            default_trigger__frequency__isnull=False
+        )
+        return actions.distinct().exists()
+
     def action_buckets(self):
         """Return a dictionary of this Behavior's published Actions organized
         by bucket. The dict is of the form:
