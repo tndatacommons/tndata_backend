@@ -619,12 +619,26 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         default=0,
         help_text="The number of (published) child actions in this Behavior"
     )
-    action_buckets_count = JSONField(
+    action_buckets_prep = models.IntegerField(
         blank=True,
-        default=dict,
-        help_text="A dictionary of counts for each action bucket"
+        default=0,
+        help_text="The number of PREP actions in this behavior."
     )
-
+    action_buckets_core = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of CORE actions in this behavior."
+    )
+    action_buckets_helper = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of HELPER actions in this behavior."
+    )
+    action_buckets_checkup = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of CHECKUP actions in this behavior."
+    )
     # Record-keeping on who/when this was last changed this behavior
     # --------------------------------------------------------------
     updated_by = models.ForeignKey(
@@ -668,11 +682,17 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
             self.actions_count = self.action_set.published().count()
 
             # Count the number of Actions in each bucket
-            buckets = [Action.PREP, Action.CORE, Action.HELPER, Action.CHECKUP]
-            self.action_buckets_count = {
-                bucket: self.action_set.filter(bucket=Action.PREP).count()
-                for bucket in buckets
-            }
+            qs = self.action_set.all()
+            self.action_buckets_prep = qs.filter(bucket=Action.PREP).count()
+            self.action_buckets_core = qs.filter(bucket=Action.CORE).count()
+            self.action_buckets_helper = qs.filter(bucket=Action.HELPER).count()
+            self.action_buckets_checkup = qs.filter(bucket=Action.CHECKUP).count()
+
+    # -------------------------------------------------------------------------
+    # TODO: How to populate the actions counting stuff? And keep it up-to-date
+    # TODO: Trigger a behavior.save() when an action is saved?
+    # TODO: Data migration to populate these values?
+    # -------------------------------------------------------------------------
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
