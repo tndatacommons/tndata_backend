@@ -237,7 +237,7 @@ class BehaviorCategoryListFilter(CategoryListFilter):
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'state', 'in_goals', 'updated_on',
-        'num_actions', 'selected_by_users',
+        'has_prep_actions', 'num_actions', 'selected_by_users',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description', 'id',
@@ -247,6 +247,11 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
     actions = ['convert_to_goal']
+
+    def has_prep_actions(self, obj):
+        return obj.action_buckets_prep > 0
+    has_prep_actions.boolean = True
+    has_prep_actions.admin_order_field = 'action_buckets_prep'
 
     def selected_by_users(self, obj):
         return models.UserBehavior.objects.filter(behavior=obj).count()
