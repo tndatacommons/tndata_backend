@@ -536,6 +536,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
     urls_image_field = "image"
 
     # Data Fields
+    # -----------
     title = models.CharField(
         max_length=256,
         db_index=True,
@@ -610,6 +611,22 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         help_text="A square icon for this item in the app, preferrably 512x512."
     )
     state = FSMField(default="draft")
+
+    # Reporting roll-up fields
+    # ------------------------
+    actions_count = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of (published) child actions in this Behavior"
+    )
+    action_buckets_count = JSONField(
+        blank=True,
+        default=dict,
+        help_text="A dictionary of counts for each action bucket"
+    )
+
+    # Record-keeping on who/when this was last changed this behavior
+    # --------------------------------------------------------------
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="behaviors_updated",
@@ -619,11 +636,6 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         settings.AUTH_USER_MODEL,
         related_name="behaviors_created",
         null=True
-    )
-    actions_count = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of (published) child actions in this Behavior"
     )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -642,13 +654,32 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
     def __str__(self):
         return "{0}".format(self.title)
 
+    def _set_goal_ids(self):
+        """Save the parent Goal IDs in the `goal_ids` array field; this should
+        get called every time the Behavior is saved."""
+        if self.id:
+            self.goal_ids = list(self.goals.values_list('id', flat=True))
+
+    def _count_actions(self):
+        """Count this behavior's child actions, and store a breakdown of
+        how many exist in each bucket (if they're dynamic)"""
+        if self.id:
+            # Count all of our published actions.
+            self.actions_count = self.action_set.published().count()
+
+            # Count the number of Actions in each bucket
+            buckets = [Action.PREP, Action.CORE, Action.HELPER, Action.CHECKUP]
+            self.action_buckets_count = {
+                bucket: self.action_set.filter(bucket=Action.PREP).count()
+                for bucket in buckets
+            }
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
-        if self.id:
-            self.goal_ids = list(self.goals.values_list('id', flat=True))
-            self.actions_count = self.action_set.published().count()
+        self._set_goal_ids()
+        self._count_actions()
         super().save(*args, **kwargs)
 
     @property
