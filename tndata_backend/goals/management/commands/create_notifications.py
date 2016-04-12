@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -38,8 +40,14 @@ class Command(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._messages_created = 0
+        self._slack_messages = defaultdict(set)
+
+    def _to_slack(self, user, message):
+        """record a slack message to send to the given user."""
+        self._slack_messages[user].add(message)
 
     def write_log(self):
+        # Write our log messages.
         for msg, error in self._log_messages:
             if error:
                 logger.error(msg)
@@ -47,6 +55,11 @@ class Command(BaseCommand):
             else:
                 logger.warning(msg)
                 self.stdout.write(msg)
+
+        # Then post our slack messages (if any)
+        for user, message_set in self._slack_messages.items():
+            for message in message_set:
+                post_private_message(user, message)
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -186,7 +199,7 @@ class Command(BaseCommand):
                         "dynamic notifications."
                     )
                     err_msg = err_msg.format(user.id, user.email)
-                    post_private_message('bkmontgomery', err_msg)
+                    self._to_slack('bkmontgomery', err_msg)
 
             # XXX; Very inefficient;
             # schedule the non-dynamic notifications.
