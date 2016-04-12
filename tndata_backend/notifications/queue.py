@@ -20,7 +20,7 @@ def _log_slack(msg, username):
     SLACK_USERS = {
         # Local account: slack username
         'bkmontgomery': 'bkmontgomery',
-        'ringram': 'ringram',
+        # 'ringram': 'ringram',
     }
     if SLACK_USERS.get(username):
         post_private_message(SLACK_USERS[username], msg)
