@@ -502,14 +502,10 @@ if DEBUG:
 	'debug_toolbar.panels.logging.LoggingPanel',
 	'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
-    # MIDDLEWARE_CLASSES = (
-        # 'querycount.middleware.QueryCountMiddleware',
-        # 'debug_toolbar.middleware.DebugToolbarMiddleware',
-    # ) + MIDDLEWARE_CLASSES
-    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
+    MIDDLEWARE_CLASSES = (
         'querycount.middleware.QueryCountMiddleware',
         'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
+    ) + MIDDLEWARE_CLASSES
     INTERNAL_IPS = CIDRS(['127.0.0.1', '192.168.0.0/16', '10.0.0.0/16'])
 
     # Just like production, but without the cached template loader
