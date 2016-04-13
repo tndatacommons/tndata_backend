@@ -42,13 +42,13 @@ def send(message_id):
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
 
-        log_msg = "[DELIVERED] {}) {} / '{}' on {}".format(
-            message_id,
-            msg.title,
-            msg.message,
-            to_localtime(msg.deliver_on, msg.user).strftime("%c %Z")
-        )
-        _log_slack(log_msg, msg.user.username)
+        # log_msg = "[DELIVERED] {}) {} / '{}' on {}".format(
+            # message_id,
+            # msg.title,
+            # msg.message,
+            # to_localtime(msg.deliver_on, msg.user).strftime("%c %Z")
+        # )
+        # _log_slack(log_msg, msg.user.username)
 
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
@@ -101,14 +101,6 @@ def enqueue(message):
 
         # Log to slack when things are scheduled, too
         local_deliver_on = to_localtime(message.deliver_on, message.user)
-        log_msg = "[SCHEDULED]: {}) '{} / {}' for delivery on '{}'".format(
-            message.id,
-            message.title,
-            message.message,
-            local_deliver_on.strftime("%c %Z")
-        )
-        _log_slack(log_msg, message.user.username)
-
     if job:
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')
