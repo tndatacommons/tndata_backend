@@ -268,8 +268,8 @@ class IndexView(ContentViewerMixin, TemplateView):
             dynamic_behaviors = dynamic_behaviors.filter(
                 action_buckets_core__gt=0,
                 action_buckets_prep=0
-            ).distinct()
-            context['dynamic_behaviors'] = dynamic_behaviors
+            ).distinct().order_by('updated_on')
+            context['dynamic_behaviors'] = dynamic_behaviors[:40]
 
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
