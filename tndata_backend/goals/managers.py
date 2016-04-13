@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Q
+from django.db.models import Min, Q
 from django.template.defaultfilters import slugify
 from django.utils import timezone
 
@@ -82,6 +82,19 @@ class UserGoalManager(models.Manager):
         qs = qs.filter(goal__state='published')
         return qs.filter(**kwargs).distinct()
 
+    def next_in_sequence(self, **kwargs):
+        """Return a queryset of UserGoals that are:
+
+        - not completed,
+        - the next in the sequence (based on sequence_order)
+
+        """
+        kwargs['completed'] = False
+        qs = self.get_queryset().filter(**kwargs)
+        seq = qs.aggregate(Min('goal__sequence_order'))
+        seq = seq.get('goal__sequence_order__min') or 0
+        return qs.filter(goal__sequence_order=seq)
+
 
 class UserBehaviorManager(models.Manager):
 
@@ -93,6 +106,20 @@ class UserBehaviorManager(models.Manager):
         qs = super().get_queryset()
         qs = qs.filter(behavior__state='published')
         return qs.filter(**kwargs).distinct()
+
+    def next_in_sequence(self, **kwargs):
+        """Return a queryset of UserBehaviors that are:
+
+        - not completed,
+        - the next in the sequence (based on sequence_order)
+
+        """
+        kwargs['completed'] = False
+        import ipdb;ipdb.set_trace();
+        qs = self.get_queryset().filter(**kwargs)
+        seq = qs.aggregate(Min('behavior__sequence_order'))
+        seq = seq.get('behavior__sequence_order__min') or 0
+        return qs.filter(behavior__sequence_order=seq)
 
 
 class UserActionQuerySet(models.QuerySet):
@@ -214,6 +241,30 @@ class UserActionManager(models.Manager):
             qs = qs.filter(action__sequence_order=sequences[0])
 
         return qs
+
+    def next_in_sequence(self, behavior, **kwargs):
+        """Given a behavior, return the queryset of UserActions that are
+        related to the behavior, but have not yet been completed, and are
+        the next in a sequence.
+
+        """
+        # TODO: ---------------------------------------------------------------
+        # TODO: Ok, based on this, UserGoal, and UserBehavior, we could
+        # TODO: conceivably queue up things based on a sequeunce number, but
+        # TODO: we still need some way to mark a Goal/Behavior as `completed`
+        # TODO: when all those actions have been marked as `completed
+        # TODO: ---------------------------------------------------------------
+        from .models import UserCompletedAction as UCA
+        # Find the UserActions related to this behavior.
+        qs = self.get_queryset().filter(action__behavior=behavior).filter(**kwargs)
+        # Then exluded the ones we've marked as completed.
+        qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
+
+        # Now, find the min sequence, and return all UserActions
+        # that match that sequeunce.
+        seq = qs.aggregate(Min('action__sequence_order'))
+        seq = seq.get('action__sequence_order__min') or 0
+        return qs.filter(action__sequence_order=seq)
 
 
 class TriggerManager(models.Manager):
@@ -352,6 +403,7 @@ class BehaviorManager(WorkflowManager):
             action__default_trigger__time_of_day__isnull=False,
             action__default_trigger__frequency__isnull=False
         ).distinct()
+
 
 class CategoryManager(WorkflowManager):
     """Updated WorkflowManager for Categories; we want to exclude packaged
