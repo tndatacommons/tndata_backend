@@ -147,7 +147,7 @@ class CategoryListFilter(admin.SimpleListFilter):
 
 class GoalAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'in_categories', 'created_by',
+        'title', 'sequence_order', 'state', 'in_categories', 'created_by',
         'created_on', 'updated_on',
     )
     search_fields = [
@@ -236,7 +236,7 @@ class BehaviorCategoryListFilter(CategoryListFilter):
 
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'in_goals', 'updated_on',
+        'title', 'sequence_order', 'state', 'in_goals', 'updated_on',
         'has_prep_actions', 'num_actions', 'selected_by_users',
     )
     search_fields = [
@@ -325,7 +325,7 @@ class ActionCategoryListFilter(CategoryListFilter):
 
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'notification_text', 'state', 'action_type',
+        'title', 'sequence_order', 'notification_text', 'state', 'action_type',
         'selected_by_users',
     )
     search_fields = [

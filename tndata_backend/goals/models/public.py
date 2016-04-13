@@ -377,6 +377,12 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         max_length=256, db_index=True, unique=True,
         help_text="A Title for the Goal (50 characters)"
     )
+    sequence_order = models.IntegerField(
+        default=0,
+        db_index=True,
+        blank=True,
+        help_text="Optional ordering for a sequence of goals"
+    )
     subtitle = models.CharField(
         max_length=256,
         null=True,
@@ -437,7 +443,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         return "{0}".format(self.title)
 
     class Meta:
-        ordering = ['title']
+        ordering = ['sequence_order', 'title']
         verbose_name = "Goal"
         verbose_name_plural = "Goals"
         # add_goal, change_goal, delete_goal are created by default.
