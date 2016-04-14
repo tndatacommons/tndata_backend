@@ -116,21 +116,23 @@
             </a>
           </p>
 
-          {% for bs in goal.behavior_set.all %}
+          {% for behavior in goal.behavior_set.all %}
             <dl>
               <dt class="clearfix">
-                <div class="pull-right">{{ bs|label }}</div>
-                <a href="{{ bs.get_absolute_url }}">{{bs}}</a>
+                <div class="pull-right">{{ behavior|label }}</div>
+                <a href="{{ behavior.get_absolute_url }}">{{behavior}}</a>
               </dt>
               <dd class="clearfix">
-                <ul>
-                {% for ba in bs.action_set.all %}
+                <ul class="action-list">
+                {% for action in behavior.action_set.all %}
                   <li>
-                    <div class="pull-right">{{ba|label}}</div>
-                    <a href="{{ ba.get_absolute_url }}">{{ ba }}</a>
-                    {% with trigger=ba.default_trigger %}
+                    {#<div class="pull-right">{{ba|label}}</div>#}
+                    {{ action|label }}
+                    <span class="label secondary">{{ action.get_action_type_display }}</span>
+                    <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+                    {% with trigger=action.default_trigger %}
                       {% if trigger %}
-                        <small>{{ trigger.time_details }}</small>
+                        <br/><small>{{ trigger.time_details }}</small>
                       {% endif %}
                     {% endwith %}
                   </li>
