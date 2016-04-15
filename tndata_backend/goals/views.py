@@ -19,6 +19,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils import timezone
 
 from django_fsm import TransitionNotAllowed
+from django_rq import job
 from userprofile.forms import UserForm
 from userprofile.models import UserProfile
 from utils.db import get_max_order
@@ -1431,15 +1432,32 @@ def admin_batch_assign_keywords(request):
     return render(request, 'goals/admin_batch_assign_keywords.html', context)
 
 
+@job
+def _duplicate_category_content(category, prefix=None):
+    """Given a category and an optional prefix, duplicate all of it's content;
+    NOTE: This is an async RQ task, defined here, because otherwise the
+    view below won't be able to import it (or least I couldn't get it to
+    work)."""
+    if prefix:
+        category.duplicate_content(prefix)
+    else:
+        category.duplicate_content()
+
+
 @user_passes_test(staff_required, login_url='/')
 def duplicate_content(request, pk, title_slug):
     category = get_object_or_404(Category, pk=pk, title_slug=title_slug)
     if request.method == "POST":
         form = TitlePrefixForm(request.POST)
         if form.is_valid():
-            category = category.duplicate_content(form.cleaned_data['prefix'])
-            messages.success(request, "Your content has been duplicated")
-            return redirect(category.get_absolute_url())
+            prefix = form.cleaned_data['prefix']
+            _duplicate_category_content.delay(category, prefix)
+            msg = (
+                "Your content is being duplicated and should be available in "
+                "about a minute."
+            )
+            messages.success(request, msg)
+            return redirect("goals:category-list")
     else:
         form = TitlePrefixForm()
 
