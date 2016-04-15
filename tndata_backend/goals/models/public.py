@@ -224,6 +224,8 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         self.title_slug = slugify(self.title)
         self.color = self._format_color(self.color)
         self.secondary_color = self._generate_secondary_color()
+        if not self.order:
+            self.order = get_max_order(self.__class__)
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Category, self).save(*args, **kwargs)
 
