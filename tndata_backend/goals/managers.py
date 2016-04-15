@@ -353,6 +353,7 @@ class BehaviorManager(WorkflowManager):
             action__default_trigger__frequency__isnull=False
         ).distinct()
 
+
 class CategoryManager(WorkflowManager):
     """Updated WorkflowManager for Categories; we want to exclude packaged
     content from the list of published Categories."""
@@ -360,6 +361,11 @@ class CategoryManager(WorkflowManager):
     def published(self, *args, **kwargs):
         qs = super().published()
         return qs.filter(packaged_content=False)
+
+    def selected_by_default(self, **kwargs):
+        """Return a queryset of Categories that should be selected by default."""
+        kwargs['selected_by_default'] = True
+        return super().get_queryset().filter(**kwargs)
 
     def packages(self, *args, **kwargs):
         """Return only Categories that have been marked as packages.

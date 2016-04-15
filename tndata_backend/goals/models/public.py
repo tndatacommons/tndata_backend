@@ -104,6 +104,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Select a secondary color for this Category. If omitted, a "
                   "complementary color will be generated."
     )
+
     state = FSMField(default="draft")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -114,6 +115,11 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         settings.AUTH_USER_MODEL,
         related_name="categories_created",
         null=True
+    )
+    selected_by_default = models.BooleanField(
+        default=False,
+        help_text="Should this category and all of its content be "
+                  "auto-selected for new users?"
     )
 
     # Fields related to 'Packaged Content'
