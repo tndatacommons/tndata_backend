@@ -2,6 +2,7 @@
 Signal Handlers for our models.
 
 """
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import ObjectDoesNotExist
@@ -22,6 +23,15 @@ from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from .triggers import Trigger
 
 from ..utils import clean_title, clean_notification, strip
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='auto-enroll')
+def auto_enroll(sender, **kwargs):
+    """Auto-enroll new users in default categories."""
+    if kwargs.get('created', False) and 'instance' in kwargs:
+        user = kwargs['instance']
+        for category in Category.objects.selected_by_default(state='published'):
+            category.enroll(user)
 
 
 @receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
