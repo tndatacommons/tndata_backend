@@ -57,11 +57,13 @@ class TestCategoryManager(TestCase):
         cls.draft_category = Category.objects.create(
             order=1,
             title="Draft Category",
+            selected_by_default=True
         )
         cls.published_category = Category.objects.create(
             order=2,
             title="Published Category",
-            state="published"
+            state="published",
+            selected_by_default=True
         )
         cls.packaged_category = Category.objects.create(
             order=3,
@@ -69,6 +71,18 @@ class TestCategoryManager(TestCase):
             state="published",
             packaged_content=True
         )
+
+    def test_selected_by_default(self):
+        # Will return all categories selected by default without any args...
+        results = sorted([c.title for c in Category.objects.selected_by_default()])
+        expected = sorted(['Draft Category', 'Published Category'])
+        self.assertEqual(results, expected)
+
+        # Will exclude draft content if given the correct kwargs.
+        cats = Category.objects.selected_by_default(state='published')
+        results = [c.title for c in cats]
+        expected = ['Published Category']
+        self.assertEqual(results, expected)
 
     def test_published(self):
         results = Category.objects.published()
