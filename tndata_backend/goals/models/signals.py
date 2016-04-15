@@ -12,6 +12,7 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 from django.utils import timezone
 
+from django_rq import job
 from notifications.signals import notification_snoozed
 from redis_metrics import metric
 
@@ -25,13 +26,17 @@ from .triggers import Trigger
 from ..utils import clean_title, clean_notification, strip
 
 
+@job
+def _enroll_user_in_default_categories(user):
+    for category in Category.objects.selected_by_default(state='published'):
+        category.enroll(user)
+
+
 @receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='auto-enroll')
 def auto_enroll(sender, **kwargs):
     """Auto-enroll new users in default categories."""
     if kwargs.get('created', False) and 'instance' in kwargs:
-        user = kwargs['instance']
-        for category in Category.objects.selected_by_default(state='published'):
-            category.enroll(user)
+        _enroll_user_in_default_categories.delay(kwargs['instance'])
 
 
 @receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
