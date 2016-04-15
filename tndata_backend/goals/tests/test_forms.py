@@ -290,16 +290,15 @@ class TestCategoryForm(TestCase):
     def test_unbound(self):
         form = CategoryForm()
         fields = sorted([
-            'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
+            'title', 'description', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
-            'display_prevent_custom_triggers_option',
+            'display_prevent_custom_triggers_option', 'selected_by_default',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):
         data = {
-            'order': '1',
             'packaged_content': False,
             'package_contributors': '',
             'title': 'New Category',
@@ -309,6 +308,7 @@ class TestCategoryForm(TestCase):
             'color': '#eee',
             'secondary_color': '',
             'notes': '',
+            'selected_by_default': 'on',
         }
         form = CategoryForm(data)
         self.assertTrue(form.is_valid())
@@ -317,7 +317,6 @@ class TestCategoryForm(TestCase):
         """Ensure that duplicate titles fail validation."""
         c = Category.objects.create(order=1, title="C")  # Existing object
         data = {
-            'order': '2',
             'packaged_content': False,
             'package_contributors': '',
             'title': 'c',  # Should be a Duplicate
