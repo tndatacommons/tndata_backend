@@ -368,6 +368,11 @@ class CategoryCreateView(ContentEditorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your category has been created.")
+        return url
+
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
         at the class level because we want to query the value each time."""
@@ -416,7 +421,11 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     form_class = CategoryForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    success_url = reverse_lazy('goals:category-list')
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your category has been saved")
+        return url
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
