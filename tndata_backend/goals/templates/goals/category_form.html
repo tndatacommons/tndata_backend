@@ -44,13 +44,19 @@ Goals &amp; their Actions, and is the first thing a user will see in the app.</p
 
 <div class="row">
   <div class="large-6 small-12 columns">
-    <p>The structure of our data looks something like the following:</p>
+    <p>The structure of our data looks something like the following. Categories
+    may contain multiple goals. Goals may contain multiple Behaviors, and
+    Behaviors contains Notifications.</p>
     <pre class="panel">
 Category
-  - Goal
-  -- Behavior
-  --- Action 1
-  --- Action 2
+  - Goal 1
+  -- Behavior 1
+  --- Notification 1
+  --- Notification 2
+  - Goal 2
+  -- Behavior 2
+  --- Notification 3
+  --- Notification 4
     </pre>
   </div>
   <div class="large-6 small-12 columns">

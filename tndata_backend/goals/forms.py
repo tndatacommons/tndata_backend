@@ -290,13 +290,12 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = [
             'packaged_content', 'package_contributors',
-            'prevent_custom_triggers_default',
+            'selected_by_default', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
-            'order', 'title', 'description', 'icon', 'image', 'color',
+            'title', 'description', 'icon', 'image', 'color',
             'secondary_color', 'notes', 'consent_summary', 'consent_more',
         ]
         labels = {
-            "order": "Default Order",
             "notes": "Scratchpad",
             'prevent_custom_triggers_default': 'Prevent custom triggers by default',
             'display_prevent_custom_triggers_option': (
@@ -331,9 +330,9 @@ class CategoryForm(forms.ModelForm):
                 Div(
                     Fieldset(
                         _("Category Details"),
-                        'order',
                         'title',
                         'description',
+                        'selected_by_default',
                         'icon',
                         'image',
                         'color',
