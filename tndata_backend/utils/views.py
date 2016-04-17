@@ -19,7 +19,7 @@ from . email import (
 from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
 from . slack import post_message
-from . user_utils import username_hash
+from . user_utils import username_hash, get_client_ip
 
 
 def signup(request):
@@ -46,6 +46,10 @@ def signup(request):
                 u.save()
                 for group in Group.objects.filter(name=CONTENT_VIEWERS):
                     u.groups.add(group)
+
+                # Set their IP address.
+                u.userprofile.ip_address = get_client_ip(request)
+                u.userprofile.save()
 
                 # Log the user in
                 u = authenticate(
