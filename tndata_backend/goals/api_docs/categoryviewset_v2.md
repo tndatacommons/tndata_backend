@@ -14,11 +14,22 @@ Each Category has at least the following bits of information:
 * `color`: A primary color for content in this category
 * `secondary_color`: A secondary color for content
 * `packaged_content`: True or False. Is this category a package.
+* `selected_by_default`: If True, this category (and all of its content) will
+  be auto-selected for new users when they sign up for the service.
 * `object_type`: Will always be the string `category`.
 
 ## Category Endpoints
 
 Each category is available at an endpoint based on it's database ID: `/api/categories/{id}/`.
+
+
+## Filters
+
+Categories can be filtered by the following attributes:
+
+* `selected_by_default`. e.g. `/api/categories/?selected_by_default=1` will
+  list categories that are selected by default, while
+  `/api/categories/?selected_by_default=0` will not.
 
 
 ----

@@ -72,6 +72,17 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
+    def get_queryset(self):
+        self.queryset = super().get_queryset()
+        sbd = self.request.GET.get('selected_by_default', None)
+        if sbd is not None:
+            try:
+                sbd = bool(int(sbd))
+                self.queryset = self.queryset.filter(selected_by_default=bool(sbd))
+            except ValueError:
+                pass
+        return self.queryset
+
     def retrieve(self, request, pk=None):
         """When an authenticated user requests a category by ID, we may need
         to check if the user has access to it (since it may be a package or
