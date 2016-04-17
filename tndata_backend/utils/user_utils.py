@@ -8,6 +8,28 @@ from django.db.models import ObjectDoesNotExist
 from django.utils import timezone
 
 
+def get_client_ip(request):
+    """Try to get the user's client IP address, and return it.
+
+    See: http://stackoverflow.com/a/4581997/182778
+
+    NOTE: This function attemps to pull the IP address from
+    HTTP_X_FORWARDED_FOR, but falls back to the REMOTE_ADDR value.
+
+    It uses the first item in X-Forwarded-For, but we may want to use the
+    last item (esp. if we were on something like Heroku). From the django docs:
+    "relying on REMOTE_ADDR or similar values is widely known to be a worst
+    practice".
+
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
 def user_timezone(user, timeout=3600):
     """Return the user's timezone (as specified on their UserProfile).
 
