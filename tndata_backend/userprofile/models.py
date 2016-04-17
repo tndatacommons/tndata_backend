@@ -92,6 +92,12 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL,
         help_text="The user to whom this profile belongs"
     )
+    ip_address = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        protocol='both',
+        unpack_ipv4=True,
+    )
     timezone = models.CharField(
         max_length=64,
         default="America/Chicago",
