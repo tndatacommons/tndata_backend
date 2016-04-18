@@ -476,6 +476,11 @@ class TestCategoryCreateView(TestCaseWithGroups):
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Category.objects.filter(title="New").exists())
+
+        # Ensure we redirect to the detail page afterwards
+        new_cat = Category.objects.get(title="New")
+        self.assertIn(new_cat.get_absolute_url(), resp.get('Location', ''))
+
         Category.objects.filter(title="New Category").delete()  # clean up
 
     def test_editor_post(self):
@@ -677,6 +682,15 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         resp = self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
+
+    def test_redirect_after_save(self):
+        """Ensure we redirect to the detail page after saving"""
+        self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
+        payload = self.payload.copy()
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, payload)
+        self.assertIn(self.category.get_absolute_url(), resp.get("Location", ''))
+        self.assertEqual(resp.status_code, 302)
 
     def test_viewer_submit_for_review(self):
         """Ensure viewers cannot submit for review."""
@@ -908,7 +922,11 @@ class TestGoalCreateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestGoalCreateView).setUpTestData()
-        # Create Goal
+        cls.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+        )
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
@@ -940,6 +958,23 @@ class TestGoalCreateView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
+
+    def test_admin_post(self):
+        """Ensure Admins can create new Goals"""
+        self.client.login(username="admin", password="pass")
+        payload = {
+            'title': 'Created Goal',
+            'description': 'whee',
+            'categories': self.category.id,
+        }
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Goal.objects.filter(title="Created Goal").exists())
+
+        # Ensure we redirect to the detail page afterwards
+        obj = Goal.objects.get(title="Created Goal")
+        self.assertIn(obj.get_absolute_url(), resp.get('Location', ''))
+        Goal.objects.filter(id=obj.id).delete()  # clean up
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -1280,6 +1315,16 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(updated_goal.state, "pending-review")
         behavior.delete()
 
+    def test_redirect_after_save(self):
+        """Ensure we redirect to the detail page after saving"""
+        payload = self.payload.copy()
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+
+        goal = Goal.objects.get(pk=self.goal.id)
+        self.assertIn(goal.get_absolute_url(), resp.get("Location", ''))
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
@@ -1608,6 +1653,10 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Behavior.objects.filter(title="New").exists())
 
+        # Ensure we redirect to the detail page afterwards
+        obj = Behavior.objects.get(title="New")
+        self.assertIn(obj.get_absolute_url(), resp.get('Location', ''))
+
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, self.payload)
@@ -1914,6 +1963,15 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
 
+    def test_redirect_after_save(self):
+        """Ensure we redirect to the detail page after saving"""
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload.copy())
+        self.assertEqual(resp.status_code, 302)
+
+        behavior = Behavior.objects.get(pk=self.behavior.id)
+        self.assertIn(behavior.get_absolute_url(), resp.get("Location", ''))
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
@@ -2195,6 +2253,11 @@ class TestActionCreateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Action.objects.filter(title="New").exists())
+
+        # Ensure we redirect to the detail page afterwards
+        obj = Action.objects.get(title="New")
+        self.assertIn(obj.get_absolute_url(), resp.get('Location', ''))
+        Action.objects.filter(title="New").delete()  # clean up
 
     def test_admin_post_and_review(self):
         self.client.login(username="admin", password="pass")
@@ -2500,6 +2563,15 @@ class TestActionUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Action.objects.get(pk=self.action.pk).state, "pending-review")
+
+    def test_redirect_after_save(self):
+        """Ensure we redirect to the detail page after saving"""
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, self.payload.copy())
+        self.assertEqual(resp.status_code, 302)
+
+        action = Action.objects.get(pk=self.action.id)
+        self.assertIn(action.get_absolute_url(), resp.get("Location", ''))
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
