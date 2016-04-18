@@ -463,6 +463,11 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your goal has been created.")
+        return url
+
     def get_context_data(self, **kwargs):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
         context['goals'] = Goal.objects.all().prefetch_related("categories")
@@ -510,7 +515,6 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = GoalForm
-    success_url = reverse_lazy('goals:goal-list')
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
@@ -592,6 +596,9 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
             self.object.review()  # Transition to the new state
             msg = "{0} has been submitted for review".format(self.object)
             messages.success(self.request, msg)
+        else:
+            messages.success(self.request, "Your behavior has been created.")
+
         self.object.save(
             created_by=self.request.user,
             updated_by=self.request.user
@@ -637,7 +644,6 @@ class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = BehaviorForm
-    success_url = reverse_lazy('goals:behavior-list')
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
@@ -740,7 +746,8 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
             self.object.review()  # Transition to the new state
             msg = "{0} has been submitted for review".format(self.object)
             messages.success(self.request, msg)
-
+        else:
+            messages.success(self.request, "Your notification has been created.")
         self.object.save(
             created_by=self.request.user,
             updated_by=self.request.user
