@@ -193,13 +193,9 @@ class Command(BaseCommand):
                             trigger=ua.trigger
                         )
                 except DailyProgress.DoesNotExist:
-                    # XXX ping BRAD on slack so we know if this is happening.
-                    err_msg = (
-                        "NO DailyProgress object for user {}/{}. They won't get "
-                        "dynamic notifications."
-                    )
-                    err_msg = err_msg.format(user.id, user.email)
-                    self._to_slack('bkmontgomery', err_msg)
+                    # XXX no need to report, we're going to remove this
+                    # with the upcoming "content sequencing" feature.
+                    pass
 
             # XXX; Very inefficient;
             # schedule the non-dynamic notifications.
