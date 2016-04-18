@@ -10,7 +10,6 @@ import django_rq
 import waffle
 
 from utils.slack import post_private_message
-from utils.user_utils import to_localtime
 
 
 logger = logging.getLogger("loggly_logs")
@@ -41,15 +40,6 @@ def send(message_id):
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
-
-        # log_msg = "[DELIVERED] {}) {} / '{}' on {}".format(
-            # message_id,
-            # msg.title,
-            # msg.message,
-            # to_localtime(msg.deliver_on, msg.user).strftime("%c %Z")
-        # )
-        # _log_slack(log_msg, msg.user.username)
-
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
         # happend to the original GCMMessage, and it's pre-delete signal handler
@@ -98,9 +88,6 @@ def enqueue(message):
             job = UserQueue(message).add()
         else:
             job = scheduler.enqueue_at(message.deliver_on, send, message.id)
-
-        # Log to slack when things are scheduled, too
-        local_deliver_on = to_localtime(message.deliver_on, message.user)
     if job:
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')
