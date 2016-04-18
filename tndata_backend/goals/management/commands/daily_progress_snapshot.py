@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     criteria = (
                         Q(username=options['user']) | Q(email=options['user'])
                     )
-                users = list(User.objects.get(criteria))
+                users = list(User.objects.filter(criteria))
             except User.DoesNotExist:
                 msg = "Could not find user: {0}".format(options['user'])
                 raise CommandError(msg)
