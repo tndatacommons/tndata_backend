@@ -23,27 +23,44 @@ class Command(BaseCommand):
                   "Accepts a username, email, or id")
         )
 
-    def _get_users(self, user):
+        parser.add_argument(
+            '--domain',
+            action='store',
+            dest='domain',
+            default=None,
+            help=("Add all users whose email matches a domain, "
+                  "e.g. @example.com")
+        )
+
+    def _get_users(self, options):
         User = get_user_model()
-        if user:
-            try:
-                if user.isnumeric():
-                    criteria = Q(id=user)
-                else:
-                    criteria = (Q(username=user) | Q(email=user))
+        users = User.objects.all()
 
-                # If we're in staging or dev, only do this for our accounts.
-                if settings.STAGING or settings.DEBUG:
-                    criteria = (criteria & Q(email__icontains="@tndata.org"))
+        user = options.get('user')
+        domain = options.get('domain')
 
-                return [User.objects.get(criteria)]
-            except User.DoesNotExist:
-                msg = "Could not find user: {0}".format(user)
-                raise CommandError(msg)
-        return User.objects.all()
+        if domain:
+            if not domain.startswith('@'):
+                domain = '@{}'.format(domain)
+            users = users.filter(email__iendswith=domain)
+
+        elif user and user.isnumeric():
+            users = users.filter(id=user)
+
+        elif user:
+            users = users.filter(Q(username=user) | Q(email=user))
+
+        # If we're in staging or dev, only do this for our accounts.
+        if settings.STAGING or settings.DEBUG:
+            users = users.filter(email__iendswith="@tndata.org")
+
+        if not users.exists():
+            raise CommandError("Could not find specified users")
+
+        return users
 
     def handle(self, *args, **options):
-        users = self._get_users(options['user'])
+        users = self._get_users(options)
 
         categories = Category.objects.selected_by_default(state='published')
         for user in users:
