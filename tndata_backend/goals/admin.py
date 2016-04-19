@@ -234,6 +234,14 @@ class BehaviorCategoryListFilter(CategoryListFilter):
         return queryset
 
 
+class ActionInline(admin.TabularInline):
+    model = models.Action
+    fields = (
+        'sequence_order', 'notification_text',
+        'title', 'action_type', 'description', 'more_info',
+    )
+
+
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'state', 'in_goals', 'updated_on',
@@ -246,6 +254,7 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
+    inlines = [ActionInline, ]
     actions = ['convert_to_goal']
 
     def has_prep_actions(self, obj):
