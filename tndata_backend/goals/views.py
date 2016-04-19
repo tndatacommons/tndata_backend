@@ -369,6 +369,12 @@ class CategoryCreateView(ContentEditorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_form_kwargs(self):
+        """Includes the current user in the form's kwargs."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_success_url(self):
         url = super().get_success_url()
         messages.success(self.request, "Your category has been created.")
@@ -422,6 +428,12 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     form_class = CategoryForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+
+    def get_form_kwargs(self):
+        """Includes the current user in the form's kwargs."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_success_url(self):
         url = super().get_success_url()

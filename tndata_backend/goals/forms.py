@@ -311,16 +311,34 @@ class CategoryForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # Pop the user so it doesn't get passed to super
+        self.user = kwargs.pop("user", None)
+
         # Set a default color / secondary color
         initial = kwargs.get('initial', {})
         instance = kwargs.get('instance')
-
         if not instance and initial.get('color') is None:
             initial['color'] = Category.DEFAULT_PRIMARY_COLOR
         if not instance and initial.get('secondary_color') is None:
             initial['secondary_color'] = Category.DEFAULT_SECONDARY_COLOR
         kwargs['initial'] = initial
+
         super().__init__(*args, **kwargs)
+
+        # Only allow the `selected_by_default` option for superusers
+        # If user is not an admin, remove that field.
+        if self.user is None or (self.user and not self.user.is_superuser):
+            del self.fields['selected_by_default']
+            details_fields = (
+                _("Category Details"), 'title', 'description', 'icon', 'image',
+                'color', 'secondary_color',
+            )
+        else:
+            details_fields = (
+                _("Category Details"), 'title', 'description',
+                'selected_by_default', 'icon', 'image', 'color',
+                'secondary_color',
+            )
 
         # Configure crispy forms.
         self.helper = FormHelper()
@@ -328,16 +346,7 @@ class CategoryForm(forms.ModelForm):
         self.helper.layout = Layout(
             Div(
                 Div(
-                    Fieldset(
-                        _("Category Details"),
-                        'title',
-                        'description',
-                        'selected_by_default',
-                        'icon',
-                        'image',
-                        'color',
-                        'secondary_color',
-                    ),
+                    Fieldset(*details_fields),
                     css_class="large-6 small-12 columns"
                 ),
                 Div(

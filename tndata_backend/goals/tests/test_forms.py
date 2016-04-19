@@ -1,3 +1,4 @@
+from unittest.mock import Mock
 from django.test import TestCase
 from .. forms import (
     ActionForm,
@@ -293,6 +294,17 @@ class TestCategoryForm(TestCase):
             'title', 'description', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
+            'display_prevent_custom_triggers_option',
+        ])
+        self.assertEqual(fields, sorted(list(form.fields.keys())))
+
+    def test_unboud_with_superuser(self):
+        mock_user = Mock(is_superuser=True)
+        form = CategoryForm(user=mock_user)
+        fields = sorted([
+            'title', 'description', 'icon', 'image', 'color', 'notes',
+            'secondary_color', 'packaged_content', 'package_contributors',
+            'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option', 'selected_by_default',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
@@ -308,7 +320,6 @@ class TestCategoryForm(TestCase):
             'color': '#eee',
             'secondary_color': '',
             'notes': '',
-            'selected_by_default': 'on',
         }
         form = CategoryForm(data)
         self.assertTrue(form.is_valid())
