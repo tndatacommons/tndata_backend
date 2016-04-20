@@ -205,6 +205,16 @@ class ActionForm(forms.ModelForm):
             raise ValidationError(err, params={"value": priority})
         return priority
 
+    def clean_title(self):
+        # XXX getting the follownig error when this is == 256.
+        # DataError: value too long for type character varying(256) when == 256
+        return self.cleaned_data['title'][:255]
+
+    def clean_notification_text(self):
+        # XXX getting the follownig error when this is == 256.
+        # DataError: value too long for type character varying(256) when == 256
+        return self.cleaned_data['notification_text'][:255]
+
 
 class BehaviorForm(forms.ModelForm):
     """A Form for creating/updating behaviors. This form orders related
