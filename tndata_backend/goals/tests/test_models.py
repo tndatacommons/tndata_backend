@@ -186,7 +186,7 @@ class TestGoal(TestCase):
         Category.objects.filter(id=self.category.id).delete()
 
     def test__str__(self):
-        expected = "Title for Test Goal"
+        expected = "0: Title for Test Goal"
         actual = "{}".format(self.goal)
         self.assertEqual(expected, actual)
 
@@ -516,12 +516,6 @@ class TestTrigger(TestCase):
             trigger.frequency = 'weekends'
             trigger.save()
             expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 4, 4, 59, 59, 999999))
-            self.assertEqual(trigger.dynamic_range(), expected)
-
-            # Monthly - 30 days
-            trigger.frequency = 'monthly'
-            trigger.save()
-            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 5, 2, 4, 59, 59, 999999))
             self.assertEqual(trigger.dynamic_range(), expected)
 
     def test_dynamic_trigger_date(self):
@@ -1186,7 +1180,7 @@ class TestBehavior(TestCase):
         Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test__str__(self):
-        expected = "Test Behavior"
+        expected = "0: Test Behavior"
         actual = "{}".format(self.behavior)
         self.assertEqual(expected, actual)
 
@@ -1331,7 +1325,7 @@ class TestAction(TestCase):
             self.assertEqual(action.bucket, bucket)
 
     def test__str__(self):
-        expected = "Test Action"
+        expected = "0: Test Action"
         actual = "{}".format(self.action)
         self.assertEqual(expected, actual)
 

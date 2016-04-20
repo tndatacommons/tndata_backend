@@ -387,7 +387,7 @@ class TestGoalForm(TestCase):
         form = GoalForm()
         fields = sorted([
             'categories', 'title', 'description', 'icon', 'more_info', 'notes',
-            'keywords',
+            'keywords', 'sequence_order',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -396,6 +396,7 @@ class TestGoalForm(TestCase):
         data = {
             'categories': [c.id],
             'title': 'New Goal',
+            'sequence_order': '1',
             'description': 'asdf',
             'icon': '',
             'notes': '',
@@ -412,6 +413,7 @@ class TestGoalForm(TestCase):
         data = {
             'categories': [c.id],
             'title': 'g',  # Should be a duplicate
+            'sequence_order': '1',
             'description': 'asdf',
             'icon': '',
             'notes': '',
