@@ -1043,7 +1043,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['bucket', 'sequence_order', 'action_type', 'title']
+        ordering = ['sequence_order', 'action_type', 'title']
         verbose_name = "Action"
         verbose_name_plural = "Actions"
         # add_action, change_action, delete_action are created by default.
