@@ -748,7 +748,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         self.object = form.save()
         default_trigger = trigger_form.save(commit=False)
         trigger_name = "Default: {0}-{1}".format(self.object, self.object.id)
-        default_trigger.name = trigger_name
+        default_trigger.name = trigger_name[:128]
         default_trigger.save()
         self.object.default_trigger = default_trigger
 
