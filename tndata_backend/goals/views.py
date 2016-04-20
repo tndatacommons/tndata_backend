@@ -265,12 +265,13 @@ class IndexView(ContentViewerMixin, TemplateView):
                 context[key] = func(state='pending-review').order_by("-updated_on")
 
             # List all the Behaviors that need a `prep` action.
-            dynamic_behaviors = Behavior.objects.contains_dynamic()
-            dynamic_behaviors = dynamic_behaviors.filter(
-                action_buckets_core__gt=0,
-                action_buckets_prep=0
-            ).distinct().order_by('updated_on')
-            context['dynamic_behaviors'] = dynamic_behaviors[:40]
+            # XXX: Disabling 'bucket'-related content.
+            # dynamic_behaviors = Behavior.objects.contains_dynamic()
+            # dynamic_behaviors = dynamic_behaviors.filter(
+                # action_buckets_core__gt=0,
+                # action_buckets_prep=0
+            # ).distinct().order_by('updated_on')
+            # context['dynamic_behaviors'] = dynamic_behaviors[:40]
 
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
@@ -581,11 +582,12 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # XXX: Disabling bucket-related stuff
         # Determine if this Behavior contains dynamic notifications
-        obj = context['object']
-        qs = Behavior.objects.contains_dynamic().filter(pk=obj.id)
-        context['contains_dynamic'] = qs.exists()
-        context['action_url'] = Action.get_create_reinforcing_action_url()
+        # obj = context['object']
+        # qs = Behavior.objects.contains_dynamic().filter(pk=obj.id)
+        # context['contains_dynamic'] = qs.exists()
+        # context['action_url'] = Action.get_create_reinforcing_action_url()
         return context
 
 

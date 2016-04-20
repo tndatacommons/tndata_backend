@@ -38,10 +38,12 @@
         <tr>
           <td>
             {# if we're using dynamic notifications but no PREP actions #}
+            {% comment %} XXX Disabling bucket-related stuff
             {% if behavior.action_buckets_prep == 0 and behavior.contains_dynamic %}
             <span class="label warning" data-tooltip aria-haspopup="true"
                   title="This Behavior contains Dynamic Notifications, and requires at least one Reinforcing Notification"><i class="fa fa-warning"></i> Action Required</span>
             {% endif %}
+            {% endcomment %}
 
             {% if user|is_editor %}
               {% publish_deny_form behavior "dropdown" %}
