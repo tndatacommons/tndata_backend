@@ -8,7 +8,8 @@ from django.db.models import Q
 
 import waffle
 
-from goals.models import CustomAction, DailyProgress, Goal, Trigger
+from goals.models import CustomAction, Goal, Trigger
+from goals.sequence import get_next_useractions_in_sequence
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
@@ -167,35 +168,52 @@ class Command(BaseCommand):
 
         """
         for user in users:
-            # For each user's behavior...
-            for ub in user.userbehavior_set.published():
-                try:
-                    # Figure out which bucket they're in
-                    dp = user.dailyprogress_set.latest()
-                    bucket = dp.get_status(ub.behavior)
+            # Sequenced Goals, Behaviors, Actions
+            for ua in get_next_useractions_in_sequence(user):
+                # Retrive the `next_reminder`, which will be in the
+                # user's timezone, and may have been created weeks or
+                # months ago. This is slightlly differnt from other
+                # UserActions, because we don't re-generate
+                # these on the fly
+                deliver_on = to_utc(ua.next_reminder)
+                self.create_message(
+                    user,
+                    ua.action,
+                    ua.get_notification_title(),
+                    ua.get_notification_text(),
+                    deliver_on,
+                    priority=ua.priority,
+                    trigger=ua.trigger
+                )
 
-                    # pluck the next useraction from the bucket (this excludes
-                    # things they've already received).
-                    for ua in user.useraction_set.select_from_bucket(bucket):
-                        # Retrive the `next_reminder`, which will be in the
-                        # user's timezone, and may have been created weeks or
-                        # months ago.
-                        # XXX: this is slightlly differnt from other UserActions,
-                        # because we don't re-generate these on the fly
-                        deliver_on = to_utc(ua.next_reminder)
-                        self.create_message(
-                            user,
-                            ua.action,
-                            ua.get_notification_title(),
-                            ua.get_notification_text(),
-                            deliver_on,
-                            priority=ua.priority,
-                            trigger=ua.trigger
-                        )
-                except DailyProgress.DoesNotExist:
-                    # XXX no need to report, we're going to remove this
-                    # with the upcoming "content sequencing" feature.
-                    pass
+# XXX: Currently disabled
+#            # Dynamic Notifications based on Buckets
+#            for ub in user.userbehavior_set.published():
+#                try:
+#                    # Figure out which bucket they're in
+#                    dp = user.dailyprogress_set.latest()
+#                    bucket = dp.get_status(ub.behavior)
+#
+#                    # pluck the next useraction from the bucket (this excludes
+#                    # things they've already received).
+#                    for ua in user.useraction_set.select_from_bucket(bucket):
+#                        # Retrive the `next_reminder`, which will be in the
+#                        # user's timezone, and may have been created weeks or
+#                        # months ago.
+#                        # XXX: this is slightlly differnt from other UserActions,
+#                        # because we don't re-generate these on the fly
+#                        deliver_on = to_utc(ua.next_reminder)
+#                        self.create_message(
+#                            user,
+#                            ua.action,
+#                            ua.get_notification_title(),
+#                            ua.get_notification_text(),
+#                            deliver_on,
+#                            priority=ua.priority,
+#                            trigger=ua.trigger
+#                        )
+#                except DailyProgress.DoesNotExist:
+#                    pass
 
             # XXX; Very inefficient;
             # schedule the non-dynamic notifications.
