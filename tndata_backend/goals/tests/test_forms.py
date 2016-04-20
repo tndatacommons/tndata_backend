@@ -198,6 +198,46 @@ class TestActionForm(TestCase):
         self.assertTrue(form.is_valid())
         b.delete()
 
+    def test_is_valid(self):
+        b = Behavior.objects.create(title="asdf")
+        data = {
+            'sequence_order': '0',
+            'behavior': b.id,
+            'title': 'X' * 256,
+            'description': 'some description',
+            'more_info': '',
+            'external_resource': '',
+            'notification_text': 'Y' * 256,
+            'source_link': '',
+            'source_notes': '',
+            'notes': '',
+            'action_type': Action.SHOWING,
+            'priority': Action.LOW,
+        }
+        form = ActionForm(data)
+        self.assertTrue(form.is_valid())
+        b.delete()
+
+    def test_not_valid(self):
+        b = Behavior.objects.create(title="asdf")
+        data = {
+            'sequence_order': '0',
+            'behavior': b.id,
+            'title': 'X' * 512,  # TOO long
+            'description': 'some description',
+            'more_info': '',
+            'external_resource': '',
+            'notification_text': 'Y' * 512,  # TOO long
+            'source_link': '',
+            'source_notes': '',
+            'notes': '',
+            'action_type': Action.SHOWING,
+            'priority': Action.LOW,
+        }
+        form = ActionForm(data)
+        self.assertFalse(form.is_valid())
+        b.delete()
+
     def test_duplicate_title(self):
         """Ensure that duplicate titles are OK."""
         b = Behavior.objects.create(title="B")

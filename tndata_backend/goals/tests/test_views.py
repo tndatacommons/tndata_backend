@@ -2268,6 +2268,37 @@ class TestActionCreateView(TestCaseWithGroups):
         qs = Action.objects.filter(title="New", state='pending-review')
         self.assertTrue(qs.exists())
 
+    def test_admin_post_with_long_values(self):
+        """Verify we can create objects that hit text-length limits"""
+        # 256 title / notification_text
+        payload = {
+            'sequence_order': 0,
+            'title': 'X' * 256,
+            'notification_text': 'Y' * 256,
+            'behavior': self.behavior.id,
+            'action_type': 'showing',
+            'priority': '3',
+            'more_info': '',
+            'source_link': '',
+            'external_resource': '',
+            'external_resource_name': '',
+            'source_notes': '',
+            'icon': '',
+            'description': '',
+            'trigger-time_of_day': '',
+            'trigger-frequency': '',
+            'trigger-time': '',
+            'trigger-trigger_date': '',
+            'trigger-recurrences': '',
+            'trigger-start_when_selected': '',
+            'trigger-stop_on_complete': '',
+            'trigger-relative_value': '0',
+            'trigger-relative_units': '',
+        }
+        self.client.login(username="admin", password="pass")
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+
     def test_editor_post(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(self.url, self.payload)
