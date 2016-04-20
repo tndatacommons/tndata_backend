@@ -120,7 +120,7 @@ class ActionForm(forms.ModelForm):
             'notification_text', 'sequence_order', 'behavior', 'title',
             'description', 'more_info', 'external_resource',
             'external_resource_name', 'source_link', 'source_notes',
-            'notes', 'icon', 'action_type', 'priority',
+            'notes', 'icon', 'priority',
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {
@@ -167,7 +167,7 @@ class ActionForm(forms.ModelForm):
                         "behavior",
                         "description",
                         "more_info",
-                        "sequence_order",
+                        "icon",
                     ),
                     Fieldset(
                         _("Resource Details"),
@@ -184,11 +184,10 @@ class ActionForm(forms.ModelForm):
                     ),
                     Fieldset(
                         _("Meta Details"),
+                        "sequence_order",
                         "priority",
-                        "action_type",
                         "source_link",
                         "source_notes",
-                        "icon",
                     ),
                     css_class="large-6 small-12 columns"
                 ),
