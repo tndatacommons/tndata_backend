@@ -82,8 +82,9 @@ class GoalSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Goal
         fields = (
-            'id', 'title', 'description', 'html_description', 'outcome',
-            'icon_url', 'categories', 'behaviors_count', 'object_type',
+            'id', 'sequence_order', 'title', 'description', 'html_description',
+            'outcome', 'icon_url', 'categories', 'behaviors_count',
+            'object_type',
         )
 
 
@@ -97,9 +98,10 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Behavior
         fields = (
-            'id', 'title', 'description', 'html_description', 'more_info',
-            'html_more_info', 'external_resource', 'external_resource_name',
-            'icon_url', 'actions_count', 'goals', 'object_type',
+            'id', 'sequence_order', 'title', 'description', 'html_description',
+            'more_info', 'html_more_info', 'external_resource',
+            'external_resource_name', 'icon_url', 'actions_count', 'goals',
+            'object_type',
         )
         read_only_fields = ("actions_count", )
 

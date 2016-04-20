@@ -53,8 +53,9 @@ class SimpleGoalSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Goal
         fields = (
-            'id', 'title', 'title_slug', 'description', 'html_description',
-            'outcome', 'icon_url', 'primary_category', 'object_type',
+            'id', 'sequence_order', 'title', 'title_slug', 'description',
+            'html_description', 'outcome', 'icon_url', 'primary_category',
+            'object_type',
         )
 
     def get_primary_category(self, obj):
@@ -75,10 +76,10 @@ class SimpleBehaviorSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Behavior
         fields = (
-            'id', 'title', 'title_slug', 'description', 'html_description',
-            'more_info', 'html_more_info', 'external_resource',
-            'external_resource_name', 'icon_url', 'actions_count',
-            'object_type',
+            'id', 'sequence_order', 'title', 'title_slug', 'description',
+            'html_description', 'more_info', 'html_more_info',
+            'external_resource', 'external_resource_name', 'icon_url',
+            'actions_count', 'object_type',
         )
         read_only_fields = ("actions_count", )
 
