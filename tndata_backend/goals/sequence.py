@@ -1,9 +1,31 @@
 """
-PLAYGROUND for Goal/Behavior/Action sequences
+Tools/utils/playground for Goal/Behavior/Action sequences
+
 """
 from django.contrib.auth import get_user_model
 from goals.models import Goal, Category
 from goals.models import UserAction, UserBehavior, UserGoal, UserCompletedAction
+
+
+def get_next_useractions_in_sequence(user):
+    """Return a queryset of UserActions that are due for delivery based on
+    the sequeunce of Goals, Behaviors, Actions, and whether or not a user
+    has completed the Action, the entire Behavior, and/or the Goal.
+
+    """
+    # Goals that are 'up next' (lowest sequence number this is not completed)
+    goals = user.usergoal_set.next_in_sequence(published=True)
+    goals = goals.values_list('goal', flat=True)
+
+    # Uncompleted behaviors within those goals.
+    behaviors = user.userbehavior_set.next_in_sequence(published=True)
+    behaviors = behaviors.filter(behavior__goals__in=goals)
+    behaviors = behaviors.values_list("behavior", flat=True)
+
+    # Return the related UserAction objects.
+    return user.useraction_set.next_in_sequence(behaviors, published=True)
+
+# --- the following are just debugging tools ------------
 
 
 def print_next(user):
