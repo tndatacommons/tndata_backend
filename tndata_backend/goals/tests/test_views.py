@@ -966,6 +966,7 @@ class TestGoalCreateView(TestCaseWithGroups):
             'title': 'Created Goal',
             'description': 'whee',
             'categories': self.category.id,
+            'sequence_order': 0,
         }
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
@@ -1114,7 +1115,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         )
         cls.payload = {
             'categories': cls.category.id,
-            'order': 1,
+            'sequence_order': 1,
             'title': 'A',
             'description': 'B',
             'notes': '',
@@ -1200,6 +1201,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.client.login(username="editor", password="pass")
         resp = self.client.post(goal.get_update_url(), {
             'title': existing_title,
+            'sequence_order': 0,
             'categories': self.category.id,
         })
 

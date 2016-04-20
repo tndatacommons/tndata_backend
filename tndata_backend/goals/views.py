@@ -504,6 +504,7 @@ class GoalDuplicateView(GoalCreateView):
             obj = self.get_object()
             initial.update({
                 "title": "Copy of {0}".format(obj.title),
+                'sequence_order': obj.sequence_order,
                 "categories": obj.categories.values_list("id", flat=True),
                 "description": obj.description,
             })
