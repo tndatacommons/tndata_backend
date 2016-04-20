@@ -386,7 +386,7 @@ REST_FRAMEWORK = {
         'user': '10000/day'
     },
     'VERSION_PARAM': 'version',
-    'DEFAULT_VERSION': '1',
+    'DEFAULT_VERSION': '2',
     'ALLOWED_VERSIONS': ['1', '2'],
     'DEFAULT_VERSIONING_CLASS': 'utils.api.DefaultQueryParamVersioning',
 }

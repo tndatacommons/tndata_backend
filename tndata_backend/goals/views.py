@@ -19,6 +19,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils import timezone
 
 from django_fsm import TransitionNotAllowed
+from django_rq import job
 from userprofile.forms import UserForm
 from userprofile.models import UserProfile
 from utils.db import get_max_order
@@ -368,6 +369,17 @@ class CategoryCreateView(ContentEditorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_form_kwargs(self):
+        """Includes the current user in the form's kwargs."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your category has been created.")
+        return url
+
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
         at the class level because we want to query the value each time."""
@@ -416,7 +428,17 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     form_class = CategoryForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    success_url = reverse_lazy('goals:category-list')
+
+    def get_form_kwargs(self):
+        """Includes the current user in the form's kwargs."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your category has been saved")
+        return url
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
@@ -452,6 +474,11 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
     form_class = GoalForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your goal has been created.")
+        return url
 
     def get_context_data(self, **kwargs):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
@@ -500,7 +527,6 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = GoalForm
-    success_url = reverse_lazy('goals:goal-list')
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
@@ -582,6 +608,9 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
             self.object.review()  # Transition to the new state
             msg = "{0} has been submitted for review".format(self.object)
             messages.success(self.request, msg)
+        else:
+            messages.success(self.request, "Your behavior has been created.")
+
         self.object.save(
             created_by=self.request.user,
             updated_by=self.request.user
@@ -627,7 +656,6 @@ class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = BehaviorForm
-    success_url = reverse_lazy('goals:behavior-list')
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
@@ -720,7 +748,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         self.object = form.save()
         default_trigger = trigger_form.save(commit=False)
         trigger_name = "Default: {0}-{1}".format(self.object, self.object.id)
-        default_trigger.name = trigger_name
+        default_trigger.name = trigger_name[:128]
         default_trigger.save()
         self.object.default_trigger = default_trigger
 
@@ -730,7 +758,8 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
             self.object.review()  # Transition to the new state
             msg = "{0} has been submitted for review".format(self.object)
             messages.success(self.request, msg)
-
+        else:
+            messages.success(self.request, "Your notification has been created.")
         self.object.save(
             created_by=self.request.user,
             updated_by=self.request.user
@@ -1422,15 +1451,32 @@ def admin_batch_assign_keywords(request):
     return render(request, 'goals/admin_batch_assign_keywords.html', context)
 
 
+@job
+def _duplicate_category_content(category, prefix=None):
+    """Given a category and an optional prefix, duplicate all of it's content;
+    NOTE: This is an async RQ task, defined here, because otherwise the
+    view below won't be able to import it (or least I couldn't get it to
+    work)."""
+    if prefix:
+        category.duplicate_content(prefix)
+    else:
+        category.duplicate_content()
+
+
 @user_passes_test(staff_required, login_url='/')
 def duplicate_content(request, pk, title_slug):
     category = get_object_or_404(Category, pk=pk, title_slug=title_slug)
     if request.method == "POST":
         form = TitlePrefixForm(request.POST)
         if form.is_valid():
-            category = category.duplicate_content(form.cleaned_data['prefix'])
-            messages.success(request, "Your content has been duplicated")
-            return redirect(category.get_absolute_url())
+            prefix = form.cleaned_data['prefix']
+            _duplicate_category_content.delay(category, prefix)
+            msg = (
+                "Your content is being duplicated and should be available in "
+                "about a minute."
+            )
+            messages.success(request, msg)
+            return redirect("goals:category-list")
     else:
         form = TitlePrefixForm()
 

@@ -104,6 +104,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Select a secondary color for this Category. If omitted, a "
                   "complementary color will be generated."
     )
+
     state = FSMField(default="draft")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -114,6 +115,11 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         settings.AUTH_USER_MODEL,
         related_name="categories_created",
         null=True
+    )
+    selected_by_default = models.BooleanField(
+        default=False,
+        help_text="Should this category and all of its content be "
+                  "auto-selected for new users?"
     )
 
     # Fields related to 'Packaged Content'
@@ -218,6 +224,8 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         self.title_slug = slugify(self.title)
         self.color = self._format_color(self.color)
         self.secondary_color = self._generate_secondary_color()
+        if not self.order:
+            self.order = get_max_order(self.__class__)
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Category, self).save(*args, **kwargs)
 
@@ -259,6 +267,32 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     def get_package_calendar_url(self):
         if self.packaged_content:
             return reverse("goals:package-calendar", args=[self.id])
+
+    def enroll(self, user):
+        """Enroll the user in this category and all of the published content
+        contained within it."""
+        # Enroll the user in this category...
+        user.usercategory_set.get_or_create(category=self)
+
+        # Then enroll the user in all of the published Goals
+        goals = self.goal_set.published()
+        for goal in goals:
+            ug, _ = user.usergoal_set.get_or_create(user=user, goal=goal)
+            ug.primary_category = self
+            ug.save()
+
+        # Then enroll the user in the published Behaviors
+        behaviors = Behavior.objects.published().filter(goals=goals).distinct()
+        for behavior in behaviors:
+            user.userbehavior_set.get_or_create(behavior=behavior)
+
+        # Finally, enroll the user in the Behavior's Actions
+        actions = Action.objects.published().filter(behavior__in=behaviors)
+        for action in actions.distinct():
+            ua, _ = user.useraction_set.get_or_create(action=action)
+            ua.primary_category = self
+            ua.primary_goal = ua.get_primary_goal()
+            ua.save()
 
     def duplicate_content(self, prefix="Copy of"):
         """This method will duplicate all of the content stored within this

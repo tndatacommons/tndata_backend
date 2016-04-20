@@ -21,10 +21,16 @@
         <dt>State</dt><dd>
           {{ category|label }}
           {% if category.is_packaged %}
-            <span class="label info">Package</span>
+            <span data-tooltip aria-haspopup="true"
+              title="This category is part of a package"
+              class="label info">Package</span>
+          {% endif %}
+          {% if category.selected_by_default %}
+            <span data-tooltip aria-haspopup="true"
+              title="This category is pre-selected for new users"
+              class="label">Default</span>
           {% endif %}
         </dd>
-        <dt>Default Order</dt><dd>{{ category.order }}</dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Icon</dt><dd class="gray centered">
           {% with icon=category.get_absolute_icon %}
@@ -36,7 +42,8 @@
               {% if category.icon %}
               Image details: {{ category.icon|details }}<br/>
               {% endif %}
-              Location: <a href="{{ icon }}">{{ icon|truncatechars:40 }}</a>
+              Location: <small>
+                <a href="{{ icon }}">{{ icon|truncatechars:40 }}</a></small>
             </p>
           {% else %}
             <em>No icon available</em>
@@ -49,7 +56,7 @@
             <a href="{{ image }}" target="_blank">
             <img src="{{ image }}" alt="{{ category }} image" />
             </a>
-            <p class="panel callout">
+            <p class="panel">
               Image details: {{ category.image|details }}<br/>
               Location: <small><a href="{{ image }}">{{ image }}</a></small>
             </p>
@@ -58,16 +65,20 @@
           {% endif %}
           {% endwith %}
         </dd>
-        <dt>Color</dt><dd>
-          <span style="display:inline-block;width:22px;height:22px;background-color:{{category.color}};">
-          </span>
-          {{ category.color }}
+        <dt>Color(s)</dt><dd>
+          <span style="display:inline-block;width:22px;height:22px;background-color:{{category.color}};">&nbsp;</span>
+          <code>{{ category.color }}</code> - Primary<br/>
+
+          {% if category.secondary_color %}
+            <span style="display:inline-block;width:22px;height:22px;background-color:{{category.secondary_color|default:'#ccc'}};">&nbsp;</span>
+            <code>{{ category.secondary_color }}</code> - Secondary
+          {% endif %}
          </dd>
-        <dt>Secondary Color</dt><dd>
-          <span style="display:inline-block;width:22px;height:22px;background-color:{{category.secondary_color|default:'#ccc'}};">
-          </span>
-          {{ category.secondary_color|default:"not set" }}
-         </dd>
+        <dt>Selected by default?</dt>
+        <dd>{{ category.selected_by_default|iconbool }}: This category is
+          {% if not category.selected_by_default %}not{% endif %}
+          pre-selected for new users.
+        </dd>
       </dl>
       {% if category.is_packaged %}
 

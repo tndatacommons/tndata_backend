@@ -597,7 +597,7 @@ class TestSimpleProfileAPI(V2APITestCase):
     def test_defaults(self):
         self.assertEqual(self.profile.user, self.user)
         self.assertEqual(self.profile.timezone, 'America/Chicago')
-        self.assertEqual(self.profile.maximum_daily_notifications, 10)
+        self.assertEqual(self.profile.maximum_daily_notifications, 5)
         self.assertEqual(self.profile.needs_onboarding, True)
         self.assertIsNone(self.profile.zipcode)
         self.assertIsNone(self.profile.birthday)

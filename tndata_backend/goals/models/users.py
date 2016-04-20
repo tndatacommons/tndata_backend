@@ -466,7 +466,7 @@ class UserAction(models.Model):
         ----
 
         doh. GCMMessage objects expect a string 'low', 'medium', 'high',
-        while I've built Action's with an integer priority :-/
+        while I've built Actions with an integer priority :-/
         """
         # Action (int) --> GCMMessage (string)
         priorities = {
@@ -474,6 +474,11 @@ class UserAction(models.Model):
             Action.MEDIUM: GCMMessage.MEDIUM,
             Action.HIGH: GCMMessage.HIGH
         }
+
+        # Ensure that custom triggers get set with HIGH priority
+        if self.custom_trigger is not None:
+            return priorities.get(Action.HIGH)
+
         return priorities.get(self.action.priority, GCMMessage.LOW)
 
     @property

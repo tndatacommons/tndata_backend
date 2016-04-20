@@ -19,6 +19,7 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from utils.mixins import VersionedViewSetMixin
+from utils.user_utils import get_client_ip
 
 from . import models
 from . import permissions
@@ -109,15 +110,26 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         """
         # NOTE: We expect an email address to be given, here, but this api
         # used to support a username. If we receive a username, but no email
-        # address, we swap them. This'll prevent and edge case where we might
+        # address, we swap them. This'll prevent an edge case where we might
         # end up with duplicate accounts.
         if request.data.get("username") and request.data.get("email") is None:
             request.data['email'] = request.data.get('username')
             request.data.pop('username')
+
         resp = super(UserViewSet, self).create(request, *args, **kwargs)
+
         # Include the newly-created User's auth token (if we have a user)
         if hasattr(self, 'object') and hasattr(self.object, 'auth_token'):
             resp.data['token'] = self.object.auth_token.key
+
+        # Save the IP address on the user's profile
+        try:
+            uid = resp.data.get('userprofile_id')
+            userprofile = models.UserProfile.objects.get(pk=uid)
+            userprofile.ip_address = get_client_ip(request)
+            userprofile.save()
+        except:  # XXX: Don't let any exception prevent user signup.
+            pass
         return resp
 
 

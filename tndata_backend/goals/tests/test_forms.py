@@ -1,3 +1,4 @@
+from unittest.mock import Mock
 from django.test import TestCase
 from .. forms import (
     ActionForm,
@@ -197,6 +198,46 @@ class TestActionForm(TestCase):
         self.assertTrue(form.is_valid())
         b.delete()
 
+    def test_is_valid(self):
+        b = Behavior.objects.create(title="asdf")
+        data = {
+            'sequence_order': '0',
+            'behavior': b.id,
+            'title': 'X' * 256,
+            'description': 'some description',
+            'more_info': '',
+            'external_resource': '',
+            'notification_text': 'Y' * 256,
+            'source_link': '',
+            'source_notes': '',
+            'notes': '',
+            'action_type': Action.SHOWING,
+            'priority': Action.LOW,
+        }
+        form = ActionForm(data)
+        self.assertTrue(form.is_valid())
+        b.delete()
+
+    def test_not_valid(self):
+        b = Behavior.objects.create(title="asdf")
+        data = {
+            'sequence_order': '0',
+            'behavior': b.id,
+            'title': 'X' * 512,  # TOO long
+            'description': 'some description',
+            'more_info': '',
+            'external_resource': '',
+            'notification_text': 'Y' * 512,  # TOO long
+            'source_link': '',
+            'source_notes': '',
+            'notes': '',
+            'action_type': Action.SHOWING,
+            'priority': Action.LOW,
+        }
+        form = ActionForm(data)
+        self.assertFalse(form.is_valid())
+        b.delete()
+
     def test_duplicate_title(self):
         """Ensure that duplicate titles are OK."""
         b = Behavior.objects.create(title="B")
@@ -290,16 +331,26 @@ class TestCategoryForm(TestCase):
     def test_unbound(self):
         form = CategoryForm()
         fields = sorted([
-            'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
+            'title', 'description', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
+    def test_unboud_with_superuser(self):
+        mock_user = Mock(is_superuser=True)
+        form = CategoryForm(user=mock_user)
+        fields = sorted([
+            'title', 'description', 'icon', 'image', 'color', 'notes',
+            'secondary_color', 'packaged_content', 'package_contributors',
+            'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
+            'display_prevent_custom_triggers_option', 'selected_by_default',
+        ])
+        self.assertEqual(fields, sorted(list(form.fields.keys())))
+
     def test_bound(self):
         data = {
-            'order': '1',
             'packaged_content': False,
             'package_contributors': '',
             'title': 'New Category',
@@ -317,7 +368,6 @@ class TestCategoryForm(TestCase):
         """Ensure that duplicate titles fail validation."""
         c = Category.objects.create(order=1, title="C")  # Existing object
         data = {
-            'order': '2',
             'packaged_content': False,
             'package_contributors': '',
             'title': 'c',  # Should be a Duplicate

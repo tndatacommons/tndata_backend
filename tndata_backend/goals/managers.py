@@ -413,6 +413,11 @@ class CategoryManager(WorkflowManager):
         qs = super().published()
         return qs.filter(packaged_content=False)
 
+    def selected_by_default(self, **kwargs):
+        """Return a queryset of Categories that should be selected by default."""
+        kwargs['selected_by_default'] = True
+        return super().get_queryset().filter(**kwargs)
+
     def packages(self, *args, **kwargs):
         """Return only Categories that have been marked as packages.
 

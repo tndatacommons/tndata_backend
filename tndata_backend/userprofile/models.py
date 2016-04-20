@@ -92,13 +92,19 @@ class UserProfile(models.Model):
         settings.AUTH_USER_MODEL,
         help_text="The user to whom this profile belongs"
     )
+    ip_address = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        protocol='both',
+        unpack_ipv4=True,
+    )
     timezone = models.CharField(
         max_length=64,
         default="America/Chicago",
         blank=True,
         choices=[(tz, tz) for tz in pytz.all_timezones]
     )
-    maximum_daily_notifications = models.IntegerField(default=10, blank=True)
+    maximum_daily_notifications = models.IntegerField(default=5, blank=True)
     needs_onboarding = models.BooleanField(default=True, blank=True)
 
     # Profile fields.

@@ -1,6 +1,7 @@
 {% extends "goals/base.html" %}
 {% load goal_filters %}
 {% load goal_tags %}
+{% load util_filters %}
 
 {% block title %}Categories{% endblock %}
 
@@ -24,12 +25,15 @@
           {% endif %}
           State
         </th>
-        <th>Order</th>
-        <th>Icon</th>
-        <th>Colors</th>
-        <th>Title</th>
-        <th>Child Content</th>
-        <th>Selected By</th>
+        <th>Category</th>
+        <th>
+          <span data-tooltip aria-haspopup="true"
+            title="Content contained within the category">Child Content</span>
+        </th>
+        <th>
+          <span data-tooltip aria-haspopup="true"
+            title="Number of users who have selected this category">Selected</span>
+        </th>
       </tr>
       </thead>
       <tbody>
@@ -43,35 +47,44 @@
               {{ category|label }}
             {% endif %}
           </td>
-          <td>{{ category.order }}</td>
           <td>
-            {% with icon=category.get_absolute_icon %}
-              {% if icon %}
-                <div class="gray centered">
-                  <a href="{{ category_url }}">
-                    <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
-                  </a>
-                </div>
-              {% else %}
-                <em>no icon</em>
-              {% endif %}
-            {% endwith %}
-          </td>
-          <td>
-            <div class="color"
-                 style="height:25px;width:25px;background-color:{{ category.color}};">
-            </div>
-            {% if category.secondary_color %}
-            <div class="color"
-                 style="height:25px;width:25px;background-color:{{ category.secondary_color}};">
-            </div>
-            {% endif %}
-          </td>
-          <td>
-              <a href="{{ category_url }}">{{ category }}</a>
+              {# Category TITLE #}
+              <strong><a href="{{ category_url }}">{{ category }}</a></strong><br/>
+
+              {# Labels for Category package, default #}
               {% if category.is_packaged %}
-                <span class="label info">Package</span>
+                <span class="label info" data-tooltip aria-haspopup="true"
+                  title="This category's content is organized as a package.">Package</span>
               {% endif %}
+              {% if category.selected_by_default %}
+                <span class="label" data-tooltip aria-haspopup="true"
+                  title="This category is pre-selected for new users.">Default</span>
+              {% endif %}
+
+              {# Icon (if any) #}
+              {% with icon=category.get_absolute_icon %}
+                {% if icon %}
+                  <div class="gray centered pull-right">
+                  <img src="{{ icon }}" class="list-icon" alt="{{ category }} icon"/>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
+              {# Colors (if any) #}
+              {% with c1=category.color c2=category.secondary_color %}
+              <div class="pull-right">
+                <div class="color" data-tooltip aria-haspopup="true"
+                     title="{{ c1 }}"
+                     style="height:25px;width:25px;background-color:{{ c1 }};">
+                </div>
+                {% if category.secondary_color %}
+                <div class="color" data-tooltip aria-haspopup="true"
+                     title="{{ c2 }}"
+                     style="height:25px;width:25px;background-color:{{ c2 }};">
+                </div>
+                {% endif %}
+              </div>
+              {% endwith %}
           </td>
           <td>
             <ul class="accordion" data-accordion>
