@@ -89,6 +89,10 @@ class UserGoalManager(models.Manager):
         - the next in the sequence (based on sequence_order)
 
         """
+        # Allow a published=True kwarg
+        if kwargs.pop('published'):
+            kwargs['goal__state'] = 'published'
+
         kwargs['completed'] = False
         qs = self.get_queryset().filter(**kwargs)
         seq = qs.aggregate(Min('goal__sequence_order'))
@@ -114,8 +118,11 @@ class UserBehaviorManager(models.Manager):
         - the next in the sequence (based on sequence_order)
 
         """
+        # Allow a published=True kwarg
+        if kwargs.pop('published'):
+            kwargs['behavior__state'] = 'published'
+
         kwargs['completed'] = False
-        import ipdb;ipdb.set_trace();
         qs = self.get_queryset().filter(**kwargs)
         seq = qs.aggregate(Min('behavior__sequence_order'))
         seq = seq.get('behavior__sequence_order__min') or 0
@@ -242,21 +249,34 @@ class UserActionManager(models.Manager):
 
         return qs
 
-    def next_in_sequence(self, behavior, **kwargs):
+    def next_in_sequence(self, behaviors, **kwargs):
         """Given a behavior, return the queryset of UserActions that are
         related to the behavior, but have not yet been completed, and are
         the next in a sequence.
 
+        * behaviors - Either a Behavior instance, a queryset of Behaviors, or
+                      an iterable of Behavior IDs. This will filter UserActions
+                      related to the given Behavior(s).
+        * published - (optional). You may provide `published=True` as a keyword
+                      argument, and this method will only return objects related
+                      to published Actions.
+
         """
-        # TODO: ---------------------------------------------------------------
-        # TODO: Ok, based on this, UserGoal, and UserBehavior, we could
-        # TODO: conceivably queue up things based on a sequeunce number, but
-        # TODO: we still need some way to mark a Goal/Behavior as `completed`
-        # TODO: when all those actions have been marked as `completed
-        # TODO: ---------------------------------------------------------------
         from .models import UserCompletedAction as UCA
-        # Find the UserActions related to this behavior.
-        qs = self.get_queryset().filter(action__behavior=behavior).filter(**kwargs)
+
+        if kwargs.pop('published', None):
+            kwargs['action__state'] = 'published'
+
+        is_behavior_object = (
+            hasattr(behaviors, '__class__') and
+            behaviors.__class__.__name__ == "Behavior"
+        )
+        if is_behavior_object:
+            kwargs['action__behavior'] = behaviors
+        else:
+            kwargs['action__behavior__in'] = behaviors
+        qs = self.get_queryset().filter(**kwargs)
+
         # Then exluded the ones we've marked as completed.
         qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
 
