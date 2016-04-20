@@ -474,7 +474,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{0}".format(self.title)
+        return "{0}: {1}".format(self.order, self.title)
 
     class Meta:
         ordering = ['sequence_order', 'title']
@@ -494,6 +494,10 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["goal", self.id])
+
+    @property
+    def order(self):
+        return self.sequence_order
 
     @property
     def rendered_description(self):
@@ -707,7 +711,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         )
 
     def __str__(self):
-        return "{0}".format(self.title)
+        return "{0}: {1}".format(self.order, self.title)
 
     def _set_goal_ids(self):
         """Save the parent Goal IDs in the `goal_ids` array field; this should
@@ -736,6 +740,10 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         self._set_goal_ids()
         self._count_actions()
         super().save(*args, **kwargs)
+
+    @property
+    def order(self):
+        return self.sequence_order
 
     @property
     def rendered_description(self):
@@ -1103,7 +1111,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             setattr(cls, func_name, classmethod(func))
 
     def __str__(self):
-        return "{0}".format(self.title)
+        return "{0}: {1}".format(self.order, self.title)
 
     def _set_notification_text(self):
         if not self.notification_text:
@@ -1131,6 +1139,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self._serialize_default_trigger()
         super().save(*args, **kwargs)
         self.remove_queued_messages()
+
+    @property
+    def order(self):
+        return self.sequence_order
 
     @property
     def is_helper(self):
