@@ -50,7 +50,6 @@ class Trigger(models.Model):
         ('biweekly', 'A couple times a week'),
         ('multiweekly', 'Three - four times a week'),
         ('weekends', 'During the weekend'),
-        ('monthly', 'Once a month'),
     )
     RELATIVE_UNIT_CHOICES = (
         ('days', 'Days'),
@@ -236,7 +235,6 @@ class Trigger(models.Model):
             'biweekly': 5,
             'multiweekly': 5,
             'weekends': 7 - today.isoweekday(),
-            'monthly': 30,
         }
         return local_day_range(user, today, days=days_from_now[self.frequency])
 
@@ -290,7 +288,6 @@ class Trigger(models.Model):
             'biweekly': [3, 5],
             'multiweekly': [2, 5, 7],
             'weekends': [saturday, sunday],
-            'monthly': [28, 29, 30],
         }
         days = random.choice(days_from_now[self.frequency])
         dt = today + timedelta(days=days)
