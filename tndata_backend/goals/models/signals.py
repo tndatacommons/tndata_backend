@@ -21,6 +21,7 @@ from .packages import PackageEnrollment
 from .progress import DailyProgress, UserCompletedAction
 from .public import Action, Behavior, Category, Goal, action_unpublished
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
+from .users import userbehavior_completed
 from .triggers import Trigger
 
 from ..utils import clean_title, clean_notification, strip
@@ -283,6 +284,46 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
             content_type=ContentType.objects.get_for_model(Action)
         )
         messages.delete()
+
+    # Check the Action's parent behavior. If all of the UserActions
+    # within that behavior are completed, mark the Behavior as complete.
+    # Don't really like altering a behavior here, but... :-/
+    if completed and instance.sibling_actions_completed():
+        behavior = instance.action.behavior
+        ub = instance.user.userbehavior_set.get(behavior=behavior)
+        ub.complete()
+        ub.save()
+
+
+@receiver(userbehavior_completed, sender=UserBehavior, dispatch_uid="ub-compt")
+def check_user_goals(sender, instance, **kwargs):
+    """When a UserBehavior is marked as completed, that means all of the
+    Behavior's Actions have a related UserCompletedAction object, and that
+    the Behavior is "done". We now need to check if the Behavior's parent Goal
+    is "done", by checking to see if all of the user's selected behaviors
+    within that goal have been completed."""
+
+    # TODO: Signal handler for completed UserBehaviors;
+    # TODO: When all berhaviors within a goal are completed,
+    # TODO: mark goal as completed.
+    user = instance.user
+
+    # Parent goals for this Behavior
+    goals = instance.behavior.goals.values_list('pk', flat=True)
+
+    # Those that are selected by the user.
+    usergoals = user.usergoal_set.filter(goal__pk__in=goals)
+    goals = usergoals.values_list('goal__pk', flat=True)
+
+    # If there are no, uncompletd UserBehaviors, then the goal is compelted.
+    incomplete_userbehaviors = user.userbehavior_set.filter(
+        behavior__goals__in=goals,
+        completed=False
+    )
+    if not incomplete_userbehaviors.exists():
+        for ug in usergoals:
+            ug.complete()
+            ug.save()
 
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")

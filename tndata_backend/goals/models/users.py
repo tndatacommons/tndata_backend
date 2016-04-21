@@ -10,8 +10,10 @@ Mappings between users and their selected public content.
                         [ User ]
 
 """
+
 from collections import defaultdict
 
+import django.dispatch
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -127,6 +129,11 @@ class UserGoal(models.Model):
             from ..serializers.simple import SimpleCategorySerializer
             self.serialized_primary_category = SimpleCategorySerializer(cat).data
 
+    def complete(self):
+        """Mark this goal as complete"""
+        self.completed = True
+        self.completed_on = timezone.now()
+
     @property
     def goal_progress(self):
         return None
@@ -172,6 +179,20 @@ class UserGoal(models.Model):
     objects = UserGoalManager()
 
 
+# -----------------------------------------------------------------------------
+#
+# A signal that will be fired when a UserBehavior is "completed", meaning that
+# the user has completed all of the actions within the related Behavior.
+#
+# The provided arguments include:
+#
+# - sender: the UserBehavior class
+# - instance: the instance of the UserBehavior class.
+#
+# -----------------------------------------------------------------------------
+userbehavior_completed = django.dispatch.Signal(providing_args=['instance'])
+
+
 class UserBehavior(models.Model):
     """A Mapping between Users and the Behaviors they've selected.
 
@@ -202,6 +223,18 @@ class UserBehavior(models.Model):
         unique_together = ("user", "behavior")
         verbose_name = "User Behavior"
         verbose_name_plural = "User Behaviors"
+
+    def complete(self):
+        """Mark this behavior as complete, and fire a signal to notify the
+        user's selected goals that are parents of this behavior.
+        """
+        self.completed = True
+        self.completed_on = timezone.now()
+        # fire a signal
+        userbehavior_completed.send(
+            sender=self.__class__,
+            instance=self,
+        )
 
     def bucket_progress(self):
         """Calculates bucket progress for all actions within the related
