@@ -117,12 +117,23 @@ class UserBehaviorManager(models.Manager):
         - not completed,
         - the next in the sequence (based on sequence_order)
 
+        Allowed keyword arguments include:
+
+        - published -- restrict results to published Behaviors
+        - goals -- filters by goals.
+
         """
         # Allow a published=True kwarg
         if kwargs.pop('published'):
             kwargs['behavior__state'] = 'published'
-
         kwargs['completed'] = False
+
+        # Filter on provided goals (if any)
+        goals = kwargs.pop('goals', None)
+        if goals:
+            kwargs['behavior__goals__in'] = goals
+
+        # We also need to know about (un)completed goals and their sequences.
         qs = self.get_queryset().filter(**kwargs)
         seq = qs.aggregate(Min('behavior__sequence_order'))
         seq = seq.get('behavior__sequence_order__min') or 0

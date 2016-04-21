@@ -18,8 +18,10 @@ def get_next_useractions_in_sequence(user):
     goals = goals.values_list('goal', flat=True)
 
     # Uncompleted behaviors within those goals.
-    behaviors = user.userbehavior_set.next_in_sequence(published=True)
-    behaviors = behaviors.filter(behavior__goals__in=goals)
+    behaviors = user.userbehavior_set.next_in_sequence(
+        published=True,
+        goals=goals
+    )
     behaviors = behaviors.values_list("behavior", flat=True)
 
     # Return the related UserAction objects.
