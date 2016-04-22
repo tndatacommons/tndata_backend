@@ -139,6 +139,29 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
                 return Response(serializer.data)
         return super().retrieve(request, *args, **kwargs)
 
+    @detail_route(methods=['post'],
+                  permission_classes=[IsContentAuthor],
+                  url_path='order')
+    def set_order(self, request, pk=None):
+        """Allow certin users to update Goals through the api; but only
+        to set the order.
+
+            /api/goals/<id>/order/
+
+        """
+        try:
+            # NOTE: we can't use self.get_object() here, because we're allowing
+            # users to change items that may not yet be published.
+            seq = int(request.data.get('sequence_order'))
+            num = models.Goal.objects.filter(pk=pk).update(sequence_order=seq)
+            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class TriggerViewSet(VersionedViewSetMixin,
                      mixins.CreateModelMixin,
