@@ -3,6 +3,7 @@
 {% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
+{% load static from staticfiles %}
 
 {% block title %}B: {{ behavior.title }}{% endblock %}
 
@@ -107,6 +108,20 @@
       <ul class="action-list">
       {% for action in behavior.action_set.all %}
         <li>
+          {# -- Allow re-ordering actions --------------- #}
+          <select
+            id="action-update-{{action.id}}"
+            class="pull-left no-chosen action-update"
+            style="margin: 0 20px 0 0;width:50px;"
+            data-actionid="{{action.id}}">
+          {% for v in order_values %}
+            <option
+              value="{{v}}"
+              {% if action.sequence_order == v %} selected="selected"{% endif %}>
+              {{v}}</option>
+          {% endfor %}
+          </select>
+          {# -------------------------------------------- #}
           {{ action|label }} <span class="label secondary">
             {{ action.get_action_type_display }}</span>
           <a href="{{ action.get_absolute_url }}">{{ action }}</a>
@@ -118,4 +133,10 @@
       </ul>
     </div>
   </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
 {% endblock %}

@@ -3,6 +3,7 @@
 {% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
+{% load static from staticfiles %}
 
 {% block title %}G: {{ goal.title }}{% endblock %}
 
@@ -73,15 +74,44 @@
 
       <h2 class="subheader">Behavior Content</h2>
       <p><em>{{ goal }}</em> contains the following behaviors and actions:</p>
-      <ul>
+      <ul style="list-style-type: none">
       {% for behavior in goal.behavior_set.all %}
-        <li>{{behavior|label}}
+        <li>
+          {{behavior|label}}
           <strong>
             <a href="{{ behavior.get_absolute_url }}">{{behavior}}</a>
           </strong>
-          <ul class="action-list">
+          {# -- Allow re-ordering behaviors --------------- #}
+          <select
+            id="behavior-update-{{behavior.id}}"
+            class="pull-left no-chosen behavior-update"
+            style="margin: 0 20px 0 0;width:50px;"
+            data-behaviorid="{{behavior.id}}">
+          {% for v in order_values %}
+            <option
+              value="{{v}}"
+              {% if behavior.sequence_order == v %} selected="selected"{% endif %}>
+              {{v}}</option>
+          {% endfor %}
+          </select>
+          {# -------------------------------------------- #}
+          <ul class="action-list clearfix">
             {% for action in behavior.action_set.all %}
               <li>
+                {# -- Allow re-ordering actions --------------- #}
+                <select
+                  id="action-update-{{action.id}}"
+                  class="pull-left no-chosen action-update"
+                  style="margin: 0 20px 0 0;width:50px;"
+                  data-actionid="{{action.id}}">
+                {% for v in order_values %}
+                  <option
+                    value="{{v}}"
+                    {% if action.sequence_order == v %} selected="selected"{% endif %}>
+                    {{v}}</option>
+                {% endfor %}
+                </select>
+                {# -------------------------------------------- #}
                 {{ action|label }} <span class="label secondary">{{ action.get_action_type_display }}</span>
                 <a href="{{ action.get_absolute_url }}">{{ action }}</a>
                 <small>{{ action.default_trigger.time_details }}</small>
@@ -96,4 +126,10 @@
 
     </div>
   </div> {# end .row #}
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
 {% endblock %}

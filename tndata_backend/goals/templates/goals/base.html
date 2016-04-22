@@ -11,6 +11,11 @@
 <link rel="stylesheet" href="{% static 'js/dropzone/basic.css' %}" />
 <style type="text/css">
 .breadcrumbs {margin-top:1em;}
+
+/* success/error stats for Action.sequence_order updates */
+select.success {background-color: #8f8;}
+select.error {background-color: #f88;}
+
 select[multiple] {min-height: 100px;}
 /* Nested lists; i.e. the tree of Goals/Behaviors/Actions */
 ul.nested {list-style-type:none; margin-left: 0px;}
@@ -78,10 +83,11 @@ form.dropzone {
 }
 
 /* Styles for the right-hand-side list of content */
-ul.action-list {list-style-type:none;}
+ul.action-list {list-style-type:none;clear:both;}
 ul.action-list li {
   border-top: 1px dotted #ccc;
   line-height: 1;
+  margin:0.25em 0;
   padding: 0.5em 0;
 }
 </style>
@@ -249,7 +255,7 @@ ul.action-list li {
     $('table.object-list').DataTable({paging:false});
 
     // Use chosen for all <select> elements
-    $('select').chosen();
+    $('select:not(.no-chosen)').chosen();
 
     $("#search").click(function(e) {
       e.preventDefault();

@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseNotFound, JsonResponse
@@ -469,6 +469,27 @@ class GoalDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        goal = context['object']
+
+        # IDs for this Goal's child behaviors
+        bids = goal.behavior_set.values_list('pk', flat=True)
+        order_values = Behavior.objects.filter(pk__in=bids).aggregate(
+            Max('sequence_order')
+        )
+        order_values = order_values.get('sequence_order__max') or 0
+
+        # include values for the Action's sequence_orders
+        result = Action.objects.filter(behavior__id__in=bids).aggregate(
+            Max('sequence_order')
+        )
+
+        # Pick the larger order value from Behaviors and Actions
+        result = max(order_values, result.get('sequence_order__max') or 0)
+        context['order_values'] = list(range(result + 5))
+        return context
+
 
 class GoalCreateView(ContentAuthorMixin, CreatedByView):
     model = Goal
@@ -582,6 +603,7 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        behavior = context['object']
 
         # XXX: Disabling bucket-related stuff
         # Determine if this Behavior contains dynamic notifications
@@ -589,6 +611,11 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
         # qs = Behavior.objects.contains_dynamic().filter(pk=obj.id)
         # context['contains_dynamic'] = qs.exists()
         # context['action_url'] = Action.get_create_reinforcing_action_url()
+
+        # include values for the Action's sequence_orders
+        result = behavior.action_set.aggregate(Max('sequence_order'))
+        result = result.get('sequence_order__max') or 0
+        context['order_values'] = list(range(result + 5))
         return context
 
 
