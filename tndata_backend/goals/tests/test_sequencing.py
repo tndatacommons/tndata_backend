@@ -247,3 +247,112 @@ class TestSequencing(TestCase):
             list(results.values_list("action__title", flat=True)),
             []
         )
+
+
+class TestContentCompletion(TestCase):
+    """Ensure that when a user completes all actions in a Behavior, the
+    UserBehavior is marked as completed, and when all Behaviors in a Goal are
+    compelted the UserGoal is also marked as completed.
+
+    This work was implemented to support content sequencing so the test
+    is included here as well.
+
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create a user.
+        User = get_user_model()
+        cls.user = User.objects.create_user("asdf", "asdf@example.com", "asdf")
+
+        def _t():
+            # Function to generate a trigger
+            return mommy.make(Trigger, time_of_day='morning', frequency='daily')
+
+        def _goal(title, category, seq):  # Function to create a Goal
+            return mommy.make(
+                Goal,
+                title=title,
+                sequence_order=seq,
+                state='published',
+                categories=[category]
+            )
+
+        def _behavior(title, goal, seq):  # Function to create a Behavior
+            return mommy.make(
+                Behavior,
+                title=title,
+                sequence_order=seq,
+                state='published',
+                goals=[goal]
+            )
+
+        def _action(title, behavior, seq):  # Function to generate an Action
+            return mommy.make(
+                Action,
+                title=title,
+                sequence_order=seq,
+                behavior=behavior,
+                default_trigger=_t(),
+                state='published'
+            )
+
+        # Create a series of sequenced content.
+        # C0 (0)
+        # - GA (0)
+        # -- BA (0) --- AA (0), AB (0)
+        # -- BB (0) --- AC (0)
+        cat = mommy.make(Category, title="C0", order=0, state='published')
+
+        # Goal GA
+        ga = _goal('GA', cat, 0)
+        ba = _behavior("BA", ga, 0)
+        _action("AA", ba, 0)
+        _action("AB", ba, 0)
+
+        bb = _behavior("BB", ga, 0)
+        _action("AC", bb, 0)
+
+        # Enroll the user in all of the above content.
+        cat.enroll(cls.user)
+
+    def test_completion(self):
+        # ensure the user got enrolled, and that nothing is yet completed
+        self.assertEqual(self.user.useraction_set.count(), 3)
+        self.assertFalse(
+            self.user.usergoal_set.get(goal__title='GA').completed)
+        self.assertFalse(
+            self.user.userbehavior_set.get(behavior__title='BA').completed)
+        self.assertFalse(
+            self.user.userbehavior_set.get(behavior__title='BB').completed)
+
+        ucas = self.user.usercompletedaction_set.all()
+        ucas = ucas.filter(action__title__in=['AA', 'AB', 'AC'])
+        self.assertFalse(ucas.exists())
+
+        # Complete an action, the behavior/goal is not yet completed.
+        _complete_action(self.user, 'AA')
+        self.assertFalse(
+            self.user.userbehavior_set.get(behavior__title='BA').completed)
+        self.assertFalse(
+            self.user.userbehavior_set.get(behavior__title='BB').completed)
+        self.assertFalse(
+            self.user.usergoal_set.get(goal__title='GA').completed)
+
+        # Complete the remaining action, and the behavior should get
+        # completed as well (but not the goal)
+        _complete_action(self.user, 'AB')
+        self.assertTrue(
+            self.user.userbehavior_set.get(behavior__title='BA').completed)
+        self.assertFalse(
+            self.user.userbehavior_set.get(behavior__title='BB').completed)
+        self.assertFalse(
+            self.user.usergoal_set.get(goal__title='GA').completed)
+
+        # Complete the last action, and it's behavior should get completed.
+        # Since all the behaviors are completed, the Goal should be too.
+        _complete_action(self.user, 'AC')
+        self.assertTrue(
+            self.user.userbehavior_set.get(behavior__title='BB').completed)
+        self.assertTrue(
+            self.user.usergoal_set.get(goal__title='GA').completed)
