@@ -60,6 +60,7 @@ class Command(BaseCommand):
         return users
 
     def handle(self, *args, **options):
+        import ipdb;ipdb.set_trace();
         users = self._get_users(options)
 
         categories = Category.objects.selected_by_default(state='published')
