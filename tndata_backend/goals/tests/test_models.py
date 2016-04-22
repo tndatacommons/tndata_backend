@@ -186,7 +186,7 @@ class TestGoal(TestCase):
         Category.objects.filter(id=self.category.id).delete()
 
     def test__str__(self):
-        expected = "0: Title for Test Goal"
+        expected = "Title for Test Goal"
         actual = "{}".format(self.goal)
         self.assertEqual(expected, actual)
 
@@ -1180,7 +1180,7 @@ class TestBehavior(TestCase):
         Behavior.objects.filter(id=self.behavior.id).delete()
 
     def test__str__(self):
-        expected = "0: Test Behavior"
+        expected = "Test Behavior"
         actual = "{}".format(self.behavior)
         self.assertEqual(expected, actual)
 
@@ -1325,7 +1325,7 @@ class TestAction(TestCase):
             self.assertEqual(action.bucket, bucket)
 
     def test__str__(self):
-        expected = "0: Test Action"
+        expected = "Test Action"
         actual = "{}".format(self.action)
         self.assertEqual(expected, actual)
 

@@ -474,7 +474,7 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{0}: {1}".format(self.order, self.title)
+        return "{}".format(self.title)
 
     class Meta:
         ordering = ['sequence_order', 'title']
@@ -711,7 +711,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         )
 
     def __str__(self):
-        return "{0}: {1}".format(self.order, self.title)
+        return "{}".format(self.title)
 
     def _set_goal_ids(self):
         """Save the parent Goal IDs in the `goal_ids` array field; this should
@@ -1111,7 +1111,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             setattr(cls, func_name, classmethod(func))
 
     def __str__(self):
-        return "{0}: {1}".format(self.order, self.title)
+        return "{}".format(self.title)
 
     def _set_notification_text(self):
         if not self.notification_text:
