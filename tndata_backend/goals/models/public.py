@@ -275,7 +275,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         user.usercategory_set.get_or_create(category=self)
 
         # Then enroll the user in all of the published Goals
-        goals = self.goal_set.published()
+        goals = self.goal_set.filter(state='published')
         for goal in goals:
             ug, _ = user.usergoal_set.get_or_create(user=user, goal=goal)
             ug.primary_category = self
