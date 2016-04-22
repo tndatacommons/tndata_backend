@@ -301,11 +301,9 @@ def check_user_goals(sender, instance, **kwargs):
     Behavior's Actions have a related UserCompletedAction object, and that
     the Behavior is "done". We now need to check if the Behavior's parent Goal
     is "done", by checking to see if all of the user's selected behaviors
-    within that goal have been completed."""
+    within that goal have been completed.
 
-    # TODO: Signal handler for completed UserBehaviors;
-    # TODO: When all berhaviors within a goal are completed,
-    # TODO: mark goal as completed.
+    """
     user = instance.user
 
     # Parent goals for this Behavior

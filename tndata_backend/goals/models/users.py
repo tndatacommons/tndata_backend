@@ -230,6 +230,7 @@ class UserBehavior(models.Model):
         """
         self.completed = True
         self.completed_on = timezone.now()
+        self.save()  # WE MUST save this prior to firing the signal.
         # fire a signal
         userbehavior_completed.send(
             sender=self.__class__,
