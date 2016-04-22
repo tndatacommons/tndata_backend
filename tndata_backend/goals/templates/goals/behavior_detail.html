@@ -98,13 +98,14 @@
       {% for goal in behavior.goals.all %}
         <li>
           {{ goal|label }}
+          <strong>{{ goal.sequence_order }}:</strong>
           <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
         </li>
       {% empty %}
         <li><em>This behavior is not associated with any Goals.</em></li>
       {% endfor %}
       </ul>
-      <h2 class="subheader">Actions</h2>
+      <h2 class="subheader">Notifications</h2>
       <ul class="action-list">
       {% for action in behavior.action_set.all %}
         <li>

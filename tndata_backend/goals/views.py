@@ -363,6 +363,15 @@ class CategoryDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category = context['object']
+
+        result = category.goals.aggregate(Max('sequence_order'))
+        result = result.get('sequence_order__max') or 0
+        context['order_values'] = list(range(result + 5))
+        return context
+
 
 class CategoryCreateView(ContentEditorMixin, CreatedByView):
     model = Category

@@ -3,6 +3,7 @@
 {% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
+{% load static from staticfiles %}
 
 {% block title %}C: {{ category.title }}{% endblock %}
 
@@ -111,14 +112,30 @@
         <h2 class="subheader">Notes</h2>
         <div class="panel">{{ category.notes|markdown }}</div>
       {% endif %}
-      <h2 class="subheader">Content</h2>
+      <h2 class="subheader">Category Content</h2>
       <p><strong>{{ category }}</strong>
-        contains the following Goals, Behaviors, and Actions:</p>
+        contains the following Goals, Behaviors, and Notifications:</p>
       <ul class="accordion" data-accordion>
       {% for goal in category.goals %}
         <li class="accordion-navigation clearfix">
-          <a href="#goal-{{goal.id}}"><div class="pull-right">{{ goal|label }}</div> {{ goal }}</a>
-          <div id="goal-{{ goal.id }}" class="content{% if forloop.first %} active{% endif %}">
+          <a href="#goal-{{goal.id}}">
+            <div class="pull-right">{{ goal|label }}</div> {{ goal }}
+            {# -- Allow re-ordering goals --------------- #}
+            <select
+              id="goal-update-{{goal.id}}"
+              class="pull-left no-chosen goal-update"
+              style="margin: 0 20px 0 0;width:50px;"
+              data-goalid="{{goal.id}}">
+            {% for v in order_values %}
+              <option
+                value="{{v}}"
+                {% if goal.sequence_order == v %} selected="selected"{% endif %}>
+                {{v}}</option>
+            {% endfor %}
+            </select>
+            {# -------------------------------------------- #}
+          </a>
+          <div id="goal-{{ goal.id }}" class="content">
 
           {# Link to the goal's detail page #}
           <p class="text-right" style="margin:0;padding:0">
@@ -131,15 +148,16 @@
             <dl>
               <dt class="clearfix">
                 <div class="pull-right">{{ behavior|label }}</div>
+                {{ behavior.sequence_order }}:
                 <a href="{{ behavior.get_absolute_url }}">{{behavior}}</a>
               </dt>
               <dd class="clearfix">
                 <ul class="action-list">
                 {% for action in behavior.action_set.all %}
                   <li>
-                    {#<div class="pull-right">{{ba|label}}</div>#}
                     {{ action|label }}
                     <span class="label secondary">{{ action.get_action_type_display }}</span>
+                    {{ action.sequence_order }}:
                     <a href="{{ action.get_absolute_url }}">{{ action }}</a>
                     {% with trigger=action.default_trigger %}
                       {% if trigger %}
@@ -162,4 +180,10 @@
       </ul>
     </div>
   </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
 {% endblock %}
