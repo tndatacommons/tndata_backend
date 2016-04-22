@@ -21,6 +21,7 @@ from utils.mixins import VersionedViewSetMixin
 from . import models
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
+from . permissions import is_content_author
 from . utils import pop_first
 
 
@@ -61,6 +62,11 @@ class IsOwner(permissions.IsAuthenticated):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
+
+
+class IsContentAuthor(permissions.IsAuthenticated):
+    def has_object_permission(self, request, view, obj):
+        return is_content_author(request.user)
 
 
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -202,6 +208,29 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         return self.queryset
 
+    @detail_route(methods=['post'],
+                  permission_classes=[IsContentAuthor],
+                  url_path='order')
+    def set_order(self, request, pk=None):
+        """Allow certin users to update Behaviors through the api; but only
+        to set the order.
+
+            /api/behaviors/<id>/order/
+
+        """
+        try:
+            # NOTE: we can't use self.get_object() here, because we're allowing
+            # users to change items that may not yet be published.
+            seq = int(request.data.get('sequence_order'))
+            num = models.Behavior.objects.filter(pk=pk).update(sequence_order=seq)
+            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Actions. See the api_docs/ for more info"""
@@ -250,6 +279,29 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.exclude(id__in=chosen)
 
         return self.queryset
+
+    @detail_route(methods=['post'],
+                  permission_classes=[IsContentAuthor],
+                  url_path='order')
+    def set_order(self, request, pk=None):
+        """Allow certin users to update Actions through the api; but only
+        to set the order.
+
+            /api/actions/<id>/order/
+
+        """
+        try:
+            # NOTE: we can't use self.get_object() here, because we're allowing
+            # users to change items that may not yet be published.
+            seq = int(request.data.get('sequence_order'))
+            num = models.Action.objects.filter(pk=pk).update(sequence_order=seq)
+            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserGoalViewSet(VersionedViewSetMixin,
