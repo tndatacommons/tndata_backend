@@ -1537,13 +1537,10 @@ def debug_notifications(request):
     useractions = None
     completed_useractions = None
     completed_customactions = None
-    progress = None
     next_user_action = None
     today = None
     upcoming_useractions = []
     upcoming_customactions = []
-    buckets = {}
-    daily_progress = None
     email = request.GET.get('email_address', None)
 
     if email is None:
@@ -1570,7 +1567,6 @@ def debug_notifications(request):
                 updated_on__range=today
             )
 
-            progress = user_feed.todays_progress(user)
             next_user_action = user_feed.next_user_action(user)
             upcoming_useractions = user_feed.todays_actions(user)
             upcoming_customactions = user_feed.todays_customactions(user)
@@ -1582,14 +1578,6 @@ def debug_notifications(request):
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
-        # Buckets for each Behavior the user has selected.
-        try:
-            daily_progress = user.dailyprogress_set.latest()
-            for ub in user.userbehavior_set.all():
-                buckets[ub.behavior.title] = daily_progress.get_status(ub.behavior)
-        except DailyProgress.DoesNotExist:
-            daily_progress = None
-
     context = {
         'form': form,
         'email': email,
@@ -1597,12 +1585,9 @@ def debug_notifications(request):
         'customactions': customactions,
         'completed_useractions': completed_useractions,
         'completed_customactions': completed_customactions,
-        'progress': progress,
         'next_user_action': next_user_action,
         'upcoming_useractions': upcoming_useractions,
         'upcoming_customactions': upcoming_customactions,
-        'daily_progress': daily_progress,
-        'buckets': buckets,
         'today': today,
     }
     return render(request, 'goals/debug_notifications.html', context)

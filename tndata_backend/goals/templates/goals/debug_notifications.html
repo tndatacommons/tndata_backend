@@ -73,16 +73,7 @@
       <span class="label info">{{ today.0|localtime }}</span> to
       <span class="label info">{{ today.1|localtime }}</span>
     </p>
-    </h2>
     <div class="panel">
-      <h3>Behavior Buckets <small>{{ daily_progress.updated_on }}</small></h3>
-      <ul>
-      {% for behavior, bucket in buckets.items %}
-        <li>{{ behavior }}: <span class="label secondary">{{ bucket }}</li>
-      {% empty %}
-        <li>no data</li>
-      {% endfor %}
-      </ul>
 
       <h3>Public/Packaged Actions</h3>
       <ul>
