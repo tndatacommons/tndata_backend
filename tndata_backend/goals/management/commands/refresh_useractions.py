@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from goals.models import CustomAction, UserAction
+from utils.slack import post_private_message
 
 logger = logging.getLogger("loggly_logs")
 
@@ -57,6 +58,7 @@ class Command(BaseCommand):
         msg = "Refreshed Trigger Date for {0} UserActions".format(count)
         logger.error(msg)
         self.stderr.write(msg)
+        post_private_message("bkmontgomery", msg)
 
         count = 0
         for ca in CustomAction.objects.stale(**kwargs):
@@ -66,3 +68,4 @@ class Command(BaseCommand):
         msg = "Refreshed Trigger Date for {0} CustomActions".format(count)
         logger.error(msg)
         self.stderr.write(msg)
+        post_private_message("bkmontgomery", msg)
