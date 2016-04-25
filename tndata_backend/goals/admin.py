@@ -63,17 +63,16 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
         children = [obj.publish_children() for obj in queryset]
         children = [val for sublist in children for val in sublist]
         count += len(children)
-        print("Published:\n- {}".format("\n- ".join([str(obj) for obj in children])))
 
         # and the children's children
         while len(children) > 0:
             children = [obj.publish_children() for obj in children]
             children = [val for sublist in children for val in sublist]
             count += len(children)
-            print("Published:\n- {}".format("\n- ".join([str(obj) for obj in children])))
-        print("Count: {}".format(count))
         self.message_user(request, "Published {} objects.".format(count))
     publish_children.short_description = "Publish selected item and all child content"
+
+
 
 
 class CategoryAdmin(ContentWorkflowAdmin):
@@ -86,6 +85,49 @@ class CategoryAdmin(ContentWorkflowAdmin):
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.actions.append('delete_children')
+
+    def delete_children(self, request, queryset):
+        # publish the selected objects:
+        categories_to_delete = set(queryset.values_list('id', flat=True))
+
+        # Find all the child goals that are in no other categories.
+        goals = models.Goal.objects.filter(categories__in=categories_to_delete)
+        goals_to_delete = set()
+        for goal in goals:
+            parents = set(goal.categories.values_list('id', flat=True))
+            if parents.issubset(categories_to_delete):
+                goals_to_delete.add(goal.id)
+
+        # Find all behaviors in those goals
+        behaviors = models.Behavior.objects.filter(goals__in=goals_to_delete)
+        behaviors_to_delete = set()
+        for behavior in behaviors:
+            parents = set(behavior.goals.values_list('id', flat=True))
+            if parents.issubset(goals_to_delete):
+                behaviors_to_delete.add(behavior.id)
+
+        actions = models.Action.objects.filter(behavior__in=behaviors_to_delete)
+
+        # Build a confirmation message
+        msg = "Deleted {a} Actions, {b} Behaviors, {g} Goals, and {c} Categories."
+        msg = msg.format(
+            a=actions.count(),
+            b=len(behaviors_to_delete),
+            g=len(goals_to_delete),
+            c=len(categories_to_delete),
+        )
+
+        # NOW, delete stuff.
+        actions.delete()
+        models.Behavior.objects.filter(id__in=behaviors_to_delete).delete()
+        models.Goal.objects.filter(id__in=goals_to_delete).delete()
+        queryset.delete()  # the categories.
+        self.message_user(request, msg)
+
+    delete_children.short_description = "Delete selected item and all child content"
 admin.site.register(models.Category, CategoryAdmin)
 
 
