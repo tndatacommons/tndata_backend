@@ -73,8 +73,6 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
     publish_children.short_description = "Publish selected item and all child content"
 
 
-
-
 class CategoryAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'state', 'created_by', 'updated_on', 'created_on',
