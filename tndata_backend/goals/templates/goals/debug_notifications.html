@@ -68,6 +68,38 @@
     </div>
   </div>
   <div class="large-6 small-12 columns">
+    <h2>Notification Queue</h2>
+    <p>The following table lists the user's prioritized notifications queue
+    for the next 3 days.</p>
+    <table>
+      <thead>
+        <tr>
+        <th>Date</th>
+        <th>High</th>
+        <th>Med</th>
+        <th>Low</th>
+        <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for datestring, datadict in user_queues.items %}
+        <tr>
+          <td>{{datestring}}</td>
+          <td>{% for msg in datadict.high %}
+            <a href="/admin/notifications/gcmmessage/?q={{msg}}">
+            {{msg|truncatechars:12}}</a><br/>{% endfor %}</td>
+          <td>{% for msg in datadict.medium %}
+            <a href="/admin/notifications/gcmmessage/?q={{msg}}">
+            {{msg|truncatechars:12}}</a><br/>{% endfor %}</td>
+          <td>{% for msg in datadict.low %}
+            <a href="/admin/notifications/gcmmessage/?q={{msg}}">
+            {{msg|truncatechars:12}}</a><br/>{% endfor %}</td>
+          <td>{{datadict.count|default:0}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% comment %}
     <h2>Progress <small>Behaviors / Completed Actions</small></h2>
     <p>
       <span class="label info">{{ today.0|localtime }}</span> to
@@ -109,6 +141,7 @@
       {% endfor %}
       </ul>
     </div>
+    {% endcomment %}
   </div>
 </div> {# end .row #}
 

@@ -20,6 +20,7 @@ from django.utils import timezone
 
 from django_fsm import TransitionNotAllowed
 from django_rq import job
+from notifications import queue
 from userprofile.forms import UserForm
 from userprofile.models import UserProfile
 from utils.db import get_max_order
@@ -1535,12 +1536,13 @@ def debug_notifications(request):
     User = get_user_model()
     customactions = None
     useractions = None
-    completed_useractions = None
-    completed_customactions = None
+    # completed_useractions = None
+    # completed_customactions = None
     next_user_action = None
     today = None
     upcoming_useractions = []
     upcoming_customactions = []
+    user_queues = defaultdict(dict)
     email = request.GET.get('email_address', None)
 
     if email is None:
@@ -1552,20 +1554,20 @@ def debug_notifications(request):
             today = local_day_range(user)
             useractions = user.useraction_set.all()
             useractions = useractions.order_by("next_trigger_date").distinct()
-            completed_useractions = UserCompletedAction.objects.filter(
-                user=user,
-                updated_on__range=today
-            )
+            # completed_useractions = UserCompletedAction.objects.filter(
+            #     user=user,
+            #     updated_on__range=today
+            # )
 
             # Custom Actions
             customactions = user.customaction_set.all()
             customactions = customactions.order_by("next_trigger_date")
             customactions = customactions.distinct()
 
-            completed_customactions = UserCompletedCustomAction.objects.filter(
-                user=user,
-                updated_on__range=today
-            )
+            # completed_customactions = UserCompletedCustomAction.objects.filter(
+            #     user=user,
+            #     updated_on__range=today
+            # )
 
             next_user_action = user_feed.next_user_action(user)
             upcoming_useractions = user_feed.todays_actions(user)
@@ -1575,6 +1577,23 @@ def debug_notifications(request):
             for ca in customactions:
                 ca.upcoming = ca in upcoming_customactions
 
+            # The user's notification queue
+            dt = today[0]
+            for dt in [dt + timedelta(days=i) for i in range(0, 3)]:
+                qdata = queue.UserQueue.get_data(user, date=dt)
+                # data for a user queue is a dict that looks like this:
+                # 'uq:1:2016-04-25:count': 0,
+                # 'uq:1:2016-04-25:high': [],
+                # 'uq:1:2016-04-25:low': [],
+                # 'uq:1:2016-04-25:medium
+                for key, content in qdata.items():
+                    parts = key.split(':')
+                    datestring = parts[2]
+                    key = parts[3]
+                    user_queues[datestring][key] = content
+
+                #user_queues.append(queue.UserQueue.get_data(user, date=dt))
+
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
@@ -1583,12 +1602,13 @@ def debug_notifications(request):
         'email': email,
         'useractions': useractions,
         'customactions': customactions,
-        'completed_useractions': completed_useractions,
-        'completed_customactions': completed_customactions,
+        # 'completed_useractions': completed_useractions,
+        # 'completed_customactions': completed_customactions,
         'next_user_action': next_user_action,
         'upcoming_useractions': upcoming_useractions,
         'upcoming_customactions': upcoming_customactions,
         'today': today,
+        'user_queues': dict(user_queues),
     }
     return render(request, 'goals/debug_notifications.html', context)
 
