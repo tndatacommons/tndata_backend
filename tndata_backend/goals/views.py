@@ -1639,9 +1639,9 @@ def debug_progress(request):
     if user:
         ucas = user.usercompletedaction_set.all()
         completed['actions'] = ucas.filter(updated_on__gte=from_date)
-        behaviors =  user.userbehavior_set.filter(completed=True)
+        behaviors = user.userbehavior_set.filter(completed=True)
         completed['behaviors'] = behaviors.filter(completed_on__gte=from_date)
-        goals =  user.usergoal_set.filter(completed=True)
+        goals = user.usergoal_set.filter(completed=True)
         completed['goals'] = goals.filter(completed_on__gte=from_date)
 
     context = {
