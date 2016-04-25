@@ -97,18 +97,41 @@
   </div>
 </div> {# end .row #}
 {% endcomment %}
-{% if latest_dp %}
+
 <div class="row">
-  <div class="large-6 medium-6 small-12 columns">
-    <h3>Latest Behavior Status</h3>
-    <pre>{{ latest_dp.behaviors_status }}</pre>
+  <div class="large-6 small-12 columns">
+    <h2>Completed Goals</h2>
+    <ul>
+    {% for ug in completed.goals %}
+      <li>{{ ug.goal }}: {{ ug.completed_on }}</li>
+    {% empty %}
+      <li><em>Nothing completed, yet</em></li>
+    {% endfor %}
+    </ul>
+    <h2>Completed Behaviors</h2>
+    <ul>
+    {% for ub in completed.behaviors %}
+      <li>{{ ub.behavior }}: {{ ub.completed_on }}</li>
+    {% empty %}
+      <li><em>Nothing completed, yet</em></li>
+    {% endfor %}
+    </ul>
   </div>
-  <div class="large-6 medium-6 small-12 columns">
-    <h3>Latest Goal Status</h3>
-    <pre>{{ latest_dp.goal_status }}</pre>
+  <div class="large-6 small-12 columns">
+    <h2>Completed Actions</h2>
+    <ul>
+    {% for uca in completed.actions %}
+      <li>
+        <span class="label">{{ uca.state }}</span>
+        {{ uca.action }}<br/>
+        <em>{{ uca.updated_on }}</em>
+      </li>
+    {% endfor %}
+    </ul>
+
   </div>
 </div>
-{% endif %}
+
 <div class="row">
   <div class="large-12 small-12 columns">
 

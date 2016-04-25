@@ -1633,10 +1633,16 @@ def debug_progress(request):
         user=user,
         updated_on__gte=from_date
     )
-    try:
-        latest_dp = daily_progresses.latest()
-    except DailyProgress.DoesNotExist:
-        latest_dp = None
+
+    # Completed Actions/Behaviors/Goals.
+    completed = {'actions': [], 'behaviors': [], 'goals': []}
+    if user:
+        ucas = user.usercompletedaction_set.all()
+        completed['actions'] = ucas.filter(updated_on__gte=from_date)
+        behaviors =  user.userbehavior_set.filter(completed=True)
+        completed['behaviors'] = behaviors.filter(completed_on__gte=from_date)
+        goals =  user.usergoal_set.filter(completed=True)
+        completed['goals'] = goals.filter(completed_on__gte=from_date)
 
     context = {
         'email': email,
@@ -1646,7 +1652,7 @@ def debug_progress(request):
         'today': today,
         'from_date': from_date,
         'daily_progresses': daily_progresses,
-        'latest_dp': latest_dp,
+        'completed': completed,
     }
     return render(request, 'goals/debug_progress.html', context)
 
