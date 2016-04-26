@@ -515,15 +515,28 @@ class UserBehaviorAdmin(UserRelatedModelAdmin):
 admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 
+class UACategoryListFilter(admin.SimpleListFilter):
+    title = "Primary Category"
+    parameter_name = 'category'
+
+    def lookups(self, request, model_admin):
+        qs = models.Category.objects.all()
+        return qs.values_list('id', 'title').order_by('title')
+
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(primary_category__id=category_id)
+        return queryset
+
+
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'next_trigger_date', 'notification',
-        'action', 'behavior', 'goals',
+        'action', 'behavior', 'primary_goal', 'primary_category',
+        'completed',
     )
-    list_filter = (
-        'primary_category',
-        'primary_goal',
-    )
+    list_filter = (UACategoryListFilter, 'primary_goal')
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title', 'action__notification_text', 'id',
@@ -535,8 +548,13 @@ class UserActionAdmin(UserRelatedModelAdmin):
     ]
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
 
-    def goals(self, obj):
-        return ", ".join(obj.action.behavior.goals.values_list("title", flat=True))
+    def completed(self, obj):
+        return models.UserCompletedAction.objects.filter(
+            user=obj.user,
+            useraction=obj,
+            state=models.UserCompletedAction.COMPLETED
+        ).exists()
+    completed.boolean = True
 
     def behavior(self, obj):
         return obj.action.behavior.title
@@ -547,14 +565,6 @@ class UserActionAdmin(UserRelatedModelAdmin):
 
     def notification(self, obj):
         return obj.action.notification_text
-
-    def categories(self, obj):
-        cats = set()
-        for g in obj.action.behavior.goals.all():
-            for title in g.categories.values_list("title", flat=True):
-                cats.add(title)
-        return ", ".join(cats)
-
 admin.site.register(models.UserAction, UserActionAdmin)
 
 
