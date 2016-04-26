@@ -159,6 +159,7 @@
       <th>Object</th>
       <th>Status</th>
       <th>Notifications</th>
+      <th>Parents</th>
     </tr>
   </thead>
   <tbody>
@@ -318,6 +319,19 @@
             <li><em>none scheduled</em></li>
           {% endfor %}
           </ul>
+        </td>
+        <td>
+          <strong data-tooltip aria-haspopup="true"
+                  class="has-tip" title="Primary Category">
+            {{ ua.primary_category }}</strong><br/>
+          <span class="label info" data-tooltip aria-haspopup="true"
+                class="has-tip" title="Sequence Order for this Goal">
+                {{ ua.primary_goal.sequence_order }}</span>
+          {{ ua.primary_goal }}<br/>
+          <span class="label info" data-tooltip aria-haspopup="true"
+                class="has-tip" title="Sequence Order for this Behavior">
+                {{ ua.action.behavior.sequence_order }}</span>
+          {{ ua.action.behavior }}<br/>
         </td>
       </tr>
     {% endfor %}
