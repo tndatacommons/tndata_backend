@@ -100,6 +100,42 @@
 
 <div class="row">
   <div class="large-6 small-12 columns">
+    <h2>Next in Sequence</h2>
+    <p>The next set of goals/behaviors/actions based on the specified
+       sequence (if any) and whether or not the user has completed stuff.</p>
+
+    <div class="panel">
+      <h3>Goals</h3>
+      <ul style="list-style-type:none">
+      {% for ug in next_goals %}
+        <li>
+          <span class="label info">{{ ug.goal.sequence_order }}</span>
+          {{ug}} <small>{{ug.primary_category}}</small>
+        </li>
+      {% endfor %}
+      </ul>
+
+      <h3>Behaviors</h3>
+      <ul style="list-style-type:none">
+      {% for ub in next_behaviors %}
+        <li>
+          <span class="label info">{{ ub.behavior.sequence_order }}</span>
+          {{ub}}
+        </li>
+      {% endfor %}
+      </ul>
+
+      <h3>Actions/Notifications</h3>
+      <ul style="list-style-type:none">
+      {% for ua in next_actions %}
+        <li>
+          <span class="label info">{{ ua.action.sequence_order }}</span>
+          {{ua}} <small>{{ ua.next_trigger_date }}</small>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+
     <h2>Completed Goals</h2>
     <ul>
     {% for ug in completed.goals %}

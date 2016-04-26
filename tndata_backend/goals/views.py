@@ -58,7 +58,6 @@ from . models import (
     PackageEnrollment,
     Trigger,
     UserCompletedAction,
-    UserCompletedCustomAction,
     UserGoal,
     popular_actions,
     popular_behaviors,
@@ -1591,9 +1590,7 @@ def debug_notifications(request):
                     datestring = parts[2]
                     key = parts[3]
                     user_queues[datestring][key] = content
-
-                #user_queues.append(queue.UserQueue.get_data(user, date=dt))
-
+                # user_queues.append(queue.UserQueue.get_data(user, date=dt))
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
@@ -1649,6 +1646,14 @@ def debug_progress(request):
         goals = user.usergoal_set.filter(completed=True)
         completed['goals'] = goals.filter(completed_on__gte=from_date)
 
+    # NEXT in sequence objeccts.
+    next_goals = user.usergoal_set.next_in_sequence(published=True)
+    next_behaviors = user.userbehavior_set.next_in_sequence(
+        goals=next_goals.values_list('goal', flat=True), published=True)
+    next_actions = user.useraction_set.next_in_sequence(
+        next_behaviors.values_list('behavior', flat=True), published=True)
+    next_actions = next_actions.order_by("next_trigger_date")
+
     context = {
         'email': email,
         'searched_user': user,
@@ -1658,6 +1663,9 @@ def debug_progress(request):
         'from_date': from_date,
         'daily_progresses': daily_progresses,
         'completed': completed,
+        'next_goals': next_goals,
+        'next_behaviors': next_behaviors,
+        'next_actions': next_actions,
     }
     return render(request, 'goals/debug_progress.html', context)
 
