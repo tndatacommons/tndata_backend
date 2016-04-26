@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -31,11 +31,17 @@ class CustomActionManager(models.Manager):
     def stale(self, **kwargs):
         """Return a queryset of objects whose `next_trigger_date` is either
         stale or None."""
-        qs = self.get_queryset().filter(**kwargs)
-        return qs.filter(
-            Q(next_trigger_date__lt=timezone.now()) |
+        hours = kwargs.pop('hours', None)
+        now = timezone.now()
+
+        qs = self.get_queryset().filter(**kwargs).filter(
+            Q(next_trigger_date__lt=now) |
             Q(next_trigger_date=None)
         )
+        if hours:
+            threshold = now - timedelta(hours=hours)
+            qs = qs.filter(updated_on__lte=threshold)
+        return qs
 
 
 class DailyProgressManager(models.Manager):
@@ -154,10 +160,22 @@ class UserActionQuerySet(models.QuerySet):
         return self.filter(next_trigger_date__gte=timezone.now())
 
     def stale(self, **kwargs):
-        return self.filter(**kwargs).filter(
-            Q(next_trigger_date__lt=timezone.now()) |
+        # An `hours` param let's us limit output to objects that are older
+        # than the given number of hour
+        hours = kwargs.pop('hours', None)
+        now = timezone.now()
+
+        # Items with no trigger, or whose trigger is in the past.
+        qs = self.filter(**kwargs).filter(
+            Q(next_trigger_date__lt=now) |
             Q(next_trigger_date=None)
         )
+        # Items that haven't been updated in some time threshold
+        if hours:
+            threshold = now - timedelta(hours=hours)
+            qs = qs.filter(updated_on__lte=threshold)
+
+        return qs
 
 
 class UserActionManager(models.Manager):
