@@ -1620,6 +1620,10 @@ def debug_progress(request):
     email = request.GET.get('email_address', None)
     user = None
     form = EmailForm(initial={'email_address': email})
+    next_goals = []
+    next_behaviors = []
+    next_actions = []
+
     try:
         user = User.objects.get(email__icontains=email)
     except (User.DoesNotExist, User.MultipleObjectsReturned):
@@ -1646,13 +1650,13 @@ def debug_progress(request):
         goals = user.usergoal_set.filter(completed=True)
         completed['goals'] = goals.filter(completed_on__gte=from_date)
 
-    # NEXT in sequence objeccts.
-    next_goals = user.usergoal_set.next_in_sequence(published=True)
-    next_behaviors = user.userbehavior_set.next_in_sequence(
-        goals=next_goals.values_list('goal', flat=True), published=True)
-    next_actions = user.useraction_set.next_in_sequence(
-        next_behaviors.values_list('behavior', flat=True), published=True)
-    next_actions = next_actions.order_by("next_trigger_date")
+        # NEXT in sequence objeccts.
+        next_goals = user.usergoal_set.next_in_sequence(published=True)
+        next_behaviors = user.userbehavior_set.next_in_sequence(
+            goals=next_goals.values_list('goal', flat=True), published=True)
+        next_actions = user.useraction_set.next_in_sequence(
+            next_behaviors.values_list('behavior', flat=True), published=True)
+        next_actions = next_actions.order_by("next_trigger_date")
 
     context = {
         'email': email,
