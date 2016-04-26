@@ -40,6 +40,7 @@ class UserCategory(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     category = models.ForeignKey(Category)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{0}".format(self.category.title)
@@ -82,6 +83,7 @@ class UserGoal(models.Model):
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     # Pre-rendered FK Fields.
     serialized_goal = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
@@ -214,6 +216,7 @@ class UserBehavior(models.Model):
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "{0}".format(self.behavior.title)
@@ -437,6 +440,7 @@ class UserAction(models.Model):
     serialized_trigger = JSONField(blank=True, default=dict,
                                    dump_kwargs=dump_kwargs)
     created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['user', 'action']
