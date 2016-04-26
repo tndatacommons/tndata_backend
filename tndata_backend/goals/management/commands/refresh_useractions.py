@@ -58,7 +58,7 @@ class Command(BaseCommand):
         msg = "Refreshed Trigger Date for {0} UserActions".format(count)
         logger.error(msg)
         self.stderr.write(msg)
-        post_private_message("bkmontgomery", msg)
+        #post_private_message("bkmontgomery", msg)
 
         count = 0
         for ca in CustomAction.objects.stale(**kwargs):
@@ -68,4 +68,4 @@ class Command(BaseCommand):
         msg = "Refreshed Trigger Date for {0} CustomActions".format(count)
         logger.error(msg)
         self.stderr.write(msg)
-        post_private_message("bkmontgomery", msg)
+        #post_private_message("bkmontgomery", msg)

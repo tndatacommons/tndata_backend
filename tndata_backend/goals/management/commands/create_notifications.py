@@ -287,5 +287,5 @@ class Command(BaseCommand):
         # Finish with a confirmation message
         m = "Created {0} notifications.".format(self._messages_created)
         self._log_messages.append((m, WARNING))
-        self._to_slack('bkmontgomery', m)
+        #self._to_slack('bkmontgomery', m)
         self.write_log()
