@@ -548,22 +548,23 @@ class UserAction(models.Model):
             return to_localtime(self.next_trigger_date, self.user)
         return self.next()
 
-    def _in_current_bucket(self):
-        """Return True if this action/trigger is a dynamic notifcation and
-        is part of the user's currently-active behavior bucket."""
-        if self.trigger.is_dynamic:
-            try:
-                # Check the user's current bucket, and do a lookup to see
-                # if this action is part of the currently-selected bucket.
-                # If so, return True (otherwise return False)
-                dp = self.user.dailyprogress_set.latest()
-                bucket = dp.get_status(self.action.behavior)
-                uas = self.user.useraction_set.select_from_bucket(bucket)
-                return uas.filter(pk=self.id).exists()
-            except self.user.dailyprogress_set.model.DoesNotExist:
-                # no progress? Are we in the first bucket?
-                return self.action.bucket == Action.BUCKET_ORDER[0]
-        return True  # non-dynamic triggers would always be current.
+# XXX: Don't need this since we've removed buckets.
+#    def _in_current_bucket(self):
+#        """Return True if this action/trigger is a dynamic notifcation and
+#        is part of the user's currently-active behavior bucket."""
+#        if self.trigger.is_dynamic:
+#            try:
+#                # Check the user's current bucket, and do a lookup to see
+#                # if this action is part of the currently-selected bucket.
+#                # If so, return True (otherwise return False)
+#                dp = self.user.dailyprogress_set.latest()
+#                bucket = dp.get_status(self.action.behavior)
+#                uas = self.user.useraction_set.select_from_bucket(bucket)
+#                return uas.filter(pk=self.id).exists()
+#            except self.user.dailyprogress_set.model.DoesNotExist:
+#                # no progress? Are we in the first bucket?
+#                return self.action.bucket == Action.BUCKET_ORDER[0]
+#        return True  # non-dynamic triggers would always be current.
 
     def _print_next_details(self):
         dp = self.user.dailyprogress_set.latest()
@@ -603,8 +604,9 @@ class UserAction(models.Model):
         is_dynamic = trigger and trigger.is_dynamic
 
         # Return None if we're not in the right bucket or sequence
-        if is_dynamic and not self._in_current_bucket():
-            return None  # don't schedule a notification
+        # XXX: Don't need this since we've removed buckets.
+        # if is_dynamic and not self._in_current_bucket():
+        #     return None  # don't schedule a notification
 
         # If we have a dynamic trigger, let's first determine wether or not
         # we need to re-generate a time; i.e. if the next_trigger_date is in
@@ -690,12 +692,14 @@ class UserAction(models.Model):
         * update_triggers: (default is True).
 
         """
-        self._serialize_action()
-        self._serialize_behavior()
-        self._serialize_primary_goal()
-        self._serialize_primary_category()
-        self._serialize_custom_trigger()
-        self._serialize_trigger()  # Keep *after* custom_trigger
+        # XXX disable this serialization because that was an effort to speed
+        # up the v1 api.
+        # self._serialize_action()
+        # self._serialize_behavior()
+        # self._serialize_primary_goal()
+        # self._serialize_primary_category()
+        # self._serialize_custom_trigger()
+        # self._serialize_trigger()  # Keep *after* custom_trigger
         if kwargs.pop("update_triggers", True):
             self._set_next_trigger_date()
         return super().save(*args, **kwargs)
