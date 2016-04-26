@@ -6,7 +6,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from goals.models import CustomAction, UserAction
-from utils.slack import post_private_message
 
 logger = logging.getLogger("loggly_logs")
 
@@ -22,6 +21,22 @@ class Command(BaseCommand):
             default=None,
             help=("Restrict this command to the given User. "
                   "Accepts a username, email, or id")
+        )
+        parser.add_argument(
+            '--hours',
+            action='store',
+            dest='hours',
+            default=2,
+            type=int,
+            help="Limit to objects that are older than the given value (in hours)"
+        )
+        parser.add_argument(
+            '--limit',
+            action='store',
+            dest='limit',
+            default=100,
+            type=int,
+            help="Limit the number of objects that are modified"
         )
 
     def _user_kwargs(self, user):
@@ -43,9 +58,19 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         count = 0
         kwargs = self._user_kwargs(options['user'])
+        limit = options.pop('limit')
+
+        # Limit the refreshed objects to those that are at least 2 hours old.
+        # (or to an age based on limit option)
+        hours = options.pop('hours')
+        kwargs['hours'] = hours
 
         # Fetch the set of UserActions to refresh.
+        # We want to limit these to reduce the amount of time it takes to
+        # complete execution of this script.
         useractions = UserAction.objects.stale(**kwargs).published()
+        if limit:
+            useractions = useractions[:limit]
 
         # If we're in staging or dev, only do this for our accounts.
         if settings.STAGING or settings.DEBUG:
@@ -58,7 +83,6 @@ class Command(BaseCommand):
         msg = "Refreshed Trigger Date for {0} UserActions".format(count)
         logger.error(msg)
         self.stderr.write(msg)
-        #post_private_message("bkmontgomery", msg)
 
         count = 0
         for ca in CustomAction.objects.stale(**kwargs):
@@ -68,4 +92,3 @@ class Command(BaseCommand):
         msg = "Refreshed Trigger Date for {0} CustomActions".format(count)
         logger.error(msg)
         self.stderr.write(msg)
-        #post_private_message("bkmontgomery", msg)
