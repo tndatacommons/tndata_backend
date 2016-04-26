@@ -1223,8 +1223,6 @@ class TestUserActionAPI(APITestCase):
         self.assertIn('custom_trigger', ua)
         self.assertIn('created_on', ua)
         self.assertEqual(ua['user'], self.user.id)
-        self.assertEqual(ua['action']['id'], self.action.id)
-        self.assertEqual(ua['action']['title'], self.action.title)
         self.assertTrue(ua['custom_triggers_allowed'])
 
     def test_get_useraction_list_with_filters(self):
