@@ -457,7 +457,7 @@ class UserCategoryAdmin(UserRelatedModelAdmin):
     def accepted(self, obj):
         values = obj.category.packageenrollment_set.filter(user=obj.user)
         return all(values.values_list("accepted", flat=True))
-    accepted.boolean=True
+    accepted.boolean = True
 
     def enrolled(self, obj):
         items = obj.category.packageenrollment_set.filter(user=obj.user)
@@ -582,18 +582,46 @@ def tablib_export_user_completed_actions(modeladmin, request, queryset):
 tablib_export_user_completed_actions.short_description = "Export Data as a CSV File"
 
 
+class UCACategoryListFilter(admin.SimpleListFilter):
+    title = "Primary Category"
+    parameter_name = 'category'
+
+    def lookups(self, request, model_admin):
+        qs = models.Category.objects.all()
+        return qs.values_list('id', 'title').order_by('title')
+
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(
+                useraction__primary_category__id=category_id)
+        return queryset
+
+
 class UserCompletedActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last',
-        'useraction', 'action', 'state', 'created_on', 'updated_on',
+        'user_email', 'action', 'state', 'updated_on',
+        'behavior', 'primary_goal', 'primary_category',
     )
+    list_filter = ('state', UCACategoryListFilter, )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title',
     )
-    list_filter = ('state', )
     raw_id_fields = ("user", "action", "useraction")
     actions = [tablib_export_user_completed_actions]
+
+    def behavior(self, obj):
+        return obj.action.behavior
+    behavior.admin_order_field = 'action__behavior__title'
+
+    def primary_goal(self, obj):
+        return obj.useraction.primary_goal
+    primary_goal.admin_order_field = 'useraction__primary_goal__title'
+
+    def primary_category(self, obj):
+        return obj.useraction.primary_category
+    primary_category.admin_order_field = 'useraction__primary_category__title'
 
 admin.site.register(models.UserCompletedAction, UserCompletedActionAdmin)
 
