@@ -446,8 +446,7 @@ admin.site.register(models.Action, ActionAdmin)
 
 class UserCategoryAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'user', 'category',
-        'created_on', 'accepted', 'enrolled',
+        'user_email', 'category', 'created_on', 'accepted', 'enrolled',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -458,6 +457,7 @@ class UserCategoryAdmin(UserRelatedModelAdmin):
     def accepted(self, obj):
         values = obj.category.packageenrollment_set.filter(user=obj.user)
         return all(values.values_list("accepted", flat=True))
+    accepted.boolean=True
 
     def enrolled(self, obj):
         items = obj.category.packageenrollment_set.filter(user=obj.user)
@@ -469,9 +469,9 @@ admin.site.register(models.UserCategory, UserCategoryAdmin)
 
 class UserGoalAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'user', 'goal',
-        'categories', 'created_on'
+        'user_email', 'goal', 'categories', 'completed',
     )
+    list_filter = ('goal__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'goal__title', 'goal__id', 'id',
@@ -493,14 +493,17 @@ admin.site.register(models.UserGoal, UserGoalAdmin)
 
 class UserBehaviorAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'behavior', 'categories',
-        'custom_trigger', 'created_on',
+        'user_email', 'behavior', 'goals', 'categories', 'completed',
     )
+    list_filter = ('behavior__goals__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'behavior__id', 'behavior__title', 'id',
     )
     raw_id_fields = ("user", "behavior")
+
+    def goals(self, obj):
+        return ", ".join(obj.behavior.goals.values_list("title", flat=True))
 
     def categories(self, obj):
         cats = set()
