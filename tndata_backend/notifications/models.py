@@ -71,13 +71,6 @@ class GCMDevice(models.Model):
     def __str__(self):
         return self.device_name or self.registration_id
 
-# ---------------------------------------------------------------------
-#
-# XXX IDEA: Let's just create GCMMessage objects without any regard to
-# delivery date. Then create a separate task that will enqueue things
-# 24-48 hours in advance.
-#
-# ---------------------------------------------------------------------
 
 class GCMMessage(models.Model):
     """A Notification Message sent via GCM."""
