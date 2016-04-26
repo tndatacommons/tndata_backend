@@ -1,10 +1,12 @@
 from collections import defaultdict
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
+from django.utils import timezone
 
 import waffle
 
@@ -146,15 +148,15 @@ class Command(BaseCommand):
                 # Will be in the user's timezone
                 deliver_on = customaction.trigger.next(user=customaction.user)
                 deliver_on = to_utc(deliver_on)
-
-                self.create_message(
-                    customaction.user,
-                    customaction,
-                    customaction.customgoal.title,
-                    customaction.notification_text,
-                    deliver_on,
-                    priority=customaction.priority
-                )
+                if deliver_on and deliver_on < self.threshold:
+                    self.create_message(
+                        customaction.user,
+                        customaction,
+                        customaction.customgoal.title,
+                        customaction.notification_text,
+                        deliver_on,
+                        priority=customaction.priority
+                    )
 
     def schedule_action_notifications(self, users):
         """Given a queryset of users, we first:
@@ -176,15 +178,16 @@ class Command(BaseCommand):
                 # UserActions, because we don't re-generate
                 # these on the fly
                 deliver_on = to_utc(ua.next_reminder)
-                self.create_message(
-                    user,
-                    ua.action,
-                    ua.get_notification_title(),
-                    ua.get_notification_text(),
-                    deliver_on,
-                    priority=ua.priority,
-                    trigger=ua.trigger
-                )
+                if deliver_on and deliver_on < self.threshold:
+                    self.create_message(
+                        user,
+                        ua.action,
+                        ua.get_notification_title(),
+                        ua.get_notification_text(),
+                        deliver_on,
+                        priority=ua.priority,
+                        trigger=ua.trigger
+                    )
 
 # XXX: Currently disabled
 #            # Dynamic Notifications based on Buckets
@@ -221,14 +224,15 @@ class Command(BaseCommand):
                 if ua.trigger and not ua.trigger.is_dynamic:
                     # Will be in the user's timezone
                     deliver_on = to_utc(ua.trigger.next(user=user))
-                    self.create_message(
-                        user,
-                        ua.action,
-                        ua.get_notification_title(),
-                        ua.get_notification_text(),
-                        deliver_on,
-                        priority=ua.priority
-                    )
+                    if deliver_on and deliver_on < self.threshold:
+                        self.create_message(
+                            user,
+                            ua.action,
+                            ua.get_notification_title(),
+                            ua.get_notification_text(),
+                            deliver_on,
+                            priority=ua.priority
+                        )
 
     def schedule_morning_goal_notifications(self, users):
         trigger = Trigger.objects.get_default_morning_goal_trigger()
@@ -237,14 +241,15 @@ class Command(BaseCommand):
             deliver_on = trigger.next(user=user)
             deliver_on = to_utc(deliver_on)
 
-            self.create_message(
-                user,
-                ContentType.objects.get_for_model(Goal),
-                DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
-                DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
-                deliver_on,
-                priority=GCMMessage.LOW
-            )
+            if deliver_on and deliver_on < self.threshold:
+                self.create_message(
+                    user,
+                    ContentType.objects.get_for_model(Goal),
+                    DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
+                    DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
+                    deliver_on,
+                    priority=GCMMessage.LOW
+                )
 
     def schedule_evening_goal_notifications(self, users):
         trigger = Trigger.objects.get_default_evening_goal_trigger()
@@ -253,16 +258,27 @@ class Command(BaseCommand):
             deliver_on = trigger.next(user=user)
             deliver_on = to_utc(deliver_on)
 
-            self.create_message(
-                user,
-                ContentType.objects.get_for_model(Goal),
-                DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE,
-                DEFAULT_EVENING_GOAL_NOTIFICATION_TEXT,
-                deliver_on,
-                priority=GCMMessage.LOW
-            )
+            if deliver_on and deliver_on < self.threshold:
+                self.create_message(
+                    user,
+                    ContentType.objects.get_for_model(Goal),
+                    DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE,
+                    DEFAULT_EVENING_GOAL_NOTIFICATION_TEXT,
+                    deliver_on,
+                    priority=GCMMessage.LOW
+                )
 
     def handle(self, *args, **options):
+        # ---------------------------------------------------------------------
+        # XXX: Don't create notifications that are too far in the future
+        # Attempting to do this has always been a little tricky, and we disabled
+        # this for a while, but we're getting too many messages queued up.
+        #
+        # We also recently disabled the monthly option, so this should be safe.
+        #
+        self.threshold = timezone.now() + timedelta(days=15)
+        # ---------------------------------------------------------------------
+
         # This switch allows us to completely disable creation of notifications
         if not waffle.switch_is_active('goals-create_notifications'):
             return None
@@ -287,5 +303,4 @@ class Command(BaseCommand):
         # Finish with a confirmation message
         m = "Created {0} notifications.".format(self._messages_created)
         self._log_messages.append((m, WARNING))
-        #self._to_slack('bkmontgomery', m)
         self.write_log()
