@@ -1,9 +1,11 @@
 import waffle
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
+from django.utils import timezone
 
 from goals.models import DailyProgress
 
@@ -48,6 +50,10 @@ class Command(BaseCommand):
 
         else:
             users = User.objects.filter(is_active=True)
+
+        # Only do this for users whose progress hasn't been updated recently.
+        dt = timezone.today() - timedelta(hours=8)
+        users = users.exclude(dailyprogress__updated_on__gte=dt).distinct()
 
         # Create snapshots for those users in the given date range.
         count = 0
