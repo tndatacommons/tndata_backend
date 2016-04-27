@@ -299,7 +299,8 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = [
             'packaged_content', 'package_contributors',
-            'selected_by_default', 'prevent_custom_triggers_default',
+            'selected_by_default', 'enrolled_when_selected',
+            'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
             'title', 'description', 'icon', 'image', 'color',
             'secondary_color', 'notes', 'consent_summary', 'consent_more',
@@ -319,6 +320,25 @@ class CategoryForm(forms.ModelForm):
             "consent_more": TextareaWithMarkdownHelperWidget(),
         }
 
+    def clean(self):
+        # HACK to ensure some data integrity stuff.
+        data = super().clean()
+        # Categories CANNOT be both a 'package' and a 'selected_by_default'
+        # prefer selected by default.
+        if data.get('selected_by_default') and data.get('packaged_content'):
+            data['packaged_content'] = False
+
+        # Categories CANNOT be both a 'package' and 'enrolled_when_selected'
+        # prefer enrolled when selected
+        if data.get('enrolled_when_selected') and data.get('packaged_content'):
+            data['packaged_content'] = False
+
+        # Categories CANNOT be `selected_by_default` and 'enrolled_when_selected'
+        # prefer selected by default
+        if data.get('enrolled_when_selected') and data.get('selected_by_default'):
+            data['enrolled_when_selected'] = False
+        return data
+
     def __init__(self, *args, **kwargs):
         # Pop the user so it doesn't get passed to super
         self.user = kwargs.pop("user", None)
@@ -334,9 +354,10 @@ class CategoryForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        # Only allow the `selected_by_default` option for superusers
-        # If user is not an admin, remove that field.
+        # Only allow the `selected_by_default` & `enrolled_when_selected`
+        # options for superusers. If user is not an admin, remove that field.
         if self.user is None or (self.user and not self.user.is_superuser):
+            del self.fields['enrolled_when_selected']
             del self.fields['selected_by_default']
             details_fields = (
                 _("Category Details"), 'title', 'description', 'icon', 'image',
@@ -345,8 +366,8 @@ class CategoryForm(forms.ModelForm):
         else:
             details_fields = (
                 _("Category Details"), 'title', 'description',
-                'selected_by_default', 'icon', 'image', 'color',
-                'secondary_color',
+                'selected_by_default', 'enrolled_when_selected',
+                'icon', 'image', 'color', 'secondary_color',
             )
 
         # Configure crispy forms.
