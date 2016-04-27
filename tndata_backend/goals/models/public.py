@@ -116,13 +116,42 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         related_name="categories_created",
         null=True
     )
+    # -------------------------------------------------------------------------
+    # SPECIAL-PURPOSE CATEGORIES:
+    #
+    # - selected_by_default: These are categories that we want to auto-enroll
+    #   new users into. This means they'll have content in the app even if
+    #   they don't select anything.
+    # - enrolled_when_selected: Thes are categories taht should get listed
+    #   for the user, and if/when they select the category, the user will get
+    #   auto-enrolled in all of the category's content.
+    #
+    # These are _mutually exclusive_ from packages. They're categories of
+    # content, that we make really easy to get the user into the data.
+    # -------------------------------------------------------------------------
     selected_by_default = models.BooleanField(
         default=False,
         help_text="Should this category and all of its content be "
                   "auto-selected for new users?"
     )
+    enrolled_when_selected = models.BooleanField(
+        default=False,
+        help_text="When a user selects this public category, they are enrolled "
+                  "in all of the category's child content."
+    )
 
-    # Fields related to 'Packaged Content'
+    # -------------------------------------------------------------------------
+    # PACKAGES.
+    # A package is collection of content (just like a category), but it
+    # additionally has an extra step required for enrollment; i.e. the user
+    # receives a notification, and must agree to a consent form provided by
+    # the owner of the package.
+    #
+    # Until the user does this, they do not gain access to the content within
+    # the package. Additionally, differnt package enrollments may contain
+    # different goals within the category. Being enrolled in a package does not
+    # meant that you have all goals / behaviors / actions within that category.
+    # -------------------------------------------------------------------------
     packaged_content = models.BooleanField(
         default=False,
         help_text="Is this Category for a collection of packaged content?"
@@ -151,8 +180,9 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
                   "will see the option to prevent custom triggers during "
                   "user enrollment."
     )
+    # -------------------------------------------------------------------------
 
-    # timestamps
+    # TIMESTAMPS
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
