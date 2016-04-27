@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
+from goals.sequence import get_next_useractions_in_sequence
 from goals.models import CustomAction, UserAction
 
 logger = logging.getLogger("loggly_logs")
@@ -39,10 +40,28 @@ class Command(BaseCommand):
             help="Limit the number of objects that are modified"
         )
 
-    def _user_kwargs(self, user):
+    def _users(self, user):
+        """Pull the `user` option return a queryset of of Users."""
+        User = get_user_model()
+        users = User.objects.filter(is_active=True)
+        if user and user.isnumeric():
+            users = users.filter(id=user)
+        elif user:
+            users = users.filter(Q(username=user) | Q(email=user))
+
+        # Restrict to internal users for staging and/or debug
+        if settings.STAGING or settings.DEBUG:
+            users = users.filter(email__icontains="@tndata.org")
+        return users
+
+    def _useraction_kwargs(self, user):
+        """Pull the `user` option and create a dict of keyword arguments
+        that can be passed to the UserAction query.
+
+        """
         User = get_user_model()
 
-        kwargs = {}  # Keyword arguments that get passed to our action querysets.
+        kwargs = {}
         if user:
             try:
                 if user.isnumeric():
@@ -53,42 +72,54 @@ class Command(BaseCommand):
             except User.DoesNotExist:
                 msg = "Could not find user: {0}".format(user)
                 raise CommandError(msg)
+
+        # Restrict to internal users for staging and/or debug
+        if settings.STAGING or settings.DEBUG:
+            kwargs['user__email__icontains'] = "@tndata.org"
+
         return kwargs
 
     def handle(self, *args, **options):
-        count = 0
-        kwargs = self._user_kwargs(options['user'])
-        limit = options.pop('limit')
-
         # Limit the refreshed objects to those that are at least 2 hours old.
         # (or to an age based on limit option)
+        limit = options.pop('limit')
         hours = options.pop('hours')
-        kwargs['hours'] = hours
 
-        # Fetch the set of UserActions to refresh.
-        # We want to limit these to reduce the amount of time it takes to
-        # complete execution of this script.
-        useractions = UserAction.objects.stale(**kwargs).published()
-        if limit:
-            useractions = useractions[:limit]
-
-        # If we're in staging or dev, only do this for our accounts.
-        if settings.STAGING or settings.DEBUG:
-            useractions = useractions.filter(user__email__icontains="@tndata.org")
-
-        for ua in useractions:
-            count += 1
-            ua.save(update_triggers=True)  # fields get refreshed on save.
+        # 1. Fetch the set of SEQUENCED UserActions to refresh.
+        count = 0
+        for user in self._users(options['user']):
+            useractions = get_next_useractions_in_sequence(user)
+            useractions = useractions.stale(hours=hours).published()
+            for ua in useractions:
+                count += 1
+                ua.save(update_triggers=True)  # fields get refreshed on save.
 
         msg = "Refreshed Trigger Date for {0} UserActions".format(count)
-        logger.error(msg)
+        logger.info(msg)
         self.stderr.write(msg)
 
+        # 2. Refresh stale UserActions that have a custom trigger
+        count = 0
+        kwargs = self._useraction_kwargs(options['user'])
+        kwargs['hours'] = hours
+        useractions = UserAction.objects.stale(
+            hours=hours,
+            custom_trigger__isnull=False
+        )
+        for ua in useractions.published()[:limit]:
+            count += 1
+            ua.save(update_triggers=True)
+
+        msg = "Refreshed Custom Triggers for {0} UserActions".format(count)
+        logger.info(msg)
+        self.stderr.write(msg)
+
+        # 3. Update all custom actions
         count = 0
         for ca in CustomAction.objects.stale(**kwargs):
             count += 1
             ca.save()  # fields get refreshed on save.
 
         msg = "Refreshed Trigger Date for {0} CustomActions".format(count)
-        logger.error(msg)
+        logger.info(msg)
         self.stderr.write(msg)
