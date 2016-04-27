@@ -190,7 +190,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         return self.title
 
     class Meta:
-        ordering = ['order', 'title']
+        ordering = ['order', 'title', 'enrolled_when_selected', ]
         verbose_name = "Category"
         verbose_name_plural = "Categories"
         # add_category, change_category, delete_category are created by default.

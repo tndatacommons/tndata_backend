@@ -11,6 +11,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelOptions(
+            name='category',
+            options={'permissions': (('view_category', 'Can view Categories'), ('decline_category', 'Can Decline Categories'), ('publish_category', 'Can Publish Categories')), 'verbose_name_plural': 'Categories', 'ordering': ['order', 'title', 'enrolled_when_selected'], 'verbose_name': 'Category'},
+        ),
         migrations.AddField(
             model_name='category',
             name='enrolled_when_selected',
