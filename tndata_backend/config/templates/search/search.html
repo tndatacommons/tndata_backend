@@ -29,11 +29,17 @@ form.blank {margin: 50% 0px;}
       {% for result in page.object_list %}
         <div>
           <span class="label secondary">{{ result.model_name|title }}</span>
-          <strong><a href="{{ result.url }}">{{ result.title }}</a></strong> |
+          {% if result.url %}
+            <strong><a href="{{ result.url }}">{{ result.title }}</a></strong>
+          {% else %}
+            <strong>{{ result.title }}</strong>
+          {% endif %} |
           <small>Updated: {{ result.updated_on }}</small>
+          {% if result.description %}
           <blockquote>
             {% highlight result.description with query max_length 255 %}
           </blockquote>
+          {% endif %}
         </div>
 
       {% empty %}
