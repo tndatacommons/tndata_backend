@@ -31,7 +31,13 @@ database ID `/api/goals/{id}/`.
 
 ## Enrolling a user in a Goal
 
-You may also enroll a user in a goal, directly.
+You may also enroll a user in a goal, directly. To do so, send a POST reuest
+to `/api/goals/{id}/enroll/`, including the following information:
+
+    {
+        'category': ID,  // Optional, the parent category's ID.
+    }
+
 
 ## Filtering
 
