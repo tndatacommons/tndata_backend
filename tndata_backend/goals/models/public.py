@@ -596,6 +596,39 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
             cat = self.categories.first()
         return cat
 
+    def enroll(self, user, primary_category=None):
+        """Enroll the user in this goal and all of the published content
+        contained within it.
+
+        * user - The user to enroll in the goal.
+        * primary_category - If provided, this Category instance will be set
+          as the primary category on all UserGoals and UserActions.
+
+        """
+        if primary_category is None:
+            primary_category = self.get_parent_category_for_user(user)
+
+        # Ensure we also have the category selected.
+        if not user.usercategory_set.filter(category=primary_category).exists():
+            user.usercategory_set.create(category=primary_category)
+
+        ug, _ = user.usergoal_set.get_or_create(goal=self)
+        ug.primary_category = primary_category
+        ug.save()
+
+        # Then enroll the user in the published Behaviors
+        behaviors = Behavior.objects.published().filter(goals=self).distinct()
+        for behavior in behaviors:
+            user.userbehavior_set.get_or_create(behavior=behavior)
+
+        # Finally, enroll the user in the Behavior's Actions
+        actions = Action.objects.published().filter(behavior__in=behaviors)
+        for action in actions.distinct():
+            ua, _ = user.useraction_set.get_or_create(action=action)
+            ua.primary_category = primary_category
+            ua.primary_goal = self
+            ua.save()
+
     objects = GoalManager()
 
 
