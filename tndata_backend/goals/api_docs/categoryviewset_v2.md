@@ -30,6 +30,6 @@ Categories can be filtered by the following attributes:
 * `selected_by_default`. e.g. `/api/categories/?selected_by_default=1` will
   list categories that are selected by default, while
   `/api/categories/?selected_by_default=0` will not.
-
+* `featured`. e.g. `/api/categories/?featured=1`
 
 ----

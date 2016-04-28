@@ -78,15 +78,27 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
+    def _as_bool(self, request, field):
+        """Attempt to pull the given field from a GET parameter as a boolean
+        value. This method will return True, False, or None if the value was
+        not set."""
+        value = request.GET.get(field, None)
+        if value is not None:
+            try:
+                value = bool(value)
+            except ValueError:  # invalid value, so return None
+                value = None
+        return value
+
     def get_queryset(self):
         self.queryset = super().get_queryset()
-        sbd = self.request.GET.get('selected_by_default', None)
-        if sbd is not None:
-            try:
-                sbd = bool(int(sbd))
-                self.queryset = self.queryset.filter(selected_by_default=bool(sbd))
-            except ValueError:
-                pass
+        selected_by_default = self._as_bool(self.request, 'selected_by_default')
+        featured = self._as_bool(self.request, 'featured')
+        if selected_by_default is not None:
+            self.queryset = self.queryset.filter(
+                selected_by_default=selected_by_default)
+        if featured is not None:
+            self.queryset = self.queryset.filter(featured=featured)
         return self.queryset
 
     def retrieve(self, request, pk=None):
