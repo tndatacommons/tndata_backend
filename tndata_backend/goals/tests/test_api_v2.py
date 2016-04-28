@@ -1,5 +1,6 @@
 from datetime import date, time
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import override_settings
@@ -31,6 +32,7 @@ from .. models import (
 # XXX We've got each test case in this module decorated with `override_settings`,
 # XXX though I'm not sure that actually works with APITestCase
 # XXX See: https://github.com/tomchristie/django-rest-framework/issues/2466
+DRF_DT_FORMAT = settings.REST_FRAMEWORK['DATETIME_FORMAT']
 TEST_SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 TEST_CACHES = {
     'default': {
@@ -51,6 +53,7 @@ TEST_REST_FRAMEWORK = {
     'DEFAULT_VERSION': '1',
     'ALLOWED_VERSIONS': ['1', '2'],
     'DEFAULT_VERSIONING_CLASS': 'utils.api.DefaultQueryParamVersioning',
+    'DATETIME_FORMAT': DRF_DT_FORMAT,
 }
 
 
@@ -2263,9 +2266,9 @@ class TestPackageEnrollmentAPI(V2APITestCase):
 
         # NOTE: the api is supposed to format in ISO format, but it differs
         # slightly, becuase the +00:00 is omitted.
-        updated = self.package.updated_on.isoformat().replace("+00:00", "Z")
+        updated = self.package.updated_on.strftime(DRF_DT_FORMAT)
         self.assertEqual(response.data['updated_on'], updated)
-        enrolled = self.package.enrolled_on.isoformat().replace("+00:00", "Z")
+        enrolled = self.package.enrolled_on.strftime(DRF_DT_FORMAT)
         self.assertEqual(response.data['enrolled_on'], enrolled)
         self.assertEqual(response.data['category']['id'], self.category.id)
         self.assertEqual(response.data['goals'][0]['id'], self.goal.id)
