@@ -343,6 +343,7 @@ class TestCategoryForm(TestCase):
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option', 'selected_by_default',
+            'enrolled_when_selected',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
