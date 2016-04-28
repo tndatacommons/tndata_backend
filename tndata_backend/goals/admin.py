@@ -76,12 +76,12 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
 class CategoryAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'state', 'created_by', 'updated_on', 'created_on',
-        'packaged_content', 'selected_by_default', 'enrolled_when_selected',
+        'packaged_content', 'selected_by_default', 'featured',
     )
     search_fields = ['title', 'description', 'notes', 'id']
     list_filter = (
         'state', 'packaged_content', 'selected_by_default',
-        'enrolled_when_selected',
+        'featured',
     )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')

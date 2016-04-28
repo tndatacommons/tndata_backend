@@ -34,7 +34,7 @@ class SimpleCategorySerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Category
         fields = (
-            'id', 'order', 'title', 'title_slug', 'description',
+            'id', 'order', 'featured', 'title', 'title_slug', 'description',
             'html_description', 'packaged_content', 'icon_url', 'image_url',
             'color', 'secondary_color', 'object_type',
         )

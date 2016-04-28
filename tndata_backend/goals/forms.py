@@ -299,7 +299,7 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = [
             'packaged_content', 'package_contributors',
-            'selected_by_default', 'enrolled_when_selected',
+            'selected_by_default', 'featured',
             'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
             'title', 'description', 'icon', 'image', 'color',
@@ -328,15 +328,15 @@ class CategoryForm(forms.ModelForm):
         if data.get('selected_by_default') and data.get('packaged_content'):
             data['packaged_content'] = False
 
-        # Categories CANNOT be both a 'package' and 'enrolled_when_selected'
+        # Categories CANNOT be both a 'package' and 'featured'
         # prefer enrolled when selected
-        if data.get('enrolled_when_selected') and data.get('packaged_content'):
+        if data.get('featured') and data.get('packaged_content'):
             data['packaged_content'] = False
 
-        # Categories CANNOT be `selected_by_default` and 'enrolled_when_selected'
+        # Categories CANNOT be `selected_by_default` and 'featured'
         # prefer selected by default
-        if data.get('enrolled_when_selected') and data.get('selected_by_default'):
-            data['enrolled_when_selected'] = False
+        if data.get('featured') and data.get('selected_by_default'):
+            data['featured'] = False
         return data
 
     def __init__(self, *args, **kwargs):
@@ -354,10 +354,10 @@ class CategoryForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        # Only allow the `selected_by_default` & `enrolled_when_selected`
+        # Only allow the `selected_by_default` & `featured`
         # options for superusers. If user is not an admin, remove that field.
         if self.user is None or (self.user and not self.user.is_superuser):
-            del self.fields['enrolled_when_selected']
+            del self.fields['featured']
             del self.fields['selected_by_default']
             details_fields = (
                 _("Category Details"), 'title', 'description', 'icon', 'image',
@@ -366,7 +366,7 @@ class CategoryForm(forms.ModelForm):
         else:
             details_fields = (
                 _("Category Details"), 'title', 'description',
-                'selected_by_default', 'enrolled_when_selected',
+                'selected_by_default', 'featured',
                 'icon', 'image', 'color', 'secondary_color',
             )
 

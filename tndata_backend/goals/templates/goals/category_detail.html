@@ -31,10 +31,9 @@
               title="This category is pre-selected for new users"
               class="label">Default</span>
           {% endif %}
-          {% if category.enrolled_when_selected %}
+          {% if category.featured %}
             <span data-tooltip aria-haspopup="true"
-              title="All of this category's child content will be selected when
-                     a user chooses the category" class="label">Self-Enroll</span>
+              title="This is a featured category." class="label">Featured</span>
           {% endif %}
         </dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
@@ -85,13 +84,12 @@
           {% if not category.selected_by_default %}not{% endif %}
           pre-selected for new users.
         </dd>
-        {% if category.enrolled_when_selected %}
-        <dt>Enrolled when selected?</dt>
-        <dd>{{ category.enrolled_when_selected|iconbool }}: Users will be
-          self-enrolled in all of this category's content when they select
-          the category in the app.
+        <dt>Featured</dt>
+        <dd>{{ category.featured|iconbool }}:
+          This category is {% if not category.featured %}not{% endif %} a featured
+          category and will {% if not category.featured %}not{% endif %} be
+          listed promintently within the app.
         </dd>
-        {% endif %}
       </dl>
       {% if category.is_packaged %}
 

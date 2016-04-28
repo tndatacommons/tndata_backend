@@ -122,9 +122,8 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     # - selected_by_default: These are categories that we want to auto-enroll
     #   new users into. This means they'll have content in the app even if
     #   they don't select anything.
-    # - enrolled_when_selected: Thes are categories taht should get listed
-    #   for the user, and if/when they select the category, the user will get
-    #   auto-enrolled in all of the category's content.
+    # - featured: Thes are categories that should get listed prominently in the
+    #   app, typically for a provider we want to promote.
     #
     # These are _mutually exclusive_ from packages. They're categories of
     # content, that we make really easy to get the user into the data.
@@ -134,10 +133,11 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Should this category and all of its content be "
                   "auto-selected for new users?"
     )
-    enrolled_when_selected = models.BooleanField(
+    featured = models.BooleanField(
         default=False,
-        help_text="When a user selects this public category, they are enrolled "
-                  "in all of the category's child content."
+        help_text="Featured categories are typically collection of content "
+                  "provided by an agency/partner that we want to promote "
+                  "publicy within the app."
     )
 
     # -------------------------------------------------------------------------
@@ -190,7 +190,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         return self.title
 
     class Meta:
-        ordering = ['order', 'title', 'enrolled_when_selected', ]
+        ordering = ['order', 'title', 'featured', ]
         verbose_name = "Category"
         verbose_name_plural = "Categories"
         # add_category, change_category, delete_category are created by default.

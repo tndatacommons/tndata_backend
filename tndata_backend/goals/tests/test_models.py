@@ -310,7 +310,7 @@ class TestGoalEnrollment(TestCase):
 
         # Create the content of library for the user.
         cls.cat = mommy.make(
-            Category, title="C", enrolled_when_selected=True,
+            Category, title="C", featured=True,
             order=0, state='published'
         )
 

@@ -40,28 +40,6 @@ def auto_enroll(sender, **kwargs):
         _enroll_user_in_default_categories.delay(kwargs['instance'])
 
 
-@job
-def _handle_enrolled_when_selected_categories(user, category):
-    if category.enrolled_when_selected:
-        category.enroll(user)
-
-
-@receiver(post_save, sender=UserCategory, dispatch_uid="uc_enroll_when_selected")
-def uc_enroll_when_selected(sender, instance, created, raw, using, **kwargs):
-    """When a UserCategory is created, and it's associated with a category
-    flagged as `enrolled_when_selected`, we need to enroll the user in the
-    category's child content.
-
-    This is similar to Categories that are marked as `selected_by_default`.
-
-    """
-    if created and instance.category.enrolled_when_selected:
-        _handle_enrolled_when_selected_categories.delay(
-            instance.user,
-            instance.category
-        )
-
-
 @receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserBehavior, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserAction, dispatch_uid="coru_daily_progress")
