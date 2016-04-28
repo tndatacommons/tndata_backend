@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 This endpoint represents a user's selected Actions. That is, an object that
 defines a mapping between [Users](/api/users/) and [Actions](/api/actions/).
 

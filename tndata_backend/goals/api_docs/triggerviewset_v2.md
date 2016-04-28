@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 A Trigger contains the information that is used to generate the times/dates
 for push notifications. It generally contains a date, time, some recurrence
 information and additional detaills on when/if notifications should stop.

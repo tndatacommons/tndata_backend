@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 A User's custom actions. This endpoint allows a user to retrieve a list
 of or create new custom actions. A `CustomAction` object must be associated
 with a parent `CustomGoal` object (see [Custom Goals](/api/users/customgoals/)).

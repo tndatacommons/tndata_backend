@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 This endpoint represents a user's selected goals. That is, it's an object
 that defines a mapping between [Users](/api/users/) and
 [Goals](/api/goals/).

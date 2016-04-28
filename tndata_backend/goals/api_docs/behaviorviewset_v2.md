@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 A Behavior may reside in one or more goals, and it contains zero or more
 Actions.
 
