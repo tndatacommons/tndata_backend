@@ -24,9 +24,14 @@ Each goal contains the following information:
   parent categories for the goal.
 * `object_type`: A string; will alwayws be `goal`.
 
-## Goal Endpoints
+## Goal Details Endpoint
 
-Each goal is available at an endpoint based on it's database ID: `/api/goals/{id}/`.
+Each goal's content is available at an endpoint based on it's
+database ID `/api/goals/{id}/`.
+
+## Enrolling a user in a Goal
+
+You may also enroll a user in a goal, directly.
 
 ## Filtering
 

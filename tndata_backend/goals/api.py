@@ -4,6 +4,7 @@ from django.conf import settings as project_settings
 from django.db.models import Q
 from django.utils import timezone
 
+from django_rq import job
 from drf_haystack.viewsets import HaystackViewSet
 from drf_haystack.filters import HaystackHighlightFilter
 from rest_framework import mixins, permissions, status, viewsets
@@ -120,6 +121,11 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         return super().retrieve(request, pk=pk)
 
 
+@job
+def _enroll_user_in_goal(user, goal, category=None):
+    goal.enroll(user, category)
+
+
 class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Goals. See the api_docs/ for more info"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -167,6 +173,43 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             seq = int(request.data.get('sequence_order'))
             num = models.Goal.objects.filter(pk=pk).update(sequence_order=seq)
             return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @detail_route(methods=['post'], url_path='enroll')
+    def enroll(self, request, pk=None):
+        """Let a user enroll themselves in a goal.
+
+            /api/goals/<id>/enroll/
+
+        Requires that a user be authenticated, and the POST request should
+        contain the following info:
+
+        - category: ID  (ID for a primary category)
+
+        """
+        try:
+            assert request.user.is_authenticated()
+
+            # NOTE: It should be save to use self.get_object() here,
+            # this should only happen for published goals.
+            goal = self.get_object()
+            category = request.data.get('category', None)
+            if category:
+                category = models.Category.objects.get(pk=category)
+
+            # Async enrollment because this could be slow
+            _enroll_user_in_goal.delay(request.user, goal, category)
+
+            msg = (
+                "Your request has been scheduled and your goals should "
+                "appear in your feed soon."
+            )
+            return Response(data={'message': msg}, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response(
