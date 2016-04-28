@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 from utils.serializers import ObjectTypeModelSerializer
 
@@ -252,6 +253,11 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         action = Action.objects.get(pk=action_id)
         results['action'] = ActionSerializer(action).data
         results = self.include_parent_objects(results)
+        # Ensure that we use the Specified Datetime formatting for the
+        # next_reminder field.
+        if 'next_reminder' in results and results['next_reminder']:
+            results['next_reminder'] = results['next_reminder'].strftime(
+                settings.REST_FRAMEWORK['DATETIME_FORMAT'])
         return results
 
     def create(self, validated_data):

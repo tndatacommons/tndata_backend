@@ -389,6 +389,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSION': '2',
     'ALLOWED_VERSIONS': ['1', '2'],
     'DEFAULT_VERSIONING_CLASS': 'utils.api.DefaultQueryParamVersioning',
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S%z',  # 2015-04-28 03:47:25+0000
 }
 
 
