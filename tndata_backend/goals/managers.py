@@ -458,6 +458,9 @@ class CategoryManager(WorkflowManager):
     """Updated WorkflowManager for Categories; we want to exclude packaged
     content from the list of published Categories."""
 
+    def featured(self, *args, **kwargs):
+        return super().published().filter(featured=True)
+
     def published(self, *args, **kwargs):
         qs = super().published()
         return qs.filter(packaged_content=False)
