@@ -233,6 +233,27 @@ class TestGoalAPI(V2APITestCase):
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+    def test_enroll_unathenticated(self):
+        url = self.get_url('goal-enroll', args=[self.goal.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_enroll(self):
+        User = get_user_model()
+        user = User.objects.create_user('x', 'a@b.xyz', 'asdf')
+        url = self.get_url('goal-enroll', args=[self.goal.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['message'],
+            "Your request has been scheduled and your goals "
+            "should appear in your feed soon."
+        )
+        user.delete()
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
