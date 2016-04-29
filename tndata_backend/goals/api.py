@@ -180,7 +180,9 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    @detail_route(methods=['post'], url_path='enroll')
+    @detail_route(methods=['post'],
+                  permission_classes=[permissions.IsAuthenticated],
+                  url_path='enroll')
     def enroll(self, request, pk=None):
         """Let a user enroll themselves in a goal.
 
@@ -193,8 +195,6 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         """
         try:
-            assert request.user.is_authenticated()
-
             # NOTE: It should be save to use self.get_object() here,
             # this should only happen for published goals.
             goal = self.get_object()
