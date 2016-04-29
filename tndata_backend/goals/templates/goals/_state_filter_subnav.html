@@ -11,4 +11,13 @@
     hide-for-small-only"><a href="?state=pending-review">Pending</a></dd>
   <dd class="{% if state_filter == "declined" %}active {% endif %}
     hide-for-small-only"><a href="?state=declined">Declined</a></dd>
+
+  {% if category_list %} {# Additional filters for categories #}
+    <dd class="{% if packaged_content %}active {%endif %}
+      hide-for-small-only"><a href="?packaged_content=1">Packages</a></dd>
+    <dd  class="{% if featured %}active {%endif %}
+      hide-for-small-only"><a href="?featured=1">Featured</a></dd>
+    <dd  class="{% if selected_by_default %}active {%endif %}
+      hide-for-small-only"><a href="?selected_by_default=1">Default</a></dd>
+  {% endif %}
 </dl>

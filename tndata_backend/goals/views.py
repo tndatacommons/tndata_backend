@@ -352,10 +352,33 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
     context_object_name = 'categories'
     template_name = "goals/category_list.html"
 
+    def _filters(self):
+        kw = {}
+
+        selected = self.request.GET.get('selected_by_default', None)
+        if selected is not None:
+            kw['selected_by_default'] = bool(selected)
+
+        featured = self.request.GET.get('featured', None)
+        if featured is not None:
+            kw['featured'] = bool(featured)
+
+        packaged = self.request.GET.get('packaged_content', None)
+        if packaged is not None:
+            kw['packaged_content'] = bool(packaged)
+
+        return kw
+
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(**self._filters())
         queryset = queryset.annotate(Count('usercategory'))
         return queryset.prefetch_related("goal_set", "goal_set__behavior_set")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(self._filters())
+        context['category_list'] = True
+        return context
 
 
 class CategoryDetailView(ContentViewerMixin, DetailView):
