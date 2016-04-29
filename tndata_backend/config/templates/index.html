@@ -41,6 +41,13 @@
     {% else %}
       <div class="large-8 large-offset-2 medium-10 medium-offset-1 small-12 columns end">
         <h1>TN Data Commons Admin</h1>
+        <div data-alert class="alert-box info">
+          <i class="fa fa-warning"></i>
+          Usage of this system indicates acceptance of the
+          <a href="/terms/">terms of service</a>,
+          <a href="/privacy/">privacy policy</a>, and
+          <a href="/license/">content license agreement</a>.
+        </div>
         <form action="{% url 'login' %}" method="post">{% csrf_token %}
         {{ login_form }}<hr>
 
