@@ -235,7 +235,7 @@ class TestGoalAPI(V2APITestCase):
 
     def test_enroll_unathenticated(self):
         url = self.get_url('goal-enroll', args=[self.goal.id])
-        response = self.client.get(url)
+        response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_enroll(self):
