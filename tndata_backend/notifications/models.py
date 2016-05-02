@@ -329,6 +329,7 @@ class GCMMessage(models.Model):
         options = {
             'delay_while_idle': delay_while_idle,
             'time_to_live': time_to_live,
+            'low_priority': True,
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
