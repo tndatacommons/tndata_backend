@@ -271,8 +271,6 @@ if DEBUG:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-            #'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            #'LOCATION': 'unique-snowflake',
         }
     }
 
@@ -307,8 +305,6 @@ CACHEOPS_DEFAULTS = {'timeout': CACHE_TIMEOUT}
 CACHEOPS = {
     'auth.*': {'ops': ('fetch', 'get')},
     'auth.permission': {'ops': 'all'},
-    #'goals.*': {'ops': ('fetch', 'get')},
-    #'userprofile.userprofile': {'ops': ('fetch', 'get')},
 }
 CACHEOPS_DEGRADE_ON_FAILURE = True
 
@@ -399,9 +395,14 @@ PLAY_APP_URL = os.environ.get('PLAY_APP_URL')
 
 # django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
+CORS_URLS_REGEX = r'^/api/.*$'
 CORS_ORIGIN_WHITELIST = (
+    'app.tndata.org',
+    'staging.tndata.org',
+    'tndata.ngrok.io',
+    'brad.ngrok.io',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
 )
 
 # Ignore these bad host headers; This circumvents the SuspiciousOperation
@@ -489,19 +490,19 @@ if DEBUG:
     # -------------
     DEBUG_TOOLBAR_PATCH_SETTINGS = False  # Do not adjust settings automatically
     DEBUG_TOOLBAR_PANELS = [
-	'debug_toolbar.panels.versions.VersionsPanel',
-	'debug_toolbar.panels.timer.TimerPanel',
-        #'pympler.panels.MemoryPanel',
-	'debug_toolbar.panels.settings.SettingsPanel',
-	'debug_toolbar.panels.headers.HeadersPanel',
-	'debug_toolbar.panels.request.RequestPanel',
-	'debug_toolbar.panels.sql.SQLPanel',
-	'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-	'debug_toolbar.panels.templates.TemplatesPanel',
-	'debug_toolbar.panels.cache.CachePanel',
-	'debug_toolbar.panels.signals.SignalsPanel',
-	'debug_toolbar.panels.logging.LoggingPanel',
-	'debug_toolbar.panels.redirects.RedirectsPanel',
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        # 'pympler.panels.MemoryPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+        'debug_toolbar.panels.cache.CachePanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.logging.LoggingPanel',
+        'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
     MIDDLEWARE_CLASSES = (
         'querycount.middleware.QueryCountMiddleware',
