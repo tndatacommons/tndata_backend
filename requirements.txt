@@ -6,7 +6,7 @@ Pillow==2.7.0
 Django==1.8.12
 Markdown==2.5.1
 Pygments==2.0.1
-django-cors-headers==0.13
+django-cors-headers==1.1.0
 djangorestframework==3.3.2
 gnureadline==6.3.3
 ipdb==0.8
