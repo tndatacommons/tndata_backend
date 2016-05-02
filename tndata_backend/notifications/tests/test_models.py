@@ -212,7 +212,7 @@ class TestGCMMessage(TestCase):
         msg._get_gcm_client = Mock(return_value=mock_client)
 
         # 1. call send() / whose internals are mocked
-        # 2. it'll call _save_response
+        # 2. it'll call _handle_gcm_response
         # 3. which will call save()
         # 4. which should not re-enque the message.
         original_queue_id = msg.queue_id
@@ -357,7 +357,7 @@ class TestGCMMessage(TestCase):
 
     def test_send(self):
         with patch("notifications.models.GCMClient") as mock_client:
-            self.msg._save_response = Mock()  # Don't call _save_response
+            self.msg._handle_gcm_response = Mock()  # Don't call _handle_gcm_response
             mock_resp = Mock(
                 status_code=200,
                 reason='ok',
@@ -401,7 +401,7 @@ class TestGCMMessage(TestCase):
         msg.delete()
         other_device.delete()
 
-    def test__save_response(self):
+    def test__handle_gcm_response(self):
         """Ensure that success=True, and the response_text includes expected
         data (from the GCM response)"""
         resp = Mock(status_code=200, reason='OK', url="FOO")
@@ -418,7 +418,7 @@ class TestGCMMessage(TestCase):
                 'success': 1
             }]
         )
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
 
         self.assertTrue(self.msg.success)
@@ -427,7 +427,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
 
-    def test__save_response_when_error(self):
+    def test__handle_gcm_response_when_error(self):
         """Ensure that success=False, and our response_text includes the GCM
         error message."""
         resp = Mock(status_code=200, reason='OK', url="FOO")
@@ -442,14 +442,14 @@ class TestGCMMessage(TestCase):
                 'success': 0
             }]
         )
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
 
         self.assertEqual(self.msg.response_text, "NotRegistered")
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
 
-    def test__save_response_when_success_and_error(self):
+    def test__handle_gcm_response_when_success_and_error(self):
         """If we get both a success and a failure in the GCM result data,
         record the message as a success."""
         resp = Mock(status_code=200, reason='OK', url="FOO")
@@ -465,7 +465,7 @@ class TestGCMMessage(TestCase):
                 'success': 1
             }]
         )
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
 
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
         self.assertEqual(self.msg.response_text, expected_text)
@@ -473,7 +473,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
 
-    def test__save_response_when_muldiple_successes(self):
+    def test__handle_gcm_response_when_muldiple_successes(self):
         """If we get multiple successes in the GCM result data, record the
         message as a success."""
 
@@ -495,7 +495,7 @@ class TestGCMMessage(TestCase):
             }]
         )
 
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
 
         self.assertTrue(self.msg.success)
