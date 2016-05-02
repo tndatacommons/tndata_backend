@@ -85,6 +85,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
     actions = ['send_notification', 'expire_messages']
+    raw_id_fields = ('user', )
 
     def pretty_payload(self, obj):
         """pretty-printed version of the `content_json` attribute delivered as
