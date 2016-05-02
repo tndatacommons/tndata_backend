@@ -15,6 +15,8 @@ from django.utils import timezone
 
 from jsonfield import JSONField
 from pushjack import GCMClient
+from pushjack.exceptions import GCMInvalidRegistrationError
+
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
@@ -334,11 +336,11 @@ class GCMMessage(models.Model):
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
         resp = client.send(self.registered_devices, self.content_json, **options)
-        self._save_response(resp)
+        self._handle_gcm_response(resp)
         return resp
 
     def _set_expiration(self, days=7):
-        """Set the date/time at which this message should be expired (i.e.
+        """Set the date/time at which this object should be expired (i.e.
         deleted) from our database. We want to set an expiration for some point
         in the future, so that users can receive these messages, but then snooze
         them for some time.
@@ -351,15 +353,42 @@ class GCMMessage(models.Model):
             self.expire_on = timezone.now() + timedelta(days=days)
             metric('GCM Message Sent', category='Notifications')
 
-    def _save_response(self, resp):
-        """This method saves response data from GCM. This is mostly good for
-        debugging message delivery, and this method will parse out that data
-        and populate the following fields:
+    def _remove_invalid_gcm_devices(self, errors):
+        """Given a list of errors from GCM, look for any instances of
+        `GCMInvalidRegistrationError`, and delete any matching `GCMDevice`
+        objects.
 
-        * response_code
-        * response_text
-        * response_data
-        * registration_ids
+        * errors = a list of errors (if any)
+
+        XXX: This is a destructive operation.
+
+        """
+        identifiers = [
+            error.identifier for error in errors
+            if isinstance(error, GCMInvalidRegistrationError) and error.identifier
+        ]
+        if len(identifiers) > 0:  # Don't hit the DB if we don't have to.
+            GCMDevice.objects.filter(registration_id__in=identifiers).delete()
+
+    def _handle_gcm_response(self, resp):
+        """This method handles the http response & data from GCM (after sending
+        a message). There are a few things that can happen, here:
+
+        1. The Response content is parsed, and the following fields are
+           populated:
+
+            * response_code
+            * response_text
+            * response_data
+            * registration_ids
+
+        2. If a message is successfully delivered, this method will call
+           the `_set_expiration` method to set a date on which this instance
+           should be deleted.
+
+        3. Handles removing invalid registration IDs; i.e. If we tried to send
+           a message to an invalid identifier, GCM will tell us. Let's remove
+           those (GCMDevice) objects from the system.
 
         """
         report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
@@ -405,8 +434,8 @@ class GCMMessage(models.Model):
                         msg += result['error']
             self.response_text = msg
 
-        # Now set an expiration date
-        self._set_expiration()
+        self._set_expiration()  # Now set an expiration date, if applicable.
+        self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
         self.save()
 
     def get_daily_message_limit(self):
