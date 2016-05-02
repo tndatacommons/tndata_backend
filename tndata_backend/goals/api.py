@@ -140,6 +140,14 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(
                 categories__id=self.request.GET['category']
             )
+
+        # We want to exclude values from this endpoint that the user has already
+        # selected (if the user is authenticated AND we're hitting api v2)
+        user = self.request.user
+        if self.request.version == '2' and user.is_authenticated():
+            chosen = user.usergoal_set.values_list('goal__id', flat=True)
+            self.queryset = self.queryset.exclude(id__in=chosen)
+
         return self.queryset
 
     def retrieve(self, request, *args, **kwargs):
