@@ -69,7 +69,8 @@ class SearchSerializer(HaystackSerializer):
 
         # Check to see if we have a serialized object in the search result
         if 'serialized_object' in result:
-            result['serialized_object'] = json.loads(result['serialized_object'])
+            result[instance.model_name] = json.loads(result['serialized_object'])
+            del result['serialized_object']
         return result
 
 

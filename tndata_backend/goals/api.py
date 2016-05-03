@@ -930,16 +930,18 @@ class PackageEnrollmentViewSet(VersionedViewSetMixin,
 
 class SearchViewSet(HaystackViewSet):
     """This endpoint lists results from our Search Index, which contains content
-    from [Goals](/api/goals/) and [Actions](/api/actions/).
+    from [Goals](/api/goals/) and [Actions](/api/actions/). While we index
+    content from both types of objects, this endpoint currently only returns
+    serialized `Goal` instances.
 
     ## Searching
 
-    To search this content, simply send a GET request with a `q` parameter
+    To search this content, send a GET request with a `q` parameter
     containing your search terms. For example:
 
         {'q': 'wellness'}
 
-    A GET request without a search term will return all Goals indexed.
+    A GET request without a search term will return all Goals.
 
     ## Results
 
@@ -948,7 +950,7 @@ class SearchViewSet(HaystackViewSet):
 
     * `id`: The ID of the object represented
     * `object_type`: A lowercase string representing the type of object
-      (currently this will always be `goal`)
+      (currently this will always be `search-goal`)
     * `title`: The title of the object.
     * `description`: The full description of the object.
     * `updated_on`: The date/time on which the object was last updated.
@@ -956,6 +958,8 @@ class SearchViewSet(HaystackViewSet):
       against which search is performed.
     * `highlighted`: A string containing html-highlighted matches. The
       highlighted keywords are wrapped with `<em>` tags.
+    * In addition, there will be a nested serialized object, in the case of
+      goals, this will called `goal`.
 
     """
     # NOTE: This viewset is not versioned; our VersionedViewSetMixin conflics
