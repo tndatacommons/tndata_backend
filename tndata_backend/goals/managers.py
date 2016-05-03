@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Q
+from django.db.models import Min, Q
 from django.template.defaultfilters import slugify
 from django.utils import timezone
 
@@ -31,11 +31,17 @@ class CustomActionManager(models.Manager):
     def stale(self, **kwargs):
         """Return a queryset of objects whose `next_trigger_date` is either
         stale or None."""
-        qs = self.get_queryset().filter(**kwargs)
-        return qs.filter(
-            Q(next_trigger_date__lt=timezone.now()) |
+        hours = kwargs.pop('hours', None)
+        now = timezone.now()
+
+        qs = self.get_queryset().filter(**kwargs).filter(
+            Q(next_trigger_date__lt=now) |
             Q(next_trigger_date=None)
         )
+        if hours:
+            threshold = now - timedelta(hours=hours)
+            qs = qs.filter(updated_on__lte=threshold)
+        return qs
 
 
 class DailyProgressManager(models.Manager):
@@ -82,6 +88,23 @@ class UserGoalManager(models.Manager):
         qs = qs.filter(goal__state='published')
         return qs.filter(**kwargs).distinct()
 
+    def next_in_sequence(self, **kwargs):
+        """Return a queryset of UserGoals that are:
+
+        - not completed,
+        - the next in the sequence (based on sequence_order)
+
+        """
+        # Allow a published=True kwarg
+        if kwargs.pop('published'):
+            kwargs['goal__state'] = 'published'
+
+        kwargs['completed'] = False
+        qs = self.get_queryset().filter(**kwargs)
+        seq = qs.aggregate(Min('goal__sequence_order'))
+        seq = seq.get('goal__sequence_order__min') or 0
+        return qs.filter(goal__sequence_order=seq)
+
 
 class UserBehaviorManager(models.Manager):
 
@@ -93,6 +116,34 @@ class UserBehaviorManager(models.Manager):
         qs = super().get_queryset()
         qs = qs.filter(behavior__state='published')
         return qs.filter(**kwargs).distinct()
+
+    def next_in_sequence(self, **kwargs):
+        """Return a queryset of UserBehaviors that are:
+
+        - not completed,
+        - the next in the sequence (based on sequence_order)
+
+        Allowed keyword arguments include:
+
+        - published -- restrict results to published Behaviors
+        - goals -- filters by goals.
+
+        """
+        # Allow a published=True kwarg
+        if kwargs.pop('published'):
+            kwargs['behavior__state'] = 'published'
+        kwargs['completed'] = False
+
+        # Filter on provided goals (if any)
+        goals = kwargs.pop('goals', None)
+        if goals:
+            kwargs['behavior__goals__in'] = goals
+
+        # We also need to know about (un)completed goals and their sequences.
+        qs = self.get_queryset().filter(**kwargs)
+        seq = qs.aggregate(Min('behavior__sequence_order'))
+        seq = seq.get('behavior__sequence_order__min') or 0
+        return qs.filter(behavior__sequence_order=seq)
 
 
 class UserActionQuerySet(models.QuerySet):
@@ -109,10 +160,22 @@ class UserActionQuerySet(models.QuerySet):
         return self.filter(next_trigger_date__gte=timezone.now())
 
     def stale(self, **kwargs):
-        return self.filter(**kwargs).filter(
-            Q(next_trigger_date__lt=timezone.now()) |
+        # An `hours` param let's us limit output to objects that are older
+        # than the given number of hour
+        hours = kwargs.pop('hours', None)
+        now = timezone.now()
+
+        # Items with no trigger, or whose trigger is in the past.
+        qs = self.filter(**kwargs).filter(
+            Q(next_trigger_date__lt=now) |
             Q(next_trigger_date=None)
         )
+        # Items that haven't been updated in some time threshold
+        if hours:
+            threshold = now - timedelta(hours=hours)
+            qs = qs.filter(updated_on__lte=threshold)
+
+        return qs
 
 
 class UserActionManager(models.Manager):
@@ -214,6 +277,43 @@ class UserActionManager(models.Manager):
             qs = qs.filter(action__sequence_order=sequences[0])
 
         return qs
+
+    def next_in_sequence(self, behaviors, **kwargs):
+        """Given a behavior, return the queryset of UserActions that are
+        related to the behavior, but have not yet been completed, and are
+        the next in a sequence.
+
+        * behaviors - Either a Behavior instance, a queryset of Behaviors, or
+                      an iterable of Behavior IDs. This will filter UserActions
+                      related to the given Behavior(s).
+        * published - (optional). You may provide `published=True` as a keyword
+                      argument, and this method will only return objects related
+                      to published Actions.
+
+        """
+        from .models import UserCompletedAction as UCA
+
+        if kwargs.pop('published', None):
+            kwargs['action__state'] = 'published'
+
+        is_behavior_object = (
+            hasattr(behaviors, '__class__') and
+            behaviors.__class__.__name__ == "Behavior"
+        )
+        if is_behavior_object:
+            kwargs['action__behavior'] = behaviors
+        else:
+            kwargs['action__behavior__in'] = behaviors
+        qs = self.get_queryset().filter(**kwargs)
+
+        # Then exluded the ones we've marked as completed.
+        qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
+
+        # Now, find the min sequence, and return all UserActions
+        # that match that sequeunce.
+        seq = qs.aggregate(Min('action__sequence_order'))
+        seq = seq.get('action__sequence_order__min') or 0
+        return qs.filter(action__sequence_order=seq)
 
 
 class TriggerManager(models.Manager):
@@ -338,13 +438,37 @@ class WorkflowManager(models.Manager):
         return self.get_queryset().filter(**kwargs)
 
 
+class BehaviorManager(WorkflowManager):
+
+    def contains_dynamic(self):
+        """Return a queryset of Behaviors that contain dynamic notifications,
+        i.e. Actions that have a bucket, and whose default trigger contains
+        a time_of_day and frequency value.
+
+        NOTE: These behaviors may also contain some NON-Dynamic actions, as well.
+
+        """
+        return self.filter(
+            action__default_trigger__time_of_day__isnull=False,
+            action__default_trigger__frequency__isnull=False
+        ).distinct()
+
+
 class CategoryManager(WorkflowManager):
     """Updated WorkflowManager for Categories; we want to exclude packaged
     content from the list of published Categories."""
 
+    def featured(self, *args, **kwargs):
+        return super().published().filter(featured=True)
+
     def published(self, *args, **kwargs):
         qs = super().published()
         return qs.filter(packaged_content=False)
+
+    def selected_by_default(self, **kwargs):
+        """Return a queryset of Categories that should be selected by default."""
+        kwargs['selected_by_default'] = True
+        return super().get_queryset().filter(**kwargs)
 
     def packages(self, *args, **kwargs):
         """Return only Categories that have been marked as packages.

@@ -4,6 +4,7 @@ from django.conf import settings as project_settings
 from django.db.models import Q
 from django.utils import timezone
 
+from django_rq import job
 from drf_haystack.viewsets import HaystackViewSet
 from drf_haystack.filters import HaystackHighlightFilter
 from rest_framework import mixins, permissions, status, viewsets
@@ -21,6 +22,7 @@ from utils.mixins import VersionedViewSetMixin
 from . import models
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
+from . permissions import is_content_author
 from . utils import pop_first
 
 
@@ -63,6 +65,11 @@ class IsOwner(permissions.IsAuthenticated):
         return obj.user == request.user
 
 
+class IsContentAuthor(permissions.IsAuthenticated):
+    def has_object_permission(self, request, view, obj):
+        return is_content_author(request.user)
+
+
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Categories. See the api_docs/ for more info"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -71,6 +78,29 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class_v2 = v2.CategorySerializer
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
+
+    def _as_bool(self, request, field):
+        """Attempt to pull the given field from a GET parameter as a boolean
+        value. This method will return True, False, or None if the value was
+        not set."""
+        value = request.GET.get(field, None)
+        if value is not None:
+            try:
+                value = bool(value)
+            except ValueError:  # invalid value, so return None
+                value = None
+        return value
+
+    def get_queryset(self):
+        self.queryset = super().get_queryset()
+        selected_by_default = self._as_bool(self.request, 'selected_by_default')
+        featured = self._as_bool(self.request, 'featured')
+        if selected_by_default is not None:
+            self.queryset = self.queryset.filter(
+                selected_by_default=selected_by_default)
+        if featured is not None:
+            self.queryset = self.queryset.filter(featured=featured)
+        return self.queryset
 
     def retrieve(self, request, pk=None):
         """When an authenticated user requests a category by ID, we may need
@@ -91,6 +121,11 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         return super().retrieve(request, pk=pk)
 
 
+@job
+def _enroll_user_in_goal(user, goal, category=None):
+    goal.enroll(user, category)
+
+
 class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Goals. See the api_docs/ for more info"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -105,6 +140,14 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(
                 categories__id=self.request.GET['category']
             )
+
+        # We want to exclude values from this endpoint that the user has already
+        # selected (if the user is authenticated AND we're hitting api v2)
+        user = self.request.user
+        if self.request.version == '2' and user.is_authenticated():
+            chosen = user.usergoal_set.values_list('goal__id', flat=True)
+            self.queryset = self.queryset.exclude(id__in=chosen)
+
         return self.queryset
 
     def retrieve(self, request, *args, **kwargs):
@@ -121,6 +164,66 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
                 serializer = self.get_serializer(ug.get().goal)
                 return Response(serializer.data)
         return super().retrieve(request, *args, **kwargs)
+
+    @detail_route(methods=['post'],
+                  permission_classes=[IsContentAuthor],
+                  url_path='order')
+    def set_order(self, request, pk=None):
+        """Allow certin users to update Goals through the api; but only
+        to set the order.
+
+            /api/goals/<id>/order/
+
+        """
+        try:
+            # NOTE: we can't use self.get_object() here, because we're allowing
+            # users to change items that may not yet be published.
+            seq = int(request.data.get('sequence_order'))
+            num = models.Goal.objects.filter(pk=pk).update(sequence_order=seq)
+            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @detail_route(methods=['post'],
+                  permission_classes=[permissions.IsAuthenticated],
+                  url_path='enroll')
+    def enroll(self, request, pk=None):
+        """Let a user enroll themselves in a goal.
+
+            /api/goals/<id>/enroll/
+
+        Requires that a user be authenticated, and the POST request should
+        contain the following info:
+
+        - category: ID  (ID for a primary category)
+
+        """
+        try:
+            # NOTE: It should be save to use self.get_object() here,
+            # this should only happen for published goals.
+            goal = self.get_object()
+            category = request.data.get('category', None)
+            if category:
+                category = models.Category.objects.get(pk=category)
+
+            # Async enrollment because this could be slow
+            _enroll_user_in_goal.delay(request.user, goal, category)
+
+            msg = (
+                "Your request has been scheduled and your goals should "
+                "appear in your feed soon."
+            )
+            return Response(data={'message': msg}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class TriggerViewSet(VersionedViewSetMixin,
@@ -191,6 +294,29 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         return self.queryset
 
+    @detail_route(methods=['post'],
+                  permission_classes=[IsContentAuthor],
+                  url_path='order')
+    def set_order(self, request, pk=None):
+        """Allow certin users to update Behaviors through the api; but only
+        to set the order.
+
+            /api/behaviors/<id>/order/
+
+        """
+        try:
+            # NOTE: we can't use self.get_object() here, because we're allowing
+            # users to change items that may not yet be published.
+            seq = int(request.data.get('sequence_order'))
+            num = models.Behavior.objects.filter(pk=pk).update(sequence_order=seq)
+            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Actions. See the api_docs/ for more info"""
@@ -239,6 +365,29 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.exclude(id__in=chosen)
 
         return self.queryset
+
+    @detail_route(methods=['post'],
+                  permission_classes=[IsContentAuthor],
+                  url_path='order')
+    def set_order(self, request, pk=None):
+        """Allow certin users to update Actions through the api; but only
+        to set the order.
+
+            /api/actions/<id>/order/
+
+        """
+        try:
+            # NOTE: we can't use self.get_object() here, because we're allowing
+            # users to change items that may not yet be published.
+            seq = int(request.data.get('sequence_order'))
+            num = models.Action.objects.filter(pk=pk).update(sequence_order=seq)
+            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserGoalViewSet(VersionedViewSetMixin,

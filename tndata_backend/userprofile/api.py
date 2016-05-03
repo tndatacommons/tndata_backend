@@ -19,6 +19,7 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from utils.mixins import VersionedViewSetMixin
+from utils.user_utils import get_client_ip
 
 from . import models
 from . import permissions
@@ -109,15 +110,26 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         """
         # NOTE: We expect an email address to be given, here, but this api
         # used to support a username. If we receive a username, but no email
-        # address, we swap them. This'll prevent and edge case where we might
+        # address, we swap them. This'll prevent an edge case where we might
         # end up with duplicate accounts.
         if request.data.get("username") and request.data.get("email") is None:
             request.data['email'] = request.data.get('username')
             request.data.pop('username')
+
         resp = super(UserViewSet, self).create(request, *args, **kwargs)
+
         # Include the newly-created User's auth token (if we have a user)
         if hasattr(self, 'object') and hasattr(self.object, 'auth_token'):
             resp.data['token'] = self.object.auth_token.key
+
+        # Save the IP address on the user's profile
+        try:
+            uid = resp.data.get('userprofile_id')
+            userprofile = models.UserProfile.objects.get(pk=uid)
+            userprofile.ip_address = get_client_ip(request)
+            userprofile.save()
+        except:  # XXX: Don't let any exception prevent user signup.
+            pass
         return resp
 
 
@@ -176,7 +188,11 @@ class SimpleProfileViewSet(VersionedViewSetMixin,
     permission_classes = [permissions.IsSelf]
 
     def get_queryset(self):
-        self.queryset = super().get_queryset().filter(user=self.request.user)
+        self.queryset = super().get_queryset()
+        if self.request.user.is_authenticated():
+            self.queryset = self.queryset.filter(user=self.request.user)
+        else:
+            self.queryset = self.queryset.none()
         return self.queryset
 
     def update(self, request, *args, **kwargs):
@@ -286,10 +302,6 @@ class ObtainAuthorization(ObtainAuthToken):
                 user = serializer.validated_data['user']
                 token, created = Token.objects.get_or_create(user=user)
 
-                gender = user.userprofile.sex
-                if gender:
-                    gender = gender.lower()
-
                 return Response({
                     'token': token.key,
                     'username': user.username,
@@ -300,7 +312,15 @@ class ObtainAuthorization(ObtainAuthToken):
                     'last_name': user.last_name,
                     'full_name': user.get_full_name(),
                     'email': user.email,
-                    'gender': gender,
+                    'zipcode': user.userprofile.zipcode,
+                    'birthday': user.userprofile.birthday,  # TODO: serialize
+                    'sex': user.userprofile.sex,
+                    'gender': user.userprofile.sex,
+                    'employed': user.userprofile.employed,
+                    'is_parent': user.userprofile.is_parent,
+                    'in_relationship': user.userprofile.in_relationship,
+                    'has_degree': user.userprofile.has_degree,
+                    'maximum_daily_notifications': user.userprofile.maximum_daily_notifications,
                     'needs_onboarding': user.userprofile.needs_onboarding,
                     'object_type': 'user',
                 })

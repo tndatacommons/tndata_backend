@@ -2,6 +2,7 @@
 Signal Handlers for our models.
 
 """
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import ObjectDoesNotExist
@@ -11,6 +12,7 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 from django.utils import timezone
 
+from django_rq import job
 from notifications.signals import notification_snoozed
 from redis_metrics import metric
 
@@ -19,9 +21,23 @@ from .packages import PackageEnrollment
 from .progress import DailyProgress, UserCompletedAction
 from .public import Action, Behavior, Category, Goal, action_unpublished
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
+from .users import userbehavior_completed
 from .triggers import Trigger
 
 from ..utils import clean_title, clean_notification, strip
+
+
+@job
+def _enroll_user_in_default_categories(user):
+    for category in Category.objects.selected_by_default(state='published'):
+        category.enroll(user)
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='auto-enroll')
+def auto_enroll(sender, **kwargs):
+    """Auto-enroll new users in default categories."""
+    if kwargs.get('created', False) and 'instance' in kwargs:
+        _enroll_user_in_default_categories.delay(kwargs['instance'])
 
 
 @receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
@@ -65,6 +81,13 @@ def remove_queued_messages(sender, instance, *args, **kwargs):
         instance.action_default.remove_queued_messages()
     except ObjectDoesNotExist:
         pass
+
+
+@receiver(post_save, sender=Action, dispatch_uid="set-parent-behavior-action-counts")
+def update_parent_behavior_action_counts(sender, instance, *args, **kwargs):
+    """When an action is saved, we need to tell its parent Behavior to update
+    it's count of all child actions (for dynamic behaviors)."""
+    instance.behavior.save()
 
 
 @receiver(pre_save, sender=Action)
@@ -261,6 +284,44 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
             content_type=ContentType.objects.get_for_model(Action)
         )
         messages.delete()
+
+    # Check the Action's parent behavior. If all of the UserActions
+    # within that behavior are completed, mark the Behavior as complete.
+    # Don't really like altering a behavior here, but... :-/
+    if completed and instance.sibling_actions_completed():
+        behavior = instance.action.behavior
+        ub = instance.user.userbehavior_set.get(behavior=behavior)
+        ub.complete()
+        ub.save()
+
+
+@receiver(userbehavior_completed, sender=UserBehavior, dispatch_uid="ub-compt")
+def check_user_goals(sender, instance, **kwargs):
+    """When a UserBehavior is marked as completed, that means all of the
+    Behavior's Actions have a related UserCompletedAction object, and that
+    the Behavior is "done". We now need to check if the Behavior's parent Goal
+    is "done", by checking to see if all of the user's selected behaviors
+    within that goal have been completed.
+
+    """
+    user = instance.user
+
+    # Parent goals for this Behavior
+    goals = instance.behavior.goals.values_list('pk', flat=True)
+
+    # Those that are selected by the user.
+    usergoals = user.usergoal_set.filter(goal__pk__in=goals)
+    goals = usergoals.values_list('goal__pk', flat=True)
+
+    # If there are no, uncompletd UserBehaviors, then the goal is compelted.
+    incomplete_userbehaviors = user.userbehavior_set.filter(
+        behavior__goals__in=goals,
+        completed=False
+    )
+    if not incomplete_userbehaviors.exists():
+        for ug in usergoals:
+            ug.complete()
+            ug.save()
 
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")

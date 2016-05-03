@@ -266,6 +266,113 @@ class TestGoal(TestCase):
         self.assertEqual(self.goal.description, "more descriptions.")
 
 
+class TestGoalEnrollment(TestCase):
+    """This is a set of integration tests for Goal.enroll -- i.e. goal
+    enrollment."""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create a user.
+        User = get_user_model()
+        cls.user = User.objects.create_user("u", "u@example.com", "lsdjf")
+
+        def _t():
+            # Function to generate a trigger
+            return mommy.make(Trigger, time_of_day='morning', frequency='daily')
+
+        def _goal(title, category, seq):  # creates a published Goal
+            return mommy.make(
+                Goal,
+                title=title,
+                sequence_order=seq,
+                state='published',
+                categories=[category]
+            )
+
+        def _behavior(title, goal, seq):  # creates a published Behavior
+            return mommy.make(
+                Behavior,
+                title=title,
+                sequence_order=seq,
+                state='published',
+                goals=[goal]
+            )
+
+        def _action(title, behavior, seq):  # creates a published Action
+            return mommy.make(
+                Action,
+                title=title,
+                sequence_order=seq,
+                behavior=behavior,
+                default_trigger=_t(),
+                state='published'
+            )
+
+        # Create the content of library for the user.
+        cls.cat = mommy.make(
+            Category, title="C", featured=True,
+            order=0, state='published'
+        )
+
+        # Create Goals
+        cls.goal1 = _goal('G1', cls.cat, 0)
+        cls.goal2 = _goal('G2', cls.cat, 0)
+
+        # and behaviors
+
+        b1 = _behavior("B1", cls.goal1, 0)
+        b2 = _behavior("B2", cls.goal2, 0)
+
+        # and actions
+        _action("A10", b1, 0)
+        _action("A11", b1, 1)
+        _action("A20", b2, 0)
+        _action("A21", b2, 1)
+
+    def tearDown(self):
+        # Rest user-selected content
+        UserAction.objects.all().delete()
+        UserBehavior.objects.all().delete()
+        UserGoal.objects.all().delete()
+        UserCategory.objects.all().delete()
+
+    def test_enroll_with_primary_category(self):
+        # Enroll the user in the first goal, specify the category
+        self.goal1.enroll(self.user, primary_category=self.cat)
+
+        # ensure the content got added.
+        categories = self.user.usercategory_set.values_list(
+            'category__title', flat=True)
+        goals = self.user.usergoal_set.values_list('goal__title', flat=True)
+        behaviors = self.user.userbehavior_set.values_list(
+            'behavior__title', flat=True)
+        actions = self.user.useraction_set.values_list(
+            'action__title', flat=True)
+
+        self.assertEqual(sorted(list(categories)), ['C'])
+        self.assertEqual(sorted(list(goals)), ['G1'])
+        self.assertEqual(sorted(list(behaviors)), ['B1'])
+        self.assertEqual(sorted(list(actions)), ['A10', 'A11'])
+
+    def test_enroll_without_primary_category(self):
+        # Enroll the user in the second goal, but don't specify the category
+        self.goal2.enroll(self.user)
+
+        # ensure the content got added.
+        categories = self.user.usercategory_set.values_list(
+            'category__title', flat=True)
+        goals = self.user.usergoal_set.values_list('goal__title', flat=True)
+        behaviors = self.user.userbehavior_set.values_list(
+            'behavior__title', flat=True)
+        actions = self.user.useraction_set.values_list(
+            'action__title', flat=True)
+
+        self.assertEqual(sorted(list(categories)), ['C'])
+        self.assertEqual(sorted(list(goals)), ['G2'])
+        self.assertEqual(sorted(list(behaviors)), ['B2'])
+        self.assertEqual(sorted(list(actions)), ['A20', 'A21'])
+
+
 class TestTrigger(TestCase):
     """Tests for the `Trigger` model."""
 
@@ -471,6 +578,52 @@ class TestTrigger(TestCase):
         # True when there is both frequency or time_of_day
         trigger = mommy.make(Trigger, frequency='daily', time_of_day='early')
         self.assertTrue(trigger.is_dynamic)
+
+    def test_dynamic_range(self):
+        """Ensure we get the correct range of valid dates for dynamic triggers"""
+
+        # None when not dynamic
+        self.assertIsNone(self.trigger.dynamic_range())
+
+        # None when no user
+        trigger = mommy.make(Trigger, frequency='daily', time_of_day='early')
+        self.assertIsNone(trigger.dynamic_range())
+
+        # When we have a user...
+        trigger.user = mommy.make(User)
+        trigger.save()
+
+        with patch("goals.models.triggers.local_now") as mock_now:
+            mock_now.return_value = tzdt(2016, 4, 1, 12, 34, 56)
+
+            # Daily - 1 day
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 3, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Weekly - 7 days
+            trigger.frequency = 'weekly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 9, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Biweekly - 5 days
+            trigger.frequency = 'biweekly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 7, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Multiweekly - 5 days
+            trigger.frequency = 'multiweekly'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 7, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
+
+            # Weekends - Depends on the day, but encompases the updcoming weekend.
+            # April, 2016, 1st = Friday, Sunday = 3rd
+            trigger.frequency = 'weekends'
+            trigger.save()
+            expected = (tzdt(2016, 4, 1, 5, 0), tzdt(2016, 4, 4, 4, 59, 59, 999999))
+            self.assertEqual(trigger.dynamic_range(), expected)
 
     def test_dynamic_trigger_date(self):
         # is None when not dynamic

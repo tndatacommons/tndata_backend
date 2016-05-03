@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from pushjack import GCMClient
+from pushjack.exceptions import GCMInvalidRegistrationError
 from .. models import GCMDevice, GCMMessage
 from .. import queue
 
@@ -197,6 +198,7 @@ class TestGCMMessage(TestCase):
         mock_resp = Mock(
             responses=[Mock(status_code=200, reason='OK', url="FOO")],
             messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            errors=[],
             data=[{
                 'canonical_ids': 0,
                 'failure': 0,
@@ -212,7 +214,7 @@ class TestGCMMessage(TestCase):
         msg._get_gcm_client = Mock(return_value=mock_client)
 
         # 1. call send() / whose internals are mocked
-        # 2. it'll call _save_response
+        # 2. it'll call _handle_gcm_response
         # 3. which will call save()
         # 4. which should not re-enque the message.
         original_queue_id = msg.queue_id
@@ -357,11 +359,13 @@ class TestGCMMessage(TestCase):
 
     def test_send(self):
         with patch("notifications.models.GCMClient") as mock_client:
-            self.msg._save_response = Mock()  # Don't call _save_response
+            # Don't actually call _handle_gcm_response; mock it!
+            self.msg._handle_gcm_response = Mock()
             mock_resp = Mock(
                 status_code=200,
                 reason='ok',
                 url='url',
+                errors=[],
             )
             mock_client.return_value = Mock(**{'send.return_value': mock_resp})
 
@@ -370,11 +374,13 @@ class TestGCMMessage(TestCase):
                 ['REGISTRATIONID'],
                 self.msg.content_json,
                 delay_while_idle=False,
+                low_priority=True,
                 time_to_live=None,
             )
 
     def test__set_expiration(self):
-        other_device = GCMDevice.objects.create(user=self.user, registration_id="OTHER")
+        other_device = GCMDevice.objects.create(
+            user=self.user, registration_id="OTHER")
         msg = GCMMessage.objects.create(
             self.user,
             "Other",
@@ -401,7 +407,7 @@ class TestGCMMessage(TestCase):
         msg.delete()
         other_device.delete()
 
-    def test__save_response(self):
+    def test__handle_gcm_response(self):
         """Ensure that success=True, and the response_text includes expected
         data (from the GCM response)"""
         resp = Mock(status_code=200, reason='OK', url="FOO")
@@ -410,6 +416,7 @@ class TestGCMMessage(TestCase):
         mock_resp = Mock(
             responses=[resp],
             messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            errors=[],
             data=[{
                 'canonical_ids': 0,
                 'failure': 0,
@@ -418,7 +425,7 @@ class TestGCMMessage(TestCase):
                 'success': 1
             }]
         )
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
 
         self.assertTrue(self.msg.success)
@@ -427,13 +434,14 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
 
-    def test__save_response_when_error(self):
+    def test__handle_gcm_response_when_error(self):
         """Ensure that success=False, and our response_text includes the GCM
         error message."""
         resp = Mock(status_code=200, reason='OK', url="FOO")
         mock_resp = Mock(
             responses=[resp],
             messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            errors=[],
             data=[{
                 'canonical_ids': 0,
                 'failure': 1,
@@ -442,20 +450,21 @@ class TestGCMMessage(TestCase):
                 'success': 0
             }]
         )
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
 
         self.assertEqual(self.msg.response_text, "NotRegistered")
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
 
-    def test__save_response_when_success_and_error(self):
+    def test__handle_gcm_response_when_success_and_error(self):
         """If we get both a success and a failure in the GCM result data,
         record the message as a success."""
         resp = Mock(status_code=200, reason='OK', url="FOO")
         mock_resp = Mock(
             responses=[resp],
             messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            errors=[],
             data=[{
                 'canonical_ids': 0,
                 'failure': 1,
@@ -465,7 +474,7 @@ class TestGCMMessage(TestCase):
                 'success': 1
             }]
         )
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
 
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
         self.assertEqual(self.msg.response_text, expected_text)
@@ -473,7 +482,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
 
-    def test__save_response_when_muldiple_successes(self):
+    def test__handle_gcm_response_when_muldiple_successes(self):
         """If we get multiple successes in the GCM result data, record the
         message as a success."""
 
@@ -483,6 +492,7 @@ class TestGCMMessage(TestCase):
         mock_resp = Mock(
             responses=[resp],
             messages=[{'registration_ids': ['REGISTRATION_ID']}],
+            errors=[],
             data=[{
                 'canonical_ids': 0,
                 'failure': 0,
@@ -495,7 +505,7 @@ class TestGCMMessage(TestCase):
             }]
         )
 
-        self.msg._save_response(mock_resp)
+        self.msg._handle_gcm_response(mock_resp)
         expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
 
         self.assertTrue(self.msg.success)
@@ -503,3 +513,53 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data, mock_resp.data)
+
+    def test__handle_gcm_response_error_invalid_identifier(self):
+        """Handle the case where we get an error message from GCM about an
+        invalid registration id / identifier. The matching GCMDevice should
+        be removed.
+
+        """
+        # Create a new device / message.
+        GCMDevice.objects.create(user=self.user, registration_id="XXX")
+        message = GCMMessage.objects.create(
+            self.user,
+            "Another Test",
+            "Another test message",
+            datetime_utc(2000, 1, 1, 1, 0),
+        )
+
+        # The HTTP response from GCM
+        resp = Mock(
+            status_code=200,
+            reason='OK',
+            url="https://android.googleapis.com/gcm/send"
+        )
+
+        # This mock pushjack response includes an example of GCM data that we'd
+        # get when a message was not delivered due to an invalid registration id
+        error = GCMInvalidRegistrationError('XXX')
+
+        mock_resp = Mock(
+            responses=[resp],
+            errors=[error],
+            failures=['XXX'],
+            registration_ids=['XXX'],
+            messages=[{'to': 'XXX', }],
+            data=[{
+                'success': 0,
+                'canonical_ids': 0,
+                'failure': 1,
+                'multicast_id': 5313178907646522818,
+                'results': [{'error': 'InvalidRegistration'}]
+            }]
+        )
+
+        # Verify we have a GCM Device.
+        self.assertTrue(GCMDevice.objects.filter(registration_id='XXX').exists())
+
+        # Handle the response
+        message._handle_gcm_response(mock_resp)
+
+        # Verify the side effect: The device should've been deleted
+        self.assertFalse(GCMDevice.objects.filter(registration_id='XXX').exists())

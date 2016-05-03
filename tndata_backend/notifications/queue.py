@@ -15,9 +15,14 @@ from utils.slack import post_private_message
 logger = logging.getLogger("loggly_logs")
 
 
-def _log_slack(msg, really=False):
-    if really:
-        post_private_message('bkmontgomery', msg)
+def _log_slack(msg, username):
+    SLACK_USERS = {
+        # Local account: slack username
+        'bkmontgomery': 'bkmontgomery',
+        # 'ringram': 'ringram',
+    }
+    if SLACK_USERS.get(username):
+        post_private_message(SLACK_USERS[username], msg)
 
 
 def get_scheduler(queue='default'):
@@ -35,10 +40,6 @@ def send(message_id):
         from . models import GCMMessage
         msg = GCMMessage.objects.get(pk=message_id)
         msg.send()  # NOTE: sets a metric on successful sends.
-
-        m = "[{}] Success! {}".format(message_id, msg)
-        _log_slack(m, msg.user.username == "bkmontgomery")
-
     except Exception as e:
         # NOTE: If for some reason, a message got queued up, but something
         # happend to the original GCMMessage, and it's pre-delete signal handler
@@ -53,7 +54,7 @@ def send(message_id):
         # Include the traceback in the slack message.
         tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
         log = "{}\n```{}```".format(log, "\n".join(tb))
-        _log_slack(log, True)
+        _log_slack(log, 'bkmontgomery')
 
 
 def enqueue(message):
@@ -87,7 +88,6 @@ def enqueue(message):
             job = UserQueue(message).add()
         else:
             job = scheduler.enqueue_at(message.deliver_on, send, message.id)
-
     if job:
         # Record a metric so we can see queued vs sent?
         metric('GCM Message Scheduled', category='Notifications')

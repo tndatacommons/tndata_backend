@@ -63,15 +63,12 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
         children = [obj.publish_children() for obj in queryset]
         children = [val for sublist in children for val in sublist]
         count += len(children)
-        print("Published:\n- {}".format("\n- ".join([str(obj) for obj in children])))
 
         # and the children's children
         while len(children) > 0:
             children = [obj.publish_children() for obj in children]
             children = [val for sublist in children for val in sublist]
             count += len(children)
-            print("Published:\n- {}".format("\n- ".join([str(obj) for obj in children])))
-        print("Count: {}".format(count))
         self.message_user(request, "Published {} objects.".format(count))
     publish_children.short_description = "Publish selected item and all child content"
 
@@ -79,13 +76,59 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
 class CategoryAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'state', 'created_by', 'updated_on', 'created_on',
-        'packaged_content',
+        'packaged_content', 'selected_by_default', 'featured',
     )
     search_fields = ['title', 'description', 'notes', 'id']
-    list_filter = ('state', 'packaged_content',)
+    list_filter = (
+        'state', 'packaged_content', 'selected_by_default',
+        'featured',
+    )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.actions.append('delete_children')
+
+    def delete_children(self, request, queryset):
+        # publish the selected objects:
+        categories_to_delete = set(queryset.values_list('id', flat=True))
+
+        # Find all the child goals that are in no other categories.
+        goals = models.Goal.objects.filter(categories__in=categories_to_delete)
+        goals_to_delete = set()
+        for goal in goals:
+            parents = set(goal.categories.values_list('id', flat=True))
+            if parents.issubset(categories_to_delete):
+                goals_to_delete.add(goal.id)
+
+        # Find all behaviors in those goals
+        behaviors = models.Behavior.objects.filter(goals__in=goals_to_delete)
+        behaviors_to_delete = set()
+        for behavior in behaviors:
+            parents = set(behavior.goals.values_list('id', flat=True))
+            if parents.issubset(goals_to_delete):
+                behaviors_to_delete.add(behavior.id)
+
+        actions = models.Action.objects.filter(behavior__in=behaviors_to_delete)
+
+        # Build a confirmation message
+        msg = "Deleted {a} Actions, {b} Behaviors, {g} Goals, and {c} Categories."
+        msg = msg.format(
+            a=actions.count(),
+            b=len(behaviors_to_delete),
+            g=len(goals_to_delete),
+            c=len(categories_to_delete),
+        )
+
+        # NOW, delete stuff.
+        actions.delete()
+        models.Behavior.objects.filter(id__in=behaviors_to_delete).delete()
+        models.Goal.objects.filter(id__in=goals_to_delete).delete()
+        queryset.delete()  # the categories.
+        self.message_user(request, msg)
+
+    delete_children.short_description = "Delete selected item and all child content"
 admin.site.register(models.Category, CategoryAdmin)
 
 
@@ -147,7 +190,7 @@ class CategoryListFilter(admin.SimpleListFilter):
 
 class GoalAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'in_categories', 'created_by',
+        'title', 'sequence_order', 'state', 'in_categories', 'created_by',
         'created_on', 'updated_on',
     )
     search_fields = [
@@ -174,7 +217,8 @@ admin.site.register(models.Goal, GoalAdmin)
 class TriggerAdmin(UserRelatedModelAdmin):
     list_display = (
         'combined', 'email', 'time', 'trigger_date', 'stop_on_complete',
-        'start_when_selected', 'relative', 'next', 'serialized_recurrences'
+        'start_when_selected', 'relative', 'dynamic', 'next',
+        'rrule'
     )
     prepopulated_fields = {"name_slug": ("name", )}
     search_fields = [
@@ -182,6 +226,13 @@ class TriggerAdmin(UserRelatedModelAdmin):
         'name',
     ]
     raw_id_fields = ('user', )
+
+    def rrule(self, obj):
+        return obj.serialized_recurrences()
+
+    def dynamic(self, obj):
+        return obj.is_dynamic
+    dynamic.boolean = True
 
     def relative(self, obj):
         if obj.relative_value:
@@ -226,10 +277,18 @@ class BehaviorCategoryListFilter(CategoryListFilter):
         return queryset
 
 
+class ActionInline(admin.TabularInline):
+    model = models.Action
+    fields = (
+        'sequence_order', 'notification_text',
+        'title', 'action_type', 'description', 'more_info',
+    )
+
+
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'in_goals', 'updated_on',
-        'num_actions', 'selected_by_users',
+        'title', 'sequence_order', 'state', 'in_goals', 'updated_on',
+        'has_prep_actions', 'num_actions', 'selected_by_users',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description', 'id',
@@ -238,7 +297,13 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
+    inlines = [ActionInline, ]
     actions = ['convert_to_goal']
+
+    def has_prep_actions(self, obj):
+        return obj.action_buckets_prep > 0
+    has_prep_actions.boolean = True
+    has_prep_actions.admin_order_field = 'action_buckets_prep'
 
     def selected_by_users(self, obj):
         return models.UserBehavior.objects.filter(behavior=obj).count()
@@ -312,7 +377,7 @@ class ActionCategoryListFilter(CategoryListFilter):
 
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'notification_text', 'state', 'action_type',
+        'title', 'sequence_order', 'notification_text', 'state', 'action_type',
         'selected_by_users',
     )
     search_fields = [
@@ -384,8 +449,7 @@ admin.site.register(models.Action, ActionAdmin)
 
 class UserCategoryAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'user', 'category',
-        'created_on', 'accepted', 'enrolled',
+        'user_email', 'category', 'created_on', 'accepted', 'enrolled',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -396,6 +460,7 @@ class UserCategoryAdmin(UserRelatedModelAdmin):
     def accepted(self, obj):
         values = obj.category.packageenrollment_set.filter(user=obj.user)
         return all(values.values_list("accepted", flat=True))
+    accepted.boolean = True
 
     def enrolled(self, obj):
         items = obj.category.packageenrollment_set.filter(user=obj.user)
@@ -407,9 +472,9 @@ admin.site.register(models.UserCategory, UserCategoryAdmin)
 
 class UserGoalAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'user', 'goal',
-        'categories', 'created_on'
+        'user_email', 'goal', 'categories', 'completed',
     )
+    list_filter = ('goal__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'goal__title', 'goal__id', 'id',
@@ -431,14 +496,17 @@ admin.site.register(models.UserGoal, UserGoalAdmin)
 
 class UserBehaviorAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'behavior', 'categories',
-        'custom_trigger', 'created_on',
+        'user_email', 'behavior', 'goals', 'categories', 'completed',
     )
+    list_filter = ('behavior__goals__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'behavior__id', 'behavior__title', 'id',
     )
     raw_id_fields = ("user", "behavior")
+
+    def goals(self, obj):
+        return ", ".join(obj.behavior.goals.values_list("title", flat=True))
 
     def categories(self, obj):
         cats = set()
@@ -450,11 +518,28 @@ class UserBehaviorAdmin(UserRelatedModelAdmin):
 admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 
+class UACategoryListFilter(admin.SimpleListFilter):
+    title = "Primary Category"
+    parameter_name = 'category'
+
+    def lookups(self, request, model_admin):
+        qs = models.Category.objects.all()
+        return qs.values_list('id', 'title').order_by('title')
+
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(primary_category__id=category_id)
+        return queryset
+
+
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'prev_trigger_date', 'next_trigger_date',
-        'notification', 'action', 'behavior', 'created_on',
+        'user_email', 'next_trigger_date', 'notification',
+        'action', 'behavior', 'primary_goal', 'primary_category',
+        'completed',
     )
+    list_filter = (UACategoryListFilter, 'primary_goal')
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title', 'action__notification_text', 'id',
@@ -466,6 +551,14 @@ class UserActionAdmin(UserRelatedModelAdmin):
     ]
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
 
+    def completed(self, obj):
+        return models.UserCompletedAction.objects.filter(
+            user=obj.user,
+            useraction=obj,
+            state=models.UserCompletedAction.COMPLETED
+        ).exists()
+    completed.boolean = True
+
     def behavior(self, obj):
         return obj.action.behavior.title
     behavior.admin_order_field = 'action__behavior_id'
@@ -475,14 +568,6 @@ class UserActionAdmin(UserRelatedModelAdmin):
 
     def notification(self, obj):
         return obj.action.notification_text
-
-    def categories(self, obj):
-        cats = set()
-        for g in obj.action.behavior.goals.all():
-            for title in g.categories.values_list("title", flat=True):
-                cats.add(title)
-        return ", ".join(cats)
-
 admin.site.register(models.UserAction, UserActionAdmin)
 
 
@@ -510,18 +595,46 @@ def tablib_export_user_completed_actions(modeladmin, request, queryset):
 tablib_export_user_completed_actions.short_description = "Export Data as a CSV File"
 
 
+class UCACategoryListFilter(admin.SimpleListFilter):
+    title = "Primary Category"
+    parameter_name = 'category'
+
+    def lookups(self, request, model_admin):
+        qs = models.Category.objects.all()
+        return qs.values_list('id', 'title').order_by('title')
+
+    def queryset(self, request, queryset):
+        category_id = self.value()
+        if category_id:
+            queryset = queryset.filter(
+                useraction__primary_category__id=category_id)
+        return queryset
+
+
 class UserCompletedActionAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last',
-        'useraction', 'action', 'state', 'created_on', 'updated_on',
+        'user_email', 'action', 'state', 'updated_on',
+        'behavior', 'primary_goal', 'primary_category',
     )
+    list_filter = ('state', UCACategoryListFilter, )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title',
     )
-    list_filter = ('state', )
     raw_id_fields = ("user", "action", "useraction")
     actions = [tablib_export_user_completed_actions]
+
+    def behavior(self, obj):
+        return obj.action.behavior
+    behavior.admin_order_field = 'action__behavior__title'
+
+    def primary_goal(self, obj):
+        return obj.useraction.primary_goal
+    primary_goal.admin_order_field = 'useraction__primary_goal__title'
+
+    def primary_category(self, obj):
+        return obj.useraction.primary_category
+    primary_category.admin_order_field = 'useraction__primary_category__title'
 
 admin.site.register(models.UserCompletedAction, UserCompletedActionAdmin)
 

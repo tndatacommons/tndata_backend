@@ -60,21 +60,43 @@ class TestCategoryManager(TestCase):
         )
         cls.published_category = Category.objects.create(
             order=2,
-            title="Published Category",
-            state="published"
+            title="Published",
+            state="published",
         )
         cls.packaged_category = Category.objects.create(
             order=3,
-            title="Packaged Category",
+            title="Packaged",
             state="published",
             packaged_content=True
         )
+        cls.default_category = Category.objects.create(
+            order=4,
+            title="Default",
+            state="published",
+            selected_by_default=True
+        )
+        cls.draft_default_category = Category.objects.create(
+            order=5,
+            title="Draft Default",
+            selected_by_default=True
+        )
+
+    def test_selected_by_default(self):
+        # Will return all categories selected by default without any args...
+        results = sorted([c.title for c in Category.objects.selected_by_default()])
+        expected = sorted(['Draft Default', 'Default'])
+        self.assertEqual(results, expected)
+
+        # Will exclude draft content if given the correct kwargs.
+        cats = Category.objects.selected_by_default(state='published')
+        results = [c.title for c in cats]
+        expected = ['Default']
+        self.assertEqual(results, expected)
 
     def test_published(self):
         results = Category.objects.published()
-        self.assertIn(self.published_category, results)
-        self.assertNotIn(self.packaged_category, results)
-        self.assertNotIn(self.draft_category, results)
+        results = list(results.values_list('title', flat=True))
+        self.assertEqual(results, ['Published', 'Default'])
 
 
 class TestDailyProgressManager(TestCase):

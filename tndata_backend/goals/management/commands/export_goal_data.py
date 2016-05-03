@@ -11,7 +11,6 @@ MODELS = {
     'trigger': models.Trigger,
     'behavior': models.Behavior,
     'action': models.Action,
-    'action': models.Action,
 }
 
 

@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 A User's custom goals.  This endpoint allows a user to retrieve a list
 of or create new custom goals.
 

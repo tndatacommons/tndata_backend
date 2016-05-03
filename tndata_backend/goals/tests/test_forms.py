@@ -1,3 +1,4 @@
+from unittest.mock import Mock
 from django.test import TestCase
 from .. forms import (
     ActionForm,
@@ -171,9 +172,10 @@ class TestActionForm(TestCase):
     def test_unbound(self):
         form = ActionForm()
         fields = sorted([
-            'sequence_order', 'behavior', 'title', 'description', 'action_type',
-            'more_info', 'external_resource', 'external_resource_name', 'icon',
-            'notification_text', 'source_link', 'source_notes', 'notes', 'priority',
+            'sequence_order', 'behavior', 'title', 'description',
+            'more_info', 'external_resource', 'external_resource_name',
+            'icon', 'notification_text', 'source_link', 'source_notes',
+            'notes', 'priority',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -190,11 +192,48 @@ class TestActionForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
-            'action_type': Action.SHOWING,
             'priority': Action.LOW,
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())
+        b.delete()
+
+    def test_is_valid(self):
+        b = Behavior.objects.create(title="asdf")
+        data = {
+            'sequence_order': '0',
+            'behavior': b.id,
+            'title': 'X' * 256,
+            'description': 'some description',
+            'more_info': '',
+            'external_resource': '',
+            'notification_text': 'Y' * 256,
+            'source_link': '',
+            'source_notes': '',
+            'notes': '',
+            'priority': Action.LOW,
+        }
+        form = ActionForm(data)
+        self.assertTrue(form.is_valid())
+        b.delete()
+
+    def test_not_valid(self):
+        b = Behavior.objects.create(title="asdf")
+        data = {
+            'sequence_order': '0',
+            'behavior': b.id,
+            'title': 'X' * 512,  # TOO long
+            'description': 'some description',
+            'more_info': '',
+            'external_resource': '',
+            'notification_text': 'Y' * 512,  # TOO long
+            'source_link': '',
+            'source_notes': '',
+            'notes': '',
+            'priority': Action.LOW,
+        }
+        form = ActionForm(data)
+        self.assertFalse(form.is_valid())
         b.delete()
 
     def test_duplicate_title(self):
@@ -213,7 +252,6 @@ class TestActionForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
-            'action_type': Action.SHOWING,
             'priority': Action.LOW,
         }
         form = ActionForm(data)
@@ -290,16 +328,27 @@ class TestCategoryForm(TestCase):
     def test_unbound(self):
         form = CategoryForm()
         fields = sorted([
-            'order', 'title', 'description', 'icon', 'image', 'color', 'notes',
+            'title', 'description', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
+    def test_unboud_with_superuser(self):
+        mock_user = Mock(is_superuser=True)
+        form = CategoryForm(user=mock_user)
+        fields = sorted([
+            'title', 'description', 'icon', 'image', 'color', 'notes',
+            'secondary_color', 'packaged_content', 'package_contributors',
+            'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
+            'display_prevent_custom_triggers_option', 'selected_by_default',
+            'featured',
+        ])
+        self.assertEqual(fields, sorted(list(form.fields.keys())))
+
     def test_bound(self):
         data = {
-            'order': '1',
             'packaged_content': False,
             'package_contributors': '',
             'title': 'New Category',
@@ -317,7 +366,6 @@ class TestCategoryForm(TestCase):
         """Ensure that duplicate titles fail validation."""
         c = Category.objects.create(order=1, title="C")  # Existing object
         data = {
-            'order': '2',
             'packaged_content': False,
             'package_contributors': '',
             'title': 'c',  # Should be a Duplicate
@@ -340,7 +388,7 @@ class TestGoalForm(TestCase):
         form = GoalForm()
         fields = sorted([
             'categories', 'title', 'description', 'icon', 'more_info', 'notes',
-            'keywords',
+            'keywords', 'sequence_order',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -349,6 +397,7 @@ class TestGoalForm(TestCase):
         data = {
             'categories': [c.id],
             'title': 'New Goal',
+            'sequence_order': '1',
             'description': 'asdf',
             'icon': '',
             'notes': '',
@@ -365,6 +414,7 @@ class TestGoalForm(TestCase):
         data = {
             'categories': [c.id],
             'title': 'g',  # Should be a duplicate
+            'sequence_order': '1',
             'description': 'asdf',
             'icon': '',
             'notes': '',

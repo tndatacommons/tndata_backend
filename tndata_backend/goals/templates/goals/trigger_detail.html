@@ -23,10 +23,26 @@
       </div>
 
       <dl>
+        <dt>Disabled</dt><dd>{{ trigger.disabled }}</dd>
         <dt>Time</dt><dd>{{ trigger.time }}</dd>
-        <dt>Date</dt><dd>{{ trigger.trigger_date|default:"not set"}}</dd>
-        <dt>Recurrences</dt><dd>{{ trigger.recurrences_as_text }}</dd>
-        <dt>RRULE data</dt><dd><code>{{ trigger.serialized_recurrences}}</code></dd>
+        <dt>Date</dt><dd>{{ trigger.trigger_date }}</dd>
+        <dt>Recurrences</dt>
+          <dd>{{ trigger.recurrences_as_text|default:"None" }}</dd>
+        <dt>RRULE data</dt>
+          <dd><code>{{ trigger.serialized_recurrences|default:"n/a"}}</code></dd>
+        <dt>Relative Reminder</dt>
+        <dd>
+          {% if trigger.relative_value %}
+            {{ trigger.relative_value }} {{ trigger.relative_units }}
+          {% else %}
+            None
+          {% endif %}
+        </dd>
+        <dt>Dynamic Notification</dt>
+        <dd>
+          {{ trigger.get_time_of_day_display }},
+          {{ trigger.get_frequency_display }}
+        </dd>
         {% if trigger.action_default %}
           <dt>Default Trigger for</dt>
           <dd>
@@ -42,7 +58,8 @@
             {% endfor %}
           </dd>
         {% endif %}
-
+        <dt>Start When Selected</dt><dd>{{ trigger.start_when_selected }}</dd>
+        <dt>Stop On Complete</dt><dd>{{ trigger.stop_on_complete }}</dd>
       </dl>
     </div>
   </div>

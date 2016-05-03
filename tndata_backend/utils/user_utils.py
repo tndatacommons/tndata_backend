@@ -1,11 +1,33 @@
 import hashlib
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.db.models import ObjectDoesNotExist
 from django.utils import timezone
+
+
+def get_client_ip(request):
+    """Try to get the user's client IP address, and return it.
+
+    See: http://stackoverflow.com/a/4581997/182778
+
+    NOTE: This function attemps to pull the IP address from
+    HTTP_X_FORWARDED_FOR, but falls back to the REMOTE_ADDR value.
+
+    It uses the first item in X-Forwarded-For, but we may want to use the
+    last item (esp. if we were on something like Heroku). From the django docs:
+    "relying on REMOTE_ADDR or similar values is widely known to be a worst
+    practice".
+
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 def user_timezone(user, timeout=3600):
@@ -71,13 +93,15 @@ def local_now(user):
     return to_localtime(now, user)
 
 
-def local_day_range(user, dt=None):
+def local_day_range(user, dt=None, days=None):
     """Return a tuple of the form (start, end), containing datetime objects
     in utc time that represents the range for the user's full day.
 
     * user: a User instance. The User whom we're considering.
     * dt: (optional). If given, this is the datetime around which the range
       is constructed.
+    * days = (optional) Number of days over which the range should spread. The
+      default behavior is for the range to encompass a single day.
 
     This is useful to query for objects that were updated or created during the
     user's day; e.g.
@@ -92,6 +116,8 @@ def local_day_range(user, dt=None):
 
     start = dt.replace(hour=0, minute=0, second=0, microsecond=0)
     end = dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+    if days:
+        end = end + timedelta(days=days)
     return (start.astimezone(timezone.utc), end.astimezone(timezone.utc))
 
 

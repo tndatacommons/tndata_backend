@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 from utils.serializers import ObjectTypeModelSerializer
 
@@ -63,9 +64,9 @@ class CategorySerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Category
         fields = (
-            'id', 'order', 'title', 'description', 'html_description',
-            'packaged_content', 'icon_url', 'image_url', 'color',
-            'secondary_color', 'object_type',
+            'id', 'order', 'featured', 'title', 'description',
+            'html_description', 'packaged_content', 'icon_url', 'image_url',
+            'color', 'secondary_color', 'selected_by_default', 'object_type',
         )
 
 
@@ -82,8 +83,9 @@ class GoalSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Goal
         fields = (
-            'id', 'title', 'description', 'html_description', 'outcome',
-            'icon_url', 'categories', 'behaviors_count', 'object_type',
+            'id', 'sequence_order', 'title', 'description', 'html_description',
+            'outcome', 'icon_url', 'categories', 'behaviors_count',
+            'object_type',
         )
 
 
@@ -97,9 +99,10 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Behavior
         fields = (
-            'id', 'title', 'description', 'html_description', 'more_info',
-            'html_more_info', 'external_resource', 'external_resource_name',
-            'icon_url', 'actions_count', 'goals', 'object_type',
+            'id', 'sequence_order', 'title', 'description', 'html_description',
+            'more_info', 'html_more_info', 'external_resource',
+            'external_resource_name', 'icon_url', 'actions_count', 'goals',
+            'object_type',
         )
         read_only_fields = ("actions_count", )
 
@@ -250,6 +253,11 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         action = Action.objects.get(pk=action_id)
         results['action'] = ActionSerializer(action).data
         results = self.include_parent_objects(results)
+        # Ensure that we use the Specified Datetime formatting for the
+        # next_reminder field.
+        if 'next_reminder' in results and results['next_reminder']:
+            results['next_reminder'] = results['next_reminder'].strftime(
+                settings.REST_FRAMEWORK['DATETIME_FORMAT'])
         return results
 
     def create(self, validated_data):

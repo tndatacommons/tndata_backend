@@ -1,4 +1,6 @@
 
+**API Version 2**
+
 A user's stats on their daily progress toward selected goals.
 
 ## Fields

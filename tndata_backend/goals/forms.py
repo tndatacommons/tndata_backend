@@ -120,7 +120,7 @@ class ActionForm(forms.ModelForm):
             'notification_text', 'sequence_order', 'behavior', 'title',
             'description', 'more_info', 'external_resource',
             'external_resource_name', 'source_link', 'source_notes',
-            'notes', 'icon', 'action_type', 'priority',
+            'notes', 'icon', 'priority',
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {
@@ -167,7 +167,7 @@ class ActionForm(forms.ModelForm):
                         "behavior",
                         "description",
                         "more_info",
-                        "sequence_order",
+                        "icon",
                     ),
                     Fieldset(
                         _("Resource Details"),
@@ -184,11 +184,10 @@ class ActionForm(forms.ModelForm):
                     ),
                     Fieldset(
                         _("Meta Details"),
+                        "sequence_order",
                         "priority",
-                        "action_type",
                         "source_link",
                         "source_notes",
-                        "icon",
                     ),
                     css_class="large-6 small-12 columns"
                 ),
@@ -204,6 +203,16 @@ class ActionForm(forms.ModelForm):
             err = "%(value)s is not a valid priority"
             raise ValidationError(err, params={"value": priority})
         return priority
+
+    def clean_title(self):
+        # XXX getting the follownig error when this is == 256.
+        # DataError: value too long for type character varying(256) when == 256
+        return self.cleaned_data['title'][:255]
+
+    def clean_notification_text(self):
+        # XXX getting the follownig error when this is == 256.
+        # DataError: value too long for type character varying(256) when == 256
+        return self.cleaned_data['notification_text'][:255]
 
 
 class BehaviorForm(forms.ModelForm):
@@ -290,13 +299,13 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = [
             'packaged_content', 'package_contributors',
+            'selected_by_default', 'featured',
             'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
-            'order', 'title', 'description', 'icon', 'image', 'color',
+            'title', 'description', 'icon', 'image', 'color',
             'secondary_color', 'notes', 'consent_summary', 'consent_more',
         ]
         labels = {
-            "order": "Default Order",
             "notes": "Scratchpad",
             'prevent_custom_triggers_default': 'Prevent custom triggers by default',
             'display_prevent_custom_triggers_option': (
@@ -311,17 +320,55 @@ class CategoryForm(forms.ModelForm):
             "consent_more": TextareaWithMarkdownHelperWidget(),
         }
 
+    def clean(self):
+        # HACK to ensure some data integrity stuff.
+        data = super().clean()
+        # Categories CANNOT be both a 'package' and a 'selected_by_default'
+        # prefer selected by default.
+        if data.get('selected_by_default') and data.get('packaged_content'):
+            data['packaged_content'] = False
+
+        # Categories CANNOT be both a 'package' and 'featured'
+        # prefer enrolled when selected
+        if data.get('featured') and data.get('packaged_content'):
+            data['packaged_content'] = False
+
+        # Categories CANNOT be `selected_by_default` and 'featured'
+        # prefer selected by default
+        if data.get('featured') and data.get('selected_by_default'):
+            data['featured'] = False
+        return data
+
     def __init__(self, *args, **kwargs):
+        # Pop the user so it doesn't get passed to super
+        self.user = kwargs.pop("user", None)
+
         # Set a default color / secondary color
         initial = kwargs.get('initial', {})
         instance = kwargs.get('instance')
-
         if not instance and initial.get('color') is None:
             initial['color'] = Category.DEFAULT_PRIMARY_COLOR
         if not instance and initial.get('secondary_color') is None:
             initial['secondary_color'] = Category.DEFAULT_SECONDARY_COLOR
         kwargs['initial'] = initial
+
         super().__init__(*args, **kwargs)
+
+        # Only allow the `selected_by_default` & `featured`
+        # options for superusers. If user is not an admin, remove that field.
+        if self.user is None or (self.user and not self.user.is_superuser):
+            del self.fields['featured']
+            del self.fields['selected_by_default']
+            details_fields = (
+                _("Category Details"), 'title', 'description', 'icon', 'image',
+                'color', 'secondary_color',
+            )
+        else:
+            details_fields = (
+                _("Category Details"), 'title', 'description',
+                'selected_by_default', 'featured',
+                'icon', 'image', 'color', 'secondary_color',
+            )
 
         # Configure crispy forms.
         self.helper = FormHelper()
@@ -329,16 +376,7 @@ class CategoryForm(forms.ModelForm):
         self.helper.layout = Layout(
             Div(
                 Div(
-                    Fieldset(
-                        _("Category Details"),
-                        'order',
-                        'title',
-                        'description',
-                        'icon',
-                        'image',
-                        'color',
-                        'secondary_color',
-                    ),
+                    Fieldset(*details_fields),
                     css_class="large-6 small-12 columns"
                 ),
                 Div(
@@ -373,8 +411,8 @@ class GoalForm(forms.ModelForm):
     class Meta:
         model = Goal
         fields = [
-            'categories', 'keywords', 'title', 'description',
-            'more_info', 'icon', 'notes',
+            'categories', 'sequence_order', 'title', 'description',
+            'more_info', 'keywords', 'icon', 'notes',
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {

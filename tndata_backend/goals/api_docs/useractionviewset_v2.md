@@ -1,3 +1,6 @@
+
+**API Version 2**
+
 This endpoint represents a user's selected Actions. That is, an object that
 defines a mapping between [Users](/api/users/) and [Actions](/api/actions/).
 
@@ -86,7 +89,7 @@ the following:
       "trigger": {...},
       "next_reminder": null,
       "editable": true,
-      "created_on": "2016-01-21T17:45:19.725448Z",
+      "created_on": "2016-01-21 17:45:19+0000",
       "primary_goal": 20,
       "primary_category": 24,
       "object_type": "useraction",
@@ -94,7 +97,7 @@ the following:
         "id": 1160,
         "user": 1,
         "category": {...},
-        "created_on": "2016-01-20T23:21:16.153161Z",
+        "created_on": "2016-01-20 23:21:16+0000",
         "editable": true,
         "object_type": "usercategory"
       },
@@ -103,7 +106,7 @@ the following:
         "user": 1,
         "goal": {...},
         "editable": true,
-        "created_on": "2016-01-21T17:33:19.223719Z",
+        "created_on": "2016-01-21 17:33:19+0000",
         "primary_category": 24,
         "object_type": "usergoal"
       },
@@ -111,7 +114,7 @@ the following:
         "id": 1962,
         "user": 1,
         "behavior": {...},
-        "created_on": "2016-01-21T17:33:19.319116Z",
+        "created_on": "2016-01-21 17:33:19+0000",
         "editable": true,
         "object_type": "userbehavior"
       }

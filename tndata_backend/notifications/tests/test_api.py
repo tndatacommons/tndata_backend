@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import override_settings
@@ -17,6 +18,7 @@ from .. import queue
 
 User = get_user_model()
 
+DRF_DT_FORMAT = settings.REST_FRAMEWORK['DATETIME_FORMAT']
 TEST_REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
@@ -31,6 +33,7 @@ TEST_REST_FRAMEWORK = {
     'DEFAULT_VERSION': '1',
     'ALLOWED_VERSIONS': ['1', '2'],
     'DEFAULT_VERSIONING_CLASS': 'utils.api.DefaultQueryParamVersioning',
+    'DATETIME_FORMAT': DRF_DT_FORMAT,
 }
 
 
@@ -188,4 +191,7 @@ class TestGCMMessageAPI(APITestCase):
             )
             response = self.client.put(self.detail_url, self.payload)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data['deliver_on'], '2015-09-02T12:34:00Z')
+            self.assertEqual(
+                response.data['deliver_on'],
+                '2015-09-02 12:34:00+0000'
+            )

@@ -36,11 +36,16 @@ class UserCompletedAction(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     useraction = models.ForeignKey(UserAction)
     action = models.ForeignKey(Action)
+
+    # NOTE: See the `action_completed` signal handler (in models.signals)
+    # It also checks if all of a user's actions within a behavior have been
+    # completed, and if so, marks the behavior as completed.
     state = models.CharField(
         max_length=32,
         default=UNSET,
         choices=STATE_CHOICES
     )
+
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
@@ -68,6 +73,22 @@ class UserCompletedAction(models.Model):
     @property
     def snoozed(self):
         return self.state == "snoozed"
+
+    def sibling_actions_completed(self):
+        """Query to see if sibling actions (those under the same Behavior)
+        have been completed.
+
+        Returns True if all the actions are completed, False otherwise.
+
+        """
+        # Note: this query is for UserActions under the same behavior that
+        # have not been completed. If this returns results, the sibling actions
+        # have not been completed.
+        return not UserAction.objects.filter(
+            user=self.user,
+            action__behavior=self.action.behavior,
+            usercompletedaction=None
+        ).exists()
 
 
 class DailyProgress(models.Model):

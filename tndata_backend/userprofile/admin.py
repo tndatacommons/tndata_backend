@@ -43,8 +43,12 @@ admin.site.register(models.UserPlace, UserPlaceAdmin)
 class UserProfileAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'user_first', 'user_last', 'timezone',
-        'needs_onboarding', 'zipcode', 'birthday', 'sex', 'employed',
-        'is_parent', 'in_relationship', 'has_degree',
+        'needs_onboarding', 'zipcode', 'ip_address',
+    )
+    list_filter = (
+        'zipcode', 'sex', 'employed', 'is_parent',
+        'in_relationship', 'has_degree',
+        'timezone',
     )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
@@ -53,10 +57,24 @@ class UserProfileAdmin(UserRelatedModelAdmin):
 admin.site.register(models.UserProfile, UserProfileAdmin)
 
 
+class UserProfileInline(admin.StackedInline):
+    model = models.UserProfile
+    fields = (
+        'timezone', 'maximum_daily_notifications',
+        'needs_onboarding', 'zipcode', 'birthday', 'sex', 'employed',
+        'is_parent', 'in_relationship', 'has_degree', 'ip_address',
+    )
+    readonly_fields = (
+        'ip_address', 'zipcode', 'birthday', 'sex', 'employed',
+        'is_parent', 'in_relationship', 'has_degree',
+    )
+
+
 class CustomUserAdmin(UserAdmin):
     """Override the default UserAdmin class so we can attach a custom action."""
     actions = [remove_app_data]
     list_display = ('email', 'full_name', 'is_staff', 'date_joined', 'username')
+    inlines = [UserProfileInline]
 
     def full_name(self, obj):
         return obj.get_full_name()

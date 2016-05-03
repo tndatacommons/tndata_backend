@@ -3,6 +3,7 @@
 {% load goal_filters %}
 {% load util_tags %}
 {% load util_filters %}
+{% load static from staticfiles %}
 
 {% block title %}B: {{ behavior.title }}{% endblock %}
 
@@ -15,6 +16,19 @@
   <div class="row">
     <div class="large-6 small-12 columns">
       <h1>{{ behavior }} {% goal_object_controls behavior %}</h1>
+
+      {% comment %} XXX Disabling bucket stuff
+      {% if contains_dynamic and behavior.action_buckets_prep == 0 %}
+        <div data-alert class="alert-box warning">
+          <i class="fa fa-warning"></i> This Behavior contains Dynamic
+          Notifications, but does not contain any Reinforcing Notifications. This
+          will prevent users from receiving notifications in their proper order.
+          Please add a <a href="{{ action_url }}">
+          Reinforcing Notification</a>. <a href="#" class="close">&times;</a>
+        </div>
+      {% endif %}
+      {% endcomment %}
+
       <dl>
         <dt>State</dt><dd>{{ behavior|label }}</dd>
         <dt>Sequence Order</dt><dd>{{ behavior.sequence_order }}</dd>
@@ -84,18 +98,35 @@
       {% for goal in behavior.goals.all %}
         <li>
           {{ goal|label }}
+          <strong>{{ goal.sequence_order }}:</strong>
           <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
         </li>
       {% empty %}
         <li><em>This behavior is not associated with any Goals.</em></li>
       {% endfor %}
       </ul>
-      <h2 class="subheader">Actions</h2>
-      <ul>
+      <h2 class="subheader">Notifications</h2>
+      <ul class="action-list">
       {% for action in behavior.action_set.all %}
         <li>
-          {{ action|label }}
+          {# -- Allow re-ordering actions --------------- #}
+          <select
+            id="action-update-{{action.id}}"
+            class="pull-left no-chosen action-update"
+            style="margin: 0 20px 0 0;width:50px;"
+            data-actionid="{{action.id}}">
+          {% for v in order_values %}
+            <option
+              value="{{v}}"
+              {% if action.sequence_order == v %} selected="selected"{% endif %}>
+              {{v}}</option>
+          {% endfor %}
+          </select>
+          {# -------------------------------------------- #}
+          {{ action|label }} <span class="label secondary">
+            {{ action.get_action_type_display }}</span>
           <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+          <small>{{ action.default_trigger.time_details }}</small>
         </li>
       {% empty %}
         <li><em>This behavior does not contain any actions.</em></li>
@@ -103,4 +134,10 @@
       </ul>
     </div>
   </div>
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
 {% endblock %}

@@ -3,6 +3,9 @@
 
 {% if is_editor %}
 <h2>Content for Review</h2>
+<p>The following content needs to be reviewed either for publication or because
+the content requires your action.</p>
+
 <table class="object-list">
 <thead>
   <tr>
@@ -13,6 +16,30 @@
   </tr>
 </thead>
 <tbody>
+  {% for behavior in dynamic_behaviors %}
+    <tr>
+      <td>
+        <span class="label warning" data-tooltip aria-haspopup="true"
+              title="This Behavior contains Dynamic Notifications, and requires at least one Reinforcing Notification"><i class="fa fa-warning"></i> Action Required</span>
+      </td>
+      <td><span class="label secondary">Behavior</span></td>
+      <td><a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a></td>
+      <td>
+        {{ behavior.updated_on|date:"n-j-Y" }}<br/>
+        by
+        {% if behavior.created_by %}
+          {{ behavior.created_by.email|truncatechars:15 }}
+        {% elif behavior.updated_by %}
+          {{ behavior.updated_by.email|truncatechars:15 }}
+        {% else %}
+          nobody
+        {% endif %}
+        <br/>
+        <small class="label secondary">
+          {{ behavior.updated_on|timesince }} ago</small>
+      </td>
+    </tr>
+  {% endfor %}
   {% for obj in categories %}
     <tr>
       <td>{% publish_deny_form obj "dropdown" %}</td>

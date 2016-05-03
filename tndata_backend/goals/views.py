@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseNotFound, JsonResponse
@@ -19,6 +19,8 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils import timezone
 
 from django_fsm import TransitionNotAllowed
+from django_rq import job
+from notifications import queue
 from userprofile.forms import UserForm
 from userprofile.models import UserProfile
 from utils.db import get_max_order
@@ -56,7 +58,6 @@ from . models import (
     PackageEnrollment,
     Trigger,
     UserCompletedAction,
-    UserCompletedCustomAction,
     UserGoal,
     popular_actions,
     popular_behaviors,
@@ -263,6 +264,15 @@ class IndexView(ContentViewerMixin, TemplateView):
             for key, func in mapping.items():
                 context[key] = func(state='pending-review').order_by("-updated_on")
 
+            # List all the Behaviors that need a `prep` action.
+            # XXX: Disabling 'bucket'-related content.
+            # dynamic_behaviors = Behavior.objects.contains_dynamic()
+            # dynamic_behaviors = dynamic_behaviors.filter(
+                # action_buckets_core__gt=0,
+                # action_buckets_prep=0
+            # ).distinct().order_by('updated_on')
+            # context['dynamic_behaviors'] = dynamic_behaviors[:40]
+
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
         mapping = {
@@ -291,13 +301,6 @@ class IndexView(ContentViewerMixin, TemplateView):
         context['num_my_content'] = sum(
             len(context[key]) for key in mapping.keys()
         )
-
-        # Most popular content.
-        context['popular_categories'] = popular_categories()
-        context['popular_goals'] = popular_goals()
-        context['popular_behaviors'] = popular_behaviors()
-        context['popular_actions'] = popular_actions()
-
         return self.render_to_response(context)
 
 
@@ -349,10 +352,33 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
     context_object_name = 'categories'
     template_name = "goals/category_list.html"
 
+    def _filters(self):
+        kw = {}
+
+        selected = self.request.GET.get('selected_by_default', None)
+        if selected is not None:
+            kw['selected_by_default'] = bool(selected)
+
+        featured = self.request.GET.get('featured', None)
+        if featured is not None:
+            kw['featured'] = bool(featured)
+
+        packaged = self.request.GET.get('packaged_content', None)
+        if packaged is not None:
+            kw['packaged_content'] = bool(packaged)
+
+        return kw
+
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().filter(**self._filters())
         queryset = queryset.annotate(Count('usercategory'))
         return queryset.prefetch_related("goal_set", "goal_set__behavior_set")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(self._filters())
+        context['category_list'] = True
+        return context
 
 
 class CategoryDetailView(ContentViewerMixin, DetailView):
@@ -360,12 +386,32 @@ class CategoryDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category = context['object']
+
+        result = category.goals.aggregate(Max('sequence_order'))
+        result = result.get('sequence_order__max') or 0
+        context['order_values'] = list(range(result + 5))
+        return context
+
 
 class CategoryCreateView(ContentEditorMixin, CreatedByView):
     model = Category
     form_class = CategoryForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+
+    def get_form_kwargs(self):
+        """Includes the current user in the form's kwargs."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your category has been created.")
+        return url
 
     def get_initial(self, *args, **kwargs):
         """Pre-populate the value for the initial order. This can't be done
@@ -415,7 +461,17 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
     form_class = CategoryForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-    success_url = reverse_lazy('goals:category-list')
+
+    def get_form_kwargs(self):
+        """Includes the current user in the form's kwargs."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your category has been saved")
+        return url
 
     def get_context_data(self, **kwargs):
         context = super(CategoryUpdateView, self).get_context_data(**kwargs)
@@ -445,12 +501,38 @@ class GoalDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        goal = context['object']
+
+        # IDs for this Goal's child behaviors
+        bids = goal.behavior_set.values_list('pk', flat=True)
+        order_values = Behavior.objects.filter(pk__in=bids).aggregate(
+            Max('sequence_order')
+        )
+        order_values = order_values.get('sequence_order__max') or 0
+
+        # include values for the Action's sequence_orders
+        result = Action.objects.filter(behavior__id__in=bids).aggregate(
+            Max('sequence_order')
+        )
+
+        # Pick the larger order value from Behaviors and Actions
+        result = max(order_values, result.get('sequence_order__max') or 0)
+        context['order_values'] = list(range(result + 5))
+        return context
+
 
 class GoalCreateView(ContentAuthorMixin, CreatedByView):
     model = Goal
     form_class = GoalForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your goal has been created.")
+        return url
 
     def get_context_data(self, **kwargs):
         context = super(GoalCreateView, self).get_context_data(**kwargs)
@@ -475,6 +557,7 @@ class GoalDuplicateView(GoalCreateView):
             obj = self.get_object()
             initial.update({
                 "title": "Copy of {0}".format(obj.title),
+                'sequence_order': obj.sequence_order,
                 "categories": obj.categories.values_list("id", flat=True),
                 "description": obj.description,
             })
@@ -499,7 +582,6 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = GoalForm
-    success_url = reverse_lazy('goals:goal-list')
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
@@ -519,7 +601,12 @@ class GoalDeleteView(ContentEditorMixin, ContentDeleteView):
 
 class TriggerListView(ContentViewerMixin, ListView):
     model = Trigger
-    queryset = Trigger.objects.default().values('id', 'name', 'time', 'recurrences')
+    fields = (
+        'id', 'name', 'time', 'trigger_date', 'recurrences',
+        'relative_value', 'relative_units',
+        'time_of_day', 'frequency', 'action_default',
+    )
+    queryset = Trigger.objects.default().values(*fields)
     context_object_name = 'triggers'
 
 
@@ -546,6 +633,23 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        behavior = context['object']
+
+        # XXX: Disabling bucket-related stuff
+        # Determine if this Behavior contains dynamic notifications
+        # obj = context['object']
+        # qs = Behavior.objects.contains_dynamic().filter(pk=obj.id)
+        # context['contains_dynamic'] = qs.exists()
+        # context['action_url'] = Action.get_create_reinforcing_action_url()
+
+        # include values for the Action's sequence_orders
+        result = behavior.action_set.aggregate(Max('sequence_order'))
+        result = result.get('sequence_order__max') or 0
+        context['order_values'] = list(range(result + 5))
+        return context
+
 
 class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
     model = Behavior
@@ -566,6 +670,9 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
             self.object.review()  # Transition to the new state
             msg = "{0} has been submitted for review".format(self.object)
             messages.success(self.request, msg)
+        else:
+            messages.success(self.request, "Your behavior has been created.")
+
         self.object.save(
             created_by=self.request.user,
             updated_by=self.request.user
@@ -611,7 +718,6 @@ class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     form_class = BehaviorForm
-    success_url = reverse_lazy('goals:behavior-list')
 
     def get_context_data(self, **kwargs):
         context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
@@ -704,7 +810,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         self.object = form.save()
         default_trigger = trigger_form.save(commit=False)
         trigger_name = "Default: {0}-{1}".format(self.object, self.object.id)
-        default_trigger.name = trigger_name
+        default_trigger.name = trigger_name[:128]
         default_trigger.save()
         self.object.default_trigger = default_trigger
 
@@ -714,7 +820,8 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
             self.object.review()  # Transition to the new state
             msg = "{0} has been submitted for review".format(self.object)
             messages.success(self.request, msg)
-
+        else:
+            messages.success(self.request, "Your notification has been created.")
         self.object.save(
             created_by=self.request.user,
             updated_by=self.request.user
@@ -1406,15 +1513,32 @@ def admin_batch_assign_keywords(request):
     return render(request, 'goals/admin_batch_assign_keywords.html', context)
 
 
+@job
+def _duplicate_category_content(category, prefix=None):
+    """Given a category and an optional prefix, duplicate all of it's content;
+    NOTE: This is an async RQ task, defined here, because otherwise the
+    view below won't be able to import it (or least I couldn't get it to
+    work)."""
+    if prefix:
+        category.duplicate_content(prefix)
+    else:
+        category.duplicate_content()
+
+
 @user_passes_test(staff_required, login_url='/')
 def duplicate_content(request, pk, title_slug):
     category = get_object_or_404(Category, pk=pk, title_slug=title_slug)
     if request.method == "POST":
         form = TitlePrefixForm(request.POST)
         if form.is_valid():
-            category = category.duplicate_content(form.cleaned_data['prefix'])
-            messages.success(request, "Your content has been duplicated")
-            return redirect(category.get_absolute_url())
+            prefix = form.cleaned_data['prefix']
+            _duplicate_category_content.delay(category, prefix)
+            msg = (
+                "Your content is being duplicated and should be available in "
+                "about a minute."
+            )
+            messages.success(request, msg)
+            return redirect("goals:category-list")
     else:
         form = TitlePrefixForm()
 
@@ -1434,15 +1558,13 @@ def debug_notifications(request):
     User = get_user_model()
     customactions = None
     useractions = None
-    completed_useractions = None
-    completed_customactions = None
-    progress = None
+    # completed_useractions = None
+    # completed_customactions = None
     next_user_action = None
     today = None
     upcoming_useractions = []
     upcoming_customactions = []
-    buckets = {}
-    daily_progress = None
+    user_queues = defaultdict(dict)
     email = request.GET.get('email_address', None)
 
     if email is None:
@@ -1454,22 +1576,21 @@ def debug_notifications(request):
             today = local_day_range(user)
             useractions = user.useraction_set.all()
             useractions = useractions.order_by("next_trigger_date").distinct()
-            completed_useractions = UserCompletedAction.objects.filter(
-                user=user,
-                updated_on__range=today
-            )
+            # completed_useractions = UserCompletedAction.objects.filter(
+            #     user=user,
+            #     updated_on__range=today
+            # )
 
             # Custom Actions
             customactions = user.customaction_set.all()
             customactions = customactions.order_by("next_trigger_date")
             customactions = customactions.distinct()
 
-            completed_customactions = UserCompletedCustomAction.objects.filter(
-                user=user,
-                updated_on__range=today
-            )
+            # completed_customactions = UserCompletedCustomAction.objects.filter(
+            #     user=user,
+            #     updated_on__range=today
+            # )
 
-            progress = user_feed.todays_progress(user)
             next_user_action = user_feed.next_user_action(user)
             upcoming_useractions = user_feed.todays_actions(user)
             upcoming_customactions = user_feed.todays_customactions(user)
@@ -1478,31 +1599,36 @@ def debug_notifications(request):
             for ca in customactions:
                 ca.upcoming = ca in upcoming_customactions
 
+            # The user's notification queue
+            dt = today[0]
+            for dt in [dt + timedelta(days=i) for i in range(0, 3)]:
+                qdata = queue.UserQueue.get_data(user, date=dt)
+                # data for a user queue is a dict that looks like this:
+                # 'uq:1:2016-04-25:count': 0,
+                # 'uq:1:2016-04-25:high': [],
+                # 'uq:1:2016-04-25:low': [],
+                # 'uq:1:2016-04-25:medium
+                for key, content in qdata.items():
+                    parts = key.split(':')
+                    datestring = parts[2]
+                    key = parts[3]
+                    user_queues[datestring][key] = content
+                # user_queues.append(queue.UserQueue.get_data(user, date=dt))
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
-
-        # Buckets for each Behavior the user has selected.
-        try:
-            daily_progress = user.dailyprogress_set.latest()
-            for ub in user.userbehavior_set.all():
-                buckets[ub.behavior.title] = daily_progress.get_status(ub.behavior)
-        except DailyProgress.DoesNotExist:
-            daily_progress = None
 
     context = {
         'form': form,
         'email': email,
         'useractions': useractions,
         'customactions': customactions,
-        'completed_useractions': completed_useractions,
-        'completed_customactions': completed_customactions,
-        'progress': progress,
+        # 'completed_useractions': completed_useractions,
+        # 'completed_customactions': completed_customactions,
         'next_user_action': next_user_action,
         'upcoming_useractions': upcoming_useractions,
         'upcoming_customactions': upcoming_customactions,
-        'daily_progress': daily_progress,
-        'buckets': buckets,
         'today': today,
+        'user_queues': dict(user_queues),
     }
     return render(request, 'goals/debug_notifications.html', context)
 
@@ -1517,6 +1643,10 @@ def debug_progress(request):
     email = request.GET.get('email_address', None)
     user = None
     form = EmailForm(initial={'email_address': email})
+    next_goals = []
+    next_behaviors = []
+    next_actions = []
+
     try:
         user = User.objects.get(email__icontains=email)
     except (User.DoesNotExist, User.MultipleObjectsReturned):
@@ -1532,10 +1662,24 @@ def debug_progress(request):
         user=user,
         updated_on__gte=from_date
     )
-    try:
-        latest_dp = daily_progresses.latest()
-    except DailyProgress.DoesNotExist:
-        latest_dp = None
+
+    # Completed Actions/Behaviors/Goals.
+    completed = {'actions': [], 'behaviors': [], 'goals': []}
+    if user:
+        ucas = user.usercompletedaction_set.all()
+        completed['actions'] = ucas.filter(updated_on__gte=from_date)
+        behaviors = user.userbehavior_set.filter(completed=True)
+        completed['behaviors'] = behaviors.filter(completed_on__gte=from_date)
+        goals = user.usergoal_set.filter(completed=True)
+        completed['goals'] = goals.filter(completed_on__gte=from_date)
+
+        # NEXT in sequence objeccts.
+        next_goals = user.usergoal_set.next_in_sequence(published=True)
+        next_behaviors = user.userbehavior_set.next_in_sequence(
+            goals=next_goals.values_list('goal', flat=True), published=True)
+        next_actions = user.useraction_set.next_in_sequence(
+            next_behaviors.values_list('behavior', flat=True), published=True)
+        next_actions = next_actions.order_by("next_trigger_date")
 
     context = {
         'email': email,
@@ -1545,9 +1689,31 @@ def debug_progress(request):
         'today': today,
         'from_date': from_date,
         'daily_progresses': daily_progresses,
-        'latest_dp': latest_dp,
+        'completed': completed,
+        'next_goals': next_goals,
+        'next_behaviors': next_behaviors,
+        'next_actions': next_actions,
     }
     return render(request, 'goals/debug_progress.html', context)
+
+
+class ReportsView(ContentViewerMixin, TemplateView):
+    """This view simply renders a template that lists the available reports
+    with a short description of each."""
+    template_name = "goals/reports.html"
+
+
+class ReportPopularView(ContentViewerMixin, TemplateView):
+    template_name = "goals/report_popular.html"
+
+    def get(self, request, *args, **kwargs):
+        """Include the most popular content in the conext prior to rendering"""
+        context = self.get_context_data(**kwargs)
+        context['popular_categories'] = popular_categories()
+        context['popular_goals'] = popular_goals()
+        context['popular_behaviors'] = popular_behaviors()
+        context['popular_actions'] = popular_actions()
+        return self.render_to_response(context)
 
 
 @user_passes_test(staff_required, login_url='/')

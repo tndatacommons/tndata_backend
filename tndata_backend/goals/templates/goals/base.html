@@ -11,6 +11,11 @@
 <link rel="stylesheet" href="{% static 'js/dropzone/basic.css' %}" />
 <style type="text/css">
 .breadcrumbs {margin-top:1em;}
+
+/* success/error stats for Action.sequence_order updates */
+select.success {background-color: #8f8;}
+select.error {background-color: #f88;}
+
 select[multiple] {min-height: 100px;}
 /* Nested lists; i.e. the tree of Goals/Behaviors/Actions */
 ul.nested {list-style-type:none; margin-left: 0px;}
@@ -67,6 +72,24 @@ form.dropzone {
   text-align: center;
   border:3px dotted #aaa;
 }
+
+#insta-search {
+  margin:0px;
+  padding: 2em 1em;
+  background-color: #ffd;
+  border: 1px solid #ccc;
+  border-top-width: 0px;
+  display:none;
+}
+
+/* Styles for the right-hand-side list of content */
+ul.action-list {list-style-type:none;clear:both;}
+ul.action-list li {
+  border-top: 1px dotted #ccc;
+  line-height: 1;
+  margin:0.25em 0;
+  padding: 0.5em 0;
+}
 </style>
 {% endblock %}
 
@@ -84,12 +107,17 @@ form.dropzone {
   <section class="top-bar-section">
     {# Right Nav Section #}
     <ul class="right">
+      <li><a id="search" href="{% url 'haystack_search' %}">
+        <i class="fa fa-search"></i> Search</a></li>
       <li class="divider"></li>
-      <li><a href="{% url 'haystack_search' %}">
-        <i class="fa fa-search"></i></a></li>
-      <li class="divider"></li>
-      <li><a href="{% url 'userprofile:index' %}">
-        <i class="fa fa-user"></i> Account</a></li>
+      <li class="has-dropdown">
+        <a href="#"><i class="fa fa-line-chart"></i> Reports</a>
+        <ul class="dropdown">
+          <li><a href="#">Popular Content</a></li>
+          <li><a href="#">Temporary Placeholder</a></li>
+        </ul>
+      </li>
+      {% if user.is_staff %}
       <li class="divider"></li>
       <li class="has-dropdown">
         <a href="/admin/"><i class="fa fa-unlock"></i> Admin</a>
@@ -102,9 +130,16 @@ form.dropzone {
             Notification Dashboard</a></li>
         </ul>
       </li>
+      {% endif %}
       <li class="divider"></li>
-      <li><a href="{% url 'logout' %}">
-        <i class="fa fa-sign-out"></i> Sign Out</a></li>
+      <li class="has-dropdown">
+        <a href="{% url 'userprofile:index' %}"><i class="fa fa-user"></i> Account</a>
+        <ul class="dropdown">
+          <li><a href="{% url 'logout' %}">
+            <i class="fa fa-sign-out"></i> Sign Out</a>
+          </li>
+        </ul>
+      </li>
     </ul>
 
     {# Left Nav Section #}
@@ -168,10 +203,6 @@ form.dropzone {
         </li>
         {% endwith %}
       {% endif %}
-      {% if perms.goals.view_trigger and user.is_staff %}
-        <li class="divider"></li>
-        <li><a href="{% url 'goals:trigger-list' %}">Triggers</a></li>
-      {% endif %}
       <li class="divider"></li>
     </ul>
   </section>
@@ -182,6 +213,22 @@ form.dropzone {
 {% block body %}
   <div class="row">
     <div class="large-12 small-12 columns">
+
+    <div class="row" id="insta-search">
+      <form method="get" action="{% url 'haystack_search' %}">
+      <div class="large-12 medium-12 small-12 columns">
+        <div class="row collapse">
+          <div class="small-10 columns">
+            <input id="id_q" name="q" type="search"
+                   placeholder="Search Categories, Goals, Behaviors, Notifications">
+          </div>
+          <div class="small-2 columns">
+            <button class="button postfix"><i class="fa fa-search"></i> Search</button>
+          </div>
+        </div>
+      </div>
+      </form>
+    </div>
 
     {# wrapper for breadcrumbs #}
     <ul class="breadcrumbs">
@@ -208,7 +255,17 @@ form.dropzone {
     $('table.object-list').DataTable({paging:false});
 
     // Use chosen for all <select> elements
-    $('select').chosen();
+    $('select:not(.no-chosen)').chosen();
+
+    $("#search").click(function(e) {
+      e.preventDefault();
+      var elt = $("#insta-search");
+      if(elt.is(":visible")) {
+        $("#insta-search").slideUp();
+      } else {
+        $("#insta-search").slideDown();
+      }
+    });
   });
   </script>
 {% endblock %}

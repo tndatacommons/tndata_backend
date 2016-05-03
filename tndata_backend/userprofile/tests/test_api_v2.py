@@ -1,4 +1,5 @@
 import hashlib
+from datetime import date
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -575,3 +576,116 @@ class TestUserProfilesAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['timezone'], "America/New_York")
         self.assertTrue(response.data['needs_onboarding'])
+
+
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+class TestSimpleProfileAPI(V2APITestCase):
+
+    def setUp(self):
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="me",
+            email="me@example.com",
+            password="secret"
+        )
+        self.profile = self.user.userprofile
+
+    def tearDown(self):
+        self.User.objects.all().delete()
+        UserProfile.objects.all().delete()
+
+    def test_defaults(self):
+        self.assertEqual(self.profile.user, self.user)
+        self.assertEqual(self.profile.timezone, 'America/Chicago')
+        self.assertEqual(self.profile.maximum_daily_notifications, 5)
+        self.assertEqual(self.profile.needs_onboarding, True)
+        self.assertIsNone(self.profile.zipcode)
+        self.assertIsNone(self.profile.birthday)
+        self.assertEqual(self.profile.sex, "")
+        self.assertFalse(self.profile.employed)
+        self.assertFalse(self.profile.is_parent)
+        self.assertFalse(self.profile.in_relationship)
+        self.assertFalse(self.profile.has_degree)
+
+    def test_get_unauthed(self):
+        url = self.get_url('profile-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 0)
+
+    def test_get_authed(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        url = self.get_url('profile-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_get_detail_unauthed(self):
+        url = self.get_url('profile-detail', args=[self.profile.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_detail_authed(self):
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        url = self.get_url('profile-detail', args=[self.profile.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_list_not_allowed(self):
+        """POSTing to the profile-list should not be allowed."""
+        url = self.get_url('profile-list')
+        response = self.client.post(url, {})
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+        # Not allowed Even when authorized.
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_put_profile(self):
+        """Test updating userprofiles w/ all data"""
+        url = self.get_url('profile-detail', args=[self.profile.id])
+        payload = {
+            'timezone': "America/New_York",
+            'maximum_daily_notifications': 42,
+            'needs_onboarding': False,
+            'zipcode': '12345',
+            'birthday': '1999-12-31',
+            'sex': 'female',
+            'employed': True,
+            'is_parent': True,
+            'in_relationship': True,
+            'has_degree': True,
+        }
+
+        # Not without authentication
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        # OK when authenticated
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        profile = UserProfile.objects.get(pk=self.profile.id)
+        self.assertEqual(profile.timezone, 'America/New_York')
+        self.assertEqual(profile.maximum_daily_notifications, 42)
+        self.assertEqual(profile.zipcode, '12345')
+        self.assertEqual(profile.birthday, date(1999, 12, 31))
+        self.assertEqual(profile.get_sex_display(), "Female")
+        self.assertFalse(profile.needs_onboarding)
+        self.assertTrue(profile.employed)
+        self.assertTrue(profile.is_parent)
+        self.assertTrue(profile.in_relationship)
+        self.assertTrue(profile.has_degree)

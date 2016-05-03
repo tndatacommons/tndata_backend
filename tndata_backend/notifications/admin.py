@@ -70,6 +70,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     list_display = (
         'user_email', 'user_username', 'title', 'message_teaser',
         'content_type', 'object_id', 'deliver_on', 'success', 'response_text',
+        'queue_id',
     )
     list_filter = (DeliverDayListFilter, 'success', 'content_type')
     search_fields = [
@@ -84,6 +85,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
         'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
     actions = ['send_notification', 'expire_messages']
+    raw_id_fields = ('user', )
 
     def pretty_payload(self, obj):
         """pretty-printed version of the `content_json` attribute delivered as

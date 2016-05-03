@@ -68,21 +68,44 @@
     </div>
   </div>
   <div class="large-6 small-12 columns">
+    <h2>Notification Queue</h2>
+    <p>The following table lists the user's prioritized notifications queue
+    for the next 3 days.</p>
+    <table>
+      <thead>
+        <tr>
+        <th>Date</th>
+        <th>High</th>
+        <th>Med</th>
+        <th>Low</th>
+        <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for datestring, datadict in user_queues.items %}
+        <tr>
+          <td>{{datestring}}</td>
+          <td>{% for msg in datadict.high %}
+            <a href="/admin/notifications/gcmmessage/?q={{msg}}">
+            {{msg|truncatechars:12}}</a><br/>{% endfor %}</td>
+          <td>{% for msg in datadict.medium %}
+            <a href="/admin/notifications/gcmmessage/?q={{msg}}">
+            {{msg|truncatechars:12}}</a><br/>{% endfor %}</td>
+          <td>{% for msg in datadict.low %}
+            <a href="/admin/notifications/gcmmessage/?q={{msg}}">
+            {{msg|truncatechars:12}}</a><br/>{% endfor %}</td>
+          <td>{{datadict.count|default:0}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% comment %}
     <h2>Progress <small>Behaviors / Completed Actions</small></h2>
     <p>
       <span class="label info">{{ today.0|localtime }}</span> to
       <span class="label info">{{ today.1|localtime }}</span>
     </p>
-    </h2>
     <div class="panel">
-      <h3>Behavior Buckets <small>{{ daily_progress.updated_on }}</small></h3>
-      <ul>
-      {% for behavior, bucket in buckets.items %}
-        <li>{{ behavior }}: <span class="label secondary">{{ bucket }}</li>
-      {% empty %}
-        <li>no data</li>
-      {% endfor %}
-      </ul>
 
       <h3>Public/Packaged Actions</h3>
       <ul>
@@ -118,6 +141,7 @@
       {% endfor %}
       </ul>
     </div>
+    {% endcomment %}
   </div>
 </div> {# end .row #}
 
@@ -135,6 +159,7 @@
       <th>Object</th>
       <th>Status</th>
       <th>Notifications</th>
+      <th>Parents</th>
     </tr>
   </thead>
   <tbody>
@@ -294,6 +319,19 @@
             <li><em>none scheduled</em></li>
           {% endfor %}
           </ul>
+        </td>
+        <td>
+          <strong data-tooltip aria-haspopup="true"
+                  class="has-tip" title="Primary Category">
+            {{ ua.primary_category }}</strong><br/>
+          <span class="label info" data-tooltip aria-haspopup="true"
+                class="has-tip" title="Sequence Order for this Goal">
+                {{ ua.primary_goal.sequence_order }}</span>
+          {{ ua.primary_goal }}<br/>
+          <span class="label info" data-tooltip aria-haspopup="true"
+                class="has-tip" title="Sequence Order for this Behavior">
+                {{ ua.action.behavior.sequence_order }}</span>
+          {{ ua.action.behavior }}<br/>
         </td>
       </tr>
     {% endfor %}

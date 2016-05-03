@@ -33,6 +33,7 @@ from .path import (
 from .triggers import Trigger
 from ..encoder import dump_kwargs
 from ..managers import (
+    BehaviorManager,
     CategoryManager,
     GoalManager,
     WorkflowManager
@@ -103,6 +104,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Select a secondary color for this Category. If omitted, a "
                   "complementary color will be generated."
     )
+
     state = FSMField(default="draft")
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -114,8 +116,42 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         related_name="categories_created",
         null=True
     )
+    # -------------------------------------------------------------------------
+    # SPECIAL-PURPOSE CATEGORIES:
+    #
+    # - selected_by_default: These are categories that we want to auto-enroll
+    #   new users into. This means they'll have content in the app even if
+    #   they don't select anything.
+    # - featured: Thes are categories that should get listed prominently in the
+    #   app, typically for a provider we want to promote.
+    #
+    # These are _mutually exclusive_ from packages. They're categories of
+    # content, that we make really easy to get the user into the data.
+    # -------------------------------------------------------------------------
+    selected_by_default = models.BooleanField(
+        default=False,
+        help_text="Should this category and all of its content be "
+                  "auto-selected for new users?"
+    )
+    featured = models.BooleanField(
+        default=False,
+        help_text="Featured categories are typically collection of content "
+                  "provided by an agency/partner that we want to promote "
+                  "publicy within the app."
+    )
 
-    # Fields related to 'Packaged Content'
+    # -------------------------------------------------------------------------
+    # PACKAGES.
+    # A package is collection of content (just like a category), but it
+    # additionally has an extra step required for enrollment; i.e. the user
+    # receives a notification, and must agree to a consent form provided by
+    # the owner of the package.
+    #
+    # Until the user does this, they do not gain access to the content within
+    # the package. Additionally, differnt package enrollments may contain
+    # different goals within the category. Being enrolled in a package does not
+    # meant that you have all goals / behaviors / actions within that category.
+    # -------------------------------------------------------------------------
     packaged_content = models.BooleanField(
         default=False,
         help_text="Is this Category for a collection of packaged content?"
@@ -144,8 +180,9 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
                   "will see the option to prevent custom triggers during "
                   "user enrollment."
     )
+    # -------------------------------------------------------------------------
 
-    # timestamps
+    # TIMESTAMPS
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -153,7 +190,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         return self.title
 
     class Meta:
-        ordering = ['order', 'title']
+        ordering = ['order', 'title', 'featured', ]
         verbose_name = "Category"
         verbose_name_plural = "Categories"
         # add_category, change_category, delete_category are created by default.
@@ -217,6 +254,8 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         self.title_slug = slugify(self.title)
         self.color = self._format_color(self.color)
         self.secondary_color = self._generate_secondary_color()
+        if not self.order:
+            self.order = get_max_order(self.__class__)
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Category, self).save(*args, **kwargs)
 
@@ -258,6 +297,32 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     def get_package_calendar_url(self):
         if self.packaged_content:
             return reverse("goals:package-calendar", args=[self.id])
+
+    def enroll(self, user):
+        """Enroll the user in this category and all of the published content
+        contained within it."""
+        # Enroll the user in this category...
+        user.usercategory_set.get_or_create(category=self)
+
+        # Then enroll the user in all of the published Goals
+        goals = self.goal_set.filter(state='published')
+        for goal in goals:
+            ug, _ = user.usergoal_set.get_or_create(user=user, goal=goal)
+            ug.primary_category = self
+            ug.save()
+
+        # Then enroll the user in the published Behaviors
+        behaviors = Behavior.objects.published().filter(goals=goals).distinct()
+        for behavior in behaviors:
+            user.userbehavior_set.get_or_create(behavior=behavior)
+
+        # Finally, enroll the user in the Behavior's Actions
+        actions = Action.objects.published().filter(behavior__in=behaviors)
+        for action in actions.distinct():
+            ua, _ = user.useraction_set.get_or_create(action=action)
+            ua.primary_category = self
+            ua.primary_goal = ua.get_primary_goal()
+            ua.save()
 
     def duplicate_content(self, prefix="Copy of"):
         """This method will duplicate all of the content stored within this
@@ -376,6 +441,12 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
         max_length=256, db_index=True, unique=True,
         help_text="A Title for the Goal (50 characters)"
     )
+    sequence_order = models.IntegerField(
+        default=0,
+        db_index=True,
+        blank=True,
+        help_text="Optional ordering for a sequence of goals"
+    )
     subtitle = models.CharField(
         max_length=256,
         null=True,
@@ -433,10 +504,10 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "{0}".format(self.title)
+        return "{}".format(self.title)
 
     class Meta:
-        ordering = ['title']
+        ordering = ['sequence_order', 'title']
         verbose_name = "Goal"
         verbose_name_plural = "Goals"
         # add_goal, change_goal, delete_goal are created by default.
@@ -453,6 +524,10 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["goal", self.id])
+
+    @property
+    def order(self):
+        return self.sequence_order
 
     @property
     def rendered_description(self):
@@ -521,6 +596,39 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
             cat = self.categories.first()
         return cat
 
+    def enroll(self, user, primary_category=None):
+        """Enroll the user in this goal and all of the published content
+        contained within it.
+
+        * user - The user to enroll in the goal.
+        * primary_category - If provided, this Category instance will be set
+          as the primary category on all UserGoals and UserActions.
+
+        """
+        if primary_category is None:
+            primary_category = self.get_parent_category_for_user(user)
+
+        # Ensure we also have the category selected.
+        if not user.usercategory_set.filter(category=primary_category).exists():
+            user.usercategory_set.create(category=primary_category)
+
+        ug, _ = user.usergoal_set.get_or_create(goal=self)
+        ug.primary_category = primary_category
+        ug.save()
+
+        # Then enroll the user in the published Behaviors
+        behaviors = Behavior.objects.published().filter(goals=self).distinct()
+        for behavior in behaviors:
+            user.userbehavior_set.get_or_create(behavior=behavior)
+
+        # Finally, enroll the user in the Behavior's Actions
+        actions = Action.objects.published().filter(behavior__in=behaviors)
+        for action in actions.distinct():
+            ua, _ = user.useraction_set.get_or_create(action=action)
+            ua.primary_category = primary_category
+            ua.primary_goal = self
+            ua.save()
+
     objects = GoalManager()
 
 
@@ -536,6 +644,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
     urls_image_field = "image"
 
     # Data Fields
+    # -----------
     title = models.CharField(
         max_length=256,
         db_index=True,
@@ -610,6 +719,36 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         help_text="A square icon for this item in the app, preferrably 512x512."
     )
     state = FSMField(default="draft")
+
+    # Reporting roll-up fields
+    # ------------------------
+    actions_count = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of (published) child actions in this Behavior"
+    )
+    action_buckets_prep = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of PREP actions in this behavior."
+    )
+    action_buckets_core = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of CORE actions in this behavior."
+    )
+    action_buckets_helper = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of HELPER actions in this behavior."
+    )
+    action_buckets_checkup = models.IntegerField(
+        blank=True,
+        default=0,
+        help_text="The number of CHECKUP actions in this behavior."
+    )
+    # Record-keeping on who/when this was last changed this behavior
+    # --------------------------------------------------------------
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="behaviors_updated",
@@ -619,11 +758,6 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         settings.AUTH_USER_MODEL,
         related_name="behaviors_created",
         null=True
-    )
-    actions_count = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of (published) child actions in this Behavior"
     )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -640,16 +774,39 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         )
 
     def __str__(self):
-        return "{0}".format(self.title)
+        return "{}".format(self.title)
+
+    def _set_goal_ids(self):
+        """Save the parent Goal IDs in the `goal_ids` array field; this should
+        get called every time the Behavior is saved."""
+        if self.id:
+            self.goal_ids = list(self.goals.values_list('id', flat=True))
+
+    def _count_actions(self):
+        """Count this behavior's child actions, and store a breakdown of
+        how many exist in each bucket (if they're dynamic)"""
+        if self.id:
+            # Count all of our published actions.
+            self.actions_count = self.action_set.published().count()
+
+            # Count the number of Actions in each bucket
+            qs = self.action_set.all()
+            self.action_buckets_prep = qs.filter(bucket=Action.PREP).count()
+            self.action_buckets_core = qs.filter(bucket=Action.CORE).count()
+            self.action_buckets_helper = qs.filter(bucket=Action.HELPER).count()
+            self.action_buckets_checkup = qs.filter(bucket=Action.CHECKUP).count()
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
-        if self.id:
-            self.goal_ids = list(self.goals.values_list('id', flat=True))
-            self.actions_count = self.action_set.published().count()
+        self._set_goal_ids()
+        self._count_actions()
         super().save(*args, **kwargs)
+
+    @property
+    def order(self):
+        return self.sequence_order
 
     @property
     def rendered_description(self):
@@ -698,6 +855,20 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         """
         return self.userbehavior_set.filter(user=user, behavior=self).first()
 
+    def contains_dynamic(self):
+        """Returns True or False; This method tells us if this Behavior
+        contains any dynamic notifications; i.e. Actions that have a bucket,
+        and whose default trigger contains a time_of_day and frequency value.
+
+        NOTE: This behavior may also contain some NON-Dynamic actions, as well.
+
+        """
+        actions = self.action_set.filter(
+            default_trigger__time_of_day__isnull=False,
+            default_trigger__frequency__isnull=False
+        )
+        return actions.distinct().exists()
+
     def action_buckets(self):
         """Return a dictionary of this Behavior's published Actions organized
         by bucket. The dict is of the form:
@@ -710,7 +881,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
             buckets[action.bucket].append(action)
         return dict(buckets)
 
-    objects = WorkflowManager()
+    objects = BehaviorManager()
 
 
 def _action_type_url_function(action_type):
@@ -943,7 +1114,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['bucket', 'sequence_order', 'action_type', 'title']
+        ordering = ['sequence_order', 'action_type', 'title']
         verbose_name = "Action"
         verbose_name_plural = "Actions"
         # add_action, change_action, delete_action are created by default.
@@ -1003,7 +1174,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             setattr(cls, func_name, classmethod(func))
 
     def __str__(self):
-        return "{0}".format(self.title)
+        return "{}".format(self.title)
 
     def _set_notification_text(self):
         if not self.notification_text:
@@ -1031,6 +1202,10 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self._serialize_default_trigger()
         super().save(*args, **kwargs)
         self.remove_queued_messages()
+
+    @property
+    def order(self):
+        return self.sequence_order
 
     @property
     def is_helper(self):

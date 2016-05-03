@@ -292,4 +292,14 @@ urlpatterns = [
         views.report_triggers,
         name='report-triggers'
     ),
+    url(
+        r'^reports/popular/$',
+        views.ReportPopularView.as_view(),
+        name='report-popular'
+    ),
+    url(
+        r'^reports/$',
+        views.ReportsView.as_view(),
+        name='reports'
+    ),
 ]
