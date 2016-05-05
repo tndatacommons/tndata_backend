@@ -119,8 +119,9 @@ ul.action-list li {
       <li class="has-dropdown">
         <a href="#"><i class="fa fa-line-chart"></i> Reports</a>
         <ul class="dropdown">
-          <li><a href="#">Popular Content</a></li>
-          <li><a href="#">Temporary Placeholder</a></li>
+          <li><a href="{% url 'goals:reports' %}">About</a></li>
+          <li><a href="{% url 'goals:report-popular' %}">Popular Content</a></li>
+          <li><a href="{% url 'goals:report-triggers' %}">Triggers</a></li>
         </ul>
       </li>
       {% if user.is_staff %}

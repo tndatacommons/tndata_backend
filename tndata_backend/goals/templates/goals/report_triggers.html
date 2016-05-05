@@ -49,6 +49,7 @@
   <div class="large-8 small-12 columns">
 
     {# --- Custom v. Default triggers --- #}
+    <h2>Custom v. Default triggers</h2>
     <div id="custom_v_default-legend" class="pull-right panel legend"></div>
     <canvas id="custom_v_default" width="200" height="200"></canvas>
     <script>
@@ -73,6 +74,7 @@
     <hr/>
 
     {# --- Trigger with & without recurrences ---- #}
+    <h2>Triggers with/without recurrences</h2>
     <div id="recurrences-legend" class="pull-right panel legend"></div>
     <canvas id="recurrences" width="200" height="200"></canvas>
     <script>
@@ -96,7 +98,47 @@
     </script>
     <hr/>
 
+    {# --- Time Of Day usage ---- #}
+    <h2>Default Time of Day usage</h2>
+    <div id="tod_counts-legend" class="pull-right panel legend"></div>
+    <canvas id="tod_counts" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("tod_counts").getContext("2d");
+    var data = [{% for tod, count in tod_counter.items %}
+      {
+          value: {{ count }},
+          color:"{% random_color %}",
+          highlight: "#FF5A5E",
+          label: "{{ tod }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("tod_counts-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+
+    {# --- Frequency usage ---- #}
+    <h2>Default Frequency usage</h2>
+    <div id="freq_counts-legend" class="pull-right panel legend"></div>
+    <canvas id="freq_counts" width="200" height="200"></canvas>
+    <script>
+    var ctx = document.getElementById("freq_counts").getContext("2d");
+    var data = [{% for freq, count in freq_counter.items %}
+      {
+          value: {{ count }},
+          color:"{% random_color %}",
+          highlight: "#FF5A5E",
+          label: "{{ freq }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}];
+    var c = new Chart(ctx).Pie(data);
+    document.getElementById("freq_counts-legend").innerHTML = c.generateLegend();
+    </script>
+    <hr/>
+
+    {% comment %}
     {# --- Triggers w/ time/date only---- #}
+    <h2>Triggers with only a Time or Date </h2>
     <div id="time_or_date-legend" class="pull-right panel legend"></div>
     <canvas id="time_or_date" width="200" height="200"></canvas>
     <script>
@@ -127,6 +169,7 @@
     <hr/>
 
     {# --- Triggers w/ time & date only---- #}
+    <h2>Triggers with only a Time AND Date </h2>
     <div id="time_and_date-legend" class="pull-right panel legend"></div>
     <canvas id="time_and_date" width="200" height="200"></canvas>
     <script>
@@ -149,8 +192,10 @@
     document.getElementById("time_and_date-legend").innerHTML = c.generateLegend();
     </script>
     <hr/>
+    {% endcomment %}
 
     {# --- REcurrences ---- #}
+    <h2>Scheduled Recurrences</h2>
     <div id="recurrence_counts-legend" class="pull-right panel legend"></div>
     <canvas id="recurrence_counts" width="200" height="200"></canvas>
     <script>
@@ -167,6 +212,7 @@
     document.getElementById("recurrence_counts-legend").innerHTML = c.generateLegend();
     </script>
     <hr/>
+
   </div>
 </div> {# end .row #}
 
