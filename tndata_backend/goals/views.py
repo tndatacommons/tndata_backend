@@ -735,6 +735,7 @@ class BehaviorDeleteView(ContentEditorMixin, ContentDeleteView):
 class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Action
     context_object_name = 'actions'
+    paginate_by = 50
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -780,6 +781,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     def get_initial(self):
         data = self.initial.copy()
         data.update(self.form_class.INITIAL[self.action_type])
+        data['behavior'] = self.request.GET.get('behavior', None)
         return data
 
     def get(self, request, *args, **kwargs):
@@ -1743,11 +1745,20 @@ def report_triggers(request):
     ).count()
 
     # Count all the recurrence options
-    custom_triggers = triggers.filter(user__isnull=False, recurrences__isnull=False)
+    custom_triggers = triggers.filter(
+        user__isnull=False,
+        recurrences__isnull=False
+    )
     custom_recurrences = []
     for t in custom_triggers:
         custom_recurrences.append(t.recurrences_as_text())
     custom_recurrences = Counter(custom_recurrences)
+
+    # Counts for time of day / frequency
+    tods = Trigger.objects.filter(time_of_day__gt='')
+    tod_counter = Counter(tods.values_list("time_of_day", flat=True))
+    freqs = Trigger.objects.filter(frequency__gt='')
+    freq_counter = Counter(freqs.values_list("frequency", flat=True))
 
     context = {
         'total_trigger_count': total_trigger_count,
@@ -1758,6 +1769,8 @@ def report_triggers(request):
         'time_only': time_only,
         'date_only': date_only,
         'custom_recurrences': custom_recurrences.most_common(20),
+        'tod_counter': dict(tod_counter),
+        'freq_counter': dict(freq_counter),
     }
     return render(request, 'goals/report_triggers.html', context)
 

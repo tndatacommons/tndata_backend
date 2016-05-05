@@ -12,6 +12,16 @@
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Notifications</h2>
+
+      <div data-alert class="alert-box info">
+        <a href="#" class="close">&times;</a>
+        <i class="fa fa-warning"></i>
+        <strong>This content is now paginated</strong><br/>
+        With the introduction of many new notifications, this content is now
+        split across multiple pages. If you can't find a notification, try
+        the search in the menu at the top of this page.
+      </div>
+
       {% include "goals/_state_filter_subnav.html" %}
 
       <table class="object-list">
@@ -24,12 +34,10 @@
           State
         </th>
         <th>Order</th>
-        <th>Type/Bucket</th>
         <th>Title</th>
         <th>Notification</th>
         <th>Behavior</th>
         <th>Icon</th>
-        <th>Selected By</th>
       </tr>
       </thead>
       <tbody>
@@ -44,10 +52,6 @@
           </td>
           <td>{{ action.sequence_order }}</td>
           <td>
-            {{ action.get_action_type_display }} /
-            <em>{{ action.get_bucket_display }}</em>
-          </td>
-          <td>
             <a href="{{ action.get_absolute_url }}">
               {{ action }}</a>
           </td>
@@ -60,11 +64,14 @@
               {% endif %}
             {% endwith %}
           </td>
-          <td>{{ action.useraction__count }}</td>
         </tr>
       {% endfor %}
       </tbody>
       </table>
+
+      {# Pagination ... #}
+      {% include "goals/_pagination.html" %}
+
     </div>
   </div> {# end .row #}
   <hr/>
