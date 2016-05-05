@@ -1,9 +1,21 @@
 from django import template
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
-from goals.permissions import is_content_editor
+from goals.permissions import is_content_editor, is_content_author
 
 register = template.Library()
+
+
+@register.filter("is_author")
+def user_is_author(user):
+    """Return True if the user is a content author, otherwise False.
+
+    Handy for using in an if/else:
+
+        {% if user|is_author %}
+
+    """
+    return is_content_author(user)
 
 
 @register.filter("is_editor")
