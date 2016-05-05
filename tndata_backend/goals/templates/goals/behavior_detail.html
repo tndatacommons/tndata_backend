@@ -106,6 +106,8 @@
       {% endfor %}
       </ul>
       <h2 class="subheader">Notifications</h2>
+      {% csrf_token %} {# needed by our ordering forms #}
+
       <ul class="action-list">
       {% for action in behavior.action_set.all %}
         <li>

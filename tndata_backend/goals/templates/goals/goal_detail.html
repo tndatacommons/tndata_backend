@@ -73,6 +73,8 @@
       </ul>
 
       <h2 class="subheader">Behavior Content</h2>
+      {% csrf_token %} {# needed by our ordering forms #}
+
       <p><em>{{ goal }}</em> contains the following behaviors and actions:</p>
       <ul style="list-style-type: none">
       {% for behavior in goal.behavior_set.all %}

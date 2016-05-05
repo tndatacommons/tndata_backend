@@ -113,6 +113,7 @@
         <div class="panel">{{ category.notes|markdown }}</div>
       {% endif %}
       <h2 class="subheader">Category Content</h2>
+      {% csrf_token %} {# needed by our ordering forms #}
       <p><strong>{{ category }}</strong>
         contains the following Goals, Behaviors, and Notifications:</p>
       <ul class="accordion" data-accordion>
