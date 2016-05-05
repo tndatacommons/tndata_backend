@@ -112,6 +112,7 @@
       {% for action in behavior.action_set.all %}
         <li>
           {# -- Allow re-ordering actions --------------- #}
+          {% if user|is_author %}
           <select
             id="action-update-{{action.id}}"
             class="pull-left no-chosen action-update"
@@ -124,6 +125,7 @@
               {{v}}</option>
           {% endfor %}
           </select>
+          {% endif %}
           {# -------------------------------------------- #}
           {{ action|label }} <span class="label secondary">
             {{ action.get_action_type_display }}</span>
@@ -141,5 +143,7 @@
 
 {% block bodyjs %}
   {{ block.super }}
+  {% if user|is_author %}
   <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
+  {% endif %}
 {% endblock %}
