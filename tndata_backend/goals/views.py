@@ -712,6 +712,7 @@ class BehaviorDeleteView(ContentEditorMixin, ContentDeleteView):
 class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Action
     context_object_name = 'actions'
+    paginate_by = 50
 
     def get_queryset(self):
         queryset = super().get_queryset()
