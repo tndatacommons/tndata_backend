@@ -123,6 +123,7 @@
         <div class="panel">{{ category.notes|markdown }}</div>
       {% endif %}
       <h2 class="subheader">Category Content</h2>
+      {% csrf_token %} {# needed by our ordering forms #}
       <p><strong>{{ category }}</strong>
         contains the following Goals, Behaviors, and Notifications:</p>
       <ul class="accordion" data-accordion>
@@ -131,6 +132,7 @@
           <a href="#goal-{{goal.id}}">
             <div class="pull-right">{{ goal|label }}</div> {{ goal }}
             {# -- Allow re-ordering goals --------------- #}
+            {% if user|is_author %}
             <select
               id="goal-update-{{goal.id}}"
               class="pull-left no-chosen goal-update"
@@ -143,6 +145,7 @@
                 {{v}}</option>
             {% endfor %}
             </select>
+            {% endif %}
             {# -------------------------------------------- #}
           </a>
           <div id="goal-{{ goal.id }}" class="content">
@@ -195,5 +198,7 @@
 
 {% block bodyjs %}
   {{ block.super }}
+  {% if user|is_author %}
   <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
+  {% endif %}
 {% endblock %}

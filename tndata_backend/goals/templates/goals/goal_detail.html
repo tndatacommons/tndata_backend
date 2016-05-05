@@ -73,6 +73,8 @@
       </ul>
 
       <h2 class="subheader">Behavior Content</h2>
+      {% csrf_token %} {# needed by our ordering forms #}
+
       <p><em>{{ goal }}</em> contains the following behaviors and actions:</p>
       <ul style="list-style-type: none">
       {% for behavior in goal.behavior_set.all %}
@@ -82,6 +84,7 @@
             <a href="{{ behavior.get_absolute_url }}">{{behavior}}</a>
           </strong>
           {# -- Allow re-ordering behaviors --------------- #}
+          {% if user|is_author %}
           <select
             id="behavior-update-{{behavior.id}}"
             class="pull-left no-chosen behavior-update"
@@ -94,11 +97,13 @@
               {{v}}</option>
           {% endfor %}
           </select>
+          {% endif %}
           {# -------------------------------------------- #}
           <ul class="action-list clearfix">
             {% for action in behavior.action_set.all %}
               <li>
                 {# -- Allow re-ordering actions --------------- #}
+                {% if user|is_author %}
                 <select
                   id="action-update-{{action.id}}"
                   class="pull-left no-chosen action-update"
@@ -111,6 +116,7 @@
                     {{v}}</option>
                 {% endfor %}
                 </select>
+                {% endif %}
                 {# -------------------------------------------- #}
                 {{ action|label }} <span class="label secondary">{{ action.get_action_type_display }}</span>
                 <a href="{{ action.get_absolute_url }}">{{ action }}</a>
@@ -131,5 +137,7 @@
 
 {% block bodyjs %}
   {{ block.super }}
+  {% if user|is_author %}
   <script type="text/javascript" src="{% static 'js/ordering.js' %}"></script>
+  {% endif %}
 {% endblock %}

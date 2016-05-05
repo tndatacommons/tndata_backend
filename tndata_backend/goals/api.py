@@ -178,11 +178,15 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         try:
             # NOTE: we can't use self.get_object() here, because we're allowing
             # users to change items that may not yet be published.
-            seq = int(request.data.get('sequence_order'))
-            num = models.Goal.objects.filter(pk=pk).update(sequence_order=seq)
-            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+            #
+            # WE *do* still need to check object permissions, so we have to
+            # retrive the whole thing.
+            obj = models.Goal.objects.get(pk=pk)
+            self.check_object_permissions(request, obj)
+            obj.sequence_order = int(request.data.get('sequence_order'))
+            return Response(data={'updated': True}, status=status.HTTP_200_OK)
 
-        except Exception as e:
+        except (ValueError, models.Goal.DoesNotExist) as e:
             return Response(
                 data={'error': "{0}".format(e)},
                 status=status.HTTP_400_BAD_REQUEST
@@ -307,11 +311,17 @@ class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         try:
             # NOTE: we can't use self.get_object() here, because we're allowing
             # users to change items that may not yet be published.
-            seq = int(request.data.get('sequence_order'))
-            num = models.Behavior.objects.filter(pk=pk).update(sequence_order=seq)
-            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+            #
+            # WE *do* still need to check object permissions, so we have to
+            # retrive the whole thing.
+            obj = models.Behavior.objects.get(pk=pk)
+            self.check_object_permissions(request, obj)
+            obj.sequence_order = int(request.data.get('sequence_order'))
+            obj.save()
 
-        except Exception as e:
+            return Response(data={'updated': True}, status=status.HTTP_200_OK)
+
+        except (ValueError, models.Behavior.DoesNotExist) as e:
             return Response(
                 data={'error': "{0}".format(e)},
                 status=status.HTTP_400_BAD_REQUEST
@@ -379,11 +389,16 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         try:
             # NOTE: we can't use self.get_object() here, because we're allowing
             # users to change items that may not yet be published.
-            seq = int(request.data.get('sequence_order'))
-            num = models.Action.objects.filter(pk=pk).update(sequence_order=seq)
-            return Response(data={'updated': num}, status=status.HTTP_200_OK)
+            #
+            # WE *do* still need to check object permissions, so we have to
+            # retrive the whole thing.
+            obj = models.Action.objects.get(pk=pk)
+            self.check_object_permissions(request, obj)
+            obj.sequence_order = int(request.data.get('sequence_order'))
+            obj.save()
+            return Response(data={'updated': True}, status=status.HTTP_200_OK)
 
-        except Exception as e:
+        except (ValueError, models.Action.DoesNotExist) as e:
             return Response(
                 data={'error': "{0}".format(e)},
                 status=status.HTTP_400_BAD_REQUEST
