@@ -136,6 +136,10 @@
         <li><em>This behavior does not contain any actions.</em></li>
       {% endfor %}
       </ul>
+
+      <p><a class="button tiny info"
+            href="{% url 'goals:action-create' %}?behavior={{ behavior.id }}">
+            <i class="fa fa-plus-circle"></i> New Notification</a></p>
     </div>
   </div>
 {% endblock %}

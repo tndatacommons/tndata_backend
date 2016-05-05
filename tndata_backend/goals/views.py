@@ -757,6 +757,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     def get_initial(self):
         data = self.initial.copy()
         data.update(self.form_class.INITIAL[self.action_type])
+        data['behavior'] = self.request.GET.get('behavior', None)
         return data
 
     def get(self, request, *args, **kwargs):
