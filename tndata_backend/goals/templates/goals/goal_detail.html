@@ -62,7 +62,7 @@
         <div class="panel">{{ goal.notes|markdown }}</div>
       {% endif %}
       <h2 class="subheader">Categories</h2>
-      <p><em>{{goal}}</em> is listed in the following Categories:</p>
+      <p><strong>{{goal}}</strong> is listed in the following Categories.</p>
       <ul>
       {% for cat in goal.categories.all %}
         <li>
@@ -72,10 +72,15 @@
       {% endfor %}
       </ul>
 
-      <h2 class="subheader">Behavior Content</h2>
+      <h2 class="subheader">Behaviors</h2>
       {% csrf_token %} {# needed by our ordering forms #}
-
-      <p><em>{{ goal }}</em> contains the following behaviors and actions:</p>
+      <p>
+        <a class="pull-right button tiny secondary"
+           href="{% url 'goals:behavior-list' %}?goal={{ goal.id }}">
+           <i class="fa fa-eye"></i> View Behaviors</a>
+        <strong>{{ goal }}</strong>
+        contains the following behaviors and notifications.
+      </p>
       <ul style="list-style-type: none">
       {% for behavior in goal.behavior_set.all %}
         <li>

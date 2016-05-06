@@ -12,7 +12,11 @@
 {% block content %}
   <div class="row">
     <div class="large-12 small-12 columns">
-      <h1>Behavior</h2>
+      <h1>Behavior
+      {% if goal %}
+        <small>for {{ goal }}</small>
+      {% endif %}
+      </h2>
       {% include "goals/_state_filter_subnav.html" %}
 
       <table class="object-list">
