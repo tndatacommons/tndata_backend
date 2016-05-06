@@ -103,7 +103,7 @@ class Command(BaseCommand):
             external_resource=action.external_resource,
             external_resource_name=action.external_resource_name,
             notification_text=action.notification_text,
-            icon=action.icon,  # TODO: Does this actually work?
+            icon=action.icon,  # NOTE: Links to existing icon on S3
             state=state,  # Changed.
             priority=action.priority,
             bucket=action.bucket,
