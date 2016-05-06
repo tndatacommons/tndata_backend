@@ -20,6 +20,7 @@ from ..serializer_fields import (
     SimpleCategoryField,
     SimpleGoalField,
 )
+from .fields import ReadOnlyDatetimeField
 
 
 User = get_user_model()
@@ -133,7 +134,7 @@ class SimpleUserActionSerializer(ObjectTypeModelSerializer):
     )
     custom_triggers_allowed = serializers.ReadOnlyField()
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-    next_reminder = serializers.ReadOnlyField(source='next')
+    next_reminder = ReadOnlyDatetimeField(source='next')
 
     class Meta:
         model = UserAction

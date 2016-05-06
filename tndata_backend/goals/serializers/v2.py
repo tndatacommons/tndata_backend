@@ -23,6 +23,7 @@ from ..serializer_fields import (
     SimpleTriggerField,
 )
 
+from .fields import ReadOnlyDatetimeField
 # XXX: Things we don't want to change from v1
 from .v1 import (  # flake8: noqa
     CustomActionSerializer,
@@ -207,7 +208,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         required=False,
     )
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-    next_reminder = serializers.ReadOnlyField(source='next')
+    next_reminder = ReadOnlyDatetimeField(source='next')
 
     class Meta:
         model = UserAction
@@ -253,11 +254,6 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         action = Action.objects.get(pk=action_id)
         results['action'] = ActionSerializer(action).data
         results = self.include_parent_objects(results)
-        # Ensure that we use the Specified Datetime formatting for the
-        # next_reminder field.
-        if 'next_reminder' in results and results['next_reminder']:
-            results['next_reminder'] = results['next_reminder'].strftime(
-                settings.REST_FRAMEWORK['DATETIME_FORMAT'])
         return results
 
     def create(self, validated_data):

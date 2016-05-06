@@ -34,6 +34,7 @@ from ..serializer_fields import (
     SimpleGoalField,
     SimpleTriggerField,
 )
+from .fields import ReadOnlyDatetimeField
 
 
 class DailyProgressSerializer(ObjectTypeModelSerializer):
@@ -399,7 +400,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         queryset=Category.objects.all(),
         required=False
     )
-    next_reminder = serializers.ReadOnlyField(source='next')
+    next_reminder = ReadOnlyDatetimeField(source='next')
 
     class Meta:
         model = UserAction
@@ -432,7 +433,7 @@ class ReadOnlyUserActionSerializer(ObjectTypeModelSerializer):
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     primary_goal = serializers.ReadOnlyField(source="serialized_primary_goal")
     primary_category = serializers.ReadOnlyField(source="serialized_primary_category")
-    next_reminder = serializers.ReadOnlyField()
+    next_reminder = ReadOnlyDatetimeField()
 
     class Meta:
         model = UserAction
@@ -499,7 +500,7 @@ class CustomActionSerializer(ObjectTypeModelSerializer):
         source="custom_trigger",
         required=False
     )
-    next_reminder = serializers.ReadOnlyField(source='next')
+    next_reminder = ReadOnlyDatetimeField(source='next')
 
     class Meta:
         model = CustomAction
