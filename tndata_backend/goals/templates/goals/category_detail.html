@@ -112,10 +112,15 @@
         <h2 class="subheader">Notes</h2>
         <div class="panel">{{ category.notes|markdown }}</div>
       {% endif %}
-      <h2 class="subheader">Category Content</h2>
+      <h2 class="subheader">Available Content</h2>
       {% csrf_token %} {# needed by our ordering forms #}
-      <p><strong>{{ category }}</strong>
-        contains the following Goals, Behaviors, and Notifications:</p>
+      <p>
+        <a class="pull-right button tiny secondary"
+           href="{% url 'goals:goal-list' %}?category={{ category.id }}">
+           <i class="fa fa-eye"></i> View Goals</a>
+        <strong>{{ category }}</strong>
+        contains the following Goals, Behaviors, and Notifications.
+      </p>
       <ul class="accordion" data-accordion>
       {% for goal in category.goals %}
         <li class="accordion-navigation clearfix">

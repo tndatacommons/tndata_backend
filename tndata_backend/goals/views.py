@@ -470,7 +470,16 @@ class GoalListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.annotate(Count('usergoal'))
+        if self.request.GET.get('category', False):
+            queryset = queryset.filter(categories__pk=self.request.GET['category'])
         return queryset.prefetch_related("behavior_set", "categories")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.request.GET.get('category', None)
+        if category_id:
+            context['category'] = Category.objects.get(pk=category_id)
+        return context
 
 
 class GoalDetailView(ContentViewerMixin, DetailView):
