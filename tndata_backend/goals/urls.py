@@ -298,6 +298,11 @@ urlpatterns = [
         name='report-popular'
     ),
     url(
+        r'^reports/authors/$',
+        views.report_authors,
+        name='report-authors'
+    ),
+    url(
         r'^reports/$',
         views.ReportsView.as_view(),
         name='reports'

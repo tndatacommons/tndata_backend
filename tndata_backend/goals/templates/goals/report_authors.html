@@ -1,0 +1,130 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block title %}Author Progress{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  {% comment %}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+  div.legend ul.pie-legend {list-style-type: none;padding:0;margin:0;max-width:250px;}
+  div.legend ul.pie-legend li span {
+    display:inline-block;
+    border:1px solid black;
+    width:18px;
+    height: 18px;
+    padding:0;
+    margin: 0 5px 0 0;
+  }
+  </style>
+  {% endcomment %}
+{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:reports' %}">Reports</a></li>
+  <li class="current">Authors</li>
+{% endblock %}
+
+{% block content %}
+<h1>Author Stats</h1>
+
+<h2>Goals</h2>
+<div class="row">
+{% for state, counter in goals.items %}
+  <div class="large-3 small-6 columns">
+    <table>
+    <caption>{{ state }}</caption>
+    <thead>
+      <tr><th>User</th><th>Number of items</th></tr>
+    </thead>
+    <tbody>
+    {% for email, count in counter.items %}
+      <tr>
+        <td>{{ email|default:"Unkown" }}</td>
+        <td>{{ count }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div> {# end .columns #}
+{% endfor %}
+</div> {# end .row #}
+<hr/>
+
+<h2>Behaviors</h2>
+<div class="row">
+{% for state, counter in behaviors.items %}
+  <div class="large-3 small-6 columns">
+    <table>
+    <caption>{{ state }}</caption>
+    <thead>
+      <tr><th>User</th><th>Number of items</th></tr>
+    </thead>
+    <tbody>
+    {% for email, count in counter.items %}
+      <tr>
+        <td>{{ email|default:"Unkown" }}</td>
+        <td>{{ count }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div> {# end .columns #}
+{% endfor %}
+</div> {# end .row #}
+<hr/>
+
+<h2>Actions</h2>
+<div class="row">
+{% for state, counter in actions.items %}
+  <div class="large-3 small-6 columns">
+    <table>
+    <caption>{{ state }}</caption>
+    <thead>
+      <tr><th>User</th><th>Number of items</th></tr>
+    </thead>
+    <tbody>
+    {% for email, count in counter.items %}
+      <tr>
+        <td>{{ email|default:"Unkown" }}</td>
+        <td>{{ count }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div> {# end .columns #}
+{% endfor %}
+</div> {# end .row #}
+
+<hr/>
+
+
+{% comment %}
+<div class="large-8 small-12 columns">
+
+  {# --- TODO... ---- #}
+  <h2>Default Frequency usage</h2>
+  <div id="freq_counts-legend" class="pull-right panel legend"></div>
+  <canvas id="freq_counts" width="200" height="200"></canvas>
+  <script>
+  var ctx = document.getElementById("freq_counts").getContext("2d");
+  var data = [{% for freq, count in freq_counter.items %}
+    {
+        value: {{ count }},
+        color:"{% random_color %}",
+        highlight: "#FF5A5E",
+        label: "{{ freq }}"
+    }{% if not forloop.last %},{% endif %}
+  {% endfor %}];
+  var c = new Chart(ctx).Pie(data);
+  document.getElementById("freq_counts-legend").innerHTML = c.generateLegend();
+  </script>
+  <hr/>
+</div>
+{% endcomment %}
+{% endblock %}

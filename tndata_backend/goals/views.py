@@ -1802,6 +1802,35 @@ def report_triggers(request):
     return render(request, 'goals/report_triggers.html', context)
 
 
+@user_passes_test(staff_required, login_url='/')
+def report_authors(request):
+    # Count of who's got how many items in what state.
+    states = ['draft', 'published', 'pending-review', 'declined']
+    goals = {}
+    behaviors = {}
+    actions = {}
+    for state in states:
+        items = Goal.objects.filter(state=state)
+        items = items.values_list('created_by__email', flat=True)
+        goals[state] = dict(Counter(items))
+
+        items = Behavior.objects.filter(state=state)
+        items = items.values_list('created_by__email', flat=True)
+        behaviors[state] = dict(Counter(items))
+
+        items = Action.objects.filter(state=state)
+        items = items.values_list('created_by__email', flat=True)
+        actions[state] = dict(Counter(items))
+
+    context = {
+        'goals': goals,
+        'behaviors': behaviors,
+        'actions': actions,
+    }
+    return render(request, 'goals/report_authors.html', context)
+
+
+
 def fake_api(request, option=None):
     """Return a 'fake' api response. This is a view that returns fake/dummy
     data for api endpoints that we may have removed; This will prevent an
