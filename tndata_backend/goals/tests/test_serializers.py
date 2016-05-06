@@ -1,14 +1,61 @@
 import pytz
 from datetime import date, time
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.utils import timezone
+
+from rest_framework import serializers
 
 from .. models import Trigger
 from .. serializers import CustomTriggerSerializer
-
+from ..serializer_fields import ReadOnlyDatetimeField
 
 User = get_user_model()
+
+
+DRF_DT_FORMAT = settings.REST_FRAMEWORK['DATETIME_FORMAT']
+TEST_REST_FRAMEWORK = {
+    'PAGE_SIZE': 100,
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'utils.api.BrowsableAPIRendererWithoutForms',
+    ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'utils.api.NoThrottle',
+    ),
+    'VERSION_PARAM': 'version',
+    'DEFAULT_VERSION': '1',
+    'ALLOWED_VERSIONS': ['1', '2'],
+    'DEFAULT_VERSIONING_CLASS': 'utils.api.DefaultQueryParamVersioning',
+    'DATETIME_FORMAT': DRF_DT_FORMAT,
+}
+
+
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+class TestReadOnlyDatetimeField(TestCase):
+    """Tests for our ReadOnlyDatetimeField. These are based on the ReadOnlyField
+    from DRF: https://goo.gl/bRSzw6 """
+
+    def setUp(self):
+        class TestSerializer(serializers.Serializer):
+            dt = ReadOnlyDatetimeField()
+        self.serializer_class = TestSerializer
+
+    def test_validate_read_only(self):
+        """This is indeed a read-only field"""
+        dt = timezone.now()
+        serializer = self.serializer_class(data={'dt': dt})
+        self.assertTrue(serializer.is_valid())
+        assert serializer.validated_data == {}
+
+    def test_serialize_read_only(self):
+        """Read-only serializers.should be serialized."""
+        dt = timezone.now()
+        serializer = self.serializer_class({'dt': dt})
+        assert serializer.data == {'dt': dt.strftime(DRF_DT_FORMAT)}
 
 
 class TestCustomTriggerSerializer(TestCase):
