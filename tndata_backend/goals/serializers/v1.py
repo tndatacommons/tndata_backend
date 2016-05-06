@@ -28,13 +28,13 @@ from ..serializer_fields import (
     NullableDateField,
     NullableTimeField,
     PackagedCategoryField,
+    ReadOnlyDatetimeField,
     SimpleActionField,
     SimpleBehaviorField,
     SimpleCategoryField,
     SimpleGoalField,
     SimpleTriggerField,
 )
-from .fields import ReadOnlyDatetimeField
 
 
 class DailyProgressSerializer(ObjectTypeModelSerializer):

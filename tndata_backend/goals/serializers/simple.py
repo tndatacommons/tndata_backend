@@ -15,12 +15,12 @@ from ..models import (
 )
 from ..serializer_fields import (
     CustomTriggerField,
+    ReadOnlyDatetimeField,
     SimpleActionField,
     SimpleBehaviorField,
     SimpleCategoryField,
     SimpleGoalField,
 )
-from .fields import ReadOnlyDatetimeField
 
 
 User = get_user_model()

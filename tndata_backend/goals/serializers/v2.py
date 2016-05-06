@@ -16,6 +16,7 @@ from ..models import (
 )
 from ..serializer_fields import (
     CustomTriggerField,
+    ReadOnlyDatetimeField,
     SimpleActionField,
     SimpleBehaviorField,
     SimpleCategoryField,
@@ -23,7 +24,6 @@ from ..serializer_fields import (
     SimpleTriggerField,
 )
 
-from .fields import ReadOnlyDatetimeField
 # XXX: Things we don't want to change from v1
 from .v1 import (  # flake8: noqa
     CustomActionSerializer,
