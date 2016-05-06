@@ -105,6 +105,9 @@
         <li><em>This behavior is not associated with any Goals.</em></li>
       {% endfor %}
       </ul>
+      <a class="button secondary tiny pull-right"
+        href="{% url 'goals:action-list' %}?behavior={{ behavior.id }}">
+        <i class="fa fa-eye"></i> View List</a>
       <h2 class="subheader">Notifications</h2>
       {% csrf_token %} {# needed by our ordering forms #}
 

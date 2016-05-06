@@ -717,7 +717,16 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.annotate(Count('useraction'))
+        if self.request.GET.get('behavior', False):
+            queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
         return queryset.select_related("behavior__title")
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(*args, **kwargs)
+        behavior_id = self.request.GET.get('behavior', None)
+        if behavior_id:
+            ctx['behavior'] = Behavior.objects.get(pk=behavior_id)
+        return ctx
 
 
 class ActionDetailView(ContentViewerMixin, DetailView):
