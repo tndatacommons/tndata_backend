@@ -11,7 +11,11 @@
 {% block content %}
   <div class="row">
     <div class="large-12 small-12 columns">
-      <h1>Goals</h1>
+      <h1>Goals
+      {% if category %}
+        <small>for {{ category }}</small>
+      {% endif %}
+      </h1>
       {% include "goals/_state_filter_subnav.html" %}
 
       <table class="object-list">
