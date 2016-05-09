@@ -4,6 +4,11 @@ from django.db import IntegrityError, transaction
 from goals.models import Action, Behavior, Trigger
 
 
+# This command will save the IDs for all of the created actions, so if (for
+# some reason) we need to kill them we can.
+OUTPUT_FILE = '/var/tmp/duplicated_actions.txt'
+
+
 class Command(BaseCommand):
     """Use this command to copy Action objects form one or more models
     into ALL *published* behaviors. This command accepts IDs and a flag that
@@ -81,7 +86,7 @@ class Command(BaseCommand):
             raise CommandError("{} are not a valid database ids".format(
                 options['object_id']))
 
-        criteria = {'behavior__state': 'published'}
+        criteria = {}
         if options.get('category'):
             criteria['behavior__goals__categories__pk__in'] = object_ids
         elif options.get('goal'):
@@ -116,7 +121,7 @@ class Command(BaseCommand):
         )
 
     def _copy_action(self, action, behavior, trigger, state='published'):
-        return Action.objects.create(
+        action = Action.objects.create(
             title=action.title,
             behavior=behavior,  # New Parent Behavior
             action_type=action.action_type,
@@ -137,8 +142,12 @@ class Command(BaseCommand):
             updated_by=action.updated_by,
             created_by=action.created_by,
         )
+        # Save the ID to the output file.
+        self._output_file.write("{},".format(action.id))
+        return action
 
     def handle(self, *args, **options):
+        self._output_file = open(OUTPUT_FILE, "w")
         new_action_count = 0
         new_trigger_count = 0
 
@@ -165,6 +174,16 @@ class Command(BaseCommand):
                 msg = "Created {} new Actions and {} new Triggers"
                 self.stdout.write(msg.format(new_action_count, new_trigger_count))
 
+            self._output_file.close()
+            msg = "IDs for new actions written to: {}"
+            self.stdout.write(msg.format(OUTPUT_FILE))
+
         except IntegrityError as e:
+            # Remove all the stuff written to our outputfile.
+            self.output_file.seek(0)
+            self.output_file.truncate()
+            self._output_file.close()
+
+            # Now raise an exception w/ our error.
             err = "Exception encountered: '{}'; transaction rolled back"
             raise CommandError(err.format(e))
