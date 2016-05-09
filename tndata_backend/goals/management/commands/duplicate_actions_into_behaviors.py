@@ -23,6 +23,13 @@ class Command(BaseCommand):
 
         ./manage.py duplicate_actions_into_behaviors --cateogry 1 2 3
 
+    - Additionally, we can exclude some Behaviors from having Actions copied
+      into them, e.g.: Copy Actions from Behaviors with ID = 5, 6 into all
+      behaviors EXCEPT for those with ID = 7, 9
+
+        ./manage.py duplicate_actions_into_behaviors 5, 6 --exclude 7 9
+
+
     """
     help = 'Creates duplicate Actions in ALL Behaviors'
 
@@ -52,6 +59,16 @@ class Command(BaseCommand):
             default=True,
             help="Is the specified object ID a Behavior (this is the default)?"
         )
+        parser.add_argument(
+            "-e",
+            "--exclude",
+            dest='exlude_behaviors',
+            nargs='*',
+            action="store",
+            default=None,
+            type=int,
+            help="IDs for behaviors that should be excluded when creating actions"
+        )
 
     def _get_actions(self, options):
         # Given an object id and some options that tell us what kind of
@@ -73,7 +90,15 @@ class Command(BaseCommand):
         else:
             raise CommandError(
                 'You must specify an object type with -g, -c, or -b')
-        return Action.objects.filter(**criteria).distinct()
+
+        actions = Action.objects.filter(**criteria).distinct()
+
+        # Exclude any behaviors that were specified
+        excluded = options.get('exclude_behaviors', None)
+        if excluded:
+            actions = actions.exclude(behavior__pk__in=excluded)
+
+        return actions
 
     def _copy_trigger(self, old_trigger):
         return Trigger.objects.create(
@@ -113,12 +138,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-
         new_action_count = 0
         new_trigger_count = 0
 
         # Actions that we want to copy
         actions = self._get_actions(options)
+
         try:
             # All-or-nothing: If any of this fails,
             # we will back out of the transaction.
