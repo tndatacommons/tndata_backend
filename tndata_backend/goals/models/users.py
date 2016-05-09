@@ -443,7 +443,7 @@ class UserAction(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['user', 'action']
+        ordering = ['user', 'next_trigger_date', 'action']
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
