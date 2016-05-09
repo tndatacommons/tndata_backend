@@ -6,26 +6,27 @@ from goals.models import Action, Behavior, Trigger
 
 class Command(BaseCommand):
     """Use this command to copy Action objects form one or more models
-    into ALL behaviors. This command accepts IDs and a flag that tells us
-    whether or not the parent object is a Category, Goal, or Behavior.
+    into ALL *published* behaviors. This command accepts IDs and a flag that
+    tells us whether or not the parent object is a Category, Goal, or Behavior.
 
     Example Usage:
 
-    - Copy Actions from Behaviors with ID = 43, 44 into ALL Behaviors:
+    - Copy Actions from Behaviors with ID = 43, 44 into ALL published Behaviors:
 
         ./manage.py duplicate_actions_into_behaviors 43 44
 
-    - Copy Actions from the Goal with ID = 42 into ALL Behaviors:
+    - Copy Actions from the Goal with ID = 42 into ALL published Behaviors:
 
         ./manage.py duplicate_actions_into_behaviors --goal 42
 
-    - Copy Actions from the Categories with IDs = 1, 2, 3into ALL Behaviors:
+    - Copy Actions from the Categories with IDs = 1, 2, 3 into ALL published
+      Behaviors:
 
         ./manage.py duplicate_actions_into_behaviors --cateogry 1 2 3
 
     - Additionally, we can exclude some Behaviors from having Actions copied
       into them, e.g.: Copy Actions from Behaviors with ID = 5, 6 into all
-      behaviors EXCEPT for those with ID = 7, 9
+      published Behaviors EXCEPT for those with ID = 7, 9
 
         ./manage.py duplicate_actions_into_behaviors 5, 6 --exclude 7 9
 
@@ -80,7 +81,7 @@ class Command(BaseCommand):
             raise CommandError("{} are not a valid database ids".format(
                 options['object_id']))
 
-        criteria = {}
+        criteria = {'behavior__state': 'published'}
         if options.get('category'):
             criteria['behavior__goals__categories__pk__in'] = object_ids
         elif options.get('goal'):
