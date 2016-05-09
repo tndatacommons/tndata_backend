@@ -97,14 +97,7 @@ class Command(BaseCommand):
             raise CommandError(
                 'You must specify an object type with -g, -c, or -b')
 
-        actions = Action.objects.filter(**criteria).distinct()
-
-        # Exclude any behaviors that were specified
-        excluded = options.get('exclude_behaviors', None)
-        if excluded:
-            actions = actions.exclude(behavior__pk__in=excluded)
-
-        return actions
+        return Action.objects.filter(**criteria).distinct()
 
     def _copy_trigger(self, old_trigger):
         return Trigger.objects.create(
@@ -159,8 +152,16 @@ class Command(BaseCommand):
             # we will back out of the transaction.
             with transaction.atomic():
 
-                # For every behavior, bulk-create copies of the above actions.
-                for behavior in Behavior.objects.all():
+                # For every published behavior (except for those that were
+                # excplicitly exluded), we want to bulk-create copies of the
+                # above actions.
+                behaviors = Behavior.objects.published()
+
+                excluded = options.get('exclude_behaviors', None)
+                if excluded:
+                    behaviors = behaviors.exclude(pk__in=excluded)
+
+                for behavior in behaviors:
                     for action in actions:
                         # Don't create duplicate content.
                         lookup = behavior.action_set.filter(title=action.title)
