@@ -784,6 +784,14 @@ class UserAction(models.Model):
         return category
 
     @property
+    def completed(self):
+        return self.user.usercompletedaction_set.filter(
+            action=self.action,
+            useraction=self,
+            state='completed'
+        ).exists()
+
+    @property
     def completed_today(self):
         """Return True if this action was completed today, False otherwise"""
         return self.user.usercompletedaction_set.filter(
