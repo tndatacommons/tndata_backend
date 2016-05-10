@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.contrib.messages import ERROR
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.text import mark_safe
 
@@ -474,7 +475,7 @@ class UserGoalAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'goal', 'categories', 'completed',
     )
-    list_filter = ('goal__categories', )
+    list_filter = ('completed', 'goal__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'goal__title', 'goal__id', 'id',
@@ -498,7 +499,7 @@ class UserBehaviorAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'behavior', 'goals', 'categories', 'completed',
     )
-    list_filter = ('behavior__goals__categories', )
+    list_filter = ('completed', 'behavior__goals__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'behavior__id', 'behavior__title', 'id',
@@ -533,13 +534,54 @@ class UACategoryListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class UserActionCompletedListFilter(admin.SimpleListFilter):
+    title = "Completed"
+    parameter_name = 'completed'
+
+    def lookups(self, request, model_admin):
+        return ((1, 'Yes'), (0, 'No'))
+
+    def queryset(self, request, queryset):
+        completed = self.value()
+        if completed is None:
+            return queryset
+        else:
+            completed = bool(int(completed))
+
+        if completed:
+            queryset = queryset.filter(
+                usercompletedaction__isnull=False,
+                usercompletedaction__state=models.UserCompletedAction.COMPLETED
+            )
+        else:
+            states = [
+                models.UserCompletedAction.UNSET,
+                models.UserCompletedAction.UNCOMPLETED,
+                models.UserCompletedAction.DISMISSED,
+                models.UserCompletedAction.SNOOZED,
+            ]
+            queryset = queryset.filter(
+                Q(usercompletedaction__isnull=True) |
+                Q(
+                    usercompletedaction__isnull=False,
+                    usercompletedaction__state__in=states
+                )
+            )
+            queryset = queryset.exclude(usercompletedaction__state='completed')
+        return queryset
+
+
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'next_trigger_date', 'notification',
         'action', 'behavior', 'primary_goal', 'primary_category',
         'completed',
     )
-    list_filter = (UACategoryListFilter, 'primary_goal')
+    list_filter = (
+        UserActionCompletedListFilter,
+        UACategoryListFilter,
+        'primary_goal'
+    )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title', 'action__notification_text', 'id',
@@ -552,11 +594,7 @@ class UserActionAdmin(UserRelatedModelAdmin):
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
 
     def completed(self, obj):
-        return models.UserCompletedAction.objects.filter(
-            user=obj.user,
-            useraction=obj,
-            state=models.UserCompletedAction.COMPLETED
-        ).exists()
+        return obj.completed
     completed.boolean = True
 
     def behavior(self, obj):
