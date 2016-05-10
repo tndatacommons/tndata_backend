@@ -1694,9 +1694,6 @@ class TestUserCategoryAPI(APITestCase):
             order=1,
             state='published'
         )
-        # TODO: Figure out how to test icon/image fields and their inclusion
-        # in the api. Maybe useful: http://goo.gl/nh7Vl4
-
         # Assign a Category to the User
         self.uc = UserCategory.objects.create(user=self.user, category=self.category)
 
@@ -1728,7 +1725,6 @@ class TestUserCategoryAPI(APITestCase):
         self.assertIn("custom_triggers_allowed", response.data['results'][0])
         self.assertIn("order", response.data['results'][0]['category'])
         self.assertIn("title", response.data['results'][0]['category'])
-        self.assertIn("title_slug", response.data['results'][0]['category'])
         self.assertIn("description", response.data['results'][0]['category'])
         self.assertIn("icon_url", response.data['results'][0]['category'])
         self.assertIn("image_url", response.data['results'][0]['category'])
