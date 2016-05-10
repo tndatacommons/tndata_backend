@@ -1204,6 +1204,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self.remove_queued_messages()
 
     @property
+    def behavior_title(self):
+        """Return only the title for the related Behavior."""
+        behavior = Behavior.objects.only("title").get(pk=self.behavior_id)
+        return behavior.title
+
+    @property
     def order(self):
         return self.sequence_order
 

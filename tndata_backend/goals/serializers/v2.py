@@ -117,10 +117,12 @@ class ActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Action
         fields = (
-            'id', 'behavior', 'sequence_order', 'title', 'description',
-            'html_description', 'more_info', 'html_more_info',
+            'id', 'behavior', 'behavior_title', 'sequence_order',
+            'title', 'description', 'html_description',
+            'more_info', 'html_more_info',
             'external_resource', 'external_resource_name',
-            'notification_text', 'icon_url', 'object_type',
+            'notification_text', 'icon_url',
+            'object_type',
         )
 
 
