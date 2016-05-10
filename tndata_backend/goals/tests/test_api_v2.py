@@ -2015,10 +2015,13 @@ class TestUserCategoryAPI(V2APITestCase):
         self.assertIn("editable", response.data['results'][0])
         self.assertIn("order", response.data['results'][0]['category'])
         self.assertIn("title", response.data['results'][0]['category'])
-        self.assertIn("title_slug", response.data['results'][0]['category'])
         self.assertIn("description", response.data['results'][0]['category'])
         self.assertIn("icon_url", response.data['results'][0]['category'])
         self.assertIn("image_url", response.data['results'][0]['category'])
+        self.assertIn("color", response.data['results'][0]['category'])
+        self.assertIn("secondary_color", response.data['results'][0]['category'])
+        self.assertIn("selected_by_default", response.data['results'][0]['category'])
+        self.assertIn("object_type", response.data['results'][0]['category'])
 
         self.assertEqual(
             response.data['results'][0]['id'],
@@ -2052,6 +2055,7 @@ class TestUserCategoryAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.post(url, {"category": newcat.id})
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Make sure our user has two categories.

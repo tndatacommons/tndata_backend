@@ -164,16 +164,18 @@ class SimpleCategoryField(serializers.RelatedField):
     def to_representation(self, value):
         return {
             'id': value.id,
-            'title': value.title,
-            'title_slug': value.title_slug,
             'order': value.order,
+            'featured': value.featured,
+            'title': value.title,
             'description': value.description,
             'html_description': value.rendered_description,
+            'packaged_content': value.packaged_content,
             'icon_url': value.get_absolute_icon(),
             'image_url': value.get_absolute_image(),
             'color': value.color,
             'secondary_color': value.secondary_color,
-            'packaged_content': value.packaged_content,
+            'selected_by_default': value.selected_by_default,
+            'object_type': 'category',
         }
 
 
