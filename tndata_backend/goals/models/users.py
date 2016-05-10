@@ -738,16 +738,26 @@ class UserAction(models.Model):
             return user_behavior.get_user_goals()
         return Goal.objects.none()
 
-    def get_primary_goal(self):
+    @property
+    def goal_title(self):
+        """Return the title string for this object's primary goal."""
+        return self.get_primary_goal(only='title').title
+
+    def get_primary_goal(self, only=None):
         """Return a Goal (or None) representing the primary goal associated
         with this user's selected Action."""
         if self.primary_goal:
             result = self.primary_goal
+        elif only:
+            result = self.get_user_goals().only(only).first()
         else:
             result = self.get_user_goals().first()
-        if not result and self.user_behavior:
-            # Somehow, this user has no goals selected for this Action/Behavior,
-            # so fall back to the first goal on the parent behavior.
+
+        # Somehow, this user has no goals selected for this Action/Behavior,
+        # so fall back to the first goal on the parent behavior.
+        if not result and self.user_behavior and only:
+            result = self.user_behavior.behavior.goals.only(only).first()
+        elif not result and self.user_behavior:
             result = self.user_behavior.behavior.goals.first()
         return result
 
