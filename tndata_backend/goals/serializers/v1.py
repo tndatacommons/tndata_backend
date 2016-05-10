@@ -505,7 +505,7 @@ class CustomActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = CustomAction
         fields = (
-            'id', 'user', 'customgoal', 'title', 'title_slug',
+            'id', 'user', 'customgoal', 'goal_title', 'title', 'title_slug',
             'notification_text', 'trigger', 'next_reminder',
             'updated_on', 'created_on', 'object_type',
         )

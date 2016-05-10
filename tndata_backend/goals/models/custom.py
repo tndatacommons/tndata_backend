@@ -87,6 +87,10 @@ class CustomAction(models.Model):
         super().save(*args, **kwargs)
 
     @property
+    def goal_title(self):
+        return self.customgoal.title
+
+    @property
     def priority(self):
         return GCMMessage.MEDIUM
 
