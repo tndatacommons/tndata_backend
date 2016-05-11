@@ -27,6 +27,7 @@ from .. models import (
     UserCompletedAction,
     UserCompletedCustomAction,
 )
+from .. permissions import get_or_create_content_authors
 
 
 # XXX We've got each test case in this module decorated with `override_settings`,
@@ -253,6 +254,33 @@ class TestGoalAPI(V2APITestCase):
             "should appear in your feed soon."
         )
         user.delete()
+
+    def test_set_order(self):
+        """Ensure the GoalViewSet.set_order detail_route updates the
+        Goal's sequence_order"""
+        url = reverse('goal-order', args=[self.goal.id])
+        payload = {'sequence_order': 1}
+
+        # check the pre-condition
+        self.assertEqual(self.goal.sequence_order, 0)
+
+        # But not for Anonymous requests...
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # Authenticated requests...
+        User = get_user_model()
+        content_author_group = get_or_create_content_authors()
+        args = ("author", "author@example.com", "pass")
+        user = User.objects.create_user(*args)
+        user.groups.add(content_author_group)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Goal.objects.get(pk=self.goal.id).sequence_order, 1)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -515,6 +543,34 @@ class TestBehaviorAPI(V2APITestCase):
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+    def test_set_order(self):
+        """Ensure the BehaviorViewSet.set_order detail_route updates the
+        Behavior's sequence_order"""
+        url = reverse('behavior-order', args=[self.behavior.id])
+        payload = {'sequence_order': 1}
+
+        # check the pre-condition
+        self.assertEqual(self.behavior.sequence_order, 0)
+
+        # But not for Anonymous requests...
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # Authenticated requests...
+        User = get_user_model()
+        content_author_group = get_or_create_content_authors()
+        args = ("author", "author@example.com", "pass")
+        user = User.objects.create_user(*args)
+        user.groups.add(content_author_group)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            Behavior.objects.get(pk=self.behavior.id).sequence_order, 1)
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
@@ -761,6 +817,34 @@ class TestActionAPI(V2APITestCase):
         url = self.get_url('action-detail', args=[self.action.id])
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_set_order(self):
+        """Ensure the ActionViewSet.set_order detail_route updates the
+        Action's sequence_order"""
+        url = reverse('action-order', args=[self.action.id])
+        payload = {'sequence_order': 100}
+
+        # check the pre-condition
+        self.assertNotEqual(self.action.sequence_order, 100)
+
+        # But not for Anonymous requests...
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # Authenticated requests...
+        User = get_user_model()
+        content_author_group = get_or_create_content_authors()
+        args = ("author", "author@example.com", "pass")
+        user = User.objects.create_user(*args)
+        user.groups.add(content_author_group)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            Action.objects.get(pk=self.action.id).sequence_order, 100)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)

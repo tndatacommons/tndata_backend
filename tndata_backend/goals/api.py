@@ -184,6 +184,7 @@ class GoalViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             obj = models.Goal.objects.get(pk=pk)
             self.check_object_permissions(request, obj)
             obj.sequence_order = int(request.data.get('sequence_order'))
+            obj.save()
             return Response(data={'updated': True}, status=status.HTTP_200_OK)
 
         except (ValueError, models.Goal.DoesNotExist) as e:
