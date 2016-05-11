@@ -336,6 +336,7 @@ class UserActionManager(models.Manager):
 
         """
         from .models import UserCompletedAction as UCA
+        sequences_by_behavior = {}
 
         if kwargs.pop('published', False):
             kwargs['action__state'] = 'published'
@@ -346,18 +347,36 @@ class UserActionManager(models.Manager):
         )
         if is_behavior_object:
             kwargs['action__behavior'] = behaviors
+            sequences_by_behavior = {b.id: set() for b in behaviors}
         else:
             kwargs['action__behavior__in'] = behaviors
+            sequences_by_behavior = {bid: set() for bid in behaviors}
+
         qs = self.get_queryset().filter(**kwargs)
 
         # Then exluded the ones we've marked as completed.
         qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
 
-        # Now, find the min sequence, and return all UserActions
-        # that match that sequeunce.
-        seq = qs.aggregate(Min('action__sequence_order'))
-        seq = seq.get('action__sequence_order__min') or 0
-        return qs.filter(action__sequence_order=seq)
+        # Now, find the minimum sequence_order value, based for the set of
+        # actions in each parent behavior.
+        for ua in qs:
+            sequences_by_behavior[ua.action.behavior_id].add(
+                (ua.action_id, ua.action.sequence_order)
+            )
+
+        # Now find the min sequence value per behavior & filter out the others.
+        for behavior_id, values in sequences_by_behavior.items():
+            try:
+                min_seq = min(t[1] for t in values)
+                sequences_by_behavior[behavior_id] = [
+                    t[0] for t in values if t[1] == min_seq
+                ]
+            except ValueError:
+                pass  # min() might fail if there are no values
+
+        # Flatten that list & do a lookup
+        action_ids = list(flatten(sequences_by_behavior.values()))
+        return qs.filter(action__pk__in=action_ids)
 
 
 class TriggerManager(models.Manager):
