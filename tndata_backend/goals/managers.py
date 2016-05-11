@@ -96,7 +96,7 @@ class UserGoalManager(models.Manager):
 
         """
         # Allow a published=True kwarg
-        if kwargs.pop('published'):
+        if kwargs.pop('published', False):
             kwargs['goal__state'] = 'published'
 
         kwargs['completed'] = False
@@ -130,7 +130,7 @@ class UserBehaviorManager(models.Manager):
 
         """
         # Allow a published=True kwarg
-        if kwargs.pop('published'):
+        if kwargs.pop('published', False):
             kwargs['behavior__state'] = 'published'
         kwargs['completed'] = False
 
@@ -293,7 +293,7 @@ class UserActionManager(models.Manager):
         """
         from .models import UserCompletedAction as UCA
 
-        if kwargs.pop('published', None):
+        if kwargs.pop('published', False):
             kwargs['action__state'] = 'published'
 
         is_behavior_object = (
