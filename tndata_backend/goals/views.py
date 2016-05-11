@@ -1584,11 +1584,12 @@ def debug_notifications(request):
     for a day, with all of the sheduled GCMNotifications for that user.
 
     """
+    # How many UserActions/CustomActions to display
+    num_items = int(request.GET.get('n', 25))
+
     User = get_user_model()
     customactions = None
     useractions = None
-    # completed_useractions = None
-    # completed_customactions = None
     next_user_action = None
     today = None
     upcoming_useractions = []
@@ -1603,22 +1604,14 @@ def debug_notifications(request):
         try:
             user = User.objects.get(email__icontains=email)
             today = local_day_range(user)
-            useractions = user.useraction_set.all()
-            useractions = useractions.order_by("next_trigger_date").distinct()
-            # completed_useractions = UserCompletedAction.objects.filter(
-            #     user=user,
-            #     updated_on__range=today
-            # )
+
+            # UserActions
+            useractions = user.useraction_set.all().distinct()[:num_items]
 
             # Custom Actions
             customactions = user.customaction_set.all()
             customactions = customactions.order_by("next_trigger_date")
-            customactions = customactions.distinct()
-
-            # completed_customactions = UserCompletedCustomAction.objects.filter(
-            #     user=user,
-            #     updated_on__range=today
-            # )
+            customactions = customactions.distinct()[:num_items]
 
             next_user_action = user_feed.next_user_action(user)
             upcoming_useractions = user_feed.todays_actions(user)
@@ -1642,17 +1635,15 @@ def debug_notifications(request):
                     datestring = parts[2]
                     key = parts[3]
                     user_queues[datestring][key] = content
-                # user_queues.append(queue.UserQueue.get_data(user, date=dt))
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
     context = {
+        'num_items': num_items,
         'form': form,
         'email': email,
         'useractions': useractions,
         'customactions': customactions,
-        # 'completed_useractions': completed_useractions,
-        # 'completed_customactions': completed_customactions,
         'next_user_action': next_user_action,
         'upcoming_useractions': upcoming_useractions,
         'upcoming_customactions': upcoming_customactions,

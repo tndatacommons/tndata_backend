@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load crispy_forms_tags %}
+{% load util_filters %}
 {% load tz %}
 
 {% block title %}Debug Notifications{% endblock %}
@@ -22,9 +23,23 @@
 
 <form action="{% url 'goals:debug_notifications' %}" method="get">
   <div class="row">
-    <div class="large-12 column">
+    <div class="large-6 column">
       {{ form|crispy }}
-      <p><input type="submit" value="Search" class="button"/></p>
+    </div>
+    <div class="large-3 column">
+      <label for="id_n">Number of Items</label>
+      <select id="id_n" name="n" class="no-chosen">
+        {% with n=num_items %}
+        <option value="25"{% if n == 25 %} selected="selected"{% endif %}>25</option>
+        <option value="50"{% if n == 50 %} selected="selected"{% endif %}>50</option>
+        <option value="100"{% if n == 100 %} selected="selected"{% endif %}>100</option>
+        <option value="200"{% if n == 200 %} selected="selected"{% endif %}>200</option>
+        <option value="500"{% if n == 500 %} selected="selected"{% endif %}>500</option>
+        {% endwith %}
+      </select>
+    </div>
+    <div class="large-3 column">
+      <input type="submit" value="Search" class="button"/>
     </div>
   </div>
 </form>
@@ -49,6 +64,8 @@
           <span class="label info">
             {{ ua.next_trigger_date|localtime|date:"M j Y P e" }}</span>
         </li>
+        {% empty %}
+        <li><em>no upcoming actions</em></li>
         {% endfor %}
       </ol>
       <hr/>
@@ -60,11 +77,15 @@
           <span class="label info">
             {{ obj.next_trigger_date|localtime|date:"M j Y P e" }}</span>
         </li>
+        {% empty %}
+        <li><em>no upcoming custom actions</em></li>
         {% endfor %}
       </ol>
       <hr/>
-      <p>Your daily progress stats as shown on the home feed.</p>
-      <pre>{{ progress|pprint }}</pre>
+      {% if progress %}
+        <p>Your daily progress stats as shown on the home feed.</p>
+        <pre>{{ progress|pprint }}</pre>
+      {% endif %}
     </div>
   </div>
   <div class="large-6 small-12 columns">
@@ -99,245 +120,216 @@
       {% endfor %}
       </tbody>
     </table>
-    {% comment %}
-    <h2>Progress <small>Behaviors / Completed Actions</small></h2>
-    <p>
-      <span class="label info">{{ today.0|localtime }}</span> to
-      <span class="label info">{{ today.1|localtime }}</span>
-    </p>
-    <div class="panel">
-
-      <h3>Public/Packaged Actions</h3>
-      <ul>
-      {% for uca in completed_useractions %}
-        <li>
-          ({{uca.id}}) {{ uca.action }}: <em>{{ uca.state|upper }}</em><br/>
-          <small>
-          Updated: <span class="label info">
-            {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
-          Created: <span class="label info">
-            {{ uca.created_on|localtime|date:"M j Y P e" }}</span>
-          </small>
-        </li>
-      {% empty %}
-        <li>no completed actions for this day</li>
-      {% endfor %}
-      </ul>
-
-      <h3>Custom Actions</h3>
-      <ul>
-      {% for uca in completed_customactions %}
-        <li>
-          ({{uca.id}}) {{ uca.action }}: <em>{{ uca.state|upper }}</em><br/>
-          <small>
-          Updated: <span class="label info">
-            {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
-          Created: <span class="label info">
-            {{ uca.created_on|localtime|date:"M j Y P e" }}</span>
-          </small>
-        </li>
-      {% empty %}
-        <li>no completed actions for this day</li>
-      {% endfor %}
-      </ul>
-    </div>
-    {% endcomment %}
   </div>
 </div> {# end .row #}
 
 
-<h2>User Content <small>UserActions &amp; CustomActions</small></h2>
-{% if useractions|length or customactions|length %}
-<table>
-  <caption>
-    {{useractions.count}} <code>UserAction</code> /
-    {{customactions.count}} <code>CustomAction</code>
-  </caption>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Object</th>
-      <th>Status</th>
-      <th>Notifications</th>
-      <th>Parents</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for ca in customactions %}
+{% with ca_count=customactions.count %}
+{% if ca_count > 0 %}
+  <h2>Custom Actions <small>{{ ca_count }} items</small></h2>
+  <table>
+    <thead>
       <tr>
-        {# --- Object Type --- #}
-        <td>Custom Action</td>
-
-        {# --- Object Details & Trigger info --- #}
-        <td class="{% if ca.upcoming %}upcoming{% else %}past{% endif %}">
-          <strong>
-            {% if ca.upcoming %}<i class="fa fa-star"></i>{% endif %}
-            {{ ca }} / {{ ca.customgoal }}
-          </strong><br/>
-          <code>
-            CustomAction.id: {{ ca.id }}, CustomGoal.id: {{ ca.customgoal.id }}
-          </code><br/>
-          <em>
-          {% if ca.trigger %}
-            {% with recur=ca.trigger.recurrences_as_text %}
-              {% if recur %}{{ recur|upper }}{% else %}
-                {{ ca.trigger.date|default:"No date" }} /
-                {{ ca.trigger.time|default:"No time" }}
-              {% endif %}
-            {% endwith %}
-            <br/>
-            <span class="label info">
-              {{ ca.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
-            <span class="label secondary">
-              {{ ca.next|utc|date:"M j Y P e"|default:"None" }}</span>
-          {% endif %}
-          </em>
-          {% comment %}
-          <hr/>
-          {% for uca in completed %}
-            {% if uca.useraction == ua %}
-              <strong><i class="fa fa-trophy"></i> {{ uca.state|upper }}</strong><br/>
-              <span class="label info">
-                {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
-              <span class="label secondary">
-              {{ uca.updated_on|utc|date:"M j Y P e" }}</span>
-            {% endif %}
-          {% endfor %}
-          {% endcomment %}
-        </td>
-
-        {# --- Status --- #}
-        <td>
-        <strong>Next Trigger</strong><br/>
-        <span class="label info">
-          {{ ca.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-        </span><br/>
-        <span class="label secondary">
-          {{ ca.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-        <hr/>
-        <strong>Previous Trigger</strong><br/>
-        <span class="label info">
-          {{ ca.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-        </span><br/>
-        <span class="label secondary">
-          {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-        </td>
-
-        {# --- Scheduled/Past Notifications --- #}
-        <td>
-          <ul style="list-style-type:none;">
-          {% for msg in ca.queued_notifications %}
-            <li>
-              <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
-              <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
-                 target="_blank">{{ msg.deliver_on|date:"P e m/d/Y" }}</a>
-            </li>
-          {% empty %}
-            <li><em>none scheduled</em></li>
-          {% endfor %}
-          </ul>
-        </td>
+        <th>Details</th>
+        <th>Trigger</th>
+        <th>Notifications</th>
+        <th>Parents</th>
       </tr>
-    {% endfor %}
-    {% for ua in useractions %}
-      <tr>
-        {# -- object type -- #}
-        <td>User Action</td>
-
-        {# --- Action info --- #}
-        <td class="{% if ua.upcoming %}upcoming{% else %}past{% endif %}">
-          <strong>
-            {% if ua.upcoming %}<i class="fa fa-star"></i>{% endif %}
-            {{ ua.action }}</strong><br/>
-          <code>
-            Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}
-          </code><br/>
-          <em>
-          {% if ua.trigger %}
-            {% if ua.trigger != ua.custom_trigger %}
-              <span class="label">DEFAULT</span> {% endif %}
-            {% with recur=ua.trigger.recurrences_as_text %}
-              {% if recur %}{{ recur|upper }}{% else %}
-                {{ ua.trigger.date|default:"No date" }} /
-                {{ ua.trigger.time|default:"No time" }}
-              {% endif %}
-            {% endwith %}
-            <br/>
-            <span class="label info">
-              {{ ua.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
-            <span class="label secondary">
-              {{ ua.next|utc|date:"M j Y P e"|default:"None" }}</span>
-          {% endif %}
-          </em>
-          <hr/>
-          {% for uca in completed %}
-            {% if uca.useraction == ua %}
-              <strong><i class="fa fa-trophy"></i> {{ uca.state|upper }}</strong><br/>
+    </thead>
+    <tbody>
+      {% for ca in customactions %}
+        <tr>
+          {# --- Object Details & Trigger info --- #}
+          <td class="{% if ca.upcoming %}upcoming{% else %}past{% endif %}">
+            <strong>
+              {% if ca.upcoming %}<i class="fa fa-star"></i>{% endif %}
+              {{ ca }} / {{ ca.customgoal }}
+            </strong><br/>
+            <code>
+              CustomAction.id: {{ ca.id }}, CustomGoal.id: {{ ca.customgoal.id }}
+            </code><br/>
+            <em>
+            {% if ca.trigger %}
+              {% with recur=ca.trigger.recurrences_as_text %}
+                {% if recur %}{{ recur|upper }}{% else %}
+                  {{ ca.trigger.date|default:"No date" }} /
+                  {{ ca.trigger.time|default:"No time" }}
+                {% endif %}
+              {% endwith %}
+              <br/>
               <span class="label info">
-                {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
+                {{ ca.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
               <span class="label secondary">
-              {{ uca.updated_on|utc|date:"M j Y P e" }}</span>
+                {{ ca.next|utc|date:"M j Y P e"|default:"None" }}</span>
             {% endif %}
-          {% endfor %}
-        </td>
+            </em>
+          </td>
 
-        {# --- Status --- #}
-        <td>
-        <strong>Next Trigger</strong><br/>
-        {% if ua.next_trigger_date %}
+          {# --- Status --- #}
+          <td>
+          <strong>Next Trigger</strong><br/>
           <span class="label info">
-            {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+            {{ ca.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
           </span><br/>
           <span class="label secondary">
-            {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-        {% else %}
-          <em>None</em>
-        {% endif %}
-        <hr/>
-        <strong>Previous Trigger</strong><br/>
-        {% if ua.prev_trigger_date %}
+            {{ ca.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+          <hr/>
+          <strong>Previous Trigger</strong><br/>
           <span class="label info">
-            {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+            {{ ca.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
           </span><br/>
           <span class="label secondary">
             {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-        {% else %}
-          <em>None</em>
-        {% endif %}
-        </td>
+          </td>
 
-        {# --- Scheduled/Past Notifications --- #}
-        <td>
-          <ul style="list-style-type:none;">
-          {% for msg in ua.queued_notifications %}
-            <li>
-              <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
-              <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
-                 target="_blank">{{ msg.deliver_on|date:"P e m/d/Y" }}</a>
-            </li>
-          {% empty %}
-            <li><em>none scheduled</em></li>
-          {% endfor %}
-          </ul>
-        </td>
-        <td>
-          <strong data-tooltip aria-haspopup="true"
-                  class="has-tip" title="Primary Category">
-            {{ ua.primary_category }}</strong><br/>
-          <span class="label info" data-tooltip aria-haspopup="true"
-                class="has-tip" title="Sequence Order for this Goal">
-                {{ ua.primary_goal.sequence_order }}</span>
-          {{ ua.primary_goal }}<br/>
-          <span class="label info" data-tooltip aria-haspopup="true"
-                class="has-tip" title="Sequence Order for this Behavior">
-                {{ ua.action.behavior.sequence_order }}</span>
-          {{ ua.action.behavior }}<br/>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+          {# --- Scheduled/Past Notifications --- #}
+          <td>
+            <ul style="list-style-type:none;">
+            {% for msg in ca.queued_notifications %}
+              <li>
+                <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
+                <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
+                   target="_blank">{{ msg.deliver_on|date:"P e m/d/Y" }}</a>
+              </li>
+            {% empty %}
+              <li><em>none scheduled</em></li>
+            {% endfor %}
+            </ul>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endif %}
+{% endwith %}
+
+{% with ua_count=useractions.count %}
+{% if ua_count > 0 %}
+  <h2>User Actions <small>{{ ua_count }} items</small></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Details</th>
+        <th>Trigger</th>
+        <th>Notifications</th>
+        <th>Parents</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ua in useractions %}
+        <tr>
+          {# --- UserAction & Action details --- #}
+          <td class="{% if ua.upcoming %}upcoming{% else %}past{% endif %}">
+            {% if ua.upcoming %}
+              <strong data-tooltip aria-haspopup="true"
+                      class="has-tip" title="Upcoming Notification">
+                <i class="fa fa-star"></i> {{ ua.action }}</strong>
+            {% else %} {# past item #}
+              <span data-tooltip aria-haspopup="true"
+                      class="has-tip" title="Past Notification">
+                {{ ua.action }}</span>
+            {% endif %}
+            <br/>
+            <code>
+              Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}
+            </code><br/>
+            <em>
+            {% if ua.trigger %}
+              {% if ua.trigger != ua.custom_trigger %}
+                <span class="label">DEFAULT</span>
+              {% endif %}
+
+              {% if ua.trigger.is_dynamic %}
+                {{ ua.trigger.time_details }}
+              {% else %}
+                {% with recur=ua.trigger.recurrences_as_text %}
+                  {% if recur %}{{ recur|upper }}{% else %}
+                    {{ ua.trigger.date|default:"No date" }} /
+                    {{ ua.trigger.time|default:"No time" }}
+                  {% endif %}
+                {% endwith %}
+              {% endif %}
+            {% endif %}
+            </em>
+
+            {% if ua.completed %}
+              <hr/>
+              Completed: {{ ua.completed|iconbool }}<br/>
+              {% with uca=ua.usercompletedaction_set.latest %}
+                <span class="label info">
+                  {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
+                <span class="label secondary">
+                    {{ uca.updated_on|utc|date:"M j Y P e" }}</span>
+              {% endwith %}
+            {% endif %}
+          </td>
+
+          {# --- Status --- #}
+          <td>
+          <strong>Next Trigger</strong><br/>
+          {% if ua.next_trigger_date %}
+            <span class="label info">
+              {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+            </span><br/>
+            <span class="label secondary">
+              {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+          {% else %}
+            <em>None</em>
+          {% endif %}
+          <hr/>
+          <strong>Previous Trigger </strong><br/>
+          {% if ua.prev_trigger_date %}
+            <span class="label info">
+              {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+            </span><br/>
+            <span class="label secondary">
+              {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+          {% else %}
+            <em>None</em>
+          {% endif %}
+
+          <hr/>
+          <strong>Next Generated Trigger</strong><br/>
+          <span class="label info">
+            {{ ua.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
+          <span class="label secondary">
+            {{ ua.next|utc|date:"M j Y P e"|default:"None" }}</span>
+
+          </td>
+
+          {# --- Scheduled/Past Notifications --- #}
+          <td>
+            <ul style="list-style-type:none;">
+            {% for msg in ua.queued_notifications %}
+              <li>
+                <i class="fa {% if msg.success %}fa-check{% else %}fa-calendar-o{% endif %}"></i>
+                <a href="/admin/notifications/gcmmessage/{{ msg.id }}/"
+                   target="_blank">{{ msg.deliver_on|date:"P e m/d/Y" }}</a>
+              </li>
+            {% empty %}
+              <li><em>none scheduled</em></li>
+            {% endfor %}
+            </ul>
+          </td>
+          <td>
+            <strong data-tooltip aria-haspopup="true"
+                    class="has-tip" title="Primary Category">
+              {{ ua.primary_category }}</strong><br/>
+            <span class="label info" data-tooltip aria-haspopup="true"
+                  class="has-tip" title="Sequence Order for this Goal">
+                  {{ ua.primary_goal.sequence_order }}</span>
+            {{ ua.primary_goal }}<br/>
+            <span class="label info" data-tooltip aria-haspopup="true"
+                  class="has-tip" title="Sequence Order for this Behavior">
+                  {{ ua.action.behavior.sequence_order }}</span>
+            {{ ua.action.behavior }}<br/>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endwith %}
 
 {% endif %} {# not email #}
 {% endblock %}
