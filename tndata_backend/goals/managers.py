@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
@@ -19,6 +20,7 @@ from .settings import (
 )
 
 from utils import user_utils
+from utils.datastructures import flatten
 
 
 class CustomActionManager(models.Manager):
@@ -138,12 +140,54 @@ class UserBehaviorManager(models.Manager):
         goals = kwargs.pop('goals', None)
         if goals:
             kwargs['behavior__goals__in'] = goals
+        qs = self.get_queryset().select_related('behavior').filter(**kwargs)
 
-        # We also need to know about (un)completed goals and their sequences.
-        qs = self.get_queryset().filter(**kwargs)
-        seq = qs.aggregate(Min('behavior__sequence_order'))
-        seq = seq.get('behavior__sequence_order__min') or 0
-        return qs.filter(behavior__sequence_order=seq)
+        # ---------------------------------------------------------------------
+        # NOTE: We need to make the minimum sequence_order values dependent on
+        # the behavior's parent goals. For example, I may be in Goal A (seq 0),
+        # but also in Goal B (seq 1), and Goal A's min sequence value might be
+        # 0 while Goal B's min sequence value might be 1. We can't exclude the
+        # Behaviors in Goal B.
+        #
+        # To do this, we need to determine what the min Behavior.sequence_order
+        # is for each goal.
+        # ---------------------------------------------------------------------
+        #
+        # populate data, like:
+        #
+        # {
+        #   goal_id: [(behavior_id, sequence_order)]
+        #   ...
+        # }
+        #
+        # THEN, filter on the minimum sequence_order value for each goal, and
+        # flatten the  remaining behavior_ids, and return a queryset of
+        # matching those behavior ids.
+        # ---------------------------------------------------------------------
+        if goals is None and hasattr(self, 'instance') and self.instance:
+            # If we werent' given any goals, use those selected by the user.
+            goals = self.instance.usergoal_set.next_in_sequence()
+            goals = goals.values_list("goal", flat=True)
+        elif goals is None:
+            # No user, use all of the behaviors' parent goals.
+            goals = set(flatten(ub.behavior.goal_ids for ub in qs))
+
+        sequences_by_goal = defaultdict(set)
+        for goal_id in goals:
+            for ub in qs:
+                if goal_id in ub.behavior.goal_ids:
+                    sequences_by_goal[goal_id].add(
+                        (ub.behavior_id, ub.behavior.sequence_order)
+                    )
+
+        # Now find the min sequence value per goal & filter out the others.
+        for goal_id, values in sequences_by_goal.items():
+            min_seq = min(t[1] for t in values)
+            sequences_by_goal[goal_id] = [t[0] for t in values if t[1] == min_seq]
+
+        # Flatten that list
+        behavior_ids = list(flatten(sequences_by_goal.values()))
+        return qs.filter(behavior__id__in=behavior_ids)
 
 
 class UserActionQuerySet(models.QuerySet):
