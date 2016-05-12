@@ -147,21 +147,21 @@ def action_feedback(user, obj, lookback=30):
     """
     feedback = {
         'low': {
-            'title': "I've done some work to {goal} this month!",
-            'subtitle': 'Even small steps can help me reach my goal',
+            'title': "You've done some work to {goal} this month!",
+            'subtitle': 'Even small steps can help you reach your goal',
             'icon': 1,
         },
         'med': {
-            'title': "I've done {num} activities to {goal} this month!",
-            'subtitle': 'I must really want this!',
+            'title': "You've done {num} activities to {goal} this month!",
+            'subtitle': 'You must really want this!',
             'icon': 2,
         },
         'hi': {
             'title': (
-                "I've done {num} out of {total} activities to {goal} "
+                "You've done {num} out of {total} activities to {goal} "
                 "this month!"
             ),
-            'subtitle': "I'm doing great! I'll schedule another activity!",
+            'subtitle': "You're doing great! Schedule another activity!",
             'icon': 3,
         },
     }

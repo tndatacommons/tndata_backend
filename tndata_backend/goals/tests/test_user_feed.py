@@ -141,8 +141,8 @@ class TestUserProgress(TestCase):
 
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
-            'title': "I've done some work to gtitle this month!",
-            'subtitle': 'Even small steps can help me reach my goal',
+            'title': "You've done some work to gtitle this month!",
+            'subtitle': 'Even small steps can help you reach your goal',
             'total': 10,
             'completed': 0,
             'incomplete': 10,
@@ -171,8 +171,8 @@ class TestUserProgress(TestCase):
 
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
-            'title': "I've done 5 activities to gtitle this month!",
-            'subtitle': 'I must really want this!',
+            'title': "You've done 5 activities to gtitle this month!",
+            'subtitle': 'You must really want this!',
             'total': 10,
             'completed': 5,
             'incomplete': 5,
@@ -199,8 +199,8 @@ class TestUserProgress(TestCase):
 
         results = user_feed.action_feedback(self.user, self.ua1)
         expected = {
-            'title': "I've done 6 out of 10 activities to gtitle this month!",
-            'subtitle': "I'm doing great! I'll schedule another activity!",
+            'title': "You've done 6 out of 10 activities to gtitle this month!",
+            'subtitle': "You're doing great! Schedule another activity!",
             'total': 10,
             'completed': 6,
             'incomplete': 4,
@@ -442,10 +442,10 @@ class TestUserFeed(TestCase):
         self.assertEqual(fb['incomplete'], 0)
         self.assertEqual(fb['percentage'], 0)
         self.assertEqual(
-            fb['title'], "I've done some work to test goal this month!"
+            fb['title'], "You've done some work to test goal this month!"
         )
         self.assertEqual(
-            fb['subtitle'], "Even small steps can help me reach my goal"
+            fb['subtitle'], "Even small steps can help you reach your goal"
         )
 
     def test_todays_actions(self):
