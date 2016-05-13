@@ -26,6 +26,8 @@ from datetime import timedelta
 from django.core.cache import cache
 from django.db.models import Q
 from django.utils import timezone
+
+from notifications.models import GCMMessage
 from utils.user_utils import local_day_range
 
 from .models import (
@@ -243,10 +245,10 @@ def todays_customactions(user):
 
 def todays_actions(user):
     """Return a QuerySet of UserAction objects that the user should perform
-    today, ordered by `next_trigger_date` field (e.g. next up is first in the
-    list).
+    today; These are based on the current set of un-delivered GCMMessages.
 
-    This result excludes any UserActions that have already been completed.
+    (this was formerly based on the set of un-completed UserActions based on
+    the next_trigger_date field).
 
     """
     cache_key = TODAYS_ACTIONS.format(userid=user.id)
@@ -258,18 +260,14 @@ def todays_actions(user):
     today = local_day_range(user)  # start/end in UTC wrapping the user's day
     now = timezone.now()
 
-    # Exclude those that have been completed
-    cids = user.usercompletedaction_set.filter(
-        updated_on__range=today,
-        state=UserCompletedAction.COMPLETED
+    messages = GCMMessage.objects.filter(
+        user=user,
+        content_type__model='action',
+        deliver_on__range=(now, today[1]),
     )
-    cids = cids.values_list('useraction', flat=True)
-
-    # The `next_trigger_date` should always be saved as UTC
-    upcoming = user.useraction_set.published().select_related('action')
-    upcoming = upcoming.filter(next_trigger_date__range=(now, today[1]))
-    upcoming = upcoming.exclude(id__in=cids)
-    upcoming = upcoming.order_by('next_trigger_date')
+    messages = messages.exclude(success=True)
+    actions = list(messages.values_list('object_id', flat=True))
+    upcoming = user.useraction_set.published().filter(action__id__in=actions)
 
     # Now cache for a short time because other functions here use this.
     cache.set(cache_key, upcoming, timeout=TODAYS_ACTIONS_TIMEOUT)
