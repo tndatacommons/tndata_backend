@@ -34,8 +34,24 @@
               <ul>
               {% for value in values %}
                 <li>
-                  <a target="_blank"
-                       href="/admin/notifications/gcmmessage/?q={{ value }}">
+                  <a data-tooltip aria-haspopup="true"
+                     class="has-tip tip-top job-link"
+                     style="color:#008CBA;font-weight:normal;cursor:help"
+                     {% comment %}
+
+                      ugh. this is awful but I've already wasted too
+                      much time on this
+
+                      Find related message info & show it in a tooltip
+
+                     {% endcomment %}
+                     {% for job, scheduled_for, message_data in jobs %}
+                     {% if job.id == value %}
+                     title="{{ message_data.title }} / {{ message_data.message }}"
+                     {% endif %}
+                     {% endfor %}
+                     target="_blank"
+                     href="/admin/notifications/gcmmessage/?q={{ value }}">
                   {{ value }}</a>
                 </li>
               {% endfor %}
@@ -82,14 +98,16 @@
         </td>
         <td>{{ job.created_at|localtime|timesince }}</td>
         <td>
-          {{ message_data.title }} {{ message_data.message }}
+          <strong>{{ message_data.title }}</strong>
+          <br/>{{ message_data.message }}
           {% if message_data.id %}
             <small>(
             <a href="/admin/notifications/gcmmessage/{{ message_data.id }}/"
               target="_blank"><i class="fa fa-external-link-square"></i> admin</a>
             )</small>
           {% endif %}
-          <br/>Job ID: <a href="/rq/queues/0/{{ job.id }}">{{ job.id|truncatechars:15 }}</a>
+          <br/>
+          <small>Job ID: <a href="/rq/queues/0/{{ job.id }}">{{ job.id }}</a></small>
         </td>
         <td>
           <form action="{% url 'notifications:cancel-job' %}" method="post">
@@ -168,5 +186,4 @@
     });
   });
   </script>
-
 {% endblock %}

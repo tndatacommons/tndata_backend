@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 
+from utils.datastructures import flatten
+
 from . import queue
 from .models import GCMMessage
 
@@ -24,7 +26,7 @@ def dashboard(request):
     else:
         date = datetime.strptime(date, "%Y-%m-%d").date()
     user = request.GET.get('user', None)
-    user_queues = []
+    user_queues = []  # Prioritized user queue
     try:
         user = User.objects.get(email__icontains=user)
         user_queues.append(queue.UserQueue.get_data(user, date=date))
@@ -40,17 +42,16 @@ def dashboard(request):
     ids = [job.args[0] for job, _ in jobs]
 
     message_data = defaultdict(dict)
-    fields = ['id', 'title', 'user__id', 'user__email', 'message', 'deliver_on']
-    notifs = GCMMessage.objects.filter(pk__in=ids).values_list(*fields)
-    for msg in notifs:
-        mid, title, user_id, email, message, deliver_on = msg
-        message_data[mid] = {
-            'id': mid,
-            'title': title,
-            'user_id': user_id,
-            'email': email,
-            'message': message,
-            'date_string': deliver_on.strftime("%Y-%m-%d"),
+    for msg in GCMMessage.objects.filter(pk__in=ids):
+        message_data[msg.id] = {
+            'id': msg.id,
+            'title': msg.title,
+            'user_id': msg.user_id,
+            'email': msg.user.email,
+            'message': msg.message,
+            'title': msg.title,
+            'date_string': msg.deliver_on.strftime("%Y-%m-%d"),
+            'queue_id': msg.queue_id,
         }
 
     jobs = [
