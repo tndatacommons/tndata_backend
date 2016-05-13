@@ -18,6 +18,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from django_fsm import FSMField, transition
+from django_rq import job
 from jsonfield import JSONField
 from markdown import markdown
 from notifications.models import GCMMessage
@@ -632,6 +633,16 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     objects = GoalManager()
 
 
+@job
+def _enroll_users_in_published_behavior(behavior):
+    """When we publish a behavior, we need to enroll everyone that has selected
+    the behavior's parents' (goal) and in all the published child actions."""
+    for goal in behavior.goals.published():
+        # For everyone that's selected the parent Goals:
+        for ug in goal.usergoal_set.all():
+            ug.add_behaviors(behaviors=[behavior])
+
+
 class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Model):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
@@ -833,7 +844,15 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
 
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
-        pass
+        """
+        When a Behavior is published, we need to auto-enroll all of the users
+        that have selected the parent goal, AND look for all of the child
+        Actions that are published, and auto-enroll the user in those as well.
+
+        NOTE: this is impolemented as an async job since it'll be slow.
+
+        """
+        _enroll_users_in_published_behavior.delay(self)
 
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["behavior", self.id])
