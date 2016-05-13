@@ -25,10 +25,12 @@ def dashboard(request):
         date = timezone.now().date()
     else:
         date = datetime.strptime(date, "%Y-%m-%d").date()
-    user = request.GET.get('user', None)
+
+    user = None
+    email = request.GET.get('user', None)
     user_queues = []  # Prioritized user queue
     try:
-        user = User.objects.get(email__icontains=user)
+        user = User.objects.get(email__icontains=email)
         user_queues.append(queue.UserQueue.get_data(user, date=date))
         date = date + timedelta(days=1)
         user_queues.append(queue.UserQueue.get_data(user, date=date))
@@ -60,6 +62,7 @@ def dashboard(request):
     ]
 
     context = {
+        'email': email,
         'jobs': jobs,
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled'],
         'selected_date': date,

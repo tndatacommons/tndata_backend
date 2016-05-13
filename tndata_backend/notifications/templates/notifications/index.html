@@ -68,7 +68,7 @@
   {# display a redis-metrics chart of sent messages #}
   {% aggregate_history metrics %}
 
-  <table class="object-list">
+  <table class="object-list"{% if email %} data-search="{{ email }}"{% endif %}>
     <caption>{{ jobs|length }} Enqueued Messages</caption>
     <thead>
       <tr>

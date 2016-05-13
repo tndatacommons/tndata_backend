@@ -73,7 +73,18 @@
   <script>
   $(document).ready(function() {
     // Apply datatables to all .object-list tables.
-    $('table.object-list').DataTable({paging:false});
+    // And include an initial search/filter value if applicable.
+    var table = $("table.object-list")
+    var initial = table.data("search");
+    if(initial) {
+      initial = initial.split("@")[0];
+    }
+    var table = table.DataTable({paging: false});
+
+    if(initial) {
+      table.search(initial);
+      table.draw();
+    }
   });
   </script>
 {% endblock %}
