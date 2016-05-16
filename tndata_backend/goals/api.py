@@ -653,6 +653,37 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
         result = super(UserBehaviorViewSet, self).update(request, *args, **kwargs)
         return result
 
+    @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='disable')
+    def disable(self, request, pk=None):
+        """"Allow users to disable all triggers for all actions within
+        this Behavior.
+
+        To disable all triggers, send a POST request with the following payload:
+
+            {'disabled': True}
+
+        Upon success, this endpoint will return the number of Actions that were
+        disabled:
+
+            {'count': 42}
+
+        ----
+
+        """
+        try:
+            userbehavior = self.get_object()
+            count = 0
+            if bool(request.data.get('disabled', False)):
+                for ua in userbehavior.get_useractions():
+                    ua.disable_trigger()
+                    count += 1
+            return Response(data={'count': count}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                data={'error': "{0}".format(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
 class UserActionViewSet(VersionedViewSetMixin,
                         mixins.CreateModelMixin,

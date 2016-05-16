@@ -571,6 +571,40 @@ class TestBehaviorAPI(V2APITestCase):
         self.assertEqual(
             Behavior.objects.get(pk=self.behavior.id).sequence_order, 1)
 
+    def test_disable(self):
+        """Test disabling all Acctions/Triggers within a behavior."""
+        # First, we need some actions.
+        a1 = Action.objects.create(title="A1", behavior=self.behavior)
+        a2 = Action.objects.create(title="A2", behavior=self.behavior)
+        a1.publish()
+        a2.publish()
+
+        # THe URL for the endpoint
+        url = reverse('behavior-disable', args=[self.behavior.id])
+        payload = {'disabled': '1'}
+
+        User = get_user_model()
+        args = ("foo", "foo@example.com", "pass")
+        user = User.objects.create_user(*args)
+
+        # Assign useractions to the user
+        user.useractions_set.add(a1)
+        user.useractions_set.add(a2)
+
+        # Now let's do the Request.
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for ua in user.useraction_set.filter(action__in=[a1, a2]):
+            self.assertTrue(ua.custom_trigger.disabled)
+
+        # Clean Up
+        user.delete()
+        a1.delete()
+        a2.delete()
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
