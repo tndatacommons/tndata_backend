@@ -1100,9 +1100,14 @@ class TestUserBehaviorAPI(V2APITestCase):
         self.behavior.save()
 
         self.action1 = Action.objects.create(title="A1", behavior=self.behavior)
+        self.action1.default_trigger = mommy.make(Trigger)
         self.action1.publish()
+        self.action1.save()
+
         self.action2 = Action.objects.create(title="A2", behavior=self.behavior)
+        self.action2.default_trigger = mommy.make(Trigger)
         self.action2.publish()
+        self.action2.save()
 
         self.ub = UserBehavior.objects.create(
             user=self.user,
@@ -1417,13 +1422,15 @@ class TestUserBehaviorAPI(V2APITestCase):
         category.delete()
 
     def test_disable(self):
-        """Test disabling all Acctions/Triggers within a behavior."""
-        url = reverse('userbehavior-disable', args=[self.behavior.id])
+        """Test disabling all Actions/Triggers within a behavior."""
+        url = reverse('userbehavior-disable', args=[self.ub.id])
         payload = {'disabled': '1'}
 
-        # Assign useractions to the user
-        self.user.useractions_set.add(self.action1)
-        self.user.useractions_set.add(self.action2)
+        # Create some UserActions and assign them to the user
+        ua1 = UserAction.objects.create(user=self.user, action=self.action1)
+        ua2 = UserAction.objects.create(user=self.user, action=self.action2)
+        self.user.useraction_set.add(ua1)
+        self.user.useraction_set.add(ua2)
 
         # Now let's do the Request.
         self.client.credentials(
@@ -1431,9 +1438,13 @@ class TestUserBehaviorAPI(V2APITestCase):
         )
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        actions = [self.action1, self.action2]
-        for ua in self.user.useraction_set.filter(action__in=actions):
+
+        for ua in self.user.useraction_set.filter(pk__in=[ua1.pk, ua2.pk]):
             self.assertTrue(ua.custom_trigger.disabled)
+
+        # Clean up
+        ua1.delete()
+        ua2.delete()
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)

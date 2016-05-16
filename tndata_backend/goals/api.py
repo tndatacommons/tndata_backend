@@ -676,6 +676,7 @@ class UserBehaviorViewSet(VersionedViewSetMixin,
             if bool(request.data.get('disabled', False)):
                 for ua in userbehavior.get_useractions():
                     ua.disable_trigger()
+                    ua.save()
                     count += 1
             return Response(data={'count': count}, status=status.HTTP_200_OK)
         except Exception as e:
