@@ -854,4 +854,33 @@ class UserAction(models.Model):
         msgs = msgs.order_by('-deliver_on').distinct()
         return msgs
 
+    def enable_trigger(self):
+        """If the user has a custom trigger, this method will ensure it
+        is enabled."""
+        if self.custom_trigger:
+            self.custom_trigger.disabled = False
+            self.custom_trigger.save()
+
+    def disable_trigger(self):
+        """Disables the trigger for this action."""
+        if self.custom_trigger:
+            self.custom_trigger.disabled = True
+            self.custom_trigger.save()
+        elif self.default_trigger:
+            # Create a custom trigger that's a duplicate and disable it.
+            self.custom_trigger = Trigger.objects.create(
+                user=self.user,
+                name=self.get_custom_trigger_name(),
+                time_of_day=self.default_trigger.time_of_day,
+                frequency=self.default_trigger.frequency,
+                time=self.default_trigger.time,
+                trigger_date=self.default_trigger.trigger_date,
+                recurrences=self.default_trigger.recurrences,
+                start_when_selected=self.default_trigger.start_when_selected,
+                stop_on_complete=self.default_trigger.stop_on_complete,
+                disabled=True,
+                relative_value=self.default_trigger.relative_value,
+                relative_units=self.default_trigger.relative_units,
+            )
+
     objects = UserActionManager()

@@ -2133,6 +2133,74 @@ class TestUserAction(TestCaseDates):
         # Clean up
         msg.delete()
 
+    def test_enable_trigger_when_no_custom_trigger(self):
+        """When there's no custom_trigger, this shouldn't do anything."""
+        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        ua = UserAction.objects.create(user=self.user, action=act)
+        self.assertIsNone(ua.custom_trigger)
+        ua.enable_trigger()
+        self.assertIsNone(ua.custom_trigger)
+
+        # Clean up
+        ua.delete()
+        act.delete()
+
+    def test_enable_trigger_when_custom_trigger(self):
+        """When there IS a custom_trigger, this should set disabled=False."""
+        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        ua = UserAction.objects.create(user=self.user, action=act)
+        ua.custom_trigger = mommy.make(Trigger, user=self.user, disabled=True)
+
+        self.assertTrue(ua.custom_trigger.disabled)
+        ua.enable_trigger()
+        self.assertFalse(ua.custom_trigger.disabled)
+
+        # Clean up
+        ua.delete()
+        act.delete()
+
+    def test_disable_trigger_when_no_custom_trigger_or_default_trigger(self):
+        """When there's no custom_trigger OR default trigger, this shouldn't
+        do anything."""
+        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        ua = UserAction.objects.create(user=self.user, action=act)
+        self.assertIsNone(ua.custom_trigger)
+        ua.disable_trigger()
+        self.assertIsNone(ua.custom_trigger)
+
+        # Clean up
+        ua.delete()
+        act.delete()
+
+    def test_disable_trigger_when_no_custom_trigger(self):
+        """When there's no custom_trigger BUT there IS a default trigger, this
+        should create one and disable it"""
+        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        act.default_trigger = mommy.make(Trigger, disabled=False)
+        ua = UserAction.objects.create(user=self.user, action=act)
+
+        self.assertIsNone(ua.custom_trigger)
+        ua.disable_trigger()
+        self.assertTrue(ua.custom_trigger.disabled)
+
+        # Clean up
+        ua.delete()
+        act.delete()
+
+    def test_disable_trigger_when_custom_trigger(self):
+        """When there IS a custom_trigger, this should set disabled=True."""
+        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        ua = UserAction.objects.create(user=self.user, action=act)
+        ua.custom_trigger = mommy.make(Trigger, disabled=False)
+
+        self.assertFalse(ua.custom_trigger.disabled)
+        ua.disable_trigger()
+        self.assertTrue(ua.custom_trigger.disabled)
+
+        # Clean up
+        ua.delete()
+        act.delete()
+
 
 class TestUserCompletedAction(TestCase):
     """Tests for the `UserCompletedAction` model."""
