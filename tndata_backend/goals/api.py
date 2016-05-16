@@ -834,12 +834,11 @@ class UserActionViewSet(VersionedViewSetMixin,
         ua = self.get_object()
         request.data['user'] = ua.user.id
         request.data['action'] = ua.action.id
-        try:
-            # Attempt disabling the trigger
-            ua.custom_trigger.disabled = bool(disabled)
-            ua.custom_trigger.save()
-        except AttributeError:
-            pass  # This object didn't have a custom trigger
+
+        if ua.custom_trigger and ua.custom_trigger.disabled:
+            ua.enable_trigger()
+        else:
+            ua.disable_trigger()
         return request
 
     def _include_trigger(self, request, trigger_rrule, trigger_time,
