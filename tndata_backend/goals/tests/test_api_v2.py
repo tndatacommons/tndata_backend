@@ -1018,7 +1018,7 @@ class TestUserGoalAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_usergoal_detail(self):
-        """Ensure authenticated users can deelte."""
+        """Ensure authenticated users can delete."""
         url = self.get_url('usergoal-detail', args=[self.ug.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
@@ -1098,6 +1098,11 @@ class TestUserBehaviorAPI(V2APITestCase):
         )
         self.behavior.goals.add(self.goal)
         self.behavior.save()
+
+        self.action1 = Action.objects.create(title="A1", behavior=self.behavior)
+        self.action1.publish()
+        self.action2 = Action.objects.create(title="A2", behavior=self.behavior)
+        self.action2.publish()
 
         self.ub = UserBehavior.objects.create(
             user=self.user,
@@ -1300,7 +1305,7 @@ class TestUserBehaviorAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_userbehavior_detail(self):
-        """Ensure authenticated users can deelte."""
+        """Ensure authenticated users can delete."""
         url = self.get_url('userbehavior-detail', args=[self.ub.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
@@ -1353,6 +1358,29 @@ class TestUserBehaviorAPI(V2APITestCase):
 
         # Clean up.
         other_behavior.delete()
+
+    def test_delete_userbehavior_should_delete_useractions(self):
+        """Ensure authenticated users can delete their UserBehaviors, but that
+        doing so also deletes the related UserAction objects."""
+
+        # Ensure the user has selected the child actions
+        UserAction.objects.get_or_create(user=self.user, action=self.action1)
+        UserAction.objects.get_or_create(user=self.user, action=self.action2)
+        self.assertEqual(self.user.useraction_set.count(), 2)
+
+        url = self.get_url('userbehavior-detail', args=[self.ub.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Verify side-effects
+        userbehaviors = self.user.userbehavior_set.filter(id=self.ub.id)
+        self.assertEqual(userbehaviors.count(), 0)
+        useractions = self.user.useraction_set.filter(
+            action__behavior=self.behavior)
+        self.assertEqual(useractions.count(), 0)
 
     def test_post_userbehavior_with_parent_data(self):
         """POSTing to create a UserBehavior with parent object IDs"""
@@ -1923,7 +1951,7 @@ class TestUserActionAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_useraction_detail_authenticated(self):
-        """Ensure authenticated users can deelte."""
+        """Ensure authenticated users can delete."""
         url = self.get_url('useraction-detail', args=[self.ua.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
@@ -2229,7 +2257,7 @@ class TestUserCategoryAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_usercategory_detail_authenticated(self):
-        """Ensure authenticated users can deelte."""
+        """Ensure authenticated users can delete."""
         url = self.get_url('usercategory-detail', args=[self.uc.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
