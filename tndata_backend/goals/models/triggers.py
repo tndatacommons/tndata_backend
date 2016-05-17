@@ -43,6 +43,7 @@ class Trigger(models.Model):
         ('afternoon', 'Afternoon'),
         ('evening', 'Evening'),
         ('late', 'During the night'),
+        ('allday', 'During the day'),
     )
     FREQUENCY_CHOICES = (
         ('daily', 'Daily'),
@@ -270,6 +271,7 @@ class Trigger(models.Model):
             'afternoon': [13, 14, 15, 16, 17],
             'evening': [17, 18, 19, 20, 21],
             'late': [22, 23, 0, 1, 2],
+            'allday': [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
         }
         hour = random.choice(hours[self.time_of_day])
         minute = random.choice(range(1, 59))
