@@ -124,7 +124,7 @@ class ActionForm(forms.ModelForm):
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {
-            "description": TextareaWithMarkdownHelperWidget(),
+            "description": TextareaWithMarkdownHelperWidget(warning_limit=200),
             "more_info": TextareaWithMarkdownHelperWidget(),
         }
 
