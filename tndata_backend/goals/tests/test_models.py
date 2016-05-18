@@ -1017,6 +1017,37 @@ class TestTrigger(TestCase):
         # Clean up
         t.delete()
 
+    def test_next_with_recurrence_and_time_of_day(self):
+        """Test the value of `next` for triggers that have ONLY a `time_of_day`
+        and `recurrences` set of days."""
+
+        # 7pm on M, W, Th on Aug 17, 19, 20  (repeat until 8/21/2015)
+        rrule = 'RRULE:FREQ=DAILY'
+        t = Trigger.objects.create(
+            name="x",
+            time_of_day='early',
+            recurrences=rrule
+        )
+
+        with patch("goals.models.triggers.timezone.now") as mock_now:
+            # now: 08/15 at 11:00am, expected: next is Mon 8/16
+            mock_now.return_value = tzdt(2015, 8, 15, 11, 0)
+
+            result = t.next()
+            self.assertIsNotNone(result)
+            self.assertEqual(result.day, 16)
+            self.assertIn(result.hour, [6, 7, 8])
+
+            # now: 08/15 at 4:00am, expected: next is Mon 8/15
+            mock_now.return_value = tzdt(2015, 8, 15, 4, 0)
+            result = t.next()
+            self.assertIsNotNone(result)
+            self.assertEqual(result.day, 15)
+            self.assertIn(result.hour, [6, 7, 8])
+
+        # Clean up
+        t.delete()
+
     def test_default_trigger_timezone(self):
         """A Default trigger, with no user input should return UTC time"""
         trigger = Trigger.objects.create(

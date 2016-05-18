@@ -5,7 +5,7 @@ The Trigger model encapsulates reminder schedules & information.
 import pytz
 import random
 
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -239,6 +239,23 @@ class Trigger(models.Model):
         }
         return local_day_range(user, today, days=days_from_now[self.frequency])
 
+    def dynamic_trigger_time(self):
+        """Generate a datetime.time object based on `time_of_day` (if set)."""
+        # We need to an hour that corresponds to the selected Time of Day
+        random.seed()  # Seed our generator...
+        hours = {
+            'early': [6, 7, 8],
+            'morning': [9, 10, 11],
+            'noonish': [11, 12, 13],
+            'afternoon': [13, 14, 15, 16, 17],
+            'evening': [17, 18, 19, 20, 21],
+            'late': [22, 23, 0, 1, 2],
+            'allday': [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+        }
+        hour = random.choice(hours[self.time_of_day])
+        minute = random.choice(range(1, 59))
+        return time(hour, minute)
+
     def dynamic_trigger_date(self, user=None):
         """This method dynamically generates a future datetime based on the
         selected values of `frequency` and `time_of_day`. Both fields must be
@@ -264,17 +281,7 @@ class Trigger(models.Model):
             return None
 
         # We need to an hour that corresponds to the selected Time of Day
-        hours = {
-            'early': [6, 7, 8],
-            'morning': [9, 10, 11],
-            'noonish': [11, 12, 13],
-            'afternoon': [13, 14, 15, 16, 17],
-            'evening': [17, 18, 19, 20, 21],
-            'late': [22, 23, 0, 1, 2],
-            'allday': [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
-        }
-        hour = random.choice(hours[self.time_of_day])
-        minute = random.choice(range(1, 59))
+        time_of_day = self.dynamic_trigger_time()
 
         # We need a current time, and we need to know if it's the weekend.
         today = local_now(user)  # NOTE this is in the user's timezone
@@ -293,7 +300,7 @@ class Trigger(models.Model):
         }
         days = random.choice(days_from_now[self.frequency])
         dt = today + timedelta(days=days)
-        dt = dt.replace(hour=hour, minute=minute)
+        dt = dt.replace(hour=time_of_day.hour, minute=time_of_day.minute)
         return dt  # will be in the user's tz because we used local_now
 
     @property
@@ -383,16 +390,29 @@ class Trigger(models.Model):
         starting date/time for this trigger."""
         if tz is None:
             tz = self.get_tz()
+
         alert_time = None
+
+        # The Trigger has a specific Time & Date.
         if self.trigger_date and self.time:
             alert_time = self._combine(self.time, self.trigger_date, tz)
+
+        # The Trigger ONLY has a specified time; The Date will be "today".
         elif self.time is not None:
             now = timezone.now().astimezone(tz)
             alert_time = self._combine(self.time, now, tz)
+
+        # Neither Time/Date are specified, but we may have Time of Day (e.g.
+        # we've selected time of day + set a recurrence).
+        elif self.time_of_day:
+            now = timezone.now().astimezone(tz)
+            alert_time = self._combine(self.dynamic_trigger_time(), now, tz)
+
         return alert_time
 
     def get_occurences(self, begin=None, days=30):
-        """Get some dates in this series of reminders. Returns a list of datetime objects"""
+        """Get some dates in this series of reminders. Returns a list of
+        datetime objects."""
         if self.disabled:
             return []
 
