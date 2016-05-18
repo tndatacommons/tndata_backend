@@ -15,3 +15,14 @@ a.md-guide {font-size: .6em;}
 /* text in the dropdown */
 div.md-support p { font-size: .8em; color:#888;}
 div.md-support pre { font-size: .8em; color:#888;}
+
+/* text-length warning */
+span.md-text-length {
+  line-height: .8;
+  position:relative;
+  top: -1em;
+  color: #888;
+  font-size: .8em;
+  float:right;
+}
+span.md-text-length.warning {color: red;}
