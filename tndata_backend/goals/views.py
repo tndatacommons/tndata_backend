@@ -981,9 +981,6 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)
         context['Action'] = self.model
 
-        # We also list all existing actions & link to them.
-        context['actions'] = Action.objects.all().select_related("behavior__title")
-
         # pre-populate some dynamic content displayed to the user regarding
         # an action's parent behavior.
         context['behaviors'] = Behavior.objects.values(

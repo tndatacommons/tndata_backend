@@ -92,54 +92,33 @@ Category
   </div>
 </div> {# end .row #}
 
-
-<div class="row">
-  <div class="large-6 small-12 columns">
-    <div id="behavior-info" class="panel">
-      <h2>Behavior</h2>
-      {% for behavior in behaviors %}
-        <div class="behaviors" id="behavior-{{behavior.id}}">
-          {% if behavior.description or behavior.informal_list %}
-            {% if behavior.description %}
-              <em>{{behavior.description}}</em>
-            {% endif %}
-            {% if behavior.informal_list %}
-              <hr/><strong>Informal List</strong><br/>
-              {{behavior.informal_list|linebreaks}}
-            {% endif %}
-          {% else %}
-            <em>No description available.</em>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-  <div class="large-6 small-12 columns">
-    <table id="behaviors-table">
-      <caption>Existing Notifications within the selected behavior</caption>
-      <thead>
-        <tr><th>Order</th><th>Behavior</th><th>Title</th></tr>
-      </thead>
-      <tbody>
-      {% for action in actions %}
-        <tr class="existing-action behavior-{{action.behavior_id }}">
-          <td>{{ action.sequence_order }}</td>
-          <td>{{ action.behavior }}</td>
-          <td><a href="{{ action.get_absolute_url }}">{{ action }}</a></td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div> {# end .row #}
-
-
 <form
   {# Disable Garlic for custom types, otherwise we have stuff in the wrong place #}
   {% if action_type == "custom" %}data-persist="garlic"{% endif %}
   action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:action-create' %}{% endif %}"
   method="post"
   enctype="multipart/form-data">{% csrf_token %}
+
+  {# --- Panel with details on behaviors; activated on <select> chagned ---- #}
+  <div id="behavior-info" class="panel">
+    <h2>Behavior</h2>
+    {% for behavior in behaviors %}
+      <div class="behaviors" id="behavior-{{behavior.id}}">
+        {% if behavior.description or behavior.informal_list %}
+          {% if behavior.description %}
+            <em>{{behavior.description}}</em>
+          {% endif %}
+          {% if behavior.informal_list %}
+            <hr/><strong>Informal List</strong><br/>
+            {{behavior.informal_list|linebreaks}}
+          {% endif %}
+        {% else %}
+          <em>No description available.</em>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {# ----------------------------------------------------------------------- #}
 
   {% crispy form %}
 
