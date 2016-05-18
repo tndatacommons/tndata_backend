@@ -298,6 +298,11 @@ urlpatterns = [
         name='report-popular'
     ),
     url(
+        r'^reports/actions/$',
+        views.report_actions,
+        name='report-actions'
+    ),
+    url(
         r'^reports/authors/$',
         views.report_authors,
         name='report-authors'

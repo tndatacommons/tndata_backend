@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Count, Max, Q
+from django.db.models.functions import Length
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
     HttpResponseNotFound, JsonResponse
@@ -263,15 +264,6 @@ class IndexView(ContentViewerMixin, TemplateView):
             }
             for key, func in mapping.items():
                 context[key] = func(state='pending-review').order_by("-updated_on")
-
-            # List all the Behaviors that need a `prep` action.
-            # XXX: Disabling 'bucket'-related content.
-            # dynamic_behaviors = Behavior.objects.contains_dynamic()
-            # dynamic_behaviors = dynamic_behaviors.filter(
-                # action_buckets_core__gt=0,
-                # action_buckets_prep=0
-            # ).distinct().order_by('updated_on')
-            # context['dynamic_behaviors'] = dynamic_behaviors[:40]
 
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
@@ -1817,6 +1809,46 @@ def report_authors(request):
     }
     return render(request, 'goals/report_authors.html', context)
 
+
+@user_passes_test(staff_required, login_url='/')
+def report_actions(request):
+    """Information about our Action content."""
+    subreport = request.GET.get('sub', None)
+    max_len = int(request.GET.get('len', 200))
+    valid_options = [200, 300, 400, 600, 800, 1000]
+
+    # Notifications will be shorter, so use a different set of valid lengths
+    if subreport == "notif":
+        valid_options = [90, 100, 150]
+
+    if max_len not in valid_options:
+        max_len = valid_options[0]
+
+    actions = Action.objects.all()
+    context = {
+        'actions': None,
+        'total': actions.count(),
+        'max_len': max_len,
+        'len_options': valid_options,
+        'subreport': subreport,
+    }
+
+    for state in ['draft', 'published', 'pending-review', 'declined']:
+        key = "{}_count".format(state.replace('-', ''))
+        data = {key: actions.filter(state=state).count()}
+        context.update(data)
+
+    if subreport == "desc":  # Long descriptions
+        actions = actions.annotate(text_len=Length('description'))
+        actions = actions.filter(text_len__gt=max_len).select_related('behavior')
+        context['actions'] = actions.order_by('text_len')
+        context['subreport_title'] = "Long Descriptions"
+    elif subreport == "notif":  # Long notifiation text
+        actions = actions.annotate(text_len=Length('notification_text'))
+        actions = actions.filter(text_len__gt=max_len).select_related('behavior')
+        context['actions'] = actions.order_by('text_len')
+        context['subreport_title'] = "Long Notification Text"
+    return render(request, 'goals/report_actions.html', context)
 
 
 def fake_api(request, option=None):
