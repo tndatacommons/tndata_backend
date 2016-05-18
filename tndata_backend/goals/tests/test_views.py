@@ -2488,7 +2488,6 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/action_form.html")
         self.assertContains(resp, self.action.title)
-        self.assertIn("actions", resp.context)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
