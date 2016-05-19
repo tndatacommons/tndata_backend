@@ -27,7 +27,6 @@ from django.core.cache import cache
 from django.db.models import Q
 from django.utils import timezone
 
-from notifications.models import GCMMessage
 from utils.user_utils import local_day_range
 
 from .models import (
@@ -244,11 +243,14 @@ def todays_customactions(user):
 
 
 def todays_actions(user):
-    """Return a QuerySet of UserAction objects that the user should perform
-    today; These are based on the current set of un-delivered GCMMessages.
+    """Return a QuerySet of *uncompleted* UserActions for today.
 
-    (this was formerly based on the set of un-completed UserActions based on
-    the next_trigger_date field).
+    Currently this is based on the UserAction.next_trigger_date field, and
+    is not necessarily the list of notifications you will receive (because
+    the number of notifications may be limited).
+
+    This feed encompasses everything for the day, so you may see an "old"
+    date associated with an Action.
 
     """
     cache_key = TODAYS_ACTIONS.format(userid=user.id)
@@ -258,16 +260,19 @@ def todays_actions(user):
 
     # We want to show only those left for "today" (in the user's timezone)
     today = local_day_range(user)  # start/end in UTC wrapping the user's day
-    now = timezone.now()
 
-    messages = GCMMessage.objects.filter(
-        user=user,
-        content_type__model='action',
-        deliver_on__range=(now, today[1]),
+    # FEED based on all of *today's* UserActions (next_trigger_date)
+    cids = user.usercompletedaction_set.filter(
+        updated_on__range=today,
+        state=UserCompletedAction.COMPLETED
     )
-    messages = messages.exclude(success=True)
-    actions = list(messages.values_list('object_id', flat=True))
-    upcoming = user.useraction_set.published().filter(action__id__in=actions)
+    cids = cids.values_list("useraction", flat=True)
+
+    # The `next_trigger_date` should always be saved as UTC
+    upcoming = user.useraction_set.published().select_related('action')
+    upcoming = upcoming.filter(next_trigger_date__range=today)
+    upcoming = upcoming.exclude(id__in=cids)
+    upcoming = upcoming.order_by('next_trigger_date')
 
     # Now cache for a short time because other functions here use this.
     cache.set(cache_key, upcoming, timeout=TODAYS_ACTIONS_TIMEOUT)
@@ -359,6 +364,11 @@ def todays_actions_progress(user):
     # NOTE: The UserAction.next_trigger_date field gets refreshed automatically
     # every two hours. So, to get a picture of the whole day at a time, we need
     # to consider both it and the previous trigger date.
+    # -------------------------------------------------------------------------
+    # UPDATE: with the new UserQueue, there are things taht might ahve gotten
+    # "scheduled" (e.g. next_trigger_date got set), but not queued up for GCM.
+    # should we even count those? How fo fucking handle this :-/
+    # -------------------------------------------------------------------------
     total = user.useraction_set.published().filter(
         Q(prev_trigger_date__range=today) |
         Q(next_trigger_date__range=today) |
