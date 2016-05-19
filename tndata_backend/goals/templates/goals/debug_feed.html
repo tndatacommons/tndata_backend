@@ -1,0 +1,127 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+{% load util_filters %}
+{% load tz %}
+
+{% block title %}Debug Notifications{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  <style type="text/css">
+  table {width: 100%;}
+  table tbody tr td {vertical-align: top;}
+  td.past {
+    color: #888;
+    text-decoration: line-through;
+  }
+  </style>
+{% endblock %}
+
+
+{% block content %}
+<h1>Feed Debugging
+  {% if today %}<small>{{ today.0 }} - {{ today.1 }}</small>{% endif %}
+</h1>
+
+<form action="{% url 'goals:debug_feed' %}" method="get">
+  <div class="row">
+    <div class="large-6 column">
+      {{ form|crispy }}
+      <input type="submit" value="Search" class="button"/>
+    </div>
+    <div class="large-6 columns">
+      {% if progress %}
+      <h2>Progress</h2>
+      <pre class="panel">{{ progress|pprint }}</pre>
+      {% else %}
+        <p><em>No progress data</em></p>
+      {% endif %}
+    </div>
+  </div>
+</form>
+
+{% if email %}
+<div class="row">
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>Feed <small>Data displayed on the feed</small></h3>
+    <table>
+      <thead>
+      <tr><th>id</th><th>Action (id)</th><th>Next trigger date</th></tr>
+      </thead>
+      <tbody>
+      {% for ua in feed_useractions %}
+        <tr>
+          <td>{{ ua.id }}</td>
+          <td>{{ ua.action }} ({{ ua.action_id }})</td>
+          <td>{{ ua.next_trigger_date }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>GCM Messages <small>may not be queued</small></h3>
+    <table>
+      <thead>
+      <tr>
+        <th>X</th>
+        <th>Message</th>
+        <th>Object (id)</th>
+        <th>Deliver On</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for msg in notifs %}
+        <tr>
+          <td>{{msg.success|iconbool }}</td>
+          <td><strong>{{ msg.title }}</strong><br/>{{ msg.message }}</td>
+          <td>
+            {% if msg.object_id %}
+              {{ msg.content_object }} ({{ msg.object_id }})
+            {% else %} n/a {% endif %}
+          </td>
+          <td>{{ msg.deliver_on }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="row">
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>UserActions <small>next_trigger_date = today</small></h3>
+    <table>
+      <thead>
+      <tr><th>id</th><th>Action (id)</th><th>Next trigger date</th></tr>
+      </thead>
+      <tbody>
+      {% for ua in useractions %}
+        <tr>
+          <td>{{ ua.id }}</td>
+          <td>{{ ua.action }} ({{ ua.action_id }})</td>
+          <td>{{ ua.next_trigger_date }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="large-6 medium-6 small-12 columns">
+    <h3>UserCompletedActions <small>updated today</small></h3>
+    <table>
+      <thead>
+      <tr><th>Status</th><th>Action (id)</th><th>Next trigger date</th></tr>
+      </thead>
+      <tbody>
+      {% for uca in ucas %}
+        <tr>
+          <td>{{ uca.get_state_display }}</td>
+          <td>{{ uca.action }} ({{ uca.action_id }})</td>
+          <td>{{ uca.useraction.next_trigger_date }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %} {# not email #}
+{% endblock %}

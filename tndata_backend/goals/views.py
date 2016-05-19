@@ -1643,6 +1643,60 @@ def debug_notifications(request):
 
 
 @user_passes_test(staff_required, login_url='/')
+def debug_feed(request):
+    """Ugh. List the data for the feed, the useractions with a "today"
+    next_trigger_date, and the created GCMMessages for today side-by-side.
+
+    """
+    User = get_user_model()
+    today = None
+    useractions = None
+    feed_useractions = None
+    progress = None
+    notifs = None
+    ucas = None
+    email = request.GET.get('email_address', None)
+
+    if email is None:
+        form = EmailForm()
+    else:
+        form = EmailForm(initial={'email_address': email})
+        try:
+            user = User.objects.get(email__icontains=email)
+            today = local_day_range(user)
+
+            # UserActions
+            useractions = user.useraction_set.published()
+            useractions = useractions.filter(next_trigger_date__range=today)
+            useractions = useractions.distinct()
+
+            # UserCompletedActions
+            ucas = user.usercompletedaction_set.filter(updated_on__range=today)
+
+            # GCMMessages
+            notifs = user.gcmmessage_set.filter(deliver_on__range=today)
+
+            # Feed data
+            feed_useractions = user_feed.todays_actions(user)
+            progress = user_feed.todays_actions_progress(user)
+
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            messages.error(request, "Could not find that user")
+
+    context = {
+        'form': form,
+        'today': today,
+        'email': email,
+        'notifs': notifs,
+        'useractions': useractions,
+        'ucas': ucas,
+        'feed_useractions': feed_useractions,
+        'progress': progress,
+    }
+    return render(request, 'goals/debug_feed.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
 def debug_progress(request):
     """A view to allow searching by email addresss then view and
     analyze their DailyProgress info.

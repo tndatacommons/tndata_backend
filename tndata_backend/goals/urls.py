@@ -278,6 +278,11 @@ urlpatterns = [
         name='batch-assign-keywords'
     ),
     url(
+        r'^debug-feed/$',
+        views.debug_feed,
+        name='debug_feed'
+    ),
+    url(
         r'^debug-notifications/$',
         views.debug_notifications,
         name='debug_notifications'
