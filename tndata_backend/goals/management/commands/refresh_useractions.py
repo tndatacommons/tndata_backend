@@ -41,7 +41,7 @@ class Command(BaseCommand):
         )
 
     def _users(self, user):
-        """Pull the `user` option return a queryset of of Users."""
+        """Pull the `user` option and return a QuerySet of active Users."""
         User = get_user_model()
         users = User.objects.filter(is_active=True)
         if user and user.isnumeric():

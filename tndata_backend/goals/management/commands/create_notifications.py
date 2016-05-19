@@ -30,7 +30,7 @@ WARNING = False
 
 
 class SingleItemList(list):
-    """that only allows one item"""
+    """A list that only allows unique elements"""
     def append(self, item):
         if item not in self:
             super().append(item)

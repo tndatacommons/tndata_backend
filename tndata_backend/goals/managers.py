@@ -204,8 +204,13 @@ class UserActionQuerySet(models.QuerySet):
         return self.filter(next_trigger_date__gte=timezone.now())
 
     def stale(self, **kwargs):
-        # An `hours` param let's us limit output to objects that are older
-        # than the given number of hour
+        """Returns UserAction objects whose `next_trigger_date` is in the past.
+
+        An `hours` parameter will limit results to objects that are older
+        than the given number of hours, e.g. hours=2 will give us items that
+        are at least 2 hours old.
+
+        """
         hours = kwargs.pop('hours', None)
         now = timezone.now()
 
