@@ -1,0 +1,83 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h2>Signups <small>over the last 90 days</small></h2>
+
+      <canvas id="signupsChart" width="1000" height="300"></canvas>
+      <script type="text/javascript">
+      var data = {
+        labels: [
+          {% for day, num in signups %}"{{day}}"{% if not forloop.last %},{% endif %}{% endfor %}
+        ],
+        datasets: [
+          {
+            label: "Signups",
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(151,187,205,1)",
+            pointColor: "rgba(151,187,205,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,187,205,1)",
+            data: [
+            {% for day, num in signups %}{{ num }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]
+          }
+        ]
+      };
+      var ctx = document.getElementById("signupsChart").getContext("2d");
+      var c = new Chart(ctx).Line(data);
+      </script>
+
+      <h2>Daily App usage <small>users who've logged in</small></h2>
+      <canvas id="loginsChart" width="1000" height="300"></canvas>
+      <script type="text/javascript">
+      var data = {
+        labels: ["Today", "This Week", "30 days", "60 days", "90 days", "> 90"],
+        datasets: [
+          {
+              label: "User Logins",
+              fillColor: "rgba(151,187,205,0.5)",
+              strokeColor: "rgba(151,187,205,0.8)",
+              highlightFill: "rgba(151,187,205,0.75)",
+              highlightStroke: "rgba(151,187,205,1)",
+              data: [
+                {{logins.1}}, {{logins.7}}, {{logins.30}},
+                {{logins.60}}, {{logins.90}}, {{logins.91}}
+              ]
+          },
+        ]
+      };
+      var ctx = document.getElementById("loginsChart").getContext("2d");
+      var c = new Chart(ctx).Bar(data);
+      </script>
+    </div>
+  </div> {# end .row #}
+  <div class="row">
+    <div class="large-6 small-12 columns">
+      <h2>Basic Demographics</h2>
+
+      <table>
+        <tr><th>Total Accounts</th><td>{{total_users}}</td></tr>
+        <tr><th>Female</th><td>{{demographics.female}}</td></tr>
+        <tr><th>Male</th><td>{{demographics.male}}</td></tr>
+        <tr><th>Unkown</th><td>{{demographics.unknown}}</td></tr>
+      </table>
+    </div>
+    <div class="large-6 small-12 columns">
+      <h2>Zipcodes</h2>
+      <table>
+        {% for zip, count in zipcodes %}
+          <tr><th>{{ zip|default:"Unknown" }}</th><td>{{count}}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+{% endblock %}

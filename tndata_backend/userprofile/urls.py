@@ -4,6 +4,11 @@ from . import views
 
 urlpatterns = [
     url(
+        r'^report/$',
+        views.report,
+        name='report'
+    ),
+    url(
         r'^remove-app-data/$',
         views.admin_remove_app_data,
         name='remove-app-data'

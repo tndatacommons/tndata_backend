@@ -1,3 +1,6 @@
+from collections import Counter, OrderedDict
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -5,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView
 from django.views.generic.base import RedirectView
+from django.utils import timezone
 
 from utils.mixins import LoginRequiredMixin
 from utils.user_utils import get_all_permissions
@@ -55,6 +59,63 @@ def update_profile(request, pk):
 
     context = {'form': form, 'user_form': user_form}
     return render(request, "userprofile/userprofile_form.html", context)
+
+
+@user_passes_test(lambda u: u.is_authenticated() and u.is_staff)
+def report(request):
+    """This is an all-in-one report about user accounts. Currently it lists
+    information about:
+
+    1. account creation.
+    2. last login time.
+
+    """
+    days = 30  # how much history to display?
+
+    User = get_user_model()
+    now = timezone.now()
+    since = now - timedelta(days=days)
+
+    signups = User.objects.filter(date_joined__gte=since)
+    signups = signups.datetimes('date_joined', 'day')
+    signups = Counter([d.strftime("%Y-%m-%d") for d in signups])
+
+    # Now that we have data, we need to zero-fill the missing parts.
+    results = OrderedDict()
+    for x in range(0, 30):
+        x = (now - timedelta(days=x)).strftime("%Y-%m-%d")
+        results[x] = signups.get(x, 0)
+    signups = list(reversed(list(results.items())))
+
+    # Last login in "days ago" buckets
+    logins = {}
+    for days in [1, 7, 30, 60, 90]:
+        since = now - timedelta(days=days)
+        logins[days] = User.objects.filter(last_login__lte=since).count()
+
+    # > 90 days == 91
+    since = now - timedelta(days=91)
+    logins[91] = User.objects.filter(last_login__gte=since).count()
+
+    # Male/Female count
+    sexes = []
+    for sex in UserProfile.objects.values_list('sex', flat=True):
+        sexes.append(sex.lower() if sex else 'unknown')
+    demographics = Counter(sexes)
+
+    # Zip codes
+    zipcodes = UserProfile.objects.values_list('zipcode', flat=True)
+    zipcodes = Counter(z.strip() for z in zipcodes if z and z.isnumeric())
+    zipcodes = list(sorted(zipcodes.items()))
+
+    context = {
+        'total_users': User.objects.all().count(),
+        'demographics': demographics,
+        'logins': logins,
+        'signups': signups,
+        'zipcodes': zipcodes,
+    }
+    return render(request, 'userprofile/report.html', context)
 
 
 @user_passes_test(lambda u: u.is_authenticated() and u.is_staff)
