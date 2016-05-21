@@ -7,6 +7,8 @@ the following:
 * `id`: The unique database identifier for the action
 * `behavior`: The [Behavior](/api/behaviors/) (an ID) to which the action
    belongs
+* `behavior_title`: The title of the parent Behavior.
+* `behavior_description`: The description of the parent Behavior.
 * `sequence_order`: The order in which actions should be displayed/performed (if any)
 * `title`: A unique, Formal title. Use this to refer to this item.
 * `description`: A short description of the Action. Plain text

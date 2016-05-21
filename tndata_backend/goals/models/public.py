@@ -1225,8 +1225,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     @property
     def behavior_title(self):
         """Return only the title for the related Behavior."""
-        behavior = Behavior.objects.only("title").get(pk=self.behavior_id)
-        return behavior.title
+        return self.behavior.title
+
+    @property
+    def behavior_description(self):
+        """Return only the description for the related Behavior."""
+        return self.behavior.description
 
     @property
     def order(self):
