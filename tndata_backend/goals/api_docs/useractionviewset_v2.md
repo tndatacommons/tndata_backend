@@ -44,6 +44,8 @@ This endpoint returns resources with the following fields.
 
 * `editable`: A boolean that indicates whether or not a user
   should be able to customize the reminders for this action.
+* `userbehvaior_id`: The ID of the `UserBehavior` object associated with the
+  `Action`'s parent `Behavior`.
 * `primary_goal`: The ID of the goal under which the user selected this action.
 * `primary_category`: The ID of the category associated with this action.
 * `created_on`: Time at which the user selected this item.

@@ -748,6 +748,18 @@ class UserAction(models.Model):
         qs = qs.prefetch_related('behavior__goals')
         return qs.filter(user=self.user, behavior=self.action.behavior).first()
 
+    @property
+    def userbehavior_id(self):
+        """Return the UserBehavior ID for the related Action's Behavior."""
+        try:
+            userbehavior = UserBehavior.objects.get(
+                user__id=self.user_id,
+                behavior__action__id=self.action_id
+            )
+            return userbehavior.id
+        except UserBehavior.DoesNotExist:
+            return None
+
     def get_notification_title(self):
         """Return the string to be used in this user's notification title."""
         goal = self.get_primary_goal() or Goal(title='')
