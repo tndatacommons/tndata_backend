@@ -37,8 +37,18 @@
   <div class="large-8 medium-8 small-12 columns">
     <h2 class="secondary">Sub-reports</h2>
     <ul>
-      <li><a href="?sub=desc">Notifications with long text descriptions</a></li>
-      <li><a href="?sub=notif">Notifications with long notification text</a></li>
+      <li><a href="?sub=desc">Long text descriptions</a>.<br/>
+        Lists notifications whose <code>description</code> text contains more
+        than 200 (or longer) characters.
+      </li>
+      <li><a href="?sub=notif">Long notification text</a>.<br/>
+        Lists notifications whose <code>notification_text</code> contains
+        more than 90, 100, or 150 characters.
+      </li>
+      <li><a href="?sub=links">Notifications containing links</a>.<br/>
+        List  notifications whose <code>description</code> or
+        <code>more info</code> fields contain links.
+     </li>
     </ul>
 
     {% if actions %}
@@ -88,6 +98,9 @@
       {% endfor %}
       </tbody>
     </table>
+    {% elif subreport == "links" %}
+      <p>There are not Actions whose <code>description</code> or
+      <code>more_info</code> fields contain links.</p>
     {% else %}
       <p>There is no content whose character
          count is greater than {{ max_len }}.</p>
