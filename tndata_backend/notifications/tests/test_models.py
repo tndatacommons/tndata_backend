@@ -57,7 +57,6 @@ class TestGCMDevice(TestCase):
     def test_defaults(self):
         """Ensure fields get default values."""
         self.assertEqual(self.device.device_name, "Default Device")
-        self.assertTrue(self.device.is_active)
 
     def test_constraints(self):
         """Ensure that (user, device_id, registration_id) define a unique

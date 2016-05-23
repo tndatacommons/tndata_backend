@@ -74,7 +74,7 @@ class TestGCMDeviceAPI(APITestCase):
         self.assertEqual(c['user'], self.device.user.id)
         self.assertEqual(c['device_name'], self.device.device_name)
         self.assertEqual(c['device_id'], self.device.device_id)
-        self.assertEqual(c['is_active'], self.device.is_active)
+        self.assertEqual(c['device_type'], self.device.device_type)
         self.assertIn('created_on', c)
         self.assertIn('updated_on', c)
 
@@ -85,14 +85,31 @@ class TestGCMDeviceAPI(APITestCase):
 
     def test_post_device_list(self):
         """Test Creating a Device."""
+
+        # 1st and android device.
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        post_data = {'registration_id': 'NEWREGID', 'device_name': 'OTHERDEVICE'}
+        post_data = {
+            'registration_id': 'NEWREGID',
+            'device_name': 'OTHERDEVICE',
+        }
         response = self.client.post(self.url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         qs = GCMDevice.objects.filter(user=self.user, registration_id='NEWREGID')
         self.assertTrue(qs.exists())
+
+        # And now an iOS device.
+        post_data = {
+            'registration_id': 'IOSREGID',
+            'device_name': 'IOSDEVICE',
+            'device_type': 'ios'
+        }
+        response = self.client.post(self.url, post_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        qs = GCMDevice.objects.filter(user=self.user, registration_id='IOSREGID')
+        self.assertTrue(qs.exists())
+        self.assertEqual(qs[0].device_type, 'ios')
 
     def test_post_device_list_updating_device_name(self):
         """Test Updating a Device."""

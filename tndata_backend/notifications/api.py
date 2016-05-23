@@ -31,12 +31,11 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
     To register a device, you must POST the following information to
     `/api/notifications/devices/`:
 
-    * `device_name`: (optional) a name for the device. It's best to provide
-      this information if possible.
     * `registration_id`: This is the device's registration ID. For more info,
       see the [Register for GCM](https://developer.android.com/google/gcm/client.html#sample-register) section in the android developer documentation.
-    * `is_active`: (optional) Defaults to True; whether or not the device accepts
-      notifications.
+    * `device_type`: should be `android` or `ios`.
+    * `device_name`: (optional) a name for the device. It's best to provide
+      this information if possible.
 
     GET requests to this enpoint will list a user's registered devices, including
     the following information:
@@ -49,8 +48,6 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
       registration id when it changes.
     * `registration_id`: This is the device's registration ID. For more info,
       see the [Register for GCM](https://developer.android.com/google/gcm/client.html#sample-register) section in the android developer documentation.
-    * `is_active`: (optional) Defaults to True; whether or not the device accepts
-      notifications.
     * `created_on`: The date the device data was created
     * `updated_on`: The date the device data was last updated
     * `object_type`: Will always be the string "gcmdevice"
@@ -75,7 +72,7 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
         """
         device = None
         device_name = request.data.get('device_name', '')
-        active = request.data.get('is_active', True)
+        device_type = request.data.get('device_type', 'android')
         registration_id = request.data.get('registration_id', None)
 
         try:
@@ -91,8 +88,8 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
         if device:
             device.device_id = device_id
             device.device_name = device_name
-            device.is_active = active
             device.registration_id = registration_id
+            device.device_type = device_type
             device.save()
 
         if device and device_id:
@@ -117,6 +114,10 @@ class GCMDeviceViewSet(mixins.CreateModelMixin,
             device_name = request.data.get('device_name', 'unkown')
             device_id = hash_value("{}+{}".format(request.user.email, device_name))
             request.data['device_id'] = device_id
+
+            # If device_type isn't specified, default to 'android'
+            if not request.data.get('device_type', None):
+                request.data['device_type'] = 'android'
 
             # Check to see if the Registration ID already exists:
             reg_id = request.data.get('registration_id', None)

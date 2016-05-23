@@ -10,7 +10,7 @@ class GCMDeviceSerializer(ObjectTypeModelSerializer):
         model = GCMDevice
         fields = (
             'id', 'user','device_name', 'device_id', 'registration_id',
-            'is_active', 'created_on', 'updated_on', 'object_type',
+            'device_type', 'created_on', 'updated_on', 'object_type',
         )
         read_only_fields = ("id", "created_on", "updated_on")
 
