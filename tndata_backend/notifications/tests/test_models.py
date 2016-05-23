@@ -223,7 +223,7 @@ class TestGCMMessage(TestCase):
         self.assertTrue(msg.success)
         self.assertEqual(msg.response_code, 200)
         self.assertEqual(msg.registration_ids, "REGISTRATION_ID")
-        self.assertEqual(msg.response_data, mock_resp.data)
+        self.assertEqual(msg.response_data['android'], mock_resp.data)
 
         # Clean up.
         msg.delete()
@@ -238,10 +238,16 @@ class TestGCMMessage(TestCase):
 
     def test_ios_devices(self):
         # note: the message above is only associated with an android device.
-        self.assertEqual(self.msg.ios_devices, ['REGISTRATIONID'])
+        self.assertEqual(self.msg.ios_devices, [])
 
         # Create a new Device / message for ios
-        device = GCMDevice.objects.create(user=self.user, registration_id="IOS")
+        device = GCMDevice.objects.create(
+            user=self.user,
+            device_name='IOS',
+            device_id='test ios device',
+            registration_id="IOS",
+            device_type='ios'
+        )
         msg = GCMMessage.objects.create(
             self.user,
             "Test ios message",
@@ -374,8 +380,12 @@ class TestGCMMessage(TestCase):
 
     def test_send(self):
         with patch("notifications.models.GCMClient") as mock_client:
-            # Don't actually call _handle_gcm_response; mock it!
+            # Don't actually call these internal record-keeping methods.
             self.msg._handle_gcm_response = Mock()
+            self.msg._remove_invalid_gcm_devices = Mock()
+            self.msg._set_expiration = Mock()
+
+            # mock the call / response from GCM
             mock_resp = Mock(
                 status_code=200,
                 reason='ok',
@@ -384,7 +394,7 @@ class TestGCMMessage(TestCase):
             )
             mock_client.return_value = Mock(**{'send.return_value': mock_resp})
 
-            self.assertEqual(self.msg.send(), mock_resp)
+            self.assertTrue(self.msg.send())
             mock_client.return_value.send.assert_called_once_with(
                 ['REGISTRATIONID'],
                 self.msg.content_json,
@@ -447,7 +457,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_text, expected_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
-        self.assertEqual(self.msg.response_data, mock_resp.data)
+        self.assertEqual(self.msg.response_data['android'], mock_resp.data)
 
     def test__handle_gcm_response_when_error(self):
         """Ensure that success=False, and our response_text includes the GCM
@@ -470,7 +480,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_text, "NotRegistered")
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
-        self.assertEqual(self.msg.response_data, mock_resp.data)
+        self.assertEqual(self.msg.response_data['android'], mock_resp.data)
 
     def test__handle_gcm_response_when_success_and_error(self):
         """If we get both a success and a failure in the GCM result data,
@@ -495,7 +505,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_text, expected_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
-        self.assertEqual(self.msg.response_data, mock_resp.data)
+        self.assertEqual(self.msg.response_data['android'], mock_resp.data)
 
     def test__handle_gcm_response_when_muldiple_successes(self):
         """If we get multiple successes in the GCM result data, record the
@@ -527,7 +537,7 @@ class TestGCMMessage(TestCase):
         self.assertEqual(self.msg.response_text, expected_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
-        self.assertEqual(self.msg.response_data, mock_resp.data)
+        self.assertEqual(self.msg.response_data['android'], mock_resp.data)
 
     def test__handle_gcm_response_error_invalid_identifier(self):
         """Handle the case where we get an error message from GCM about an

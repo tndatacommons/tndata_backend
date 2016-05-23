@@ -364,7 +364,7 @@ class GCMMessage(models.Model):
         if len(android_ids):
             client = self._get_gcm_client(recipient_type='android')
             resp = client.send(android_ids, self.content_json, **options)
-            self._handle_gcm_response(resp)
+            self._handle_gcm_response(resp, request_type='android')
             self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
 
         # Send to iOS devices (if any)
@@ -373,7 +373,7 @@ class GCMMessage(models.Model):
             options['low_priority'] = False  # always use priority=high for ios
             client = self._get_gcm_client(recipient_type='ios')
             resp = client.send(ios_ids, self.content_json, **options)
-            self._handle_gcm_response(resp)
+            self._handle_gcm_response(resp, request_type='ios')
             self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
 
         self._set_expiration()  # Now set an expiration date, if applicable.
@@ -411,7 +411,7 @@ class GCMMessage(models.Model):
         if len(identifiers) > 0:  # Don't hit the DB if we don't have to.
             GCMDevice.objects.filter(registration_id__in=identifiers).delete()
 
-    def _handle_gcm_response(self, resp):
+    def _handle_gcm_response(self, resp, request_type='android'):
         """This method handles the http response & data from GCM (after sending
         a message). There are a few things that can happen, here:
 
@@ -449,7 +449,7 @@ class GCMMessage(models.Model):
         self.registration_ids += "\n".join(rids)
 
         # Save the whole chunk of response data
-        self.response_data.update(resp.data)
+        self.response_data[request_type] = resp.data
 
         # Inspect the response data for a failure message; response data
         # may look like this, and may have both failures and successes.
@@ -461,8 +461,12 @@ class GCMMessage(models.Model):
         #    'success': 0}]
         #
         # If we have any success, consider this message succesfully sent
-        successes = [d.get('success', False) for d in self.response_data]
-        failures = [d.get('failure', False) for d in self.response_data]
+        successes = [
+            d.get('success', False) for d in self.response_data[request_type]
+        ]
+        failures = [
+            d.get('failure', False) for d in self.response_data[request_type]
+        ]
         if any(successes):
             self.success = True
         elif any(failures):
@@ -471,7 +475,7 @@ class GCMMessage(models.Model):
         # If we failed set the response text
         if not self.success:
             msg = ""
-            for item in self.response_data:
+            for item in self.response_data[request_type]:
                 for result in item.get('results', []):
                     if 'error' in result:
                         msg += result['error']
