@@ -33,6 +33,10 @@ logger = logging.getLogger("loggly_logs")
 
 class GCMDevice(models.Model):
     """A User's registered device."""
+    DEVICE_TYPE_OPTIONS = (
+        ('android', 'Android'),
+        ('ios', 'iOS'),
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         help_text="The owner of this message."
@@ -55,10 +59,11 @@ class GCMDevice(models.Model):
         db_index=True,
         help_text="The Android device ID"
     )
-    is_active = models.BooleanField(
-        default=True,
-        blank=True,
-        help_text="Does this device accept notifications?"
+    device_type = models.CharField(
+        max_length=32,
+        help_text="Type of device",
+        default='android',
+        choices=DEVICE_TYPE_OPTIONS
     )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -252,7 +257,7 @@ class GCMMessage(models.Model):
         """Return the active registration IDs associated with the user."""
         # Note: if the user has no devices, creating a GCMMessage through
         # the manager (GCMMessage.objects.create) will fail.
-        devices = GCMDevice.objects.filter(is_active=True, user=self.user)
+        devices = GCMDevice.objects.filter(user=self.user)
         return list(devices.values_list("registration_id", flat=True))
 
     def _checkin(self, obj):
