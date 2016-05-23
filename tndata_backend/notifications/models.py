@@ -443,10 +443,11 @@ class GCMMessage(models.Model):
             self.response_code = r.status_code  # NOTE: not really accurage :/
 
         # Save all the registration_ids that GCM thinks it delivered to
-        rids = []
+        rids = set([rid for rid in self.registration_ids.split("\n") if rid])
         for msg in resp.messages:  # this is a list of dicts
-            rids.extend(msg.get("registration_ids", []))
-        self.registration_ids += "\n".join(rids)
+            for rid in msg.get('registration_ids', []):
+                rids.add(rid)
+        self.registration_ids = "\n".join(rids)
 
         # Save the whole chunk of response data
         self.response_data[request_type] = resp.data
@@ -461,12 +462,8 @@ class GCMMessage(models.Model):
         #    'success': 0}]
         #
         # If we have any success, consider this message succesfully sent
-        successes = [
-            d.get('success', False) for d in self.response_data[request_type]
-        ]
-        failures = [
-            d.get('failure', False) for d in self.response_data[request_type]
-        ]
+        successes = [d.get('success', False) for d in resp.data]
+        failures = [d.get('failure', False) for d in resp.data]
         if any(successes):
             self.success = True
         elif any(failures):
@@ -475,11 +472,11 @@ class GCMMessage(models.Model):
         # If we failed set the response text
         if not self.success:
             msg = ""
-            for item in self.response_data[request_type]:
+            for item in resp.data:
                 for result in item.get('results', []):
                     if 'error' in result:
-                        msg += result['error']
-            self.response_text += msg
+                        msg += result['error'] + "\n"
+            self.response_text += "{}\n----\n".format(msg)
 
     def get_daily_message_limit(self):
         try:

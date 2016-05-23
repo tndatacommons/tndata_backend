@@ -477,7 +477,7 @@ class TestGCMMessage(TestCase):
         )
         self.msg._handle_gcm_response(mock_resp)
 
-        self.assertEqual(self.msg.response_text, "NotRegistered")
+        self.assertIn("NotRegistered", self.msg.response_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data['android'], mock_resp.data)
@@ -501,13 +501,15 @@ class TestGCMMessage(TestCase):
         )
         self.msg._handle_gcm_response(mock_resp)
 
-        expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
-        self.assertEqual(self.msg.response_text, expected_text)
+        success_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
+        error_text = "NotRegistered"
+        self.assertIn(success_text, self.msg.response_text)
+        self.assertIn(error_text, self.msg.response_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data['android'], mock_resp.data)
 
-    def test__handle_gcm_response_when_muldiple_successes(self):
+    def test__handle_gcm_response_when_multiple_successes(self):
         """If we get multiple successes in the GCM result data, record the
         message as a success."""
 
@@ -531,10 +533,12 @@ class TestGCMMessage(TestCase):
         )
 
         self.msg._handle_gcm_response(mock_resp)
-        expected_text = "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
-
+        expected_text = (
+            "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
+            "Status Code: 200\nReason: OK\nURL: FOO\n----\n"
+        )
         self.assertTrue(self.msg.success)
-        self.assertEqual(self.msg.response_text, expected_text)
+        self.assertIn(expected_text, self.msg.response_text)
         self.assertEqual(self.msg.response_code, 200)
         self.assertEqual(self.msg.registration_ids, "REGISTRATION_ID")
         self.assertEqual(self.msg.response_data['android'], mock_resp.data)
@@ -586,5 +590,5 @@ class TestGCMMessage(TestCase):
         # Handle the response
         message._handle_gcm_response(mock_resp)
 
-        # Verify the side effect: The device should've been deleted
-        self.assertFalse(GCMDevice.objects.filter(registration_id='XXX').exists())
+        # Verify the side effect: The message should be marked as unsuccessful
+        self.assertFalse(message.success)
