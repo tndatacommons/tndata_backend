@@ -81,7 +81,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     readonly_fields = (
         'pretty_payload',
         'success', 'response_text', 'response_code', 'gcm_response',
-        'pretty_response_data', 'delivered_to', 'registered_devices',
+        'pretty_response_data', 'delivered_to', 'android_devices', 'ios_devices',
         'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
     actions = ['send_notification', 'expire_messages']
@@ -125,14 +125,23 @@ class GCMMessageAdmin(admin.ModelAdmin):
     delivered_to.short_description = "Delivered to"
     delivered_to.allow_tags = True
 
-    def registered_devices(self, obj):
-        """List all the registration IDs owned by the user."""
+    def ios_devices(self, obj):
+        """List all the registration IDs for ios devices owned by the user."""
         if obj.user:
-            ids = "\n".join(obj.registered_devices)
+            ids = "\n".join(obj.ios_devices)
             return mark_safe("<br/><pre>{0}</pre>".format(ids))
         return ''
-    registered_devices.short_description = "Registered Devices"
-    registered_devices.allow_tags = True
+    ios_devices.short_description = "iOS Devices"
+    ios_devices.allow_tags = True
+
+    def android_devices(self, obj):
+        """List all the registration IDs for android devices owned by the user."""
+        if obj.user:
+            ids = "\n".join(obj.android_devices)
+            return mark_safe("<br/><pre>{0}</pre>".format(ids))
+        return ''
+    android_devices.short_description = "Android Devices"
+    android_devices.allow_tags = True
 
     def gcm_response(self, obj):
         """Formatting for the response_text that GCM sets."""

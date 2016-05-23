@@ -233,11 +233,27 @@ class TestGCMMessage(TestCase):
         self.assertIsInstance(client, GCMClient)
         self.assertEqual(client.api_key, settings.GCM['API_KEY'])
 
-    def test_registered_devices(self):
-        self.assertEqual(
-            self.msg.registered_devices,
-            ['REGISTRATIONID']
+    def test_android_devices(self):
+        self.assertEqual(self.msg.android_devices, ['REGISTRATIONID'])
+
+    def test_ios_devices(self):
+        # note: the message above is only associated with an android device.
+        self.assertEqual(self.msg.ios_devices, ['REGISTRATIONID'])
+
+        # Create a new Device / message for ios
+        device = GCMDevice.objects.create(user=self.user, registration_id="IOS")
+        msg = GCMMessage.objects.create(
+            self.user,
+            "Test ios message",
+            "A test message for an ios device",
+            datetime_utc(2000, 1, 1, 1, 0),
+            device
         )
+        self.assertEqual(msg.ios_devices, ['IOS'])
+
+        # clean up
+        msg.delete()
+        device.delete()
 
     def test__checkin(self):
         from goals.settings import (
