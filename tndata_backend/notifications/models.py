@@ -249,15 +249,25 @@ class GCMMessage(models.Model):
 
         super(GCMMessage, self).save(*args, **kwargs)
 
-    def _get_gcm_client(self):
+    def _get_gcm_client(self, recipient_type=None):
+        if recipient_type == "ios":
+            return GCMClient(api_key=GCM['IOS_API_KEY'])  # TODO: Add to settings.
         return GCMClient(api_key=GCM['API_KEY'])
 
     @property
-    def registered_devices(self):
-        """Return the active registration IDs associated with the user."""
+    def android_devices(self):
+        """Return a list of Registration IDs for the user's android devices"""
         # Note: if the user has no devices, creating a GCMMessage through
         # the manager (GCMMessage.objects.create) will fail.
-        devices = GCMDevice.objects.filter(user=self.user)
+        devices = GCMDevice.objects.filter(user=self.user, device_type='android')
+        return list(devices.values_list("registration_id", flat=True))
+
+    @property
+    def ios_devices(self):
+        """Return a list of Registration IDs for the user's android devices"""
+        # Note: if the user has no devices, creating a GCMMessage through
+        # the manager (GCMMessage.objects.create) will fail.
+        devices = GCMDevice.objects.filter(user=self.user, device_type='ios')
         return list(devices.values_list("registration_id", flat=True))
 
     def _checkin(self, obj):
@@ -319,7 +329,7 @@ class GCMMessage(models.Model):
         return json.dumps(self.content)
 
     def send(self, collapse_key=None, delay_while_idle=False, time_to_live=None):
-        """Deliver this message to Google Cloud Messaging.
+        """Deliver this message to Google Cloud Messaging (both iOS & Android).
 
         This method accepts the following options as keyword arguments; These
         are options available thru pushjack and are just passed along.
@@ -332,7 +342,6 @@ class GCMMessage(models.Model):
 
         """
         logging.info("Sending GCMMessage, id = %s", self.id)
-        client = self._get_gcm_client()
         options = {
             'delay_while_idle': delay_while_idle,
             'time_to_live': time_to_live,
@@ -340,9 +349,27 @@ class GCMMessage(models.Model):
         }
         if collapse_key is not None:
             options['collapse_key'] = collapse_key
-        resp = client.send(self.registered_devices, self.content_json, **options)
-        self._handle_gcm_response(resp)
-        return resp
+
+        # Send to Android devices (if any)
+        android_ids = self.android_devices
+        if len(android_ids):
+            client = self._get_gcm_client(recipient_type='android')
+            resp = client.send(self.android_ids, self.content_json, **options)
+            self._handle_gcm_response(resp)
+            self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
+
+        # Send to iOS devices (if any)
+        ios_ids = self.ios_devices
+        if len(ios_ids):
+            options['low_priority'] = False  # always use priority=high for ios
+            client = self._get_gcm_client(recipient_type='ios')
+            resp = client.send(self.ios_ids, self.content_json, **options)
+            self._handle_gcm_response(resp)
+            self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
+
+        self._set_expiration()  # Now set an expiration date, if applicable.
+        self.save()  # the above methods change state, so we need to save.
+        return True
 
     def _set_expiration(self, days=7):
         """Set the date/time at which this object should be expired (i.e.
@@ -396,22 +423,24 @@ class GCMMessage(models.Model):
            those (GCMDevice) objects from the system.
 
         """
+        # Update the http response info from GCM
         report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
-        report = ""
-        # Save the http response info
         for r in resp.responses:  # Should only be 1 item.
-            report += report_pattern.format(r.status_code, r.reason, r.url)
-            self.response_code = r.status_code
-        self.response_text = report
+            self.response_text += report_pattern.format(
+                r.status_code,
+                r.reason,
+                r.url
+            )
+            self.response_code = r.status_code  # NOTE: not really accurage :/
 
         # Save all the registration_ids that GCM thinks it delivered to
         rids = []
         for msg in resp.messages:  # this is a list of dicts
             rids.extend(msg.get("registration_ids", []))
-        self.registration_ids = "\n".join(rids)
+        self.registration_ids += "\n".join(rids)
 
         # Save the whole chunk of response data
-        self.response_data = resp.data
+        self.response_data.update(resp.data)
 
         # Inspect the response data for a failure message; response data
         # may look like this, and may have both failures and successes.
@@ -437,11 +466,7 @@ class GCMMessage(models.Model):
                 for result in item.get('results', []):
                     if 'error' in result:
                         msg += result['error']
-            self.response_text = msg
-
-        self._set_expiration()  # Now set an expiration date, if applicable.
-        self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
-        self.save()
+            self.response_text += msg
 
     def get_daily_message_limit(self):
         try:
