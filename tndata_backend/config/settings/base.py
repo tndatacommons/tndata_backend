@@ -26,6 +26,7 @@ be set prior to running the project:
 * HAYSTACK_URL -- connection to haystack; e.g. "http://127.0.0.1:9200/"
 * HAYSTACK_INDEX_NAME -- index name to use for haystack
 * GCM_API_KEY -- API key for google cloud messaging
+* GCM_IOS_API_KEY -- API key for google cloud messaging (for iOS)
 * DB_NAME -- Database name
 * DB_USER -- Database user
 * DB_PASSWORD -- database password
@@ -197,6 +198,7 @@ HAYSTACK_CONNECTIONS = {
 # Settings for Google Cloud Messaging.
 GCM = {
     'API_KEY': os.environ.get('GCM_API_KEY'),
+    'IOS_API_KEY': os.environ.get('GCM_IOS_API_KEY'),
 }
 
 AUTHENTICATION_BACKENDS = (

@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -251,7 +252,15 @@ class GCMMessage(models.Model):
 
     def _get_gcm_client(self, recipient_type=None):
         if recipient_type == "ios":
-            return GCMClient(api_key=GCM['IOS_API_KEY'])  # TODO: Add to settings.
+            try:
+                key = GCM['IOS_API_KEY']
+                assert key is not None
+                return GCMClient(api_key=key)
+            except (KeyError, AssertionError):
+                raise ImproperlyConfigured(
+                    "The IOS_API_KEY must be defined in order to deliver "
+                    "push notifications to iOS devices"
+                )
         return GCMClient(api_key=GCM['API_KEY'])
 
     @property
@@ -354,7 +363,7 @@ class GCMMessage(models.Model):
         android_ids = self.android_devices
         if len(android_ids):
             client = self._get_gcm_client(recipient_type='android')
-            resp = client.send(self.android_ids, self.content_json, **options)
+            resp = client.send(android_ids, self.content_json, **options)
             self._handle_gcm_response(resp)
             self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
 
@@ -363,7 +372,7 @@ class GCMMessage(models.Model):
         if len(ios_ids):
             options['low_priority'] = False  # always use priority=high for ios
             client = self._get_gcm_client(recipient_type='ios')
-            resp = client.send(self.ios_ids, self.content_json, **options)
+            resp = client.send(ios_ids, self.content_json, **options)
             self._handle_gcm_response(resp)
             self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
 

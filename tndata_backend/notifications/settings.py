@@ -11,6 +11,7 @@ gcm_settings = getattr(project_settings, 'GCM', {})
 
 GCM = {
     'API_KEY': gcm_settings.get('API_KEY', None),
+    'IOS_API_KEY': gcm_settings.get('IOS_API_KEY', None),
 }
 
 if GCM['API_KEY'] is None:
