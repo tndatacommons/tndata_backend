@@ -1902,6 +1902,13 @@ def report_actions(request):
         actions = actions.filter(text_len__gt=max_len).select_related('behavior')
         context['actions'] = actions.order_by('text_len')
         context['subreport_title'] = "Long Notification Text"
+    elif subreport == "links":  # description / more_info contains URLs
+        context['actions'] = actions = actions.filter(
+            Q(description__icontains='http') |
+            Q(more_info__icontains='http')
+        )
+        context['subreport_title'] = "Containing Links"
+        context['len_options'] = []
     return render(request, 'goals/report_actions.html', context)
 
 
