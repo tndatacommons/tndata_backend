@@ -176,7 +176,7 @@ class ArrayFieldListFilter(admin.SimpleListFilter):
 
 class CategoryListFilter(admin.SimpleListFilter):
     """Admin Filter that lists categories in alpha-order by title."""
-    title = "By Category"
+    title = "Category"
     parameter_name = 'category'
 
     def lookups(self, request, model_admin):
@@ -376,6 +376,50 @@ class ActionCategoryListFilter(CategoryListFilter):
         return queryset
 
 
+class ActionTriggerListFilter(admin.SimpleListFilter):
+    title = "Trigger"
+    parameter_name = 'trigger'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('dynamic', 'Dynamic'),
+            ('time', 'Time of Day Only'),
+            ('freq', 'Frequency Only'),
+            ('advanced', 'Advanced Only'),
+            ('none', 'No Trigger'),
+            # ('time', 'Dynamic Time + Advanced'),
+            # ('freq', 'Dynamic Frequency + Advanced')
+        )
+
+    def queryset(self, request, queryset):
+        lookup = self.value()
+        if lookup == 'dynamic':
+            queryset = queryset.filter(
+                default_trigger__time_of_day__isnull=False,
+                default_trigger__frequency__isnull=False,
+            )
+        elif lookup == 'advanced':
+            queryset = queryset.filter(
+                default_trigger__time_of_day__isnull=True,
+                default_trigger__frequency__isnull=True,
+            )
+        elif lookup == 'time':
+            queryset = queryset.filter(
+                default_trigger__time_of_day__isnull=False,
+                default_trigger__frequency__isnull=True,
+            )
+        elif lookup == 'freq':
+            queryset = queryset.filter(
+                default_trigger__time_of_day__isnull=True,
+                default_trigger__frequency__isnull=False,
+            )
+        elif lookup == 'none':
+            queryset = queryset.filter(
+                default_trigger__isnull=True,
+            )
+        return queryset
+
+
 class ActionAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'sequence_order', 'notification_text', 'state', 'action_type',
@@ -386,7 +430,8 @@ class ActionAdmin(ContentWorkflowAdmin):
         'notification_text', 'behavior__title',
     ]
     list_filter = (
-        'state', 'bucket', 'action_type', 'priority', ActionCategoryListFilter
+        'state', ActionTriggerListFilter, 'action_type', 'priority',
+        ActionCategoryListFilter,
     )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('behavior', 'default_trigger', 'updated_by', 'created_by')
