@@ -449,8 +449,14 @@ class GCMMessage(models.Model):
                 rids.add(rid)
         self.registration_ids = "\n".join(rids)
 
-        # Save the whole chunk of response data
-        self.response_data[request_type] = resp.data
+        # Argh. I changed how we save things in `response_data`, but it's
+        # possible that may be an existing list instead of a dict. If so,
+        # i need to update the original data:
+        if isinstance(self.response_data, list):
+            self.response_data = {request_type: self.response_data}
+        else:
+            # Save the whole chunk of response data
+            self.response_data[request_type] = resp.data
 
         # Inspect the response data for a failure message; response data
         # may look like this, and may have both failures and successes.
