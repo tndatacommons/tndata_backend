@@ -1866,7 +1866,17 @@ def report_authors(request):
 
 @user_passes_test(staff_required, login_url='/')
 def report_actions(request):
-    """Information about our Action content."""
+    """Information about our Action content.
+
+    This view contains code for several "sub reports". They are:
+
+    - notif: List actions with "long" notifictation_text
+    - desc: List actions with "long" description text
+    - links: List actions whose more_info/descriptions contain links
+    - triggers: Filter actions based on their default_triggers (whether they're
+      dynamic, contain advanced options, or some combination of both).
+
+    """
     subreport = request.GET.get('sub', None)
     max_len = int(request.GET.get('len', 200))
     valid_options = [200, 300, 400, 600, 800, 1000]
@@ -1886,7 +1896,6 @@ def report_actions(request):
         'len_options': valid_options,
         'subreport': subreport,
     }
-
     for state in ['draft', 'published', 'pending-review', 'declined']:
         key = "{}_count".format(state.replace('-', ''))
         data = {key: actions.filter(state=state).count()}
@@ -1909,6 +1918,47 @@ def report_actions(request):
         )
         context['subreport_title'] = "Containing Links"
         context['len_options'] = []
+    elif subreport == "triggers" and request.GET.get('trigger') == 'dynamic':
+        # List dynamic triggers
+        context['actions'] = actions.filter(
+            default_trigger__time_of_day__isnull=False,
+            default_trigger__frequency__isnull=False,
+        )
+        context['subreport_title'] = "Trigger options"
+        context['len_options'] = []
+        context['trigger'] = 'dynamic'
+    elif subreport == "triggers" and request.GET.get('trigger') == 'advanced':
+        context['actions'] = actions.filter(
+            default_trigger__time_of_day__isnull=True,
+            default_trigger__frequency__isnull=True,
+        )
+        context['subreport_title'] = "Trigger options"
+        context['len_options'] = []
+        context['trigger'] = 'advanced'
+    elif subreport == "triggers" and request.GET.get('trigger') == 'time':
+        context['actions'] = actions.filter(
+            default_trigger__time_of_day__isnull=False,
+            default_trigger__frequency__isnull=True,
+        )
+        context['subreport_title'] = "Trigger options"
+        context['len_options'] = []
+        context['trigger'] = 'time'
+    elif subreport == "triggers" and request.GET.get('trigger') == 'freq':
+        context['actions'] = actions.filter(
+            default_trigger__time_of_day__isnull=True,
+            default_trigger__frequency__isnull=False,
+        )
+        context['subreport_title'] = "Trigger options"
+        context['len_options'] = []
+        context['trigger'] = 'freq'
+    elif subreport == "triggers" and request.GET.get('trigger') == 'none':
+        context['actions'] = actions.filter(
+            default_trigger__isnull=True,
+        )
+        context['subreport_title'] = "Trigger options"
+        context['len_options'] = []
+        context['trigger'] = 'none'
+
     return render(request, 'goals/report_actions.html', context)
 
 
