@@ -27,7 +27,7 @@
 
 {% block content %}
 <div class="row">
-  <div class="larg-12 columns">
+  <div class="large-12 columns">
     <h1>Notifications <small>{{ total }} total</small></h1>
     <p class="lead">Information about our Notification (aka Action) content.</p>
   </div>
@@ -48,14 +48,42 @@
       <li><a href="?sub=links">Notifications containing links</a>.<br/>
         List  notifications whose <code>description</code> or
         <code>more info</code> fields contain links.
-     </li>
+      </li>
+      <li><a href="?sub=triggers">Dynamic vs. Advanced Triggers</a>.<br/>
+        List  notifications based on their default trigger settings. Click this
+        report to see additional search options.
     </ul>
 
-    {% if actions %}
+    {% if subreport and actions %}
     <h3>
       {{ subreport_title }}
       <small>{{ actions.count }} notifications.</small>
     </h3>
+    {% endif %}
+
+    {% if subreport == "triggers" %}
+      <form method="get" class="panel">
+      <p>List actions whose default trigger matches one of the following criteria:</p>
+      <div class="row">
+        <div class="small-8 columns">
+          <input type="hidden" name="sub" value="{{subreport}}"/>
+          <select name='trigger'>
+            <option value=""> ----- </option>
+            <option value="dynamic" {% if trigger == "dynamic"%} selected="selected"{% endif %}>Dynamic Triggers</option>
+            <option value="advanced" {% if trigger == "advanced"%} selected="selected"{% endif %}>Triggers with Advanced options</option>
+            <option value="time" {% if trigger == "time"%} selected="selected"{% endif %}>Triggers with Time of Day and/or advanced</option>
+            <option value="freq" {% if trigger == "freq"%} selected="selected"{% endif %}>Triggers with Frequency and/or advanced</option>
+            <option value="none" {% if trigger == "none"%} selected="selected"{% endif %}>No Default Trigger</option>
+          </select>
+        </div>
+        <div class="small-4 columns">
+          <button type="submit" id="triggerSearch" class="button">Search</button>
+        </div> {# end .columns #}
+      </div> {# end .row #}
+      </form>
+    {% endif %}
+
+    {% if subreport and subreport != "triggers" and actions|length == 0%}
     <p>View content longer than:
       {% for opt in len_options %}
         {% if opt == max_len %}
@@ -67,11 +95,19 @@
       {% endfor %}
       characters.
     </p>
+    {% endif %}
+
+    {% if actions %}
     <table>
       <thead>
         <tr>
           <th>Title</th>
-          <th>Text Length</th>
+          {% if subreport == "triggers" %}
+            <th>Edit</th>
+            <th>Trigger</th>
+          {% else %}
+            <th>Text Length</th>
+          {% endif %}
           <th>Behavior</th>
         </tr>
       </thead>
@@ -81,15 +117,26 @@
         <tr>
           <td>
             <a href="{{ action.get_absolute_url }}">{{ action }}</a>
-            <i data-tooltip aria-haspopup="true"
-               {% if subreport == "desc" %}
-                title="{{ action.description }}"
-               {% elif subreport == "notif" %}
-                title="{{ action.notification_text }}"
-               {% endif %}
-               class="tip-top fa fa-info-circle"></i>
+            {% if subreport != "triggers" %}
+              <i data-tooltip aria-haspopup="true"
+                 {% if subreport == "desc" %}
+                  title="{{ action.description }}"
+                 {% elif subreport == "notif" %}
+                  title="{{ action.notification_text }}"
+                 {% endif %}
+                 class="tip-top fa fa-info-circle"></i>
+            {% endif %}
           </td>
-          <td>{{ action.text_len }}</td>
+          {% if subreport == "triggers" %}
+            <td><a href="{{ action.get_update_url }}"><i class="fa fa-edit"></i></a></td>
+            <td>
+              <i data-tooltip aria-haspopup="true"
+                 title="{{ action.default_trigger }}"
+                 class="tip-top fa fa-info-circle"></i>
+            </td>
+          {% else %}
+            <td>{{ action.text_len }}</td>
+          {% endif %}
           <td>
             <a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a>
           </td>
@@ -99,10 +146,12 @@
       </tbody>
     </table>
     {% elif subreport == "links" %}
-      <p>There are not Actions whose <code>description</code> or
+      <p class="alert-box info">There are not Actions whose <code>description</code> or
       <code>more_info</code> fields contain links.</p>
-    {% else %}
-      <p>There is no content whose character
+    {% elif subreport == "triggers" %}
+      <p class="alert-box info">We couldn't find any actions whose default trigger matched that criteria.</p>
+    {% elif subreport  %}
+      <p class="alert-box info">There is no content whose character
          count is greater than {{ max_len }}.</p>
       <p>Find content longer than:
         {% for opt in len_options %}
@@ -174,4 +223,17 @@
   </div> {# end .columns #}
 
 </div> {# end .rows #}
+{% endblock %}
+
+
+{% block bodyjs %}
+  {{ block.super }}
+  <script type="text/javascript">
+  $(document).ready(function() {
+    $("#triggerSearch").click(function() {
+      console.log("Running pleaseWait");
+      $("#triggerSearch").html('<i class="fa fa-spinner fa-spin"></i> <span class="sr-only">Loading...</span>');
+    });
+  });
+  </script>
 {% endblock %}
