@@ -15,7 +15,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from jsonfield import JSONField
-from pushjack import GCMClient
+from pushjack import APNSClient, APNSSandboxClient, GCMClient
 from pushjack.exceptions import GCMInvalidRegistrationError
 
 from goals.settings import (
@@ -26,8 +26,9 @@ from redis_metrics import metric
 
 from . import queue
 from . managers import GCMMessageManager
-from . settings import GCM
+from . settings import GCM, APNS_CERT_PATH
 from . signals import notification_snoozed
+
 
 logger = logging.getLogger("loggly_logs")
 
@@ -263,6 +264,17 @@ class GCMMessage(models.Model):
                 )
         return GCMClient(api_key=GCM['API_KEY'])
 
+    def _get_apns_client(self):
+        options = {
+            'certificate': APNS_CERT_PATH,
+            'default_error_timeout': 10,
+            'default_expiration_offset': 2592000,
+            'default_batch_size': 100
+        }
+        if settings.DEBUG or settings.STAGING:
+            return APNSSandboxClient(**options)
+        return APNSClient(**options)
+
     @property
     def android_devices(self):
         """Return a list of Registration IDs for the user's android devices"""
@@ -370,11 +382,32 @@ class GCMMessage(models.Model):
         # Send to iOS devices (if any)
         ios_ids = self.ios_devices
         if len(ios_ids):
-            options['low_priority'] = False  # always use priority=high for ios
-            client = self._get_gcm_client(recipient_type='ios')
-            resp = client.send(ios_ids, self.content_json, **options)
-            self._handle_gcm_response(resp, request_type='ios')
-            self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
+            # ... Via GCM
+            # options['low_priority'] = False  # always use priority=high for ios
+            # client = self._get_gcm_client(recipient_type='ios')
+            # resp = client.send(ios_ids, self.content_json, **options)
+            # self._handle_gcm_response(resp, request_type='ios')
+            # self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
+
+            # ... Via APNS
+            client = self._get_apns_client()
+            payload = self.content  # send as extra, w/o title or message
+            resp = client.send(
+                ios_ids,
+                payload.pop('message', ''),
+                title=payload.pop('title', ''),
+                # content_available=True,
+                # title='Title',
+                # title_loc_key='t_loc_key',
+                # title_loc_args='t_loc_args',
+                # action_loc_key='a_loc_key',
+                # loc_key='loc_key',
+                # launch_image='path/to/image.jpg',
+                extra=payload
+            )
+            self._handle_apns_response(resp)
+            self._remove_invalid_apns_devices(client.get_expired_tokens())
+            client.close()
 
         self._set_expiration()  # Now set an expiration date, if applicable.
         self.save()  # the above methods change state, so we need to save.
@@ -394,6 +427,11 @@ class GCMMessage(models.Model):
             self.expire_on = timezone.now() + timedelta(days=days)
             metric('GCM Message Sent', category='Notifications')
 
+    def _remove_invalid_apns_devices(self, tokens):
+        """Remove the GCMDevices whose registration_id matches any of the
+        given tokens (these are no longer valid)."""
+        GCMDevice.objects.filter(registration_id__in=tokens).delete()
+
     def _remove_invalid_gcm_devices(self, errors):
         """Given a list of errors from GCM, look for any instances of
         `GCMInvalidRegistrationError`, and delete any matching `GCMDevice`
@@ -410,6 +448,43 @@ class GCMMessage(models.Model):
         ]
         if len(identifiers) > 0:  # Don't hit the DB if we don't have to.
             GCMDevice.objects.filter(registration_id__in=identifiers).delete()
+
+    def _handle_apns_response(self, resp):
+        # Update the http response info from GCM
+        # report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
+        # for r in resp.responses:  # Should only be 1 item.
+            # self.response_text += report_pattern.format(
+                # r.status_code,
+                # r.reason,
+                # r.url
+            # )
+            # self.response_code = r.status_code  # NOTE: not really accurage :/
+
+        # Save all the tokens to which APNS delivered
+        self.registration_ids += "\n".join(resp.tokens)
+
+        if isinstance(self.response_data, list):
+            self.response_data = {'apns': resp.token_errors}
+        else:
+            # Save the whole chunk of response data
+            self.response_data['apns'] = resp.token_errors
+
+        # Inspect the response data for a failure message; response data
+        # may look like this, and may have both failures and successes.
+        # If we have any success, consider this message succesfully sent
+        if any(resp.successes):
+            self.success = True
+        elif any(resp.failures):
+            self.success = False
+
+        if any(resp.errors):
+            for err in resp.errors:
+                msg = "Code: {}\nDescription: {}\nIdentifier: {}\n----\n"
+                self.response_text += msg.format(
+                    err.code,
+                    err.description,
+                    err.identifier
+                )
 
     def _handle_gcm_response(self, resp, request_type='android'):
         """This method handles the http response & data from GCM (after sending
