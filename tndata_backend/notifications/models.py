@@ -450,16 +450,6 @@ class GCMMessage(models.Model):
             GCMDevice.objects.filter(registration_id__in=identifiers).delete()
 
     def _handle_apns_response(self, resp):
-        # Update the http response info from GCM
-        # report_pattern = "Status Code: {0}\nReason: {1}\nURL: {2}\n----\n"
-        # for r in resp.responses:  # Should only be 1 item.
-            # self.response_text += report_pattern.format(
-                # r.status_code,
-                # r.reason,
-                # r.url
-            # )
-            # self.response_code = r.status_code  # NOTE: not really accurage :/
-
         # Save all the tokens to which APNS delivered
         self.registration_ids += "\n".join(resp.tokens)
 
