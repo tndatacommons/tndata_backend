@@ -27,6 +27,7 @@ be set prior to running the project:
 * HAYSTACK_INDEX_NAME -- index name to use for haystack
 * GCM_API_KEY -- API key for google cloud messaging
 * GCM_IOS_API_KEY -- API key for google cloud messaging (for iOS)
+* APNS_CERT_PATH  -- Path the the Apple Certificate for APNS
 * DB_NAME -- Database name
 * DB_USER -- Database user
 * DB_PASSWORD -- database password
@@ -200,6 +201,9 @@ GCM = {
     'API_KEY': os.environ.get('GCM_API_KEY'),
     'IOS_API_KEY': os.environ.get('GCM_IOS_API_KEY'),
 }
+
+# Settings for APNS
+APNS_CERT_PATH = os.environ.get('APNS_CERT_PATH')
 
 AUTHENTICATION_BACKENDS = (
     'utils.backends.EmailAuthenticationBackend',
