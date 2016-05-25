@@ -79,7 +79,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     exclude = ('response_text', 'registration_ids', 'response_data')
     readonly_fields = (
         'pretty_payload',
-        'success', 'response_text', 'response_code', 'gcm_response',
+        'success', 'response_text', 'response_code', 'response_messages',
         'pretty_response_data', 'delivered_to', 'android_devices', 'ios_devices',
         'gcm_diagnostics', 'created_on', 'expire_on', 'queue_id',
     )
@@ -90,7 +90,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
         """pretty-printed version of the `content_json` attribute delivered as
         a payload to GCM."""
         return mark_safe("<br/><pre>{0}</pre>".format(pformat(obj.content)))
-    pretty_payload.short_description = "GCM Payload"
+    pretty_payload.short_description = "Message Payload"
     pretty_payload.allow_tags = True
 
     def gcm_diagnostics(self, obj):
@@ -114,7 +114,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
         """pretty-printed response data"""
         data = pformat(obj.response_data)
         return mark_safe("<br/><pre>{0}</pre>".format(data))
-    pretty_response_data.short_description = "GCM Response Data"
+    pretty_response_data.short_description = "Response Data"
     pretty_response_data.allow_tags = True
 
     def delivered_to(self, obj):
@@ -142,11 +142,11 @@ class GCMMessageAdmin(admin.ModelAdmin):
     android_devices.short_description = "Android Devices"
     android_devices.allow_tags = True
 
-    def gcm_response(self, obj):
+    def response_messages(self, obj):
         """Formatting for the response_text that GCM sets."""
         return mark_safe("<br/><pre>{0}</pre>".format(obj.response_text))
-    gcm_response.short_description = "GCM Response"
-    gcm_response.allow_tags = True
+    response_messages.short_description = "GCM/APNS Responses"
+    response_messages.allow_tags = True
 
     def message_teaser(self, obj):
         return "{0}...".format(obj.message[:32])
@@ -160,7 +160,7 @@ class GCMMessageAdmin(admin.ModelAdmin):
     def send_notification(self, request, queryset):
         for obj in queryset:
             obj.send()
-    send_notification.short_description = "Send Message via GCM"
+    send_notification.short_description = "Send Push Notification"
 
     def expire_messages(self, request, queryset):
         queryset = queryset.filter(expire_on__lte=timezone.now())
