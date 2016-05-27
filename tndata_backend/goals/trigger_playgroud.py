@@ -4,13 +4,95 @@ triggers; it's faster than running unit tests and lets me see a chunk of
 dates all at once.
 
 """
+import re
+
 from datetime import date, datetime, time
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from goals.models import Action, Trigger
+from goals.models import Action, Category, Trigger
+
+
+def parse_notification_text(action=None):
+    # Update all the library's content, parsing the date/teim from the
+    # notification_text, and including an updated dateteim string in the
+    # external_resource field (and changeing external_resource_name)
+
+    if action is None:
+        cat = Category.objects.get(pk=44)  # Explore Memphis...
+        actions = Action.objects.filter(behavior__goals__categories=cat)
+        actions = actions.distinct()
+        print("Found: {} Actions".format(actions.count()))
+    else:
+        actions = [action]
+
+    count = 0
+    for action in actions:
+        # WAT! Some of these have a year of 2015
+        if '2015, ' in action.notification_text:
+            action.notification_text = action.notification_text.replace("2015, ", '')
+        # Possible notification patterns
+        # July 26, 10:15 am
+        # June 10, 10 am
+        patterns = [
+            ('full', r'[A-Z][a-z]+ \d+, \d+:\d+ *[am|pm]*'),
+            ('hours-only', r'[A-Z][a-z]+ \d+, \d+ *[am|pm]*'),
+        ]
+        matched = False  # did any of the patterns match?
+        for name, pattern in patterns:
+            match = re.search(pattern, action.notification_text)
+            if match:
+                # include the current year & convert to a datetime.
+                datestring = match.group().replace(',', ', 2016')
+
+                datefmt = '%B %d, %Y %I:%M %p'
+                if name == 'hours-only':
+                    datefmt = '%B %d, %Y %I %p'
+
+                try:
+                    date = datetime.strptime(datestring, datefmt)
+                    # print("'{}' -> {} (using format '{}')".format(
+                        # datestring, date, datefmt))
+
+                    action.external_resource_name = "Add to calendar"
+                    action.external_resource = date.strftime("%Y-%m-%d %H:%M:00")
+                    action.save()
+                    count += 1
+                    matched = True
+                    break;  # dont try any other patterns.
+                except:
+                    print("FAIL: action={}, '{}', with format: '{}'".format(
+                        action.id, datestring, datefmt))
+
+        if not matched:
+            print("NO MATCH: {}".format(action.notification_text))
+            # THESE were not supposed to be part of the library?
+#            extraneous = [
+#                'You can do this!',
+#                'What does success look like?',
+#                'Why do you want this?',
+#                'You’re awesome!',
+#                'Be proud of yourself!',
+#                "What's in it for you?",
+#                "How will you do it?",
+#                "Think how you'll feel.",
+#                "Sometimes life gets in the way.",
+#                "Keep going!",
+#                "How will you do this today?",
+#                "Why do you want it?",
+#                "Be committed.",
+#                "What got in the way?",
+#                "It’s a process.",
+#                "One step at a time.",
+#                "Make some time for this today.",
+#                "You've got this.",
+#                "Look how far you've come!",
+#            ]
+#            if action.notification_text in extraneous:
+#                action.delete()
+    print("Updated {}.".format(count))
 
 
 def tzdt(*args, **kwargs):
