@@ -1,10 +1,18 @@
 from collections import defaultdict
 from datetime import time, timedelta
+
+from django.conf import settings
 from django.utils import timezone
 
 import pytz
 
 from .user_utils import to_utc
+
+
+def format_datetime(value):
+    """Given a datetime object, format it using the datetime format specified
+    for djagno rest framework."""
+    return value.strftime(settings.REST_FRAMEWORK['DATETIME_FORMAT'])
 
 
 def timezone_lookup(tz):
