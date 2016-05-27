@@ -119,10 +119,9 @@ class ActionSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'behavior', 'behavior_title', 'behavior_description',
             'sequence_order', 'title', 'description', 'html_description',
-            'more_info', 'html_more_info',
-            'external_resource', 'external_resource_name',
-            'notification_text', 'icon_url',
-            'object_type',
+            'more_info', 'html_more_info', 'external_resource',
+            'external_resource_name', 'external_resource_type',
+            'notification_text', 'icon_url', 'object_type',
         )
 
 
