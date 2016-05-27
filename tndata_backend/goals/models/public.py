@@ -7,6 +7,7 @@ Behavior content. They're organized as follows:
 Actions are the things we want to help people to do.
 
 """
+import re
 from collections import defaultdict
 
 import django.dispatch
@@ -1014,6 +1015,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         (HIGH, "High"),
     )
 
+    # Types for External Resoruces
+    EXTERNAL_RESOURCE_TYPES = (
+        ('link', 'Link'),
+        ('phone', 'Phone Number'),
+        ('datetime', 'Date Type'),
+    )
+
     # URLMixin attributes
     urls_fields = ['pk', 'title_slug']
     urls_app_namespace = "goals"
@@ -1079,6 +1087,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         max_length=256,
         help_text=("A human-friendly name for your external resource. This is "
                    "especially helpful for web links.")
+    )
+    external_resource_type = models.CharField(
+        blank=True,
+        max_length=32,
+        choices=EXTERNAL_RESOURCE_TYPES,
+        help_text=("An internally-used field that makes it easier for client "
+                   "apps to determine how to handle the external_resource data.")
     )
     notification_text = models.CharField(
         max_length=256,
@@ -1209,6 +1224,27 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             srs = TriggerSerializer(self.default_trigger)
             self.serialized_default_trigger = srs.data
 
+    def _set_external_resource_type(self):
+        """Set the `external_resource_type` field based on the data detected in
+        the `external_resource` field."""
+        resource = self.external_resource.strip()
+        self.external_resource = resource
+
+        phone_pattern = r'\d\d\d-'
+        datetime_pattern = r'\d\d\d\d-\d\d-\d\d \d\d:\d\d:\d\d'
+
+        # Phone Numbers
+        if resource and re.match(phone_pattern, resource):
+            self.external_resource_type = 'phone'
+
+        # Links
+        elif resource and resource.startswith('http'):
+            self.external_resource_type = 'link'
+
+        # Specific Datetimes
+        elif resource and re.match(datetime_pattern, resource):
+            self.external_resource_type = 'datetime'
+
     def save(self, *args, **kwargs):
         """After saving an Action, we remove any stale GCM Notifications that
         were associated with the action, IF any of the fields used to generate
@@ -1219,6 +1255,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self._set_bucket()
         self._set_notification_text()
         self._serialize_default_trigger()
+        self._set_external_resource_type()
         super().save(*args, **kwargs)
         self.remove_queued_messages()
 
