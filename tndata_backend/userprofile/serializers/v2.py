@@ -30,12 +30,14 @@ from .v1 import (  # NOQA
 )
 from utils import user_utils
 from utils.decorators import cached_method
+from utils.dateutils import format_datetime
 from utils.serializers import ObjectTypeModelSerializer
 
 
 class SimpleProfileSerializer(ObjectTypeModelSerializer):
 
     object_type = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = models.UserProfile
         fields = (
@@ -182,7 +184,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                     'goal': primary_goal.title,
                     'category_color': primary_category.color,
                     'category_id': primary_category.id,
-                    'trigger': "{}".format(ua.next_reminder),
+                    'trigger': "{}".format(format_datetime(ua.next_reminder)),
                     'type': 'useraction',
                     'object_type': 'upcoming_item',
                 })
@@ -202,7 +204,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                     'goal': ca.customgoal.title,
                     'category_color': '#176CC4',
                     'category_id': '-1',
-                    'trigger': "{}".format(ca.next_reminder),
+                    'trigger': "{}".format(format_datetime(ca.next_reminder)),
                     'type': 'customaction',
                     'object_type': 'upcoming_item',
                 })
