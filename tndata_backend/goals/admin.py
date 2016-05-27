@@ -431,7 +431,7 @@ class ActionAdmin(ContentWorkflowAdmin):
     ]
     list_filter = (
         'state', ActionTriggerListFilter, 'action_type', 'priority',
-        ActionCategoryListFilter,
+        'external_resource_type', ActionCategoryListFilter,
     )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('behavior', 'default_trigger', 'updated_by', 'created_by')
