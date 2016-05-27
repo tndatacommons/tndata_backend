@@ -1019,7 +1019,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     EXTERNAL_RESOURCE_TYPES = (
         ('link', 'Link'),
         ('phone', 'Phone Number'),
-        ('datetime', 'Date Type'),
+        ('datetime', 'Date/Time'),
     )
 
     # URLMixin attributes

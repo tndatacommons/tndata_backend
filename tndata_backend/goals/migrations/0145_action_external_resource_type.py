@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='action',
             name='external_resource_type',
-            field=models.CharField(blank=True, choices=[('link', 'Link'), ('phone', 'Phone Number'), ('datetime', 'Date Type')], help_text='An internally-used field that makes it easier for client apps to determine how to handle the external_resource data.', max_length=32),
+            field=models.CharField(help_text='An internally-used field that makes it easier for client apps to determine how to handle the external_resource data.', max_length=32, choices=[('link', 'Link'), ('phone', 'Phone Number'), ('datetime', 'Date/Time')], blank=True),
         ),
     ]
