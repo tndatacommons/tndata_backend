@@ -313,6 +313,11 @@ urlpatterns = [
         name='report-authors'
     ),
     url(
+        r'^reports/engagement/$',
+        views.report_engagement,
+        name='report-engagement'
+    ),
+    url(
         r'^reports/$',
         views.ReportsView.as_view(),
         name='reports'

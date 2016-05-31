@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import user_passes_test
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Q, Sum
 from django.db.models.functions import Length
 from django.http import (
     HttpResponse, HttpResponseBadRequest, HttpResponseForbidden,
@@ -1960,6 +1960,44 @@ def report_actions(request):
         context['trigger'] = 'none'
 
     return render(request, 'goals/report_actions.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
+def report_engagement(request):
+    """A report on User-engagement in the app.
+
+    Questions:
+
+    - are they checking in?
+    - are they doing anything with notifications?
+    - should we show aggregate data...
+    - or make it searchable by user.
+
+    """
+    since = timezone.now() - timedelta(days=30)  # TODO: ability to change this scale
+
+    dps = DailyProgress.objects.filter(created_on__gte=since, actions_total__gt=0)
+    aggregates = dps.aggregate(
+        Sum('actions_completed'),
+        Sum('actions_snoozed'),
+        Sum('actions_dismissed'),
+    )
+
+    # WANT: count daily values for each interaction, e.g.
+    #   d[2016-05-14] = {'completed': 25, 'snooozed': 10, 'dismissed': 5}
+    #   d[2016-05-15] = {'completed': 25, 'snooozed': 10, 'dismissed': 5}
+
+    # engagement = Counter()
+    # for dp in dps:
+        # dt = dps.created_on.strftime("%Y-%m-%d")
+        # engagement[dt]['snoozed']
+
+    context = {
+        'since': since,
+        'progresses': dps,
+        'aggregates': aggregates,
+    }
+    return render(request, 'goals/report_engagement.html', context)
 
 
 def fake_api(request, option=None):

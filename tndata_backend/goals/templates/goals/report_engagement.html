@@ -1,0 +1,97 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block title %}App Engagement{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+    canvas {
+      display: block;
+      margin: .5em auto;
+      width: 200px;
+      height: 200px;
+    }
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:reports' %}">Reports</a></li>
+  <li class="current">App Engagement</li>
+{% endblock %}
+
+{% block content %}
+<h1>App Engagement <small>for the past 30 days</small></h1>
+
+<div class="row">
+  <div class="large-12 small-12 columns">
+
+    <canvas id="status-counts"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("status-counts").getContext("2d");
+    var data = [
+      {
+        value: {{ aggregates.actions_completed__sum }},
+        color: "#43AC6A",
+        highlight: "#368a55",
+        label: "Completed"
+      },
+      {
+        value: {{ aggregates.actions_snoozed__sum }},
+        color: "#f08a24",
+        highlight: "#cf6e0e",
+        label: "Snoozed"
+      },
+      {
+        value: {{ aggregates.actions_dismissed__sum }},
+        color: "#f04124",
+        highlight: "#cf2a0e",
+        label: "Dismissed"
+      }
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+
+<pre>
+Sum('actions_completed') -- {{ aggregates.actions_completed__sum }}
+Sum('actions_snoozed')  -- {{ aggregates.actions_snoozed__sum }}
+Sum('actions_dismissed') -- {{ aggregates.actions_dismissed__sum }}
+</pre>
+
+<hr/>
+
+    <table>
+    <caption>Daily Progress info ({{ progresses.count }} items since {{ since }})</caption>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Total Actions</th>
+        <th>Completed</th>
+        <th>Snoozed</th>
+        <th>Dismissed</th>
+        <th>Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for dp in progresses %}
+      <tr>
+        <td>{{ dp.user.email|default:"Unkown" }}</td>
+        <td>{{ dp.actions_total }}</td>
+        <td>{{ dp.actions_completed }}</td>
+        <td>{{ dp.actions_snoozed }}</td>
+        <td>{{ dp.actions_dismissed }}</td>
+        <td>{{ dp.updated_on }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div> {# end .columns #}
+</div> {# end .row #}
+<hr/>
+
+{% endblock %}

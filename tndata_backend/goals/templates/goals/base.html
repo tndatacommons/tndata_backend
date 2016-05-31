@@ -124,6 +124,8 @@ ul.action-list li {
           <li><a href="{% url 'goals:report-actions' %}">Notifications</a></li>
           <li><a href="{% url 'goals:report-triggers' %}">Triggers</a></li>
           <li><a href="{% url 'goals:report-authors' %}">Authors</a></li>
+          <li><a href="{% url 'goals:report-engagement' %}">App Engagement</a></li>
+          <li><a href="{% url 'userprofile:report' %}">Users</a></li>
         </ul>
       </li>
       {% if user.is_staff %}
