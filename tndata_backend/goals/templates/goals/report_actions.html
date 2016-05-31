@@ -102,8 +102,8 @@
       <thead>
         <tr>
           <th>Title</th>
+          <th>Edit</th>
           {% if subreport == "triggers" %}
-            <th>Edit</th>
             <th>Trigger</th>
           {% else %}
             <th>Text Length</th>
@@ -127,8 +127,8 @@
                  class="tip-top fa fa-info-circle"></i>
             {% endif %}
           </td>
+          <td><a href="{{ action.get_update_url }}"><i class="fa fa-edit"></i></a></td>
           {% if subreport == "triggers" %}
-            <td><a href="{{ action.get_update_url }}"><i class="fa fa-edit"></i></a></td>
             <td>
               <i data-tooltip aria-haspopup="true"
                  title="{{ action.default_trigger }}"
