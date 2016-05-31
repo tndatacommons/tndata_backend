@@ -161,6 +161,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     # 3rd-party apps
     'axes',
+    'badgify',
     'cacheops',
     'corsheaders',
     'crispy_forms',
