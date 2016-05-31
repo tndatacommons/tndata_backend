@@ -402,6 +402,11 @@ class Trigger(models.Model):
             now = timezone.now().astimezone(tz)
             alert_time = self._combine(self.time, now, tz)
 
+        # We may have a specified date + a time of day
+        elif self.trigger_date and self.time_of_day:
+            t = self.dynamic_trigger_time()
+            alert_time = self._combine(t, self.trigger_date, tz)
+
         # Neither Time/Date are specified, but we may have Time of Day (e.g.
         # we've selected time of day + set a recurrence).
         elif self.time_of_day:
