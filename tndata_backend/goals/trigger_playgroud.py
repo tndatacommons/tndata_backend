@@ -6,13 +6,13 @@ dates all at once.
 """
 import re
 
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from goals.models import Action, Category, Trigger
+from goals.models import Action, Category, Trigger, UserAction
 
 
 def parse_notification_text(action=None):
@@ -232,63 +232,88 @@ def print_triggers():
 
 
 
-def dynamic_triggers():
+def test_trigger():
 
-    # PRINT this calendar with: calendar.prmonth(2016, 3)
-    # ---------------------------------------------------
-    #      March 2016
+    # PRINT this calendar with: calendar.prmonth(2016, 8)
+    #
+    # August 2016
     # Mo Tu We Th Fr Sa Su
-    #     1  2  3  4  5  6
-    #  7  8  9 10 11 12 13
-    # 14 15 16 17 18 19 20
-    # 21 22 23 24 25 26 27
-    # 28 29 30 31
+    #  1  2  3  4  5  6  7
+    #  8  9 10 11 12 13 14
+    # 15 16 17 18 19 20 21
+    # 22 23 24 25 26 27 28
+    # 29 30 31
 
     User = get_user_model()
     user = User.objects.get(pk=1)
 
     YEAR = 2016
-    MONTH = 3
+    MONTH = 8
     START_DAY = 1  # Day of month to start on.
-    NUM_DAYS = 10  # Number of days to test.
+    NUM_DAYS = 40  # Number of days to test.
 
-    Trigger.objects.filter(name="testing").delete()
-    t = Trigger.objects.create(
-        user=user,
-        name="testing",
-        frequency="weekly",
-        time_of_day='noonish'
-    )
+    # Existing trigger.
+    #
+    # trigger_date  = datetime.date(2016, 8, 12)
+    # frequency     = None
+    # time_of_day   = 'noonish'
+    # serialized_recurrences --> 'RRULE:FREQ=WEEKLY;COUNT=8;BYDAY=WE,SA'
+    #
+    # Expected dates:
+    # 8 / 13 - SAT
+    # 8 / 17 - WED
+    # 8 / 20 - SAT
+    # 8 / 24 - WED
+    # 8 / 27 - SAT
+    # 8 / 31 - WED
+    # 9 / 3  - SAT
+    # 9 / 7  - WED
+    action = Action.objects.get(pk=2001)
+    ua, _ = UserAction.objects.get_or_create(user=user, action=action)
+
+    def next_t():
+        return ua.trigger.next(user=ua.user)
+
+    # Trigger.objects.filter(name="testing").delete()
+    # t = Trigger.objects.create(
+        # user=user,
+        # name="testing",
+        # frequency="weekly",
+        # time_of_day='noonish'
+    # )
 
     # Time format
     tf = "%a %x %X %Z"
     tf = "%c %Z"
 
-    for i in range(NUM_DAYS):
-        day = START_DAY + i
-        with patch("goals.models.triggers.timezone.now") as now:
+    with patch("goals.models.triggers.timezone.now") as now:
+        start_day = tzdt(YEAR, MONTH, START_DAY, 6, 0)
+
+        for i in range(NUM_DAYS):
+            day = start_day + timedelta(days=i)
+
             # Early morning
-            now.return_value = tzdt(YEAR, MONTH, day, 6, 0)
+            now.return_value = day
             now_string = now().strftime(tf)
-            next_time = t.next()
+            next_time = next_t()
             next_string = next_time.strftime(tf) if next_time else "None"
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
 
             # Late morning
-            now.return_value = tzdt(YEAR, MONTH, day, 11, 0)
+            now.return_value = day.replace(hour=11)
             now_string = now().strftime(tf)
-            next_time = t.next()
+            next_time = next_t()
             next_string = next_time.strftime(tf) if next_time else "None"
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
 
             # Afternoon
-            now.return_value = tzdt(YEAR, MONTH, day, 13, 30)
+            now.return_value = day.replace(hour=13)
             now_string = now().strftime(tf)
-            next_time = t.next()
+            next_time = next_t()
             next_string = next_time.strftime(tf) if next_time else "None"
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
-        print("------------------------------------")
-    t.delete()
+            print("------------------------------------")
+    #t.delete()
 
 
 def debug_useraction_dates(useraction):
