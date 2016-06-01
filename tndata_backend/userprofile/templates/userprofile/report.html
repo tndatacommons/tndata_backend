@@ -1,5 +1,6 @@
 {% extends "goals/base.html" %}
 {% load static from staticfiles %}
+{% load util_tags %}
 
 {% block head %}
   {{ block.super }}
@@ -64,7 +65,33 @@
     <div class="large-6 small-12 columns">
       <h2>Basic Demographics</h2>
 
-      <table>
+      <canvas id="demo-counts"></canvas>
+      <script>
+      // Get the context of the canvas element we want to select
+      var ctx = document.getElementById("demo-counts").getContext("2d");
+      var data = [
+        {
+          value: {{ demographics.female|default:0 }},
+          color: "#FFADFC",
+          highlight: "#FF8DFC",
+          label: "Female"
+        },
+        {
+          value: {{ demographics.male|default:0 }},
+          color: "#7DC0FF",
+          highlight: "#7DA2FF",
+          label: "Male"
+        },
+        {
+          value: {{ demographics.unknown|default:0 }},
+          color: "#e0e0e0",
+          highlight: "#c0c0c0",
+          label: "Unknown"
+        }
+      ]
+      var c = new Chart(ctx).Doughnut(data);
+      </script>
+      <table style="width:100%">
         <tr><th>Total Accounts</th><td>{{total_users}}</td></tr>
         <tr><th>Female</th><td>{{demographics.female}}</td></tr>
         <tr><th>Male</th><td>{{demographics.male}}</td></tr>
@@ -73,7 +100,22 @@
     </div>
     <div class="large-6 small-12 columns">
       <h2>Zipcodes</h2>
-      <table>
+      <canvas id="zip-counts"></canvas>
+      <script>
+      var ctx = document.getElementById("zip-counts").getContext("2d");
+      var data = [
+        {% for zip, count in zipcodes %}
+        {
+          value: {{ count|default:0 }},
+          color: "{% random_color %}",
+          highlight: "#FF5A5E",
+          label: "{{ zip|default:'Unknown' }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+      var c = new Chart(ctx).Doughnut(data);
+      </script>
+      <table style="width:100%">
         {% for zip, count in zipcodes %}
           <tr><th>{{ zip|default:"Unknown" }}</th><td>{{count}}</td></tr>
         {% endfor %}
