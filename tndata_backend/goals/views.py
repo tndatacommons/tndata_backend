@@ -1982,20 +1982,58 @@ def report_engagement(request):
         Sum('actions_snoozed'),
         Sum('actions_dismissed'),
     )
+    # Do we have notification engagement data?
+    has_engagement = all(aggregates.values())
 
-    # WANT: count daily values for each interaction, e.g.
-    #   d[2016-05-14] = {'completed': 25, 'snooozed': 10, 'dismissed': 5}
-    #   d[2016-05-15] = {'completed': 25, 'snooozed': 10, 'dismissed': 5}
+    ca_aggregates = dps.aggregate(
+        Sum('customactions_completed'),
+        Sum('customactions_snoozed'),
+        Sum('customactions_dismissed'),
+    )
+    # Do we have custom notification engagement data?
+    has_ca_engagement = all(ca_aggregates.values())
 
-    # engagement = Counter()
-    # for dp in dps:
-        # dt = dps.created_on.strftime("%Y-%m-%d")
-        # engagement[dt]['snoozed']
+
+    engagement = defaultdict(Counter)
+    if has_engagement:
+        # WANT: count daily values for each interaction, e.g.
+        #   d[2016-05-14] = {'completed': 25, 'snooozed': 10, 'dismissed': 5}
+        #   d[2016-05-15] = {'completed': 25, 'snooozed': 10, 'dismissed': 5}
+        for dp in dps:
+            dt = dp.created_on.strftime("%Y-%m-%d")
+            engagement[dt]['snoozed'] += dp.actions_snoozed
+            engagement[dt]['completed'] += dp.actions_completed
+            engagement[dt]['dismissed'] += dp.actions_dismissed
+        # now convert to a sorted list of tuples
+        # (2016-01-02, snoozed, dismissed, completed)
+        engagement = sorted([
+            (dt, data['snoozed'], data['dismissed'], data['completed'])
+            for dt, data in engagement.items()
+        ])
+
+    # Same as engagement, but for custom actions
+    ca_engagement = defaultdict(Counter)
+    if has_ca_engagement:
+        for dp in dps:
+            dt = dp.created_on.strftime("%Y-%m-%d")
+            ca_engagement[dt]['snoozed'] += dp.customactions_snoozed
+            ca_engagement[dt]['completed'] += dp.customactions_completed
+            ca_engagement[dt]['dismissed'] += dp.customactions_dismissed
+
+        ca_engagement = sorted([
+            (dt, data['snoozed'], data['dismissed'], data['completed'])
+            for dt, data in ca_engagement.items()
+        ])
 
     context = {
         'since': since,
         'progresses': dps,
         'aggregates': aggregates,
+        'ca_aggregates': ca_aggregates,
+        'has_engagement': has_engagement,
+        'engagement': engagement,
+        'has_ca_engagement': has_ca_engagement,
+        'ca_engagement': ca_engagement,
     }
     return render(request, 'goals/report_engagement.html', context)
 

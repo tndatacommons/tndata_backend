@@ -10,10 +10,16 @@
   {{ block.super }}
   <script src="{% static 'js/Chart.min.js' %}"></script>
   <style type="text/css">
-    canvas {
+    #status-counts {
       display: block;
       margin: .5em auto;
       width: 200px;
+      height: 200px;
+    }
+    #engagement-counts {
+      display: block;
+      margin: .5em auto;
+      width: 750px;
       height: 200px;
     }
   </style>
@@ -26,9 +32,15 @@
 
 {% block content %}
 <h1>App Engagement <small>for the past 30 days</small></h1>
+<p class="lead">The following charts show how users are interacting with the app's
+push notifications in aggregate. Do they <em>snooze</em>, <em>dismiss</em>
+or <em>complete</em> the actions that are delivered.</p>
 
+<hr/>
+<h2>Notifications / Actions</h2>
+{% if has_engagement %}
 <div class="row">
-  <div class="large-12 small-12 columns">
+  <div class="large-3 small-12 columns">
 
     <canvas id="status-counts"></canvas>
     <script>
@@ -57,16 +69,185 @@
     var c = new Chart(ctx).Doughnut(data);
     </script>
 
-<pre>
-Sum('actions_completed') -- {{ aggregates.actions_completed__sum }}
-Sum('actions_snoozed')  -- {{ aggregates.actions_snoozed__sum }}
-Sum('actions_dismissed') -- {{ aggregates.actions_dismissed__sum }}
-</pre>
+    <table style="width:100%">
+    <tr><th>Completed</th><td>{{ aggregates.actions_completed__sum }}</td></tr>
+    <tr><th>Snoozed</th><td>{{ aggregates.actions_snoozed__sum }}</td></tr>
+    <tr><th>Dismissed</th><td>{{ aggregates.actions_dismissed__sum }}</td></tr>
+    </table>
+
+  </div> {# end .columns#}
+  <div class="large-9 small-12 columns">
+
+    <canvas id="engagement-counts"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("engagement-counts").getContext("2d");
+    var data = {
+      labels: {{ engagement|jsarray:0|safe }},
+      datasets: [
+          {
+              label: "Snoozed",
+              fillColor: "rgba(240, 138, 36,0.5)",
+              strokeColor: "rgba(240, 138, 36,0.8)",
+              highlightFill: "rgba(240, 138, 36,0.75)",
+              highlightStroke: "rgba(240, 138, 36,1)",
+              data: {{ engagement|jsarray:1 }}
+          },
+          {
+              label: "Dismissed",
+              fillColor: "rgba(240, 65, 36,0.5)",
+              strokeColor: "rgba(240, 65, 36,0.8)",
+              highlightFill: "rgba(240, 65, 36,0.75)",
+              highlightStroke: "rgba(240, 65, 36,1)",
+              data: {{ engagement|jsarray:2 }}
+          },
+          {
+              label: "Completed",
+              fillColor: "rgba(67,172,106,0.5)",
+              strokeColor: "rgba(67,172,106,0.8)",
+              highlightFill: "rgba(67,172,106,0.75)",
+              highlightStroke: "rgba(67,172,106,1)",
+              data: {{ engagement|jsarray:3 }}
+          },
+      ]
+    }
+    var c = new Chart(ctx).Bar(data);
+    </script>
+
+    <table style="width: 100%">
+      <thead>
+      <tr>
+        <th>Date</th><th>Snoozed</th><th>Dismissed</th><th>Completed</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for dt, snoozed, dismissed, completed in engagement %}
+        <tr>
+          <td>{{ dt }}</td>
+          <td>{{ snoozed }}</td>
+          <td>{{ dismissed}}</td>
+          <td>{{ completed}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+  </div> {# end .columns#}
+</div> {# end .row #}
+{% else %}
+  <p class="lead">There is no engagement data available.</p>
+{% endif %}
 
 <hr/>
+<h2>Custom Actions</h2>
+{% if has_ca_engagement %}
+<div class="row">
+  <div class="large-3 small-12 columns">
 
-    <table>
-    <caption>Daily Progress info ({{ progresses.count }} items since {{ since }})</caption>
+    <canvas id="ca-status-counts"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("ca-status-counts").getContext("2d");
+    var data = [
+      {
+        value: {{ ca_aggregates.actions_completed__sum|default:0 }},
+        color: "#43AC6A",
+        highlight: "#368a55",
+        label: "Completed"
+      },
+      {
+        value: {{ ca_aggregates.actions_snoozed__sum|default:0 }},
+        color: "#f08a24",
+        highlight: "#cf6e0e",
+        label: "Snoozed"
+      },
+      {
+        value: {{ ca_aggregates.actions_dismissed__sum|default:0 }},
+        color: "#f04124",
+        highlight: "#cf2a0e",
+        label: "Dismissed"
+      }
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+
+    <table style="width:100%">
+    <tr><th>Completed</th><td>{{ ca_aggregates.actions_completed__sum|default:0 }}</td></tr>
+    <tr><th>Snoozed</th><td>{{ ca_aggregates.actions_snoozed__sum|default:0 }}</td></tr>
+    <tr><th>Dismissed</th><td>{{ ca_aggregates.actions_dismissed__sum|default:0 }}</td></tr>
+    </table>
+
+  </div> {# end .columns#}
+  <div class="large-9 small-12 columns">
+    <canvas id="ca-engagement-counts"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("ca-engagement-counts").getContext("2d");
+    var data = {
+      labels: {{ ca_engagement|jsarray:0|safe }},
+      datasets: [
+          {
+              label: "Snoozed",
+              fillColor: "rgba(240, 138, 36,0.5)",
+              strokeColor: "rgba(240, 138, 36,0.8)",
+              highlightFill: "rgba(240, 138, 36,0.75)",
+              highlightStroke: "rgba(240, 138, 36,1)",
+              data: {{ ca_engagement|jsarray:1 }}
+          },
+          {
+              label: "Dismissed",
+              fillColor: "rgba(240, 65, 36,0.5)",
+              strokeColor: "rgba(240, 65, 36,0.8)",
+              highlightFill: "rgba(240, 65, 36,0.75)",
+              highlightStroke: "rgba(240, 65, 36,1)",
+              data: {{ ca_engagement|jsarray:2 }}
+          },
+          {
+              label: "Completed",
+              fillColor: "rgba(67,172,106,0.5)",
+              strokeColor: "rgba(67,172,106,0.8)",
+              highlightFill: "rgba(67,172,106,0.75)",
+              highlightStroke: "rgba(67,172,106,1)",
+              data: {{ ca_engagement|jsarray:3 }}
+          },
+      ]
+    }
+    var c = new Chart(ctx).Bar(data);
+    </script>
+
+    <table style="width: 100%">
+      <thead>
+      <tr>
+        <th>Date</th><th>Snoozed</th><th>Dismissed</th><th>Completed</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for dt, snoozed, dismissed, completed in ca_engagement %}
+        <tr>
+          <td>{{ dt }}</td>
+          <td>{{ snoozed }}</td>
+          <td>{{ dismissed}}</td>
+          <td>{{ completed}}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div> {# end .columns#}
+</div> {# end .row #}
+{% else %}
+  <p class="lead">There is no engagement data for custom actions.</p>
+{% endif %}
+
+
+<hr/>
+<h2>Raw Daily Progress Data</h2>
+<div class="row">
+  <div class="large-12 small-12 columns">
+    <table class="object-list">
+    <caption>
+      Daily Progress info ({{ progresses.count }} items
+      since {{ since }})
+    </caption>
     <thead>
       <tr>
         <th>User</th>
@@ -74,6 +255,10 @@ Sum('actions_dismissed') -- {{ aggregates.actions_dismissed__sum }}
         <th>Completed</th>
         <th>Snoozed</th>
         <th>Dismissed</th>
+        <th>Total Custom Actions</th>
+        <th>Custom Completed</th>
+        <th>Custom Snoozed</th>
+        <th>Custom Dismissed</th>
         <th>Updated</th>
       </tr>
     </thead>
@@ -85,7 +270,11 @@ Sum('actions_dismissed') -- {{ aggregates.actions_dismissed__sum }}
         <td>{{ dp.actions_completed }}</td>
         <td>{{ dp.actions_snoozed }}</td>
         <td>{{ dp.actions_dismissed }}</td>
-        <td>{{ dp.updated_on }}</td>
+        <td>{{ dp.customactions_total }}</td>
+        <td>{{ dp.customactions_completed }}</td>
+        <td>{{ dp.customactions_snoozed }}</td>
+        <td>{{ dp.customactions_dismissed }}</td>
+        <td>{{ dp.updated_on|timesince }} ago</td>
       </tr>
     {% endfor %}
     </tbody>
