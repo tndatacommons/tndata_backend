@@ -10,6 +10,32 @@ import markdown
 register = template.Library()
 
 
+@register.filter("jsarray", is_safe=True)
+def to_js_array(iterable, index=None):
+    """Convert the given iterable to a JavaScript array.
+
+    For example, if `values = ['foo', 'bar', 'baz']`, the following would yield:
+
+        {{ values|jsarray }} --> '["foo", "bar", "baz"]'
+
+    If the given interable contains nested items, the `index` option will
+    retrieve a single value from that index, e.g.:
+
+        values = [(1, 'foo'), (2, 'bar'), (3, 'baz')]
+
+    then:
+
+        {{ values|jsarray:0 }} --> '[1, 2, 3]'
+        {{ values|jsarray:1 }} --> '["foo", "bar", "baz"]'
+
+    """
+    if len(iterable) == 0:
+        return "[]"
+    if index is not None:
+        iterable = [t[index] for t in iterable]
+    return '{}'.format(iterable)
+
+
 @register.filter("json", is_safe=True)
 def to_json(value):
     """Attempt to convert the primitive value to a json string."""
