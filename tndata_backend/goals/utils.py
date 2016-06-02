@@ -5,7 +5,6 @@ from io import TextIOWrapper
 from django.conf import settings
 from django.core.cache import cache
 
-
 # Import clog if we're in debug otherwise make it a noop
 if settings.DEBUG:
     from clog.clog import clog
@@ -206,3 +205,59 @@ def delete_content(prefix):
     cats.delete()
 
     print("...done.")
+
+
+def delete_boilerplate_actions(boilerplate_category, categories_to_delete):
+    """Delete the Actions whose titles match those in the given
+    `boilerplate_category`. This is a way for us to "undo" our copying of
+    actions into multiple categories (see the `duplicate_actions_into_behaviors`
+    management command).
+
+    * boilerplate_category - The PK for the Category from which actions were
+      copied.
+    * categories_to_delete - A list of category PK's from which these actions
+      will be removed.
+
+    -----
+
+    USAGE: delete_boilerplate_actions(48, [18, 35, 36, 44])
+
+    """
+    from goals.models import Category, Action, UserAction
+
+    total = 0
+    total_cats = 0
+    slugs = []
+
+    try:
+        cat = Category.objects.get(id=boilerplate_category)
+        actions = Action.objects.filter(behavior__goals__categories=cat).distinct()
+        slugs = list(actions.values_list('title_slug', flat=True))
+    except Category.DoesNotExist:
+        err = "Couldn't find the Boilerplate category: {}"
+        print(err.format(boilerplate_category))
+        return False
+
+    for cat_id in categories_to_delete:
+        try:
+            cat = Category.objects.get(pk=cat_id)
+            actions = Action.objects.filter(
+                behavior__goals__categories=cat,
+                title_slug__in=slugs
+            ).distinct()
+            print("\nFound {} actions in '{}' (pk={})\n".format(
+                actions.count(), cat, cat_id))
+            for action in actions:
+                action_id = action.id
+                print("{}) {}".format(action_id, action))
+                print("--> has {} useractions".format(action.useraction_set.count()))
+                action.delete()
+                print("--> {} UserAction's remain".format(
+                    UserAction.objects.filter(action__id=action_id).count()))
+                print("-----------------------------")
+                total += 1
+            total_cats += 1
+        except Category.DoesNotExist:
+            print("Skipping Category: {}".format(cat_id))
+
+    print("Removed {} total Actions from {} categories".format(total, total_cats))
