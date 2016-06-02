@@ -165,6 +165,7 @@ urlpatterns = [
     url(r'^jsi18n/$', javascript_catalog, {'packages': ('recurrences')}),
     url(r'^search/', include('haystack.urls')),
     url(r'^metrics/', include('redis_metrics.urls')),
+    url(r'^badges/', include('badgify.urls')),
     url(r'^403/$', utils_views.FourOhThree.as_view()),
     url(r'^404/$', utils_views.FourOhFour.as_view()),
     url(r'^500/$', utils_views.FiveHundred.as_view()),

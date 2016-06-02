@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {{ badge.name }}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="large-12 columns">
+    <h1>{{ badge.name }}</h1>
+    <p><em>{{ badge.description }}</em></p>
+    <p><strong>{{ badge.users_count }} users</strong>:</p>
+    <ul>
+        {% for user in awarded_users %}
+        <li>{{ user.username }}</li>
+        {% endfor %}
+    </ul>
+    {% include "badgify/_pagination.html" %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Badges{% endblock %}
+
+{% block body %}
+  <div class="row">
+    <div class="large-12 columns">
+    {% if not badges %}
+        <p>No badges yet.</p>
+    {% else %}
+        <ul>
+        {% for badge in badges %}
+            <li>
+                <h4><a href="{{ badge.get_absolute_url }}">{{ badge.name }}</a></h4>
+                <ul>
+                    <li><em>{{ badge.description }}</em></li>
+                    <li><strong>{{ badge.users_count }} users</strong></li>
+                </ul>
+            </li>
+        {% endfor %}
+        </ul>
+        {% include "badgify/_pagination.html" %}
+    {% endif %}
+    </div>
+  </div>
+{% endblock %}
