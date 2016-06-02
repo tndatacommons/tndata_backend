@@ -1877,6 +1877,7 @@ def report_actions(request):
       dynamic, contain advanced options, or some combination of both).
 
     """
+    limit = 100
     subreport = request.GET.get('sub', None)
     max_len = int(request.GET.get('len', 200))
     valid_options = [200, 300, 400, 600, 800, 1000]
@@ -1890,6 +1891,7 @@ def report_actions(request):
 
     actions = Action.objects.all()
     context = {
+        'limit': limit,
         'actions': None,
         'total': actions.count(),
         'max_len': max_len,
@@ -1904,57 +1906,62 @@ def report_actions(request):
     if subreport == "desc":  # Long descriptions
         actions = actions.annotate(text_len=Length('description'))
         actions = actions.filter(text_len__gt=max_len).select_related('behavior')
-        context['actions'] = actions.order_by('text_len')
+        context['actions'] = actions.order_by('-text_len')[:limit]
         context['subreport_title'] = "Long Descriptions"
     elif subreport == "notif":  # Long notifiation text
         actions = actions.annotate(text_len=Length('notification_text'))
         actions = actions.filter(text_len__gt=max_len).select_related('behavior')
-        context['actions'] = actions.order_by('text_len')
+        context['actions'] = actions.order_by('-text_len')[:limit]
         context['subreport_title'] = "Long Notification Text"
     elif subreport == "links":  # description / more_info contains URLs
-        context['actions'] = actions = actions.filter(
+        actions = actions.filter(
             Q(description__icontains='http') |
             Q(more_info__icontains='http')
         )
+        actions = actions.annotate(text_len=Length('description'))
+        context['actions'] = actions[:limit]
         context['subreport_title'] = "Containing Links"
         context['len_options'] = []
     elif subreport == "triggers" and request.GET.get('trigger') == 'dynamic':
         # List dynamic triggers
-        context['actions'] = actions.filter(
+        actions = actions.filter(
             default_trigger__time_of_day__isnull=False,
             default_trigger__frequency__isnull=False,
         )
+        context['actions'] = actions[:limit]
         context['subreport_title'] = "Trigger options"
         context['len_options'] = []
         context['trigger'] = 'dynamic'
     elif subreport == "triggers" and request.GET.get('trigger') == 'advanced':
-        context['actions'] = actions.filter(
+        actions = actions.filter(
             default_trigger__time_of_day__isnull=True,
             default_trigger__frequency__isnull=True,
         )
+        context['actions'] = actions[:limit]
         context['subreport_title'] = "Trigger options"
         context['len_options'] = []
         context['trigger'] = 'advanced'
     elif subreport == "triggers" and request.GET.get('trigger') == 'time':
-        context['actions'] = actions.filter(
+        actions = actions.filter(
             default_trigger__time_of_day__isnull=False,
             default_trigger__frequency__isnull=True,
         )
+        context['actions'] = actions[:limit]
         context['subreport_title'] = "Trigger options"
         context['len_options'] = []
         context['trigger'] = 'time'
     elif subreport == "triggers" and request.GET.get('trigger') == 'freq':
-        context['actions'] = actions.filter(
+        actions = actions.filter(
             default_trigger__time_of_day__isnull=True,
             default_trigger__frequency__isnull=False,
         )
+        context['actions'] = actions[:limit]
         context['subreport_title'] = "Trigger options"
         context['len_options'] = []
         context['trigger'] = 'freq'
     elif subreport == "triggers" and request.GET.get('trigger') == 'none':
-        context['actions'] = actions.filter(
-            default_trigger__isnull=True,
-        )
+        actions = actions.filter(default_trigger__isnull=True)
+        context['actions'] = actions[:limit]
         context['subreport_title'] = "Trigger options"
         context['len_options'] = []
         context['trigger'] = 'none'

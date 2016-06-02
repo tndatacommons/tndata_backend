@@ -57,7 +57,7 @@
     {% if subreport and actions %}
     <h3>
       {{ subreport_title }}
-      <small>{{ actions.count }} notifications.</small>
+      <small>{{ actions.count }} items</small>
     </h3>
     {% endif %}
 
@@ -83,7 +83,7 @@
       </form>
     {% endif %}
 
-    {% if subreport and subreport != "triggers" and actions|length == 0%}
+    {% if subreport and subreport != "triggers" and subreport != "links" and actions|length != 0 %}
     <p>View content longer than:
       {% for opt in len_options %}
         {% if opt == max_len %}
@@ -119,10 +119,10 @@
             <a href="{{ action.get_absolute_url }}">{{ action }}</a>
             {% if subreport != "triggers" %}
               <i data-tooltip aria-haspopup="true"
-                 {% if subreport == "desc" %}
-                  title="{{ action.description }}"
+                 {% if subreport == "desc" or subreport == "links" %}
+                  title="DESCRIPTION: {{ action.description }}"
                  {% elif subreport == "notif" %}
-                  title="{{ action.notification_text }}"
+                  title="NOTIFICATION: {{ action.notification_text }}"
                  {% endif %}
                  class="tip-top fa fa-info-circle"></i>
             {% endif %}
@@ -146,7 +146,7 @@
       </tbody>
     </table>
     {% elif subreport == "links" %}
-      <p class="alert-box info">There are not Actions whose <code>description</code> or
+      <p class="alert-box info">There are no Actions whose <code>description</code> or
       <code>more_info</code> fields contain links.</p>
     {% elif subreport == "triggers" %}
       <p class="alert-box info">We couldn't find any actions whose default trigger matched that criteria.</p>
