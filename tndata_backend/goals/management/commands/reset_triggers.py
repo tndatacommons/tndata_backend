@@ -106,7 +106,7 @@ class Command(BaseCommand):
                 action.default_trigger.time_of_day = options['timeofday']
                 modified = True
 
-            if action.default_trigger and options['timeofday']:
+            if action.default_trigger and options['frequency']:
                 action.default_trigger.frequency = options['frequency']
                 modified = True
 
