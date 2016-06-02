@@ -152,11 +152,10 @@ class Trigger(models.Model):
     def time_details(self):
         """Return a string representation of this trigger's time details"""
         if self.is_dynamic:
-            result = "{} in the {}".format(
+            return "{}, {}".format(
+                self.get_time_of_day_display(),
                 self.get_frequency_display(),
-                self.get_time_of_day_display()
             )
-            return result
 
         result = ""
         if self.time:
