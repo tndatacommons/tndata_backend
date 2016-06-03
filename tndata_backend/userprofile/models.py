@@ -122,6 +122,8 @@ class UserProfile(models.Model):
     has_degree = models.BooleanField(default=False, blank=True)
 
     # app interaction fields
+    # app_logins is updated when a user requests an auth token via the api;
+    # see api.ObtainAuthorization
     app_logins = models.IntegerField(
         default=0,
         help_text="Number of times the user has logged into the app."

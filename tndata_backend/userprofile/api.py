@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
+from django.db.models import F
 
 from axes.models import AccessLog
 from axes.decorators import get_ip
@@ -301,6 +302,10 @@ class ObtainAuthorization(ObtainAuthToken):
             if serializer.is_valid(raise_exception=True):
                 user = serializer.validated_data['user']
                 token, created = Token.objects.get_or_create(user=user)
+
+                # Update the number of times the user has logged in
+                profiles = models.UserProfile.objects.filter(user=user)
+                profiles.update(app_logins=F('app_logins') + 1)
 
                 return Response({
                     'token': token.key,
