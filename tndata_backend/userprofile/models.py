@@ -121,6 +121,12 @@ class UserProfile(models.Model):
     in_relationship = models.BooleanField(default=False, blank=True)
     has_degree = models.BooleanField(default=False, blank=True)
 
+    # app interaction fields
+    app_logins = models.IntegerField(
+        default=0,
+        help_text="Number of times the user has logged into the app."
+    )
+
     # Timestamps
     updated_on = models.DateTimeField(auto_now=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
