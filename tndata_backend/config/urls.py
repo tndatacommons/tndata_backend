@@ -9,6 +9,10 @@ from django.views.i18n import javascript_catalog
 from axes.decorators import watch_login
 from rest_framework import routers
 
+from badgify_api.api import (
+    AwardViewSet,
+    BadgeViewSet,
+)
 from goals.api import (
     ActionViewSet,
     BehaviorViewSet,
@@ -74,6 +78,8 @@ class IndexView(TemplateView):
 router = routers.DefaultRouter()
 
 # ViewSets from the goals app.
+router.register(r'awards', AwardViewSet)
+router.register(r'badges', BadgeViewSet)
 router.register(r'search', SearchViewSet, base_name="search")
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
