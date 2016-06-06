@@ -53,6 +53,7 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.db.models import Count
 from django.utils import timezone
 
 from badgify.recipe import BaseRecipe
@@ -102,7 +103,7 @@ def checkin_streak(streak_number, badge_slug):
 
     users = User.objects.filter(pk__in=user_ids)
     users = users.exclude(badges__badge__slug=badge_slug).distinct()
-    return users
+    return users.values_list("id", flat=True)
 
 
 # -------------------------
@@ -316,3 +317,116 @@ class StreakFourWeeksRecipe(BaseRecipe):
     badge_path = 'badges/placeholder.png'
     checkin_days = 28
 badgify.register(StreakFourWeeksRecipe)
+
+
+# -----------------------------------
+# Package Enrollment & Goal Selection
+# -----------------------------------
+
+
+class ParticipantRecipe(BaseRecipe):
+    """Awarded when a user accepts their pacakge enrollment (i.e. a
+    PackageEnrollment object is `accepted` within the past 10 minutes.)"""
+    name = 'Participant'
+    slug = 'participant'
+    # Wanted: 'Congrats on joining <package>!'
+    description = "Congrats on joining your first package!"
+
+    @property
+    def image(self):
+        return staticfiles_storage.open('badges/placeholder.png')
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        users = User.objects.annotate(num_packages=Count('packageenrollment'))
+        users = users.filter(
+            num_packages=1,
+            accepted=True,
+            packageenrollment__updated_on__gte=since
+        )
+        return users.values_list('id', flat=True)
+
+
+class UserGoalCountMixin:
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    num_usergoals = 1  # Number of goals the user has selected.
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        # TODO: exclude packaged usergoals from this :-/
+        users = User.objects.annotate(num_usergoals=Count('usergoal'))
+        users = users.filter(
+            num_usergoals=self.num_usergoals,
+            usergoal__created_on__gte=since
+        )
+        return users.values_list("id", flat=True)
+
+
+class GoalSetterRecipe(UserGoalCountMixin, BaseRecipe):
+    # Goal-setter -- Enroll in first non-package goal
+    name = 'Goal-setter'
+    slug = 'goal-setter'
+    description = "Congrats on setting your first goal!"
+    badge_path = 'badges/placeholder.png'
+    num_usergoals = 1
+badgify.register(GoalSetterRecipe)
+
+
+class StriverRecipe(UserGoalCountMixin, BaseRecipe):
+    # Striver -- Enroll in second non-package goal
+    name = 'Striver'
+    slug = 'striver'
+    description = "Congrats on setting your second goal!"
+    badge_path = 'badges/placeholder.png'
+    num_usergoals = 2
+badgify.register(StriverRecipe)
+
+
+class AchieverRecipe(UserGoalCountMixin, BaseRecipe):
+    # Achiever -- Enroll in fourth non-package goal
+    name = 'Achiever'
+    slug = 'achiever'
+    description = "Congrats on setting your fourth goal!"
+    badge_path = 'badges/placeholder.png'
+    num_usergoals = 4
+badgify.register(AchieverRecipe)
+
+
+class HighFiveRecipe(UserGoalCountMixin, BaseRecipe):
+    # High Five -- Enroll in fifth non-package goal
+    name = 'High five'
+    slug = 'high-five'
+    description = "Congrats on setting your fifth goal!"
+    badge_path = 'badges/placeholder.png'
+    num_usergoals = 5
+badgify.register(HighFiveRecipe)
+
+
+class PerfectTenRecipe(UserGoalCountMixin, BaseRecipe):
+    # Perfect ten -- Enroll in tenth non-package goal
+    name = 'Perfect ten'
+    slug = 'perfect-ten'
+    description = "Congrats on setting your tenth goal!"
+    badge_path = 'badges/placeholder.png'
+    num_usergoals = 10
+badgify.register(PerfectTenRecipe)
+
+
+class SuperstarRecipe(UserGoalCountMixin, BaseRecipe):
+    # Superstar -- Enroll in twentieth non-package goal
+    name = 'Superstar'
+    slug = 'superstar'
+    description = "Congrats on setting your twentieth goal!"
+    badge_path = 'badges/placeholder.png'
+    num_usergoals = 20
+badgify.register(SuperstarRecipe)
