@@ -73,8 +73,10 @@ def just_joined(minutes=10, days=None):
     User = get_user_model()
     if days:
         since = timezone.now() - timedelta(days=days)
-    else:
+    elif minutes:
         since = timezone.now() - timedelta(minutes=minutes)
+    else:
+        return User.objects.none()
     return User.objects.filter(date_joined__gte=since).values_list("id", flat=True)
 
 
@@ -107,11 +109,10 @@ def checkin_streak(streak_number, badge_slug):
 # General App-usage recipes
 # -------------------------
 
-class StarterRecipe(BaseRecipe):
-    """Awarded when signing up (hopefully about the time they view the feed)."""
-    name = 'Starter'
-    slug = 'starter'
-    description = "Congrats on signing up! You're on your way to success!"
+class SignupMixin:
+    minutes_since_signup = None
+    days_since_signup = None
+    badge_path = 'badges/placeholder.png'
 
     @property
     def image(self):
@@ -120,25 +121,29 @@ class StarterRecipe(BaseRecipe):
     @property
     def user_ids(self):
         """Returns a queryset of users who joined within the past 10 minutes"""
-        return just_joined(minutes=10)
+        return just_joined(
+            minutes=self.minutes_since_signup,
+            days=self.days_since_signup
+        )
 
+
+class StarterRecipe(SignupMixin, BaseRecipe):
+    """Awarded when signing up (hopefully about the time they view the feed)."""
+    name = 'Starter'
+    slug = 'starter'
+    description = "Congrats on signing up! You're on your way to success!"
+    badge_path = 'badges/placeholder.png'
+    minutes_since_singup = 10
 badgify.register(StarterRecipe)
 
 
-class ExplorerRecipe(BaseRecipe):
+class ExplorerRecipe(SignupMixin, BaseRecipe):
     """Awarded when the user has been signed up for a week."""
     name = 'Explorer'
     slug = 'explorer'
     description = "You've used Compass for a week! Woo-hoo!"
-
-    @property
-    def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
-
-    @property
-    def user_ids(self):
-        return just_joined(days=7)
-
+    badge_path = 'badges/placeholder.png'
+    days_since_signup = 7
 badgify.register(ExplorerRecipe)
 
 
@@ -147,32 +152,33 @@ class LighthouseRecipe(BaseRecipe):
     name = 'Lighthouse'
     slug = 'lighthouse'
     description = "You've used Compass for a month! Woo-hoo!"
-
-    @property
-    def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
-
-    @property
-    def user_ids(self):
-        return just_joined(days=30)
-
+    badge_path = 'badges/placeholder.png'
+    days_since_signup = 30
 badgify.register(LighthouseRecipe)
 
 
-class HomecomingRecipe(BaseRecipe):
+class LoginMixin:
+    minutes_since_login = None
+    login_number = None
+    badge_path = 'badges/placeholder.png'
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        since = self.minutes_since_login or 10
+        return just_logged_in(self.login_number, minutes=since)
+
+
+class HomecomingRecipe(LoginMixin, BaseRecipe):
     """Awarded by coming back to the app a second time."""
     name = 'Homecoming'
     slug = 'homecoming'
     description = "Congrats for coming back."
-
-    @property
-    def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
-
-    @property
-    def user_ids(self):
-        return just_logged_in(2)
-
+    badge_path = 'badges/placeholder.png'
+    login_number = 2
 badgify.register(HomecomingRecipe)
 
 
@@ -181,15 +187,8 @@ class SeekerRecipe(BaseRecipe):
     name = 'Seeker'
     slug = 'seeker'
     description = "Congrats for coming back the third time."
-
-    @property
-    def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
-
-    @property
-    def user_ids(self):
-        return just_logged_in(3)
-
+    badge_path = 'badges/placeholder.png'
+    login_number = 3
 badgify.register(SeekerRecipe)
 
 
@@ -198,15 +197,7 @@ class PathfinderRecipe(BaseRecipe):
     name = 'Pathfinder'
     slug = 'pathfinder'
     description = "Congrats for coming back the seventh time."
-
-    @property
-    def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
-
-    @property
-    def user_ids(self):
-        return just_logged_in(7)
-
+    login_number = 7
 badgify.register(PathfinderRecipe)
 
 
@@ -215,15 +206,7 @@ class NavigatorRecipe(BaseRecipe):
     name = 'Navigator'
     slug = 'navigator'
     description = "Congrats for coming back the fourteenth time."
-
-    @property
-    def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
-
-    @property
-    def user_ids(self):
-        return just_logged_in(14)
-
+    login_number = 14
 badgify.register(NavigatorRecipe)
 
 
