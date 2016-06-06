@@ -2666,3 +2666,7 @@ class TestDailyProgress(TestCase):
         # Now, creating a progress for "today" should increment that value.
         dp = DailyProgress.objects.create(user=user)
         self.assertEqual(dp.checkin_streak, 2)
+
+    def test_usercompleted_actions(self):
+        # smoke test so we know if this works or not.
+        self.assertEqual(self.progress.usercompletedactions().count(), 0)

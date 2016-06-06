@@ -302,7 +302,7 @@ class DailyProgress(models.Model):
         """Return a queryset of UserCompletedAction objects that were updated
         during the same day that this instance was created.
         """
-        day_range = local_day_range(dp.user, dt=self.created_on)
+        day_range = local_day_range(self.user, dt=self.created_on)
         return self.user.usercompletedaction_set.filter(updated_on__range=day_range)
 
     # The DailyProgress manager has custom convenience methods:
