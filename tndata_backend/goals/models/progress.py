@@ -163,6 +163,14 @@ class DailyProgress(models.Model):
         help_text="User feedback on their progress toward achieving goals"
     )
 
+    # NOTE: This value gets set by the `set_dp_checkin_streak` signal handler.
+    checkin_streak = models.IntegerField(
+        default=0,
+        blank=True,
+        help_text="A count of check-in streaks (how many days in a row a user "
+                  "has submitted a daily check-in."
+    )
+
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 

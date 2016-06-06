@@ -2646,3 +2646,23 @@ class TestDailyProgress(TestCase):
         behavior = Mock(id=2)
         self.progress.set_status(behavior, 'FOO')
         self.assertEqual(self.progress.behaviors_status['behavior-2'], 'FOO')
+
+    def test_checkin_streak(self):
+        """When a DailyProgress instance is saved, the pre-save signal handler
+        should increment the value of the checkin_streak based on "yesterday's"
+        saved value."""
+
+        # Setup: Start with a new user, so the progress doesn't clash with
+        # the one set up in this test cases's test data.
+        user = mommy.make(User)
+
+        # Now, we need to set a DailyProgress for "yesterday"
+        today = timezone.now()
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = today - timedelta(days=1)
+            dp = DailyProgress.objects.create(user=user)
+            self.assertEqual(dp.checkin_streak, 1)  # the default
+
+        # Now, creating a progress for "today" should increment that value.
+        dp = DailyProgress.objects.create(user=user)
+        self.assertEqual(dp.checkin_streak, 2)

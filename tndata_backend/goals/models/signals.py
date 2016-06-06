@@ -2,6 +2,7 @@
 Signal Handlers for our models.
 
 """
+from datetime import timedelta
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
@@ -15,6 +16,7 @@ from django.utils import timezone
 from django_rq import job
 from notifications.signals import notification_snoozed
 from redis_metrics import metric
+from utils.user_utils import local_day_range
 
 from .custom import CustomAction
 from .packages import PackageEnrollment
@@ -63,6 +65,27 @@ def update_daily_progress(sender, instance, using, **kwargs):
     dp = DailyProgress.objects.for_today(instance.user)
     dp.update_stats()
     dp.save()
+
+
+@receiver(pre_save, sender=DailyProgress, dispatch_uid='set_dp_checkin_streak')
+def set_dp_checkin_streak(sender, instance, raw, using, **kwargs):
+    """Query for yesterday's checkin streak value and add 1 whenever a
+    DailyProgress object is saved."""
+    if instance.created_on:
+        yesterday = instance.created_on - timedelta(days=1)
+    else:
+        yesterday = timezone.now() - timedelta(days=1)
+    yesterday = local_day_range(instance.user, yesterday)
+
+    # See what "yesterday's streak value was"
+    try:
+        streak = DailyProgress.objects.exclude(pk=instance.id).get(
+            user=instance.user,
+            created_on__range=yesterday
+        ).checkin_streak
+    except DailyProgress.DoesNotExist:
+        streak = 0
+    instance.checkin_streak = streak + 1
 
 
 @receiver(post_save, sender=Trigger, dispatch_uid="custom-trigger-updated")
