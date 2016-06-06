@@ -50,13 +50,17 @@ Optionally, A recipe class may implement:
 
 """
 from datetime import timedelta
+
+from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.utils import timezone
 
 from badgify.recipe import BaseRecipe
 import badgify
 
-from django.contrib.auth import get_user_model
-from django.utils import timezone
+from .models import DailyProgress
+
+from utils import dateutils
 
 
 # ----------------
@@ -81,6 +85,22 @@ def just_logged_in(nth, minutes=10):
     since = timezone.now() - timedelta(minutes=minutes)
     users = User.objects.filter(last_login__gte=since, userprofile__app_logins=nth)
     return users.values_list("id", flat=True)
+
+
+def checkin_streak(streak_number, badge_slug):
+    """Return a queryset of Users that have the a checkin-streak of
+    `streak_number`, but have not received this specified badge, yet."""
+    User = get_user_model()
+
+    today = dateutils.date_range(timezone.now())
+    user_ids = DailyProgress.objects.filter(
+        created_on__range=today,
+        checkin_streak=streak_number
+    ).values_list("user", flat=True).distinct()
+
+    users = User.objects.filter(pk__in=user_ids)
+    users = users.exclude(badges__badge__slug=badge_slug).distinct()
+    return users
 
 
 # -------------------------
@@ -224,3 +244,92 @@ badgify.register(NavigatorRecipe)
 #         # TODO: How to do this?
 #
 # badgify.register(NavigatorRecipe)
+
+
+# ------------------------------
+# Self-report / Check-in recipes
+# ------------------------------
+
+class CheckinMixin:
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    checkin_days = 1  # Number days in a row the user has checked in.
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        return checkin_streak(self.checkin_days, self.slug)
+
+
+class ThoughtfulRecipe(CheckinMixin, BaseRecipe):
+    name = 'Thoughtful'
+    slug = 'thoughtful'
+    description = "This was your first time checking in! You're awesome!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 1
+badgify.register(ThoughtfulRecipe)
+
+
+class ConscientiousRecipe(CheckinMixin, BaseRecipe):
+    name = 'Conscientious'
+    slug = 'conscientious'
+    description = "This was your second time checking in! You're taking care of yourself!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 2
+badgify.register(ConscientiousRecipe)
+
+
+class StreakThreeDaysRecipe(BaseRecipe):
+    name = 'Streak - three days!'
+    slug = 'streak-three-days'
+    description = "You've checked in three times in a row! Score!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 3
+badgify.register(StreakThreeDaysRecipe)
+
+
+class StreakFiveDaysRecipe(BaseRecipe):
+    name = 'Streak - five days!'
+    slug = 'streak-five-days'
+    description = "You've checked in five times in a row! Way to go!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 3
+badgify.register(StreakFiveDaysRecipe)
+
+
+class StreakOneWeekRecipe(BaseRecipe):
+    name = 'Streak - one week!'
+    slug = 'streak-one-week'
+    description = "You've checked in seven times in a row! Keep up the streak!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 7
+badgify.register(StreakOneWeekRecipe)
+
+
+class StreakTwoWeeksRecipe(BaseRecipe):
+    name = 'Streak - two weeks!'
+    slug = 'streak-two-weeks'
+    description = "You've checked in every day for two weeks! Score!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 14
+badgify.register(StreakTwoWeeksRecipe)
+
+
+class StreakThreeWeeksRecipe(BaseRecipe):
+    name = 'Streak - three weeks!'
+    slug = 'streak-three-weeks'
+    description = "You've checked in every day for three weeks! Score!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 21
+badgify.register(StreakThreeWeeksRecipe)
+
+
+class StreakFourWeeksRecipe(BaseRecipe):
+    name = 'Streak - four weeks!'
+    slug = 'streak-four-weeks'
+    description = "You've checked in every day for four weeks! Score!"
+    badge_path = 'badges/placeholder.png'
+    checkin_days = 28
+badgify.register(StreakFourWeeksRecipe)
