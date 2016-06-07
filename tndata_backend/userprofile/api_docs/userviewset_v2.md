@@ -54,8 +54,9 @@ POST to `/api/users/` with the following information:
         "last_name": "Last"
     }
 
-**Note**: `email` and `password` are required! However, `first_name` and
-`last_name` are optional.
+**Note**: Either a combination of (`email` and `password`) or
+(`username` and `password`) are required! However, `first_name` and `last_name`
+are optional.
 
 *Valid Example*:
 
