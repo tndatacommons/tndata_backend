@@ -451,14 +451,15 @@ badgify.register(SuperstarRecipe)
 
 
 # -----------------------------------------------------------------------------
-# Goal Completions...
+# Goal/Behavior/Action *Custom* Completions...
+# -----------------------------------------------------------------------------
 #
 # Additional ideas, here:
-# - when users complete an Action (ie. create UserComplatedAction objects)
-# - when users complete a Behavior (all actions within a behavior)
-# - when users complete a Goal (all behaviors within a goal are completed)
-# - when users create a Custom Goal
-# - when users complete a Custom Action
+# -X- when users complete an Action (ie. create UserComplatedAction objects)
+# -X- when users complete a Behavior (all actions within a behavior)
+# -X- when users complete a Goal (all behaviors within a goal are completed)
+# --- when users create a Custom Goal
+# --- when users complete a Custom Action
 # -----------------------------------------------------------------------------
 
 
@@ -522,3 +523,75 @@ badgify.register(TrioRecipe)
 #   Congrats on your twentieth activity to <goal title>!
 # <Goal title> - Superuser
 #   Congrats on thirty activities to <goal title>!
+
+
+class UserCompletedBehaviorCountMixin:
+    """A mixin that counts a user's completed Behaviors.
+
+    """
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    num_completed = 1  # Number of UserBehavior's marked complete
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        # Find users that have completed a Behavior within the past 10 minutes.
+        users = User.objects.filter(
+            userbehavior__completed=True,
+            userbehavior__completed_on_gte=since
+        ).distinct()
+        users = users.annotate(num_completed=Count('userbehavior'))
+        users = users.filter(num_completed=self.num_completed)
+        return users.values_list("id", flat=True)
+
+
+# TODO: What to name Behavior Completion goals.
+class BehaviorCompletedRecipe(UserCompletedBehaviorCountMixin, BaseRecipe):
+    name = 'Wayfarer'
+    slug = 'wayfarer'
+    description = "Congrats on completing a set of actions!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 1
+badgify.register(BehaviorCompletedRecipe)
+
+
+class UserCompletedGoalCountMixin:
+    """A mixin that counts a user's completed Goals.
+
+    """
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    num_completed = 1  # Number of UserGoals's marked complete
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        # Find users that have completed a Goal within the past 10 minutes.
+        users = User.objects.filter(
+            usergoal__completed=True,
+            usergoal__completed_on_gte=since
+        ).distinct()
+        users = users.annotate(num_completed=Count('usergoal'))
+        users = users.filter(num_completed=self.num_completed)
+        return users.values_list("id", flat=True)
+
+
+# TODO: What to name Goal Completion goals.
+class GoalCompletedRecipe(UserCompletedGoalCountMixin, BaseRecipe):
+    name = 'Voyager'
+    slug = 'voyager'
+    description = "Congrats on completing every action in a Goal!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 1
+badgify.register(GoalCompletedRecipe)
