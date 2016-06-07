@@ -448,3 +448,77 @@ class SuperstarRecipe(UserGoalCountMixin, BaseRecipe):
     badge_path = 'badges/placeholder.png'
     num_usergoals = 20
 badgify.register(SuperstarRecipe)
+
+
+# -----------------------------------------------------------------------------
+# Goal Completions...
+#
+# Additional ideas, here:
+# - when users complete an Action (ie. create UserComplatedAction objects)
+# - when users complete a Behavior (all actions within a behavior)
+# - when users complete a Goal (all behaviors within a goal are completed)
+# - when users create a Custom Goal
+# - when users complete a Custom Action
+# -----------------------------------------------------------------------------
+
+
+class UserCompletedActionCountMixin:
+    """A mixin that counts a user's completed Actions.
+
+    """
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    num_completed = 1  # Number of UserCompletedActions for the user
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        # Find users that have completed an Action within the past 10 minutes.
+        users = User.objects.filter(usercompletedaction__created_on__gte=since)
+        users = users.distinct()
+        users = users.annotate(num_ucas=Count('usercompletedaction'))
+        users = users.filter(num_ucas=self.num_completed)
+        return users.values_list("id", flat=True)
+
+
+class FirstTimerRecipe(UserCompletedActionCountMixin, BaseRecipe):
+    """First 'got it' for *any* goal"""
+    name = 'First Timer'
+    slug = 'first-timer'
+    description = "Congrats on your first activity! Keep up the good work!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 1
+badgify.register(FirstTimerRecipe)
+
+
+class TwoFerRecipe(UserCompletedActionCountMixin, BaseRecipe):
+    name = 'Two-fer'
+    slug = 'two-fer'
+    description = "Congrats on your second activity!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 2
+badgify.register(TwoFerRecipe)
+
+
+class TrioRecipe(UserCompletedActionCountMixin, BaseRecipe):
+    name = 'Trio'
+    slug = 'trio'
+    description = "Congrats on your third activity!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 3
+badgify.register(TrioRecipe)
+
+# TODO: need different (UNIQUE) names for the rest of these.
+# <Goal title> - High Five
+#   Congrats on your fifth activity to <goal title>!
+# <Goal title> - Perfect Ten
+#   Congrats on your tenth activity to <goal title>!
+# <Goal title> - Superstar
+#   Congrats on your twentieth activity to <goal title>!
+# <Goal title> - Superuser
+#   Congrats on thirty activities to <goal title>!
