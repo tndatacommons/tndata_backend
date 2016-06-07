@@ -105,18 +105,26 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         qs = qs.filter(id=self.request.user.id)
         return qs
 
+    def perform_create(self, serializer):
+
+        # NOTE: We expect an email address to be given, here, but this api
+        # also supports signup with a username. If we receive a username,
+        # but no email address, AND if the username appears to be an email,
+        # we'll use the provided value for both username & email.
+        #
+        # However, we need to check if accounts with an email already exist,
+        # otherwise we might end up with duplicate accounts.
+        email = serializer.validated_data.get('email', None)
+        username = serializer.validated_data.get('username', None)
+        if email in [None, ''] and '@' in username:
+            serializer.validated_data['email'] = username
+            serializer.validated_data.pop('username')
+        serializer.save()  # create the user
+
     def create(self, request, *args, **kwargs):
         """Alter the returned response, so that it includes an API token for a
         newly created user.
         """
-        # NOTE: We expect an email address to be given, here, but this api
-        # used to support a username. If we receive a username, but no email
-        # address, we swap them. This'll prevent an edge case where we might
-        # end up with duplicate accounts.
-        if request.data.get("username") and request.data.get("email") is None:
-            request.data['email'] = request.data.get('username')
-            request.data.pop('username')
-
         resp = super(UserViewSet, self).create(request, *args, **kwargs)
 
         # Include the newly-created User's auth token (if we have a user)
