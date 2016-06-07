@@ -53,7 +53,7 @@ from datetime import timedelta
 
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.db.models import Count
+from django.db.models import Case, Count, IntegerField, When
 from django.utils import timezone
 
 from badgify.recipe import BaseRecipe
@@ -351,6 +351,13 @@ class ParticipantRecipe(BaseRecipe):
 
 
 class UserGoalCountMixin:
+    """A mixin that counts a user's selected (non-package) goals.
+
+    NOTE: The UserGoal.primary_category is used to exclude goals that are
+    part of a packge. Unfortunately, if a user selects a goal that is public,
+    but also part of a package, this won't count toward their receiving a badge.
+
+    """
     badge_path = 'badges/placeholder.png'  # Path to the badge.
     num_usergoals = 1  # Number of goals the user has selected.
 
@@ -363,10 +370,21 @@ class UserGoalCountMixin:
         User = get_user_model()
         since = timezone.now() - timedelta(minutes=10)
 
-        # TODO: exclude packaged usergoals from this :-/
-        users = User.objects.annotate(num_usergoals=Count('usergoal'))
+        # Annote a queryset of users with the number of non-packaged UserGoals.
+        users = User.objects.annotate(
+            num_nonpackage_usergoals=Case(
+                When(
+                    usergoal__primary_category__packaged_content=False,
+                    then=Count('usergoal')
+                ),
+                default=0,
+                output_field=IntegerField()
+            )
+        ).distinct()
+
+        # Now filter based on the specified number of selections.
         users = users.filter(
-            num_usergoals=self.num_usergoals,
+            num_nonpackage_usergoals=self.num_usergoals,
             usergoal__created_on__gte=since
         )
         return users.values_list("id", flat=True)
