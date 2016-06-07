@@ -480,6 +480,7 @@ class UserCompletedActionCountMixin:
         since = timezone.now() - timedelta(minutes=10)
 
         # Find users that have completed an Action within the past 10 minutes.
+        # TODO: check that the state == "completed"
         users = User.objects.filter(usercompletedaction__created_on__gte=since)
         users = users.distinct()
         users = users.annotate(num_ucas=Count('usercompletedaction'))
@@ -595,3 +596,73 @@ class GoalCompletedRecipe(UserCompletedGoalCountMixin, BaseRecipe):
     badge_path = 'badges/placeholder.png'
     num_completed = 1
 badgify.register(GoalCompletedRecipe)
+
+
+class UserCreatedCustomGoalCountMixin:
+    """A mixin that counts a user's CustomGoals when one is created.
+
+    """
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    num_custom_goals = 1
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        # Find users that have created a Custom Goal within the past 10 minutes.
+        users = User.objects.filter(customgoal__created_on_gte=since)
+        users = users.annotate(num_cgs=Count('customgoal'))
+        # And then filter down to users that have the specified number
+        users = users.filter(num_cgs=self.num_custom_goals).distinct()
+        return users.values_list("id", flat=True)
+
+
+# TODO: What to name Custom Goal Creation badges?
+class CustomGoalCreatedRecipe(UserCreatedCustomGoalCountMixin, BaseRecipe):
+    name = 'Captain'
+    slug = 'captain'
+    description = "Congrats on creating your first Custom Goal!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 1
+badgify.register(CustomGoalCreatedRecipe)
+
+
+class UserCompletedCustomActionCountMixin:
+    """A mixin that counts a user's completed custom actions.
+
+    """
+    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    num_completed = 1
+
+    @property
+    def image(self):
+        return staticfiles_storage.open(self.badge_path)
+
+    @property
+    def user_ids(self):
+        User = get_user_model()
+        since = timezone.now() - timedelta(minutes=10)
+
+        # Find users that have completed a custom action
+        users = User.objects.filter(
+            usercompletedcustomaction__created_on__gte=since)
+
+        # TODO: check that the state == completed.
+        users = users.annotate(num_completed=Count('usercompletedcustomaction'))
+        users = users.filter(num_completed=self.num_completed).distinct()
+        return users.values_list("id", flat=True)
+
+
+# TODO: What to name Custom Action Completion badges?
+class CustomActionCompletedRecipe(UserCompletedCustomActionCountMixin, BaseRecipe):
+    name = 'Doer'
+    slug = 'doer'
+    description = "Congrats on creating your first Custom Action!"
+    badge_path = 'badges/placeholder.png'
+    num_completed = 1
+badgify.register(CustomActionCompletedRecipe)
