@@ -140,7 +140,7 @@ class StarterRecipe(SignupMixin, BaseRecipe):
     slug = 'starter'
     description = "Congrats on signing up! You're on your way to success!"
     badge_path = 'badges/placeholder.png'
-    minutes_since_singup = 10
+    minutes_since_signup = 10
 badgify.register(StarterRecipe)
 
 
@@ -154,7 +154,7 @@ class ExplorerRecipe(SignupMixin, BaseRecipe):
 badgify.register(ExplorerRecipe)
 
 
-class LighthouseRecipe(BaseRecipe):
+class LighthouseRecipe(SignupMixin, BaseRecipe):
     """Awarded when the user has been signed up for a month."""
     name = 'Lighthouse'
     slug = 'lighthouse'
@@ -189,7 +189,7 @@ class HomecomingRecipe(LoginMixin, BaseRecipe):
 badgify.register(HomecomingRecipe)
 
 
-class SeekerRecipe(BaseRecipe):
+class SeekerRecipe(LoginMixin, BaseRecipe):
     """Awarded by coming back to the app (a third time)"""
     name = 'Seeker'
     slug = 'seeker'
@@ -199,7 +199,7 @@ class SeekerRecipe(BaseRecipe):
 badgify.register(SeekerRecipe)
 
 
-class PathfinderRecipe(BaseRecipe):
+class PathfinderRecipe(LoginMixin, BaseRecipe):
     """Awarded by coming back to the app (a seventh time)"""
     name = 'Pathfinder'
     slug = 'pathfinder'
@@ -208,7 +208,7 @@ class PathfinderRecipe(BaseRecipe):
 badgify.register(PathfinderRecipe)
 
 
-class NavigatorRecipe(BaseRecipe):
+class NavigatorRecipe(LoginMixin, BaseRecipe):
     """Awarded by coming back to the app (a 14th time)"""
     name = 'Navigator'
     slug = 'navigator'
@@ -271,7 +271,7 @@ class ConscientiousRecipe(CheckinMixin, BaseRecipe):
 badgify.register(ConscientiousRecipe)
 
 
-class StreakThreeDaysRecipe(BaseRecipe):
+class StreakThreeDaysRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - three days!'
     slug = 'streak-three-days'
     description = "You've checked in three times in a row! Score!"
@@ -280,7 +280,7 @@ class StreakThreeDaysRecipe(BaseRecipe):
 badgify.register(StreakThreeDaysRecipe)
 
 
-class StreakFiveDaysRecipe(BaseRecipe):
+class StreakFiveDaysRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - five days!'
     slug = 'streak-five-days'
     description = "You've checked in five times in a row! Way to go!"
@@ -289,7 +289,7 @@ class StreakFiveDaysRecipe(BaseRecipe):
 badgify.register(StreakFiveDaysRecipe)
 
 
-class StreakOneWeekRecipe(BaseRecipe):
+class StreakOneWeekRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - one week!'
     slug = 'streak-one-week'
     description = "You've checked in seven times in a row! Keep up the streak!"
@@ -298,7 +298,7 @@ class StreakOneWeekRecipe(BaseRecipe):
 badgify.register(StreakOneWeekRecipe)
 
 
-class StreakTwoWeeksRecipe(BaseRecipe):
+class StreakTwoWeeksRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - two weeks!'
     slug = 'streak-two-weeks'
     description = "You've checked in every day for two weeks! Score!"
@@ -307,7 +307,7 @@ class StreakTwoWeeksRecipe(BaseRecipe):
 badgify.register(StreakTwoWeeksRecipe)
 
 
-class StreakThreeWeeksRecipe(BaseRecipe):
+class StreakThreeWeeksRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - three weeks!'
     slug = 'streak-three-weeks'
     description = "You've checked in every day for three weeks! Score!"
@@ -316,7 +316,7 @@ class StreakThreeWeeksRecipe(BaseRecipe):
 badgify.register(StreakThreeWeeksRecipe)
 
 
-class StreakFourWeeksRecipe(BaseRecipe):
+class StreakFourWeeksRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - four weeks!'
     slug = 'streak-four-weeks'
     description = "You've checked in every day for four weeks! Score!"
@@ -350,7 +350,7 @@ class ParticipantRecipe(BaseRecipe):
         users = User.objects.annotate(num_packages=Count('packageenrollment'))
         users = users.filter(
             num_packages=1,
-            accepted=True,
+            packageenrollment__accepted=True,
             packageenrollment__updated_on__gte=since
         )
         return users.values_list('id', flat=True)
@@ -551,7 +551,7 @@ class UserCompletedBehaviorCountMixin:
         # Find users that have completed a Behavior within the past 10 minutes.
         users = User.objects.filter(
             userbehavior__completed=True,
-            userbehavior__completed_on_gte=since
+            userbehavior__completed_on__gte=since
         ).distinct()
         users = users.annotate(num_completed=Count('userbehavior'))
         users = users.filter(num_completed=self.num_completed)
@@ -587,7 +587,7 @@ class UserCompletedGoalCountMixin:
         # Find users that have completed a Goal within the past 10 minutes.
         users = User.objects.filter(
             usergoal__completed=True,
-            usergoal__completed_on_gte=since
+            usergoal__completed_on__gte=since
         ).distinct()
         users = users.annotate(num_completed=Count('usergoal'))
         users = users.filter(num_completed=self.num_completed)
@@ -621,7 +621,7 @@ class UserCreatedCustomGoalCountMixin:
         since = timezone.now() - timedelta(minutes=10)
 
         # Find users that have created a Custom Goal within the past 10 minutes.
-        users = User.objects.filter(customgoal__created_on_gte=since)
+        users = User.objects.filter(customgoal__created_on__gte=since)
         users = users.annotate(num_cgs=Count('customgoal'))
         # And then filter down to users that have the specified number
         users = users.filter(num_cgs=self.num_custom_goals).distinct()
