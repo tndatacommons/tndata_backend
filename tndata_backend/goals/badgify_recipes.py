@@ -5,25 +5,31 @@ See: https://github.com/ulule/django-badgify
 
 ----
 
+IMPLEMENTATION
+
+1. _X_ Create recipes as part of the goals app.
+2. ___ Cron jobs that will run the badgify_sync commands to do awards
+3. _X_ Listen for signals (Award.post_save?) and send a push notification when
+       a user is awarded a badge. (wrap this in a waffle.switch)
+4. _X_ New app (badge_api?) that exposes a user's awarded badges
+
+----
+
+WORKFLOW
+
 Typical workflow for best performances
 
-$ python manage.py badgify_sync badges
-$ python manage.py badgify_sync awards --disable-signals
-$ python manage.py badgify_sync counts
+    $ python manage.py badgify_sync badges  # Creates badges from recipes
+    $ python manage.py badgify_sync counts  # Denorm. counts (for performance)
+
+# This one awards the badges, we need to run it more frequently, but we may
+# also need the signals (which will make it slower)
+
+    $ python manage.py badgify_sync awards --disable-signals
 
 ----
 
-TODO: Ideas for implementing this:
-
-1. Create recipes as part of the goals app.
-2. Cron jobs taht will run the badgify_sync commands to do awards
-3. ^ listen for signals (Award.post_save?) and send a push notification when
-   a user is awarded a badge. (wrap this in a waffle.switch)
-4. New app (badge_api?) that exposes a user's awarded badges
-
-----
-
-NOTE: on Recipes; A recipe class must implement:
+NOTE on Recipes; A recipe class must implement:
 
 _ name class attribute
     The badge name (humanized).

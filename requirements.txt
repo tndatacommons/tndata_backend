@@ -42,5 +42,6 @@ rq==0.5.6
 django-rq==0.8.0
 rq-scheduler==0.5.1
 -e git+https://github.com/tndatacommons/django-axes.git@master#egg=axes
+django-badgify==0.1.6
 pympler==0.4.3
 psutil==4.1.0
