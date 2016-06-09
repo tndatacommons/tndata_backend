@@ -1838,6 +1838,11 @@ def report_triggers(request):
 
 @user_passes_test(staff_required, login_url='/')
 def report_authors(request):
+    author_criteria = None
+    author = request.GET.get('email', None)
+    if author is not None:
+        author_criteria = Q(created_by__email__istartswith=author.strip())
+
     # Count of who's got how many items in what state.
     states = ['draft', 'published', 'pending-review', 'declined']
     goals = {}
@@ -1845,14 +1850,20 @@ def report_authors(request):
     actions = {}
     for state in states:
         items = Goal.objects.filter(state=state)
+        if author_criteria:
+            items = items.filter(author_criteria)
         items = items.values_list('created_by__email', flat=True)
         goals[state] = dict(Counter(items))
 
         items = Behavior.objects.filter(state=state)
+        if author_criteria:
+            items = items.filter(author_criteria)
         items = items.values_list('created_by__email', flat=True)
         behaviors[state] = dict(Counter(items))
 
         items = Action.objects.filter(state=state)
+        if author_criteria:
+            items = items.filter(author_criteria)
         items = items.values_list('created_by__email', flat=True)
         actions[state] = dict(Counter(items))
 

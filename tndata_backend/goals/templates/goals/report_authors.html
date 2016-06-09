@@ -6,25 +6,6 @@
 
 {% block title %}Author Progress{% endblock %}
 
-{% block head %}
-  {{ block.super }}
-  {% comment %}
-  <script src="{% static 'js/Chart.min.js' %}"></script>
-  <style type="text/css">
-  div.legend ul.pie-legend {list-style-type: none;padding:0;margin:0;max-width:250px;}
-  div.legend ul.pie-legend li span {
-    display:inline-block;
-    border:1px solid black;
-    width:18px;
-    height: 18px;
-    padding:0;
-    margin: 0 5px 0 0;
-  }
-  </style>
-  {% endcomment %}
-{% endblock %}
-
-
 {% block breadcrumbs %}
   <li><a href="{% url 'goals:reports' %}">Reports</a></li>
   <li class="current">Authors</li>
@@ -32,6 +13,17 @@
 
 {% block content %}
 <h1>Author Stats</h1>
+
+<form action="{% url 'goals:report-authors' %}" method="get">
+  <div class="panel">
+    <p>Enter an author's email address to view their specific details.</p>
+    <p><input type="text" placeholder="Email Address" name="email"></p>
+    <p>
+      <button type="submit">Search</button> &nbsp;&nbsp;
+      <a href="{% url 'goals:report-authors' %}">View all authors</a>
+    </p>
+  </div>
+</form>
 
 <h2>Goals</h2>
 <div class="row">
