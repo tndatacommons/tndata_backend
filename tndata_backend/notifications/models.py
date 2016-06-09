@@ -349,39 +349,18 @@ class GCMMessage(models.Model):
         """JSON-encoded message payload; NOTE: has a limit of 4096 bytes."""
         return json.dumps(self.content)
 
-    def send(self, collapse_key=None, delay_while_idle=False, time_to_live=None):
-        """Deliver this message to Google Cloud Messaging (both iOS & Android).
-
-        This method accepts the following options as keyword arguments; These
-        are options available thru pushjack and are just passed along.
-
-        * collapse_key: Omitted for messages with a payload (default), specify
-            'collapse_key' for a 'send-to-sync' message.
-        * delay_while_idle:  If True indicates that the message should not be
-            sent until the device becomes active. (default is False)
-        * time_to_live: Time to Live. Default is 4 weeks.
-
-        """
-        logging.info("Sending GCMMessage, id = %s", self.id)
-        options = {
-            'delay_while_idle': delay_while_idle,
-            'time_to_live': time_to_live,
-            'low_priority': True,
-        }
-        if collapse_key is not None:
-            options['collapse_key'] = collapse_key
-
-        # Send to Android devices (if any)
-        android_ids = self.android_devices
-        if len(android_ids):
+    def _send_to_android_devices(self, android_ids, options):
+        """Send push notifications to anddroid devices using GCM"""
+        try:
             client = self._get_gcm_client(recipient_type='android')
             resp = client.send(android_ids, self.content_json, **options)
             self._handle_gcm_response(resp, request_type='android')
             self._remove_invalid_gcm_devices(resp.errors)  # handle old IDs
+        except Exception as e:
+            logging.error("[GCM] Notification Failure: %s", str(e))
 
-        # Send to iOS devices (if any)
-        ios_ids = self.ios_devices
-        if len(ios_ids):
+    def _send_to_ios_devices(self, ios_ids, options):
+        try:
             # ... Via GCM
             # options['low_priority'] = False  # always use priority=high for ios
             # client = self._get_gcm_client(recipient_type='ios')
@@ -408,6 +387,40 @@ class GCMMessage(models.Model):
             self._handle_apns_response(resp)
             self._remove_invalid_apns_devices(client.get_expired_tokens())
             client.close()
+        except Exception as e:
+            logging.error("[APNS] Notification Failure: %s", str(e))
+
+    def send(self, collapse_key=None, delay_while_idle=False, time_to_live=None):
+        """Deliver this message to Google Cloud Messaging (both iOS & Android).
+
+        This method accepts the following options as keyword arguments; These
+        are options available thru pushjack and are just passed along.
+
+        * collapse_key: Omitted for messages with a payload (default), specify
+            'collapse_key' for a 'send-to-sync' message.
+        * delay_while_idle:  If True indicates that the message should not be
+            sent until the device becomes active. (default is False)
+        * time_to_live: Time to Live. Default is 4 weeks.
+
+        """
+        logging.info("Sending GCMMessage, id = %s", self.id)
+        options = {
+            'delay_while_idle': delay_while_idle,
+            'time_to_live': time_to_live,
+            'low_priority': True,
+        }
+        if collapse_key is not None:
+            options['collapse_key'] = collapse_key
+
+        # Send to Android devices (if any)
+        android_ids = self.android_devices
+        if len(android_ids):
+            self._send_to_android_devices(android_ids, options)
+
+        # Send to iOS devices (if any)
+        ios_ids = self.ios_devices
+        if len(ios_ids):
+            self._send_to_ios_devices(ios_ids, options)
 
         self._set_expiration()  # Now set an expiration date, if applicable.
         self.save()  # the above methods change state, so we need to save.
