@@ -45,7 +45,10 @@
             {{ goal|label }}
           {% endif %}
         </td>
-        <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
+        <td>
+          <a href="{{ goal.get_update_url }}" title="Edit"><i class="fa fa-edit"></i></a>
+          <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
+        </td>
         <td>
           {% for kw in goal.keywords %}
             <span class="label secondary">{{ kw }}</span>
