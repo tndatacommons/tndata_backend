@@ -1407,12 +1407,6 @@ class TestUserBehaviorAPI(V2APITestCase):
         }
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('parent_usercategory', response.data)
-        self.assertEqual(
-            response.data['parent_usercategory']['category']['title'], 'cat')
-        self.assertIn('parent_usergoal', response.data)
-        self.assertEqual(
-            response.data['parent_usergoal']['goal']['title'], 'goal')
         self.assertIn('behavior', response.data)
         self.assertEqual(response.data['behavior']['title'], 'behavior')
 
@@ -2086,17 +2080,6 @@ class TestUserActionAPI(V2APITestCase):
         }
         response = self.client.post(url, post_data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn('parent_usercategory', response.data)
-        self.assertEqual(
-            response.data['parent_usercategory']['category']['title'], 'cat')
-        self.assertIn('parent_usergoal', response.data)
-        self.assertEqual(
-            response.data['parent_usergoal']['goal']['title'], 'goal')
-        self.assertIn('parent_userbehavior', response.data)
-        self.assertEqual(
-            response.data['parent_userbehavior']['behavior']['title'],
-            'behavior'
-        )
         self.assertIn('action', response.data)
         self.assertEqual(response.data['action']['title'], 'a')
 

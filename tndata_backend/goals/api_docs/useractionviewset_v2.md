@@ -78,51 +78,6 @@ and the given `goal` and `category` IDs will be set as the `primary_goal` and
         'category': CATEGORY_ID
     }
 
-When POSTing the above information to `/api/users/actions/`, the returned result
-will also include additional information about these parent objects as
-`parent_usercategory`, `parent_usergoal`, and `parent_userbehavior` items within
-the `useraction` details.  For example, the result JSON, would be similar to
-the following:
-
-    {
-      "id": 5406,
-      "user": 1,
-      "action": {...},
-      "trigger": {...},
-      "next_reminder": null,
-      "editable": true,
-      "created_on": "2016-01-21 17:45:19+0000",
-      "primary_goal": 20,
-      "primary_category": 24,
-      "object_type": "useraction",
-      "parent_catgory": {
-        "id": 1160,
-        "user": 1,
-        "category": {...},
-        "created_on": "2016-01-20 23:21:16+0000",
-        "editable": true,
-        "object_type": "usercategory"
-      },
-      "parent_goal": {
-        "id": 1908,
-        "user": 1,
-        "goal": {...},
-        "editable": true,
-        "created_on": "2016-01-21 17:33:19+0000",
-        "primary_category": 24,
-        "object_type": "usergoal"
-      },
-      "parent_behavior": {
-        "id": 1962,
-        "user": 1,
-        "behavior": {...},
-        "created_on": "2016-01-21 17:33:19+0000",
-        "editable": true,
-        "object_type": "userbehavior"
-      }
-    }
-
-
 ## Viewing UserActions  <a href="#viewing-useractions">&para;</a>
 
 Additional information for the UserAction is available at
