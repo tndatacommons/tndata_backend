@@ -411,6 +411,10 @@ class GoalForm(forms.ModelForm):
     alphabetically."""
     categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by("title"))
 
+    # If we're duplicating a Behavior, we'll also include  reference to the
+    # original behavior's ID, so we know how to duplicate its Actions.
+    original_goal = forms.IntegerField(widget=forms.widgets.HiddenInput, required=False)
+
     class Meta:
         model = Goal
         fields = [

@@ -549,6 +549,61 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
             msg = ("This goal must have child behaviors that are either "
                    "published or in review before it can be reviewed.")
             messages.warning(self.request, msg)
+
+        # Save the user that created/upadted this object.
+        goal = self.object
+        goal.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+
+        # If we've duplicated a Goal, look up the original's id and
+        # duplicate all of it's Behaviors & Actions.
+        # NOTE: This will be slow and inefficient.
+        original = form.cleaned_data.get('original_goal', None)
+
+        if original:
+            prefix = md5(timezone.now().strftime("%c").encode('utf8')).hexdigest()[:6]
+            original_goal = Goal.objects.get(pk=original)
+
+            for old_behavior in original_goal.behavior_set.all():
+                title = "({}) Copy of {}".format(prefix, old_behavior.title)
+                note = "Created when duplicating Goal {}: {}".format(
+                    goal.id, goal.title)
+                params = {
+                    "title": title,
+                    "sequence_order": old_behavior.sequence_order,
+                    "description": old_behavior.description,
+                    "more_info": old_behavior.more_info,
+                    "informal_list": old_behavior.informal_list,
+                    "external_resource": old_behavior.external_resource,
+                    "source_link": old_behavior.source_link,
+                    "source_notes": old_behavior.source_notes,
+                    "notes": note,
+                }
+                new_behavior = Behavior.objects.create(**params)
+                new_behavior.goals.add(goal)
+                new_behavior.save()
+
+                duplicate_actions = []
+                for action in old_behavior.action_set.all():
+                    title = "({}) Copy of {}".format(prefix, action.title)
+                    params = {
+                        "title": title,
+                        "title_slug": slugify(title),
+                        "sequence_order": action.sequence_order,
+                        "behavior": new_behavior,
+                        "description": action.description,
+                        "more_info": action.more_info,
+                        "notification_text": action.notification_text,
+                        "external_resource": action.external_resource,
+                        "external_resource_name": action.external_resource_name,
+                        "priority": action.priority,
+                        "bucket": action.bucket,
+                        "notes": note,
+                    }
+                    duplicate_actions.append(Action(**params))
+                Action.objects.bulk_create(duplicate_actions)
         return result
 
 
@@ -563,6 +618,7 @@ class GoalDuplicateView(GoalCreateView):
                 'sequence_order': obj.sequence_order,
                 "categories": obj.categories.values_list("id", flat=True),
                 "description": obj.description,
+                "original_goal": obj.id,
             })
         except self.model.DoesNotExist:
             pass
@@ -739,7 +795,7 @@ class BehaviorDuplicateView(BehaviorCreateView):
                 "description": obj.description,
                 "more_info": obj.more_info,
                 "informal_list": obj.informal_list,
-                "external_resoruce": obj.external_resource,
+                "external_resource": obj.external_resource,
                 "goals": obj.goals.values_list("id", flat=True),
                 "source_link": obj.source_link,
                 "source_notes": obj.source_notes,
