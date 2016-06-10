@@ -1,6 +1,7 @@
 from calendar import Calendar
 from collections import defaultdict, Counter
 from datetime import datetime, timedelta
+from hashlib import md5
 
 from django.conf import settings
 from django.contrib import messages
@@ -18,6 +19,7 @@ from django.template.defaultfilters import timesince
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils import timezone
+from django.utils.text import slugify
 
 from django_fsm import TransitionNotAllowed
 from django_rq import job
@@ -687,17 +689,52 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
             created_by=self.request.user,
             updated_by=self.request.user
         )
+
+        # If we've duplicated a behavior, look up the original's id and
+        # duplicate all of it's Actions
+        original = form.cleaned_data.get('original_behavior', None)
+        if original:
+            original = Behavior.objects.get(pk=original)
+            duplicate_actions = []
+            for action in original.action_set.all():
+                note = "Created when duplicating Behavior {}: {}".format(
+                    self.object.id, self.object.title)
+                params = {
+                    "title": "Copy of {0}".format(action.title),
+                    "title_slug": slugify("Copy of {0}".format(action.title)),
+                    "sequence_order": action.sequence_order,
+                    "behavior": self.object,
+                    "description": action.description,
+                    "more_info": action.more_info,
+                    "notification_text": action.notification_text,
+                    "external_resource": action.external_resource,
+                    "external_resource_name": action.external_resource_name,
+                    "priority": action.priority,
+                    "bucket": action.bucket,
+                    "notes": note,
+                }
+                duplicate_actions.append(Action(**params))
+            Action.objects.bulk_create(duplicate_actions)
         return result
 
 
 class BehaviorDuplicateView(BehaviorCreateView):
-    """Initializes the Create form with a copy of data from another object."""
+    """Initializes the Create form with a copy of data from another object.
+
+    NOTE: This view simply populates the BehaviorForm's initial data; creating
+    the new behavior is handled by BehaviorCreateView.
+
+    """
     def get_initial(self, *args, **kwargs):
         initial = super(BehaviorDuplicateView, self).get_initial(*args, **kwargs)
         try:
             obj = self.get_object()
+            title = "({}) Copy of {}".format(
+                md5(timezone.now().strftime("%c").encode('utf8')).hexdigest()[:6],
+                obj.title
+            )
             initial.update({
-                "title": "Copy of {0}".format(obj.title),
+                "title": title,
                 "sequence_order": obj.sequence_order,
                 "description": obj.description,
                 "more_info": obj.more_info,
@@ -706,6 +743,7 @@ class BehaviorDuplicateView(BehaviorCreateView):
                 "goals": obj.goals.values_list("id", flat=True),
                 "source_link": obj.source_link,
                 "source_notes": obj.source_notes,
+                "original_behavior": obj.id,
             })
         except self.model.DoesNotExist:
             pass
@@ -2010,7 +2048,6 @@ def report_engagement(request):
     )
     # Do we have custom notification engagement data?
     has_ca_engagement = all(ca_aggregates.values())
-
 
     engagement = defaultdict(Counter)
     if has_engagement:
