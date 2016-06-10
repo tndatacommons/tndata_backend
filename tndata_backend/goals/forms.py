@@ -223,7 +223,7 @@ class BehaviorForm(forms.ModelForm):
     )
     # If we're duplicating a Behavior, we'll also include  reference to the
     # original behavior's ID, so we know how to duplicate its Actions.
-    original_behavior = forms.IntegerField(widget=forms.widgets.HiddenInput)
+    original_behavior = forms.IntegerField(widget=forms.widgets.HiddenInput, required=False)
 
     class Meta:
         model = Behavior
