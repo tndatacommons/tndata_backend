@@ -273,7 +273,7 @@ class TestBehaviorForm(TestCase):
         fields = sorted([
             'title', 'description', 'more_info', 'informal_list', 'notes',
             'external_resource', 'external_resource_name', 'goals', 'icon',
-            'source_link', 'source_notes', 'sequence_order',
+            'source_link', 'source_notes', 'sequence_order', 'original_behavior',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -292,6 +292,7 @@ class TestBehaviorForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
+            'original_behavior': '',
         }
         form = BehaviorForm(data)
         self.assertTrue(form.is_valid())
@@ -314,6 +315,7 @@ class TestBehaviorForm(TestCase):
             'source_link': '',
             'source_notes': '',
             'notes': '',
+            'original_behavior': '',
         }
         form = BehaviorForm(data)
         self.assertFalse(form.is_valid())
@@ -388,7 +390,7 @@ class TestGoalForm(TestCase):
         form = GoalForm()
         fields = sorted([
             'categories', 'title', 'description', 'icon', 'more_info', 'notes',
-            'keywords', 'sequence_order',
+            'keywords', 'sequence_order', 'original_goal',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -402,6 +404,7 @@ class TestGoalForm(TestCase):
             'icon': '',
             'notes': '',
             'more_info': '',
+            'original_goal': '',
         }
         form = GoalForm(data)
         self.assertTrue(form.is_valid())
@@ -418,6 +421,7 @@ class TestGoalForm(TestCase):
             'description': 'asdf',
             'icon': '',
             'notes': '',
+            'original_goal': '',
         }
         form = GoalForm(data)
         self.assertFalse(form.is_valid())
