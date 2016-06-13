@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
+from django.template.defaultfilters import timesince
 from django.utils.text import mark_safe
 
 import tablib
@@ -76,13 +77,13 @@ class ContentWorkflowAdmin(admin.ModelAdmin):
 
 class CategoryAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'state', 'created_by', 'updated_on', 'created_on',
+        'title', 'state', 'updated', 'created_on', 'group',
         'packaged_content', 'selected_by_default', 'featured',
     )
     search_fields = ['title', 'description', 'notes', 'id']
     list_filter = (
         'state', 'packaged_content', 'selected_by_default',
-        'featured',
+        'featured', 'grouping',
     )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
@@ -90,6 +91,12 @@ class CategoryAdmin(ContentWorkflowAdmin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.actions.append('delete_children')
+
+    def updated(self, obj):
+        return "{} ago".format(timesince(obj.updated_on))
+
+    def group(self, obj):
+        return "{} / {}".format(obj.grouping, obj.grouping_name)
 
     def delete_children(self, request, queryset):
         # publish the selected objects:
