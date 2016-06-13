@@ -55,6 +55,17 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     DEFAULT_PRIMARY_COLOR = "#2E7D32"
     DEFAULT_SECONDARY_COLOR = "#4CAF50"
 
+    # Grouping. We want to order the listed (featured?) categories by a group
+    # (if any) and we want to be able to specify a group's order. SO, the
+    # stored DB value indicates order (lower == first) and the name is how
+    # things will get listed.
+    GROUPING_CHOICES = (
+        (-1, "None"),
+        (0, "High School"),
+        (1, "College"),
+        (2, "Parents"),
+    )
+
     # URLMixin attributes
     urls_app_namespace = "goals"
     urls_fields = ['pk', 'title_slug']
@@ -135,11 +146,18 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Should this category and all of its content be "
                   "auto-selected for new users?"
     )
+    # TODO: remove 'featured' since it's technically replaced by the `grouping`
     featured = models.BooleanField(
         default=False,
         help_text="Featured categories are typically collection of content "
                   "provided by an agency/partner that we want to promote "
                   "publicy within the app."
+    )
+    grouping = models.IntegerField(
+        blank=True,
+        null=True,
+        default=-1,
+        choices=GROUPING_CHOICES
     )
 
     # -------------------------------------------------------------------------
@@ -201,6 +219,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
             ("decline_category", "Can Decline Categories"),
             ("publish_category", "Can Publish Categories"),
         )
+
+    @property
+    def grouping_name(self):
+        return self.get_grouping_display()
 
     @property
     def is_packaged(self):
