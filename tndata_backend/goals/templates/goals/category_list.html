@@ -66,6 +66,11 @@
                 <span class="label" data-tooltip aria-haspopup="true"
                   title="Featured categories get listed prominently within the app.">Featured</span>
               {% endif %}
+              {% if category.grouping >= 0 %}
+                <span data-tooltip aria-haspopup="true"
+                  title="Group order / name for this catgory." class="label secondary">
+                  {{ category.grouping }} / {{ category.grouping_name }}</span>
+              {% endif %}
 
               {# Icon (if any) #}
               {% with icon=category.get_absolute_icon %}

@@ -65,9 +65,10 @@ class CategorySerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Category
         fields = (
-            'id', 'order', 'featured', 'title', 'description',
-            'html_description', 'packaged_content', 'icon_url', 'image_url',
-            'color', 'secondary_color', 'selected_by_default', 'object_type',
+            'id', 'order', 'featured', 'grouping_name', 'grouping', 'title',
+            'description', 'html_description', 'packaged_content', 'icon_url',
+            'image_url', 'color', 'secondary_color', 'selected_by_default',
+            'object_type',
         )
 
 

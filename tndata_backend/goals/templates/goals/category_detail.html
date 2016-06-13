@@ -35,6 +35,11 @@
             <span data-tooltip aria-haspopup="true"
               title="This is a featured category." class="label">Featured</span>
           {% endif %}
+          {% if category.grouping >= 0 %}
+            <span data-tooltip aria-haspopup="true"
+              title="Group order / name for this catgory." class="label secondary">
+              {{ category.grouping }} / {{ category.grouping_name }}</span>
+          {% endif %}
         </dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
         <dt>Icon</dt><dd class="gray centered">

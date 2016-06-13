@@ -166,6 +166,8 @@ class SimpleCategoryField(serializers.RelatedField):
             'id': value.id,
             'order': value.order,
             'featured': value.featured,
+            'grouping_name': value.grouping_name,
+            'grouping': value.grouping,
             'title': value.title,
             'description': value.description,
             'html_description': value.rendered_description,

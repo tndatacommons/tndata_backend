@@ -19,6 +19,12 @@ Each Category has at least the following bits of information:
 * `packaged_content`: True or False. Is this category a package.
 * `selected_by_default`: If True, this category (and all of its content) will
   be auto-selected for new users when they sign up for the service.
+* `featured`: A Boolean value: Indicates whether or not the category should
+  be featured in the app.
+* `grouping`: An integer that determines how categories should be grouped
+  together and how groups should be ordered (lower numbers mean category groups
+  should be listed first). A value of `-1` means there is no grouping set.
+* `grouping_name`: A name that should be applied to a group.
 * `object_type`: Will always be the string `category`.
 
 ## Category Endpoints

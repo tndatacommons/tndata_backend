@@ -302,7 +302,7 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = [
             'packaged_content', 'package_contributors',
-            'selected_by_default', 'featured',
+            'selected_by_default', 'featured', 'grouping',
             'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
             'title', 'description', 'icon', 'image', 'color',
@@ -363,13 +363,13 @@ class CategoryForm(forms.ModelForm):
             del self.fields['featured']
             del self.fields['selected_by_default']
             details_fields = (
-                _("Category Details"), 'title', 'description', 'icon', 'image',
-                'color', 'secondary_color',
+                _("Category Details"), 'title', 'description', 'grouping',
+                'icon', 'image', 'color', 'secondary_color',
             )
         else:
             details_fields = (
                 _("Category Details"), 'title', 'description',
-                'selected_by_default', 'featured',
+                'grouping', 'selected_by_default', 'featured',
                 'icon', 'image', 'color', 'secondary_color',
             )
 

@@ -330,7 +330,7 @@ class TestCategoryForm(TestCase):
     def test_unbound(self):
         form = CategoryForm()
         fields = sorted([
-            'title', 'description', 'icon', 'image', 'color', 'notes',
+            'title', 'description', 'grouping', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
@@ -345,7 +345,7 @@ class TestCategoryForm(TestCase):
             'secondary_color', 'packaged_content', 'package_contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option', 'selected_by_default',
-            'featured',
+            'featured', 'grouping',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
