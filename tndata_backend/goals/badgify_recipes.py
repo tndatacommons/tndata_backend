@@ -8,16 +8,16 @@ See: https://github.com/ulule/django-badgify
 IMPLEMENTATION
 
 1. _X_ Create recipes as part of the goals app.
-2. ___ Cron jobs that will run the badgify_sync commands to do awards
-3. _X_ Listen for signals (Award.post_save?) and send a push notification when
+2. _X_ Listen for signals (Award.post_save?) and send a push notification when
        a user is awarded a badge. (wrap this in a waffle.switch)
-4. _X_ New app (badge_api?) that exposes a user's awarded badges
+3. _X_ New app (badge_api?) that exposes a user's awarded badges
+4. ___ Cron jobs that will run the badgify_sync commands to do awards
 
 ----
 
 WORKFLOW
 
-Typical workflow for best performances
+Typical workflow for best performances:
 
     $ python manage.py badgify_sync badges  # Creates badges from recipes
     $ python manage.py badgify_sync counts  # Denorm. counts (for performance)
@@ -25,7 +25,19 @@ Typical workflow for best performances
 # This one awards the badges, we need to run it more frequently, but we may
 # also need the signals (which will make it slower)
 
+TODO: This is currently only scheduled in staging, we need to schedul these
+      in production/worker.
+
     $ python manage.py badgify_sync awards --disable-signals
+
+
+UPDATING BADGE IMAGES
+
+If we need to update badge images, perform the following steps:
+
+1. run collectstatic (part of deployment)
+2. run badgify_sync badges --update
+
 
 ----
 
