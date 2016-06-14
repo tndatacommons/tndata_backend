@@ -60,10 +60,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     # stored DB value indicates order (lower == first) and the name is how
     # things will get listed.
     GROUPING_CHOICES = (
-        (-1, "None"),
-        (0, "High School"),
-        (1, "College"),
-        (2, "Parents"),
+        (-1, "General"),
+        (0, "Get ready for college"),
+        (1, "Succeed in College"),
+        (2, "Help your student succeed"),
     )
 
     # URLMixin attributes
@@ -210,7 +210,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         return self.title
 
     class Meta:
-        ordering = ['order', 'title', 'featured', ]
+        ordering = ['grouping', 'order', 'title', ]
         verbose_name = "Category"
         verbose_name_plural = "Categories"
         # add_category, change_category, delete_category are created by default.
