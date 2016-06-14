@@ -31,6 +31,7 @@ class SimpleCategorySerializer(ObjectTypeModelSerializer):
     html_description = serializers.ReadOnlyField(source="rendered_description")
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     image_url = serializers.ReadOnlyField(source="get_absolute_image")
+    featured = serializers.ReadOnlyField()
 
     class Meta:
         model = Category

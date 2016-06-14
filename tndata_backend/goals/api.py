@@ -99,7 +99,10 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(
                 selected_by_default=selected_by_default)
         if featured is not None:
-            self.queryset = self.queryset.filter(featured=featured)
+            # NOTE: We used to have a 'featured' field/attribute, but this was
+            # replaced by a grouping. So this filter will list all categories
+            # that have a non-negative (non-General) grouping.
+            self.queryset = self.queryset.filter(grouping__gte=0)
         return self.queryset
 
     def retrieve(self, request, pk=None):

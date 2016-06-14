@@ -309,10 +309,7 @@ class TestGoalEnrollment(TestCase):
             )
 
         # Create the content of library for the user.
-        cls.cat = mommy.make(
-            Category, title="C", featured=True,
-            order=0, state='published'
-        )
+        cls.cat = mommy.make(Category, title="C", order=0, state='published')
 
         # Create Goals
         cls.goal1 = _goal('G1', cls.cat, 0)

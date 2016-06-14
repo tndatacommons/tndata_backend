@@ -91,9 +91,11 @@
         </dd>
         <dt>Featured</dt>
         <dd>{{ category.featured|iconbool }}:
-          This category is {% if not category.featured %}not{% endif %} a featured
-          category and will {% if not category.featured %}not{% endif %} be
-          listed promintently within the app.
+          {% if category.grouping >= 0 %}
+          This category is featured as part of the
+          <strong>{{ category.get_grouping_display }}</strong>
+          group, and will be listed promintently within the app.
+          {% endif %}
         </dd>
       </dl>
       {% if category.is_packaged %}

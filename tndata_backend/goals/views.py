@@ -355,7 +355,7 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
 
         featured = self.request.GET.get('featured', None)
         if featured is not None:
-            kw['featured'] = bool(featured)
+            kw['grouping__gte'] = 0
 
         packaged = self.request.GET.get('packaged_content', None)
         if packaged is not None:
@@ -371,6 +371,8 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(self._filters())
+        if context.get('grouping__gte', None) == 0:
+            context['featured'] = True
         context['category_list'] = True
         return context
 
