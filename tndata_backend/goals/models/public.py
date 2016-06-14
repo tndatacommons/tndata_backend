@@ -64,6 +64,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         (0, "Get ready for college"),
         (1, "Succeed in College"),
         (2, "Help your student succeed"),
+        (3, "Featured"),
     )
 
     # URLMixin attributes
@@ -135,8 +136,9 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     # - selected_by_default: These are categories that we want to auto-enroll
     #   new users into. This means they'll have content in the app even if
     #   they don't select anything.
-    # - featured: Thes are categories that should get listed prominently in the
-    #   app, typically for a provider we want to promote.
+    # - grouping: a way to 'feature' certain categories, but display them in
+    #   a named group, together. The grouping value is stored as an integer, so
+    #   that we can also sort the groups easily.
     #
     # These are _mutually exclusive_ from packages. They're categories of
     # content, that we make really easy to get the user into the data.
@@ -145,13 +147,6 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         default=False,
         help_text="Should this category and all of its content be "
                   "auto-selected for new users?"
-    )
-    # TODO: remove 'featured' since it's technically replaced by the `grouping`
-    featured = models.BooleanField(
-        default=False,
-        help_text="Featured categories are typically collection of content "
-                  "provided by an agency/partner that we want to promote "
-                  "publicy within the app."
     )
     grouping = models.IntegerField(
         blank=True,
@@ -219,6 +214,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
             ("decline_category", "Can Decline Categories"),
             ("publish_category", "Can Publish Categories"),
         )
+
+    @property
+    def featured(self):
+        return self.grouping >= 0
 
     @property
     def grouping_name(self):
