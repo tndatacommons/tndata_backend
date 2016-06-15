@@ -1798,6 +1798,14 @@ def debug_progress(request):
     analyze their DailyProgress info.
 
     """
+    # -------------------------------------------------------------------------
+    # TODO: Figure out how to compile data for user "streaks", ie. days in a
+    # row in which a user has interacted with the app.
+    # -------------------------------------------------------------------------
+    # UserCompletedAction --> state=completed, updated_on dates
+    # DailyProgress has numbers aggregated for completed, snoozed, dismissed
+    # -------------------------------------------------------------------------
+
     User = get_user_model()
     email = request.GET.get('email_address', None)
     user = None
@@ -1805,6 +1813,7 @@ def debug_progress(request):
     next_goals = []
     next_behaviors = []
     next_actions = []
+    streaks = []
 
     try:
         user = User.objects.get(email__icontains=email)
@@ -1840,7 +1849,43 @@ def debug_progress(request):
             next_behaviors.values_list('behavior', flat=True), published=True)
         next_actions = next_actions.order_by("next_trigger_date")
 
+        # Streaks.
+        # ---------------------------------------------------------------------
+        # Days in a row in which the user said "got it" (completed) or
+        # dismissed/snoozed an action.
+        def _fill_streaks(input_values, since, default_tup=()):
+            """fills in  data for missing dates"""
+            dates = sorted([dt.date() for dt in dates_range(since)])
+            index = 0  # index of the last, non-generated item
+            for dt in dates:
+                if index < len(input_values) and input_values[index][0] == dt:
+                    yield input_values[index]
+                    index += 1
+                else:
+                    data = (dt, ) + default_tup
+                    yield data
+
+        # Pulling from DailyProgress
+        streaks = daily_progresses.values_list(
+            'actions_completed', 'actions_snoozed', 'actions_dismissed',
+            'updated_on'
+        ).order_by('updated_on')
+        streaks = [
+            (
+                updated.date(),
+                True if comp > 0 else (snoozed > 0 or dismissed > 0),
+                comp,
+                snoozed,
+                dismissed
+            )
+            for comp, snoozed, dismissed, updated in streaks
+        ]
+        streaks = list(_fill_streaks(streaks, since, (False, 0, 0, 0)))
+        # ---------------------------------------------------------------------
+
     context = {
+        'streaks': streaks,
+        'streaks_dates': [t[0].strftime("%Y-%m-%d") for t in streaks],
         'email': email,
         'searched_user': user,
         'since': since,
@@ -2120,8 +2165,8 @@ def report_engagement(request):
         # now convert to a sorted list of tuples
         # (2016-01-02, snoozed, dismissed, completed)
         engagement = sorted([
-            (dt, data['snoozed'], data['dismissed'], data['completed'])
-            for dt, data in engagement.items()
+            (t, data['snoozed'], data['dismissed'], data['completed'])
+            for t, data in engagement.items()
         ])
 
     # Same as engagement, but for custom actions
@@ -2134,8 +2179,8 @@ def report_engagement(request):
             ca_engagement[dt]['dismissed'] += dp.customactions_dismissed
 
         ca_engagement = sorted([
-            (dt, data['snoozed'], data['dismissed'], data['completed'])
-            for dt, data in ca_engagement.items()
+            (t, data['snoozed'], data['dismissed'], data['completed'])
+            for t, data in ca_engagement.items()
         ])
 
     context = {

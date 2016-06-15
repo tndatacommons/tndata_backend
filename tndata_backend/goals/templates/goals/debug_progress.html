@@ -6,7 +6,6 @@
 
 {% block title %}Debug Progress{% endblock %}
 
-{% comment %}
 {% block head %}
   {{ block.super }}
   <script src="{% static 'js/Chart.min.js' %}"></script>
@@ -20,9 +19,12 @@
     padding:0;
     margin: 0 5px 0 0;
   }
+
+  tr.highlight {
+    background-color: #ffb;
+  }
   </style>
 {% endblock %}
-{% endcomment %}
 
 
 {% block content %}
@@ -49,54 +51,72 @@
 </div>
 
 {% if searched_user %}
-{% comment %}
-{# TODO: Revise this chart to show stats from the user's DailyProgress over time #}
-{# --- UserCompletedActions --- #}
 <div class="row">
   <div class="large-12 small-12 columns">
-    <h2>User's Completed Actions</h2>
-    <div id="uca-legend" class="pull-right panel legend"></div>
-    <p>The following chart shows the total number of Action that were snoozed,
-    dismissed, or completed for all users on a given day.</p>
+    <h2>Streaks <small>based on <code>DailyProgress</code> data</small></h2>
 
-    <canvas id="uca-data" width="970" height="400"></canvas>
+    <div id="streaks-legend" class="pull-right panel legend"></div>
+    <canvas id="streaks-data" width="970" height="400"></canvas>
     <script>
-    var ctx = document.getElementById("uca-data").getContext("2d");
+    var ctx = document.getElementById("streaks-data").getContext("2d");
     var data = {
-      labels: {{ uca_labels|json|safe }},
-      datasets: [{% for completed, snoozed, dismissed in uca_datasets %}
+      labels: {{ streaks_dates|json|safe }},
+      datasets: [
         {
-            label: "{{completed.label}}",
+            label: "Completed",
             fillColor: "rgba(151,200,187,0.5)",
             strokeColor: "rgba(151,200,187,0.8)",
             highlightFill: "rgba(151,200,187,0.75)",
             highlightStroke: "rgba(151,200,187,1)",
-            data: {{completed.data|json|safe}},
+            data: [{% for data in streaks %}{{ data.2|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
         },
         {
-            label: "{{snoozed.label}}",
+            label: "Snoozed",
             fillColor: "rgba(151,151,151,0.5)",
             strokeColor: "rgba(151,151,151,0.8)",
             highlightFill: "rgba(151,151,151,0.75)",
             highlightStroke: "rgba(151,151,151,1)",
-            data: {{snoozed.data|json|safe}},
+            data: [{% for data in streaks %}{{ data.3|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
         },
         {
-            label: "{{dismissed.label}}",
+            label: "Dismissed",
             fillColor: "rgba(220,180,220,0.5)",
             strokeColor: "rgba(220,180,220,0.8)",
             highlightFill: "rgba(220,180,220,0.75)",
             highlightStroke: "rgba(220,180,220,1)",
-            data: {{dismissed.data|json|safe}},
+            data: [{% for data in streaks %}{{ data.4|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
         }
-      {% endfor %}]
+      ]
     }
     var c = new Chart(ctx).Bar(data);
-    document.getElementById("uca-legend").innerHTML = c.generateLegend();
+    document.getElementById("streaks-legend").innerHTML = c.generateLegend();
     </script>
+
+
+    <table>
+    <thead>
+      <tr>
+        <td>Day</td>
+        <td>Streak?</td>
+        <td>Completed</td>
+        <td>Snoozed</td>
+        <td>Dismissed</td>
+      </tr>
+    </thead>
+    <tbody>
+    {% for dt, ok, dp_completed, dp_snoozed, dp_dismissed in streaks %}
+      <tr{% if ok %} class="highlight"{% endif %}>
+        <td>{{ dt }}</td>
+        <td>{{ ok|iconbool }}</td>
+        <td>{{ dp_completed|default:"-" }}</td>
+        <td>{{ dp_snoozed|default:"-" }}</td>
+        <td>{{ dp_dismissed|default:"-" }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
   </div>
 </div> {# end .row #}
-{% endcomment %}
 
 <div class="row">
   <div class="large-6 small-12 columns">
