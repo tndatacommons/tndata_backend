@@ -1,6 +1,9 @@
+from contextlib import ContextDecorator
+from functools import wraps
+from time import time
+
 from django.conf import settings
 from django.core.cache import cache
-from functools import wraps
 
 
 def cached_method(cache_key, timeout=settings.CACHE_TIMEOUT):
@@ -44,3 +47,42 @@ def cached_method(cache_key, timeout=settings.CACHE_TIMEOUT):
             return func(*args, **kwargs)
         return wrapper
     return decorate
+
+
+class timed(ContextDecorator):
+    """A simple context manager / decorator that captures execution time.
+
+    Usage:
+
+        with timed():
+            # do some stuff
+
+    Or as a decorator:
+
+        @timed()
+        def func():
+            # ...
+
+    You can also pass in an `output` callable that will be passed the elasped
+    time. For example, with `print`:
+
+        @timed(output=print)
+        def func():
+            # ...
+
+        func() -> print(elapsed)
+
+    """
+    def __init__(self, *args, **kwargs):
+        self.output = kwargs.pop('output', None)
+        super().__init__(*args, **kwargs)
+
+    def __enter__(self):
+        self.start = time()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.end = time()
+        self.elapsed = self.end - self.start
+        if self.output is not None:
+            self.output(self.elapsed)
