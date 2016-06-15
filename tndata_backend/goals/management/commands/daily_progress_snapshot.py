@@ -52,7 +52,7 @@ class Command(BaseCommand):
             users = User.objects.filter(is_active=True)
 
         # Only do this for users whose progress hasn't been updated recently.
-        dt = timezone.today() - timedelta(hours=8)
+        dt = timezone.now() - timedelta(hours=8)
         users = users.exclude(dailyprogress__updated_on__gte=dt).distinct()
 
         # Create snapshots for those users in the given date range.
