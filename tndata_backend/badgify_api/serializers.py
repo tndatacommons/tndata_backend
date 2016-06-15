@@ -10,7 +10,7 @@ class BadgeSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Badge
         fields = (
-            'name', 'slug', 'description', 'image', 'users_count', 'object_type'
+            'id', 'name', 'slug', 'description', 'image', 'users_count', 'object_type'
         )
 
     def get_object_type(self, obj):
