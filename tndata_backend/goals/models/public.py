@@ -62,7 +62,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     GROUPING_CHOICES = (
         (-1, "General"),
         (0, "Get ready for college"),
-        (1, "Succeed in College"),
+        (1, "Succeed in college"),
         (2, "Help your student succeed"),
         (3, "Featured"),
     )
