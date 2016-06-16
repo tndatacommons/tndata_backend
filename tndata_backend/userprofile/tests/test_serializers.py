@@ -53,10 +53,10 @@ class TestSimpleProfileSerializer(TestCase):
         self.assertEqual(serializer.validated_data['zipcode'], '12345')
         self.assertEqual(serializer.validated_data['birthday'], date(1999, 12, 31))
         self.assertEqual(serializer.validated_data['sex'], "female")
-        self.assertIsTrue(serializer.validated_data['employed'])
-        self.assertIsTrue(serializer.validated_data['is_parent'])
-        self.assertIsTrue(serializer.validated_data['in_relationship'])
-        self.assertIsTrue(serializer.validated_data['has_degree'])
+        self.assertTrue(serializer.validated_data['employed'])
+        self.assertTrue(serializer.validated_data['is_parent'])
+        self.assertTrue(serializer.validated_data['in_relationship'])
+        self.assertTrue(serializer.validated_data['has_degree'])
 
     def test_serializer_is_valid_with_empty_data(self):
         data = self.data.copy()
