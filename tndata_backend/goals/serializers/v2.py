@@ -1,6 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 from utils.serializers import ObjectTypeModelSerializer
+from utils.serializer_fields import ReadOnlyDatetimeField
 
 from ..models import (
     Action,
@@ -16,7 +17,6 @@ from ..models import (
 )
 from ..serializer_fields import (
     CustomTriggerField,
-    ReadOnlyDatetimeField,
     SimpleActionField,
     SimpleBehaviorField,
     SimpleCategoryField,

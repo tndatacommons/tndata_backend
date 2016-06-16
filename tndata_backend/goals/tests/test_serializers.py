@@ -7,10 +7,10 @@ from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from rest_framework import serializers
+from utils.serializer_fields import ReadOnlyDatetimeField
 
 from .. models import Trigger
 from .. serializers import CustomTriggerSerializer
-from ..serializer_fields import ReadOnlyDatetimeField
 
 User = get_user_model()
 
