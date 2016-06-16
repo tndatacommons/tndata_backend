@@ -32,11 +32,12 @@ from utils import user_utils
 from utils.decorators import cached_method
 from utils.dateutils import format_datetime
 from utils.serializers import ObjectTypeModelSerializer
+from utils.serializer_fields import NullableDateField
 
 
 class SimpleProfileSerializer(ObjectTypeModelSerializer):
-
     object_type = serializers.SerializerMethodField(read_only=True)
+    birthday = NullableDateField()
 
     class Meta:
         model = models.UserProfile
