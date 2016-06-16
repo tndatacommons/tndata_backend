@@ -689,3 +689,28 @@ class TestSimpleProfileAPI(V2APITestCase):
         self.assertTrue(profile.is_parent)
         self.assertTrue(profile.in_relationship)
         self.assertTrue(profile.has_degree)
+
+    def test_put_partial_profile(self):
+        """Test updating userprofiles with partial data"""
+        url = self.get_url('profile-detail', args=[self.profile.id])
+        payload = {
+            'timezone': "America/New_York",
+            'maximum_daily_notifications': 1,
+            'zipcode': '',
+            'birthday': '',
+            'sex': '',
+        }
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, payload)
+        print(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        profile = UserProfile.objects.get(pk=self.profile.id)
+        self.assertEqual(profile.timezone, 'America/New_York')
+        self.assertEqual(profile.maximum_daily_notifications, 1)
+        self.assertEqual(profile.zipcode, '')
+        self.assertEqual(profile.birthday, None)
+        self.assertEqual(profile.get_sex_display(), "")
