@@ -713,4 +713,4 @@ class TestSimpleProfileAPI(V2APITestCase):
         self.assertEqual(profile.maximum_daily_notifications, 1)
         self.assertEqual(profile.zipcode, '')
         self.assertEqual(profile.birthday, None)
-        self.assertEqual(profile.get_sex_display(), "")
+        self.assertEqual(profile.get_sex_display(), "Prefer not to answer")

@@ -2,7 +2,8 @@ from datetime import date
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
-from .. serializers import SimpleProfileSerializer
+
+from .. serializers.v2 import SimpleProfileSerializer
 
 
 DRF_DT_FORMAT = settings.REST_FRAMEWORK['DATETIME_FORMAT']
@@ -29,7 +30,7 @@ class TestSimpleProfileSerializer(TestCase):
 
     def setUp(self):
         self.data = {
-            'timezone': "America/New_York",
+            'timezone': "America/Chicago",
             'maximum_daily_notifications': 42,
             'needs_onboarding': False,
             'zipcode': '12345',
@@ -49,10 +50,31 @@ class TestSimpleProfileSerializer(TestCase):
         self.assertEqual(serializer.validated_data['timezone'], 'America/Chicago')
         self.assertEqual(
             serializer.validated_data['maximum_daily_notifications'], 42)
-        self.assertEqual(serializer.validated_data['zipcode'], 12345)
+        self.assertEqual(serializer.validated_data['zipcode'], '12345')
         self.assertEqual(serializer.validated_data['birthday'], date(1999, 12, 31))
         self.assertEqual(serializer.validated_data['sex'], "female")
         self.assertIsTrue(serializer.validated_data['employed'])
         self.assertIsTrue(serializer.validated_data['is_parent'])
         self.assertIsTrue(serializer.validated_data['in_relationship'])
         self.assertIsTrue(serializer.validated_data['has_degree'])
+
+    def test_serializer_is_valid_with_empty_data(self):
+        data = self.data.copy()
+        data['birthday'] = ''
+        data['zipcode'] = ''
+        data['sex'] = ''
+        del data['employed']
+        del data['is_parent']
+        del data['in_relationship']
+        del data['has_degree']
+
+        serializer = SimpleProfileSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+        # verify validated data
+        self.assertEqual(serializer.validated_data['timezone'], 'America/Chicago')
+        self.assertEqual(
+            serializer.validated_data['maximum_daily_notifications'], 42)
+        self.assertEqual(serializer.validated_data['zipcode'], '')
+        self.assertEqual(serializer.validated_data['birthday'], None)
+        self.assertEqual(serializer.validated_data['sex'], '')
