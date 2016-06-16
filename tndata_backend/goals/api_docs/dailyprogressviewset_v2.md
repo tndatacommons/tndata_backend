@@ -37,7 +37,16 @@ Send a PUT request with values you wish to update to the detail url:
 `/api/users/progress/{id}/`. For example, the following would change the
 number of actions completed: `{'actions_completed': 5}`
 
-## Daily Check-in
+
+----
+
+## Additional endpoints
+
+There are a few additional API endpoints that you can use to work with
+`DailyProgress` data for a user. These include:
+
+
+### Daily Check-in
 
 To update a user's daily check-in values for a goal, send a POST request
 to `/api/users/progress/checkin/` with the following data:
@@ -49,6 +58,26 @@ to `/api/users/progress/checkin/` with the following data:
 
 This endpoint will either return a error message when things go wrong, or
 will return a serialized version of the `DailyProgress` object.
+
+### Streaks
+
+Retrieve a list of (recent) days in which a user _completed_ an action or
+custom action. You can retrieve a user's streaks from `/api/users/progress/streaks/`.
+
+
+Results will include a list of `["date", boolean]` values that tells you whether
+or not the user interacted with the app on a particular date.
+
+    {
+        "count": 30,
+        "results": [
+            ["2016-05-18", true],
+            ["2016-05-19", true],
+            ["2016-05-20", false],
+            ...
+        ]
+    }
+
 
 ----
 
