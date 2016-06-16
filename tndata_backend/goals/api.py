@@ -2,7 +2,7 @@ import waffle
 from collections import OrderedDict
 
 from django.conf import settings as project_settings
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 
 from django_rq import job
@@ -1579,7 +1579,7 @@ class DailyProgressViewSet(VersionedViewSetMixin,
                     yield input_values[index]
                     index += 1
                 else:
-                    yield (dt, False)
+                    yield (dt, 0)
 
         results = OrderedDict(count=0, results=list())
         try:
@@ -1590,13 +1590,16 @@ class DailyProgressViewSet(VersionedViewSetMixin,
         if not self.request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Generate streaks data
+        # Generate streaks data &
+        # add actions completed + customactions completed
         progresses = models.DailyProgress.objects.filter(
             Q(actions_completed__gt=0) | Q(customactions_completed__gt=0),
             user=request.user
-        )
-        progresses = progresses.datetimes('updated_on', 'day')
-        progresses = [(dt, True) for dt in progresses]
+        ).annotate(
+            total=F('actions_completed') + F('customactions_completed')
+        ).distinct()
+        progresses = progresses.values_list('updated_on', 'total')
+        progresses = [(dt.date(), total) for dt, total in progresses]
         progresses = list(_fill_streaks(progresses, days=days))
         results['count'] = len(progresses)
         results['results'] = progresses

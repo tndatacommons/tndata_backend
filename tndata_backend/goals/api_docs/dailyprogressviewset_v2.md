@@ -64,16 +64,16 @@ will return a serialized version of the `DailyProgress` object.
 Retrieve a list of (recent) days in which a user _completed_ an action or
 custom action. You can retrieve a user's streaks from `/api/users/progress/streaks/`.
 
-
-Results will include a list of `["date", boolean]` values that tells you whether
-or not the user interacted with the app on a particular date.
+Results will include a list of `["date", int]` values that tells you how many
+times the user positively interacted with the app on a particular date (i.e.
+self-reported "got it" on some action).
 
     {
         "count": 30,
         "results": [
-            ["2016-05-18", true],
-            ["2016-05-19", true],
-            ["2016-05-20", false],
+            ["2016-05-18", 4],
+            ["2016-05-19", 3],
+            ["2016-05-20", 0],
             ...
         ]
     }
