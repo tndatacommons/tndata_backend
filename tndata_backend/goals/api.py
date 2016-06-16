@@ -1,4 +1,5 @@
 import waffle
+from collections import OrderedDict
 
 from django.conf import settings as project_settings
 from django.db.models import Q
@@ -16,6 +17,7 @@ from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
 
+from utils.dateutils import dates_range
 from utils.user_utils import local_day_range
 from utils.mixins import VersionedViewSetMixin
 
@@ -1507,10 +1509,6 @@ class DailyProgressViewSet(VersionedViewSetMixin,
 
         return Response(data={'error': err_msg}, status=status.HTTP_400_BAD_REQUEST)
 
-    # -------------------------------------------------------------------------
-    # TODO: Allow users to view their bucket for a bheavior and to manually set
-    # their bucket/status (DailyProgress.set_status)
-    # -------------------------------------------------------------------------
     @list_route(methods=['get', 'post'], permission_classes=[IsOwner], url_path='behaviors')
     def behavior_status(self, request, pk=None):
         """Set or list the status of your behaviors (i.e. their current bucket)
@@ -1562,4 +1560,44 @@ class DailyProgressViewSet(VersionedViewSetMixin,
         except models.DailyProgress.DoesNotExist:
             pass
 
+        return Response(data=results, status=status.HTTP_200_OK)
+
+    @list_route(methods=['get'], permission_classes=[IsOwner], url_path='streaks')
+    def streaks(self, request, pk=None):
+        """
+
+        Endpoint: [/api/users/progress/streaks/](/api/users/progress/streaks/)
+
+
+        """
+        def _fill_streaks(input_values, days=30):
+            """fills in data for missing dates"""
+            dates = sorted([dt.date() for dt in dates_range(days)])
+            index = 0  # index of the last, non-generated item
+            for dt in dates:
+                if index < len(input_values) and input_values[index][0] == dt:
+                    yield input_values[index]
+                    index += 1
+                else:
+                    yield (dt, False)
+
+        results = OrderedDict(count=0, results=list())
+        try:
+            days = int(self.request.GET.get('days', 30))
+        except ValueError:
+            pass
+
+        if not self.request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Generate streaks data
+        progresses = models.DailyProgress.objects.filter(
+            Q(actions_completed__gt=0) | Q(customactions_completed__gt=0),
+            user=request.user
+        )
+        progresses = progresses.datetimes('updated_on', 'day')
+        progresses = [(dt, True) for dt in progresses]
+        progresses = list(_fill_streaks(progresses, days=days))
+        results['count'] = len(progresses)
+        results['results'] = progresses
         return Response(data=results, status=status.HTTP_200_OK)
