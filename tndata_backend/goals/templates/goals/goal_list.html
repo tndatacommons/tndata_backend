@@ -47,14 +47,22 @@
         </td>
         <td>
           <a href="{{ goal.get_update_url }}" title="Edit"><i class="fa fa-edit"></i></a>
-          <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
+          <a href="{{ goal.get_absolute_url }}"
+             data-tooltip aria-haspopup="true"
+             title="{{ goal.description }}">{{ goal }}</a>
         </td>
         <td>
           {% for kw in goal.keywords %}
             <span class="label secondary">{{ kw }}</span>
           {% endfor %}
         </td>
-        <td>{{ goal.behavior_set.all|join:", " }}</td>
+        <td>
+          {% for behavior in goal.behavior_set.all %}
+            <span class="label secondary"
+                  data-tooltip aria-haspopup="true"
+                  title="{{ behavior.description }}">{{ behavior }}</span>
+          {% endfor %}
+        </td>
         <td>{{ goal.categories.all|join:", " }}</td>
         <td class="gray">
           {% with icon=goal.get_absolute_icon %}

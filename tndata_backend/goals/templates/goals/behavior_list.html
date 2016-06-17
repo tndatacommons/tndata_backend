@@ -68,7 +68,9 @@
           <td>
             <a href="{{ behavior.get_update_url }}" title="Edit">
               <i class="fa fa-edit"></i></a>
-            <a href="{{ behavior_url }}">{{ behavior }}</a>
+            <a href="{{ behavior_url }}"
+               data-tooltip aria-haspopup="true"
+               title="{{ behavior.description }}">{{ behavior }}</a>
           </td>
           <td style="width:200px;max-width: 200px;">
             {{ behavior.informal_list|linebreaksbr|default:"-" }}
@@ -93,7 +95,9 @@
                   {{ behavior.goals.count }}</span></a>
                 <div id="behavior-{{behavior.id}}-goals" class="content">
                 {% for g in behavior.goals.all %}
-                  <a href="{{ g.get_absolute_url }}">
+                  <a href="{{ g.get_absolute_url }}"
+                     data-tooltip aria-haspopup="true"
+                     title="{{ g.description }}">
                     <span class="label secondary radius">{{ g }}</span>
                   </a>
                 {% endfor %}
@@ -105,7 +109,9 @@
                   {{ behavior.action_set.count }}</span></a>
                 <div id="behavior-{{behavior.id}}-actions" class="content">
                 {% for a in behavior.action_set.all %}
-                  <a href="{{ a.get_absolute_url }}">
+                  <a href="{{ a.get_absolute_url }}"
+                     data-tooltip aria-haspopup="true"
+                     title="{{ a.description }}">
                     <span class="label secondary radius">{{ a }}</span>
                   </a>
                 {% endfor %}

@@ -174,7 +174,9 @@
               <dt class="clearfix">
                 <div class="pull-right">{{ behavior|label }}</div>
                 {{ behavior.sequence_order }}:
-                <a href="{{ behavior.get_absolute_url }}">{{behavior}}</a>
+                <a href="{{ behavior.get_absolute_url }}"
+                   data-tooltip aria-haspopup="true"
+                   title="{{ behavior.description }}">{{behavior}}</a>
               </dt>
               <dd class="clearfix">
                 <ul class="action-list">
@@ -183,7 +185,9 @@
                     {{ action|label }}
                     <span class="label secondary">{{ action.get_action_type_display }}</span>
                     {{ action.sequence_order }}:
-                    <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+                    <a href="{{ action.get_absolute_url }}"
+                       data-tooltip aria-haspopup="true"
+                       title="{{ action.description }}">{{ action }}</a>
                     {% with trigger=action.default_trigger %}
                       {% if trigger %}
                         <br/><small>{{ trigger.time_details }}</small>

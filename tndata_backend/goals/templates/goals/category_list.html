@@ -102,9 +102,11 @@
               <li class="accordion-navigation">
                 <a href="#category-{{category.id}}-goals">Goals</a>
                 <div id="category-{{category.id}}-goals" class="content">
-                {% for c in category.goals %}
-                  <a href="{{ c.get_absolute_url }}">
-                    <span class="label secondary radius">{{ c }}</span>
+                {% for goal in category.goals %}
+                  <a href="{{ goal.get_absolute_url }}"
+                     data-tooltip aria-haspopup="true"
+                     title="{{ goal.description }}">
+                    <span class="label secondary radius">{{ goal }}</span>
                   </a>
                 {% endfor %}
                 </div>
@@ -113,7 +115,9 @@
                 <a href="#category-{{category.id}}-behaviors">Behaviors</a>
                 <div id="category-{{category.id}}-behaviors" class="content">
                 {% for b in category.behaviors %}
-                  <a href="{{ b.get_absolute_url }}">
+                  <a href="{{ b.get_absolute_url }}"
+                     data-tooltip aria-haspopup="true"
+                     title="{{ b.description }}">
                     <span class="label secondary radius">{{ b }}</span>
                   </a>
                 {% endfor %}

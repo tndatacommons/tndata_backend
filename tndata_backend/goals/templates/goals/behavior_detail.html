@@ -99,7 +99,9 @@
         <li>
           {{ goal|label }}
           <strong>{{ goal.sequence_order }}:</strong>
-          <a href="{{ goal.get_absolute_url }}">{{ goal }}</a>
+          <a href="{{ goal.get_absolute_url }}"
+             data-tooltip aria-haspopup="true"
+             title="{{ goal.description }}" >{{ goal }}</a>
         </li>
       {% empty %}
         <li><em>This behavior is not associated with any Goals.</em></li>
@@ -132,7 +134,9 @@
           {# -------------------------------------------- #}
           {{ action|label }} <span class="label secondary">
             {{ action.get_action_type_display }}</span>
-          <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+          <a href="{{ action.get_absolute_url }}"
+             data-tooltip aria-haspopup="true"
+             title="{{ action.description }}">{{ action }}</a>
           <small>{{ action.default_trigger.time_details }}</small>
         </li>
       {% empty %}

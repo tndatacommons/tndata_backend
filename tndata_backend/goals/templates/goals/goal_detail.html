@@ -86,7 +86,9 @@
         <li>
           {{behavior|label}}
           <strong>
-            <a href="{{ behavior.get_absolute_url }}">{{behavior}}</a>
+            <a href="{{ behavior.get_absolute_url }}"
+               data-tooltip aria-haspopup="true"
+               title="{{ behavior.description }}">{{behavior}}</a>
           </strong>
           {# -- Allow re-ordering behaviors --------------- #}
           {% if user|is_author %}
@@ -123,8 +125,11 @@
                 </select>
                 {% endif %}
                 {# -------------------------------------------- #}
-                {{ action|label }} <span class="label secondary">{{ action.get_action_type_display }}</span>
-                <a href="{{ action.get_absolute_url }}">{{ action }}</a>
+                {{ action|label }} <span class="label secondary">
+                  {{ action.get_action_type_display }}</span>
+                <a href="{{ action.get_absolute_url }}"
+                   data-tooltip aria-haspopup="true"
+                   title="{{ action.description }}">{{ action }}</a>
                 <small>{{ action.default_trigger.time_details }}</small>
               </li>
             {% endfor %}

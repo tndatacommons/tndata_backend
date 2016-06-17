@@ -58,8 +58,9 @@
           <td>
             <a href="{{ action.get_update_url }}" title="Edit">
               <i class="fa fa-edit"></i></a>
-            <a href="{{ action.get_absolute_url }}">
-              {{ action }}</a>
+            <a href="{{ action.get_absolute_url }}"
+               data-tooltip aria-haspopup="true"
+               title="{{ action.description }}">{{ action }}</a>
           </td>
           <td>{{ action.notification_text }}</td>
           <td>{{ action.behavior }}</td>
