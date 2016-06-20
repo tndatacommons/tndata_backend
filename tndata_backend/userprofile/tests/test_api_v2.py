@@ -705,7 +705,6 @@ class TestSimpleProfileAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         response = self.client.put(url, payload)
-        print(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         profile = UserProfile.objects.get(pk=self.profile.id)
