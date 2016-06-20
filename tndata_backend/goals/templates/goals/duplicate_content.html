@@ -16,10 +16,15 @@
 <h1>Duplicate</h1>
 <div class="row">
   <div class="large-6 small-12 columns">
-    <p>You are about to duplicate all content within {{ category }}. This will
-    result in a copy of all Goals, Behaviors, and Actions within the Category. To
-    proceed, you must specify a new <em>prefix</em> for the title of each content
-    item.</p>
+    <p>You are about to duplicate all content within
+    <strong>{{ category }}</strong>. This will result in a copy of all Goals,
+    Behaviors, and Notifications within the Category.</p>
+
+    <p>To proceed, you must specify a new title <em>prefix</em> for each new
+    Goal and Behavior. New notifications will be an exact copy of the
+    original. For example, a goal entitled, "Learn to read" will be copied into
+    a goal entitled, "Copy of Learn to read" when the <em>prefix</em> is
+    specified as "Copy of".</p>
   </div>
   <div class="large-6 small-12 columns">
     <form action="{% url 'goals:duplicate-content' category.id category.title_slug %}" method="post">
