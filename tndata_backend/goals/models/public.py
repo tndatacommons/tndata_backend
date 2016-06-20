@@ -409,15 +409,15 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
                     default_trigger = None
                     if action.default_trigger:
                         default_trigger = action.default_trigger
-                        default_trigger.pk = None
+                        default_trigger.pk = None  # HACK to get a new object.
                         default_trigger.name = "{} {}".format(
                             prefix,
                             action.default_trigger.name
                         )
                         default_trigger.save()
 
-                    Action.objects.update_or_create(
-                        title="{} {}".format(prefix, action.title),
+                    Action.objects.create(
+                        title=action.title,
                         behavior=new_behavior,
                         action_type=action.action_type,
                         sequence_order=action.sequence_order,
