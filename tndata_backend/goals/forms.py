@@ -831,6 +831,7 @@ class UploadImageForm(forms.Form):
 
 class TitlePrefixForm(forms.Form):
     prefix = forms.CharField(
+        initial="Copy of",
         help_text="Prefix text for all new Titles",
         required=True,
     )
