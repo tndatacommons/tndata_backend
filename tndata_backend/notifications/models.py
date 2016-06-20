@@ -16,13 +16,17 @@ from django.utils import timezone
 
 from jsonfield import JSONField
 from pushjack import APNSClient, APNSSandboxClient, GCMClient
-from pushjack.exceptions import GCMInvalidRegistrationError
+from pushjack.exceptions import (
+    APNSInvalidTokenError,
+    GCMInvalidRegistrationError,
+)
 
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
 )
 from redis_metrics import metric
+from utils.slack import post_message
 
 from . import queue
 from . managers import GCMMessageManager
@@ -387,6 +391,18 @@ class GCMMessage(models.Model):
             self._handle_apns_response(resp)
             self._remove_invalid_apns_devices(client.get_expired_tokens())
             client.close()
+        except APNSInvalidTokenError:
+            err_msg = "[APNS] removing device with APNS Token for message=%s"
+            logging.warning(err_msg, str(self.id))
+            # NOTE: I have no way to know which of the ios tokens caused this,
+            # so I can either delete them all, delete none, or delete one.
+            # I'm doing the former (delete 1 at a time), since I assume most
+            # people will have 1 device, and for everyone else, we'll eventually
+            # remove the invalid token.
+            if len(ios_ids) > 0:
+                GCMDevice.objects.filter(registration_id=ios_ids[0]).delete()
+                post_message("#tech", err_msg % self.id)
+
         except Exception as e:
             logging.error("[APNS] Notification Failure: %s", str(e))
 
