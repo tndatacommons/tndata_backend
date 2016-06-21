@@ -5,6 +5,7 @@
 
 {% block content %}
   {# Ask for UserQueue data #}
+
   <form method="get">
     <fieldset><legend>User Queue Details</legend>
       <div class="row">
@@ -17,6 +18,10 @@
           <button type="submit" class="button">Display</button>
         </div>
         <div class="large-6 medium-6 small-12 columns">
+          {# Link to the test notification sending form #}
+          <p><a href="{% url 'notifications:send' %}"
+            class="button pull-right">Send Push Notification</a></p>
+
         {% for user_queue in user_queues %}
           <div class="panel">
           {# Display the count key first. #}
