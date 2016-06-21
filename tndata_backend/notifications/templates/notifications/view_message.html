@@ -18,6 +18,15 @@
   <p>Response Code: {{ message.response_code }}</p>
   <p>Response text:</p><pre>{{ message.response_text|pprint}}</pre>
   <p>Response dataa:</p><pre>{{ message.response_data|pprint}}</pre>
-  <p>Delivered to Registration IDs:</p><pre>{{ message.registration_ids|pprint }}</pre>
 
+  <h2>Devices</h2>
+  <p>Android Devices:</p><pre>{{ message.android_devices|pprint }}</pre>
+  <p>iOS Devices:</p><pre>{{ message.ios_devices|pprint }}</pre>
+
+  <h2>Misc</h2>
+  <p>Expiration: {{ message.expires_on }}</p>
+  <p>Priority: {{ message.get_priority_display }}</p>
+  <p>Queue ID: {{ message.queeu_id }}</p>
+  <p>Content Type / Object ID: {{ message.content_type.name }} / {{ message.object_id }}</p>
+  <p>Created: {{ message.created_on }} ({{ message.created_on|timesince }} ago)</p>
 {% endblock %}
