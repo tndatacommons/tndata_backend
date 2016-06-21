@@ -338,12 +338,23 @@ class GCMMessage(models.Model):
                 # The returned value may have been an int or None-type
                 user_mapping_id = user_mapping
 
+        # If this is a badge/award, we'll include badge data.
+        badge = {}
+        if self.content_type.name.lower() == "award" and self.content_object:
+            # TODO: should we change the title/message?
+            badge = {
+                'name': self.content_object.badge.name,
+                'description': self.content_object.badge.description,
+                'image': self.content_object.badge.image.url,
+            }
+
         return self._checkin({
             "id": self.id,
             "title": self.title,
             "message": self.message,
             "object_type": object_type,
             "object_id": self.object_id,
+            "badge": badge,
             "user_mapping_id": user_mapping_id,
             "production": not (settings.DEBUG or settings.STAGING),
         })
