@@ -338,9 +338,9 @@ class GCMMessage(models.Model):
                 # The returned value may have been an int or None-type
                 user_mapping_id = user_mapping
 
-        # If this is a badge/award, we'll include badge data.
+        # If this is an Award, lets include badge data.
         badge = {}
-        if self.content_type.name.lower() == "award" and self.content_object:
+        if object_type == "award" and self.content_object:
             # TODO: should we change the title/message?
             badge = {
                 'name': self.content_object.badge.name,
