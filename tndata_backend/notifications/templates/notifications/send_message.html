@@ -1,0 +1,19 @@
+{% extends "notifications/base.html" %}
+
+{% block breadcrumbs %}
+  <li class="current">Send</li>
+{% endblock %}
+
+{% block content %}
+
+  {% if form.errors %}
+    {{ form.errors }}
+  {% endif %}
+  <form method="post" action="{% url 'notifications:send' %}">{% csrf_token %}
+    <fieldset><legend>Send a Push Notificatioan</legend>
+      {{ form.as_p }}
+      <p><input type="submit" value="Send" class="button"/></p>
+    </fieldset>
+  </form>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "notifications/base.html" %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'notifications:send' %}">Send</a></li>
+  <li class="current">Message</li>
+{% endblock %}
+
+{% block content %}
+
+  <h1>Message Details</h1>
+  <p>Message id <code>{{ message.id }}</code> to <code>{{ message.user }}</code>.</p>
+
+  <h2>Payload</h2>
+  <pre>{{ message.content|pprint }}</pre>
+
+  <h2>Response Information</h2>
+  <p>Response Code: {{ message.response_code }}</p>
+  <p>Response text:</p><pre>{{ message.response_text|pprint}}</pre>
+  <p>Response dataa:</p><pre>{{ message.response_data|pprint}}</pre>
+  <p>Delivered to Registration IDs:</p><pre>{{ message.registration_ids|pprint }}</pre>
+
+{% endblock %}

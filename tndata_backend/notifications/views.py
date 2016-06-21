@@ -2,8 +2,9 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
+from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
@@ -11,7 +12,37 @@ from django.utils import timezone
 from utils.datastructures import flatten
 
 from . import queue
+from .forms import GCMMessageForm
 from .models import GCMMessage
+
+
+@login_required
+def send_message(request):
+    """A quick & easy way to send test notifications."""
+    if request.method == "POST":
+        form = GCMMessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.user = request.user
+            msg.deliver_on = timezone.now()
+            msg.priority = GCMMessage.HIGH
+            msg.save()
+            msg.send()
+            messages.success(request, "Your notification has been sent")
+            return redirect(reverse("notifications:view", args=[msg.id]))
+    else:
+        form = GCMMessageForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'notifications/send_message.html', context)
+
+
+@login_required
+def view_message(request, message_id):
+    msg = get_object_or_404(GCMMessage, pk=message_id)
+    return render(request, 'notifications/view_message.html', {'message': msg})
 
 
 @user_passes_test(lambda u: u.is_staff, login_url='/')
