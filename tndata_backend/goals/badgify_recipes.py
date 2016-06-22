@@ -135,7 +135,7 @@ class SignupMixin:
 
     @property
     def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
+        return staticfiles_storage.open(self.badge_path)
 
     @property
     def user_ids(self):
