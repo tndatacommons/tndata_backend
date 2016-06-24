@@ -104,7 +104,7 @@ class UserProfile(models.Model):
         blank=True,
         choices=[(tz, tz) for tz in pytz.all_timezones]
     )
-    maximum_daily_notifications = models.IntegerField(default=5, blank=True)
+    maximum_daily_notifications = models.IntegerField(default=3, blank=True)
     needs_onboarding = models.BooleanField(default=True, blank=True)
 
     # Profile fields.
