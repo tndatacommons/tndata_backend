@@ -21,6 +21,7 @@ from pushjack.exceptions import (
     GCMInvalidRegistrationError,
 )
 
+from badgify_api.serializers import AwardSerializer
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
@@ -295,10 +296,38 @@ class GCMMessage(models.Model):
         devices = GCMDevice.objects.filter(user=self.user, device_type='ios')
         return list(devices.values_list("registration_id", flat=True))
 
-    def _checkin(self, obj):
-        """NOTE: This alters notifications related to the goals app because
-        I couldn't think of a better place to put this. For the morning/evening
-        checkings, we want:
+    # -------------------------------------------------------------------------
+    # Payload methods.
+    #
+    # The following methods are used by the `content` & `content_json`
+    # properties to include serialized payload data in a push notifications.
+    #
+    # Each accepts a dictionary argument which it may modify, and each returns
+    # a possibly modified dict.
+    #
+    #   * _payload_action
+    #   * _payload_award
+    #   * _payload_checkin
+    #   * _payloadd_customaction
+    #
+    # -------------------------------------------------------------------------
+
+    def _payload_action(self, payload):
+        from goals.serializers.v2 import ActionSerializer
+        serializer = ActionSerializer(self.content_object)
+        payload['action'] = serializer.data
+        return payload
+
+    def _payload_award(self, payload):
+        """If this is an Award, lets include badge data with the payload."""
+        # NOTE: the content_object should be an Award instance.
+        serializer = AwardSerializer(self.content_object)
+        payload['award'] = serializer.data
+        return payload
+
+    def _payload_checkin(self, payload):
+        """This method alters the notification payload for the morning/evening
+        check-ins. It adds the following data:
 
         - object_type = 'checkin'
         - object_id = 1 for morning
@@ -310,54 +339,69 @@ class GCMMessage(models.Model):
         the goals app.
 
         """
-        if obj['object_type'] == 'goal' and obj['object_id'] is None:
-            obj['object_type'] = 'checkin'
-            if obj['title'] == DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE:
-                obj['object_id'] = 1
-            elif obj['title'] == DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE:
-                obj['object_id'] = 2
-        return obj
+        payload['object_type'] = 'checkin'
+        if payload['title'] == DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE:
+            payload['object_id'] = 1
+        elif payload['title'] == DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE:
+            payload['object_id'] = 2
+        return payload
+
+    def _payload_customaction(self, payload):
+        from goals.serializers.v2 import CustomActionSerializer
+        """If this is a custom action notifictaion, serialize the CustomAction"""
+        serializer = CustomActionSerializer(self.content_object)
+        payload['customaction'] = serializer.data
+        return payload
 
     @property
     def content(self):
         """The Bundled content that gets sent as the messages payload.
 
-        NOTE: This payload has a limit of 4096 bytes.
-        """
-        object_type = None
-        if self.content_type:  # If we have a content type, use it's name.
-            object_type = self.content_type.name.lower()
+        NOTE: According to GCM, the payload has a limit of 4096 bytes, while
+        for APNS:
 
-        user_mapping_id = None
+        > When using the HTTP/2 provider API, maximum payload size is 4096
+        > bytes. Using the legacy binary interface, maximum payload size is
+        > 2048 bytes.
+
+        """
+        payload = {
+            "id": self.id,
+            "title": self.title,
+            "message": self.message,
+            "object_type": None,
+            "object_id": self.object_id,
+            "award": None,
+            "action": None,
+            "user_mapping_id": None,
+            "production": not (settings.DEBUG or settings.STAGING),
+        }
+
+        # If we have a content type, use it's name as the `object_type`
+        if self.content_type:
+            payload['object_type'] = self.content_type.name.lower()
+
+        # See if we've got a user-mapping ID (e.g. the UserAction.id)
         has_get_user_mapping = hasattr(self.content_object, "get_user_mapping")
         if self.content_object and has_get_user_mapping:
             try:
                 user_mapping = self.content_object.get_user_mapping(self.user)
-                user_mapping_id = user_mapping.id if user_mapping else None
-            except AttributeError:
-                # The returned value may have been an int or None-type
-                user_mapping_id = user_mapping
+                if user_mapping and user_mapping.id:
+                    payload['user_mapping_id'] = user_mapping.id
+            except AttributeError:  # returned value was int or None-type
+                pass
 
-        # If this is an Award, lets include badge data.
-        badge = {}
-        if object_type == "award" and self.content_object:
-            # TODO: should we change the title/message?
-            badge = {
-                'name': self.content_object.badge.name,
-                'description': self.content_object.badge.description,
-                'image': self.content_object.badge.image.url,
-            }
+        # Include serialzed/extra data if appropriate.
+        if payload['object_type'] == 'goal' and payload['object_id'] is None:
+            payload = self._payload_checkin(payload)
+        elif payload['object_type'] == 'award' and self.content_object:
+            payload = self._payload_award(payload)
+        elif payload['object_type'] == 'action' and self.content_object:
+            payload = self._payload_action(payload)
+        elif payload['object_type'] == 'customaction' and self.content_object:
+            payload = self._payload_customaction(payload)
 
-        return self._checkin({
-            "id": self.id,
-            "title": self.title,
-            "message": self.message,
-            "object_type": object_type,
-            "object_id": self.object_id,
-            "badge": badge,
-            "user_mapping_id": user_mapping_id,
-            "production": not (settings.DEBUG or settings.STAGING),
-        })
+        return payload
 
     @property
     def content_json(self):
