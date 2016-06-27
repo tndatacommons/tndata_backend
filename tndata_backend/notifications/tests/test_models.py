@@ -309,8 +309,6 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             self.msg.content,
             {
-                "action": None,
-                "award": None,
                 "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
@@ -328,8 +326,6 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             self.msg.content,
             {
-                "action": None,
-                "award": None,
                 "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
@@ -353,8 +349,6 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             msg.content,
             {
-                "action": None,
-                "award": None,
                 "id": msg.id,
                 "title": "ASDF",
                 "message": "A asdf message",

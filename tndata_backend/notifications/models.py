@@ -21,7 +21,7 @@ from pushjack.exceptions import (
     GCMInvalidRegistrationError,
 )
 
-from badgify_api.serializers import AwardSerializer
+from badgify_api.serializers import BadgeSerializer
 from goals.settings import (
     DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
     DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
@@ -306,7 +306,7 @@ class GCMMessage(models.Model):
     # a possibly modified dict.
     #
     #   * _payload_action
-    #   * _payload_award
+    #   * _payload_badge
     #   * _payload_checkin
     #   * _payloadd_customaction
     #
@@ -318,11 +318,11 @@ class GCMMessage(models.Model):
         payload['action'] = serializer.data
         return payload
 
-    def _payload_award(self, payload):
-        """If this is an Award, lets include badge data with the payload."""
+    def _payload_badge(self, payload):
+        """If this is an Award, lets include it's badge data with the payload."""
         # NOTE: the content_object should be an Award instance.
-        serializer = AwardSerializer(self.content_object)
-        payload['award'] = serializer.data
+        serializer = BadgeSerializer(self.content_object.badge)
+        payload['badge'] = serializer.data
         return payload
 
     def _payload_checkin(self, payload):
@@ -371,8 +371,6 @@ class GCMMessage(models.Model):
             "message": self.message,
             "object_type": None,
             "object_id": self.object_id,
-            "award": None,
-            "action": None,
             "user_mapping_id": None,
             "production": not (settings.DEBUG or settings.STAGING),
         }
@@ -394,7 +392,7 @@ class GCMMessage(models.Model):
         if payload['object_type'] == 'goal' and payload['object_id'] is None:
             payload = self._payload_checkin(payload)
         elif payload['object_type'] == 'award' and self.content_object:
-            payload = self._payload_award(payload)
+            payload = self._payload_badge(payload)
         elif payload['object_type'] == 'action' and self.content_object:
             payload = self._payload_action(payload)
         elif payload['object_type'] == 'customaction' and self.content_object:
