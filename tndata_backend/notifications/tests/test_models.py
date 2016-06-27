@@ -79,6 +79,7 @@ class TestGCMMessage(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        cls.maxDiff = None
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
         try:
             cls.user.userprofile.timezone = 'America/Chicago'
@@ -261,19 +262,19 @@ class TestGCMMessage(TestCase):
         msg.delete()
         device.delete()
 
-    def test__checkin(self):
+    def test__payload_checkin(self):
         from goals.settings import (
             DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
             DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
         )
         # Input does not change when it's an action
         obj = {'object_id': 123, 'object_type': 'action', 'title': ''}
-        result = self.msg._checkin(obj)
+        result = self.msg._payload_checkin(obj)
         self.assertDictEqual(obj, result)
 
         # Input does not change when it's null
         obj = {'object_id': None, 'object_type': None, 'title': ''}
-        result = self.msg._checkin(obj)
+        result = self.msg._payload_checkin(obj)
         self.assertDictEqual(obj, result)
 
         # Input does change when it's a goal with no object ID
@@ -282,7 +283,7 @@ class TestGCMMessage(TestCase):
             'object_type': 'goal',
             'title': DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE
         }
-        result = self.msg._checkin(obj)
+        result = self.msg._payload_checkin(obj)
         expected = {
             'object_id': 1,
             'object_type': 'checkin',
@@ -296,7 +297,7 @@ class TestGCMMessage(TestCase):
             'object_type': 'goal',
             'title': DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE
         }
-        result = self.msg._checkin(obj)
+        result = self.msg._payload_checkin(obj)
         expected = {
             'object_id': 2,
             'object_type': 'checkin',
@@ -308,6 +309,8 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             self.msg.content,
             {
+                "action": None,
+                "award": None,
                 "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
@@ -325,6 +328,8 @@ class TestGCMMessage(TestCase):
         self.assertEqual(
             self.msg.content,
             {
+                "action": None,
+                "award": None,
                 "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
@@ -344,9 +349,12 @@ class TestGCMMessage(TestCase):
             "A asdf message",
             datetime_utc(2000, 1, 1, 1, 0),
         )
+
         self.assertEqual(
             msg.content,
             {
+                "action": None,
+                "award": None,
                 "id": msg.id,
                 "title": "ASDF",
                 "message": "A asdf message",
@@ -357,26 +365,25 @@ class TestGCMMessage(TestCase):
             }
         )
 
+    def test_content_with_action(self):
+        # NOTE: when the content_object is a goals.Action
+        pass  # TODO
+
+    def test_content_with_award(self):
+        # NOTE: when the content_object is a badgify.Award
+        pass
+
+    def test_content_with_customaction(self):
+        # NOTE: when the content_object is a goals.CustomAction
+        pass  # TODO
+
+    def test_content_with_goal(self):
+        # NOTE: when the content_type is a goals.Goal, but there's no content
+        # object (e.g. these are daily notifications)
+        pass  # TODO
+
     def test_content_json(self):
         self.assertEqual(self.msg.content_json, dumps(self.msg.content))
-
-    def test_content_json_with_no_content_object(self):
-        msg = GCMMessage.objects.create(
-            self.user,
-            "ASDF",
-            "A asdf message",
-            datetime_utc(2000, 1, 1, 1, 0),
-        )
-        expected = dumps({
-            "id": msg.id,
-            "title": "ASDF",
-            "message": "A asdf message",
-            "object_type": None,
-            "object_id": None,
-            "user_mapping_id": None,
-            "production": not (settings.DEBUG or settings.STAGING),
-        })
-        self.assertEqual(msg.content_json, expected)
 
     def test_send(self):
         with patch("notifications.models.GCMClient") as mock_client:

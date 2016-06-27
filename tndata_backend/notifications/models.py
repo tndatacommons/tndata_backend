@@ -384,12 +384,11 @@ class GCMMessage(models.Model):
         # See if we've got a user-mapping ID (e.g. the UserAction.id)
         has_get_user_mapping = hasattr(self.content_object, "get_user_mapping")
         if self.content_object and has_get_user_mapping:
+            user_mapping = self.content_object.get_user_mapping(self.user)
             try:
-                user_mapping = self.content_object.get_user_mapping(self.user)
-                if user_mapping and user_mapping.id:
-                    payload['user_mapping_id'] = user_mapping.id
+                payload['user_mapping_id'] = user_mapping.id
             except AttributeError:  # returned value was int or None-type
-                pass
+                payload['user_mapping_id'] = user_mapping
 
         # Include serialzed/extra data if appropriate.
         if payload['object_type'] == 'goal' and payload['object_id'] is None:
