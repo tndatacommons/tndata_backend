@@ -64,20 +64,32 @@ class UserPlaceSerializer(ObjectTypeModelSerializer):
 
 
 class UserAccountSerializer(ObjectTypeModelSerializer):
+    """This is essentially a combination of User and UserProfile."""
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
+    maximum_daily_notifications = serializers.ReadOnlyField(source='userprofile.maximum_daily_notifications')
     username = serializers.CharField(required=False)
     timezone = serializers.ReadOnlyField(source='userprofile.timezone')
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
+    maximum_daily_notifications = serializers.ReadOnlyField(source='userprofile.maximum_daily_notifications')
+    zipcode = serializers.ReadOnlyField(source='userprofile.zipcode')
+    birthday = serializers.ReadOnlyField(source='userprofile.birthday')
+    sex = serializers.ReadOnlyField(source='userprofile.sex')
+    employed = serializers.ReadOnlyField(source='userprofile.employed')
+    is_parent = serializers.ReadOnlyField(source='userprofile.is_parent')
+    in_relationship = serializers.ReadOnlyField(source='userprofile.in_relationship')
+    has_degree = serializers.ReadOnlyField(source='userprofile.has_degree')
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
-            'token', 'needs_onboarding', 'object_type',
+            'token', 'needs_onboarding', 'maximum_daily_notifications',
+            'zipcode', 'birthday', 'sex', 'employed', 'is_parent',
+            'in_relationship', 'has_degree', 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
 
