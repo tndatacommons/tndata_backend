@@ -231,19 +231,17 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
 class UserSerializer(ObjectTypeModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
-    userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
-    needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
+    userprofile_id = serializers.ReadOnlyField()
+    # needs_onboarding = serializers.ReadOnlyField(source='userprofile.needs_onboarding')
     username = serializers.CharField(required=False)
-    timezone = serializers.ReadOnlyField(source='userprofile.timezone')
-    places = serializers.SerializerMethodField(read_only=True)
-
-    user_categories = serializers.SerializerMethodField(read_only=True)
-    user_goals = serializers.SerializerMethodField(read_only=True)
-    user_behaviors = serializers.SerializerMethodField(read_only=True)
-    user_actions = serializers.SerializerMethodField(read_only=True)
-    customgoals = serializers.SerializerMethodField(read_only=True)
-    customactions = serializers.SerializerMethodField(read_only=True)
-
+    # timezone = serializers.ReadOnlyField(source='userprofile.timezone')
+    # places = serializers.SerializerMethodField(read_only=True)
+    # user_categories = serializers.SerializerMethodField(read_only=True)
+    # user_goals = serializers.SerializerMethodField(read_only=True)
+    # user_behaviors = serializers.SerializerMethodField(read_only=True)
+    # user_actions = serializers.SerializerMethodField(read_only=True)
+    # customgoals = serializers.SerializerMethodField(read_only=True)
+    # customactions = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
 
@@ -251,54 +249,52 @@ class UserSerializer(ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
-            "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
-            'token', 'needs_onboarding', "places", "user_goals", "user_behaviors",
-            "user_actions", "user_categories", 'customgoals', 'customactions',
-            'object_type',
+            "full_name", 'date_joined', 'userprofile_id', "password",
+            'token', 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
-
-    @cached_method(cache_key="{0}-User.get_places", timeout=60)
-    def get_places(self, obj):
-        qs = models.UserPlace.objects.select_related("place").filter(user=obj)
-        serialized = UserPlaceSerializer(qs, many=True)
-        return serialized.data
-
-    @cached_method(cache_key="{0}-User.get_user_categories", timeout=60)
-    def get_user_categories(self, obj):
-        qs = UserCategory.objects.published(user=obj).select_related('category')
-        serialized = UserCategorySerializer(qs, many=True)
-        return serialized.data
-
-    @cached_method(cache_key="{0}-User.get_user_goals", timeout=60)
-    def get_user_goals(self, obj):
-        qs = UserGoal.objects.published(user=obj).select_related('goal')
-        serialized = UserGoalSerializer(qs, many=True)
-        return serialized.data
-
-    @cached_method(cache_key="{0}-User.get_user_behaviors", timeout=60)
-    def get_user_behaviors(self, obj):
-        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
-        serialized = UserBehaviorSerializer(qs, many=True)
-        return serialized.data
-
-    @cached_method(cache_key="{0}-User.get_user_actions", timeout=60)
-    def get_user_actions(self, obj):
-        qs = UserAction.objects.published(user=obj)
-        serialized = UserActionSerializer(qs, many=True)
-        return serialized.data
-
-    @cached_method(cache_key="{0}-User.get_customgoals", timeout=60)
-    def get_customgoals(self, obj):
-        qs = obj.customgoal_set.all()
-        serialized = CustomGoalSerializer(qs, many=True)
-        return serialized.data
-
-    @cached_method(cache_key="{0}-User.get_customactions", timeout=60)
-    def get_customactions(self, obj):
-        qs = obj.customaction_set.all()
-        serialized = CustomActionSerializer(qs, many=True)
-        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_places", timeout=60)
+#    def get_places(self, obj):
+#        qs = models.UserPlace.objects.select_related("place").filter(user=obj)
+#        serialized = UserPlaceSerializer(qs, many=True)
+#        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_user_categories", timeout=60)
+#    def get_user_categories(self, obj):
+#        qs = UserCategory.objects.published(user=obj).select_related('category')
+#        serialized = UserCategorySerializer(qs, many=True)
+#        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_user_goals", timeout=60)
+#    def get_user_goals(self, obj):
+#        qs = UserGoal.objects.published(user=obj).select_related('goal')
+#        serialized = UserGoalSerializer(qs, many=True)
+#        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_user_behaviors", timeout=60)
+#    def get_user_behaviors(self, obj):
+#        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
+#        serialized = UserBehaviorSerializer(qs, many=True)
+#        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_user_actions", timeout=60)
+#    def get_user_actions(self, obj):
+#        qs = UserAction.objects.published(user=obj)
+#        serialized = UserActionSerializer(qs, many=True)
+#        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_customgoals", timeout=60)
+#    def get_customgoals(self, obj):
+#        qs = obj.customgoal_set.all()
+#        serialized = CustomGoalSerializer(qs, many=True)
+#        return serialized.data
+#
+#    @cached_method(cache_key="{0}-User.get_customactions", timeout=60)
+#    def get_customactions(self, obj):
+#        qs = obj.customaction_set.all()
+#        serialized = CustomActionSerializer(qs, many=True)
+#        return serialized.data
 
     def validate_username(self, value):
         User = get_user_model()
