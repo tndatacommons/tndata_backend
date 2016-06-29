@@ -2,6 +2,7 @@ from datetime import timedelta
 from pprint import pformat
 
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from django.template.defaultfilters import mark_safe
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -64,14 +65,35 @@ class DeliverDayListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class ExistingContentTypeListFilter(admin.SimpleListFilter):
+    title = _('Notifiction Type')
+    parameter_name = 'content_type__id__exact'
+
+    def lookups(self, request, model_admin):
+        """
+        This is like the built-in lookups for content types, but we ONLY
+        want those types that are associated with a GCMMessage object.
+
+        """
+        types = models.GCMMessage.objects.values_list('content_type', flat=True)
+        types = ContentType.objects.filter(pk__in=set(types))
+
+        return sorted(((ct.pk, ct.name) for ct in types), key=lambda t: t[1])
+
+    def queryset(self, request, queryset):
+        pk = self.value()
+        if pk:
+            queryset = queryset.filter(content_type__id__exact=pk)
+        return queryset
+
+
 class GCMMessageAdmin(admin.ModelAdmin):
     date_hierarchy = 'deliver_on'
     list_display = (
-        'user_email', 'user_username', 'title', 'message_teaser',
-        'content_type', 'object_id', 'deliver_on', 'success', 'response_text',
-        'queue_id',
+        'user_email', 'title', 'message_teaser', 'payload_size', 'content_type',
+        'object_id', 'deliver_on', 'success', 'response_text',
     )
-    list_filter = (DeliverDayListFilter, 'success', 'content_type')
+    list_filter = (DeliverDayListFilter, 'success', ExistingContentTypeListFilter)
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'title', 'message', 'content_type__model', 'queue_id', 'object_id',

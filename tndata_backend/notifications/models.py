@@ -313,9 +313,11 @@ class GCMMessage(models.Model):
     # -------------------------------------------------------------------------
 
     def _payload_action(self, payload):
-        from goals.serializers.v2 import ActionSerializer
-        serializer = ActionSerializer(self.content_object)
-        payload['action'] = serializer.data
+        from goals.models import UserAction
+        from goals.serializers.v2 import UserActionSerializer
+        ua = UserAction.objects.get(user=self.user, action=self.content_object)
+        serializer = UserActionSerializer(ua)
+        payload['user_action'] = serializer.data
         return payload
 
     def _payload_badge(self, payload):
@@ -350,7 +352,7 @@ class GCMMessage(models.Model):
         from goals.serializers.v2 import CustomActionSerializer
         """If this is a custom action notifictaion, serialize the CustomAction"""
         serializer = CustomActionSerializer(self.content_object)
-        payload['customaction'] = serializer.data
+        payload['custom_action'] = serializer.data
         return payload
 
     @property
@@ -377,7 +379,8 @@ class GCMMessage(models.Model):
 
         # If we have a content type, use it's name as the `object_type`
         if self.content_type:
-            payload['object_type'] = self.content_type.name.lower()
+            ct_name = self.content_type.name.lower().replace(' ', '')
+            payload['object_type'] = ct_name
 
         # See if we've got a user-mapping ID (e.g. the UserAction.id)
         has_get_user_mapping = hasattr(self.content_object, "get_user_mapping")
@@ -403,7 +406,14 @@ class GCMMessage(models.Model):
     @property
     def content_json(self):
         """JSON-encoded message payload; NOTE: has a limit of 4096 bytes."""
-        return json.dumps(self.content)
+        from goals.encoder import JSONEncoder
+        if not hasattr(self, "_content_json"):
+            self._content_json = json.dumps(self.content, cls=JSONEncoder)
+        return self._content_json
+
+    @property
+    def payload_size(self):
+        return len(self.content_json)
 
     def _send_to_android_devices(self, android_ids, options):
         """Send push notifications to anddroid devices using GCM"""
