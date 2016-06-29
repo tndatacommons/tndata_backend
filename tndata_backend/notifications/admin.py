@@ -90,9 +90,8 @@ class ExistingContentTypeListFilter(admin.SimpleListFilter):
 class GCMMessageAdmin(admin.ModelAdmin):
     date_hierarchy = 'deliver_on'
     list_display = (
-        'user_email', 'user_username', 'title', 'message_teaser',
-        'content_type', 'object_id', 'deliver_on', 'success', 'response_text',
-        'queue_id',
+        'user_email', 'title', 'message_teaser', 'payload_size', 'content_type',
+        'object_id', 'deliver_on', 'success', 'response_text',
     )
     list_filter = (DeliverDayListFilter, 'success', ExistingContentTypeListFilter)
     search_fields = [
