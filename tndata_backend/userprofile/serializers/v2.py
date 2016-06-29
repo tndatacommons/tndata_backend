@@ -231,7 +231,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
 class UserSerializer(ObjectTypeModelSerializer):
     full_name = serializers.ReadOnlyField(source='get_full_name')
-    userprofile_id = serializers.ReadOnlyField()
+    userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
     username = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
