@@ -312,7 +312,7 @@ class TestGCMMessage(TestCase):
                 "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
-                "object_type": "gcm device",
+                "object_type": "gcmdevice",
                 "object_id": self.device.id,
                 "user_mapping_id": None,
                 "production": not (settings.DEBUG or settings.STAGING),
@@ -329,7 +329,7 @@ class TestGCMMessage(TestCase):
                 "id": self.msg.id,
                 "title": "Test",
                 "message": "A test message",
-                "object_type": 'gcm device',
+                "object_type": 'gcmdevice',
                 "object_id": self.device.id,
                 "user_mapping_id": -1,  # Mocked value
                 "production": not (settings.DEBUG or settings.STAGING),
