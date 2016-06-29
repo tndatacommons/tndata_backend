@@ -273,13 +273,6 @@ class TestUsersAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
-        # There should also be a section for categories, goals, behaviors, actions
-        self.assertIn('user_goals', response.data['results'][0])
-        self.assertIn('user_behaviors', response.data['results'][0])
-        self.assertIn('user_actions', response.data['results'][0])
-        self.assertIn('user_categories', response.data['results'][0])
-        self.assertIn('places', response.data['results'][0])
-
     def test_post_user_list(self):
         """POSTing to the user-list should create a new user."""
         url = self.get_url('user-list')
