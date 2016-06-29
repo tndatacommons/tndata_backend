@@ -1,6 +1,5 @@
 This endpoint defines methods that allow you to view, create, and update
-User accounts. Additionally, it exposes several pieces of user data, therefore
-acting as a decently complete single point of information for a User.
+User accounts.
 
 Sections in this documentation:
 
@@ -10,7 +9,6 @@ Sections in this documentation:
 * <a href="#logging-out">Logging Out</a>
 * <a href="#retrieving-a-users-info">Retrieveing a User's Info</a>
 * <a href="#setting-a-password">Setting a Password</a>
-* <a href="#options">Options</a>
 
 ----
 
@@ -27,21 +25,10 @@ The following user data is available from this endpoint as an item in the
 * `first_name` -- The user's first name.
 * `last_name` -- The user's last name.
 * `full_name` -- Combination of first and last name
-* `timezone` -- The user's given timezone, e.g. `America/Chicago`
 * `date_joined` -- Date the user joined.
 * `userprofile_id` -- Unique ID for the [UserProfile](/api/userprofiles/)
 * `token` -- The user's [auth token](#acquiring-an-autho-token)
-* `needs_onboarding` -- Whether or not the user should go through onboarding.
-
-Collections of related data for the user, include:
-
-* `places` -- An array of the [user's Places](/api/users/places/)
-* `user_goals` -- An array of the user's selected Goals, ie. [UserGoals](/api/users/goals/)
-* `user_behaviors` -- An array of the user's selected Behaviors, ie. [UserBehaviors](/api/users/behaviors/).
-* `user_actions` -- An array of the user's selected Actions, ie. [UserActions](/api/users/actions/)
-* `user_categories` -- An array of the user's selected Categories, ie. [UserCategories](/api/users/categories/)
-* `customgoals` -- An array of the user's [CustomGoal](/api/users/customgoals/)
-* `customactions` -- An array of the user's [CustomAction](/api/users/customactions/)
+* `object_type` -- A string that will always be 'user'
 
 ## Creating a User <a href="#creating-a-user">&para;</a>
 
@@ -105,10 +92,6 @@ Send a PUT request to `/api/users/{id}/` including at least the following:
 
     {'username': <their username>, 'password': <new password>}
 
-## Options <a href="#options">&para;</a>
-
-See the *Options* on this page for more information regarding which fields
-are required (during PUT requests).
 
 ----
 
