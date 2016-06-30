@@ -310,6 +310,7 @@ class TestGCMMessage(TestCase):
             self.msg.content,
             {
                 "id": self.msg.id,
+                "to": self.msg.user.id,
                 "title": "Test",
                 "message": "A test message",
                 "object_type": "gcmdevice",
@@ -327,6 +328,7 @@ class TestGCMMessage(TestCase):
             self.msg.content,
             {
                 "id": self.msg.id,
+                "to": self.msg.user.id,
                 "title": "Test",
                 "message": "A test message",
                 "object_type": 'gcmdevice',
@@ -350,6 +352,7 @@ class TestGCMMessage(TestCase):
             msg.content,
             {
                 "id": msg.id,
+                "to": self.msg.user.id,
                 "title": "ASDF",
                 "message": "A asdf message",
                 "object_type": None,

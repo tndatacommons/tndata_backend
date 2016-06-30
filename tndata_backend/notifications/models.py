@@ -369,6 +369,7 @@ class GCMMessage(models.Model):
         """
         payload = {
             "id": self.id,
+            "to": self.user.id,
             "title": self.title,
             "message": self.message,
             "object_type": None,
