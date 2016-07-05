@@ -552,7 +552,7 @@ class TenSpotRecipe(UserCompletedActionCountMixin, BaseRecipe):
     description = "Congrats on ten activities!"
     badge_path = 'badges/action-05-tenspot.png'
     num_completed = 10
-badgify.register(ActionHighFiveRecipe)
+badgify.register(TenSpotRecipe)
 
 
 class UserCompletedBehaviorCountMixin:
