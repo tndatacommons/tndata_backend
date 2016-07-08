@@ -17,7 +17,6 @@ Each goal contains the following information:
 * `description`: A short description for the goal. Plain text (possibly markdown)
 * `html_description`: HTML version of the description.
 * `icon_url`: A URL for an image associated with the category
-* `behaviors_count`: The number of behaviors in this goal.
 * `categories`: A list of [Category](/api/categories/) IDs. These are the
   parent categories for the goal.
 * `object_type`: A string; will alwayws be `goal`.

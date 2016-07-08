@@ -133,7 +133,6 @@ class SimpleGoalField(serializers.RelatedField):
             'description': value.description,
             'html_description': value.rendered_description,
             'icon_url': value.get_absolute_icon(),
-            'behaviors_count': value.behavior_set.filter(state="published").count(),
         }
 
 
