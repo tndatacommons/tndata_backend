@@ -48,7 +48,6 @@ class GoalListField(serializers.RelatedField):
             'title_slug': value.title_slug,
             'description': value.description,
             'html_description': value.rendered_description,
-            'outcome': value.outcome,
             'icon_url': value.get_absolute_icon(),
         }
 
@@ -133,7 +132,6 @@ class SimpleGoalField(serializers.RelatedField):
             'title_slug': value.title_slug,
             'description': value.description,
             'html_description': value.rendered_description,
-            'outcome': value.outcome,
             'icon_url': value.get_absolute_icon(),
             'behaviors_count': value.behavior_set.filter(state="published").count(),
         }
