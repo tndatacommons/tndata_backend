@@ -185,7 +185,6 @@ class TestGoalAPI(V2APITestCase):
         self.assertEqual(obj['title'], self.goal.title)
         self.assertEqual(obj['description'], self.goal.description)
         self.assertEqual(obj['html_description'], self.goal.rendered_description)
-        self.assertEqual(obj['behaviors_count'], self.goal.behavior_set.count())
         self.assertIn('categories', obj)
 
     def test_goal_list_by_category(self):
