@@ -2,7 +2,7 @@ import waffle
 from collections import OrderedDict
 
 from django.conf import settings as project_settings
-from django.db.models import F, Q
+from django.db.models import Q
 from django.utils import timezone
 
 from django_rq import job
@@ -17,7 +17,6 @@ from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
 
-from utils.dateutils import dates_range, weekday
 from utils.user_utils import local_day_range
 from utils.mixins import VersionedViewSetMixin
 
@@ -25,6 +24,7 @@ from . import models
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
 from . permissions import is_content_author
+from . user_feed import progress_streaks
 from . utils import pop_first
 
 
@@ -1580,42 +1580,18 @@ class DailyProgressViewSet(VersionedViewSetMixin,
         param of `?days=30` to retrieve more history.
 
         """
-        def _fill_streaks(input_values, days=7):
-            """fills in data for missing dates"""
-            dates = sorted([dt.date() for dt in dates_range(days)])
-            index = 0  # index of the last, non-generated item
-            for dt in dates:
-                if index < len(input_values) and input_values[index][0] == dt:
-                    yield input_values[index]
-                    index += 1
-                else:
-                    yield (dt, 0)
-
         results = OrderedDict(count=0, results=list())
         try:
             days = int(self.request.GET.get('days', 7))
         except ValueError:
-            pass
+            days = 7
 
         if not self.request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Generate streaks data & add actions/customactions completed
-        progresses = models.DailyProgress.objects.filter(
-            Q(actions_completed__gt=0) | Q(customactions_completed__gt=0),
-            user=request.user
-        ).annotate(
-            total=F('actions_completed') + F('customactions_completed')
-        ).distinct()
-        progresses = progresses.values_list('updated_on', 'total')
-        progresses = [(dt.date(), total) for dt, total in progresses]
-        progresses = list(_fill_streaks(progresses, days=days))
+        progresses = progress_streaks(request.user, days=days)
         results['count'] = len(progresses)
-        results['results'] = []
-        for date, count in progresses:
-            results['results'].append({
-                'date': date,
-                'day': weekday(date),
-                'count': count,
-            })
+        results['results'] = progresses
+
         return Response(data=results, status=status.HTTP_200_OK)

@@ -24,13 +24,15 @@ import random
 from collections import Counter
 from datetime import timedelta
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 
+from utils.dateutils import dates_range, weekday
 from utils.user_utils import local_day_range
 
 from .models import (
     CustomAction,
+    DailyProgress,
     Goal,
     UserAction,
     UserCompletedAction,
@@ -42,6 +44,51 @@ from .models import (
 # Some Cache keys.
 TODAYS_ACTIONS = "todays_actions_{userid}"
 TODAYS_ACTIONS_TIMEOUT = 30
+
+
+def progress_streaks(user, days=7):
+    """Find the given user's Action/CustomAction streaks (i.e. DailyProgress
+    numbers for a given number of days)
+
+    Returns a list of dicts containing the following:
+
+    {
+        'date': '2016-06-12',
+        'day': 'Saturday',
+        'count': 0,
+    }
+
+    """
+
+    def _fill_streaks(input_values, days):
+        """fills in data for missing dates"""
+        dates = sorted([dt.date() for dt in dates_range(days)])
+        index = 0  # index of the last, non-generated item
+        for dt in dates:
+            if index < len(input_values) and input_values[index][0] == dt:
+                yield input_values[index]
+                index += 1
+            else:
+                yield (dt, 0)
+
+    # Generate streaks data & add actions/customactions completed
+    progresses = DailyProgress.objects.filter(
+        Q(actions_completed__gt=0) | Q(customactions_completed__gt=0), user=user
+    ).annotate(
+        total=F('actions_completed') + F('customactions_completed')
+    ).distinct()
+    progresses = progresses.values_list('updated_on', 'total')
+    progresses = [(dt.date(), total) for dt, total in progresses]
+    progresses = list(_fill_streaks(progresses, days=days))
+    results = []
+    for date, count in progresses:
+        results.append({
+            'date': date,
+            'day': weekday(date),
+            'count': count,
+        })
+
+    return results
 
 
 def _useraction_feedback(useraction, dt):
