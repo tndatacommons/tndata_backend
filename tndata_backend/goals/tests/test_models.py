@@ -177,7 +177,6 @@ class TestGoal(TestCase):
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
-            outcome="An Outcome"
         )
         self.goal.categories.add(self.category)
 

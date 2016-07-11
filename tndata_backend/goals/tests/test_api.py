@@ -127,7 +127,6 @@ class TestGoalAPI(APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
         self.goal.publish()
@@ -245,7 +244,6 @@ class TestBehaviorAPI(APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
         self.goal.publish()
@@ -410,7 +408,6 @@ class TestActionAPI(APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
         self.goal.publish()
@@ -658,7 +655,6 @@ class TestUserGoalAPI(APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome",
             state='published'
         )
         self.goal.categories.add(self.category)
@@ -878,7 +874,6 @@ class TestUserBehaviorAPI(APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome",
             state='published'
         )
         self.goal.categories.add(self.category)
@@ -1171,7 +1166,6 @@ class TestUserActionAPI(APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
 

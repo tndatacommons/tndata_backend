@@ -381,7 +381,6 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
                 title="{} {}".format(prefix, goal.title),
                 description=goal.description,
                 subtitle=goal.subtitle,
-                outcome=goal.outcome,
                 notes=goal.notes,
                 more_info=goal.more_info,
                 icon=goal.icon,
@@ -478,10 +477,6 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     description = models.TextField(
         blank=True,
         help_text="A short (250 character) description for this Goal"
-    )
-    outcome = models.TextField(
-        blank=True,
-        help_text="Desired outcome of this Goal."
     )
     notes = models.TextField(
         blank=True,
