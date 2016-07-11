@@ -86,6 +86,7 @@ def progress_streaks(user, days=7):
             'date': date,
             'day': weekday(date),
             'count': count,
+            'object_type': 'feed_streak',
         })
 
     return results
