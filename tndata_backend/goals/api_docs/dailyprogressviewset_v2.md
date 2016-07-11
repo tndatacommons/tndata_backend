@@ -71,9 +71,16 @@ self-reported "got it" on some action).
     {
         "count": 30,
         "results": [
-            ["2016-05-18", 4],
-            ["2016-05-19", 3],
-            ["2016-05-20", 0],
+            {
+                "date": "2016-05-18",
+                "day": "Wednesday",
+                "count": 4
+            },
+            {
+                "date": "2016-05-19",
+                "day": "Thursday",
+                "count": 2
+            },
             ...
         ]
     }
