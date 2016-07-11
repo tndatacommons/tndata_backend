@@ -17,7 +17,7 @@ from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
 
-from utils.dateutils import dates_range
+from utils.dateutils import dates_range, weekday
 from utils.user_utils import local_day_range
 from utils.mixins import VersionedViewSetMixin
 
@@ -1564,13 +1564,23 @@ class DailyProgressViewSet(VersionedViewSetMixin,
 
     @list_route(methods=['get'], permission_classes=[IsOwner], url_path='streaks')
     def streaks(self, request, pk=None):
-        """
+        """Fetch user's daily progress & streaks.
 
         Endpoint: [/api/users/progress/streaks/](/api/users/progress/streaks/)
 
+        Results include a list of dicts containing the following:
+
+        {
+            'date': '2016-06-12',
+            'day': 'Saturday',
+            'count': 0,
+        }
+
+        By default this method returns data for 7 days. You may include a GET
+        param of `?days=30` to retrieve more history.
 
         """
-        def _fill_streaks(input_values, days=30):
+        def _fill_streaks(input_values, days=7):
             """fills in data for missing dates"""
             dates = sorted([dt.date() for dt in dates_range(days)])
             index = 0  # index of the last, non-generated item
@@ -1583,15 +1593,14 @@ class DailyProgressViewSet(VersionedViewSetMixin,
 
         results = OrderedDict(count=0, results=list())
         try:
-            days = int(self.request.GET.get('days', 30))
+            days = int(self.request.GET.get('days', 7))
         except ValueError:
             pass
 
         if not self.request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # Generate streaks data &
-        # add actions completed + customactions completed
+        # Generate streaks data & add actions/customactions completed
         progresses = models.DailyProgress.objects.filter(
             Q(actions_completed__gt=0) | Q(customactions_completed__gt=0),
             user=request.user
@@ -1602,5 +1611,11 @@ class DailyProgressViewSet(VersionedViewSetMixin,
         progresses = [(dt.date(), total) for dt, total in progresses]
         progresses = list(_fill_streaks(progresses, days=days))
         results['count'] = len(progresses)
-        results['results'] = progresses
+        results['results'] = []
+        for date, count in progresses:
+            results['results'].append({
+                'date': date,
+                'day': weekday(date),
+                'count': count,
+            })
         return Response(data=results, status=status.HTTP_200_OK)
