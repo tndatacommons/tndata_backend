@@ -91,6 +91,7 @@ def progress_streaks(user, days=7):
     return results
 
 
+# XXX Deprecate this with action_feedback
 def _useraction_feedback(useraction, dt):
     """Aggregate total, completed, and percetage values for the given
     UserAction on the given date (dt).
@@ -127,6 +128,7 @@ def _useraction_feedback(useraction, dt):
     }
 
 
+# XXX Deprecate this with action_feedback
 def _customaction_feedback(customaction, dt):
     """Aggregate total, completed, and percetage values for the given
     CustomAction on the given date (dt).
@@ -158,6 +160,7 @@ def _customaction_feedback(customaction, dt):
     }
 
 
+# XXX Deprecate this when we replace this with progress_streaks
 def action_feedback(user, obj, lookback=30):
     """This function assembles data for *feedback* on the user's upcoming
     action or custom action. See: https://goo.gl/7UUjzq

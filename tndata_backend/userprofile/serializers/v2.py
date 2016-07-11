@@ -121,6 +121,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     progress = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
     upcoming = serializers.SerializerMethodField(read_only=True)
+    streaks = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
@@ -129,7 +130,8 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'token', 'object_type', 'upcoming',
-            'action_feedback', 'progress', 'suggestions', 'object_type',
+            'streaks', 'action_feedback', 'progress', 'suggestions',
+            'object_type',
         )
         read_only_fields = ("id", "username", "email")
 
@@ -146,16 +148,20 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                 'suggestions': [],
                 'object_type': 'feed',
                 'upcoming': [],
+                'streaks': [],
             }
 
             if not obj.is_authenticated():
                 return self._feed
 
+            # =========================================================
+            # XXX Deprecate this with action_feedback
             # Find the up next action and it's feedback.
             ua = user_feed.next_user_action(obj)
             if ua:
                 feedback = user_feed.action_feedback(obj, ua)
                 self._feed['action_feedback'] = feedback
+            # =========================================================
 
             # Progress for today
             self._feed['progress'] = user_feed.todays_progress(obj)
@@ -214,8 +220,13 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             results = self._feed['upcoming']
             results = sorted(results, key=lambda d: d['trigger'])
             self._feed['upcoming'] = results
+
+            # Streaks data
+            self._feed['streaks'] = user_feed.progress_streaks(obj)
+
         return self._feed
 
+    # XXX Deprecate this with action_feedback
     def get_action_feedback(self, obj):
         return self._get_feed(obj)['action_feedback']
 
@@ -227,6 +238,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
     def get_suggestions(self, obj):
         return []   # XXX Disabled: self._get_feed(obj)['suggestions']
+
+    def get_streaks(self, obj):
+        return self._get_feed(obj)['streaks']
 
 
 class UserSerializer(ObjectTypeModelSerializer):
