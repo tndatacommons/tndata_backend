@@ -165,7 +165,6 @@ class TestGoalAPI(V2APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
         self.goal.publish()
@@ -186,7 +185,6 @@ class TestGoalAPI(V2APITestCase):
         self.assertEqual(obj['title'], self.goal.title)
         self.assertEqual(obj['description'], self.goal.description)
         self.assertEqual(obj['html_description'], self.goal.rendered_description)
-        self.assertEqual(obj['behaviors_count'], self.goal.behavior_set.count())
         self.assertIn('categories', obj)
 
     def test_goal_list_by_category(self):
@@ -399,7 +397,6 @@ class TestBehaviorAPI(V2APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
         self.goal.publish()
@@ -591,7 +588,6 @@ class TestActionAPI(V2APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
         self.goal.publish()
@@ -867,7 +863,6 @@ class TestUserGoalAPI(V2APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome",
             state='published'
         )
         self.goal.categories.add(self.category)
@@ -1087,7 +1082,6 @@ class TestUserBehaviorAPI(V2APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome",
             state='published'
         )
         self.goal.categories.add(self.category)
@@ -1461,7 +1455,6 @@ class TestUserActionAPI(V2APITestCase):
             title="Test Goal",
             subtitle="A subtitle",
             description="A Description",
-            outcome="The outcome"
         )
         self.goal.categories.add(self.category)
 

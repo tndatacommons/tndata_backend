@@ -5,8 +5,6 @@ Goals contain the following information:
 * title_slug: A url-friendly version of the title.
 * description: A short description for the goal. Plain text (possibly markdown)
 * html_description: HTML version of the description.
-* outcome: Additional (optional) text that may describe an expected outcome
-  of pursing this Goal.
 * icon_url: A URL for an image associated with the category
 * categories: A list of [Categories](/api/categories/) in which the goal appears.
 

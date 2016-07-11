@@ -86,8 +86,7 @@ class GoalSerializer(ObjectTypeModelSerializer):
         model = Goal
         fields = (
             'id', 'sequence_order', 'title', 'description', 'html_description',
-            'outcome', 'icon_url', 'categories', 'behaviors_count',
-            'object_type',
+            'icon_url', 'categories', 'object_type',
         )
 
 
