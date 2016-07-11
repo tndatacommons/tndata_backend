@@ -9,6 +9,22 @@ import pytz
 from .user_utils import to_utc
 
 
+WEEKDAYS = {
+    0: 'Monday',
+    1: 'Tuesday',
+    2: 'Wednesday',
+    3: 'Thursday',
+    4: 'Friday',
+    5: 'Saturday',
+    6: 'Sunday',
+}
+
+
+def weekday(dt):
+    """Given a datetime/date object, return a string for the day of the week."""
+    return WEEKDAYS[dt.weekday()]
+
+
 def format_datetime(value):
     """Given a datetime object, format it using the datetime format specified
     for djagno rest framework."""
