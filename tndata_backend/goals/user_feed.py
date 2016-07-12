@@ -59,7 +59,6 @@ def progress_streaks(user, days=7):
     }
 
     """
-
     def _fill_streaks(input_values, days):
         """fills in data for missing dates"""
         dates = sorted([dt.date() for dt in dates_range(days)])
@@ -72,11 +71,15 @@ def progress_streaks(user, days=7):
                 yield (dt, 0)
 
     # Generate streaks data & add actions/customactions completed
-    progresses = DailyProgress.objects.filter(
-        Q(actions_completed__gt=0) | Q(customactions_completed__gt=0), user=user
+    since = timezone.now() - timedelta(days=7)
+    progresses = DailyProgress.objects.filter(user=user, created_on__gt=since)
+    progresses = progresses.filter(
+        Q(actions_completed__gt=0) |
+        Q(customactions_completed__gt=0)
     ).annotate(
         total=F('actions_completed') + F('customactions_completed')
     ).distinct()
+
     progresses = progresses.values_list('updated_on', 'total')
     progresses = [(dt.date(), total) for dt, total in progresses]
     progresses = list(_fill_streaks(progresses, days=days))
@@ -88,7 +91,6 @@ def progress_streaks(user, days=7):
             'count': count,
             'object_type': 'feed_streak',
         })
-
     return results
 
 
