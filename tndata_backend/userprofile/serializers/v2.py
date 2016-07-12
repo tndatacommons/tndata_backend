@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
+from django.core.cache import cache
 from django.db.models import Q
 from rest_framework import serializers
 
@@ -29,7 +30,6 @@ from .v1 import (  # NOQA
     AuthTokenSerializer,
 )
 from utils import user_utils
-from utils.decorators import cached_method
 from utils.dateutils import format_datetime
 from utils.serializers import ObjectTypeModelSerializer
 from utils.serializer_fields import NullableDateField
@@ -141,8 +141,13 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     def _get_feed(self, obj):
         """Assemble all user feed data at once because it's more efficient."""
         # note: obj == a user
-        if not hasattr(self, "_feed"):
-            self._feed = {
+        if not obj.is_authenticated():
+            return {}
+
+        cache_key = "feed_{}".format(obj.id)
+        feed = cache.get(cache_key)
+        if feed is None:
+            feed = {
                 'action_feedback': None,
                 'progress': None,
                 'suggestions': [],
@@ -151,26 +156,23 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                 'streaks': [],
             }
 
-            if not obj.is_authenticated():
-                return self._feed
-
             # =========================================================
             # XXX Deprecate this with action_feedback
             # Find the up next action and it's feedback.
             ua = user_feed.next_user_action(obj)
             if ua:
                 feedback = user_feed.action_feedback(obj, ua)
-                self._feed['action_feedback'] = feedback
+                feed['action_feedback'] = feedback
             # =========================================================
 
             # Progress for today
-            self._feed['progress'] = user_feed.todays_progress(obj)
+            feed['progress'] = user_feed.todays_progress(obj)
 
             # Goal Suggestions -- XXX: Disabled for now.
             # ------------------------------------------------------
             # suggestions = user_feed.suggested_goals(obj)
             # srz = GoalSerializer(suggestions, many=True, user=obj)
-            # self._feed['suggestions'] = srz.data
+            # feed['suggestions'] = srz.data
             # ------------------------------------------------------
 
             # Upcoming info (UserActions/CustomActions)
@@ -184,7 +186,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             for ua in useractions.filter(id__in=upcoming_uas):
                 primary_category = ua.get_primary_category()
                 primary_goal = ua.get_primary_goal()
-                self._feed['upcoming'].append({
+                feed['upcoming'].append({
                     'action_id': ua.id,
                     'action': ua.action.title,
                     'goal_id': primary_goal.id,
@@ -204,7 +206,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             related = ('customgoal', 'custom_trigger')
             customactions = obj.customaction_set.select_related(*related)
             for ca in customactions.filter(id__in=upcoming_cas):
-                self._feed['upcoming'].append({
+                feed['upcoming'].append({
                     'action_id': ca.id,
                     'action': ca.title,
                     'goal_id': ca.customgoal.id,
@@ -217,14 +219,14 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
                 })
 
             # Sort upcoming data (UserActions/CustomActions) by trigger
-            results = self._feed['upcoming']
+            results = feed['upcoming']
             results = sorted(results, key=lambda d: d['trigger'])
-            self._feed['upcoming'] = results
+            feed['upcoming'] = results
 
             # Streaks data
-            self._feed['streaks'] = user_feed.progress_streaks(obj)
-
-        return self._feed
+            feed['streaks'] = user_feed.progress_streaks(obj)
+            cache.set(cache_key, feed, 30)  # Cache feed for 30 seconds.
+        return feed
 
     # XXX Deprecate this with action_feedback
     def get_action_feedback(self, obj):
