@@ -96,7 +96,8 @@ class ExpiredListFilter(admin.SimpleListFilter):
         return ((0, 'No'), (1, 'Yes'))
 
     def queryset(self, request, queryset):
-        value = int(self.value())
+        value = self.value()
+        value = int(value) if value is not None else None
         if value == 0:  # Get messages with no `expire_on` value
             queryset = queryset.filter(expire_on__isnull=True)
         elif value == 1:  # Get messages with an `expire_on` value
