@@ -59,30 +59,38 @@ def progress_streaks(user, days=7):
     }
 
     """
+
     def _fill_streaks(input_values, days):
-        """fills in data for missing dates"""
-        dates = sorted([dt.date() for dt in dates_range(days)])
+        """Fills in data for missing dates"""
+        # XXX: dates_range will generate dates up-to & including today (in UTC)
+        # But these dates will not be tz-aware, so we want to add one and slice
+        # off the last item in the list.
+        dates = sorted([dt.date() for dt in dates_range(days+1)])[-days:]
         index = 0  # index of the last, non-generated item
+
+        # Verify that our input has the same number of dates we're comparing.
+        if len(input_values) > days:
+            # and if not, keep the last `days` values.
+            input_values = input_values[-days:]
+
         for dt in dates:
             if index < len(input_values) and input_values[index][0] == dt:
-                yield input_values[index]
+                lookup = index
                 index += 1
+                yield input_values[lookup]
             else:
                 yield (dt, 0)
 
     # Generate streaks data & add actions/customactions completed
-    since = timezone.now() - timedelta(days=7)
+    since = timezone.now() - timedelta(days=days)
     progresses = DailyProgress.objects.filter(user=user, created_on__gt=since)
-    progresses = progresses.filter(
-        Q(actions_completed__gt=0) |
-        Q(customactions_completed__gt=0)
-    ).annotate(
+    progresses = progresses.annotate(
         total=F('actions_completed') + F('customactions_completed')
-    ).distinct()
+    ).distinct().order_by("created_on")
+    progresses = set(progresses.values_list('created_on', 'total'))
+    progresses = sorted([(dt.date(), total) for dt, total in progresses])
+    progresses = sorted(list(_fill_streaks(progresses, days=days)))
 
-    progresses = progresses.values_list('updated_on', 'total')
-    progresses = [(dt.date(), total) for dt, total in progresses]
-    progresses = list(_fill_streaks(progresses, days=days))
     results = []
     for date, count in progresses:
         results.append({
