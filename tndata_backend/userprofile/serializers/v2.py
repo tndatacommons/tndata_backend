@@ -251,13 +251,16 @@ class UserSerializer(ObjectTypeModelSerializer):
     username = serializers.CharField(required=False)
     password = serializers.CharField(write_only=True)
     token = serializers.ReadOnlyField(source='auth_token.key')
+    needs_onboarding = serializers.ReadOnlyField(
+        source='userprofile.needs_onboarding'
+    )
 
     class Meta:
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "full_name", 'date_joined', 'userprofile_id', "password",
-            'token', 'object_type',
+            'token', 'needs_onboarding', 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
 

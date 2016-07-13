@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 
-from .. serializers.v2 import SimpleProfileSerializer
+from .. serializers.v2 import SimpleProfileSerializer, UserSerializer
 
 
 DRF_DT_FORMAT = settings.REST_FRAMEWORK['DATETIME_FORMAT']

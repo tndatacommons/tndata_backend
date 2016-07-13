@@ -224,7 +224,33 @@ class TestUserSerializer(TestCase):
         """Run a Single instance thru the serializer."""
         s = UserSerializer(self.user)
         self.assertIn('id', s.data)
+        self.assertIn('username', s.data)
+        self.assertIn('email', s.data)
+        self.assertIn('is_staff', s.data)
+        self.assertIn('first_name', s.data)
+        self.assertIn('last_name', s.data)
+        self.assertIn('full_name', s.data)
+        self.assertIn('date_joined', s.data)
+        self.assertIn('userprofile_id', s.data)
+        self.assertIn('token', s.data)
+        self.assertIn('needs_onboarding', s.data)
+        self.assertIn('object_type', s.data)
+
         self.assertEqual(s.data['id'], self.user.id)
+        self.assertEqual(s.data['username'], self.user.username)
+        self.assertEqual(s.data['email'], self.user.email)
+        self.assertEqual(s.data['is_staff'], self.user.is_staff)
+        self.assertEqual(s.data['first_name'], self.user.first_name)
+        self.assertEqual(s.data['last_name'], self.user.last_name)
+        self.assertEqual(s.data['full_name'], self.user.get_full_name())
+        self.assertEqual(s.data['date_joined'], self.user.date_joined)
+        self.assertEqual(s.data['userprofile_id'], self.user.userprofile_id)
+        self.assertEqual(s.data['token'], self.user.auth_token.key)
+        self.assertEqual(
+            s.data['needs_onboarding'],
+            self.user.userprofile.needs_onboarding
+        )
+        self.assertEqual(s.data['object_type'], "user")
 
     def test_deserialize_partial(self):
         """Ensure that partial serialization works: this is needed for updates
