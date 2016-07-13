@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError, models, transaction
@@ -20,7 +21,19 @@ class GCMMessageManager(models.Manager):
 
     def expired(self, *args, **kwargs):
         """Return a queryset of expired messages."""
-        return self.get_queryset().filter(expire_on__lte=timezone.now())
+        # Expired messages are those that have been delivered, AND have a
+        # set `expire_on` attribute.
+        #
+        # OR, those messages that were never delivered, but are no longer
+        # relevant (ie. they're too old).
+        now = timezone.now()
+        since = timezone.now() - timedelta(days=3)  # 3 days ago
+
+        return self.get_queryset().filter(
+            Q(expire_on__lte=now) |
+            Q(deliver_on__lte=since, success=None) |
+            Q(deliver_on__lte=since, success=False)
+        )
 
     def ready_for_delivery(self, *args, **kwargs):
         """Return a queryset of messages that are ready to be delivered."""
