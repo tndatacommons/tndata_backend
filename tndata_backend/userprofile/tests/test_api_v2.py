@@ -236,6 +236,7 @@ class TestUserSerializer(TestCase):
         self.assertIn('needs_onboarding', s.data)
         self.assertIn('object_type', s.data)
 
+        self.assertEqual(s.data['object_type'], "user")
         self.assertEqual(s.data['id'], self.user.id)
         self.assertEqual(s.data['username'], self.user.username)
         self.assertEqual(s.data['email'], self.user.email)
@@ -243,14 +244,16 @@ class TestUserSerializer(TestCase):
         self.assertEqual(s.data['first_name'], self.user.first_name)
         self.assertEqual(s.data['last_name'], self.user.last_name)
         self.assertEqual(s.data['full_name'], self.user.get_full_name())
-        self.assertEqual(s.data['date_joined'], self.user.date_joined)
-        self.assertEqual(s.data['userprofile_id'], self.user.userprofile_id)
+        self.assertEqual(s.data['userprofile_id'], self.user.userprofile.id)
         self.assertEqual(s.data['token'], self.user.auth_token.key)
         self.assertEqual(
             s.data['needs_onboarding'],
             self.user.userprofile.needs_onboarding
         )
-        self.assertEqual(s.data['object_type'], "user")
+        self.assertEqual(
+            s.data['date_joined'],
+            self.user.date_joined.strftime('%Y-%m-%d %H:%M:%S%z')
+        )
 
     def test_deserialize_partial(self):
         """Ensure that partial serialization works: this is needed for updates

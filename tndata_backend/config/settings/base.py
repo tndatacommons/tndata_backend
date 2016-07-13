@@ -162,6 +162,7 @@ INSTALLED_APPS = (
     # 3rd-party apps
     'axes',
     'badgify',
+    'badgify_api',
     'cacheops',
     'corsheaders',
     'crispy_forms',
