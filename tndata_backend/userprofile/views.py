@@ -133,6 +133,7 @@ def admin_remove_app_data(request):
 
     # Info to populate select fields for the types of objects to delete.
     object_types = [
+        ('awards', 'Badges', "Delete all of the user's awarded Badges"),
         ('customgoal', 'Custom Goals', "Delete all of the user's custom goals"),
         ('customaction', 'Custom Actions',
             "Delete all of the user's custom actions"),
@@ -158,23 +159,31 @@ def admin_remove_app_data(request):
     ]
 
     if request.method == "POST":
-        to_remove = [obj for obj, status in request.POST.items() if status == 'on']
+        to_remove = [
+            obj for obj, status in request.POST.items() if status == 'on'
+        ]
         for user in users:
             for ot in to_remove:
-                # e.g. call: user.useraction_set.all().delete()
-                attr = "{}_set".format(ot)
-                getattr(user, attr).all().delete()
+                if ot == "awards":
+                    user.badges.all().delete()
+                else:
+                    # e.g. call: user.useraction_set.all().delete()
+                    attr = "{}_set".format(ot)
+                    getattr(user, attr).all().delete()
 
-            if 'usercategory' in to_remove:
-                user.userprofile.needs_onboarding = True
-                user.userprofile.save()
+        if 'usercategory' in to_remove:
+            user.userprofile.needs_onboarding = True
+            user.userprofile.save()
 
         return HttpResponseRedirect("/admin/auth/user/")
     else:
         counts = {t[0]: 0 for t in object_types}
         for user in users:
             for ot in object_types:
-                counts[ot[0]] += getattr(user, ot[0] + "_set").count()
+                if ot[0] == "awards":
+                    counts['awards'] = user.badges.count()
+                else:
+                    counts[ot[0]] += getattr(user, ot[0] + "_set").count()
         object_types = [t + (counts[t[0]], ) for t in object_types]
 
     # GET requests
