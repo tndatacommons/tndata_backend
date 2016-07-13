@@ -86,17 +86,24 @@ from utils import dateutils
 # Helper functions
 # ----------------
 
-def just_joined(minutes=10, days=None):
-    """Return a QuerySet (a ValuesListQuerySet, actually) of users who've just
-    joined within the past `minutes` (or `days`))"""
+def just_joined(minutes=None, days=None):
+    """Return a QuerySet (a ValuesListQuerySet, actually) of users whose
+    accounts were created either within the past `minutes` or on the day of
+    `days` ago.
+
+    """
     User = get_user_model()
+    users = User.objects.none()
     if days:
+        # Return all users who joined within the given day
         since = timezone.now() - timedelta(days=days)
+        joined_on = dateutils.date_range(since)
+        users = User.objects.filter(date_joined__range=joined_on)
     elif minutes:
+        # Return all users who've joined in a 10-minute window at the given time
         since = timezone.now() - timedelta(minutes=minutes)
-    else:
-        return User.objects.none()
-    return User.objects.filter(date_joined__gte=since).values_list("id", flat=True)
+        users = User.objects.filter(date_joined__gte=since)
+    return users.values_list("id", flat=True)
 
 
 def just_logged_in(nth, minutes=10):
