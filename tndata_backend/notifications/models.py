@@ -572,21 +572,12 @@ class GCMMessage(models.Model):
         """This method handles the http response & data from GCM (after sending
         a message). There are a few things that can happen, here:
 
-        1. The Response content is parsed, and the following fields are
-           populated:
+        The Response content is parsed, and the following fields are populated:
 
             * response_code
             * response_text
             * response_data
             * registration_ids
-
-        2. If a message is successfully delivered, this method will call
-           the `_set_expiration` method to set a date on which this instance
-           should be deleted.
-
-        3. Handles removing invalid registration IDs; i.e. If we tried to send
-           a message to an invalid identifier, GCM will tell us. Let's remove
-           those (GCMDevice) objects from the system.
 
         """
         # Update the http response info from GCM

@@ -87,13 +87,33 @@ class ExistingContentTypeListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class ExpiredListFilter(admin.SimpleListFilter):
+    """List GCMMessages that have a set expiration date."""
+    title = _("Expired")
+    parameter_name = "expired"
+
+    def lookups(self, request, model_admin):
+        return ((0, 'No'), (1, 'Yes'))
+
+    def queryset(self, request, queryset):
+        value = int(self.value())
+        if value == 0:  # Get messages with no `expire_on` value
+            queryset = queryset.filter(expire_on__isnull=True)
+        elif value == 1:  # Get messages with an `expire_on` value
+            queryset = queryset.filter(expire_on__isnull=False)
+        return queryset
+
+
 class GCMMessageAdmin(admin.ModelAdmin):
     date_hierarchy = 'deliver_on'
     list_display = (
         'user_email', 'title', 'message_teaser', 'payload_size', 'content_type',
         'object_id', 'deliver_on', 'success', 'response_text',
     )
-    list_filter = (DeliverDayListFilter, 'success', ExistingContentTypeListFilter)
+    list_filter = (
+        DeliverDayListFilter, 'success', ExistingContentTypeListFilter,
+        ExpiredListFilter,
+    )
     search_fields = [
         'user__username', 'user__first_name', 'user__last_name', 'user__email',
         'title', 'message', 'content_type__model', 'queue_id', 'object_id',
