@@ -72,8 +72,10 @@ class TestGCMMessageManager(TestCase):
         self.assertEqual(qs.count(), 3)
 
     def test_expired(self):
+        # expired == send messages with a set `expire_on` or unsuccessfull
+        # messages from the past (3 days ago)
         qs = GCMMessage.objects.expired()
-        self.assertEqual(qs[0], self.expired_message)
+        self.assertEqual(qs.count(), 2)
 
     def test_ready_for_delivery(self):
         qs = GCMMessage.objects.ready_for_delivery()
