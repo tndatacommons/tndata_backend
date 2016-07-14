@@ -10,6 +10,7 @@ class CustomAwardAdmin(AwardAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'badge__name', 'badge__description',
     )
+    raw_id_fields = ('user', )
 
     def user_fullname(self, award):
         return award.user.get_full_name()
