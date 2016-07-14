@@ -11,7 +11,7 @@ IMPLEMENTATION
 2. _X_ Listen for signals (Award.post_save?) and send a push notification when
        a user is awarded a badge. (wrap this in a waffle.switch)
 3. _X_ New app (badge_api?) that exposes a user's awarded badges
-4. ___ Cron jobs that will run the badgify_sync commands to do awards
+4. _X_ Cron jobs that will run the badgify_sync commands to do awards
 
 ----
 
