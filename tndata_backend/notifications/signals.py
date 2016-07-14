@@ -36,7 +36,26 @@ def badgify_award_created_send_notfication(sender, **kwargs):
     created = kwargs.get('created', False)
     award = kwargs.get('instance', False)
 
-    if created and award and waffle.switch_is_active('enable-badgify'):
+    # XXX: OK, so there *may* be a case where the provided instance does NOT
+    # have a database ID, but it *may* have been saved. So, if that's the case,
+    # we need to look up the object prior to creating the GCMMessage.
+    if award.id is None:
+        try:
+            award = Award.objects.get(
+                user__id=award.user_id,
+                badge__id=award.badge_id
+            )
+        except Award.DoesNotExist:
+            award = None
+
+    # Ensure the following criteria has been met:
+    if (
+        created and
+        award and
+        award.id and
+        award.user.gcmdevice_set.exists() and
+        waffle.switch_is_active('enable-badgify')
+    ):
         from .models import GCMMessage
         GCMMessage.objects.create(
             user=award.user,
