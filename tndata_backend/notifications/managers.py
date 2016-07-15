@@ -119,9 +119,10 @@ class GCMMessageManager(models.Manager):
             )
 
         try:
-            # Don't create Duplicate messages:
+            # Don't create Duplicate messages and don't create messsages for
+            # users who haven't finished onboarding.
             args = (user, title, message, deliver_on, obj, content_type, valid_range)
-            if not self._message_exists(*args):
+            if not self._message_exists(*args) and not user.userprofile.needs_onboarding:
                 # Convert any times to UTC
                 if timezone.is_naive(deliver_on):
                     deliver_on = timezone.make_aware(deliver_on, timezone.utc)
