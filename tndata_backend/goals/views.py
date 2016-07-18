@@ -1481,7 +1481,8 @@ class AcceptEnrollmentCompleteView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['app_url'] = settings.PLAY_APP_URL
+        context['android_url'] = settings.PLAY_APP_URL
+        context['ios_url'] = settings.IOS_APP_URL
         context['packages'] = PackageEnrollment.objects.filter(
             id__in=self.request.session.get("package_ids", [])
         )
