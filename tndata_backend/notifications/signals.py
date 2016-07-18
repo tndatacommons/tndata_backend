@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from badgify.models import Award
+from utils.slack import post_private_message
 
 # -----------------------------------------------------------------------------
 #
@@ -65,3 +66,14 @@ def badgify_award_created_send_notfication(sender, **kwargs):
             obj=award,
             priority=GCMMessage.HIGH
         )
+
+    # TODO: Remove this Once verified it's working
+    if created:
+        msg = "[AWARD-{}] {} to {} at {}\nhttps://app.tndata.org/admin/badgify/award/?q={}".format(
+            award.id,
+            award.badge.name,
+            award.user.email,
+            award.awarded_at.strftime("%c %z"),
+            award.user.username,
+        )
+        post_private_message("bkmontgomery", msg)
