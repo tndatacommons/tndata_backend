@@ -48,6 +48,7 @@ be set prior to running the project:
     - staging / rq      --> 5
 
 * PLAY_APP_URL -- Link to the downloadable app on the play store.
+* IOS_APP_URL -- Link to the downloadable app on the apple app store.
 * SLACK_API_TOKEN -- slack api token
 * SLACK_CHANNEL -- chanel in which you want slack to post e.g. "#general"
 * SLACK_USERNAME -- username that will be used for posts to slack
@@ -400,6 +401,7 @@ REST_FRAMEWORK = {
 # Play Store Link for the mobile app.
 # https://developers.google.com/api-client-library/python/start/get_started
 PLAY_APP_URL = os.environ.get('PLAY_APP_URL')
+IOS_APP_URL = os.environ.get('IOS_APP_URL')
 
 # django-cors-headers: https://github.com/ottoyiu/django-cors-headers/
 CORS_ORIGIN_ALLOW_ALL = False
