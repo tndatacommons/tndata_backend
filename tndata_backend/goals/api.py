@@ -81,6 +81,37 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
+    @list_route(methods=['get', 'post'], url_path='members')
+    def membership(self, request, pk=None):
+        """GET: List the current user's organization membership.
+
+        POST: Add the user the given organization, requires a payload of:
+
+            {organization: <pk>}
+
+        """
+        if not self.request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.method == "POST":
+            try:
+                org = self.queryset.get(pk=request.data['organization'])
+                org.members.add(request.user)
+            except (KeyError, ValueError):
+                return Response(
+                    data={'error': "Missing or invalid value for organization"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except models.Organization.DoesNotExist:
+                return Response(
+                    data={'error': "Specified Organization not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        organizations = request.user.member_organizations.all()
+        serializer = self.get_serializer(organizations, many=True)
+        return Response(serializer.data)
+
 
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Categories. See the api_docs/ for more info"""
