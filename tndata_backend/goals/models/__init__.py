@@ -10,6 +10,7 @@ from .misc import (  # NOQA
     popular_goals,
     popular_categories
 )
+from .organizations import Organization  # NOQA
 from .packages import PackageEnrollment  # NOQA
 from .public import Action, Behavior, Category, Goal  # NOQA
 from .progress import DailyProgress, UserCompletedAction  # NOQA
