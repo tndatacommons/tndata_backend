@@ -1,0 +1,44 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}Organization{% endblock %}
+
+
+{% block head %}
+  {{ block.super }}
+  {{ form.media }}
+{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:organization-list' %}">Organization</a></li>
+  <li class="current">
+    {% if object %}{{ organization}}{% else %}New Organization{% endif %}
+  </li>
+{% endblock %}
+
+
+{% block content %}
+<h1>{% if object %}Update Organization: {{object}}{% else %}Create Organization{% endif %}</h1>
+
+<form
+  data-persist="garlic"
+  action="{% if object %}{{ object.get_update_url }}{% else %}{% url 'goals:organization-create' %}{% endif %}"
+  method="post">
+
+  {% crispy form %}
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <hr/>
+      <p>
+      <input class="button"
+             type="submit"
+             value="{% if object %}Update{% else %}Create{% endif %}"/>
+      </p>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

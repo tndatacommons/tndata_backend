@@ -497,6 +497,15 @@ class ActionAdmin(ContentWorkflowAdmin):
 admin.site.register(models.Action, ActionAdmin)
 
 
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created_on', 'updated_on')
+    search_fields = ['name', ]
+    prepopulated_fields = {"name_slug": ("name", )}
+    raw_id_fields = ('members', 'staff', 'admins')
+admin.site.register(models.Organization, OrganizationAdmin)
+
+
+
 class UserCategoryAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'category', 'created_on', 'accepted', 'enrolled',

@@ -1,0 +1,57 @@
+{% extends "goals/base.html" %}
+{% load goal_filters %}
+
+{% block title %}Organizations{% endblock %}
+
+
+{% block breadcrumbs %}
+    <li class="current">Organizations</li>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Organizations</h2>
+      <table class="object-list">
+      <thead>
+      <tr>
+        {% if user|is_editor %}
+        <th><i class="fa fa-cog"></i></th>
+        {% endif %}
+        <th>Name</th>
+        <th>Staff</th>
+        <th>Admins</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for org in organizations %}
+        {% with org_url=org.get_absolute_url %}
+        <tr>
+          {% if user|is_editor %}
+          <td>
+            <a href="{{ org.get_update_url }}" class="button tiny">Edit</a>
+          </td>
+          {% endif %}
+          <td>
+            <a href="{{ org_url }}">{{ org.name }}</a>
+          </td>
+          <td>
+            {% for obj in org.staff.all %}
+              {{ obj.get_full_name }} &lt;{{ obj.email }}&gt;<br/>
+            {% endfor %}
+          </td>
+          <td>
+            {% for obj in org.admins.all %}
+              {{ obj.get_full_name }} &lt;{{ obj.email }}&gt;<br/>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endwith %}
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

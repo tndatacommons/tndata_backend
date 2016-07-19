@@ -26,7 +26,7 @@ from utils.db import get_max_order
 from utils.user_utils import date_hash
 from utils.widgets import TextareaWithMarkdownHelperWidget
 
-from . models import Action, Behavior, Category, Goal, Trigger
+from . models import Action, Behavior, Category, Goal, Organization, Trigger
 from . permissions import ContentPermissions, is_content_editor
 from . utils import read_uploaded_csv
 from . widgets import TimeSelectWidget
@@ -400,6 +400,38 @@ class CategoryForm(forms.ModelForm):
                     css_class="large-6 small-12 columns"
                 ),
                 css_class="row"
+            )
+        )
+
+
+class UserMultipleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+            return "{} <{}>".format(obj.get_full_name(), obj.email)
+
+
+def _users():
+    User = get_user_model()
+    return User.objects.filter(is_active=True)
+
+
+class OrganizationForm(forms.ModelForm):
+    staff = UserMultipleChoiceField(queryset=_users(), required=False)
+    admins = UserMultipleChoiceField(queryset=_users(), required=False)
+
+    class Meta:
+        model = Organization
+        fields = ['name', 'staff', 'admins']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Organization"),
+                "name",
+                "staff",
+                "admins",
             )
         )
 

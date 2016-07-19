@@ -83,6 +83,11 @@ urlpatterns = [
 
     # Create views
     url(
+        r'^new/organization/$',
+        views.OrganizationCreateView.as_view(),
+        name='organization-create'
+    ),
+    url(
         r'^new/categories/$',
         views.CategoryCreateView.as_view(),
         name='category-create'
@@ -272,6 +277,30 @@ urlpatterns = [
         views.CategoryDetailView.as_view(),
         name='category-detail'
     ),
+
+    # Organizations
+    url(
+        r'^organizations/$',
+        views.OrganizationListView.as_view(),
+        name='organization-list'
+    ),
+    url(
+        r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/update/$',
+        views.OrganizationUpdateView.as_view(),
+        name='organization-update'
+    ),
+    url(
+        r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/delete/$',
+        views.OrganizationDeleteView.as_view(),
+        name='organization-delete'
+    ),
+    url(
+        r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/$',
+        views.OrganizationDetailView.as_view(),
+        name='organization-detail'
+    ),
+
+    # Misc Debugging & Reports.
     url(
         r'^batch-assign-keywords/$',
         views.admin_batch_assign_keywords,

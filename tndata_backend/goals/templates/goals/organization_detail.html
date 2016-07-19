@@ -1,0 +1,45 @@
+{% extends "goals/base.html" %}
+
+{% block title %}{{ organization }}{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'goals:organization-list' %}">Organizations</a></li>
+    <li class="current">{{ organization }}</li>
+{% endblock %}
+
+{% block content %}
+  <h1>
+    {{ organization }}
+    <a class="button pull-right alert tiny"
+       href="{{ organization.get_delete_url }}">Delete</a>
+  </h1>
+  <div class="row">
+    <div class="large-4 medium-4 small-12 columns">
+      {% with results=organization.admins.all %}
+        <h2 class="subheader">Admin <small>({{ results.count }} users)</small></h2>
+        {% for obj in results %}
+          {{ obj.get_full_name }}
+          <small>&lt;<a href="mailto:{{ obj.email }}">{{ obj.email }}</a>&gt;</small><br/>
+        {% endfor %}
+      {% endwith %}
+    </div>
+    <div class="large-4 medium-4 small-12 columns">
+      {% with results=organization.staff.all %}
+        <h2 class="subheader">Staff <small>({{ results.count }} users)</small></h2>
+        {% for obj in results %}
+          {{ obj.get_full_name }}
+          <small>&lt;<a href="mailto:{{ obj.email }}">{{ obj.email }}</a>&gt;</small><br/>
+        {% endfor %}
+      {% endwith %}
+    </div>
+    <div class="large-4 medium-4 small-12 columns">
+      {% with results=organization.members.all %}
+        <h2 class="subheader">Members <small>({{ results.count }} users)</small></h2>
+        {% for obj in results %}
+          {{ obj.get_full_name }}
+          <small>&lt;<a href="mailto:{{ obj.email }}">{{ obj.email }}</a>&gt;</small><br/>
+        {% endfor %}
+      {% endwith %}
+    </div>
+  </div>
+{% endblock %}

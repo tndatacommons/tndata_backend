@@ -44,6 +44,7 @@ from . forms import (
     DisableTriggerForm,
     EnrollmentReminderForm,
     GoalForm,
+    OrganizationForm,
     PackageEnrollmentForm,
     TitlePrefixForm,
     UploadImageForm,
@@ -51,6 +52,7 @@ from . forms import (
 from . mixins import (
     ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
     PackageManagerMixin, ReviewableUpdateMixin, StateFilterMixin,
+    SuperuserRequiredMixin,
 )
 from . models import (
     Action,
@@ -58,6 +60,7 @@ from . models import (
     Category,
     DailyProgress,
     Goal,
+    Organization,
     PackageEnrollment,
     Trigger,
     UserCompletedAction,
@@ -1106,6 +1109,71 @@ class ActionDeleteView(ContentEditorMixin, ContentDeleteView):
     slug_url_kwarg = "title_slug"
     pk_url_kwarg = 'pk'
     success_url = reverse_lazy('goals:index')
+
+
+class OrganizationListView(SuperuserRequiredMixin, ListView):
+    model = Organization
+    context_object_name = 'organizations'
+    template_name = "goals/organization_list.html"
+
+
+class OrganizationDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Organization.objects.all()
+    slug_field = "title_slug"
+    slug_url_kwarg = "title_slug"
+
+
+class OrganizationCreateView(SuperuserRequiredMixin, CreateView):
+    model = Organization
+    form_class = OrganizationForm
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your organization has been created.")
+        return url
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['organizations'] = Organization.objects.all()
+        return context
+
+
+class OrganizationUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Organization
+    form_class = OrganizationForm
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+    def get_success_url(self):
+        url = super().get_success_url()
+        messages.success(self.request, "Your organization has been saved")
+        return url
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['organizations'] = Organization.objects.all()
+        return context
+
+
+class OrganizationDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Organization
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:organization-list')
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.members.count() > 0:
+            msg = "You cannot remove an Organization with members."
+            return HttpResponseForbidden(msg)
+        result = super().delete(request, *args, **kwargs)
+        messages.success(
+            request,
+            "Your organization ({}) has been deleted.".format(obj.name)
+        )
+        return result
 
 
 class PackageListView(ContentViewerMixin, ListView):
