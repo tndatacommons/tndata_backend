@@ -20,6 +20,7 @@ from .. models import (
     CustomGoal,
     DailyProgress,
     Goal,
+    Organization,
     PackageEnrollment,
     Trigger,
     UserAction,
@@ -31,6 +32,59 @@ from .. models import (
 )
 
 User = get_user_model()
+
+
+class TestOrganization(TestCase):
+    """Tests for the `Organization` model."""
+
+    def setUp(self):
+        self.user = User.objects.create_user('orguser', 'orguser@x.com', 'pass')
+        self.organization = Organization.objects.create(name='Org')
+
+    def tearDown(self):
+        Organization.objects.filter(id=self.organization.id).delete()
+
+    def test__str__(self):
+        expected = "Org"
+        actual = "{}".format(self.organization)
+        self.assertEqual(expected, actual)
+
+    def test_save(self):
+        """Verify that saving generates a name_slug"""
+        organization = Organization.objects.create(name="New Name")
+        organization.save()
+        self.assertEqual(organization.name_slug, "new-name")
+        organization.delete()  # Clean up.
+
+    def test_members_staff_admins(self):
+        self.organization.members.add(self.user)
+        self.organization.staff.add(self.user)
+        self.organization.admins.add(self.user)
+
+        self.assertEqual(self.organization.members.count(), 1)
+        self.assertEqual(self.organization.staff.count(), 1)
+        self.assertEqual(self.organization.admins.count(), 1)
+
+    def test_get_absolute_url(self):
+        expected = "/goals/organizations/{}-{}/"
+        self.assertEqual(
+            self.organization.get_absolute_url(),
+            expected.format(self.organization.id, self.organization.name_slug)
+        )
+
+    def test_get_update_url(self):
+        expected = "/goals/organizations/{}-{}/update/"
+        self.assertEqual(
+            self.organization.get_update_url(),
+            expected.format(self.organization.id, self.organization.name_slug)
+        )
+
+    def test_get_delete_url(self):
+        expected = "/goals/organizations/{}-{}/delete/"
+        self.assertEqual(
+            self.organization.get_delete_url(),
+            expected.format(self.organization.id, self.organization.name_slug)
+        )
 
 
 class TestCaseDates(TestCase):

@@ -58,10 +58,6 @@ class Organization(models.Model):
         self.name_slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-    @property
-    def categories(self):
-        return self.category_set.all()
-
     def get_absolute_url(self):
         args = [self.pk, self.name_slug]
         return reverse('goals:organization-detail', args=args)
