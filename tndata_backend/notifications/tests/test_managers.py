@@ -27,6 +27,9 @@ class TestGCMMessageManager(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
+        cls.user.userprofile.needs_onboarding = False
+        cls.user.userprofile.save()
+
         cls.device = GCMDevice.objects.create(
             user=cls.user,
             registration_id="REGISTRATIONID"

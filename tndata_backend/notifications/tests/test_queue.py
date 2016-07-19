@@ -30,6 +30,7 @@ class TestUserQueue(TestCase):
 
         cls.profile = cls.user.userprofile
         cls.profile.maximum_daily_notifications = 10
+        cls.profile.needs_onboarding = False
         cls.profile.save()
 
         cls.device = GCMDevice.objects.create(

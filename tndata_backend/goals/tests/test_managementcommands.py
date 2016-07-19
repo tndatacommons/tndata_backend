@@ -32,6 +32,8 @@ class TestCreateNotifications(TestCase):
     def test_create_notifications_with_content(self):
         User = get_user_model()
         user = User.objects.create_user('x', 'x@example.com', 'pass')
+        user.userprofile.needs_onboarding = False
+        user.userprofile.save()
 
         # Ensure the user has a device
         user.gcmdevice_set.create(registration_id="REGID", device_name="test")

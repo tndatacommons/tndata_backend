@@ -84,6 +84,7 @@ class TestGCMMessage(TestCase):
         try:
             cls.user.userprofile.timezone = 'America/Chicago'
             cls.user.userprofile.maximum_daily_notifications = 10
+            cls.user.userprofile.needs_onboarding = False
             cls.user.userprofile.save()
         except ValueError:
             pass

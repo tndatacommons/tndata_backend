@@ -47,7 +47,11 @@ class TestGCMDeviceAPI(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
+        # Create the user and ensure they've compelted onboarding
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
+        cls.user.userprofile.needs_onboarding = False
+        cls.user.userprofile.save()
+
         cls.device = GCMDevice.objects.create(
             user=cls.user,
             registration_id="REGISTRATIONID",
@@ -149,6 +153,9 @@ class TestGCMMessageAPI(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user('gcm', 'gcm@example.com', 'pass')
+        cls.user.userprofile.needs_onboarding = False
+        cls.user.userprofile.save()
+
         cls.device = GCMDevice.objects.create(
             user=cls.user,
             registration_id="REGISTRATIONID"

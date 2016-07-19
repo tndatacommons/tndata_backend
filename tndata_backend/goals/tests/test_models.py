@@ -1762,6 +1762,9 @@ class TestUserAction(TestCaseDates):
             username="test",
             email="test@example.com"
         )
+        self.user.userprofile.needs_onboarding = False
+        self.user.userprofile.save()
+
         self.goal = Goal.objects.create(title="Goal for Behavior", state='published')
         self.ug = UserGoal.objects.create(user=self.user, goal=self.goal)
         self.behavior = Behavior.objects.create(title='Test Behavior')
@@ -2521,6 +2524,9 @@ class TestCustomAction(TestCase):
 
     def setUp(self):
         self.user = mommy.make(User)
+        self.user.userprofile.needs_onboarding = False
+        self.user.userprofile.save()
+
         self.customgoal = mommy.make(CustomGoal, title='Goal', user=self.user)
         self.customaction = mommy.make(
             CustomAction,
