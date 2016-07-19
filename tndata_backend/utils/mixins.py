@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
+from rest_framework.exceptions import APIException
+
 
 class LoginRequiredMixin(object):
     """A mixin for a class-based view that requires the user to be logged in.
@@ -62,6 +64,9 @@ class VersionedViewSetMixin:
             default = settings.REST_FRAMEWORK['DEFAULT_VERSION']
             attr_name = "serializer_class_v{}".format(default)
             serializer_class = getattr(self, attr_name)
+
+        if serializer_class is None:
+            raise APIException("This version of the api has no serializer.")
 
         # HACK: Dynamically write a new docstring based on the api version
         # It really makes little sense to do this work here, but this is
