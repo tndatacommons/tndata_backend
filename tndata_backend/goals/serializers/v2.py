@@ -9,6 +9,7 @@ from ..models import (
     Category,
     DailyProgress,
     Goal,
+    Organization,
     Trigger,
     UserAction,
     UserGoal,
@@ -33,6 +34,12 @@ from .v1 import (  # flake8: noqa
     ReadOnlyUserActionSerializer,
     TriggerSerializer,
 )
+
+
+class OrganizationSerializer(ObjectTypeModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ('id', 'name', 'name_slug')
 
 
 class DailyProgressSerializer(ObjectTypeModelSerializer):

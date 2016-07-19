@@ -72,6 +72,16 @@ class IsContentAuthor(permissions.IsAuthenticated):
         return is_content_author(request.user)
 
 
+class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+    """ViewSet for Organizations"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.Organization.objects.all()
+    serializer_class_v1 = None
+    serializer_class_v2 = v2.OrganizationSerializer
+    pagination_class = PublicViewSetPagination
+    docstring_prefix = "goals/api_docs"
+
+
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Categories. See the api_docs/ for more info"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)

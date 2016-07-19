@@ -45,13 +45,13 @@ class Organization(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         ordering = ['name', ]
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"
+
+    def __str__(self):
+        return self.name
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
