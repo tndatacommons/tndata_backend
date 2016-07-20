@@ -1,4 +1,5 @@
 from django import http
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.models import Group
@@ -48,12 +49,17 @@ def _setup_content_viewer(request, user, password):
     post_message("#tech", msg)
 
 
-def _setup_enduser(request, user, password):
+def _setup_enduser(request, user):
     """Handle addional post-account-creation tasks for end-users."""
     User = get_user_model()
 
     # Set an appropriate message.
     messages.success(request, "Welcome to Compass! Your account has been created.")
+
+    # -------------------------------------------------------------------------
+    # TODO: Check for organization paramters, and add the new user as a member
+    # in the correct Organization (if applicable) and assign their content?
+    # -------------------------------------------------------------------------
 
     # Send some email notifications.
     send_new_enduser_welcome(user)
@@ -99,7 +105,7 @@ def signup(request, content_viewer=False, enduser=False):
     redirect_to = '/'
     if enduser:
         template = 'utils/signup_enduser.html'
-        redirect_to = '/'  # TODO: App download page.
+        redirect_to = 'join'
 
     if request.method == "POST":
         form = UserForm(request.POST)
@@ -129,6 +135,10 @@ def signup(request, content_viewer=False, enduser=False):
                     password = password_form.cleaned_data['password']
                     _setup_content_viewer(request, u, password)
 
+                if enduser:
+                    _setup_enduser(request, u)
+                    redirect_to = reverse(redirect_to) + "?c=1"
+
                 return redirect(redirect_to)
         else:
             messages.error(request, "We could not process your request. "
@@ -136,11 +146,16 @@ def signup(request, content_viewer=False, enduser=False):
     else:
         form = UserForm()
         password_form = SetNewPasswordForm(prefix='pw')
+        # TODO: Read any GET params (e.g. organizations?) and handle them
+        # appropriately. We want to possibly specify an organization. Could
+        # be the site from which the user is signing up.
 
     context = {
         'form': form,
         'password_form': password_form,
         'completed': bool(request.GET.get("c", False)),
+        'android_url': settings.PLAY_APP_URL,
+        'ios_url': settings.IOS_APP_URL,
     }
     return render(request, template, context)
 

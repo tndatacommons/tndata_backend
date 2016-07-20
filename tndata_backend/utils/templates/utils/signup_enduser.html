@@ -1,27 +1,39 @@
 {% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
 {% block title %}Sign Up{% endblock %}
 
 {% block body %}
 <div class="row">
   <div class="large-8 large-offset-2 medium-10 medium-offset-1 small-12 columns end">
+  <h1>Welcome to Compass!</h1>
   {% if completed %}
-    <h1>Thank you</h1>
-    <p>We will review your request, soon. Once we do, we will activate your
-    account then contact you with additional information.</p>
+    <p class="lead">You're almost there!</p>
+    <p>Download the mobile app, and log in with the credentials (your email &amp;
+    password) you just created, and you'll be on your journey.</p>
+    <p style="text-align:center">
+      <a href="{{ android_url }}" class="button large success">
+        <i class="fa fa-android"></i> Android!</a>
+      <a href="{{ ios_url }}" class="button large">
+        <i class="fa fa-apple"></i> iOS</a>
+    </p>
   {% elif form %}
-    <h1>Request an Account</h1>
-    <p>Complete the following form to request an account. Once you submit this
-    form, we will review your request and grant access.</p>
-    <form action="{% url 'utils:signup' %}" method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-      {{ password_form.as_p }}
-      <hr>
-      <p><em>Creating an account indicates that you agree to our
+    <p>Complete the following form to create your account.</p>
+    <form action="{% url 'join' %}" method="post">
+      {% crispy form %}
+      {% crispy password_form %}
+      <hr/>
+      <p style="text-align:center;">
+        <button class="button" type="submit">Sign Up</button>
+      </p>
+      <p>
+        <em>Creating an account indicates that you agree to our
         <a href="/terms/">terms of service</a>,
         <a href="/privacy/">privacy policy</a>, and
-        <a href="/license/">content license agreement</a>.</em></p>
-      <button class="button" type="submit">Request Access</button>
+        <a href="/license/">content license agreement</a>.
+        </em>
+      </p>
     </form>
   {% endif %}
   </div>
