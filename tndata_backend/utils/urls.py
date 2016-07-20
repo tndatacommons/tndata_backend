@@ -28,5 +28,5 @@ urlpatterns = patterns('',
         views.SetNewPasswordView.as_view(),
         name='set_new_password'
     ),
-    url(r'^signup/$', views.signup, name='signup'),
+    url(r'^signup/$', views.signup, {'content_viewer': True}, name='signup'),
 )

@@ -56,6 +56,24 @@ def send_new_user_request_notification_to_managers(user):
     return mail_managers(subject, message, html_message=html_message)
 
 
+def send_new_enduser_welcome(user, subject="Welcome to Compass"):
+    """When an end-user signs up via the web app, send them a welcome email."""
+    ctx = {
+        'user': user,
+        'alert': subject,
+        'cta_link': 'https://getcompass.org/',
+        'cta_text': 'Download the App',
+    }
+    message = render_to_string('utils/email/new_enduser_welcome.txt', ctx)
+    html_message = render_to_string('utils/email/new_enduser_welcome.html', ctx)
+    return send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        html_message=html_message
+    )
+
 
 def send_new_user_welcome(user):
     """When a user signs up via the web app, send them a welcome email."""

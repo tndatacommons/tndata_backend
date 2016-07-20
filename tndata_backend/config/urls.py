@@ -169,6 +169,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/$', watch_login(login), name="login"),
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),
+    url(r'^join/$', utils_views.signup, {'enduser': True}, name="join"),
     url(r'^utils/', include('utils.urls', namespace='utils')),
     url(r'^jsi18n/$', javascript_catalog, {'packages': ('recurrences')}),
     url(r'^search/', include('haystack.urls')),

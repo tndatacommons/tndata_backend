@@ -14,6 +14,7 @@ from goals.permissions import CONTENT_VIEWERS
 from userprofile.forms import UserForm
 from . email import (
     send_new_user_request_notification_to_managers,
+    send_new_enduser_welcome,
     send_new_user_welcome,
 )
 from . forms import EmailForm, SetNewPasswordForm
@@ -22,7 +23,84 @@ from . slack import post_message
 from . user_utils import username_hash, get_client_ip
 
 
-def signup(request):
+def _setup_content_viewer(request, user, password):
+    """Handle addional post-account-creation tasks for content viewers."""
+    # Add them to the appropriate groups.
+    for group in Group.objects.filter(name=CONTENT_VIEWERS):
+        user.groups.add(group)
+
+    # Log the user in & set an appropriate message.
+    user = authenticate(username=user.username, password=password)
+    login(request, user)
+    messages.success(request, "Welcome! Your account has been created.")
+
+    # Send some email notifications.
+    send_new_user_request_notification_to_managers(user)
+    send_new_user_welcome(user)
+
+    # Ping slack so this doesn't go unnoticed.
+    msg = (
+        ":warning: Hey @bkmontgomery, {user} <{email}> just signed up as a "
+        "content viewer. If necessary, update their permissions at: "
+        "https://app.tndata.org/admin/auth/user/{id}/"
+    )
+    msg = msg.format(user=user.get_full_name(), email=user.email, id=user.id)
+    post_message("#tech", msg)
+
+
+def _setup_enduser(request, user, password):
+    """Handle addional post-account-creation tasks for end-users."""
+    User = get_user_model()
+
+    # Set an appropriate message.
+    messages.success(request, "Welcome to Compass! Your account has been created.")
+
+    # Send some email notifications.
+    send_new_enduser_welcome(user)
+
+    # Ping slack so this doesn't go unnoticed.
+    num_users = User.objects.filter(is_active=True).count()
+    msg = (
+        ":exclamation: :point_right: {user} <{email}> just joined. That "
+        "makes *{num_users}* active accounts."
+    )
+    msg = msg.format(
+        user=user.get_full_name(), email=user.email, num_users=num_users
+    )
+    post_message("#tech", msg)
+
+
+def signup(request, content_viewer=False, enduser=False):
+    """This view handles user account creation. There are different scenarios
+    for different types of users, as indicated by the keyward arguments to
+    this function:
+
+    - content_viewer: If True, the account will be created as a content viewer
+      (ie. a user who may need access to the editing tools at some point). This
+      user account will be automatically activated, logged in, and added to
+      some groups.
+
+        /utils/signup/
+
+    - enduser: If True, the account will be created as if the user intends to
+      download and use the mobile app. Their account will be created, and the
+      user will be redirected to links to the mobile app(s).
+
+        /join/
+
+    For Endusers: The request may also include some parameters indicating the
+    organization in which the user should be a member...
+
+    TODO: ^^^^^^^^^^^
+
+    """
+    # Set the template/redirection based on the type of user signup
+    template = 'utils/signup_content_viewer.html'
+    redirect_to = '/'
+    if enduser:
+        template = 'utils/signup_enduser.html'
+        redirect_to = '/'  # TODO: App download page.
+
     if request.method == "POST":
         form = UserForm(request.POST)
         password_form = SetNewPasswordForm(request.POST, prefix="pw")
@@ -36,42 +114,22 @@ def signup(request):
                                           "your password to continue.")
                 return redirect(reverse("login"))
             except User.DoesNotExist:
+                # Create & activate the account, and do initial record-keeping
                 u = form.save(commit=False)
+                u.is_active = True
                 u.username = username_hash(u.email)
                 u.set_password(password_form.cleaned_data['password'])
-
-                # By default, ensure accounts are active and that they have
-                # permissions to view content.
-                u.is_active = True
                 u.save()
-                for group in Group.objects.filter(name=CONTENT_VIEWERS):
-                    u.groups.add(group)
 
                 # Set their IP address.
                 u.userprofile.ip_address = get_client_ip(request)
                 u.userprofile.save()
 
-                # Log the user in
-                u = authenticate(
-                    username=u.username,
-                    password=password_form.cleaned_data['password']
-                )
-                login(request, u)
-                messages.success(request, "Welcome! Your account has been created.")
+                if content_viewer:
+                    password = password_form.cleaned_data['password']
+                    _setup_content_viewer(request, u, password)
 
-                # Send some email notifications...
-                send_new_user_request_notification_to_managers(u)
-                send_new_user_welcome(u)
-
-                # Ping slack so this doesn't go unnoticed.
-                msg = (
-                    ":warning: @bkmontgomery, {user} <{email}> just registered "
-                    "for an account. Update their permissions at: "
-                    "https://app.tndata.org/admin/auth/user/{id}/"
-                )
-                msg = msg.format(user=u.get_full_name(), email=u.email, id=u.id)
-                post_message("#tech", msg)
-                return redirect('/')
+                return redirect(redirect_to)
         else:
             messages.error(request, "We could not process your request. "
                                     "Please see the details, below.")
@@ -84,7 +142,7 @@ def signup(request):
         'password_form': password_form,
         'completed': bool(request.GET.get("c", False)),
     }
-    return render(request, "utils/signup.html", context)
+    return render(request, template, context)
 
 
 @api_view(['POST'])
