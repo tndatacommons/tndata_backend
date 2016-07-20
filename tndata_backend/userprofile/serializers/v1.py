@@ -27,6 +27,19 @@ from utils.serializers import ObjectTypeModelSerializer
 
 from .. import models
 
+# NOTE: This information has been removed from the current API,
+# the following is just a placeholder for old clients.
+ACTION_FEEDBACK = {
+    'percentage': 0,
+    'incomplete': 0,
+    'total': 0,
+    'icon': 4,
+    'completed': 0,
+    'title': "You're doing great!",
+    'subtitle': 'Even small steps can help you reach your goal'
+}
+
+
 
 class PlaceSerializer(ObjectTypeModelSerializer):
     class Meta:
@@ -181,7 +194,7 @@ class UserSerializer(ObjectTypeModelSerializer):
         if not hasattr(self, "_feed"):
             self._feed = {
                 'next_action': None,
-                'action_feedback': None,
+                'action_feedback': ACTION_FEEDBACK,
                 'progress': None,
                 'upcoming_actions': [],
                 'suggestions': [],
@@ -193,10 +206,6 @@ class UserSerializer(ObjectTypeModelSerializer):
             # Up next UserAction
             ua = user_feed.next_user_action(obj)
             self._feed['next_action'] = ReadOnlyUserActionSerializer(ua).data
-            if ua:
-                # The Action feedback is irrelevant if there's no user action
-                feedback = user_feed.action_feedback(obj, ua)
-                self._feed['action_feedback'] = feedback
 
             # Actions to do today.
             upcoming = user_feed.todays_actions(obj)
@@ -215,7 +224,7 @@ class UserSerializer(ObjectTypeModelSerializer):
         return self._get_feed(obj)['next_action']
 
     def get_action_feedback(self, obj):
-        return self._get_feed(obj)['action_feedback']
+        return ACTION_FEEDBACK
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']
@@ -457,7 +466,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         if not hasattr(self, "_feed"):
             self._feed = {
                 'next_action': None,
-                'action_feedback': None,
+                'action_feedback': ACTION_FEEDBACK,
                 'progress': None,
                 'upcoming_actions': [],
                 'suggestions': [],
@@ -469,10 +478,6 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             # Up next UserAction
             ua = user_feed.next_user_action(obj)
             self._feed['next_action'] = ReadOnlyUserActionSerializer(ua).data
-            if ua:
-                # The Action feedback is irrelevant if there's no user action
-                feedback = user_feed.action_feedback(obj, ua)
-                self._feed['action_feedback'] = feedback
 
             # Actions to do today.
             upcoming = user_feed.todays_actions(obj)
@@ -492,7 +497,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         return self._get_feed(obj)['next_action']
 
     def get_action_feedback(self, obj):
-        return self._get_feed(obj)['action_feedback']
+        return ACTION_FEEDBACK
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']

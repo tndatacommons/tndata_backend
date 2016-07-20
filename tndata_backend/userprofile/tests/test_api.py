@@ -272,7 +272,6 @@ class TestUsersAPI(APITestCase):
 
         # As well as the collections used for the home feed
         self.assertIn('next_action', response.data['results'][0])
-        self.assertIn('action_feedback', response.data['results'][0])
         self.assertIn('progress', response.data['results'][0])
         self.assertIn('upcoming_actions', response.data['results'][0])
         self.assertIn('suggestions', response.data['results'][0])

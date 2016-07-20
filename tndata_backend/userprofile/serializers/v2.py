@@ -117,7 +117,6 @@ class UserDataSerializer(ObjectTypeModelSerializer):
 class UserFeedSerializer(ObjectTypeModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
 
-    action_feedback = serializers.SerializerMethodField(read_only=True)
     progress = serializers.SerializerMethodField(read_only=True)
     suggestions = serializers.SerializerMethodField(read_only=True)
     upcoming = serializers.SerializerMethodField(read_only=True)
@@ -130,7 +129,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'token', 'object_type', 'upcoming',
-            'streaks', 'action_feedback', 'progress', 'suggestions',
+            'streaks', 'progress', 'suggestions',
             'object_type',
         )
         read_only_fields = ("id", "username", "email")
@@ -148,22 +147,12 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         feed = cache.get(cache_key)
         if feed is None:
             feed = {
-                'action_feedback': None,
                 'progress': None,
                 'suggestions': [],
                 'object_type': 'feed',
                 'upcoming': [],
                 'streaks': [],
             }
-
-            # =========================================================
-            # XXX Deprecate this with action_feedback
-            # Find the up next action and it's feedback.
-            ua = user_feed.next_user_action(obj)
-            if ua:
-                feedback = user_feed.action_feedback(obj, ua)
-                feed['action_feedback'] = feedback
-            # =========================================================
 
             # Progress for today
             feed['progress'] = user_feed.todays_progress(obj)
@@ -227,10 +216,6 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
             feed['streaks'] = user_feed.progress_streaks(obj)
             cache.set(cache_key, feed, 30)  # Cache feed for 30 seconds.
         return feed
-
-    # XXX Deprecate this with action_feedback
-    def get_action_feedback(self, obj):
-        return self._get_feed(obj)['action_feedback']
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']
