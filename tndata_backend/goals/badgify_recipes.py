@@ -69,6 +69,7 @@ Optionally, A recipe class may implement:
 """
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db.models import Case, Count, IntegerField, When
@@ -76,6 +77,7 @@ from django.utils import timezone
 
 from badgify.recipe import BaseRecipe
 import badgify
+import waffle
 
 from .models import DailyProgress
 
@@ -160,7 +162,6 @@ class StarterRecipe(SignupMixin, BaseRecipe):
     description = "Congrats on signing up! You're on your way to success!"
     badge_path = 'badges/glob-01-starter.png'
     minutes_since_signup = 10
-badgify.register(StarterRecipe)
 
 
 class ExplorerRecipe(SignupMixin, BaseRecipe):
@@ -170,7 +171,6 @@ class ExplorerRecipe(SignupMixin, BaseRecipe):
     description = "You've used Compass for a week! Woo-hoo!"
     badge_path = 'badges/glob-06-explorer.png'
     days_since_signup = 7
-badgify.register(ExplorerRecipe)
 
 
 class LighthouseRecipe(SignupMixin, BaseRecipe):
@@ -180,7 +180,6 @@ class LighthouseRecipe(SignupMixin, BaseRecipe):
     description = "You've used Compass for a month! Woo-hoo!"
     badge_path = 'badges/placeholder.png'
     days_since_signup = 30
-# badgify.register(LighthouseRecipe)
 
 
 class LoginMixin:
@@ -205,7 +204,6 @@ class HomecomingRecipe(LoginMixin, BaseRecipe):
     description = "Congrats for coming back."
     badge_path = 'badges/glob-02-homecoming.png'
     login_number = 2
-badgify.register(HomecomingRecipe)
 
 
 class SeekerRecipe(LoginMixin, BaseRecipe):
@@ -215,7 +213,6 @@ class SeekerRecipe(LoginMixin, BaseRecipe):
     description = "Congrats for coming back the third time."
     badge_path = 'badges/glob-03-seeker.png'
     login_number = 3
-badgify.register(SeekerRecipe)
 
 
 class PathfinderRecipe(LoginMixin, BaseRecipe):
@@ -225,7 +222,6 @@ class PathfinderRecipe(LoginMixin, BaseRecipe):
     description = "Congrats for coming back the seventh time."
     login_number = 7
     badge_path = 'badges/glob-04-pathfinder.png'
-badgify.register(PathfinderRecipe)
 
 
 class NavigatorRecipe(LoginMixin, BaseRecipe):
@@ -235,7 +231,6 @@ class NavigatorRecipe(LoginMixin, BaseRecipe):
     description = "Congrats for coming back the fourteenth time."
     login_number = 14
     badge_path = 'badges/glob-05-navigator.png'
-badgify.register(NavigatorRecipe)
 
 
 # TODO: Scout -- After leaving the "total badges" activities
@@ -254,7 +249,6 @@ badgify.register(NavigatorRecipe)
 #     def user_ids(self):
 #         # TODO: How to do this?
 #
-# badgify.register(NavigatorRecipe)
 
 
 # ------------------------------
@@ -280,7 +274,6 @@ class ThoughtfulRecipe(CheckinMixin, BaseRecipe):
     description = "This was your first time checking in! You're awesome!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 1
-# badgify.register(ThoughtfulRecipe)
 
 
 class ConscientiousRecipe(CheckinMixin, BaseRecipe):
@@ -289,7 +282,6 @@ class ConscientiousRecipe(CheckinMixin, BaseRecipe):
     description = "This was your second time checking in! You're taking care of yourself!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 2
-# badgify.register(ConscientiousRecipe)
 
 
 class StreakThreeDaysRecipe(CheckinMixin, BaseRecipe):
@@ -298,7 +290,6 @@ class StreakThreeDaysRecipe(CheckinMixin, BaseRecipe):
     description = "You've checked in three times in a row! Score!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 3
-# badgify.register(StreakThreeDaysRecipe)
 
 
 class StreakFiveDaysRecipe(CheckinMixin, BaseRecipe):
@@ -307,7 +298,6 @@ class StreakFiveDaysRecipe(CheckinMixin, BaseRecipe):
     description = "You've checked in five times in a row! Way to go!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 3
-# badgify.register(StreakFiveDaysRecipe)
 
 
 class StreakOneWeekRecipe(CheckinMixin, BaseRecipe):
@@ -316,7 +306,6 @@ class StreakOneWeekRecipe(CheckinMixin, BaseRecipe):
     description = "You've checked in seven times in a row! Keep up the streak!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 7
-# badgify.register(StreakOneWeekRecipe)
 
 
 class StreakTwoWeeksRecipe(CheckinMixin, BaseRecipe):
@@ -325,7 +314,6 @@ class StreakTwoWeeksRecipe(CheckinMixin, BaseRecipe):
     description = "You've checked in every day for two weeks! Score!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 14
-# badgify.register(StreakTwoWeeksRecipe)
 
 
 class StreakThreeWeeksRecipe(CheckinMixin, BaseRecipe):
@@ -334,7 +322,6 @@ class StreakThreeWeeksRecipe(CheckinMixin, BaseRecipe):
     description = "You've checked in every day for three weeks! Score!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 21
-# badgify.register(StreakThreeWeeksRecipe)
 
 
 class StreakFourWeeksRecipe(CheckinMixin, BaseRecipe):
@@ -343,7 +330,6 @@ class StreakFourWeeksRecipe(CheckinMixin, BaseRecipe):
     description = "You've checked in every day for four weeks! Score!"
     badge_path = 'badges/placeholder.png'
     checkin_days = 28
-# badgify.register(StreakFourWeeksRecipe)
 
 
 # -----------------------------------
@@ -375,7 +361,6 @@ class ParticipantRecipe(BaseRecipe):
             packageenrollment__updated_on__gte=since
         )
         return users.values_list('id', flat=True)
-# badgify.register(ParticipantRecipe)
 
 
 class UserGoalCountMixin:
@@ -425,7 +410,6 @@ class GoalSetterRecipe(UserGoalCountMixin, BaseRecipe):
     description = "Congrats on setting your first goal!"
     badge_path = 'badges/goal-01-goalsetter.png'
     num_usergoals = 1
-badgify.register(GoalSetterRecipe)
 
 
 class StriverRecipe(UserGoalCountMixin, BaseRecipe):
@@ -435,7 +419,6 @@ class StriverRecipe(UserGoalCountMixin, BaseRecipe):
     description = "Congrats on setting your second goal!"
     badge_path = 'badges/goal-02-striver.png'
     num_usergoals = 2
-badgify.register(StriverRecipe)
 
 
 class AchieverRecipe(UserGoalCountMixin, BaseRecipe):
@@ -445,7 +428,6 @@ class AchieverRecipe(UserGoalCountMixin, BaseRecipe):
     description = "Congrats on setting your fourth goal!"
     badge_path = 'badges/goal-03-achiever.png'
     num_usergoals = 4
-badgify.register(AchieverRecipe)
 
 
 class HighFiveRecipe(UserGoalCountMixin, BaseRecipe):
@@ -455,7 +437,6 @@ class HighFiveRecipe(UserGoalCountMixin, BaseRecipe):
     description = "Congrats on setting your fifth goal!"
     badge_path = 'badges/goal-04-highfive.png'
     num_usergoals = 5
-badgify.register(HighFiveRecipe)
 
 
 class PerfectTenRecipe(UserGoalCountMixin, BaseRecipe):
@@ -465,7 +446,6 @@ class PerfectTenRecipe(UserGoalCountMixin, BaseRecipe):
     description = "Congrats on setting your tenth goal!"
     badge_path = 'badges/goal-05-perfectten.png'
     num_usergoals = 10
-badgify.register(PerfectTenRecipe)
 
 
 class SuperstarRecipe(UserGoalCountMixin, BaseRecipe):
@@ -475,7 +455,6 @@ class SuperstarRecipe(UserGoalCountMixin, BaseRecipe):
     description = "Congrats on setting your twentieth goal!"
     badge_path = 'badges/goal-06-superstar.png'
     num_usergoals = 20
-badgify.register(SuperstarRecipe)
 
 
 # -----------------------------------------------------------------------------
@@ -523,7 +502,6 @@ class FirstTimerRecipe(UserCompletedActionCountMixin, BaseRecipe):
     description = "Congrats on your first activity! Keep up the good work!"
     badge_path = 'badges/action-01-firsttimer.png'
     num_completed = 1
-badgify.register(FirstTimerRecipe)
 
 
 class TwoFerRecipe(UserCompletedActionCountMixin, BaseRecipe):
@@ -532,7 +510,6 @@ class TwoFerRecipe(UserCompletedActionCountMixin, BaseRecipe):
     description = "Congrats on your second activity!"
     badge_path = 'badges/action-02-twofer.png'
     num_completed = 2
-badgify.register(TwoFerRecipe)
 
 
 class TrioRecipe(UserCompletedActionCountMixin, BaseRecipe):
@@ -541,7 +518,6 @@ class TrioRecipe(UserCompletedActionCountMixin, BaseRecipe):
     description = "Congrats on your third activity!"
     badge_path = 'badges/action-03-trio.png'
     num_completed = 3
-badgify.register(TrioRecipe)
 
 
 class ActionHighFiveRecipe(UserCompletedActionCountMixin, BaseRecipe):
@@ -550,7 +526,6 @@ class ActionHighFiveRecipe(UserCompletedActionCountMixin, BaseRecipe):
     description = "Congrats on your fifth activity!"
     badge_path = 'badges/action-04-highfive.png'
     num_completed = 5
-badgify.register(ActionHighFiveRecipe)
 
 
 class TenSpotRecipe(UserCompletedActionCountMixin, BaseRecipe):
@@ -559,7 +534,6 @@ class TenSpotRecipe(UserCompletedActionCountMixin, BaseRecipe):
     description = "Congrats on ten activities!"
     badge_path = 'badges/action-05-tenspot.png'
     num_completed = 10
-badgify.register(TenSpotRecipe)
 
 
 class UserCompletedBehaviorCountMixin:
@@ -594,7 +568,6 @@ class BehaviorCompletedRecipe(UserCompletedBehaviorCountMixin, BaseRecipe):
     description = "Congrats on completing a set of actions!"
     badge_path = 'badges/placeholder.png'
     num_completed = 1
-# badgify.register(BehaviorCompletedRecipe)
 # TODO: more behavior completion badges.
 
 
@@ -631,7 +604,6 @@ class GoalCompletedRecipe(UserCompletedGoalCountMixin, BaseRecipe):
     description = "Congrats on completing every action in a Goal!"
     badge_path = 'badges/placeholder.png'
     num_completed = 1
-# badgify.register(GoalCompletedRecipe)
 
 
 class UserCreatedCustomGoalCountMixin:
@@ -665,7 +637,6 @@ class CustomGoalCreatedRecipe(UserCreatedCustomGoalCountMixin, BaseRecipe):
     description = "Congrats on creating your first Custom Goal!"
     badge_path = 'badges/placeholder.png'
     num_completed = 1
-# badgify.register(CustomGoalCreatedRecipe)
 
 
 class UserCompletedCustomActionCountMixin:
@@ -701,4 +672,40 @@ class CustomActionCompletedRecipe(UserCompletedCustomActionCountMixin, BaseRecip
     description = "Congrats on creating your first Custom Action!"
     badge_path = 'badges/placeholder.png'
     num_completed = 1
-# badgify.register(CustomActionCompletedRecipe)
+
+
+# Register our badges.
+debug = (settings.DEBUG or settings.STAGING)
+if waffle.switch_is_active('enable-badgify') or debug:
+    badgify.register(StarterRecipe)
+    badgify.register(ExplorerRecipe)
+    badgify.register(HomecomingRecipe)
+    badgify.register(SeekerRecipe)
+    badgify.register(PathfinderRecipe)
+    badgify.register(NavigatorRecipe)
+    # badgify.register(NavigatorRecipe)
+    # badgify.register(ThoughtfulRecipe)
+    # badgify.register(ConscientiousRecipe)
+    # badgify.register(StreakThreeDaysRecipe)
+    # badgify.register(StreakFiveDaysRecipe)
+    # badgify.register(StreakOneWeekRecipe)
+    # badgify.register(StreakTwoWeeksRecipe)
+    # badgify.register(StreakThreeWeeksRecipe)
+    # badgify.register(StreakFourWeeksRecipe)
+    # badgify.register(ParticipantRecipe)
+    badgify.register(GoalSetterRecipe)
+    badgify.register(StriverRecipe)
+    badgify.register(AchieverRecipe)
+    badgify.register(HighFiveRecipe)
+    badgify.register(PerfectTenRecipe)
+    badgify.register(SuperstarRecipe)
+    badgify.register(FirstTimerRecipe)
+    badgify.register(TwoFerRecipe)
+    badgify.register(TrioRecipe)
+    badgify.register(ActionHighFiveRecipe)
+    badgify.register(TenSpotRecipe)
+    # badgify.register(BehaviorCompletedRecipe)
+    # badgify.register(GoalCompletedRecipe)
+    # badgify.register(CustomGoalCreatedRecipe)
+    # badgify.register(LighthouseRecipe)
+    # badgify.register(CustomActionCompletedRecipe)
