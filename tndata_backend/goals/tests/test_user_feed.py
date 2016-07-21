@@ -36,7 +36,6 @@ class TestUserProgress(TestCase):
     """This test case sets up data for the user, and then proceeds to verify
     their progress info. It focuses on the following functions:
 
-    * user_feed.action_feedback - Today's feedback data for an action.
     * user_feed.todays_actions_progress - The progress stats for today's
       scheduled actions.
 
@@ -124,90 +123,6 @@ class TestUserProgress(TestCase):
                     dt = self.dt  # today, 9am
                 mock_timezone.now.return_value = dt
                 call_command('refresh_useractions')
-
-    def test_action_feedback_zero_percent(self):
-        # Create some UserCompletedAction history for a single Action (10 days)
-        with patch('django.utils.timezone.now') as mock_now:
-            params = {
-                'user': self.user,
-                'useraction': self.ua1,
-                'action': self.action1,
-                'state': 'dismissed',
-            }
-            for d in range(1, 11):  # 10 days
-                mock_now.reset_mock()
-                mock_now.return_value = self.dt - timedelta(days=d)
-                UserCompletedAction.objects.create(**params)
-
-        results = user_feed.action_feedback(self.user, self.ua1)
-        expected = {
-            'title': "You've done some work to gtitle this month!",
-            'subtitle': 'Even small steps can help you reach your goal',
-            'total': 10,
-            'completed': 0,
-            'incomplete': 10,
-            'percentage': 0,
-            'icon': 1,
-        }
-        self.assertEqual(results, expected)
-
-    def test_action_feedback_half_completed(self):
-        # Create some UserCompletedAction history for a single Action (10 days)
-        with patch('django.utils.timezone.now') as mock_now:
-            params = {
-                'user': self.user,
-                'useraction': self.ua1,
-                'action': self.action1,
-                'state': 'completed',
-            }
-            for d in range(1, 11):  # 10 days
-                if d % 2 == 0:
-                    params['state'] = 'dismissed'
-                else:
-                    params['state'] = 'completed'
-                mock_now.reset_mock()
-                mock_now.return_value = self.dt - timedelta(days=d)
-                UserCompletedAction.objects.create(**params)
-
-        results = user_feed.action_feedback(self.user, self.ua1)
-        expected = {
-            'title': "You've done 5 activities to gtitle this month!",
-            'subtitle': 'You must really want this!',
-            'total': 10,
-            'completed': 5,
-            'incomplete': 5,
-            'percentage': 50,
-            'icon': 2,
-        }
-        self.assertEqual(results, expected)
-
-    def test_action_feedback_sixty_percent(self):
-        # Create some UserCompletedAction history for a single Action (10 days)
-        with patch('django.utils.timezone.now') as mock_now:
-            params = {
-                'user': self.user,
-                'useraction': self.ua1,
-                'action': self.action1,
-                'state': 'completed',
-            }
-            for d in range(1, 11):  # 10 days
-                if d > 6:
-                    params['state'] = 'dismissed'
-                mock_now.reset_mock()
-                mock_now.return_value = self.dt - timedelta(days=d)
-                UserCompletedAction.objects.create(**params)
-
-        results = user_feed.action_feedback(self.user, self.ua1)
-        expected = {
-            'title': "You've done 6 out of 10 activities to gtitle this month!",
-            'subtitle': "You're doing great! Schedule another activity!",
-            'total': 10,
-            'completed': 6,
-            'incomplete': 4,
-            'percentage': 60,
-            'icon': 3,
-        }
-        self.assertEqual(results, expected)
 
     def test_todays_actions_progress(self):
         with patch('django.utils.timezone.now') as mock_now:
@@ -378,99 +293,11 @@ class TestUserFeed(TestCase):
                 custom_trigger=cls.trigger
             )
 
-    def test__customaction_feedback(self):
-        """ensure the user_feed model has a `_customaction_feedback` function
-        that's used for calculating stats for a single CustomAction."""
-        dt = timezone.now()
-        goal = CustomGoal.objects.create(user=self.user, title="CG")
-        act = CustomAction.objects.create(
-            user=self.user,
-            customgoal=goal,
-            title="ACT",
-            notification_text="go do it"
-        )
-
-        # First, let's test then without any completion...
-        expected = {
-            'total': 0,
-            'completed': 0,
-            'percentage': 0,
-            'incomplete': 0,
-            'title': 'CG'
-        }
-        results = user_feed._customaction_feedback(act, dt)
-        self.assertDictEqual(results, expected)
-
-        # Now, let's complete it.
-        UserCompletedCustomAction.objects.create(
-            user=self.user,
-            customaction=act,
-            customgoal=goal,
-            state=UserCompletedAction.COMPLETED,
-        )
-        expected = {
-            'total': 1,
-            'completed': 1,
-            'percentage': 100,
-            'incomplete': 0,
-            'title': 'CG'
-        }
-        results = user_feed._customaction_feedback(act, dt)
-        self.assertDictEqual(results, expected)
-
-        # Clean up
-        act.delete()
-        goal.delete()
-
-    def test__useraction_feedback(self):
-        """ensure the user_feed model has a `_useraction_feedback` function
-        that's used for calculating stats for a single UserAction."""
-        expected = {
-            'total': 0,
-            'completed': 0,
-            'percentage': 0,
-            'incomplete': 0,
-            'title': 'test goal'
-        }
-        results = user_feed._useraction_feedback(self.ua, timezone.now())
-        self.assertDictEqual(results, expected)
-
-    def test_action_feedback(self):
-        # We have no UserCompletedAction objects, so this should be < 20%
-        fb = user_feed.action_feedback(self.user, self.ua)
-        self.assertEqual(fb['completed'], 0)
-        self.assertEqual(fb['incomplete'], 0)
-        self.assertEqual(fb['percentage'], 0)
-        self.assertEqual(
-            fb['title'], "You've done some work to test goal this month!"
-        )
-        self.assertEqual(
-            fb['subtitle'], "Even small steps can help you reach your goal"
-        )
-
-    # TODO: disabled this test when we changed the feed so it's based on
-    # GCMMessages queued up for the user.
-    # def test_todays_actions(self):
-        # dt = timezone.now()
-        # with patch('goals.user_feed.timezone.now') as mock_now:
-            # mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 11, 0)
-            # result = user_feed.todays_actions(self.user)
-            # self.assertEqual(list(result), [self.ua])
-
     def test_todays_actions_progress(self):
         resp = user_feed.todays_actions_progress(self.user)
         self.assertEqual(resp['completed'], 0)
         self.assertEqual(resp['total'], 1)
         self.assertEqual(resp['progress'], 0)
-
-    # TODO: disabled this test when we changed the feed so it's based on
-    # GCMMessages queued up for the user.
-    # def test_next_user_action(self):
-        # dt = timezone.now()
-        # with patch('goals.user_feed.timezone.now') as mock_now:
-            # mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 11, 10)
-            # ua = user_feed.next_user_action(self.user)
-            # self.assertEqual(ua, self.ua)
 
     def test_suggested_goals(self):
         # Create a new category
