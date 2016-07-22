@@ -42,4 +42,21 @@
       {% endwith %}
     </div>
   </div>
+  {% with cat_count=organization.categories.count %}
+  {% if cat_count %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h2>Content Categories ({{cat_count}})</h2>
+      <p>The following content categories are associated with this organization:</p>
+      <ul>
+      {% for category in organization.categories.all %}
+        <li>
+        <a href="{{ category.get_absolute_url }}">{{ category }}</a>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}
 {% endblock %}

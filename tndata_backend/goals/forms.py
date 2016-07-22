@@ -302,7 +302,7 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = [
             'packaged_content', 'package_contributors',
-            'selected_by_default', 'grouping',
+            'selected_by_default', 'grouping', 'organizations',
             'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
             'title', 'description', 'icon', 'image', 'color',
@@ -357,10 +357,11 @@ class CategoryForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        # Only allow the `selected_by_default` options for superusers. If user
-        # is not an admin, remove that field.
+        # Certain fields (`selected_by_default`, `organizations`) should only
+        # be available to superusers.
         if self.user is None or (self.user and not self.user.is_superuser):
             del self.fields['selected_by_default']
+            del self.fields['organizations']
             details_fields = (
                 _("Category Details"), 'title', 'description', 'grouping',
                 'icon', 'image', 'color', 'secondary_color',
@@ -368,7 +369,8 @@ class CategoryForm(forms.ModelForm):
         else:
             details_fields = (
                 _("Category Details"), 'title', 'description', 'grouping',
-                'selected_by_default', 'icon', 'image', 'color', 'secondary_color',
+                'organizations', 'selected_by_default', 'icon', 'image',
+                'color', 'secondary_color',
             )
 
         # Configure crispy forms.

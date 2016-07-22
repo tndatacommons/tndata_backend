@@ -42,6 +42,14 @@
           {% endif %}
         </dd>
         <dt>Description</dt><dd>{{ category.description|markdown }}</dd>
+        {% if category.organizations.count %}
+        <dt>Organizations</dt><dd>
+          <ul>
+          {% for org in category.organizations.all %}
+            <li><a href="{{ org.get_absolute_url }}">{{ org }}</a></li>
+          {% endfor %}
+        </dd>
+        {% endif %}
         <dt>Icon</dt><dd class="gray centered">
           {% with icon=category.get_absolute_icon %}
           {% if icon %}
