@@ -39,7 +39,11 @@ class TestOrganization(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user('orguser', 'orguser@x.com', 'pass')
+        self.category = Category.objects.create(
+            order=1, title='C', description='whee!'
+        )
         self.organization = Organization.objects.create(name='Org')
+        self.organization.categories.add(self.category)
 
     def tearDown(self):
         Organization.objects.filter(id=self.organization.id).delete()
@@ -48,6 +52,12 @@ class TestOrganization(TestCase):
         expected = "Org"
         actual = "{}".format(self.organization)
         self.assertEqual(expected, actual)
+
+    def test_categories(self):
+        self.assertEqual(
+            list(self.organization.categories.all()),
+            [self.category]
+        )
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
@@ -112,14 +122,23 @@ class TestCategory(TestCase):
             title='Test Category',
             description='Some explanation!',
         )
+        self.organization = Organization.objects.create(name='Org')
+        self.organization.categories.add(self.category)
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
+        Organization.objects.filter(id=self.organization.id).delete()
 
     def test__str__(self):
         expected = "Test Category"
         actual = "{}".format(self.category)
         self.assertEqual(expected, actual)
+
+    def test_organizations(self):
+        self.assertEqual(
+            list(self.category.organizations.all()),
+            [self.organization]
+        )
 
     def test_save(self):
         """Verify that saving generates a title_slug"""
