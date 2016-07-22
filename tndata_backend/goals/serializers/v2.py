@@ -39,7 +39,7 @@ from .v1 import (  # flake8: noqa
 class OrganizationSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Organization
-        fields = ('id', 'name', 'name_slug')
+        fields = ('id', 'name', 'name_slug', 'object_type')
 
 
 class DailyProgressSerializer(ObjectTypeModelSerializer):
