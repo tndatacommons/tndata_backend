@@ -138,6 +138,8 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         self.queryset = super().get_queryset()
         selected_by_default = self._as_bool(self.request, 'selected_by_default')
         featured = self._as_bool(self.request, 'featured')
+        org = self.request.GET.get('organization', None)
+
         if selected_by_default is not None:
             self.queryset = self.queryset.filter(
                 selected_by_default=selected_by_default)
@@ -146,6 +148,8 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             # replaced by a grouping. So this filter will list all categories
             # that have a non-negative (non-General) grouping.
             self.queryset = self.queryset.filter(grouping__gte=0)
+        if org is not None:
+            self.queryset = self.queryset.filter(organizations=org)
         return self.queryset
 
     def retrieve(self, request, pk=None):
