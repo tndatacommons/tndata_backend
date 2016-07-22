@@ -26,6 +26,7 @@ from notifications.models import GCMMessage
 from utils import colors
 from utils.db import get_max_order
 
+from .organizations import Organization
 from .path import (
     _category_icon_path,
     _catetgory_image_path,
@@ -154,6 +155,12 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         default=-1,
         choices=GROUPING_CHOICES
     )
+    organizations = models.ManyToManyField(
+        Organization,
+        blank=True,
+        related_name="categories",
+        help_text="Organizations whose members should have access to this content."
+    )
 
     # -------------------------------------------------------------------------
     # PACKAGES.
@@ -171,6 +178,12 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         default=False,
         help_text="Is this Category for a collection of packaged content?"
     )
+
+    # TODO: TEST/VERify that package contributors can view/edit categories and
+    # all content within; scenarios to check out:
+    # - User without content viewer permissions.
+    # - User w/ content viewer AND NO package contibuter
+    # - User w/ content viewer + package contibuter
     package_contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
