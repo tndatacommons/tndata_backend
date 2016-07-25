@@ -127,6 +127,7 @@ def admin_remove_app_data(request):
     - And: https://app.tndata.org/admin/auth/user/
 
     """
+    query = request.GET.get('q')  # The original query, if any
     ids = filter(None, request.GET.get('ids', '').split())
     User = get_user_model()
     users = User.objects.filter(id__in=ids)
@@ -175,7 +176,12 @@ def admin_remove_app_data(request):
             user.userprofile.needs_onboarding = True
             user.userprofile.save()
 
-        return HttpResponseRedirect("/admin/auth/user/")
+        messages.success(request, "The appliation data was cleared.")
+
+        url = "/admin/auth/user/"
+        if query:
+            url = "{}?q={}".format(url, query)
+        return HttpResponseRedirect(url)
     else:
         counts = {t[0]: 0 for t in object_types}
         for user in users:

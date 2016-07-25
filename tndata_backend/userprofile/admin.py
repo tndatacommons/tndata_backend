@@ -20,6 +20,9 @@ def remove_app_data(modeladmin, request, queryset):
     """
     ids = "+".join(str(obj.id) for obj in queryset)
     url = "{}?ids={}".format(reverse("userprofile:remove-app-data"), ids)
+    # Include the user's original query, too
+    if request.GET.get('q'):
+        url += "&q={}".format(request.GET['q'])
     return HttpResponseRedirect(url)
 remove_app_data.short_description = "Remove App Data"
 
