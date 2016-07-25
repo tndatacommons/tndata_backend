@@ -11,7 +11,7 @@
   {% if completed %}
     <p class="lead">You're almost there!</p>
     <p>Download the mobile app, and log in with the credentials (your email &amp;
-    password) you just created, and you'll be on your journey.</p>
+    password) that you just created, and you'll be on your journey.</p>
     <p style="text-align:center">
       <a href="{{ android_url }}" class="button large success">
         <i class="fa fa-android"></i> Android!</a>
@@ -24,6 +24,10 @@
       {% crispy form %}
       {% crispy password_form %}
       <hr/>
+      {# Include any GET params we want to pass thru via POST #}
+      {% for key, value in passthru_vars.items %}
+        <input type="hidden" name="{{ key }}" value="{{ value }}"/>
+      {% endfor %}
       <p style="text-align:center;">
         <button class="button" type="submit">Sign Up</button>
       </p>
