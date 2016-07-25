@@ -12,6 +12,7 @@ from collections import defaultdict
 
 import django.dispatch
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.urlresolvers import reverse
@@ -42,6 +43,16 @@ from ..managers import (
     WorkflowManager
 )
 from ..mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
+
+
+@job
+def _enroll_organization_members_in_category_content(category):
+    """When we publish a behavior, we need to enroll everyone that has selected
+    the behavior's parents' (goal) and in all the published child actions."""
+    User = get_user_model()
+    members = set(category.organizations.values_list('members', flat=True))
+    for user in User.objects.filter(pk__in=members):
+        category.enroll(user)
 
 
 class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
@@ -321,7 +332,9 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
 
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
-        pass
+        """When a category is published, we need to enroll any organization
+        members in the category's content."""
+        _enroll_organization_members_in_category_content.delay(self)
 
     def get_view_enrollment_url(self):
         """Essentially a Detail view for a Category Package."""
@@ -879,7 +892,7 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
         that have selected the parent goal, AND look for all of the child
         Actions that are published, and auto-enroll the user in those as well.
 
-        NOTE: this is impolemented as an async job since it'll be slow.
+        NOTE: this is implemented as an async job since it'll be slow.
 
         """
         _enroll_users_in_published_behavior.delay(self)
