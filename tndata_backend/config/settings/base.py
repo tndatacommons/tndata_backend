@@ -147,6 +147,7 @@ TEMPLATES = [
                 "django.core.context_processors.request",
                 "django.contrib.messages.context_processors.messages",
                 "utils.context_processors.staging",
+                "utils.context_processors.site_domain",
             ),
         },
     },
