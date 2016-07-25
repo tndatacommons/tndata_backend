@@ -61,7 +61,7 @@ def send_new_enduser_welcome(user, subject="Welcome to Compass"):
     ctx = {
         'user': user,
         'alert': subject,
-        'cta_link': 'https://getcompass.org/',
+        'cta_link': 'http://getcompass.org/',
         'cta_text': 'Download the App',
     }
     message = render_to_string('utils/email/new_enduser_welcome.txt', ctx)
