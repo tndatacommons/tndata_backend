@@ -488,7 +488,7 @@ QUERYCOUNT = {
 # --------------------------------------
 if DEBUG:
     INSTALLED_APPS = INSTALLED_APPS + (
-        #'debug_toolbar',
+        'debug_toolbar',
         #'pympler',
         'querycount',
     )
@@ -516,7 +516,7 @@ if DEBUG:
     ]
     MIDDLEWARE_CLASSES = (
         'querycount.middleware.QueryCountMiddleware',
-        #'debug_toolbar.middleware.DebugToolbarMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
     ) + MIDDLEWARE_CLASSES
     INTERNAL_IPS = CIDRS(['127.0.0.1', '192.168.0.0/16', '10.0.0.0/16'])
 
