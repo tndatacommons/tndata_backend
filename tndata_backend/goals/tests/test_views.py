@@ -645,12 +645,20 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         }
 
     def setUp(self):
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        self.contributor = User.objects.create_user(*args)
+        content_viewer_group = get_or_create_content_viewers()
+        self.contributor.groups.add(content_viewer_group)
+
         # Create a Category
         self.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
+        self.category.package_contributors.add(self.contributor)
         self.url = self.category.get_update_url()
 
     def tearDown(self):
@@ -680,6 +688,11 @@ class TestCategoryUpdateView(TestCaseWithGroups):
 
     def test_viewer_get(self):
         resp = self.client.login(username="viewer", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_contributor_get(self):
+        resp = self.client.login(username="contrib", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
 
@@ -731,6 +744,15 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 403)
 
+    def test_contributor_submit_for_review(self):
+        """Ensure contributors CANNOT submit for review (not on Categories)"""
+        self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
+        payload = self.payload.copy()
+        payload['review'] = 1  # Include the review in the payload
+        self.client.login(username="contrib", password="pass")
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(CACHES=TEST_CACHES)
@@ -744,6 +766,12 @@ class TestCategoryDeleteView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestCategoryDeleteView).setUpTestData()
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(get_or_create_content_viewers())
+
         # Create a Category
         cls.category = Category.objects.create(
             order=1,
@@ -778,6 +806,11 @@ class TestCategoryDeleteView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
 
+    def test_contributor_get(self):
+        resp = self.client.login(username="contrib", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
         self.assertEqual(resp.status_code, 302)
@@ -801,6 +834,11 @@ class TestCategoryDeleteView(TestCaseWithGroups):
 
     def test_viewer_post(self):
         resp = self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_contributor_post(self):
+        resp = self.client.login(username="contrib", password="pass")
         resp = self.client.post(self.url)
         self.assertEqual(resp.status_code, 403)
 
@@ -922,11 +960,20 @@ class TestGoalCreateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestGoalCreateView).setUpTestData()
+
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(get_or_create_content_viewers())
+
         cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
+        cls.category.package_contributors.add(cls.contributor)
+
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
@@ -954,6 +1001,11 @@ class TestGoalCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_contributor_get(self):
+        self.client.login(username="contrib", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
@@ -974,6 +1026,24 @@ class TestGoalCreateView(TestCaseWithGroups):
 
         # Ensure we redirect to the detail page afterwards
         obj = Goal.objects.get(title="Created Goal")
+        self.assertIn(obj.get_absolute_url(), resp.get('Location', ''))
+        Goal.objects.filter(id=obj.id).delete()  # clean up
+
+    def test_contributor_post(self):
+        """Ensure Package Contributors can create new Goals"""
+        self.client.login(username="contrib", password="pass")
+        payload = {
+            'title': 'New Goal',
+            'description': 'whee',
+            'categories': self.category.id,
+            'sequence_order': 1,
+        }
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Goal.objects.filter(title="New Goal").exists())
+
+        # Ensure we redirect to the detail page afterwards
+        obj = Goal.objects.get(title="New Goal")
         self.assertIn(obj.get_absolute_url(), resp.get('Location', ''))
         Goal.objects.filter(id=obj.id).delete()  # clean up
 
@@ -1107,12 +1177,20 @@ class TestGoalUpdateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestGoalUpdateView).setUpTestData()
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(get_or_create_content_viewers())
+
         # Create a Category
         cls.category = Category.objects.create(
             order=1,
             title='Test Category',
             description='Some explanation!',
         )
+        cls.category.package_contributors.add(cls.contributor)
+
         cls.payload = {
             'categories': cls.category.id,
             'sequence_order': 1,
@@ -1169,6 +1247,11 @@ class TestGoalUpdateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
 
+    def test_contributor_get(self):
+        self.client.login(username="contrib", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
@@ -1212,6 +1295,13 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
         # Clean up.
         goal.delete()
+
+    def test_contributor_post(self):
+        """Ensure Contributors can POST updates."""
+        self.client.login(username="contrib", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
 
     def test_author_post(self):
         """Ensure Authors can POST updates."""
@@ -1338,11 +1428,22 @@ class TestGoalDeleteView(TestCaseWithGroups):
         cls.ua_client = Client()  # Create an Unauthenticated client
 
     def setUp(self):
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        self.contributor = User.objects.create_user(*args)
+        self.contributor.groups.add(get_or_create_content_viewers())
+
+        # Create a Category
+        self.category = Category.objects.create(order=1, title='Cat')
+        self.category.package_contributors.add(self.contributor)
+
         # Create a Goal
         self.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
         )
+        self.goal.categories.add(self.category)
         self.url = self.goal.get_delete_url()
 
     def tearDown(self):
@@ -1374,6 +1475,11 @@ class TestGoalDeleteView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
 
+    def test_contributor_get(self):
+        self.client.login(username="contrib", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
         self.assertEqual(resp.status_code, 302)
@@ -1399,6 +1505,11 @@ class TestGoalDeleteView(TestCaseWithGroups):
 
     def test_viewer_post(self):
         self.client.login(username="viewer", password="pass")
+        resp = self.client.post(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_contributor_post(self):
+        self.client.login(username="contrib", password="pass")
         resp = self.client.post(self.url)
         self.assertEqual(resp.status_code, 403)
 
@@ -1609,11 +1720,26 @@ class TestBehaviorCreateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestBehaviorCreateView).setUpTestData()
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(get_or_create_content_viewers())
+
+        # Create a Category
+        cls.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+        )
+        cls.category.package_contributors.add(cls.contributor)
+
         # Create a Goal to be used as an FK
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
         )
+        cls.goal.categories.add(cls.category)
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
         )
@@ -1637,6 +1763,11 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_author_get(self):
         self.client.login(username="author", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_contributor_get(self):
+        self.client.login(username="contrib", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
@@ -1667,6 +1798,12 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(Behavior.objects.filter(title="New").exists())
+
+    def test_contributor_post(self):
+        self.client.login(username="contrib", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(Behavior.objects.filter(title="New").exists())
@@ -1802,11 +1939,26 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestBehaviorUpdateView).setUpTestData()
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(get_or_create_content_viewers())
+
+        # Create a Category
+        cls.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+        )
+        cls.category.package_contributors.add(cls.contributor)
+
         # Create a Goal
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
             description="A Description",
         )
+        cls.goal.categories.add(cls.category)
         cls.trigger = Trigger.objects.create(
             name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
         )
@@ -1840,6 +1992,11 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_contributor_get(self):
+        self.client.login(username="contrib", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
@@ -1906,6 +2063,17 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
         # Clean up.
         behavior.delete()
+
+    def test_contributor_post(self):
+        self.client.login(username="contrib", password="pass")
+        payload = self.payload.copy()
+        payload['title'] = 'contrib edit'
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Behavior.objects.get(id=self.behavior.id).title,
+            "contrib edit"
+        )
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
@@ -2450,7 +2618,23 @@ class TestActionUpdateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionUpdateView).setUpTestData()
+        # Define a user that will be a package contributor.
+        User = get_user_model()
+        args = ("contrib", "contrib@example.com", "pass")
+        cls.contributor = User.objects.create_user(*args)
+        cls.contributor.groups.add(get_or_create_content_viewers())
+
+        # Create a Category
+        cls.category = Category.objects.create(
+            order=1,
+            title='Test Category',
+            description='Some explanation!',
+        )
+        cls.category.package_contributors.add(cls.contributor)
+        cls.goal = Goal.objects.create(title="Goal")
         cls.behavior = Behavior.objects.create(title='Test Behavior')
+        cls.behavior.goals.add(cls.goal)
+
         cls.payload = {
             'sequence_order': 1,
             'title': 'U',
@@ -2476,7 +2660,7 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.url = self.action.get_update_url()
 
     def tearDown(self):
-        Action.objects.filter(id=self.behavior.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -2512,6 +2696,11 @@ class TestActionUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
         a.delete()  # Clean up
 
+    def test_contributor_get(self):
+        self.client.login(username="contrib", password="pass")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
@@ -2532,6 +2721,17 @@ class TestActionUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Action.objects.get(pk=self.action.pk).title, "U")
+
+    def test_contributor_post(self):
+        self.client.login(username="contrib", password="pass")
+        payload = self.payload.copy()
+        payload['title'] = 'contrib edit'
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            Action.objects.get(pk=self.action.pk).title,
+            "contrib edit"
+        )
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
