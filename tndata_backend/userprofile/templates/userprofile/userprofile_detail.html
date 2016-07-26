@@ -27,6 +27,18 @@
         <li><em>You do not have any permissions.</em></li>
       {% endfor %}
       </ul>
+
+      {% with categories=profile.user.packagecontributor_set.all %}
+      {% if categories.exists %}
+        <h2>Categories</h2>
+        <p>You are listed as a contributor the following Categories:</p>
+        <ul>
+          {% for cat in categories %}
+            <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% endwith %}
     </div>
   </div>
 {% endblock %}
