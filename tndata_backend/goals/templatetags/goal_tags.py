@@ -2,6 +2,8 @@ from django import template
 from goals.models import Category, Goal, Action, Behavior
 from utils.templatetags.util_tags import object_controls
 
+from ..permissions import is_package_contributor
+
 register = template.Library()
 
 
@@ -30,6 +32,10 @@ def goal_object_controls(context, obj):
     if is_editor:
         result['can_update'] = True
         result['can_delete'] = True
+        result['can_duplicate'] = True
+    elif is_package_contributor(user, obj):
+        result['can_update'] = True
+        result['can_delete'] = False
         result['can_duplicate'] = True
     elif hasattr(obj, "is_pending"):
         # Don't allow editing pending items unless you're a publisher.

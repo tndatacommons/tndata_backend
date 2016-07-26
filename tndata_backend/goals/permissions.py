@@ -229,15 +229,45 @@ def is_content_editor(user):
     return _is_superuser_or_in_group(user, CONTENT_EDITORS)
 
 
-def is_package_contributor(user):
-    """Ensures the user is either a superuser, staff, or a package contributor."""
+def is_package_contributor(user, obj=None):
+    """Determine if the given user is a package contributor, alternatively
+    check if they're a contributor for a given object.
+
+    - When `obj` is None, returns True if the given user is a superuser, staff,
+      or a package contributor for *any* category.
+    - When an `obj` is provided (a Category, Goal, Behavior, or Action), we
+      check to see if it is related to a Category in which the give user is
+      listed as a package contributor.
+
+    Note: If an object is provided, we return False if the user is a contributor,
+    but not for the given object.
+
+    """
     if not user.is_authenticated():
         return False
+
+    # If an object is provided, we want to compare it to the list of
+    # objects within the category(ies) for which the user is a package
+    # contributor.
+    lookups = {
+        'action': 'goal__behavior__action',
+        'behavior': 'goal__behavior',
+        'goal': 'goal',
+        'category': 'id',
+    }
+    lookup = lookups.get(obj.__class__.__name__)
+    if obj and lookup:
+        values = set(user.packagecontributor_set.values_list(lookup, flat=True))
+        values = [v for v in values if v is not None]
+        return obj.id in values
+
     staff = user.is_superuser or user.is_staff
     return staff or user.packagecontributor_set.exists()
 
 
-def permission_required(perm, login_url=settings.LOGIN_URL, raise_exception=True):
+def permission_required(perm, login_url=settings.LOGIN_URL,
+                        raise_exception=True,
+                        check_package_contributor=False):
     """NOTE: This is very similar to django's built-in function (from
     contrib.auth.decorators.permission_required) except that it raises an
     excption when the user is logged in, otherwise it redirects to the login
@@ -256,6 +286,8 @@ def permission_required(perm, login_url=settings.LOGIN_URL, raise_exception=True
             perms = perm
         # First check if the user has the permission (even anon users)
         if user.has_perms(perms):
+            return True
+        elif check_package_contributor and is_package_contributor(user):
             return True
         # In case the 403 handler should be called raise the exception IF the
         # user is logged in.

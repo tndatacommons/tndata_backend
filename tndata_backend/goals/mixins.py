@@ -17,8 +17,9 @@ from rest_framework.response import Response
 
 from . permissions import (
     ContentPermissions,
+    is_package_contributor,
     permission_required,
-    superuser_required
+    superuser_required,
 )
 from . utils import num_user_selections
 
@@ -113,7 +114,8 @@ class ContentAuthorMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
-        dec = permission_required(ContentPermissions.authors)
+        dec = permission_required(ContentPermissions.authors,
+                                  check_package_contributor=True)
         return dec(view)
 
     def _object_permissions(self, request):
@@ -142,8 +144,11 @@ class ContentAuthorMixin:
         obj = self.get_object()
         owner = request.user == obj.created_by
 
-        # Content owners are updating their own draft/declined content.
-        if owner and updating and obj.state in ['draft', 'declined', 'published']:
+        if is_package_contributor(request.user, obj):
+            # Package Contributors have access to objects within the category
+            return True
+        elif owner and updating and obj.state in ['draft', 'declined', 'published']:
+            # Content owners are updating their own draft/declined content.
             return True  # OK
         elif owner:
             self._denied_message = (
