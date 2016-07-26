@@ -190,11 +190,11 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Is this Category for a collection of packaged content?"
     )
 
-    # TODO: TEST/VERify that package contributors can view/edit categories and
-    # all content within; scenarios to check out:
-    # - User without content viewer permissions.
-    # - User w/ content viewer AND NO package contibuter
-    # - User w/ content viewer + package contibuter
+    # Package Contributors are users that should have access to view/edit the
+    # category's child content. This means, they should be able to view &
+    # update Goals, Behaiors, Actions.
+    #
+    # NOTE: These users *must* also have at least ContentViewer permissions.
     package_contributors = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
