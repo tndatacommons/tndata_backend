@@ -34,17 +34,20 @@
           </td>
           {% endif %}
           <td>
-            <a href="{{ prog.get_absolute_url }}">{{ prog.name }}</a>
+            <strong><a href="{{ prog.get_absolute_url }}">
+              {{ prog.name }}</a></strong>
           </td>
-          <td>{{ prog.organization }}</td>
+          <td>
+            <a href="{{ prog.organization.get_absolute_url }}">
+              {{ prog.organization }}</a></td>
           <td>
           {% for cat in prog.categories.all %}
-            <span class="label">{{ cat }}</span>
+            <span class="label secondary">{{ cat }}</span>
           {% endfor %}
           </td>
           <td>
           {% for goal in prog.auto_enrolled_goals.all %}
-            <span class="label">{{ goal }}</span>
+            <span class="label secondary">{{ goal }}</span>
           {% endfor %}
           </td>
           <td>{{ prog.members.count }}</td>

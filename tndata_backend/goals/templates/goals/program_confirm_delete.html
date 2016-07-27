@@ -4,7 +4,8 @@
 {% block breadcrumbs %}
   <li><a href="{% url 'goals:organization-list' %}">Organizations</a></li>
   <li><a href="{{ organization.get_absolute_url }}">{{ organization }}</a></li>
-  <li class="current">{{ object }}</li>
+  <li><a href="{{ object.get_absolute_url }}">{{ object }}</a></li>
+  <li class="current">Delete</li>
 {% endblock %}
 
 {% block content %}

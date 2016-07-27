@@ -1258,6 +1258,11 @@ class ProgramUpdateView(SuperuserRequiredMixin, UpdateView):
         messages.success(self.request, "Your program has been saved")
         return self.object.organization.get_absolute_url()
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['organization'] = self.object.organization
+        return context
+
 
 class ProgramDeleteView(SuperuserRequiredMixin, DeleteView):
     model = Program
