@@ -419,12 +419,19 @@ def _users():
 class OrganizationForm(forms.ModelForm):
     staff = UserMultipleChoiceField(queryset=_users(), required=False)
     admins = UserMultipleChoiceField(queryset=_users(), required=False)
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        help_text="Select Categories that should be associated with this organization."
+    )
 
     class Meta:
         model = Organization
-        fields = ['name', 'staff', 'admins']
+        fields = ['name', 'staff', 'admins', 'categories']
 
     def __init__(self, *args, **kwargs):
+        if kwargs.get('instance', False):
+            categories = kwargs['instance'].categories.all()
+            kwargs['initial'].update({'categories': categories})
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False  # Don't generate <form> tags
@@ -434,8 +441,16 @@ class OrganizationForm(forms.ModelForm):
                 "name",
                 "staff",
                 "admins",
+                "categories",
             )
         )
+
+    def save(self, *args, **kwargs):
+        obj = super().save(*args, **kwargs)
+        cats = list(self.cleaned_data['categories'].values_list('id', flat=True))
+        obj.categories.clear()
+        obj.categories.add(*cats)
+        return obj
 
 
 class GoalForm(forms.ModelForm):

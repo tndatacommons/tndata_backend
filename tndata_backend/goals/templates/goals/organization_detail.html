@@ -12,6 +12,8 @@
     {{ organization }}
     <a class="button pull-right alert tiny"
        href="{{ organization.get_delete_url }}">Delete</a>
+    <a class="button pull-right tiny"
+       href="{{ organization.get_update_url }}">Edit</a>
   </h1>
   <div class="row">
     <div class="large-4 medium-4 small-12 columns">
@@ -62,9 +64,9 @@
       <p><i class="fa fa-share-alt"></i> <strong>Signup Link: </strong><br/>
          <code>{{ site_url }}{% url 'join' %}?organization={{ organization.id }}</code></p>
       <p>Created on {{ organization.created_on }}<br/>
-        <em>({{ organization.created_on|timesince }} days ago)</em><br/>
+        <em>({{ organization.created_on|timesince }} ago)</em><br/>
         Last updated on {{ organization.updated_on }}<br/>
-        <em>({{ organization.updated_on|timesince }} days ago)</em></p>
+        <em>({{ organization.updated_on|timesince }} ago)</em></p>
     </div>
   </div>
   {% endif %}
