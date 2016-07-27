@@ -5,6 +5,7 @@ Models for Packages.
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils.text import slugify
 
 from .organizations import Organization
 from .public import Action, Behavior, Category, Goal
@@ -24,8 +25,6 @@ from ..managers import PackageEnrollmentManager
 # Categories: (list of categories available to this program)
 # Auto-enrolled goals: (list of goals that the user will be auto-enrolled in).
 # TODO: How do we make these categories show up in onboarding as a group
-
-
 class Program(models.Model):
     name = models.CharField(
         max_length=512,
@@ -69,17 +68,19 @@ class Program(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        args = [self.pk, self.name_slug]
+        args = [self.organization.id, self.organization.name_slug,
+                self.pk, self.name_slug]
         return reverse('goals:program-detail', args=args)
 
     def get_update_url(self):
-        args = [self.pk, self.name_slug]
+        args = [self.organization.id, self.organization.name_slug,
+                self.pk, self.name_slug]
         return reverse('goals:program-update', args=args)
 
     def get_delete_url(self):
-        args = [self.pk, self.name_slug]
+        args = [self.organization.id, self.organization.name_slug,
+                self.pk, self.name_slug]
         return reverse('goals:program-delete', args=args)
-
 
 
 class PackageEnrollment(models.Model):

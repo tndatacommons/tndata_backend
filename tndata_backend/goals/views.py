@@ -16,6 +16,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import timesince
+from django.template.loader import render_to_string
 from django.views.generic import DetailView, FormView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.utils import timezone
@@ -46,6 +47,7 @@ from . forms import (
     GoalForm,
     OrganizationForm,
     PackageEnrollmentForm,
+    ProgramForm,
     TitlePrefixForm,
     UploadImageForm,
 )
@@ -62,6 +64,7 @@ from . models import (
     Goal,
     Organization,
     PackageEnrollment,
+    Program,
     Trigger,
     UserCompletedAction,
     UserGoal,
@@ -1172,6 +1175,110 @@ class OrganizationDeleteView(SuperuserRequiredMixin, DeleteView):
         messages.success(
             request,
             "Your organization ({}) has been deleted.".format(obj.name)
+        )
+        return result
+
+
+class ProgramListView(SuperuserRequiredMixin, ListView):
+    """A list of all programs (not filtered by Organization)."""
+    model = Program
+    context_object_name = 'programs'
+    template_name = "goals/program_list.html"
+
+
+class ProgramDetailView(SuperuserRequiredMixin, DetailView):
+    queryset = Program.objects.all()
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['organization'] = self.object.organization
+        return context
+
+
+class ProgramCreateView(SuperuserRequiredMixin, CreateView):
+    model = Program
+    form_class = ProgramForm
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+    def _get_organization(self, pk):
+        try:
+            return Organization.objects.get(pk=pk)
+        except Organization.DoesNotExist:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        self.organization = self._get_organization(kwargs['pk'])
+        if self.organization is None:
+            return HttpResponseNotFound(render_to_string('404.html'))
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.organization = self._get_organization(kwargs['pk'])
+        if self.organization is None:
+            return HttpResponseNotFound(render_to_string('404.html'))
+        return super().post(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['organization'] = self.organization
+        return kwargs
+
+    def get_success_url(self):
+        messages.success(self.request, "Your program has been created.")
+        return self.organization.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['organization'] = self.organization
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.organization = self.organization
+        self.object.save()
+        form.save_m2m()  # save the categories & goals
+        return redirect(self.get_success_url())
+
+
+class ProgramUpdateView(SuperuserRequiredMixin, UpdateView):
+    model = Program
+    form_class = ProgramForm
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['organization'] = self.object.organization
+        return kwargs
+
+    def get_success_url(self):
+        messages.success(self.request, "Your program has been saved")
+        return self.object.organization.get_absolute_url()
+
+
+class ProgramDeleteView(SuperuserRequiredMixin, DeleteView):
+    model = Program
+    slug_field = "name_slug"
+    slug_url_kwarg = "name_slug"
+    success_url = reverse_lazy('goals:program-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['organization'] = self.object.organization
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.members.exists():
+            msg = "You cannot remove an Program with members."
+            return HttpResponseForbidden(msg)
+        result = super().delete(request, *args, **kwargs)
+        messages.success(
+            request,
+            "Your program ({}) has been deleted.".format(obj.name)
         )
         return result
 

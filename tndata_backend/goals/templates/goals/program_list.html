@@ -1,0 +1,59 @@
+{% extends "goals/base.html" %}
+{% load goal_filters %}
+
+{% block title %}Programs{% endblock %}
+
+
+{% block breadcrumbs %}
+    <li class="current">Programs</li>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <h1>Organizational Programs</h2>
+      <table class="object-list">
+      <thead>
+      <tr>
+        {% if user|is_editor %}
+        <th><i class="fa fa-cog"></i></th>
+        {% endif %}
+        <th>Name</th>
+        <th>Organization</th>
+        <th>Categories</th>
+        <th>Auto-Enrolled Goals</th>
+        <th>Members</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for prog in programs %}
+        <tr>
+          {% if user|is_editor %}
+          <td>
+            <a href="{{ prog.get_update_url }}" class="button tiny">Edit</a>
+          </td>
+          {% endif %}
+          <td>
+            <a href="{{ prog.get_absolute_url }}">{{ prog.name }}</a>
+          </td>
+          <td>{{ prog.organization }}</td>
+          <td>
+          {% for cat in prog.categories.all %}
+            <span class="label">{{ cat }}</span>
+          {% endfor %}
+          </td>
+          <td>
+          {% for goal in prog.auto_enrolled_goals.all %}
+            <span class="label">{{ goal }}</span>
+          {% endfor %}
+          </td>
+          <td>{{ prog.members.count }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div> {# end .row #}
+  <hr/>
+{% endblock %}
+

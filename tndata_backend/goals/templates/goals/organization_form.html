@@ -12,7 +12,7 @@
 
 
 {% block breadcrumbs %}
-  <li><a href="{% url 'goals:organization-list' %}">Organization</a></li>
+  <li><a href="{% url 'goals:organization-list' %}">Organizations</a></li>
   <li class="current">
     {% if object %}{{ organization}}{% else %}New Organization{% endif %}
   </li>

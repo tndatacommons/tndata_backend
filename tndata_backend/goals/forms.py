@@ -26,7 +26,9 @@ from utils.db import get_max_order
 from utils.user_utils import date_hash
 from utils.widgets import TextareaWithMarkdownHelperWidget
 
-from . models import Action, Behavior, Category, Goal, Organization, Trigger
+from . models import (
+    Action, Behavior, Category, Goal, Organization, Program, Trigger
+)
 from . permissions import ContentPermissions, is_content_editor
 from . utils import read_uploaded_csv
 from . widgets import TimeSelectWidget
@@ -451,6 +453,41 @@ class OrganizationForm(forms.ModelForm):
         obj.categories.clear()
         obj.categories.add(*cats)
         return obj
+
+
+class ProgramForm(forms.ModelForm):
+    class Meta:
+        model = Program
+        fields = ('name', 'categories', 'auto_enrolled_goals', )
+
+    def __init__(self, *args, **kwargs):
+        self.organization = kwargs.pop('organization', None)
+        super().__init__(*args, **kwargs)
+
+        if self.organization and self.organization.categories.count():
+            cats = self.organization.categories.all()
+            self.fields['categories'].queryset = cats
+
+            cats = set(cats.values_list("pk", flat=True))
+            goals = self.fields['auto_enrolled_goals'].queryset
+            goals = goals.filter(categories__in=cats)
+            self.fields['auto_enrolled_goals'].queryset = goals
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+
+        fieldset_title = "Program"
+        if self.organization:
+            fieldset_title = self.organization.name
+
+        self.helper.layout = Layout(
+            Fieldset(
+                _(fieldset_title),
+                "name",
+                "categories",
+                "auto_enrolled_goals",
+            )
+        )
 
 
 class GoalForm(forms.ModelForm):

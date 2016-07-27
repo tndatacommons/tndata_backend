@@ -83,6 +83,11 @@ urlpatterns = [
 
     # Create views
     url(
+        r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/new-program/$',
+        views.ProgramCreateView.as_view(),
+        name='program-create'
+    ),
+    url(
         r'^new/organization/$',
         views.OrganizationCreateView.as_view(),
         name='organization-create'
@@ -278,11 +283,21 @@ urlpatterns = [
         name='category-detail'
     ),
 
-    # Organizations
+    # Organizations / Programs
     url(
-        r'^organizations/$',
-        views.OrganizationListView.as_view(),
-        name='organization-list'
+        r'^organizations/(?P<organization_id>\d+)-(?P<organization_name_slug>.+)/(?P<pk>\d+)-(?P<name_slug>.+)/update/$',
+        views.ProgramUpdateView.as_view(),
+        name='program-update'
+    ),
+    url(
+        r'^organizations/(?P<organization_id>\d+)-(?P<organization_name_slug>.+)/(?P<pk>\d+)-(?P<name_slug>.+)/delete/$',
+        views.ProgramDeleteView.as_view(),
+        name='program-delete'
+    ),
+    url(
+        r'^organizations/(?P<organization_id>\d+)-(?P<organization_name_slug>.+)/(?P<pk>\d+)-(?P<name_slug>.+)/$',
+        views.ProgramDetailView.as_view(),
+        name='program-detail'
     ),
     url(
         r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/update/$',
@@ -298,6 +313,16 @@ urlpatterns = [
         r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/$',
         views.OrganizationDetailView.as_view(),
         name='organization-detail'
+    ),
+    url(
+        r'^programs/$',
+        views.ProgramListView.as_view(),
+        name='program-list'
+    ),
+    url(
+        r'^organizations/$',
+        views.OrganizationListView.as_view(),
+        name='organization-list'
     ),
 
     # Misc Debugging & Reports.

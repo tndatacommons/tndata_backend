@@ -69,3 +69,7 @@ class Organization(models.Model):
     def get_delete_url(self):
         args = [self.pk, self.name_slug]
         return reverse('goals:organization-delete', args=args)
+
+    def get_new_program_url(self):
+        args = [self.pk, self.name_slug]
+        return reverse('goals:program-create', args=args)

@@ -1,0 +1,45 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}Program{% endblock %}
+
+
+{% block head %}
+  {{ block.super }}
+  {{ form.media }}
+{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:organization-list' %}">Organization</a></li>
+  <li><a href="{{ organization.get_absolute_url }}">{{ organization }}</a></li>
+  <li class="current">
+    {% if program %}{{ program }}{% else %}New Program {% endif %}
+  </li>
+{% endblock %}
+
+
+{% block content %}
+<h1>{% if program %}Update Program: {{program}}{% else %}Create Program{% endif %}</h1>
+
+<form
+  data-persist="garlic"
+  action="{% if program %}{{ program.get_update_url }}{% else %}{{ organization.get_new_program_url }}{% endif %}"
+  method="post">
+
+  {% crispy form %}
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <hr/>
+      <p>
+      <input class="button"
+             type="submit"
+             value="{% if program %}Update{% else %}Create{% endif %}"/>
+      </p>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

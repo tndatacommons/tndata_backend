@@ -165,8 +165,9 @@ ul.action-list li {
           <a href="{% url 'goals:organization-list' %}">Orgs</a>
           {% if addobj %}
           <ul class="dropdown">
-          <li><a href="{% url 'goals:organization-create' %}">
-            <i class="fa fa-plus-circle"></i> Organization</a></li>
+            <li><a href="{% url 'goals:organization-create' %}">
+              <i class="fa fa-plus-circle"></i> Organization</a></li>
+            <li><a href="{% url 'goals:program-list' %}">Programs</a></li>
           </ul>
           {% endif %}
         </li>

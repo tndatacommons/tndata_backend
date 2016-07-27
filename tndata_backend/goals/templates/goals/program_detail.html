@@ -1,0 +1,52 @@
+{% extends "goals/base.html" %}
+
+{% block title %}{{ organization }}{% endblock %}
+
+{% block breadcrumbs %}
+    <li><a href="{% url 'goals:organization-list' %}">Organizations</a></li>
+    <li><a href="{{ organization.get_absolute_url }}">{{ organization }}</a></li>
+    <li class="current">{{ program }}</li>
+{% endblock %}
+
+{% block content %}
+  <h1>
+    {{ organization }} <small>{{ program }}</small>
+    <a class="button pull-right alert tiny"
+       href="{{ program.get_delete_url }}">Delete</a>
+    <a class="button pull-right tiny"
+       href="{{ program.get_update_url }}">Edit</a>
+  </h1>
+  <div class="row">
+    <div class="large-4 medium-4 small-12 columns">
+      <h2 class="subheader">Categories</h2>
+      <ul>
+      {% for cat in program.categories.all %}
+        <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+    <div class="large-4 medium-4 small-12 columns">
+      <h2 class="subheader">Goals <small>Auto-enrolled</small></h2>
+      <ul>
+      {% for goal in program.auto_enrolled_goals.all %}
+        <li><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+    <div class="large-4 medium-4 small-12 columns">
+      <h2 class="subheader">Members</h2>
+      <table>
+        <thead><tr><th>Member</th><th>Joined</th></tr></thead>
+        <tbody>
+        {% if program.members.exists %}
+          {% for u in program.members.all %}
+            <tr><td>{{ u.get_full_name }}</td><td>{{ u.date_joined }}</td></tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="2"><em>No Members</em></td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
