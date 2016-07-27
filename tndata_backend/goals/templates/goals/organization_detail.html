@@ -15,103 +15,77 @@
     <a class="button pull-right tiny"
        href="{{ organization.get_update_url }}">Edit</a>
   </h1>
-  <div class="row">
-    <div class="large-4 medium-4 small-12 columns">
-      {% with results=organization.admins.all %}
-        <h2 class="subheader">Admin <small>({{ results.count }} users)</small></h2>
-        {% for obj in results %}
-          {{ obj.get_full_name }}
-          <small>&lt;<a href="mailto:{{ obj.email }}">{{ obj.email }}</a>&gt;</small><br/>
-        {% endfor %}
-      {% endwith %}
-    </div>
-    <div class="large-4 medium-4 small-12 columns">
-      {% with results=organization.staff.all %}
-        <h2 class="subheader">Staff <small>({{ results.count }} users)</small></h2>
-        {% for obj in results %}
-          {{ obj.get_full_name }}
-          <small>&lt;<a href="mailto:{{ obj.email }}">{{ obj.email }}</a>&gt;</small><br/>
-        {% endfor %}
-      {% endwith %}
-    </div>
-    <div class="large-4 medium-4 small-12 columns">
-      {% with results=organization.members.all %}
-        <h2 class="subheader">Members <small>({{ results.count }} users)</small></h2>
-        {% for obj in results %}
-          {{ obj.get_full_name }}
-          <small>&lt;<a href="mailto:{{ obj.email }}">{{ obj.email }}</a>&gt;</small><br/>
-        {% endfor %}
-      {% endwith %}
-    </div>
-  </div>
-  <hr/>
-  {% with cat_count=organization.categories.count %}
-  {% if cat_count %}
+  <p class="lead">Organizations can be associated with <em>Categories</em>, and
+  they can define <em>Programs</em> for their members.</p>
+  <p>A <em>Program</em> defines the set of categories and goals that are available
+  to members within the mobile app. It may also define a set of goals in which
+  users are automatically enrolled upon account creation.</p>
   <div class="row">
     <div class="large-6 medium-6 small-12 columns">
-      <h2>Content Categories ({{cat_count}})</h2>
-      <p>The following content categories are associated with this organization:</p>
-      <ul>
-      {% for category in organization.categories.all %}
-        <li>
-        <a href="{{ category.get_absolute_url }}">{{ category }}</a>
-        </li>
-      {% endfor %}
-      </ul>
+      {# --- Categories --- #}
+      {% with cat_count=organization.categories.count %}
+      {% if cat_count %}
+        <h2>Categories ({{cat_count}})</h2>
+        <p>The following content categories are associated with this organization:</p>
+        <ul>
+        {% for category in organization.categories.all %}
+          <li>
+          <a href="{{ category.get_absolute_url }}">{{ category }}</a>
+          </li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      {% endwith %}
+
+      {# --- Members --- #}
+      {% with members=organization.members.all %}
+        <h2 class="subheader">Members
+          <small>({{ members.count }})</small></h2>
+        {% for obj in members %}
+          {{ obj.get_full_name }}
+          <small>&lt;<a href="mailto:{{ obj.email }}">
+            {{ obj.email }}</a>&gt;</small><br/>
+        {% endfor %}
+      {% endwith %}
     </div>
     <div class="large-6 medium-6 small-12 columns">
-      <h2>Meta</h2>
-      <p><i class="fa fa-share-alt"></i> <strong>Signup Link: </strong><br/>
-         <code>{{ site_url }}{% url 'join' %}?organization={{ organization.id }}</code></p>
-      <p>Created on {{ organization.created_on }}<br/>
-        <em>({{ organization.created_on|timesince }} ago)</em><br/>
-        Last updated on {{ organization.updated_on }}<br/>
-        <em>({{ organization.updated_on|timesince }} ago)</em></p>
-    </div>
-  </div>
-  {% endif %}
-  {% endwith %}
-  <div class="row">
-    <div class="large-12 medium-6 small-12 columns">
-    <h2>
-      Programs
-      <a class="button secondary tiny"
-         href="{{ organization.get_new_program_url }}">
-         <i class="fa fa-plus"></i> New Program</a>
-    </h2>
-    <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Categories</th>
-        <th>Goals</th>
-        <th>Members</th>
-        <th>Join URL</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for program in organization.program_set.all %}
-      <tr>
-        <td><a href="{{ program.get_absolute_url }}">{{ program }}</a></td>
-        <td>
-          {% for cat in program.categories.all %}
-            {{ cat }}<br/>
+      <h2>
+        Programs
+        <a class="button secondary tiny"
+           href="{{ organization.get_new_program_url }}">
+           <i class="fa fa-plus"></i> New Program</a>
+      </h2>
+      <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Categories</th>
+          <th>Goals</th>
+          <th>Members</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for program in organization.program_set.all %}
+        <tr>
+          <td>
+            <a href="{{ program.get_absolute_url }}">{{ program }}</a><br/>
+          </td>
+          <td>
+            {% for cat in program.categories.all %}
+              {{ cat }}<br/>
+            {% endfor %}
+          </td>
+          <td>
+          {% for goal in program.auto_enrolled_goals.all %}
+            {{ goal }}<br/>
           {% endfor %}
-        </td>
-        <td>
-        {% for goal in program.auto_enrolled_goals.all %}
-          {{ goal }}<br/>
-        {% endfor %}
-        </td>
-        <td>{{ program.members.count }}</td>
-        <td>
-          <i class="fa fa-share-alt"></i>
-          <code>{{ site_url }}{{ program.get_join_url }}</code>
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-    </table>
+          </td>
+          <td>{{ program.members.count }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      </table>
     </div>
-  </div>
+  </div> {# end .row #}
+
 {% endblock %}
