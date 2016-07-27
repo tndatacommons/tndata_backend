@@ -6,7 +6,6 @@ from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, FormView
-from django.utils import timezone
 
 from django_rq import job
 from rest_framework import status
@@ -14,7 +13,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from goals.permissions import CONTENT_VIEWERS
-from goals.models import Organization
+from goals.models import Program
 
 from userprofile.forms import UserForm
 from . email import (
@@ -29,15 +28,16 @@ from . user_utils import username_hash, get_client_ip
 
 
 @job
-def _enroll_user_in_organization_categories(user_id, org_id):
+def _enroll_user_in_program(user_id, program_id):
     User = get_user_model()
     try:
         user = User.objects.get(pk=user_id)
-        org = Organization.objects.get(pk=org_id)
-        for category in org.categories.published():
-            category.enroll(user)
-    except (User.DoesNotExist, Organization.DoesNotExist):
+        program = Program.objects.get(pk=program_id)
+        for goal in program.auto_enrolled_goals.all():
+            goal.enroll(user)
+    except (User.DoesNotExist, Program.DoesNotExist):
         pass
+
 
 def _setup_content_viewer(request, user, password):
     """Handle addional post-account-creation tasks for content viewers."""
@@ -68,15 +68,17 @@ def _setup_enduser(request, user):
     """Handle addional post-account-creation tasks for end-users."""
     User = get_user_model()
 
-    # Check for any organization parameters, and add the new user as a member
-    # in the correct Organization (if applicable) and assign their content.
+    # Check for any Organization & Program parameters, and make the user a member
+    # and enroll them in the Program's goals (if applicable).
     try:
-        org = Organization.objects.get(pk=request.POST.get('organization'))
-        org.members.add(user)
-        # XXX: For the moment, users in an org will be automatically enrolled
-        # in all of that org's content (done as an async job, because it's slow)
-        _enroll_user_in_organization_categories.delay(user.id, org.id)
-    except Organization.DoesNotExist:
+        program_id = request.POST.get('program')
+        org_id = request.POST.get('organization')
+
+        program = Program.objects.get(pk=program_id, organization__id=org_id)
+        program.members.add(user)
+        program.organization.members.add(user)
+        _enroll_user_in_program.delay(user.id, program.id)
+    except Program.DoesNotExist:
         pass
 
     # Send some email notifications.
@@ -116,12 +118,13 @@ def signup(request, content_viewer=False, enduser=False):
         /join/
 
     For Endusers: The request may also include one or more parameters indicating
-    the organization in which the user should be a member.
+    the Organization & Program in which the user should be a member. For
+    example: `/join/?organization=42&program=7`
 
-        - Organization ID:  `/join/?organization=42` - The user will be added as
-          a member of the specified organization and will be enrolled in that
-          organization's Categories (and all child content).
-        - TBD
+        - Organization ID: The user will be added as a member of the specified
+          organization.
+        - Program ID: The user will be added as a member of the specified
+          program and will be auto-enrolled in certain goals from the program
 
     """
     # Set the template/redirection based on the type of user signup
@@ -176,7 +179,7 @@ def signup(request, content_viewer=False, enduser=False):
 
     # The following is a list of GET request variables that we'll pass along
     # as POST request vars once a user submits the login form.
-    passthru_vars = ['organization']
+    passthru_vars = ['organization', 'program']
     passthru_vars = {
         key: request.GET.get(key) for key in passthru_vars
         if request.GET.get(key)
