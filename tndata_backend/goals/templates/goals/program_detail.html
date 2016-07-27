@@ -16,6 +16,11 @@
     <a class="button pull-right tiny"
        href="{{ program.get_update_url }}">Edit</a>
   </h1>
+  <p class="panel">
+    <i class="fa fa-share-alt"></i>
+    <strong>Signup link for this program: </strong>
+    <code>{{ site_url }}{{ program.get_join_url }}</code>
+  </p>
   <div class="row">
     <div class="large-4 medium-4 small-12 columns">
       <h2 class="subheader">Categories</h2>

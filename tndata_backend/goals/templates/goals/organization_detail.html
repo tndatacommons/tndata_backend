@@ -86,6 +86,7 @@
         <th>Categories</th>
         <th>Goals</th>
         <th>Members</th>
+        <th>Join URL</th>
       </tr>
     </thead>
     <tbody>
@@ -103,6 +104,10 @@
         {% endfor %}
         </td>
         <td>{{ program.members.count }}</td>
+        <td>
+          <i class="fa fa-share-alt"></i>
+          <code>{{ site_url }}{{ program.get_join_url }}</code>
+        </td>
       </tr>
     {% endfor %}
     </tbody>
