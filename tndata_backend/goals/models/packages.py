@@ -6,9 +6,80 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 
+from .organizations import Organization
 from .public import Action, Behavior, Category, Goal
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from ..managers import PackageEnrollmentManager
+
+
+# TODO: Allow users to build a program of content for an organization.
+# this includes mappings between named "classes" of users and certain goals
+# form the organization's selected categories.
+#
+# A program also gives users a special link they can use to sign up for content.
+# It's a bit like a package in which users can self-enroll.
+#
+# e.g.
+# Name: Moore Tech Parents
+# Categories: (list of categories available to this program)
+# Auto-enrolled goals: (list of goals that the user will be auto-enrolled in).
+# TODO: How do we make these categories show up in onboarding as a group
+
+
+class Program(models.Model):
+    name = models.CharField(
+        max_length=512,
+        unique=True,
+        help_text="The program's name."
+    )
+    name_slug = models.SlugField(max_length=512, db_index=True, unique=True)
+    organization = models.ForeignKey(
+        Organization,
+        help_text="The organziation to which this program is associated"
+    )
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        help_text="Users who are signed up for this program (e.g. students)"
+    )
+    categories = models.ManyToManyField(
+        Category,
+        help_text="The categories from which content in this program will be available."
+    )
+    auto_enrolled_goals = models.ManyToManyField(
+        Goal,
+        help_text="The goals in which program members will be auto-enrolled."
+    )
+
+    # TIMESTAMPS
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['organization', 'name', ]
+        verbose_name = "Program"
+        verbose_name_plural = "Programs"
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        """Always slugify the name prior to saving the model."""
+        self.name_slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        args = [self.pk, self.name_slug]
+        return reverse('goals:program-detail', args=args)
+
+    def get_update_url(self):
+        args = [self.pk, self.name_slug]
+        return reverse('goals:program-update', args=args)
+
+    def get_delete_url(self):
+        args = [self.pk, self.name_slug]
+        return reverse('goals:program-delete', args=args)
+
 
 
 class PackageEnrollment(models.Model):

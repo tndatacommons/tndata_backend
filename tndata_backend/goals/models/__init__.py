@@ -11,7 +11,7 @@ from .misc import (  # NOQA
     popular_categories
 )
 from .organizations import Organization  # NOQA
-from .packages import PackageEnrollment  # NOQA
+from .packages import Program, PackageEnrollment  # NOQA
 from .public import Action, Behavior, Category, Goal  # NOQA
 from .progress import DailyProgress, UserCompletedAction  # NOQA
 from .path import (  # NOQA -- we need these to satisfy old migrations.
