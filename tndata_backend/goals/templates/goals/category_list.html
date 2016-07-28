@@ -54,6 +54,11 @@
               <strong><a href="{{ category_url }}">{{ category }}</a></strong><br/>
 
               {# Labels for Category package, default #}
+              {% if category.hide_from_organizations %}
+                <span class="label alert" data-tooltip aria-haspopup="true"
+                  title="This category is hidden from organization members">
+                  <i class="fa fa-ban"></i> Organizations</span>
+              {% endif %}
               {% if category.is_packaged %}
                 <span class="label info" data-tooltip aria-haspopup="true"
                   title="This category's content is organized as a package.">Package</span>
@@ -71,12 +76,21 @@
                   title="Group order / name for this catgory." class="label secondary">
                   {{ category.grouping }} / {{ category.grouping_name }}</span>
               {% endif %}
-              {% for org in category.organizations.all %}
-                <span class="label warning">{{ org.name }}</span>
-              {% endfor %}<br/>
-              {% for program in category.program_set.all %}
-                <span class="label secondary">{{ program }}</span>
-              {% endfor %}
+
+              {% if category.organizations.exists %}
+                <br/>
+                {% for org in category.organizations.all %}
+                  <span class="label warning" data-tooltip aria-haspopup="true"
+                    title="An Organization">{{ org.name }}</span>
+                {% endfor %}
+              {% endif %}
+              {% if category.program_set.exists %}
+                <br/>
+                {% for program in category.program_set.all %}
+                  <span class="label secondary" data-tooltip aria-haspopup="true"
+                    title="An Organizational Program">{{ program }}</span>
+                {% endfor %}
+              {% endif %}
 
               {# Icon (if any) #}
               {% with icon=category.get_absolute_icon %}
