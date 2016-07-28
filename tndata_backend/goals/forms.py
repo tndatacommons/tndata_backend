@@ -429,7 +429,7 @@ class OrganizationForm(forms.ModelForm):
 
     class Meta:
         model = Organization
-        fields = ['name', 'staff', 'admins', 'categories']
+        fields = ['name', 'categories']
 
     def __init__(self, *args, **kwargs):
         if kwargs.get('instance', False):
@@ -442,8 +442,6 @@ class OrganizationForm(forms.ModelForm):
             Fieldset(
                 _("Organization"),
                 "name",
-                "staff",
-                "admins",
                 "categories",
             )
         )
