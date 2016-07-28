@@ -45,16 +45,6 @@ from ..managers import (
 from ..mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
 
 
-@job
-def _enroll_organization_members_in_category_content(category):
-    """When we publish a behavior, we need to enroll everyone that has selected
-    the behavior's parents' (goal) and in all the published child actions."""
-    User = get_user_model()
-    members = set(category.organizations.values_list('members', flat=True))
-    for user in User.objects.filter(pk__in=members):
-        category.enroll(user)
-
-
 class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose.
 
@@ -336,8 +326,6 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
 
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
-        """When a category is published, we need to enroll any organization
-        members in the category's content."""
         pass
 
     def get_view_enrollment_url(self):
@@ -465,6 +453,17 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         return new_category
 
     objects = CategoryManager()
+
+
+@job
+def _enroll_program_members(goal):
+    """When we publish a Goal, we need to look up the programs in which it
+    is listed (e.g. it's a member of Program.auto_enrolled_goals). Then, enroll
+    all program members in this goal."""
+    User = get_user_model()
+    members = goal.program_set.values_list('members', flat=True)
+    for user in User.objects.filter(pk__in=members):
+        goal.enroll(user)
 
 
 class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
@@ -628,7 +627,9 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
-        pass
+        """When a Goal is published, we need to check if it's part of a Program
+        whose members should be auto-enrolled in the Goal."""
+        _enroll_program_members.delay(self)
 
     def get_parent_category_for_user(self, user):
         """Return one of this object's parent categories, prefering one that
