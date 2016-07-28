@@ -92,6 +92,12 @@
             <code>{{ category.secondary_color }}</code> - Secondary
           {% endif %}
          </dd>
+        <dt>Hidden from Organization Members</dt>
+        <dd>{{ category.hide_from_organizations|iconbool }}: This category
+          <strong>will
+          {% if category.hide_from_organizations %}not {% endif %}</strong>
+          be displayed to users who are members of an Organization.
+        </dd>
         <dt>Selected by default?</dt>
         <dd>{{ category.selected_by_default|iconbool }}: This category is
           {% if not category.selected_by_default %}not{% endif %}

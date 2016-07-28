@@ -82,7 +82,8 @@ class CategoryAdmin(ContentWorkflowAdmin):
     )
     search_fields = ['title', 'description', 'notes', 'id']
     list_filter = (
-        'state', 'packaged_content', 'selected_by_default', 'grouping',
+        'state', 'packaged_content', 'selected_by_default',
+        'hide_from_organizations', 'grouping',
     )
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')

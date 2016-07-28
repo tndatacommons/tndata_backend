@@ -172,6 +172,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         related_name="categories",
         help_text="Organizations whose members should have access to this content."
     )
+    hide_from_organizations = models.BooleanField(
+        default=False,
+        help_text="Do not show this category to users who are members of an Organization."
+    )
 
     # -------------------------------------------------------------------------
     # PACKAGES.
@@ -334,7 +338,7 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     def publish(self):
         """When a category is published, we need to enroll any organization
         members in the category's content."""
-        _enroll_organization_members_in_category_content.delay(self)
+        pass
 
     def get_view_enrollment_url(self):
         """Essentially a Detail view for a Category Package."""

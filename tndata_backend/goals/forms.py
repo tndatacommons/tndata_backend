@@ -305,7 +305,7 @@ class CategoryForm(forms.ModelForm):
         fields = [
             'packaged_content', 'package_contributors',
             'selected_by_default', 'grouping', 'organizations',
-            'prevent_custom_triggers_default',
+            'hide_from_organizations', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
             'title', 'description', 'icon', 'image', 'color',
             'secondary_color', 'notes', 'consent_summary', 'consent_more',
@@ -359,11 +359,12 @@ class CategoryForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        # Certain fields (`selected_by_default`, `organizations`) should only
-        # be available to superusers.
+        # Certain fields (`selected_by_default`, `organizations`,
+        # `hide_from_organizations`) should only be available to superusers.
         if self.user is None or (self.user and not self.user.is_superuser):
             del self.fields['selected_by_default']
             del self.fields['organizations']
+            del self.fields['hide_from_organizations']
             details_fields = (
                 _("Category Details"), 'title', 'description', 'grouping',
                 'icon', 'image', 'color', 'secondary_color',
@@ -371,8 +372,8 @@ class CategoryForm(forms.ModelForm):
         else:
             details_fields = (
                 _("Category Details"), 'title', 'description', 'grouping',
-                'organizations', 'selected_by_default', 'icon', 'image',
-                'color', 'secondary_color',
+                'organizations', 'hide_from_organizations', 'selected_by_default',
+                'icon', 'image', 'color', 'secondary_color',
             )
 
         # Configure crispy forms.
