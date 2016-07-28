@@ -71,6 +71,12 @@
                   title="Group order / name for this catgory." class="label secondary">
                   {{ category.grouping }} / {{ category.grouping_name }}</span>
               {% endif %}
+              {% for org in category.organizations.all %}
+                <span class="label warning">{{ org.name }}</span>
+              {% endfor %}<br/>
+              {% for program in category.program_set.all %}
+                <span class="label secondary">{{ program }}</span>
+              {% endfor %}
 
               {# Icon (if any) #}
               {% with icon=category.get_absolute_icon %}

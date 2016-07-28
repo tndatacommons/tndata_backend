@@ -367,6 +367,9 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
         if packaged is not None:
             kw['packaged_content'] = bool(packaged)
 
+        organizations = self.request.GET.get('organizations', None)
+        if organizations is not None:
+            kw['organizations__isnull'] = False
         return kw
 
     def get_queryset(self):
@@ -379,6 +382,8 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
         context.update(self._filters())
         if context.get('grouping__gte', None) == 0:
             context['featured'] = True
+        if context.get('organizations__isnull') is False:
+            context['organizations'] = True
         context['category_list'] = True
         return context
 
