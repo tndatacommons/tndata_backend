@@ -42,5 +42,23 @@ Categories can be filtered by the following attributes:
 * `featured`. e.g. `/api/categories/?featured=1`
 * `organization`. e.g. `/api/categories/?organization=42` will display categories
   associated with the given organization.
+* `program`. e.g. `/api/categories/?program=7` will display categories
+  associated with the given program.
+
+
+## Organizations & Programs
+
+Users who are members in an Organization (see `/api/organizations/`) will
+receive a slightly different set of results, here. An `Organization` may contain
+one or more `Program`s that specify a mapping of categories to the organization.
+
+If a user is a member of an Organization, results from this endpoint will exclude
+Categories from other organizations (in which the user is not a member), as
+well as any category that as explicently been marked as hidden from organization
+members (see the `Category.hide_from_organizations` field).
+
+Additionally, users who are _not_ members of an organization will not see
+Categories that are associated with an organization.
+
 
 ----

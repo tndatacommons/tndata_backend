@@ -136,9 +136,27 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         self.queryset = super().get_queryset()
+
+        # If the user is enrolled in a program/organization, we need to provide
+        # the appropriate set of categories.
+        user = self.request.user
+        if user.is_authenticated() and user.program_set.exists():
+            # We want them to see public content, but NOT categories that
+            # are in an organization that the user is not enrolled in, and NOT
+            # the categories that have been explicitly hidden from organization
+            # members.
+            others = models.Category.objects.filter(organizations__isnull=False)
+            others = others.exclude(organizations__members=user.id)
+            return self.queryset.exclude(
+                pk__in=others.values_list('pk', flat=True),
+                hide_from_organizations=True
+            )
+
+        # Otherwise, filter results based on provided parameters.
         selected_by_default = self._as_bool(self.request, 'selected_by_default')
         featured = self._as_bool(self.request, 'featured')
         org = self.request.GET.get('organization', None)
+        program = self.request.GET.get('program', None)
 
         if selected_by_default is not None:
             self.queryset = self.queryset.filter(
@@ -150,7 +168,12 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             self.queryset = self.queryset.filter(grouping__gte=0)
         if org is not None:
             self.queryset = self.queryset.filter(organizations=org)
-        return self.queryset
+        if program is not None:
+            self.queryset = self.queryset.filter(program=program)
+
+        # Finally, if the user is not in a program, we'll exclude all categories
+        # that are associated with an organization
+        return self.queryset.exclude(organizations__isnull=False).distinct()
 
     def retrieve(self, request, pk=None):
         """When an authenticated user requests a category by ID, we may need
