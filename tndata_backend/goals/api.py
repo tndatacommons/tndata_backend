@@ -147,10 +147,11 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             # members.
             others = models.Category.objects.filter(organizations__isnull=False)
             others = others.exclude(organizations__members=user.id)
-            return self.queryset.exclude(
-                pk__in=others.values_list('pk', flat=True),
-                hide_from_organizations=True
-            )
+            others = others.values_list('pk', flat=True)
+
+            results = self.queryset.exclude(pk__in=others)
+            results = results.exclude(hide_from_organizations=True)
+            return results
 
         # Otherwise, filter results based on provided parameters.
         selected_by_default = self._as_bool(self.request, 'selected_by_default')
