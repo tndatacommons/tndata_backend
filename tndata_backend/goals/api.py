@@ -1,5 +1,4 @@
 import waffle
-from collections import OrderedDict
 
 from django.conf import settings as project_settings
 from django.db.models import Q
@@ -17,8 +16,9 @@ from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
 
-from utils.user_utils import local_day_range
 from utils.mixins import VersionedViewSetMixin
+from utils.serializers import resultset
+from utils.user_utils import local_day_range
 
 from . import models
 from . serializers import v1, v2
@@ -110,7 +110,7 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         organizations = request.user.member_organizations.all()
         serializer = self.get_serializer(organizations, many=True)
-        return Response(serializer.data)
+        return Response(resultset(serializer.data))
 
 
 class ProgramViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -153,7 +153,7 @@ class ProgramViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         programs = request.user.program_set.all()
         serializer = self.get_serializer(programs, many=True)
-        return Response(serializer.data)
+        return Response(resultset(serializer.data))
 
 
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
@@ -1692,7 +1692,6 @@ class DailyProgressViewSet(VersionedViewSetMixin,
         param of `?days=30` to retrieve more history.
 
         """
-        results = OrderedDict(count=0, results=list())
         try:
             days = int(self.request.GET.get('days', 7))
         except ValueError:
@@ -1703,7 +1702,5 @@ class DailyProgressViewSet(VersionedViewSetMixin,
 
         # Generate streaks data & add actions/customactions completed
         progresses = progress_streaks(request.user, days=days)
-        results['count'] = len(progresses)
-        results['results'] = progresses
-
+        results = resultset(progresses)
         return Response(data=results, status=status.HTTP_200_OK)
