@@ -13,19 +13,17 @@ from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from ..managers import PackageEnrollmentManager
 
 
-# TODO: Allow users to build a program of content for an organization.
-# this includes mappings between named "classes" of users and certain goals
-# form the organization's selected categories.
-#
-# A program also gives users a special link they can use to sign up for content.
-# It's a bit like a package in which users can self-enroll.
-#
-# e.g.
-# Name: Moore Tech Parents
-# Categories: (list of categories available to this program)
-# Auto-enrolled goals: (list of goals that the user will be auto-enrolled in).
-# TODO: How do we make these categories show up in onboarding as a group
 class Program(models.Model):
+    """
+    A program defines a set of content (categories/goals) for an organiztion
+    that should be available to a certain user-base (e.g. Parents or Students).
+
+    Like a Package, a Program allows certain users to have different sets of
+    content, event those they may be members of the same organization. This is
+    achieved through special links that they can use to sign up for Compass
+    via the web.
+
+    """
     name = models.CharField(
         max_length=512,
         unique=True,

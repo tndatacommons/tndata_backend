@@ -22,6 +22,7 @@ from goals.api import (
     DailyProgressViewSet,
     GoalViewSet,
     OrganizationViewSet,
+    ProgramViewSet,
     PackageEnrollmentViewSet,
     SearchViewSet,
     TriggerViewSet,
@@ -88,6 +89,7 @@ router.register(r'triggers', TriggerViewSet, base_name="trigger")
 router.register(r'behaviors', BehaviorViewSet)
 router.register(r'actions', ActionViewSet)
 router.register(r'organizations', OrganizationViewSet)
+router.register(r'programs', ProgramViewSet)
 router.register(r'users/actions', UserActionViewSet)
 router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)

@@ -113,6 +113,49 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
+class ProgramViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
+    """ViewSet for Programs"""
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+    queryset = models.Program.objects.all()
+    serializer_class_v1 = None
+    serializer_class_v2 = v2.ProgramSerializer
+    pagination_class = PublicViewSetPagination
+    docstring_prefix = "goals/api_docs"
+
+    @list_route(methods=['get', 'post'], url_path='members')
+    def membership(self, request, pk=None):
+        """GET: List the current user's Program membership.
+
+        POST: Add the user the given Program, requires a payload of:
+
+            {program: <pk>}
+
+        """
+        if not self.request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.method == "POST":
+            try:
+                program = self.queryset.get(pk=request.data['program'])
+                program.members.add(request.user)
+                # adding a user to a program also adds them to the organization
+                program.organization.members.add(request.user)
+            except (KeyError, ValueError):
+                return Response(
+                    data={'error': "Missing or invalid value for programs"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except models.Program.DoesNotExist:
+                return Response(
+                    data={'error': "Specified Program not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        programs = request.user.program_set.all()
+        serializer = self.get_serializer(programs, many=True)
+        return Response(serializer.data)
+
+
 class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Categories. See the api_docs/ for more info"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)

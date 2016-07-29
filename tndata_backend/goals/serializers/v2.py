@@ -10,6 +10,7 @@ from ..models import (
     DailyProgress,
     Goal,
     Organization,
+    Program,
     Trigger,
     UserAction,
     UserGoal,
@@ -34,6 +35,14 @@ from .v1 import (  # flake8: noqa
     ReadOnlyUserActionSerializer,
     TriggerSerializer,
 )
+
+
+class ProgramSerializer(ObjectTypeModelSerializer):
+    organization = serializers.ReadOnlyField(source='organization.name')
+
+    class Meta:
+        model = Program
+        fields = ('id', 'name', 'name_slug', 'organization')
 
 
 class OrganizationSerializer(ObjectTypeModelSerializer):
