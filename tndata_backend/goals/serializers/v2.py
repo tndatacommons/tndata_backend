@@ -42,7 +42,7 @@ class ProgramSerializer(ObjectTypeModelSerializer):
 
     class Meta:
         model = Program
-        fields = ('id', 'name', 'name_slug', 'organization')
+        fields = ('id', 'name', 'name_slug', 'organization', 'object_type')
 
 
 class OrganizationSerializer(ObjectTypeModelSerializer):
