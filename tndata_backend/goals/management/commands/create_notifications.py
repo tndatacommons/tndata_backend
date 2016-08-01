@@ -161,11 +161,9 @@ class Command(BaseCommand):
     def schedule_action_notifications(self, users):
         """Given a queryset of users, we first:
 
-        1. Schedule all of their dynamic notifications;
-            - iterate over their selected behaiors (UserBehaviors)
-            - find their current bucket
-            - retrive a queryset of UserActions in that bucket
-            - create gcm messages
+        1. Schedule all of their dynamic notifications, based on the item's
+           Sequencing (e.g. items that have not been completed, ordered by their
+           specified Goal/Behavior/Action sequence number)
         2. Schedule their non-dynamic (e.g. recurring) notifications.
 
         """
@@ -276,7 +274,7 @@ class Command(BaseCommand):
         #
         # We also recently disabled the monthly option, so this should be safe.
         #
-        self.threshold = timezone.now() + timedelta(days=15)
+        self.threshold = timezone.now() + timedelta(days=25)
         # ---------------------------------------------------------------------
 
         # This switch allows us to completely disable creation of notifications
