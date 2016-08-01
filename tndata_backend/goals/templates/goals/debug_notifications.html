@@ -53,8 +53,15 @@
       <span class="label info">{{ today.1|localtime }}</span>
     </p>
     <div class="panel">
-      <p><strong>Next User Action: {{ next_user_action }} at
-        <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.</strong></p>
+      <p>
+        <strong>Next User Action:
+        {% if next_user_action %}
+        <span class="label info">{{ next_user_action.next_trigger_date|localtime|date:"M j Y P e" }}</span>.
+        {% else %}
+          None
+        {% endif %}
+        </strong>
+      </p>
       <hr/>
       <h3>User Actions</h3>
       <ol>
@@ -127,27 +134,27 @@
 {% with ca_count=customactions.count %}
 {% if ca_count > 0 %}
   <h2>Custom Actions <small>{{ ca_count }} items</small></h2>
-  <table>
+  <table class="object-list">
     <thead>
       <tr>
         <th>Details</th>
-        <th>Trigger</th>
+        <th>Prev</th>
+        <th>Next</th>
         <th>Notifications</th>
-        <th>Parents</th>
       </tr>
     </thead>
     <tbody>
       {% for ca in customactions %}
         <tr>
-          {# --- Object Details & Trigger info --- #}
+          {# --- Details --- #}
           <td class="{% if ca.upcoming %}upcoming{% else %}past{% endif %}">
             <strong>
               {% if ca.upcoming %}<i class="fa fa-star"></i>{% endif %}
-              {{ ca }} / {{ ca.customgoal }}
+              {{ ca }} /<br/>
+              {{ ca.customgoal }}
             </strong><br/>
-            <code>
-              CustomAction.id: {{ ca.id }}, CustomGoal.id: {{ ca.customgoal.id }}
-            </code><br/>
+            <code>CustomAction.id: {{ ca.id }}</code><br/>
+            <code>CustomGoal.id: {{ ca.customgoal.id }}</code><br/>
             <em>
             {% if ca.trigger %}
               {% with recur=ca.trigger.recurrences_as_text %}
@@ -165,24 +172,27 @@
             </em>
           </td>
 
-          {# --- Status --- #}
+          {# --- Previous Trigger --- #}
           <td>
-          <strong>Next Trigger</strong><br/>
-          <span class="label info">
-            {{ ca.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-          </span><br/>
-          <span class="label secondary">
-            {{ ca.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-          <hr/>
-          <strong>Previous Trigger</strong><br/>
-          <span class="label info">
-            {{ ca.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-          </span><br/>
-          <span class="label secondary">
-            {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
+            <span class="label info">
+              {{ ca.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+            </span><br/>
+            <span class="label secondary">
+              {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}
+            </span>
           </td>
 
-          {# --- Scheduled/Past Notifications --- #}
+          {# --- Previous Trigger --- #}
+          <td>
+            <span class="label info">
+              {{ ca.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+            </span><br/>
+            <span class="label secondary">
+              {{ ca.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}
+            </span>
+          </td>
+
+          {# --- Notifications --- #}
           <td>
             <ul style="list-style-type:none;">
             {% for msg in ca.queued_notifications %}
@@ -206,13 +216,13 @@
 {% with ua_count=useractions.count %}
 {% if ua_count > 0 %}
   <h2>User Actions <small>{{ ua_count }} items</small></h2>
-  <table>
+  <table class="object-list">
     <thead>
       <tr>
         <th>Details</th>
-        <th>Trigger</th>
+        <th>Prev</th>
+        <th>Next</th>
         <th>Notifications</th>
-        <th>Parents</th>
       </tr>
     </thead>
     <tbody>
@@ -220,21 +230,20 @@
         <tr>
           {# --- UserAction & Action details --- #}
           <td class="{% if ua.upcoming %}upcoming{% else %}past{% endif %}">
-            {% if ua.upcoming %}
-              <strong data-tooltip aria-haspopup="true"
-                      class="has-tip" title="Upcoming Notification">
-                <i class="fa fa-star"></i> {{ ua.action }}</strong>
-            {% else %} {# past item #}
-              <span data-tooltip aria-haspopup="true"
-                      class="has-tip" title="Past Notification">
-                {{ ua.action }}</span>
-            {% endif %}
-            <br/>
-            <code>
-              Action.id: {{ ua.action.id }}, UserAction.id: {{ ua.id }}
-            </code><br/>
-            <em>
+            <span data-tooltip aria-haspopup="true" class="has-tip"
+                title="{% if ua.upcoming %}Upcoming{% else %}Past{% endif %}">
+            {{ ua.primary_category }} /<br/>
+            {{ ua.primary_goal }} / <br/>
+            {{ ua.action.behavior }} / <br/>
+            {{ ua.action }}
+            </span>
+
+            {# --- Various object details. ------- #}
+            <br/><code>Action.id: {{ ua.action.id }}</code>
+            <br/><code>UserAction.id: {{ ua.id }}</code>
+
             {% if ua.trigger %}
+              <br/>
               {% if ua.trigger != ua.custom_trigger %}
                 <span class="label">DEFAULT</span>
               {% endif %}
@@ -250,51 +259,69 @@
                 {% endwith %}
               {% endif %}
             {% endif %}
-            </em>
 
             {% if ua.completed %}
-              <hr/>
-              Completed: {{ ua.completed|iconbool }}<br/>
+              <div style="border:1px dotted #ccc;padding:0.5em;">
+              <strong>Completed: {{ ua.completed|iconbool }}</strong>
               {% with uca=ua.usercompletedaction_set.latest %}
+                <code>UserCompletedAction.id: {{ uca.id }}</code><br/>
                 <span class="label info">
-                  {{ uca.updated_on|localtime|date:"M j Y P e" }}</span><br/>
+                  {{ uca.updated_on|localtime|date:"M j Y P e" }}</span>
                 <span class="label secondary">
-                    {{ uca.updated_on|utc|date:"M j Y P e" }}</span>
+                  {{ uca.updated_on|utc|date:"M j Y P e" }}</span>
               {% endwith %}
+              </div>
+            {% endif %}
+
+            {% comment %}
+            <div class="panel">
+              <strong data-tooltip aria-haspopup="true"
+                      class="has-tip" title="Primary Category">
+                {{ ua.primary_category }}</strong><br/>
+              <span class="label info" data-tooltip aria-haspopup="true"
+                    class="has-tip" title="Sequence Order for this Goal">
+                    {{ ua.primary_goal.sequence_order }}</span>
+              {{ ua.primary_goal }}<br/>
+              <span class="label info" data-tooltip aria-haspopup="true"
+                    class="has-tip" title="Sequence Order for this Behavior">
+                    {{ ua.action.behavior.sequence_order }}</span>
+              {{ ua.action.behavior }}
+            </div>
+            {% endcomment %}
+          </td>
+
+          {# --- Previous Notification --- #}
+          <td>
+            {% if ua.prev_trigger_date %}
+              <span class="label info">
+                {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+              </span><br/>
+              <span class="label secondary">
+                {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}
+              </span>
+            {% else %}
+              <em>None</em>
             {% endif %}
           </td>
 
-          {# --- Status --- #}
+          {# --- Next Notification --- #}
           <td>
-          <strong>Next Trigger</strong><br/>
-          {% if ua.next_trigger_date %}
+            {% if ua.next_trigger_date %}
+              <span class="label info">
+                {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
+              </span><br/>
+              <span class="label secondary">
+                {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}
+              </span>
+            {% else %}
+              <em>None</em>
+            {% endif %}
+            <hr/>
+            <strong>Next Generated Trigger</strong><br/>
             <span class="label info">
-              {{ ua.next_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-            </span><br/>
+              {{ ua.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
             <span class="label secondary">
-              {{ ua.next_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-          {% else %}
-            <em>None</em>
-          {% endif %}
-          <hr/>
-          <strong>Previous Trigger </strong><br/>
-          {% if ua.prev_trigger_date %}
-            <span class="label info">
-              {{ ua.prev_trigger_date|localtime|date:"M j Y P e"|default:"n/a"}}
-            </span><br/>
-            <span class="label secondary">
-              {{ ua.prev_trigger_date|utc|date:"M j Y P e"|default:"n/a"}}</span>
-          {% else %}
-            <em>None</em>
-          {% endif %}
-
-          <hr/>
-          <strong>Next Generated Trigger</strong><br/>
-          <span class="label info">
-            {{ ua.next|localtime|date:"M j Y P e"|default:"None" }}</span><br/>
-          <span class="label secondary">
-            {{ ua.next|utc|date:"M j Y P e"|default:"None" }}</span>
-
+              {{ ua.next|utc|date:"M j Y P e"|default:"None" }}</span>
           </td>
 
           {# --- Scheduled/Past Notifications --- #}
@@ -307,22 +334,9 @@
                    target="_blank">{{ msg.deliver_on|date:"P e m/d/Y" }}</a>
               </li>
             {% empty %}
-              <li><em>none scheduled</em></li>
+              <li>none<br/>scheduled</li>
             {% endfor %}
             </ul>
-          </td>
-          <td>
-            <strong data-tooltip aria-haspopup="true"
-                    class="has-tip" title="Primary Category">
-              {{ ua.primary_category }}</strong><br/>
-            <span class="label info" data-tooltip aria-haspopup="true"
-                  class="has-tip" title="Sequence Order for this Goal">
-                  {{ ua.primary_goal.sequence_order }}</span>
-            {{ ua.primary_goal }}<br/>
-            <span class="label info" data-tooltip aria-haspopup="true"
-                  class="has-tip" title="Sequence Order for this Behavior">
-                  {{ ua.action.behavior.sequence_order }}</span>
-            {{ ua.action.behavior }}<br/>
           </td>
         </tr>
       {% endfor %}
