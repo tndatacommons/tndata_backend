@@ -1894,7 +1894,7 @@ def debug_notifications(request):
 
             # The user's notification queue
             dt = today[0]
-            for dt in [dt + timedelta(days=i) for i in range(0, 3)]:
+            for dt in [dt + timedelta(days=i) for i in range(0, 7)]:
                 qdata = queue.UserQueue.get_data(user, date=dt)
                 # data for a user queue is a dict that looks like this:
                 # 'uq:1:2016-04-25:count': 0,

@@ -35,6 +35,7 @@
         <option value="100"{% if n == 100 %} selected="selected"{% endif %}>100</option>
         <option value="200"{% if n == 200 %} selected="selected"{% endif %}>200</option>
         <option value="500"{% if n == 500 %} selected="selected"{% endif %}>500</option>
+        <option value="1000"{% if n == 1000 %} selected="selected"{% endif %}>1000</option>
         {% endwith %}
       </select>
     </div>
@@ -98,7 +99,7 @@
   <div class="large-6 small-12 columns">
     <h2>Notification Queue</h2>
     <p>The following table lists the user's prioritized notifications queue
-    for the next 3 days.</p>
+    for the next 7 days.</p>
     <table>
       <thead>
         <tr>
