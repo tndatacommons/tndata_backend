@@ -220,6 +220,8 @@
   <table class="object-list">
     <thead>
       <tr>
+        <th data-tooltip aria-haspopup="true" class="has-tip"
+            title="Next in Sequence">NiS</th>
         <th>Details</th>
         <th>Prev</th>
         <th>Next</th>
@@ -229,6 +231,7 @@
     <tbody>
       {% for ua in useractions %}
         <tr>
+          <td>{% if ua in next_in_sequence %}&#10004;{% else %}&#x2715;{% endif %}</td>
           {# --- UserAction & Action details --- #}
           <td class="{% if ua.upcoming %}upcoming{% else %}past{% endif %}">
             <span data-tooltip aria-haspopup="true" class="has-tip"
@@ -236,7 +239,7 @@
             {{ ua.primary_category }} /<br/>
             {{ ua.primary_goal }} / <br/>
             {{ ua.action.behavior }} / <br/>
-            {{ ua.action }}
+            {{ ua.action }} (Sequence: {{ ua.sequence_order }})
             </span>
 
             {# --- Various object details. ------- #}

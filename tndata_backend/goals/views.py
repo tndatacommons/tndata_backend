@@ -80,6 +80,7 @@ from . permissions import (
     permission_required,
     staff_required,
 )
+from . sequence import get_next_useractions_in_sequence
 from . utils import num_user_selections
 
 
@@ -1863,6 +1864,7 @@ def debug_notifications(request):
     useractions = None
     next_user_action = None
     today = None
+    next_in_sequence = []
     upcoming_useractions = []
     upcoming_customactions = []
     user_queues = OrderedDict()
@@ -1879,6 +1881,7 @@ def debug_notifications(request):
 
             # UserActions
             useractions = user.useraction_set.all().distinct()[:num_items]
+            next_in_sequence = get_next_useractions_in_sequence(user)
 
             # Custom Actions
             customactions = user.customaction_set.all()
@@ -1921,6 +1924,7 @@ def debug_notifications(request):
         'useractions': useractions,
         'customactions': customactions,
         'next_user_action': next_user_action,
+        'next_in_sequence': next_in_sequence,
         'upcoming_useractions': upcoming_useractions,
         'upcoming_customactions': upcoming_customactions,
         'today': today,
