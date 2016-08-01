@@ -19,8 +19,8 @@
         <th><i class="fa fa-cog"></i></th>
         {% endif %}
         <th>Name</th>
-        <th>Staff</th>
-        <th>Admins</th>
+        <th>Categories</th>
+        <th>Members</th>
       </tr>
       </thead>
       <tbody>
@@ -32,19 +32,9 @@
             <a href="{{ org.get_update_url }}" class="button tiny">Edit</a>
           </td>
           {% endif %}
-          <td>
-            <a href="{{ org_url }}">{{ org.name }}</a>
-          </td>
-          <td>
-            {% for obj in org.staff.all %}
-              {{ obj.get_full_name }} &lt;{{ obj.email }}&gt;<br/>
-            {% endfor %}
-          </td>
-          <td>
-            {% for obj in org.admins.all %}
-              {{ obj.get_full_name }} &lt;{{ obj.email }}&gt;<br/>
-            {% endfor %}
-          </td>
+          <td><a href="{{ org_url }}">{{ org }}</a></td>
+          <td>{{ org.categories.all|join:", " }}</td>
+          <td>{{ org.members.count }}</td>
         </tr>
         {% endwith %}
       {% endfor %}
