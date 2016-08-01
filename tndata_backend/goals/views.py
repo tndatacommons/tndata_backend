@@ -1,5 +1,5 @@
 from calendar import Calendar
-from collections import defaultdict, Counter
+from collections import defaultdict, Counter, OrderedDict
 from datetime import datetime, timedelta
 from hashlib import md5
 
@@ -1865,7 +1865,8 @@ def debug_notifications(request):
     today = None
     upcoming_useractions = []
     upcoming_customactions = []
-    user_queues = defaultdict(dict)
+    user_queues = OrderedDict()
+
     email = request.GET.get('email_address', None)
 
     if email is None:
@@ -1894,13 +1895,17 @@ def debug_notifications(request):
 
             # The user's notification queue
             dt = today[0]
-            for dt in [dt + timedelta(days=i) for i in range(0, 7)]:
+            days = sorted([dt + timedelta(days=i) for i in range(0, 7)])
+            for dt in days:
+                user_queues[dt.strftime("%Y-%m-%d")] = {}
+
+            for dt in days:
                 qdata = queue.UserQueue.get_data(user, date=dt)
                 # data for a user queue is a dict that looks like this:
-                # 'uq:1:2016-04-25:count': 0,
-                # 'uq:1:2016-04-25:high': [],
-                # 'uq:1:2016-04-25:low': [],
-                # 'uq:1:2016-04-25:medium
+                # {'uq:1:2016-04-25:count':  0,
+                #  'uq:1:2016-04-25:high':   [],
+                #  'uq:1:2016-04-25:low':    [],
+                #  'uq:1:2016-04-25:medium': []}
                 for key, content in qdata.items():
                     parts = key.split(':')
                     datestring = parts[2]
@@ -1919,7 +1924,7 @@ def debug_notifications(request):
         'upcoming_useractions': upcoming_useractions,
         'upcoming_customactions': upcoming_customactions,
         'today': today,
-        'user_queues': dict(user_queues),
+        'user_queues': user_queues,
     }
     return render(request, 'goals/debug_notifications.html', context)
 
