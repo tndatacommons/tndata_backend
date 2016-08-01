@@ -181,9 +181,10 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         self.queryset = super().get_queryset()
 
         # If the user is enrolled in a program/organization, we need to provide
-        # the appropriate set of categories.
+        # the appropriate set of categories. (note: being in a program also
+        # makes the user a member of the organization)
         user = self.request.user
-        if user.is_authenticated() and user.program_set.exists():
+        if user.is_authenticated() and user.member_organizations.exists():
             # We want them to see public content, but NOT categories that
             # are in an organization that the user is not enrolled in, and NOT
             # the categories that have been explicitly hidden from organization
