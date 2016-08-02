@@ -48,6 +48,7 @@ def view_message(request, message_id):
 @user_passes_test(lambda u: u.is_staff, login_url='/')
 def dashboard(request):
     """A simple dashboard for enqueued GCM notifications."""
+    devices = None
     User = get_user_model()
 
     # If we have specified a user, show their Queue details.
@@ -62,6 +63,8 @@ def dashboard(request):
     user_queues = []  # Prioritized user queue
     try:
         user = User.objects.get(email__icontains=email)
+        devices = user.gcmdevice_set.count()
+
         user_queues.append(queue.UserQueue.get_data(user, date=date))
         date = date + timedelta(days=1)
         user_queues.append(queue.UserQueue.get_data(user, date=date))
@@ -93,6 +96,7 @@ def dashboard(request):
     ]
 
     context = {
+        'devices': devices,
         'email': email,
         'jobs': jobs,
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled'],

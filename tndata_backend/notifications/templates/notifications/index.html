@@ -18,6 +18,11 @@
           <button type="submit" class="button">Display</button>
         </div>
         <div class="large-6 medium-6 small-12 columns">
+
+          {% if user_queues and devices == 0 %}
+            <div data-alert class="alert-box warning">This user has no
+            registered devices!</div>
+          {% endif %}
           {# Link to the test notification sending form #}
           <p><a href="{% url 'notifications:send' %}"
             class="button pull-right">Send Push Notification</a></p>
