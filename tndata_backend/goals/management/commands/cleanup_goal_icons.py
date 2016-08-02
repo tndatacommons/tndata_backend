@@ -29,6 +29,11 @@ class Command(BaseCommand):
             getattr(obj, attr_name).delete()
             obj.save()
 
+    def clean_category_icons(self):
+        for c in Category.objects.all():
+            self._test_file(c, 'icon')
+            self._test_file(c, 'image')
+
     def clean_behavior_icons(self):
         for b in Behavior.objects.all():
             self._test_file(b, "icon")
