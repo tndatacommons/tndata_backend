@@ -18,6 +18,7 @@ from crispy_forms.layout import (
     Fieldset,
     HTML,
     Layout,
+    Submit,
 )
 
 from recurrence import serialize as serialize_recurrences
@@ -661,41 +662,28 @@ class ActionTriggerForm(forms.ModelForm):
         return data
 
 
-class TriggerForm(forms.ModelForm):
-    recurrences = RecurrenceField(
-        help_text="Select the rules to define how this reminder should repeat."
-    )
+class TriggerForm(forms.Form):
+    """A simple for for choosing a Trigger's dynamic delivery options (currently,
+    Time of Day & Frequency."""
+    time_of_day = forms.ChoiceField(choices=Trigger.TOD_CHOICES)
+    frequency = forms.ChoiceField(choices=Trigger.FREQUENCY_CHOICES)
 
-    class Meta:
-        model = Trigger
-        fields = ['name', 'time', 'trigger_date', 'recurrences']
-        widgets = {
-            "time": TimeSelectWidget(),
-            "trigger_date": forms.TextInput(attrs={'class': 'datepicker'}),
-        }
-        labels = {
-            "time": "Reminder Time",
-            "trigger_date": "Reminder Date",
-        }
-
-    def clean(self):
-        data = super().clean()
-        recurrences = data.get('recurrences')
-        date = data.get('trigger_date')
-
-        # Intervals (e.g. every other day) need a starting date.
-        if recurrences and 'INTERVAL' in serialize_recurrences(recurrences) and not date:
-            self.add_error('trigger_date', ValidationError(
-                "A Trigger Date is required for recurrences that contain an "
-                "interval (such as every 2 days)", code="required_for_intervals"
-            ))
-        elif recurrences and 'COUNT' in serialize_recurrences(recurrences) and not date:
-            self.add_error('trigger_date', ValidationError(
-                "A Trigger Date is required for recurrences that occur a set "
-                "number of times", code="required_for_count"
-            ))
-
-        return data
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Reminder Options"),
+                "time_of_day",
+                "frequency",
+                Submit(
+                    "Reset all reminders",
+                    "Reset all reminders",
+                    css_class="button"
+                )
+            )
+        )
 
 
 class PackageEnrollmentForm(forms.Form):

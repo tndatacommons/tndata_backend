@@ -435,17 +435,11 @@ class TestTriggerForm(TestCase):
 
     def test_unbound(self):
         form = TriggerForm()
-        fields = sorted([
-            'name', 'trigger_date', 'time', 'recurrences'
-        ])
+        fields = sorted(['time_of_day', 'frequency'])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):
-        data = {
-            'name': 'New Trigger',
-            'time': '',
-            'recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR',
-        }
+        data = {'time_of_day': 'early', 'frequency': 'daily'}
         form = TriggerForm(data)
         self.assertTrue(form.is_valid())
 
