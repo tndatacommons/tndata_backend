@@ -278,6 +278,11 @@ urlpatterns = [
         name='category-duplicate'
     ),
     url(
+        r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/reset-triggers/$',
+        views.reset_default_triggers_in_category,
+        name='category-reset-triggers'
+    ),
+    url(
         r'^categories/(?P<pk>\d+)-(?P<title_slug>.+)/$',
         views.CategoryDetailView.as_view(),
         name='category-detail'

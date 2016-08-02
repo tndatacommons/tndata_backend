@@ -49,6 +49,7 @@ from . forms import (
     PackageEnrollmentForm,
     ProgramForm,
     TitlePrefixForm,
+    TriggerForm,
     UploadImageForm,
 )
 from . mixins import (
@@ -492,6 +493,31 @@ class CategoryDeleteView(ContentEditorMixin, ContentDeleteView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
     success_url = reverse_lazy('goals:index')
+
+
+def reset_default_triggers_in_category(request, pk, title_slug):
+    category = get_object_or_404(Category, pk=pk, title_slug=title_slug)
+
+    if request.method == "POST":
+        form = TriggerForm(request.POST)
+        if form.is_valid():
+            # Reset all actions in the category
+            count = 0
+            for action in category.actions:
+                action.default_trigger.reset()
+                action.default_trigger.time_of_day = form.cleaned_data['time_of_day']
+                action.default_trigger.frequency = form.cleaned_data['frequency']
+                action.default_trigger.save()
+                count += 1
+            msg = "Reset reminders for {} notifications.".format(count)
+            messages.success(request, msg)
+            return redirect(category.get_absolute_url())
+    else:
+        form = TriggerForm()
+
+    template = "goals/reset_default_triggers_in_category.html"
+    ctx = {'form': form, 'category': category}
+    return render(request, template, ctx)
 
 
 class GoalListView(ContentViewerMixin, StateFilterMixin, ListView):

@@ -1,0 +1,32 @@
+{% extends "goals/base.html" %}
+{% load goal_tags %}
+{% load goal_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Reset Category Triggers{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
+  <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
+  <li class="current">Reset Triggers</li>
+{% endblock %}
+
+
+{% block content %}
+<h1>Reset Triggers</h1>
+
+{% if form %}
+<div data-alert class="alert-box alert">
+  <i class="fa fa-warning"></i>
+  This will change the default trigger for <strong>all Actions</strong>
+  in this Category.
+  <br/>Please note that this could take a few seconds to complete.
+  <a href="#" class="close">&times;</a>
+</div>
+
+<form action="{{ category.get_reset_trigger_url }}" method="post"> {% csrf_token %}
+  {% crispy form %}
+</form>
+{% endif %}
+{% endblock %}

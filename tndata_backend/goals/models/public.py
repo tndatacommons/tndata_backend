@@ -332,6 +332,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         """Essentially a Detail view for a Category Package."""
         return reverse("goals:package-detail", args=[self.id])
 
+    def get_reset_trigger_url(self):
+        args = [self.id, self.title_slug]
+        return reverse("goals:category-reset-triggers", args=args)
+
     def get_enroll_url(self):
         return reverse("goals:package-enroll", args=[self.id])
 
