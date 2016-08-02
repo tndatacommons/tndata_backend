@@ -8,6 +8,7 @@
 <div class="row">
   <div class="large-8 large-offset-2 medium-10 medium-offset-1 small-12 columns end">
   <h1>Welcome to Compass!</h1>
+
   {% if completed %}
     <p class="lead">You're almost there!</p>
     <p>Download the mobile app, and log in with the credentials (your email &amp;
@@ -19,6 +20,16 @@
         <i class="fa fa-apple"></i> iOS</a>
     </p>
   {% elif form %}
+
+    {% if organization or program %}
+    <p class="lead">
+    Compass is a free smartphone app that will send you useful tips that help
+    you reach your goals. Compass is partnered with
+    {{ organization|default:"your organization" }} to help
+    {{ program|default:"you" }} succeed.
+    </p>
+    {% endif %}
+
     <p>Complete the following form to create your account.</p>
     <form action="{% url 'join' %}" method="post">
       {% crispy form %}

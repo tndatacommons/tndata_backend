@@ -13,9 +13,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from goals.permissions import CONTENT_VIEWERS
-from goals.models import Program
+from goals.models import Organization, Program
 
 from userprofile.forms import UserForm
+from . db import get_object_or_none
 from . email import (
     send_new_user_request_notification_to_managers,
     send_new_enduser_welcome,
@@ -127,6 +128,9 @@ def signup(request, content_viewer=False, enduser=False):
           program and will be auto-enrolled in certain goals from the program
 
     """
+    organization = None
+    program = None
+
     # Set the template/redirection based on the type of user signup
     template = 'utils/signup_content_viewer.html'
     redirect_to = '/'
@@ -173,9 +177,10 @@ def signup(request, content_viewer=False, enduser=False):
     else:
         form = UserForm()
         password_form = SetNewPasswordForm(prefix='pw')
-        # TODO: Read any GET params (e.g. organizations?) and handle them
-        # appropriately. We want to possibly specify an organization. Could
-        # be the site from which the user is signing up.
+        organization = get_object_or_none(
+            Organization, pk=request.GET.get('organization'))
+        program = get_object_or_none(
+            Program, pk=request.GET.get('organization'))
 
     # The following is a list of GET request variables that we'll pass along
     # as POST request vars once a user submits the login form.
@@ -186,6 +191,8 @@ def signup(request, content_viewer=False, enduser=False):
     }
 
     context = {
+        'organization': organization,
+        'program': program,
         'passthru_vars': passthru_vars,
         'form': form,
         'password_form': password_form,
