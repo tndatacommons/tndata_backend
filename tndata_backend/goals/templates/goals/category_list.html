@@ -92,6 +92,15 @@
                 {% endfor %}
               {% endif %}
 
+              {# Image (if any) #}
+              {% with image=category.get_absolute_image %}
+                {% if image %}
+                  <div class="gray centered pull-right">
+                  <img src="{{ image }}" class="list-icon" alt="{{ category }} hero image"/>
+                  </div>
+                {% endif %}
+              {% endwith %}
+
               {# Icon (if any) #}
               {% with icon=category.get_absolute_icon %}
                 {% if icon %}
