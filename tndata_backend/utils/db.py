@@ -10,3 +10,10 @@ def get_max_order(model):
     result = model.objects.aggregate(Max('order'))
     current_num = result['order__max'] or 0
     return current_num + 1
+
+
+def get_object_or_none(model, **kwargs):
+    try:
+        return model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        return None
