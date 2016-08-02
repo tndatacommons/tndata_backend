@@ -577,4 +577,17 @@ class Trigger(models.Model):
                 return dt
         return None
 
+    def reset(self):
+        """Reset all the attributes for this trigger to default values."""
+        self.time_of_day = None
+        self.frequency = None
+        self.time = None
+        self.trigger_date = None
+        self.recurrences = None
+        self.start_when_selected = False
+        self.stop_on_complete = False
+        self.disabled = False
+        self.relative_value = 0
+        self.relative_units = None
+
     objects = TriggerManager()
