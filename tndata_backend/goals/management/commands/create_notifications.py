@@ -41,6 +41,7 @@ class Command(BaseCommand):
     _log_messages = SingleItemList()
 
     def __init__(self, *args, **kwargs):
+        self._start_time = timezone.now()
         super().__init__(*args, **kwargs)
         self._messages_created = 0
         self._slack_messages = defaultdict(set)
@@ -299,6 +300,12 @@ class Command(BaseCommand):
             self.schedule_evening_goal_notifications(users)
 
         # Finish with a confirmation message
-        m = "Created {0} notifications.".format(self._messages_created)
+        elapsed = (timezone.now() - self._start_time).seconds
+        m = "[{}] Created {} notifications in {} seconds.".format(
+            self._start_time.strftime("%c %z"),
+            self._messages_created,
+            elapsed
+        )
         self._log_messages.append((m, WARNING))
+        self._to_slack('bkmontgomery', m)
         self.write_log()
