@@ -21,6 +21,16 @@
 {% block content %}
 <h1>Today's Notifications</h1>
 
+{% if devices %}
+  <p><strong>Devices</strong>:
+  {% for name, type in devices %}
+    {{ name }}
+    <span class="label secondary">{{ type }}</span>{% if not forloop.last %},  {% endif %}
+  {% endfor %}
+{% elif user %}
+  <div data-alert class="alert-box warning">{{ user }} has no devices.</div>
+{% endif %}
+
 <form action="{% url 'goals:debug_notifications' %}" method="get">
   <div class="row">
     <div class="large-6 column">

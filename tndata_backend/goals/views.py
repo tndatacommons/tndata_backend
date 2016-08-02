@@ -1894,6 +1894,7 @@ def debug_notifications(request):
     upcoming_useractions = []
     upcoming_customactions = []
     user_queues = OrderedDict()
+    devices = None
 
     email = request.GET.get('email_address', None)
 
@@ -1940,10 +1941,14 @@ def debug_notifications(request):
                     datestring = parts[2]
                     key = parts[3]
                     user_queues[datestring][key] = content
+
+            # Get the user's devices
+            devices = user.gcmdevice_set.values_list('device_name', 'device_type')
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
     context = {
+        'devices': devices,
         'num_items': num_items,
         'form': form,
         'email': email,
