@@ -19,7 +19,11 @@ class UserForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'email')
 
     def __init__(self, *args, **kwargs):
+        self._organization = kwargs.pop('for_organization', None)
         super().__init__(*args, **kwargs)
+        if self._organization:
+            help = "Use the email you use with {}.".format(self._organization)
+            self.fields['email'].help_text = help
         self.helper = FormHelper()
         self.helper.form_tag = False  # Don't generate <form> tags
         self.helper.layout = Layout(
