@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load staticfiles %}
 {% load crispy_forms_tags %}
 
 {% block title %}Sign Up{% endblock %}
@@ -7,7 +7,12 @@
 {% block body %}
 <div class="row">
   <div class="large-8 large-offset-2 medium-10 medium-offset-1 small-12 columns end">
-  <h1>Welcome to Compass!</h1>
+  <h1>
+    <img src="{% static 'img/app-icon.png' %}"
+         alt="Compass icon"
+         style="width:60px;height:60px;"/>
+    Welcome to Compass!
+  </h1>
 
   {% if completed %}
     <p class="lead">You're almost there!</p>
@@ -29,6 +34,7 @@
     {{ program|default:"you" }} succeed.
     </p>
     {% endif %}
+    <hr/>
 
     <p>Complete the following form to create your account.</p>
     <form action="{% url 'join' %}" method="post">
