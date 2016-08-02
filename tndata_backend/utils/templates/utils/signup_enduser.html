@@ -3,6 +3,17 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Sign Up{% endblock %}
+{% block head %}
+<style type="text/css">
+/* Styles for helptext */
+span.helptext, .hint {color:#777; font-style:italic;}
+div.hint { margin-bottom: 1em;}
+input[type="text"], input[type="password"], input[type="email"] {
+  margin-bottom: 0px;
+}
+label { margin-top:0.5em;}
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="row">

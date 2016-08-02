@@ -175,12 +175,17 @@ def signup(request, content_viewer=False, enduser=False):
             messages.error(request, "We could not process your request. "
                                     "Please see the details, below.")
     else:
-        form = UserForm()
         password_form = SetNewPasswordForm(prefix='pw')
         organization = get_object_or_none(
             Organization, pk=request.GET.get('organization'))
         program = get_object_or_none(
             Program, pk=request.GET.get('organization'))
+        if organization:
+            form = UserForm(for_organization=organization.name)
+        elif program:
+            form = UserForm(for_organization=program.organization.name)
+        else:
+            form = UserForm()
 
     # The following is a list of GET request variables that we'll pass along
     # as POST request vars once a user submits the login form.
