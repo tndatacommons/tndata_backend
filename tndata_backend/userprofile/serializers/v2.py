@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.core import validators
-from django.core.cache import cache
 from django.db.models import Q
 from rest_framework import serializers
 
@@ -143,78 +142,74 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         if not obj.is_authenticated():
             return {}
 
-        cache_key = "feed_{}".format(obj.id)
-        feed = cache.get(cache_key)
-        if feed is None:
-            feed = {
-                'progress': None,
-                'suggestions': [],
-                'object_type': 'feed',
-                'upcoming': [],
-                'streaks': [],
-            }
+        feed = {
+            'progress': None,
+            'suggestions': [],
+            'object_type': 'feed',
+            'upcoming': [],
+            'streaks': [],
+        }
 
-            # Progress for today
-            feed['progress'] = user_feed.todays_progress(obj)
+        # Progress for today
+        feed['progress'] = user_feed.todays_progress(obj)
 
-            # Goal Suggestions -- XXX: Disabled for now.
-            # ------------------------------------------------------
-            # suggestions = user_feed.suggested_goals(obj)
-            # srz = GoalSerializer(suggestions, many=True, user=obj)
-            # feed['suggestions'] = srz.data
-            # ------------------------------------------------------
+        # Goal Suggestions -- XXX: Disabled for now.
+        # ------------------------------------------------------
+        # suggestions = user_feed.suggested_goals(obj)
+        # srz = GoalSerializer(suggestions, many=True, user=obj)
+        # feed['suggestions'] = srz.data
+        # ------------------------------------------------------
 
-            # Upcoming info (UserActions/CustomActions)
-            # First, the User Actions
-            upcoming_uas = user_feed.todays_actions(obj)
-            upcoming_uas = upcoming_uas.values_list('id', flat=True)
-            upcoming_uas = list(upcoming_uas)
+        # Upcoming info (UserActions/CustomActions)
+        # First, the User Actions
+        upcoming_uas = user_feed.todays_actions(obj)
+        upcoming_uas = upcoming_uas.values_list('id', flat=True)
+        upcoming_uas = list(upcoming_uas)
 
-            related = ('action', 'primary_goal', 'primary_category')
-            useractions = obj.useraction_set.select_related(*related)
-            for ua in useractions.filter(id__in=upcoming_uas):
-                primary_category = ua.get_primary_category()
-                primary_goal = ua.get_primary_goal()
-                feed['upcoming'].append({
-                    'action_id': ua.id,
-                    'action': ua.action.title,
-                    'goal_id': primary_goal.id,
-                    'goal': primary_goal.title,
-                    'category_color': primary_category.color,
-                    'category_id': primary_category.id,
-                    'trigger': "{}".format(format_datetime(ua.next_reminder)),
-                    'type': 'useraction',
-                    'object_type': 'upcoming_item',
-                })
+        related = ('action', 'primary_goal', 'primary_category')
+        useractions = obj.useraction_set.select_related(*related)
+        for ua in useractions.filter(id__in=upcoming_uas):
+            primary_category = ua.get_primary_category()
+            primary_goal = ua.get_primary_goal()
+            feed['upcoming'].append({
+                'action_id': ua.id,
+                'action': ua.action.title,
+                'goal_id': primary_goal.id,
+                'goal': primary_goal.title,
+                'category_color': primary_category.color,
+                'category_id': primary_category.id,
+                'trigger': "{}".format(format_datetime(ua.next_reminder)),
+                'type': 'useraction',
+                'object_type': 'upcoming_item',
+            })
 
-            # Custom Actions
-            upcoming_cas = user_feed.todays_customactions(obj)
-            upcoming_cas = upcoming_cas.values_list('id', flat=True)
-            upcoming_cas = list(upcoming_cas)
+        # Custom Actions
+        upcoming_cas = user_feed.todays_customactions(obj)
+        upcoming_cas = upcoming_cas.values_list('id', flat=True)
+        upcoming_cas = list(upcoming_cas)
 
-            related = ('customgoal', 'custom_trigger')
-            customactions = obj.customaction_set.select_related(*related)
-            for ca in customactions.filter(id__in=upcoming_cas):
-                feed['upcoming'].append({
-                    'action_id': ca.id,
-                    'action': ca.title,
-                    'goal_id': ca.customgoal.id,
-                    'goal': ca.customgoal.title,
-                    'category_color': '#176CC4',
-                    'category_id': '-1',
-                    'trigger': "{}".format(format_datetime(ca.next_reminder)),
-                    'type': 'customaction',
-                    'object_type': 'upcoming_item',
-                })
+        related = ('customgoal', 'custom_trigger')
+        customactions = obj.customaction_set.select_related(*related)
+        for ca in customactions.filter(id__in=upcoming_cas):
+            feed['upcoming'].append({
+                'action_id': ca.id,
+                'action': ca.title,
+                'goal_id': ca.customgoal.id,
+                'goal': ca.customgoal.title,
+                'category_color': '#176CC4',
+                'category_id': '-1',
+                'trigger': "{}".format(format_datetime(ca.next_reminder)),
+                'type': 'customaction',
+                'object_type': 'upcoming_item',
+            })
 
-            # Sort upcoming data (UserActions/CustomActions) by trigger
-            results = feed['upcoming']
-            results = sorted(results, key=lambda d: d['trigger'])
-            feed['upcoming'] = results
+        # Sort upcoming data (UserActions/CustomActions) by trigger
+        results = feed['upcoming']
+        results = sorted(results, key=lambda d: d['trigger'])
+        feed['upcoming'] = results
 
-            # Streaks data
-            feed['streaks'] = user_feed.progress_streaks(obj)
-            cache.set(cache_key, feed, 30)  # Cache feed for 30 seconds.
+        # Streaks data
+        feed['streaks'] = user_feed.progress_streaks(obj)
         return feed
 
     def get_progress(self, obj):
