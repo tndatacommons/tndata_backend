@@ -165,6 +165,7 @@ urlpatterns = [
         r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')
     ),
+    url(r'^cronlog/', include('cronlog.urls', namespace='cronlog')),
     url(r'^goals/', include('goals.urls', namespace='goals')),
     url(r'^survey/', include('survey.urls', namespace='survey')),
     url(r'^profile/', include('userprofile.urls', namespace='userprofile')),

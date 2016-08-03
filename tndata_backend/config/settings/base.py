@@ -169,6 +169,7 @@ INSTALLED_APPS = (
     'corsheaders',
     'crispy_forms',
     'crispy_forms_foundation',
+    'cronlog',
     'django_extensions',
     'django_rq',
     'haystack',
