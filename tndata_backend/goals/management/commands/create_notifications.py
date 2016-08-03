@@ -300,12 +300,14 @@ class Command(BaseCommand):
             self.schedule_evening_goal_notifications(users)
 
         # Finish with a confirmation message
-        elapsed = (timezone.now() - self._start_time).seconds
-        m = "[{}] Created {} notifications in {} seconds.".format(
-            self._start_time.strftime("%c %z"),
-            self._messages_created,
-            elapsed
-        )
+        # elapsed = (timezone.now() - self._start_time).seconds
+        # m = "[{}] Created {} notifications in {} seconds.".format(
+            # self._start_time.strftime("%c %z"),
+            # self._messages_created,
+            # elapsed
+        # )
+        m = "Created {} notifications.".format(self._messages_created)
         self._log_messages.append((m, WARNING))
-        self._to_slack('bkmontgomery', m)
+        # self._to_slack('bkmontgomery', m)
+
         self.write_log()
