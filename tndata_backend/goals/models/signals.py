@@ -45,9 +45,11 @@ def auto_enroll(sender, **kwargs):
 @receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserBehavior, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserAction, dispatch_uid="coru_daily_progress")
+@receiver(post_save, sender=UserCompletedAction, dispatch_uid="coru_daily_progress")
 def create_or_update_daily_progress(sender, instance, created, raw, using, **kwargs):
-    """When a CustomAction, UserAction or UserBehavior is created, we want to
-    create (if necessary) or update the day's DailyProgress for the user.
+    """When a CustomAction, UserAction, UserBehavior, or UserCompletedAction
+    is created, we want to create (if necessary) or update the day's
+    DailyProgress for the user.
     """
     if created:
         dp = DailyProgress.objects.for_today(instance.user)
