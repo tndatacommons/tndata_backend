@@ -127,6 +127,7 @@
               {% endwith %}
           </td>
           <td>
+            {# Accordian containing Goals / Behaviors #}
             <ul class="accordion" data-accordion>
               <li class="accordion-navigation">
                 <a href="#category-{{category.id}}-goals">Goals</a>
@@ -134,8 +135,9 @@
                 {% for goal in category.goals %}
                   <a href="{{ goal.get_absolute_url }}"
                      data-tooltip aria-haspopup="true"
-                     title="{{ goal.description }}">
-                    <span class="label secondary radius">{{ goal }}</span>
+                     title="[{{ goal.state }}] {{ goal.description }}">
+                    <span class="label radius {{goal.state_label}}">
+                      {{ goal }}</span>
                   </a>
                 {% endfor %}
                 </div>
@@ -146,8 +148,8 @@
                 {% for b in category.behaviors %}
                   <a href="{{ b.get_absolute_url }}"
                      data-tooltip aria-haspopup="true"
-                     title="{{ b.description }}">
-                    <span class="label secondary radius">{{ b }}</span>
+                     title="[{{b.state}}] {{ b.description }}">
+                    <span class="label radius {{b.state_label}}">{{ b }}</span>
                   </a>
                 {% endfor %}
                 </div>
