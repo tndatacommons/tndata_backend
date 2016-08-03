@@ -158,20 +158,16 @@ ul.action-list li {
       <li class="divider"></li>
       <li><a href="{% url 'goals:index' %}">
         <i class="fa fa-info-circle"></i></a></li>
-      {% if perms.goals.view_organization %}
+      {% if user.is_staff %}
         <li class="divider"></li>
-        {% with addobj=perms.goals.add_organization %}
         <li class="has-dropdown">
           <a href="{% url 'goals:organization-list' %}">Orgs</a>
-          {% if addobj %}
           <ul class="dropdown">
             <li><a href="{% url 'goals:program-list' %}">Programs</a></li>
             <li><a href="{% url 'goals:organization-create' %}">
               <i class="fa fa-plus-circle"></i> Organization</a></li>
           </ul>
-          {% endif %}
         </li>
-        {% endwith %}
       {% endif %}
       {% if perms.goals.view_category %}
         <li class="divider"></li>

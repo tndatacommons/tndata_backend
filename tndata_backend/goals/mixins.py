@@ -19,6 +19,7 @@ from . permissions import (
     ContentPermissions,
     is_package_contributor,
     permission_required,
+    staff_required,
     superuser_required,
 )
 from . utils import num_user_selections
@@ -72,6 +73,16 @@ class StateFilterMixin:
         ctx = super().get_context_data(*args, **kwargs)
         ctx['state_filter'] = self.state_filter
         return ctx
+
+
+class StaffRequiredMixin:
+    """A Mixin that requires the user to be staff in order to access the view."""
+
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(StaffRequiredMixin, cls).as_view(**initkwargs)
+        dec = user_passes_test(staff_required, login_url=settings.LOGIN_URL)
+        return dec(view)
 
 
 class SuperuserRequiredMixin:

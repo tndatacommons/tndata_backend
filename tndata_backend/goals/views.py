@@ -55,7 +55,7 @@ from . forms import (
 from . mixins import (
     ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
     PackageManagerMixin, ReviewableUpdateMixin, StateFilterMixin,
-    SuperuserRequiredMixin,
+    StaffRequiredMixin, SuperuserRequiredMixin,
 )
 from . models import (
     Action,
@@ -1146,19 +1146,19 @@ class ActionDeleteView(ContentEditorMixin, ContentDeleteView):
     success_url = reverse_lazy('goals:index')
 
 
-class OrganizationListView(SuperuserRequiredMixin, ListView):
+class OrganizationListView(StaffRequiredMixin, ListView):
     model = Organization
     context_object_name = 'organizations'
     template_name = "goals/organization_list.html"
 
 
-class OrganizationDetailView(SuperuserRequiredMixin, DetailView):
+class OrganizationDetailView(StaffRequiredMixin, DetailView):
     queryset = Organization.objects.all()
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
 
-class OrganizationCreateView(SuperuserRequiredMixin, CreateView):
+class OrganizationCreateView(StaffRequiredMixin, CreateView):
     model = Organization
     form_class = OrganizationForm
     slug_field = "name_slug"
@@ -1175,7 +1175,7 @@ class OrganizationCreateView(SuperuserRequiredMixin, CreateView):
         return context
 
 
-class OrganizationUpdateView(SuperuserRequiredMixin, UpdateView):
+class OrganizationUpdateView(StaffRequiredMixin, UpdateView):
     model = Organization
     form_class = OrganizationForm
     slug_field = "name_slug"
@@ -1192,7 +1192,7 @@ class OrganizationUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class OrganizationDeleteView(SuperuserRequiredMixin, DeleteView):
+class OrganizationDeleteView(StaffRequiredMixin, DeleteView):
     model = Organization
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -1211,14 +1211,14 @@ class OrganizationDeleteView(SuperuserRequiredMixin, DeleteView):
         return result
 
 
-class ProgramListView(SuperuserRequiredMixin, ListView):
+class ProgramListView(StaffRequiredMixin, ListView):
     """A list of all programs (not filtered by Organization)."""
     model = Program
     context_object_name = 'programs'
     template_name = "goals/program_list.html"
 
 
-class ProgramDetailView(SuperuserRequiredMixin, DetailView):
+class ProgramDetailView(StaffRequiredMixin, DetailView):
     queryset = Program.objects.all()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
@@ -1229,7 +1229,7 @@ class ProgramDetailView(SuperuserRequiredMixin, DetailView):
         return context
 
 
-class ProgramCreateView(SuperuserRequiredMixin, CreateView):
+class ProgramCreateView(StaffRequiredMixin, CreateView):
     model = Program
     form_class = ProgramForm
     slug_field = "name_slug"
@@ -1275,7 +1275,7 @@ class ProgramCreateView(SuperuserRequiredMixin, CreateView):
         return redirect(self.get_success_url())
 
 
-class ProgramUpdateView(SuperuserRequiredMixin, UpdateView):
+class ProgramUpdateView(StaffRequiredMixin, UpdateView):
     model = Program
     form_class = ProgramForm
     slug_field = "name_slug"
@@ -1296,7 +1296,7 @@ class ProgramUpdateView(SuperuserRequiredMixin, UpdateView):
         return context
 
 
-class ProgramDeleteView(SuperuserRequiredMixin, DeleteView):
+class ProgramDeleteView(StaffRequiredMixin, DeleteView):
     model = Program
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
