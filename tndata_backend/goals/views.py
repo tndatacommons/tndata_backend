@@ -722,15 +722,17 @@ class TriggerDetailView(ContentEditorMixin, DetailView):
 class BehaviorListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Behavior
     context_object_name = 'behaviors'
+    paginate_by = 200
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.annotate(Count('userbehavior'))
+        queryset = super().get_queryset().only(
+            'state', 'icon', 'sequence_order', 'title',
+            'description', 'informal_list'
+        )
         if self.request.GET.get('goal', False):
             queryset = queryset.filter(goals__pk=self.request.GET['goal'])
-        return queryset.prefetch_related(
-            "goals", "goals__categories", "action_set"
-        )
+        queryset = queryset.annotate(Count('userbehavior'))
+        return queryset.order_by('-updated_on')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -890,7 +892,7 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
         queryset = queryset.annotate(Count('useraction'))
         if self.request.GET.get('behavior', False):
             queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
-        return queryset.select_related("behavior__title")
+        return queryset.select_related("behavior__title").order_by('-updated_on')
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)

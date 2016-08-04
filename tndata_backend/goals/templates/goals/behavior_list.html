@@ -17,23 +17,29 @@
         <small>for {{ goal }}</small>
       {% endif %}
       </h2>
+      <div data-alert class="alert-box info">
+        <a href="#" class="close">&times;</a>
+        <i class="fa fa-warning"></i>
+        <strong>This content is now paginated</strong><br/>
+        This content is now split across multiple pages so that it will load
+        more quickly. If you can't find a behavior, try the search in
+        the menu at the top of this page.
+      </div>
+
       {% include "goals/_state_filter_subnav.html" %}
 
       <table class="object-list">
       <thead>
       <tr>
-        <th>
-          {% if user|is_editor or user|is_contributor %}
-            <i class="fa fa-cog"></i>
-          {% endif %}
-          State
-        </th>
+        <th>State</th>
         <th>Icon</th>
         <th>Order</th>
         <th>Title</th>
         <th style="width:200px;max-width: 200px;">Informal List</th>
-        <th style="width:200px;max-width: 200px;">Related Content</th>
-        <th>Selected By</th>
+        {#<th style="width:200px;max-width: 200px;">Related Content</th>#}
+        <th data-tooltip aria-haspopup="true"
+            title="The number of users who will see this content in the app.">
+          Selected By</th>
       </tr>
       </thead>
       <tbody>
@@ -41,14 +47,6 @@
         {% with behavior_url=behavior.get_absolute_url %}
         <tr>
           <td>
-            {# if we're using dynamic notifications but no PREP actions #}
-            {% comment %} XXX Disabling bucket-related stuff
-            {% if behavior.action_buckets_prep == 0 and behavior.contains_dynamic %}
-            <span class="label warning" data-tooltip aria-haspopup="true"
-                  title="This Behavior contains Dynamic Notifications, and requires at least one Reinforcing Notification"><i class="fa fa-warning"></i> Action Required</span>
-            {% endif %}
-            {% endcomment %}
-
             {% if user|is_editor or user|is_contributor:behavior %}
               {% publish_deny_form user behavior "dropdown" %}
             {% else %}
@@ -75,56 +73,16 @@
           <td style="width:200px;max-width: 200px;">
             {{ behavior.informal_list|linebreaksbr|default:"-" }}
           </td>
-          <td style="width:200px;max-width: 200px;">
-            <ul class="accordion" data-accordion>
-              <li class="accordion-navigation">
-                <a href="#behavior-{{behavior.id}}-cats">Categories
-                  <span class="label tiny round">
-                  {{behavior.categories.count }}</span></a>
-                <div id="behavior-{{behavior.id}}-cats" class="content">
-                {% for c in behavior.categories.all %}
-                  <a href="{{ c.get_absolute_url }}">
-                    <span class="label secondary radius">{{ c }}</span>
-                  </a>
-                {% endfor %}
-                </div>
-              </li>
-              <li class="accordion-navigation">
-                <a href="#behavior-{{behavior.id}}-goals">Goals
-                  <span class="label tiny round">
-                  {{ behavior.goals.count }}</span></a>
-                <div id="behavior-{{behavior.id}}-goals" class="content">
-                {% for g in behavior.goals.all %}
-                  <a href="{{ g.get_absolute_url }}"
-                     data-tooltip aria-haspopup="true"
-                     title="{{ g.description }}">
-                    <span class="label secondary radius">{{ g }}</span>
-                  </a>
-                {% endfor %}
-                </div>
-              </li>
-              <li class="accordion-navigation">
-                <a href="#behavior-{{behavior.id}}-actions">Actions
-                  <span class="label tiny round">
-                  {{ behavior.action_set.count }}</span></a>
-                <div id="behavior-{{behavior.id}}-actions" class="content">
-                {% for a in behavior.action_set.all %}
-                  <a href="{{ a.get_absolute_url }}"
-                     data-tooltip aria-haspopup="true"
-                     title="{{ a.description }}">
-                    <span class="label secondary radius">{{ a }}</span>
-                  </a>
-                {% endfor %}
-                </div>
-              </li>
-            </ul>
-          </td>
           <td>{{ behavior.userbehavior__count }}</td>
         </tr>
         {% endwith %}
       {% endfor %}
       </tbody>
       </table>
+
+      {# Pagination ... #}
+      {% include "goals/_pagination.html" %}
+
     </div>
   </div> {# end .row #}
   <hr/>

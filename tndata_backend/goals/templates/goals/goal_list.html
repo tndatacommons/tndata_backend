@@ -21,12 +21,7 @@
       <table class="object-list">
       <thead>
       <tr>
-        <th>
-          {% if user|is_editor or user|is_contributor %}
-            <i class="fa fa-cog"></i>
-          {% endif %}
-          State
-        </th>
+        <th>State</th>
         <th>Title</th>
         <th>Keywords</th>
         <th>Behaviors</th>
@@ -39,7 +34,7 @@
       {% for goal in goals %}
         <tr>
         <td>
-          {% if user|is_editor or user|is_contributor %}
+          {% if user|is_editor or user|is_contributor:goal %}
             {% publish_deny_form user goal "dropdown" %}
           {% else %}
             {{ goal|label }}
