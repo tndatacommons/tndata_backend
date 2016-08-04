@@ -494,16 +494,38 @@ class TriggerManager(models.Manager):
         return trigger
 
 
+class WorkflowQuerySet(models.QuerySet):
+    def for_contributor(self, user):
+        """Filter the queryset based on whether or not the user is a contributor
+        in a Category."""
+
+        # To do this, we need different lookups based on the type of object.
+        lookups = {
+            'category': 'package_contributors',
+            'goal': 'categories__package_contributors',
+            'behavior': 'goals__categories__package_contributors',
+            'action': 'behavior__goals__categories__package_contributors',
+        }
+        lookup = {lookups[self.model.__name__.lower()]: user}
+        return self.filter(**lookup).distinct()
+
+
 class WorkflowManager(models.Manager):
     """A simple model manager for those models that include a workflow
     `state` field. This adds a convenience method for querying published
     objects.
 
     """
+    def get_queryset(self):
+        return WorkflowQuerySet(self.model, using=self._db)
 
     def published(self, *args, **kwargs):
         kwargs['state'] = 'published'
         return self.get_queryset().filter(**kwargs)
+
+    def for_contributor(self, user):
+        qs = self.get_queryset()
+        return qs.filter(package_contributors=user)
 
 
 class BehaviorManager(WorkflowManager):
