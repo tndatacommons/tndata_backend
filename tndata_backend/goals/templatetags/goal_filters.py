@@ -1,7 +1,12 @@
 from django import template
 from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
-from goals.permissions import is_content_editor, is_content_author
+from goals.permissions import (
+    is_content_editor,
+    is_content_author,
+    is_package_contributor,
+)
+
 
 register = template.Library()
 
@@ -28,6 +33,19 @@ def user_is_editor(user):
 
     """
     return is_content_editor(user)
+
+
+@register.filter("is_contributor")
+def user_is_contributor(user, obj=None):
+    """Return True if the user is a package contributor for the given object
+    (a Category, Goal, Behavior, or Action). Return False otherwise.
+
+    Handy for using in an if/else:
+
+        {% if user|is_contributor:obj %}
+
+    """
+    return is_package_contributor(user, obj)
 
 
 @register.filter("label", is_safe=True)
