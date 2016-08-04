@@ -94,7 +94,7 @@
         {% endif %}
       </dl>
       {% modified action %}
-      {% if perms.goals.publish_action %}{% publish_deny_form action %}{% endif %}
+      {% publish_deny_form user action %}
     </div>
     <div class="large-6 small-12 columns">
       {% if action.notes %}

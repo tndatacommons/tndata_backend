@@ -20,7 +20,7 @@
       <thead>
       <tr>
         <th>
-          {% if user|is_editor %}
+          {% if user|is_editor or user|is_contributor %}
             <i class="fa fa-cog"></i>
           {% endif %}
           State
@@ -41,8 +41,8 @@
         {% with category_url=category.get_absolute_url %}
         <tr>
           <td>
-            {% if user|is_editor %}
-              {% publish_deny_form category "dropdown" %}
+            {% if user|is_editor or user|is_contributor:category %}
+              {% publish_deny_form user category "dropdown" %}
             {% else %}
               {{ category|label }}
             {% endif %}

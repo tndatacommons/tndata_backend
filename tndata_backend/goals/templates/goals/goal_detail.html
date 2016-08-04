@@ -54,7 +54,7 @@
       </dd>
       </dl>
       {% modified goal %}
-      {% if perms.goals.publish_goal %}{% publish_deny_form goal %}{% endif %}
+      {% publish_deny_form user goal %}
     </div>
     <div class="large-6 small-12 columns">
       {% if goal.notes %}

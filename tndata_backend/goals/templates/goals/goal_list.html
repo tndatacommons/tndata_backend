@@ -22,7 +22,7 @@
       <thead>
       <tr>
         <th>
-          {% if user|is_editor %}
+          {% if user|is_editor or user|is_contributor %}
             <i class="fa fa-cog"></i>
           {% endif %}
           State
@@ -39,8 +39,8 @@
       {% for goal in goals %}
         <tr>
         <td>
-          {% if user|is_editor %}
-            {% publish_deny_form goal "dropdown" %}
+          {% if user|is_editor or user|is_contributor %}
+            {% publish_deny_form user goal "dropdown" %}
           {% else %}
             {{ goal|label }}
           {% endif %}

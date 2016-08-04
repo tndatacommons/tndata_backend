@@ -136,7 +136,7 @@
       {% endif %}
 
       {% modified category %}
-      {% if perms.goals.publish_category %}{% publish_deny_form category %}{% endif %}
+      {% publish_deny_form user category %}
     </div>
     <div class="large-6 small-12 columns">
       {% if category.package_contributors.exists %}

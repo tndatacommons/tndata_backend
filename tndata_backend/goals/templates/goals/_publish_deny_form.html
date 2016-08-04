@@ -1,5 +1,6 @@
 {% load goal_filters %}
 
+{% if obj %}
 <form action="{{ obj.get_publish_url }}" method="post">{% csrf_token %}
 {% if layout == "dropdown" %}
   {# NOTE: This is clunky, but still allows us to submit this for without extra JS #}
@@ -43,3 +44,4 @@
   </ul>
 {% endif %}
 </form>
+{% endif %}

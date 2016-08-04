@@ -32,7 +32,7 @@
       <thead>
       <tr>
         <th>
-          {% if user|is_editor %}
+          {% if user|is_editor  or user|is_contributor %}
             <i class="fa fa-cog"></i>
           {% endif %}
           State
@@ -48,8 +48,8 @@
       {% for action in actions %}
         <tr>
           <td>
-            {% if user|is_editor %}
-              {% publish_deny_form action "dropdown" %}
+            {% if user|is_editor or user|is_contributor:action %}
+              {% publish_deny_form user action "dropdown" %}
             {% else %}
               {{ action|label }}
             {% endif %}

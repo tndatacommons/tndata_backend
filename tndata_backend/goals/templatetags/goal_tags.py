@@ -109,17 +109,31 @@ def form_buttons(obj, object_name=None):
 
 
 @register.inclusion_tag("goals/_publish_deny_form.html")
-def publish_deny_form(obj, layout=None):
-    """Given an object, render Publish / Deny buttons.
+def publish_deny_form(user, obj, layout=None):
+    """Given a user and and object, render the state update form
+    (Draft / Publish / Deny) for the given object *if* the user has the
+    appropriate permissions (i.e. 'publish' permissions or is listed as a
+    package_contributor for the Category).
 
     You can specify optional layous by passing in a layout flag:
 
     * layout: "dropdown" or None are the current options.
 
     """
-    return {
-        "obj": obj,
-        "publishable": any([obj.is_draft, obj.is_pending]),
-        "declineable": any([obj.is_pending]),
-        "layout": layout,
+    publish_perms = {
+        'category': 'goals.publish_category',
+        'goal': 'goals.publish_goal',
+        'behavior': 'goals.publish_behavior',
+        'action': 'goals.publish_action',
     }
+    if (
+        user.has_perm(publish_perms.get(obj.__class__.__name__.lower())) or
+        is_package_contributor(user, obj)
+    ):
+        return {
+            "obj": obj,
+            "publishable": any([obj.is_draft, obj.is_pending]),
+            "declineable": any([obj.is_pending]),
+            "layout": layout,
+        }
+    return {}

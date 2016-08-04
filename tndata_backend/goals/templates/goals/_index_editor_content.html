@@ -45,7 +45,7 @@ the content requires your action.</p>
   {% endfor %}
   {% for obj in categories %}
     <tr>
-      <td>{% publish_deny_form obj "dropdown" %}</td>
+      <td>{% publish_deny_form user obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Category</span>
       </td>
@@ -63,7 +63,7 @@ the content requires your action.</p>
   {% endfor %}
   {% for obj in goals %}
     <tr>
-      <td>{% publish_deny_form obj "dropdown" %}</td>
+      <td>{% publish_deny_form user obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Goal</span>
       </td>
@@ -81,7 +81,7 @@ the content requires your action.</p>
   {% endfor %}
   {% for obj in behaviors %}
     <tr>
-      <td>{% publish_deny_form obj "dropdown" %}</td>
+      <td>{% publish_deny_form user obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Behavior</span>
       </td>
@@ -99,7 +99,7 @@ the content requires your action.</p>
   {% endfor %}
   {% for obj in actions %}
     <tr>
-      <td>{% publish_deny_form obj "dropdown" %}</td>
+      <td>{% publish_deny_form user obj "dropdown" %}</td>
       <td>
         <span class="label secondary">Action</span>
       </td>
