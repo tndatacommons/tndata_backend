@@ -255,7 +255,7 @@ def is_package_contributor(user, obj=None):
         'goal': 'goal',
         'category': 'id',
     }
-    lookup = lookups.get(obj.__class__.__name__)
+    lookup = lookups.get(obj.__class__.__name__.lower())
     if obj and lookup:
         values = set(user.packagecontributor_set.values_list(lookup, flat=True))
         values = [v for v in values if v is not None]

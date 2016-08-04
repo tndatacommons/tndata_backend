@@ -198,7 +198,8 @@ class ContentEditorMixin:
     @classmethod
     def as_view(cls, **initkwargs):
         view = super(ContentEditorMixin, cls).as_view(**initkwargs)
-        dec = permission_required(ContentPermissions.editors, check_package_contributor=True)
+        dec = permission_required(ContentPermissions.editors,
+                                  check_package_contributor=True)
         return dec(view)
 
 
