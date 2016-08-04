@@ -262,7 +262,8 @@ class IndexView(ContentViewerMixin, TemplateView):
             'created_by', 'state',
         ]
         context = self.get_context_data(**kwargs)
-        if is_content_editor(request.user):
+        is_package_contributor = request.user.packagecontributor_set.exists()
+        if is_content_editor(request.user) or is_package_contributor:
             context['is_editor'] = True
 
             # Show content pending review.
@@ -273,7 +274,10 @@ class IndexView(ContentViewerMixin, TemplateView):
                 'actions': Action.objects.only(*only_fields).filter,
             }
             for key, func in mapping.items():
-                context[key] = func(state='pending-review').order_by("-updated_on")
+                qs = func(state='pending-review').order_by("-updated_on")
+                if is_package_contributor:
+                    qs = qs.for_contributor(request.user)
+                context[key] = qs
 
         # List content created/updated by the current user.
         conditions = Q(created_by=request.user) | Q(updated_by=request.user)
