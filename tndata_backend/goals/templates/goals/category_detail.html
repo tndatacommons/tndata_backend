@@ -139,6 +139,22 @@
       {% if perms.goals.publish_category %}{% publish_deny_form category %}{% endif %}
     </div>
     <div class="large-6 small-12 columns">
+      {% if category.package_contributors.exists %}
+        <h2 class="subheader">Contributors</h2>
+        <div class="panel">
+          <p>The following people are listed as package contributors on this Category:</p>
+          <ul>
+          {% for contrib in category.package_contributors.all %}
+            <li>
+              {{ contrib.get_full_name }}
+              <small>
+                &lt;<a href="mailto:{{ contrib.email }}">{{ contrib.email }}</a>&gt;
+              </small>
+            </li>
+          {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
       {% if category.notes %}
         <h2 class="subheader">Notes</h2>
         <div class="panel">{{ category.notes|markdown }}</div>
