@@ -17,6 +17,9 @@ from django.contrib.auth.models import Group, Permission
 from django.core.exceptions import PermissionDenied
 from django.utils import six
 
+from utils.db import get_model_name
+
+
 # Group Names
 CONTENT_ADMINS = "Content Admins"
 CONTENT_AUTHORS = "Content Authors"
@@ -243,6 +246,7 @@ def is_package_contributor(user, obj=None):
     but not for the given object.
 
     """
+
     if not user.is_authenticated():
         return False
 
@@ -255,14 +259,14 @@ def is_package_contributor(user, obj=None):
         'goal': 'goal',
         'category': 'id',
     }
-    lookup = lookups.get(obj.__class__.__name__.lower())
+    lookup = lookups.get(get_model_name(obj))
     if obj and lookup:
         values = set(user.packagecontributor_set.values_list(lookup, flat=True))
         values = [v for v in values if v is not None]
         return obj.id in values
 
     staff = user.is_superuser or user.is_staff
-    return staff or user.packagecontributor_set.exists()
+    return staff
 
 
 def permission_required(perm, login_url=settings.LOGIN_URL,

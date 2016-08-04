@@ -1,5 +1,7 @@
 from django import template
+
 from goals.models import Category, Goal, Action, Behavior
+from utils.db import get_model_name
 from utils.templatetags.util_tags import object_controls
 
 from ..permissions import is_package_contributor
@@ -21,7 +23,8 @@ def goal_object_controls(context, obj):
     user = context.request.user
 
     # Kind of a hack. only editors have publish_* permissions.
-    editor_perm = "goals.publish_{0}".format(obj.__class__.__name__.lower())
+    model_name = get_model_name(obj)
+    editor_perm = "goals.publish_{0}".format(model_name)
     is_editor = user.has_perm(editor_perm)
 
     # Determine if the user should have certain object permissions, such as:
@@ -58,7 +61,7 @@ def goal_object_controls(context, obj):
             result['can_duplicate'] = True
 
     # Transfers only apply to Content instances.
-    if obj.__class__ in [Category, Goal, Action, Behavior]:
+    if model_name in ['category', 'goal', 'action', 'behavior']:
         result['can_transfer'] = any([
             user.is_staff,
             user.is_superuser,
@@ -127,7 +130,7 @@ def publish_deny_form(user, obj, layout=None):
         'action': 'goals.publish_action',
     }
     if (
-        user.has_perm(publish_perms.get(obj.__class__.__name__.lower())) or
+        user.has_perm(publish_perms.get(get_model_name(obj))) or
         is_package_contributor(user, obj)
     ):
         return {
