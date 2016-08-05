@@ -694,7 +694,25 @@ class TestCategoryUpdateView(TestCaseWithGroups):
     def test_contributor_get(self):
         resp = self.client.login(username="contrib", password="pass")
         resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_other_contributor_get(self):
+        """When a user is a contributor for another category, they should't be
+        able to update this view."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", "xxx")
+        content_viewer_group = get_or_create_content_viewers()
+        user.groups.add(content_viewer_group)
+
+        cat = Category.objects.create(order=2, title="x")
+        cat.package_contributors.add(user)
+
+        resp = self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
 
     def test_redirect_after_save(self):
         """Ensure we redirect to the detail page after saving"""
@@ -745,13 +763,13 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 403)
 
     def test_contributor_submit_for_review(self):
-        """Ensure contributors CANNOT submit for review (not on Categories)"""
+        """Ensure contributors CAN submit for review"""
         self.assertEqual(self.category.state, "draft")  # Ensure we start as draft
         payload = self.payload.copy()
         payload['review'] = 1  # Include the review in the payload
         self.client.login(username="contrib", password="pass")
         resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -1206,6 +1224,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
             description="A Description",
             created_by=self.author
         )
+        self.goal.categories.add(self.category)
         self.url = self.goal.get_update_url()
 
     def tearDown(self):
@@ -1251,6 +1270,25 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.client.login(username="contrib", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
+
+    def test_other_contributor_get(self):
+        """Ensure a package contributor cannot update a Goal that's not
+        in their package."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", 'xxx')
+        user.groups.add(get_or_create_content_viewers())
+
+        # Other category in which user is a contributor
+        cat = Category.objects.create(order=2, title="other cat")
+        cat.package_contributors.add(user)
+
+        # This contributor should not be able to update this Category
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url, self.payload)
@@ -1302,6 +1340,27 @@ class TestGoalUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
+
+    def test_other_contributor_post(self):
+        """Ensure a package contributor cannot update a Goal that's not
+        in their package."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", 'xxx')
+        content_viewer_group = get_or_create_content_viewers()
+        user.groups.add(content_viewer_group)
+
+        # Other category in which user is a contributor
+        cat = Category.objects.create(order=2, title="other cat")
+        cat.package_contributors.add(user)
+
+        self.client.login(username="x", password="xxx")
+        payload = self.payload.copy()
+        payload['title'] = 'contrib edit'
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
 
     def test_author_post(self):
         """Ensure Authors can POST updates."""
@@ -1478,7 +1537,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
     def test_contributor_get(self):
         self.client.login(username="contrib", password="pass")
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
     def test_anon_post(self):
         resp = self.ua_client.post(self.url)
@@ -1511,102 +1570,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
     def test_contributor_post(self):
         self.client.login(username="contrib", password="pass")
         resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(CACHES=TEST_CACHES)
-class TestTriggerListView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestTriggerListView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-        cls.url = reverse("goals:trigger-list")
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestTriggerListView).setUpTestData()
-        # Create Trigger
-        cls.trigger = Trigger.objects.create(
-            name="Test Trigger",
-            time=time(13, 30, tzinfo=pytz.UTC),
-            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
-        )
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
         self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/trigger_list.html")
-        self.assertIn("triggers", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(CACHES=TEST_CACHES)
-class TestTriggerDetailView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestTriggerDetailView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestTriggerDetailView).setUpTestData()
-        # Create a Trigger
-        cls.trigger = Trigger.objects.create(
-            name="Test Trigger",
-            time=time(13, 30, tzinfo=pytz.UTC),
-            recurrences='RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR'
-        )
-        cls.url = cls.trigger.get_absolute_url()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/trigger_detail.html")
-        self.assertContains(resp, self.trigger.name)
-        self.assertIn("trigger", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -2000,6 +1964,25 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_other_contributor_get(self):
+        """Ensure a package contributor cannot update a Behavior that's not
+        in their package."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", 'xxx')
+        user.groups.add(get_or_create_content_viewers())
+
+        # Other category in which user is a contributor
+        cat = Category.objects.create(order=2, title="other cat")
+        cat.package_contributors.add(user)
+
+        # This contributor should not be able to update this Category
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
+
     def test_author_get(self):
         self.client.login(username="author", password="pass")
         resp = self.client.get(self.url)
@@ -2074,6 +2057,27 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
             Behavior.objects.get(id=self.behavior.id).title,
             "contrib edit"
         )
+
+    def test_other_contributor_post(self):
+        """Ensure a package contributor cannot update a Behavior that's not
+        in their package."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", 'xxx')
+        content_viewer_group = get_or_create_content_viewers()
+        user.groups.add(content_viewer_group)
+
+        # Other category in which user is a contributor
+        cat = Category.objects.create(order=2, title="other cat")
+        cat.package_contributors.add(user)
+
+        self.client.login(username="x", password="xxx")
+        payload = self.payload.copy()
+        payload['title'] = 'contrib edit'
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
@@ -2632,6 +2636,7 @@ class TestActionUpdateView(TestCaseWithGroups):
         )
         cls.category.package_contributors.add(cls.contributor)
         cls.goal = Goal.objects.create(title="Goal")
+        cls.goal.categories.add(cls.category)
         cls.behavior = Behavior.objects.create(title='Test Behavior')
         cls.behavior.goals.add(cls.goal)
 
@@ -2701,6 +2706,26 @@ class TestActionUpdateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
 
+    def test_other_contributor_get(self):
+        """When a package contributor tries to update an Action that's not
+        in their package."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", 'xxx')
+        content_viewer_group = get_or_create_content_viewers()
+        user.groups.add(content_viewer_group)
+
+        # Other category in which user is a contributor
+        cat = Category.objects.create(order=2, title="other cat")
+        cat.package_contributors.add(user)
+
+        # This contributor should not be able to update this Category
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
+
     def test_viewer_get(self):
         self.client.login(username="viewer", password="pass")
         resp = self.client.get(self.url)
@@ -2732,6 +2757,27 @@ class TestActionUpdateView(TestCaseWithGroups):
             Action.objects.get(pk=self.action.pk).title,
             "contrib edit"
         )
+
+    def test_other_contributor_post(self):
+        """Ensure a package contributor cannot update an Action that's not
+        in their package."""
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", 'xxx')
+        content_viewer_group = get_or_create_content_viewers()
+        user.groups.add(content_viewer_group)
+
+        # Other category in which user is a contributor
+        cat = Category.objects.create(order=2, title="other cat")
+        cat.package_contributors.add(user)
+
+        self.client.login(username="x", password="xxx")
+        payload = self.payload.copy()
+        payload['title'] = 'contrib edit'
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 403)
+
+        cat.delete()
+        user.delete()
 
     def test_author_post(self):
         self.client.login(username="author", password="pass")
