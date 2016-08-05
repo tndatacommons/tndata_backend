@@ -14,6 +14,7 @@ from django.utils.text import slugify
 
 from rest_framework import status
 from rest_framework.response import Response
+from utils.db import get_model_name
 
 from . permissions import (
     ContentPermissions,
@@ -154,30 +155,31 @@ class ContentAuthorMixin:
 
         obj = self.get_object()
         owner = request.user == obj.created_by
+        package_contributor = is_package_contributor(request.user, obj)
 
-        if is_package_contributor(request.user, obj):
-            # Package Contributors have access to objects within the category
-            return True
-        elif owner and updating and obj.state in ['draft', 'declined', 'published']:
+        if owner and updating and obj.state in ['draft', 'declined', 'published']:
             # Content owners are updating their own draft/declined content.
             return True  # OK
-        elif owner:
+        elif owner and not package_contributor:
             self._denied_message = (
                 "Your content has either been Published already or is Pending "
                 "Review. To continue editing this content, you will need to "
                 "request that it be reset to a Draft state."
             )
+            return False
 
         # Read-only for draft-to-published content
         if not updating and obj.state in ['draft', 'pending-review', 'published']:
             return True  # OK
 
         # HACK to test for Editor-like permissions.
-        editor_perm = "goals.publish_{0}".format(obj.__class__.__name__.lower())
+        editor_perm = "goals.publish_{0}".format(get_model_name(obj))
         if request.user.has_perm(editor_perm):
             return True
 
-        return False
+        # Finally, we check to see if the user is a Package Contributor for
+        # this particular object.
+        return package_contributor
 
     def dispatch(self, request, *args, **kwargs):
         # NOTE: This mixin is only used in CreateView and UpdateView subclasses.
@@ -194,6 +196,7 @@ class ContentEditorMixin:
     NOTE that the user must have ALL of the permissions specified.
 
     """
+    _denied_message = None
 
     @classmethod
     def as_view(cls, **initkwargs):
@@ -201,6 +204,43 @@ class ContentEditorMixin:
         dec = permission_required(ContentPermissions.editors,
                                   check_package_contributor=True)
         return dec(view)
+
+    def _object_permissions(self, request, kwargs):
+        """This method check's a user's permissions for the object on which
+        the view is operating.
+
+        Returns True if the user has permissions to view/update the object.
+
+        """
+        # NOTE: If we get here, we've already verified that the user has a
+        # editor permissions (or is a contributor of *some* Category), we now
+        # need to verify that if they're a package contributor, they have
+        # permissions to the correct Category.
+
+        # Editors should be able to create content.
+        if 'Create' in self.__class__.__name__:
+            return True
+
+        if 'Publish' in self.__class__.__name__:
+            obj = self.get_object(kwargs)
+        else:
+            obj = self.get_object()
+
+        # HACK to test for Editor-like permissions.
+        if request.user.has_perm("goals.publish_goal"):
+            return True
+
+        # Finally, we check to see if the user is a Package Contributor for
+        # this particular object.
+        return obj and is_package_contributor(request.user, obj)
+
+    def dispatch(self, request, *args, **kwargs):
+        # NOTE: This mixin is only used in CreateView and UpdateView subclasses.
+        if hasattr(self, 'get_object') and not self._object_permissions(request, kwargs):
+            ctx = {"message": self._denied_message}
+            content = render_to_string("403.html", ctx)
+            return HttpResponseForbidden(content=content)
+        return super().dispatch(request, *args, **kwargs)
 
 
 class PackageManagerMixin:
