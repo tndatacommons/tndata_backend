@@ -28,9 +28,10 @@ def get_model_name(obj):
     This correctly handles the case where an object may be a deferred object.
 
     """
-    object_type = type(obj)
-    if object_type._deferred:
-        object_type = object_type.__base__.__name__
-    else:
-        object_type = object_type.__name__
-    return object_type.lower()
+    if obj:
+        object_type = type(obj)
+        if object_type._deferred:
+            object_type = object_type.__base__.__name__
+        else:
+            object_type = object_type.__name__
+        return object_type.lower()
