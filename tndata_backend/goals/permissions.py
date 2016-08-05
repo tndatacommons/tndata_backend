@@ -246,7 +246,6 @@ def is_package_contributor(user, obj=None):
     but not for the given object.
 
     """
-
     if not user.is_authenticated():
         return False
 
@@ -266,7 +265,11 @@ def is_package_contributor(user, obj=None):
         return obj.id in values
 
     staff = user.is_superuser or user.is_staff
-    return staff
+    # NOTE: This function is used in the ContentAuthorMixin and ContentEditorMixin
+    # classes to see if the user is a contributor *at all*... at which point the
+    # user's permissions are then checked for the object. So we still need to
+    # include the check for the package contributor, here.
+    return staff or user.packagecontributor_set.exists()
 
 
 def permission_required(perm, login_url=settings.LOGIN_URL,
@@ -288,6 +291,7 @@ def permission_required(perm, login_url=settings.LOGIN_URL,
             perms = (perm, )
         else:
             perms = perm
+
         # First check if the user has the permission (even anon users)
         if user.has_perms(perms):
             return True
