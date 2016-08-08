@@ -1000,7 +1000,6 @@ class TestGoalCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_form.html")
-        self.assertContains(resp, self.goal.title)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -1088,7 +1087,6 @@ class TestGoalDuplicateView(TestCaseWithGroups):
         self.assertTemplateUsed(resp, "goals/goal_form.html")
         title_copy = "Copy of {0}".format(self.goal.title)
         self.assertContains(resp, title_copy)
-        self.assertIn("goals", resp.context)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -1799,7 +1797,6 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
         self.assertTemplateUsed(resp, "goals/behavior_form.html")
         title_copy = "Copy of {0}".format(self.behavior.title)
         self.assertContains(resp, title_copy)
-        self.assertIn("behaviors", resp.context)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
