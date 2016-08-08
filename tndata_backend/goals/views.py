@@ -566,6 +566,11 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_initial(self):
+        data = self.initial.copy()
+        data['categories'] = self.request.GET.getlist('category', None)
+        return data
+
     def get_success_url(self):
         url = super().get_success_url()
         messages.success(self.request, "Your goal has been created.")

@@ -176,7 +176,7 @@
       {% for goal in category.goals %}
         <li class="accordion-navigation clearfix">
           <a href="#goal-{{goal.id}}">
-            <div class="pull-right">{{ goal|label }}</div> {{ goal }}
+            <div class="pull-right">{{ goal|label }}</div>
             {# -- Allow re-ordering goals --------------- #}
             {% if user|is_author %}
             <select
@@ -193,6 +193,7 @@
             </select>
             {% endif %}
             {# -------------------------------------------- #}
+            {{ goal }}
           </a>
           <div id="goal-{{ goal.id }}" class="content">
 
@@ -240,6 +241,11 @@
         </li>
       {% endfor %}
       </ul>
+
+      <p style="margin-top:15px;" class="pull-right">
+        <a class="button tiny info"
+            href="{% url 'goals:goal-create' %}?category={{ category.id }}">
+            <i class="fa fa-plus-circle"></i> New Goal</a></p>
     </div>
   </div>
 {% endblock %}
