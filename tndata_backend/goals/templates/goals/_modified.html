@@ -2,13 +2,13 @@
 <div class="modified">
   {% if obj.updated_on %}
     Updated {% if obj.updated_by %} by
-    <em>{{ obj.updated_by.get_full_name }}</em>{% endif %}
+    <em>{{ obj.updated_by.get_full_name|default:obj.updated_by.email }}</em>{% endif %}
     <em>{{ obj.updated_on|timesince }}</em> ago.
     <br/>
   {% endif %}
   {% if obj.created_on %}
     Created {% if obj.created_by %}by
-    <em>{{ obj.created_by.get_full_name }}</em>{% endif %}
+    <em>{{ obj.created_by.get_full_name|default:obj.created_by.email }}</em>{% endif %}
     <em>{{ obj.created_on|timesince }}</em> ago.
   {% endif %}
 </div>
