@@ -167,6 +167,17 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         help_text="Do not show this category to users who are members of an Organization."
     )
 
+    # Contributors are users that should have Editor-equivalent access to the
+    # Category and its child content. NOTE: These users *must* also have at
+    # least ContentViewer permissions.
+    contributors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="category_contributions",
+        help_text="The group of users that will contribute to content in "
+                  "this category."
+    )
+
     # -------------------------------------------------------------------------
     # PACKAGES.
     # A package is collection of content (just like a category), but it
@@ -182,19 +193,6 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
     packaged_content = models.BooleanField(
         default=False,
         help_text="Is this Category for a collection of packaged content?"
-    )
-
-    # Package Contributors are users that should have access to view/edit the
-    # category's child content. This means, they should be able to view &
-    # update Goals, Behaiors, Actions.
-    #
-    # NOTE: These users *must* also have at least ContentViewer permissions.
-    package_contributors = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        blank=True,
-        related_name="packagecontributor_set",
-        help_text="The group of users that will contribute to content in "
-                  "this category."
     )
 
     # Packaged content has a consent form (for now anyway). These are only
