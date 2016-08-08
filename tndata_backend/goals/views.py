@@ -55,7 +55,7 @@ from . forms import (
 from . mixins import (
     ContentAuthorMixin, ContentEditorMixin, ContentViewerMixin,
     PackageManagerMixin, ReviewableUpdateMixin, StateFilterMixin,
-    StaffRequiredMixin, SuperuserRequiredMixin,
+    StaffRequiredMixin,
 )
 from . models import (
     Action,
@@ -183,6 +183,7 @@ class PublishView(View):
             obj = self.get_object(kwargs)
             selections = num_user_selections(obj)
             confirmed = request.POST.get('confirmed', False) or selections <= 0
+            is_superuser = request.user.is_superuser
 
             if request.POST.get('publish', False):
                 obj.publish()
@@ -199,6 +200,26 @@ class PublishView(View):
             elif request.POST.get('draft', False) and selections > 0:
                 context = {'selections': selections, 'object': obj}
                 return render(request, 'goals/confirm_state_change.html', context)
+            elif is_superuser and request.POST.get('publish_children', False):
+                count = 0   # count *all* children published.
+                if not obj.state == "published":
+                    obj.publish()
+                    obj.save(updated_by=request.user)
+                    count += 1
+
+                # Now, publish all the children
+                children = obj.publish_children(updated_by=request.user)
+                count += len(children)
+
+                # and the children's children
+                while len(children) > 0:
+                    children = [
+                        item.publish_children(updated_by=request.user)
+                        for item in children
+                    ]
+                    children = [val for sublist in children for val in sublist]
+                    count += len(children)
+                messages.success(request, "Published {} items".format(count))
             return redirect(obj.get_absolute_url())
 
         except self.model.DoesNotExist:

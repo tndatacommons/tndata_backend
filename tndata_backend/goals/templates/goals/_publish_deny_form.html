@@ -19,6 +19,10 @@
     type="submit" name="publish" value="Publish" title="Publish"></li>
   <li><input class="secondary button tiny" style="width: 100%;margin:0;"
     type="submit" name="decline" value="Decline" title="Decline"></li>
+  {% if is_superuser and model_name == "category" %}
+  <li><input class="secondary button tiny" style="width: 100%;margin:0;"
+    type="submit" name="publish_children" value="Publish All" title="Publish All"></li>
+  {% endif %}
   </ul>
 {% else %}
   <ul class="button-group">
@@ -41,6 +45,15 @@
     {% if not declineable %}disabled="disabled"{% endif %}
     class="button alert{% if not declineable %} disabled{% endif %}">
     Decline</button></li>
+  {% if is_superuser and model_name == "category" %}
+  <li><button
+    name="publish_children"
+    value="1"
+    class="button alert warning"
+    data-tooltip aria-haspopup="true"
+    title="Publish this Category and all child content">
+    Pub All</button></li>
+  {% endif %}
   </ul>
 {% endif %}
 </form>

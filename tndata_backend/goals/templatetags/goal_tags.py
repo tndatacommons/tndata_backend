@@ -1,6 +1,6 @@
 from django import template
 
-from goals.models import Category, Goal, Action, Behavior
+from goals.models import Category, Action
 from utils.db import get_model_name
 from utils.templatetags.util_tags import object_controls
 
@@ -129,14 +129,17 @@ def publish_deny_form(user, obj, layout=None):
         'behavior': 'goals.publish_behavior',
         'action': 'goals.publish_action',
     }
+    model_name = get_model_name(obj)
     if (
-        user.has_perm(publish_perms.get(get_model_name(obj))) or
+        user.has_perm(publish_perms.get(model_name)) or
         is_contributor(user, obj)
     ):
         return {
             "obj": obj,
+            "model_name": model_name,
             "publishable": any([obj.is_draft, obj.is_pending]),
             "declineable": any([obj.is_pending]),
             "layout": layout,
+            "is_superuser": user.is_superuser,
         }
     return {}
