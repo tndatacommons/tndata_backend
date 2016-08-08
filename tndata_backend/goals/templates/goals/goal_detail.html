@@ -139,6 +139,10 @@
       {% endfor %}
       </ul>
 
+      <p><a class="button tiny info"
+            href="{% url 'goals:behavior-create' %}?goal={{ goal.id }}">
+            <i class="fa fa-plus-circle"></i> New Behavior</a></p>
+
     </div>
   </div> {# end .row #}
 {% endblock %}

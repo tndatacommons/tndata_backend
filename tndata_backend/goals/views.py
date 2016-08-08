@@ -756,6 +756,11 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_initial(self):
+        data = self.initial.copy()
+        data['goals'] = self.request.GET.getlist('goal', None)
+        return data
+
     def form_valid(self, form):
         """Submitting for review on creation should to the appropriate state
         transition. """
