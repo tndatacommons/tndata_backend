@@ -125,8 +125,7 @@
                 </select>
                 {% endif %}
                 {# -------------------------------------------- #}
-                {{ action|label }} <span class="label secondary">
-                  {{ action.get_action_type_display }}</span>
+                {{ action|label }}
                 <a href="{{ action.get_absolute_url }}"
                    data-tooltip aria-haspopup="true"
                    title="{{ action.description }}">{{ action }}</a>
