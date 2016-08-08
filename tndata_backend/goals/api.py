@@ -187,15 +187,17 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         if user.is_authenticated() and user.member_organizations.exists():
             # We want them to see public content, but NOT categories that
-            # are in an organization that the user is not enrolled in, and NOT
-            # the categories that have been explicitly hidden from organization
-            # members.
+            # are in an organization that the user is not enrolled in...
             others = models.Category.objects.filter(organizations__isnull=False)
             others = others.exclude(organizations__members=user.id)
             others = others.values_list('pk', flat=True)
-
             results = self.queryset.exclude(pk__in=others)
-            # results = results.exclude(hidden_from_organizations=...)
+
+            # AND, we need to exclude the categories that have explicitly been
+            # hidden from the user's organization(s)
+            results = results.exclude(
+                hidden_from_organizations=user.member_organizations.all()
+            )
             return results
 
         # Otherwise, filter results based on provided parameters.
