@@ -378,7 +378,7 @@ class StateMixin:
             return getattr(self, attr).all()
         return []
 
-    def publish_children(self):
+    def publish_children(self, updated_by=None):
         """Calls the .publish() method for all of the object's children that
         are in draft/pending-review.
 
@@ -389,7 +389,7 @@ class StateMixin:
         if len(children) > 0:
             for obj in children.filter(state__in=['draft', 'pending-review']):
                 obj.publish()
-                obj.save()
+                obj.save(updated_by=updated_by)
         return children
 
 
