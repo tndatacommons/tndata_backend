@@ -434,11 +434,6 @@ class CategoryCreateView(ContentEditorMixin, CreatedByView):
             initial['order'] = get_max_order(Category)
         return initial
 
-    def get_context_data(self, **kwargs):
-        context = super(CategoryCreateView, self).get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        return context
-
 
 class CategoryDuplicateView(CategoryCreateView):
     """Initializes the Create form with a copy of data from another object."""
@@ -485,11 +480,6 @@ class CategoryUpdateView(ContentEditorMixin, ReviewableUpdateMixin, UpdateView):
         url = super().get_success_url()
         messages.success(self.request, "Your category has been saved")
         return url
-
-    def get_context_data(self, **kwargs):
-        context = super(CategoryUpdateView, self).get_context_data(**kwargs)
-        context['categories'] = Category.objects.all()
-        return context
 
 
 class CategoryDeleteView(ContentEditorMixin, ContentDeleteView):
