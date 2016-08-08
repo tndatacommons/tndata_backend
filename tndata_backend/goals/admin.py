@@ -83,10 +83,13 @@ class CategoryAdmin(ContentWorkflowAdmin):
     search_fields = ['title', 'description', 'notes', 'id']
     list_filter = (
         'state', 'packaged_content', 'selected_by_default',
-        'hide_from_organizations', 'grouping',
+        'hidden_from_organizations', 'grouping',
     )
     prepopulated_fields = {"title_slug": ("title", )}
-    raw_id_fields = ('organizations', 'contributors', 'updated_by', 'created_by')
+    raw_id_fields = (
+        'organizations', 'hidden_from_organizations', 'contributors',
+        'updated_by', 'created_by'
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

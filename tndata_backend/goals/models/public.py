@@ -154,7 +154,10 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         blank=True,
         null=True,
         default=-1,
-        choices=GROUPING_CHOICES
+        choices=GROUPING_CHOICES,
+        help_text="This option defines the section within the app where this "
+                  "category will be listed."
+
     )
     organizations = models.ManyToManyField(
         Organization,
@@ -162,9 +165,12 @@ class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Mod
         related_name="categories",
         help_text="Organizations whose members should have access to this content."
     )
-    hide_from_organizations = models.BooleanField(
-        default=False,
-        help_text="Do not show this category to users who are members of an Organization."
+    hidden_from_organizations = models.ManyToManyField(
+        Organization,
+        blank=True,
+        related_name="excluded_categories",
+        help_text="Organizations whose members should NOT be able to view "
+                  "this category."
     )
 
     # Contributors are users that should have Editor-equivalent access to the
