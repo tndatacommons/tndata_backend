@@ -441,16 +441,12 @@ class TestCategoryCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
-        self.assertContains(resp, self.category.title)
-        self.assertIn("categories", resp.context)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
-        self.assertContains(resp, self.category.title)
-        self.assertIn("categories", resp.context)
 
     def test_author_get(self):
         """Ensure Authors cannot create Categories."""
@@ -538,7 +534,6 @@ class TestCategoryDuplicateView(TestCaseWithGroups):
         self.assertTemplateUsed(resp, "goals/category_form.html")
         title_copy = "Copy of {0}".format(self.category.title)
         self.assertContains(resp, title_copy)
-        self.assertIn("categories", resp.context)
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -674,7 +669,6 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/category_form.html")
         self.assertContains(resp, self.category.title)
-        self.assertIn("categories", resp.context)
 
     def test_editor_get(self):
         resp = self.client.login(username="editor", password="pass")
