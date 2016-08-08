@@ -50,6 +50,16 @@
           {% endfor %}
         </dd>
         {% endif %}
+        {% if category.hidden_from_organizations.exists %}
+        <dt>Hidden from members of:</dt>
+        <dd>
+          <ul>
+          {% for org in category.hidden_from_organizations.all %}
+            <li>{{ org }}</li>
+          {% endfor %}
+          </ul>
+        </dd>
+        {% endif %}
         <dt>Icon</dt><dd class="gray centered">
           {% with icon=category.get_absolute_icon %}
           {% if icon %}
@@ -92,12 +102,6 @@
             <code>{{ category.secondary_color }}</code> - Secondary
           {% endif %}
          </dd>
-        <dt>Hidden from Organization Members</dt>
-        <dd>{{ category.hide_from_organizations|iconbool }}: This category
-          <strong>will
-          {% if category.hide_from_organizations %}not {% endif %}</strong>
-          be displayed to users who are members of an Organization.
-        </dd>
         <dt>Selected by default?</dt>
         <dd>{{ category.selected_by_default|iconbool }}: This category is
           {% if not category.selected_by_default %}not{% endif %}

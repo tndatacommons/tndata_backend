@@ -54,8 +54,8 @@ one or more `Program`s that specify a mapping of categories to the organization.
 
 If a user is a member of an Organization, results from this endpoint will exclude
 Categories from other organizations (in which the user is not a member), as
-well as any category that as explicently been marked as hidden from organization
-members (see the `Category.hide_from_organizations` field).
+well as any category that has explicently been marked as hidden from
+organization members (see the `Category.hidden_from_organizations` field).
 
 Additionally, users who are _not_ members of an organization will not see
 Categories that are associated with an organization.

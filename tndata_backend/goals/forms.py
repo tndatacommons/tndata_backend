@@ -308,7 +308,7 @@ class CategoryForm(forms.ModelForm):
         fields = [
             'packaged_content', 'contributors',
             'selected_by_default', 'grouping', 'organizations',
-            'hide_from_organizations', 'prevent_custom_triggers_default',
+            'hidden_from_organizations', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
             'title', 'description', 'icon', 'image', 'color',
             'secondary_color', 'notes', 'consent_summary', 'consent_more',
@@ -395,7 +395,7 @@ class CategoryForm(forms.ModelForm):
                     Fieldset(
                         _("Organizations & Contributors"),
                         "organizations",
-                        "hide_from_organizations",
+                        "hidden_from_organizations",
                         "contributors"
                     ),
                     Fieldset(

@@ -333,7 +333,8 @@ class TestCategoryForm(TestCase):
             'title', 'description', 'grouping', 'icon', 'image', 'color', 'notes',
             'secondary_color', 'packaged_content', 'contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
-            'display_prevent_custom_triggers_option',
+            'display_prevent_custom_triggers_option', 'organizations',
+            'hidden_from_organizations',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
@@ -345,7 +346,7 @@ class TestCategoryForm(TestCase):
             'secondary_color', 'packaged_content', 'contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option', 'selected_by_default',
-            'grouping', 'organizations', 'hide_from_organizations',
+            'grouping', 'organizations', 'hidden_from_organizations',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 

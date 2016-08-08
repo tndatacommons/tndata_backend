@@ -184,6 +184,7 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         # the appropriate set of categories. (note: being in a program also
         # makes the user a member of the organization)
         user = self.request.user
+
         if user.is_authenticated() and user.member_organizations.exists():
             # We want them to see public content, but NOT categories that
             # are in an organization that the user is not enrolled in, and NOT
@@ -194,7 +195,7 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             others = others.values_list('pk', flat=True)
 
             results = self.queryset.exclude(pk__in=others)
-            results = results.exclude(hide_from_organizations=True)
+            # results = results.exclude(hidden_from_organizations=...)
             return results
 
         # Otherwise, filter results based on provided parameters.
