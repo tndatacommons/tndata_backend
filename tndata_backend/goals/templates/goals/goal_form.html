@@ -64,26 +64,6 @@ Category
         </p>
       {% endif %}
     {% endwith %}
-
-    <table>
-      <caption>Existing Goals</caption>
-      <thead>
-        <tr><th>Title</th><th>Categories</th></tr>
-      </thead>
-      <tbody>
-      {% for goal in goals %}
-        <tr>
-          <td><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></td>
-          <td>
-            {% for c in goal.categories.all %}
-              <a href="{{c.get_absolute_url}}">{{c}}</a>
-              {% if not forloop.last %}<br/>{% endif %}
-            {% endfor %}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
   </div>
 </div>
 </form>

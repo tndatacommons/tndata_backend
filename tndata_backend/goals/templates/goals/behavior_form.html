@@ -62,21 +62,6 @@ Category
         </p>
       {% endif %}
     {% endwith %}
-
-    <table>
-      <caption>Existing Behaviors</caption>
-      <thead>
-        <tr><th>Title</th><th>Informal List</th></tr>
-      </thead>
-      <tbody>
-      {% for bs in behaviors %}
-        <tr>
-          <td><a href="{{ bs.get_absolute_url }}">{{ bs }}</a></td>
-          <td>{{ bs.informal_list|linebreaksbr }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
   </div>
 </div>
 </form>

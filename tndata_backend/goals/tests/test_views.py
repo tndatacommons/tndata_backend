@@ -1001,7 +1001,6 @@ class TestGoalCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/goal_form.html")
         self.assertContains(resp, self.goal.title)
-        self.assertIn("goals", resp.context)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")
@@ -1712,7 +1711,6 @@ class TestBehaviorCreateView(TestCaseWithGroups):
         resp = self.client.get(self.url)
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/behavior_form.html")
-        self.assertIn("behaviors", resp.context)
 
     def test_editor_get(self):
         self.client.login(username="editor", password="pass")

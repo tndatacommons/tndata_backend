@@ -571,11 +571,6 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
         messages.success(self.request, "Your goal has been created.")
         return url
 
-    def get_context_data(self, **kwargs):
-        context = super(GoalCreateView, self).get_context_data(**kwargs)
-        context['goals'] = Goal.objects.all().prefetch_related("categories")
-        return context
-
     def form_valid(self, form):
         """Upons saving, also check if this was submitted for review."""
         result = super().form_valid(form)
@@ -760,11 +755,6 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
     form_class = BehaviorForm
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super(BehaviorCreateView, self).get_context_data(**kwargs)
-        context['behaviors'] = Behavior.objects.all()
-        return context
 
     def form_valid(self, form):
         """Submitting for review on creation should to the appropriate state
