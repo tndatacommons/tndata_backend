@@ -77,7 +77,7 @@ from . models import (
 from . permissions import (
     ContentPermissions,
     is_content_editor,
-    is_package_contributor,
+    is_contributor,
     permission_required,
     staff_required,
 )
@@ -262,8 +262,8 @@ class IndexView(ContentViewerMixin, TemplateView):
             'created_by', 'state',
         ]
         context = self.get_context_data(**kwargs)
-        is_package_contributor = request.user.packagecontributor_set.exists()
-        if is_content_editor(request.user) or is_package_contributor:
+        is_contributor = request.user.category_contributions.exists()
+        if is_content_editor(request.user) or is_contributor:
             context['is_editor'] = True
 
             # Show content pending review.
@@ -275,7 +275,7 @@ class IndexView(ContentViewerMixin, TemplateView):
             }
             for key, func in mapping.items():
                 qs = func(state='pending-review').order_by("-updated_on")
-                if is_package_contributor:
+                if is_contributor:
                     qs = qs.for_contributor(request.user)
                 context[key] = qs
 
@@ -1346,7 +1346,7 @@ class PackageDetailView(ContentViewerMixin, DetailView):
         editor = any([
             self.request.user.is_staff,
             self.request.user.has_perm('goals.publish_category'),
-            self.request.user in self.object.package_contributors.all()
+            self.request.user in self.object.contributors.all()
         ])
         context['is_editor'] = editor
         if editor:
@@ -1452,7 +1452,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
         return any([
             self.request.user.is_staff,
             self.request.user.has_perm('goals.publish_goal'),
-            self.request.user in self.category.package_contributors.all()
+            self.request.user in self.category.contributors.all()
         ])
 
     def get_success_url(self):
@@ -1707,7 +1707,7 @@ class AcceptEnrollmentCompleteView(TemplateView):
         return context
 
 
-@user_passes_test(is_package_contributor, login_url='/goals/')
+@user_passes_test(is_contributor, login_url='/goals/')
 def package_report(request, pk):
     category = get_object_or_404(Category, pk=pk)
     enrollees = category.packageenrollment_set.values_list('user', flat=True)

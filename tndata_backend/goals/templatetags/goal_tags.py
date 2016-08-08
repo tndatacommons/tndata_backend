@@ -4,7 +4,7 @@ from goals.models import Category, Goal, Action, Behavior
 from utils.db import get_model_name
 from utils.templatetags.util_tags import object_controls
 
-from ..permissions import is_package_contributor
+from ..permissions import is_contributor
 
 register = template.Library()
 
@@ -36,7 +36,7 @@ def goal_object_controls(context, obj):
         result['can_update'] = True
         result['can_delete'] = True
         result['can_duplicate'] = True
-    elif is_package_contributor(user, obj):
+    elif is_contributor(user, obj):
         result['can_update'] = True
         result['can_delete'] = False
         result['can_duplicate'] = True
@@ -116,7 +116,7 @@ def publish_deny_form(user, obj, layout=None):
     """Given a user and and object, render the state update form
     (Draft / Publish / Deny) for the given object *if* the user has the
     appropriate permissions (i.e. 'publish' permissions or is listed as a
-    package_contributor for the Category).
+    contributor for the Category).
 
     You can specify optional layous by passing in a layout flag:
 
@@ -131,7 +131,7 @@ def publish_deny_form(user, obj, layout=None):
     }
     if (
         user.has_perm(publish_perms.get(get_model_name(obj))) or
-        is_package_contributor(user, obj)
+        is_contributor(user, obj)
     ):
         return {
             "obj": obj,

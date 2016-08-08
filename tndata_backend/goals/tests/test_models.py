@@ -2431,7 +2431,7 @@ class TestPackageEnrollment(TestCase):
             packaged_content=True,
         )
         cls.category.publish()
-        cls.category.package_contributors.add(cls.admin)
+        cls.category.contributors.add(cls.admin)
 
         # create some child content
         cls.goal = Goal.objects.create(title="G", description="G.")

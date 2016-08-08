@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from goals.permissions import (
     is_content_editor,
     is_content_author,
-    is_package_contributor,
+    is_contributor,
 )
 
 
@@ -45,7 +45,7 @@ def user_is_contributor(user, obj):
         {% if user|is_contributor:obj %}
 
     """
-    return is_package_contributor(user, obj)
+    return is_contributor(user, obj)
 
 
 @register.filter("label", is_safe=True)

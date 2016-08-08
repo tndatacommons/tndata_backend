@@ -2335,7 +2335,7 @@ class TestPackageEnrollmentAPI(V2APITestCase):
             consent_more="More",
             packaged_content=True,
         )
-        self.category.package_contributors.add(self.admin)
+        self.category.contributors.add(self.admin)
         self.category.publish()
         self.category.save()
 

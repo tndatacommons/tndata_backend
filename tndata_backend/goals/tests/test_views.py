@@ -425,7 +425,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
         )
         cls.payload = {
             'packaged_content': False,
-            'package_contributors': '',
+            'contributors': '',
             'order': 2,
             'title': 'New',
             'description': 'Desc',
@@ -658,7 +658,7 @@ class TestCategoryUpdateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
-        self.category.package_contributors.add(self.contributor)
+        self.category.contributors.add(self.contributor)
         self.url = self.category.get_update_url()
 
     def tearDown(self):
@@ -705,7 +705,7 @@ class TestCategoryUpdateView(TestCaseWithGroups):
         user.groups.add(content_viewer_group)
 
         cat = Category.objects.create(order=2, title="x")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         resp = self.client.login(username="x", password="xxx")
         resp = self.client.get(self.url)
@@ -990,7 +990,7 @@ class TestGoalCreateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
 
         cls.goal = Goal.objects.create(
             title="Title for Test Goal",
@@ -1207,7 +1207,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
 
         cls.payload = {
             'categories': cls.category.id,
@@ -1280,7 +1280,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
         # Other category in which user is a contributor
         cat = Category.objects.create(order=2, title="other cat")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         # This contributor should not be able to update this Category
         self.client.login(username="x", password="xxx")
@@ -1351,7 +1351,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
         # Other category in which user is a contributor
         cat = Category.objects.create(order=2, title="other cat")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         self.client.login(username="x", password="xxx")
         payload = self.payload.copy()
@@ -1495,7 +1495,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
 
         # Create a Category
         self.category = Category.objects.create(order=1, title='Cat')
-        self.category.package_contributors.add(self.contributor)
+        self.category.contributors.add(self.contributor)
 
         # Create a Goal
         self.goal = Goal.objects.create(
@@ -1696,7 +1696,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
 
         # Create a Goal to be used as an FK
         cls.goal = Goal.objects.create(
@@ -1915,7 +1915,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
 
         # Create a Goal
         cls.goal = Goal.objects.create(
@@ -1973,7 +1973,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
         # Other category in which user is a contributor
         cat = Category.objects.create(order=2, title="other cat")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         # This contributor should not be able to update this Category
         self.client.login(username="x", password="xxx")
@@ -2068,7 +2068,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
         # Other category in which user is a contributor
         cat = Category.objects.create(order=2, title="other cat")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         self.client.login(username="x", password="xxx")
         payload = self.payload.copy()
@@ -2634,7 +2634,7 @@ class TestActionUpdateView(TestCaseWithGroups):
             title='Test Category',
             description='Some explanation!',
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
         cls.goal = Goal.objects.create(title="Goal")
         cls.goal.categories.add(cls.category)
         cls.behavior = Behavior.objects.create(title='Test Behavior')
@@ -2716,7 +2716,7 @@ class TestActionUpdateView(TestCaseWithGroups):
 
         # Other category in which user is a contributor
         cat = Category.objects.create(order=2, title="other cat")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         # This contributor should not be able to update this Category
         self.client.login(username="x", password="xxx")
@@ -2768,7 +2768,7 @@ class TestActionUpdateView(TestCaseWithGroups):
 
         # Other category in which user is a contributor
         cat = Category.objects.create(order=2, title="other cat")
-        cat.package_contributors.add(user)
+        cat.contributors.add(user)
 
         self.client.login(username="x", password="xxx")
         payload = self.payload.copy()
@@ -2971,7 +2971,7 @@ class TestPackageEnrollmentDeleteView(TestCaseWithGroups):
             state="published",
             created_by=cls.editor,
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
         cls.category.save()
         cls.goal_a = Goal.objects.create(title="Pkg Goal A", state="published")
         cls.goal_a.categories.add(cls.category)
@@ -3051,7 +3051,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
             state="published",
             created_by=cls.editor,
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
         cls.category.save()
 
         cls.goal_a = Goal.objects.create(title="Pkg Goal A", state="published")
@@ -3196,7 +3196,7 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
             state="published",
             created_by=cls.editor,
         )
-        cls.category.package_contributors.add(cls.contributor)
+        cls.category.contributors.add(cls.contributor)
         cls.category.save()
 
         # An Un-accepted Enrollment

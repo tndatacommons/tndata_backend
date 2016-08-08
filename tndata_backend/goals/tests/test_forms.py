@@ -331,7 +331,7 @@ class TestCategoryForm(TestCase):
         form = CategoryForm()
         fields = sorted([
             'title', 'description', 'grouping', 'icon', 'image', 'color', 'notes',
-            'secondary_color', 'packaged_content', 'package_contributors',
+            'secondary_color', 'packaged_content', 'contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
         ])
@@ -342,7 +342,7 @@ class TestCategoryForm(TestCase):
         form = CategoryForm(user=mock_user)
         fields = sorted([
             'title', 'description', 'icon', 'image', 'color', 'notes',
-            'secondary_color', 'packaged_content', 'package_contributors',
+            'secondary_color', 'packaged_content', 'contributors',
             'consent_summary', 'consent_more', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option', 'selected_by_default',
             'grouping', 'organizations', 'hide_from_organizations',
@@ -352,7 +352,7 @@ class TestCategoryForm(TestCase):
     def test_bound(self):
         data = {
             'packaged_content': False,
-            'package_contributors': '',
+            'contributors': '',
             'title': 'New Category',
             'description': 'asdf',
             'icon': '',
@@ -369,7 +369,7 @@ class TestCategoryForm(TestCase):
         c = Category.objects.create(order=1, title="C")  # Existing object
         data = {
             'packaged_content': False,
-            'package_contributors': '',
+            'contributors': '',
             'title': 'c',  # Should be a Duplicate
             'description': 'asdf',
             'icon': '',

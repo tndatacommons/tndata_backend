@@ -86,7 +86,7 @@ class CategoryAdmin(ContentWorkflowAdmin):
         'hide_from_organizations', 'grouping',
     )
     prepopulated_fields = {"title_slug": ("title", )}
-    raw_id_fields = ('updated_by', 'created_by')
+    raw_id_fields = ('organizations', 'contributors', 'updated_by', 'created_by')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

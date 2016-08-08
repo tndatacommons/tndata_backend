@@ -232,15 +232,15 @@ def is_content_editor(user):
     return _is_superuser_or_in_group(user, CONTENT_EDITORS)
 
 
-def is_package_contributor(user, obj=None):
-    """Determine if the given user is a package contributor, alternatively
+def is_contributor(user, obj=None):
+    """Determine if the given user is a Category contributor, alternatively
     check if they're a contributor for a given object.
 
     - When `obj` is None, returns True if the given user is a superuser, staff,
-      or a package contributor for *any* category.
+      or a contributor for *any* category.
     - When an `obj` is provided (a Category, Goal, Behavior, or Action), we
       check to see if it is related to a Category in which the give user is
-      listed as a package contributor.
+      listed as a contributor.
 
     Note: If an object is provided, we return False if the user is a contributor,
     but not for the given object.
@@ -250,8 +250,7 @@ def is_package_contributor(user, obj=None):
         return False
 
     # If an object is provided, we want to compare it to the list of
-    # objects within the category(ies) for which the user is a package
-    # contributor.
+    # objects within the category(ies) for which the user is a contributor.
     lookups = {
         'action': 'goal__behavior__action',
         'behavior': 'goal__behavior',
@@ -260,7 +259,7 @@ def is_package_contributor(user, obj=None):
     }
     lookup = lookups.get(get_model_name(obj))
     if obj and lookup:
-        values = set(user.packagecontributor_set.values_list(lookup, flat=True))
+        values = set(user.category_contributions.values_list(lookup, flat=True))
         values = [v for v in values if v is not None]
         return obj.id in values
 
@@ -268,13 +267,13 @@ def is_package_contributor(user, obj=None):
     # NOTE: This function is used in the ContentAuthorMixin and ContentEditorMixin
     # classes to see if the user is a contributor *at all*... at which point the
     # user's permissions are then checked for the object. So we still need to
-    # include the check for the package contributor, here.
-    return staff or user.packagecontributor_set.exists()
+    # include the check for the contributor, here.
+    return staff or user.category_contributions.exists()
 
 
 def permission_required(perm, login_url=settings.LOGIN_URL,
                         raise_exception=True,
-                        check_package_contributor=False):
+                        check_contributor=False):
     """NOTE: This is very similar to django's built-in function (from
     contrib.auth.decorators.permission_required) except that it raises an
     excption when the user is logged in, otherwise it redirects to the login
@@ -295,7 +294,7 @@ def permission_required(perm, login_url=settings.LOGIN_URL,
         # First check if the user has the permission (even anon users)
         if user.has_perms(perms):
             return True
-        elif check_package_contributor and is_package_contributor(user):
+        elif check_contributor and is_contributor(user):
             return True
         # In case the 403 handler should be called raise the exception IF the
         # user is logged in.

@@ -501,10 +501,10 @@ class WorkflowQuerySet(models.QuerySet):
 
         # To do this, we need different lookups based on the type of object.
         lookups = {
-            'category': 'package_contributors',
-            'goal': 'categories__package_contributors',
-            'behavior': 'goals__categories__package_contributors',
-            'action': 'behavior__goals__categories__package_contributors',
+            'category': 'contributors',
+            'goal': 'categories__contributors',
+            'behavior': 'goals__categories__contributors',
+            'action': 'behavior__goals__categories__contributors',
         }
         lookup = {lookups[self.model.__name__.lower()]: user}
         return self.filter(**lookup).distinct()
@@ -525,7 +525,7 @@ class WorkflowManager(models.Manager):
 
     def for_contributor(self, user):
         qs = self.get_queryset()
-        return qs.filter(package_contributors=user)
+        return qs.filter(contributors=user)
 
 
 class BehaviorManager(WorkflowManager):

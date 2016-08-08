@@ -18,7 +18,7 @@ from utils.db import get_model_name
 
 from . permissions import (
     ContentPermissions,
-    is_package_contributor,
+    is_contributor,
     permission_required,
     staff_required,
     superuser_required,
@@ -127,7 +127,7 @@ class ContentAuthorMixin:
     def as_view(cls, **initkwargs):
         view = super(ContentAuthorMixin, cls).as_view(**initkwargs)
         dec = permission_required(ContentPermissions.authors,
-                                  check_package_contributor=True)
+                                  check_contributor=True)
         return dec(view)
 
     def _object_permissions(self, request):
@@ -155,12 +155,12 @@ class ContentAuthorMixin:
 
         obj = self.get_object()
         owner = request.user == obj.created_by
-        package_contributor = is_package_contributor(request.user, obj)
+        contributor = is_contributor(request.user, obj)
 
         if owner and updating and obj.state in ['draft', 'declined', 'published']:
             # Content owners are updating their own draft/declined content.
             return True  # OK
-        elif owner and not package_contributor:
+        elif owner and not contributor:
             self._denied_message = (
                 "Your content has either been Published already or is Pending "
                 "Review. To continue editing this content, you will need to "
@@ -179,7 +179,7 @@ class ContentAuthorMixin:
 
         # Finally, we check to see if the user is a Package Contributor for
         # this particular object.
-        return package_contributor
+        return contributor
 
     def dispatch(self, request, *args, **kwargs):
         # NOTE: This mixin is only used in CreateView and UpdateView subclasses.
@@ -202,7 +202,7 @@ class ContentEditorMixin:
     def as_view(cls, **initkwargs):
         view = super(ContentEditorMixin, cls).as_view(**initkwargs)
         dec = permission_required(ContentPermissions.editors,
-                                  check_package_contributor=True)
+                                  check_contributor=True)
         return dec(view)
 
     def _object_permissions(self, request, kwargs):
@@ -232,7 +232,7 @@ class ContentEditorMixin:
 
         # Finally, we check to see if the user is a Package Contributor for
         # this particular object.
-        return obj and is_package_contributor(request.user, obj)
+        return obj and is_contributor(request.user, obj)
 
     def dispatch(self, request, *args, **kwargs):
         # NOTE: This mixin is only used in CreateView and UpdateView subclasses.

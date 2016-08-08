@@ -296,7 +296,7 @@ class CategoryForm(forms.ModelForm):
     """A Form for creating/updateing Categories. This form customizes the widget
     for the color field."""
 
-    package_contributors = ContributorChoiceField(
+    contributors = ContributorChoiceField(
         queryset=_contributors(),
         required=False
     )
@@ -304,7 +304,7 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = [
-            'packaged_content', 'package_contributors',
+            'packaged_content', 'contributors',
             'selected_by_default', 'grouping', 'organizations',
             'hide_from_organizations', 'prevent_custom_triggers_default',
             'display_prevent_custom_triggers_option',
@@ -397,7 +397,7 @@ class CategoryForm(forms.ModelForm):
                     Fieldset(
                         _("Packaged Content"),
                         'packaged_content',
-                        'package_contributors',
+                        'contributors',
                         'prevent_custom_triggers_default',
                         'display_prevent_custom_triggers_option',
                         'consent_summary',
