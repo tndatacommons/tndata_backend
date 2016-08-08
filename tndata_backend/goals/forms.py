@@ -298,7 +298,9 @@ class CategoryForm(forms.ModelForm):
 
     contributors = ContributorChoiceField(
         queryset=_contributors(),
-        required=False
+        required=False,
+        help_text=("Users that will be able to manage this Category's content. "
+                   "All of these will have Editor permissions.")
     )
 
     class Meta:
@@ -360,12 +362,9 @@ class CategoryForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        # Certain fields (`selected_by_default`, `organizations`,
-        # `hide_from_organizations`) should only be available to superusers.
+        # The `selected_by_default` should only be available to superusers.
         if self.user is None or (self.user and not self.user.is_superuser):
             del self.fields['selected_by_default']
-            del self.fields['organizations']
-            del self.fields['hide_from_organizations']
             details_fields = (
                 _("Category Details"), 'title', 'description', 'grouping',
                 'icon', 'image', 'color', 'secondary_color',
@@ -373,8 +372,7 @@ class CategoryForm(forms.ModelForm):
         else:
             details_fields = (
                 _("Category Details"), 'title', 'description', 'grouping',
-                'organizations', 'hide_from_organizations', 'selected_by_default',
-                'icon', 'image', 'color', 'secondary_color',
+                'selected_by_default', 'icon', 'image', 'color', 'secondary_color',
             )
 
         # Configure crispy forms.
@@ -384,9 +382,6 @@ class CategoryForm(forms.ModelForm):
             Div(
                 Div(
                     Fieldset(*details_fields),
-                    css_class="large-6 small-12 columns"
-                ),
-                Div(
                     Fieldset(
                         _("Scratchpad"),
                         Div(
@@ -394,10 +389,18 @@ class CategoryForm(forms.ModelForm):
                             css_class="panel"
                         ),
                     ),
+                    css_class="large-6 small-12 columns"
+                ),
+                Div(
+                    Fieldset(
+                        _("Organizations & Contributors"),
+                        "organizations",
+                        "hide_from_organizations",
+                        "contributors"
+                    ),
                     Fieldset(
                         _("Packaged Content"),
                         'packaged_content',
-                        'contributors',
                         'prevent_custom_triggers_default',
                         'display_prevent_custom_triggers_option',
                         'consent_summary',
