@@ -51,6 +51,13 @@ class Command(BaseCommand):
             default=None,
             help="Specify a new frequency for the trigger."
         )
+        parser.add_argument(
+            '--priority',
+            action='store',
+            dest='priority',
+            default=None,
+            help="Update all Actions with the given priority. "
+        )
 
     def _get_parent(self, pk_or_title, model):
         try:
@@ -84,20 +91,34 @@ class Command(BaseCommand):
         if value is not None and value not in opts:
             raise CommandError("{} is not a valid Frequency option.".format(value))
 
+    def _verify_priority(self, value):
+        # Check to see if we've provided a string (e.g. 'low') instead of a
+        # numeric value (e.g. 0 for low)
+        values = {t[1].lower(): t[0] for t in Action.PRIORITY_CHOICES}
+        if value in values:
+            value = values[value]
+
+        opts = [t[0] for t in Action.PRIORITY_CHOICES]
+        if value is not None and value not in opts:
+            raise CommandError("{} is not a valid Priority option.".format(value))
+        return value
+
     def handle(self, *args, **options):
 
         total = 0
         updated = 0
 
         # Ensure we've got one of the new values to be set.
-        if not any([options['timeofday'], options['frequency']]):
+        if not any([options['timeofday'], options['frequency'], options['priority']]):
             raise CommandError(
-                "You must specify at least one of --timeofday or --frequency"
+                "You must specify at least one of: --timeofday, --frequency, or --priority"
             )
 
         # ensure the specified values are valid
         self._verify_frequency(options['frequency'])
         self._verify_timeofday(options['timeofday'])
+        options['priority'] = self._verify_priority(options['priority'])
+
 
         for action in self._get_actions(options):
             modified = False  # Was the trigger modified?
@@ -110,6 +131,10 @@ class Command(BaseCommand):
                 action.default_trigger.frequency = options['frequency']
                 modified = True
 
+            if options['priority']:
+                action.priority = options['priority']
+                modified = True
+
             if modified:
                 action.default_trigger.save()
                 action.save()
@@ -117,4 +142,4 @@ class Command(BaseCommand):
 
             total += 1
 
-        self.stdout.write("Updated {} (of {}) default triggers\n".format(updated, total))
+        self.stdout.write("Updated {} (of {}) Actions / Triggers\n".format(updated, total))
