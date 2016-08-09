@@ -299,7 +299,7 @@ class TestBehaviorForm(TestCase):
         g.delete()
 
     def test_duplicate_title(self):
-        """Ensure that duplicate titles fail validation."""
+        """Ensure that duplicate titles now pass validation."""
         g = Goal.objects.create(title="G")
         b = Behavior.objects.create(title="B")  # Existing Behavior
         data = {
@@ -318,9 +318,7 @@ class TestBehaviorForm(TestCase):
             'original_behavior': '',
         }
         form = BehaviorForm(data)
-        self.assertFalse(form.is_valid())
-        err = {'title': ['Behavior with this Title already exists.']}
-        self.assertEqual(form.errors, err)
+        self.assertTrue(form.is_valid())
         b.delete()
         g.delete()
 
@@ -366,7 +364,7 @@ class TestCategoryForm(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_duplicate_title(self):
-        """Ensure that duplicate titles fail validation."""
+        """Ensure that duplicate titles now pass validation."""
         c = Category.objects.create(order=1, title="C")  # Existing object
         data = {
             'packaged_content': False,
@@ -379,9 +377,7 @@ class TestCategoryForm(TestCase):
             'notes': '',
         }
         form = CategoryForm(data)
-        self.assertFalse(form.is_valid())
-        err = {'title': ['Category with this Title already exists.']}
-        self.assertEqual(form.errors, err)
+        self.assertTrue(form.is_valid())
         c.delete()
 
 
@@ -412,7 +408,7 @@ class TestGoalForm(TestCase):
         c.delete()
 
     def test_duplicate_title(self):
-        """Ensure that duplicate titles fail validation."""
+        """Ensure that duplicate titles now pass validation."""
         c = Category.objects.create(order=1, title="C")
         g = Goal.objects.create(title='G')  # Existing object
         data = {
@@ -425,9 +421,7 @@ class TestGoalForm(TestCase):
             'original_goal': '',
         }
         form = GoalForm(data)
-        self.assertFalse(form.is_valid())
-        err = {'title': ['Goal with this Title already exists.']}
-        self.assertEqual(form.errors, err)
+        self.assertTrue(form.is_valid())
         c.delete()
         g.delete()
 

@@ -1,5 +1,3 @@
-import pytz
-from datetime import time
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -1298,10 +1296,8 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(Goal.objects.get(pk=self.goal.id).title, 'A')
 
     def test_editor_post_duplicate_title(self):
-        """If you change the title of an existing object to somethign that
-        would be a duplicate, the form should warn you (200 response) instead
-        of throwing a 500 IntegrityError."""
-
+        """If you change the title of an existing object to something that
+        would be a duplicate, ... this is OK now."""
         existing_title = "Title for Test Goal"  # A pre-existing title.
         goal = Goal.objects.create(
             title="Some Goal to Edit",
@@ -1317,10 +1313,8 @@ class TestGoalUpdateView(TestCaseWithGroups):
             'categories': self.category.id,
         })
 
-        # Ensure that there's an error warning in the returned HTML content
-        self.assertEqual(resp.status_code, 200)
-        content = resp.content.decode("utf-8")
-        self.assertIn("Goal with this Title already exists.", content)
+        # We should get redirected
+        self.assertEqual(resp.status_code, 302)
 
         # Clean up.
         goal.delete()
@@ -2008,10 +2002,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
     def test_editor_post_duplicate_title(self):
         """If you change the title of an existing object to somethign that
-        would be a duplicate, the form should warn you (200 response) instead
-        of throwing a 500 IntegrityError."""
-
-        existing_title = "Title for Test Behavior"  # A pre-existing title.
+        would be a duplicate, well, that's should be OK now."""
         behavior = Behavior.objects.create(
             title="Some Behavior to Edit",
             created_by=self.editor
@@ -2020,18 +2011,15 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
         behavior.save()
 
         self.client.login(username="editor", password="pass")
-        resp = self.client.post(behavior.get_update_url(), {
-            'title': existing_title,
-            'goals': self.goal.id,
-        })
+        existing_title = "Title for Test Behavior"  # A pre-existing title.
+        payload = self.payload.copy()
+        payload['title'] = existing_title
+        resp = self.client.post(behavior.get_update_url(), payload)
 
         # Ensure that we can an error warning in the returned HTML content
-        self.assertEqual(resp.status_code, 200)
-        content = resp.content.decode("utf-8")
-        self.assertIn("Behavior with this Title already exists.", content)
-
+        self.assertEqual(resp.status_code, 302)
         qs = Behavior.objects.filter(title=existing_title)
-        self.assertEqual(qs.count(), 1)
+        self.assertEqual(qs.count(), 2)  # There should now be 2 of these.
 
         # Clean up.
         behavior.delete()
