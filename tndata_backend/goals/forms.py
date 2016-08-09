@@ -39,6 +39,22 @@ class DisableTriggerForm(forms.Form):
     ok = forms.BooleanField(initial=True, widget=forms.HiddenInput)
 
 
+class ActionPriorityForm(forms.Form):
+    CHOICES = (('', ' ---- '), ) + Action.PRIORITY_CHOICES
+    priority = forms.ChoiceField(choices=CHOICES, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Priority"),
+                "priority",
+            )
+        )
+
+
 class ActionForm(forms.ModelForm):
     """A Form for creating/updating actions. This form orders related behaviors
     alphabetically."""
@@ -669,8 +685,12 @@ class ActionTriggerForm(forms.ModelForm):
 class TriggerForm(forms.Form):
     """A simple for for choosing a Trigger's dynamic delivery options (currently,
     Time of Day & Frequency."""
-    time_of_day = forms.ChoiceField(choices=Trigger.TOD_CHOICES)
-    frequency = forms.ChoiceField(choices=Trigger.FREQUENCY_CHOICES)
+
+    TOD_CHOICES = (('', '----'), ) + Trigger.TOD_CHOICES
+    FREQUENCY_CHOICES = (('', '----'), ) + Trigger.FREQUENCY_CHOICES
+
+    time_of_day = forms.ChoiceField(choices=TOD_CHOICES, required=False)
+    frequency = forms.ChoiceField(choices=FREQUENCY_CHOICES, required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -681,11 +701,6 @@ class TriggerForm(forms.Form):
                 _("Reminder Options"),
                 "time_of_day",
                 "frequency",
-                Submit(
-                    "Reset all reminders",
-                    "Reset all reminders",
-                    css_class="button"
-                )
             )
         )
 
