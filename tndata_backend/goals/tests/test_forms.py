@@ -175,13 +175,14 @@ class TestActionForm(TestCase):
             'sequence_order', 'behavior', 'title', 'description',
             'more_info', 'external_resource', 'external_resource_name',
             'icon', 'notification_text', 'source_link', 'source_notes',
-            'notes', 'priority',
+            'notes', 'priority', 'action_type',
         ])
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):
         b = Behavior.objects.create(title="asdf")
         data = {
+            'action_type': 'showing',
             'sequence_order': '1',
             'behavior': b.id,
             'title': 'Some Title',
@@ -201,6 +202,7 @@ class TestActionForm(TestCase):
     def test_is_valid(self):
         b = Behavior.objects.create(title="asdf")
         data = {
+            'action_type': 'showing',
             'sequence_order': '0',
             'behavior': b.id,
             'title': 'X' * 256,
@@ -220,6 +222,7 @@ class TestActionForm(TestCase):
     def test_not_valid(self):
         b = Behavior.objects.create(title="asdf")
         data = {
+            'action_type': 'showing',
             'sequence_order': '0',
             'behavior': b.id,
             'title': 'X' * 512,  # TOO long
@@ -241,6 +244,7 @@ class TestActionForm(TestCase):
         b = Behavior.objects.create(title="B")
         a = Action.objects.create(sequence_order=1, behavior=b, title="title")
         data = {
+            'action_type': 'showing',
             'sequence_order': '1',
             'behavior': b.id,
             'title': 'TITLE',  # Duplicate, even tho differs by case

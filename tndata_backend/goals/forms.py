@@ -123,7 +123,7 @@ class ActionForm(forms.ModelForm):
             'notification_text', 'sequence_order', 'behavior', 'title',
             'description', 'more_info', 'external_resource',
             'external_resource_name', 'source_link', 'source_notes',
-            'notes', 'icon', 'priority',
+            'notes', 'icon', 'priority', 'action_type',
         ]
         labels = {"notes": "Scratchpad"}
         widgets = {
@@ -189,6 +189,7 @@ class ActionForm(forms.ModelForm):
                         _("Meta Details"),
                         "sequence_order",
                         "priority",
+                        "action_type",
                         "source_link",
                         "source_notes",
                     ),
