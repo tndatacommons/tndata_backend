@@ -42,10 +42,10 @@ from ..managers import (
     GoalManager,
     WorkflowManager
 )
-from ..mixins import ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin
+from ..mixins import ModifiedMixin, StateMixin, URLMixin
 
 
-class Category(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
+class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose.
 
     We also have content (goals, behaviors, actions) that is associated with
@@ -474,7 +474,7 @@ def _enroll_program_members(goal):
         goal.enroll(user)
 
 
-class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
+class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
 
     # URLMixin attributes
     urls_app_namespace = "goals"
@@ -700,7 +700,7 @@ def _enroll_users_in_published_behavior(behavior):
             ug.add_behaviors(behaviors=[behavior])
 
 
-class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Model):
+class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
     """A Behavior. Behaviors have many actions associated with them and contain
     several bits of information for a user."""
 
