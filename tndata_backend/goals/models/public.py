@@ -497,7 +497,8 @@ class Goal(ModifiedMixin, StateMixin, UniqueTitleMixin, URLMixin, models.Model):
 
     title_slug = models.SlugField(max_length=256, null=True)
     title = models.CharField(
-        max_length=256, db_index=True, unique=True,
+        max_length=256,
+        db_index=True,
         help_text="A Title for the Goal (50 characters)"
     )
     sequence_order = models.IntegerField(
@@ -715,10 +716,9 @@ class Behavior(URLMixin, UniqueTitleMixin, ModifiedMixin, StateMixin, models.Mod
     title = models.CharField(
         max_length=256,
         db_index=True,
-        unique=True,
-        help_text="A unique title for this Behavior (50 characters)"
+        help_text="A title for this Behavior (~50 characters)"
     )
-    title_slug = models.SlugField(max_length=256, db_index=True, unique=True)
+    title_slug = models.SlugField(max_length=256, db_index=True)
     sequence_order = models.IntegerField(
         default=0,
         db_index=True,
