@@ -29,7 +29,7 @@
   {% endif %}
   {% if can_duplicate and is_category %}
     <li><a href="{% url 'goals:category-reset-triggers' object.id object.title_slug %}">
-      <i class="fa fa-clock-o"></i> Reset Default Triggers</a></li>
+      <i class="fa fa-clock-o"></i> Reset Triggers / Priorities</a></li>
   {% endif %}
   {% if can_delete %}
     <li>

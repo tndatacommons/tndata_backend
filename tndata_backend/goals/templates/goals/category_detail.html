@@ -227,6 +227,7 @@
                         <br/><small>{{ trigger.time_details }}</small>
                       {% endif %}
                     {% endwith %}
+                    <small>| {{ action.get_priority_display }} priority.</small>
                   </li>
                 {% empty %}
                   <li><em>There are no actions in this behavior</em></li>

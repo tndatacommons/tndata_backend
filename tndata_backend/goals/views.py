@@ -36,6 +36,7 @@ from . import user_feed
 from . email import send_package_cta_email, send_package_enrollment_batch
 from . forms import (
     ActionForm,
+    ActionPriorityForm,
     AcceptEnrollmentForm,
     ActionTriggerForm,
     BehaviorForm,
@@ -80,6 +81,7 @@ from . permissions import (
     is_contributor,
     permission_required,
     staff_required,
+    superuser_required,
 )
 from . sequence import get_next_useractions_in_sequence
 from . utils import num_user_selections
@@ -510,28 +512,67 @@ class CategoryDeleteView(ContentEditorMixin, ContentDeleteView):
     success_url = reverse_lazy('goals:index')
 
 
+@user_passes_test(superuser_required, login_url='/goals/')
 def reset_default_triggers_in_category(request, pk, title_slug):
+    """This is a util view that lets a superuser do one of the following:
+
+    1. Reset all default triggers (time of day/ frequency) for all Actions
+       within a category, OR
+    2. Reset all Action priorities within the category.
+
+    XXX: this is probably too much for one view, but it's convenient to put
+         both options, here.
+
+    """
     category = get_object_or_404(Category, pk=pk, title_slug=title_slug)
 
     if request.method == "POST":
-        form = TriggerForm(request.POST)
-        if form.is_valid():
-            # Reset all actions in the category
-            count = 0
+        trigger_form = TriggerForm(request.POST, prefix="triggers")
+        reset_triggers = trigger_form.is_valid()
+
+        priority_form = ActionPriorityForm(request.POST, prefix="priority")
+        reset_priorities = priority_form.is_valid()
+
+        if any([reset_triggers, reset_priorities]):
+            trigger_count = 0
+            priority_count = 0
             for action in category.actions:
-                action.default_trigger.reset()
-                action.default_trigger.time_of_day = form.cleaned_data['time_of_day']
-                action.default_trigger.frequency = form.cleaned_data['frequency']
-                action.default_trigger.save()
-                count += 1
-            msg = "Reset reminders for {} notifications.".format(count)
+                # ToD and Frequency are optional, so only do updates if
+                # they've been selected for changes.
+                tod = trigger_form.cleaned_data.get('time_of_day')
+                freq = trigger_form.cleaned_data.get('frequency')
+                if reset_triggers and (tod or freq):
+                    action.default_trigger.reset()
+                    if tod:
+                        action.default_trigger.time_of_day = tod
+                    if freq:
+                        action.default_trigger.frequency = freq
+                    action.default_trigger.save()
+                    trigger_count += 1
+
+                # Priority is also optional.
+                priority = priority_form.cleaned_data.get('priority')
+                if reset_priorities and priority:
+                    action.priority = priority
+                    action.save()
+                    priority_count += 1
+
+            msg = "Reset {} default triggers and {} priorities.".format(
+                trigger_count,
+                priority_count
+            )
             messages.success(request, msg)
             return redirect(category.get_absolute_url())
     else:
-        form = TriggerForm()
+        trigger_form = TriggerForm(prefix="triggers")
+        priority_form = ActionPriorityForm(prefix="priority")
 
     template = "goals/reset_default_triggers_in_category.html"
-    ctx = {'form': form, 'category': category}
+    ctx = {
+        'trigger_form': trigger_form,
+        'priority_form': priority_form,
+        'category': category,
+    }
     return render(request, template, ctx)
 
 

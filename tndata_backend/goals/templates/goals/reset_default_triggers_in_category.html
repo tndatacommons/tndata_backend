@@ -9,24 +9,25 @@
 {% block breadcrumbs %}
   <li><a href="{% url 'goals:category-list' %}">Categories</a></li>
   <li><a href="{{ category.get_absolute_url }}">{{ category }}</a></li>
-  <li class="current">Reset Triggers</li>
+  <li class="current">Reset Triggers / Priorities</li>
 {% endblock %}
 
 
 {% block content %}
-<h1>Reset Triggers</h1>
+<h1>Reset Triggers / Notification Priorities</h1>
 
-{% if form %}
 <div data-alert class="alert-box alert">
   <i class="fa fa-warning"></i>
-  This will change the default trigger for <strong>all Actions</strong>
-  in this Category.
+  This will change the notifiations and/or default triggers for
+  <strong>all Actions</strong> in this Category.
   <br/>Please note that this could take a few seconds to complete.
   <a href="#" class="close">&times;</a>
 </div>
 
 <form action="{{ category.get_reset_trigger_url }}" method="post"> {% csrf_token %}
-  {% crispy form %}
+  {% crispy priority_form %}
+  {% crispy trigger_form %}
+  <hr/>
+  <p><input type="submit" value="Reset all Notifications" class="button"/></p>
 </form>
-{% endif %}
 {% endblock %}
