@@ -1,13 +1,16 @@
-from datetime import date, time
+from datetime import date, time, timedelta
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.test import override_settings
+from django.utils import timezone
 
 from model_mommy import mommy
 from rest_framework import status
 from rest_framework.test import APITestCase
+from utils.user_utils import tzdt
 
 from .. models import (
     Action,
@@ -3199,3 +3202,58 @@ class TestDailyProgressAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         expected = {'error': "UserBehavior matching query does not exist."}
         self.assertEqual(response.data, expected)
+
+    def test_streaks(self):
+        """
+        /api/users/progress/streaks.<format>/
+            goals.api.DailyProgressViewSet
+            dailyprogress-streaks
+
+        /api/users/progress/streaks/
+            goals.api.DailyProgressViewSet
+            dailyprogress-streaks
+
+        """
+        User = get_user_model()
+        user = User.objects.create_user('x', 'x@x.x', 'xxx')
+        today = timezone.now()
+
+        # Generate some data for the past 2 days.
+        #with patch('goals.models.progress.timezone.now') as mock_now:
+        with patch('django.db.models.fields.timezone.now') as mock_now:
+            # 2days ago, 8am UTC
+            dt = today - timedelta(days=2)
+            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 8, 0)
+            DailyProgress.objects.create(
+                user=user,
+                actions_total=1,
+                actions_completed=1,
+                behaviors_total=1,
+                checkin_streak=1,
+            )
+
+            # 1 day ago, 8am UTC
+            dt = today - timedelta(days=1)
+            mock_now.return_value = tzdt(dt.year, dt.month, dt.day, 8, 0)
+            DailyProgress.objects.create(
+                user=user,
+                actions_total=1,
+                actions_completed=1,
+                behaviors_total=1,
+                checkin_streak=1,
+            )
+
+        # GET request should return some data
+        url = self.get_url('dailyprogress-streaks')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + user.auth_token.key)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(sum(d['count'] for d in response.data.get('results')), 2)
+
+        with patch('goals.user_feed.timezone.now') as mock_now:
+            mock_now.return_value = tzdt(today.year, today.month, today.day, 20, 1)
+            url = self.get_url('dailyprogress-streaks')
+            self.client.credentials(HTTP_AUTHORIZATION='Token ' + user.auth_token.key)
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(sum(d['count'] for d in response.data.get('results')), 2)
