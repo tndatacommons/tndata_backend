@@ -142,6 +142,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         if not obj.is_authenticated():
             return {}
 
+        if hasattr(self, '_feed_results'):
+            return self._feed_results
+
         feed = {
             'progress': None,
             'suggestions': [],
@@ -210,6 +213,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
         # Streaks data
         feed['streaks'] = user_feed.progress_streaks(obj)
+        self._feed_results = feed
         return feed
 
     def get_progress(self, obj):
