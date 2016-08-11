@@ -195,6 +195,7 @@
       <caption>Daily Progress for the past {{ since }} days</caption>
       <thead>
         <tr>
+          <th>Day</th>
           <th>Total Actions</th>
           <th>Completed</th>
           <th>Snoozed</th>
@@ -204,12 +205,16 @@
           <th>Snoozed</th>
           <th>Dismissed</th>
           <th>Selected Behaviors</th>
-          <th>Updated</th>
-          <th>UserCompleted Actions</th>
+          <th>UserCompletedActions</th>
       </thead>
       <tbody>
         {% for dp in daily_progresses %}
           <tr>
+          <td>
+            {{ dp.created_on|date:"Y-m-d" }}<br/>
+            <span class="label secondary tiny">
+              {{ dp.updated_on|timesince }}</span>
+          </td>
           <td>{{ dp.actions_total }}</td>
           <td>{{ dp.actions_completed }}</td>
           <td>{{ dp.actions_snoozed }}</td>
@@ -219,10 +224,10 @@
           <td>{{ dp.customactions_snoozed }}</td>
           <td>{{ dp.customactions_dismissed }}</td>
           <td>{{ dp.behaviors_total }}</td>
-          <td>{{ dp.updated_on|timesince }}</td>
           <td>
+            Num: {{ dp.usercompletedactions.count|default:0 }}<br/>
             <ul>
-            {% for uca in dp.completed_actions %}
+            {% for uca in dp.usercompletedactions %}
               <li>{{ uca.action }} -- {{ uca.state }}</li>
             {% endfor %}
             </ul>
