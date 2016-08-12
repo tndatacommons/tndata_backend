@@ -31,10 +31,8 @@ from utils.dateutils import dates_range, weekday
 from utils.user_utils import local_day_range
 
 from .models import (
-    CustomAction,
     DailyProgress,
     Goal,
-    UserAction,
     UserCompletedAction,
     UserCompletedCustomAction,
     UserGoal,
@@ -44,6 +42,28 @@ from .models import (
 # Some Cache keys.
 TODAYS_ACTIONS = "todays_actions_{userid}"
 TODAYS_ACTIONS_TIMEOUT = 30
+
+
+def _fill_streaks(input_values, days):
+    """This is a utility function that should fill in missing values for an
+    ordered list of input values that contain a (datetime, int) tuple, keeping
+    only the most recent number of days.
+
+    NOTE: Input should already be ordered.
+
+    """
+    # NOTE: dates_range will generate dates up-to & including today (in UTC)
+    # But these dates will not be tz-aware, so we want to add one and slice
+    # off the last item in the list.
+    desired_dates = sorted([dt.date() for dt in dates_range(days+1)])[-days:]
+
+    # Insert zero-value items for any missing dates in the list.
+    current_dates = [t[0] for t in input_values]
+    for dt in desired_dates:
+        if dt not in current_dates:
+            input_values.append((dt, 0))
+    input_values = sorted(input_values)  # now re-sort
+    return input_values[-days:]  # Keep only the most recent "days" of values
 
 
 def progress_streaks(user, days=7):
@@ -59,27 +79,6 @@ def progress_streaks(user, days=7):
     }
 
     """
-
-    def _fill_streaks(input_values, days):
-        """Fills in data for missing dates"""
-        # XXX: dates_range will generate dates up-to & including today (in UTC)
-        # But these dates will not be tz-aware, so we want to add one and slice
-        # off the last item in the list.
-        dates = sorted([dt.date() for dt in dates_range(days+1)])[-days:]
-        index = 0  # index of the last, non-generated item
-
-        # Verify that our input has the same number of dates we're comparing.
-        if len(input_values) > days:
-            # and if not, keep the last `days` values.
-            input_values = input_values[-days:]
-
-        for dt in dates:
-            if index < len(input_values) and input_values[index][0] == dt:
-                lookup = index
-                index += 1
-                yield input_values[lookup]
-            else:
-                yield (dt, 0)
 
     # Generate streaks data & add actions/customactions completed
     since = timezone.now() - timedelta(days=days)

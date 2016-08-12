@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -11,15 +11,12 @@ from .. models import (
     Action,
     Behavior,
     Category,
-    CustomAction,
-    CustomGoal,
     Goal,
     Trigger,
     UserAction,
     UserBehavior,
     UserCategory,
     UserCompletedAction,
-    UserCompletedCustomAction,
     UserGoal,
 )
 from .. import user_feed
@@ -30,6 +27,71 @@ def tzdt(*args, **kwargs):
     tz = kwargs.pop("tz", timezone.utc)
     dt = datetime(*args)
     return timezone.make_aware(dt, timezone=tz)
+
+
+class TestProgressStreaks(TestCase):
+
+    def test__fil_streaks_with_exactly_seven(self):
+        # Given exactly 7 values, we should get the same input as a result.
+        data = [
+            (date(2016, 8, 5), 4),
+            (date(2016, 8, 6), 3),
+            (date(2016, 8, 7), 4),
+            (date(2016, 8, 8), 2),
+            (date(2016, 8, 9), 6),
+            (date(2016, 8, 10), 1),
+            (date(2016, 8, 11), 7),
+        ]
+        with patch('utils.dateutils.timezone.now') as mock_now:
+            mock_now.return_value = tzdt(2016, 8, 11, 9, 0)  # 9am
+            self.assertEqual(list(user_feed._fill_streaks(data, days=7)), data)
+
+    def test__fill_streaks_with_too_many(self):
+        # Given 8 values, we want to keep 7. This should return the 7
+        # most recent items in the list.
+        data = [
+            (date(2016, 8, 4), 21),
+            (date(2016, 8, 5), 4),
+            (date(2016, 8, 6), 3),
+            (date(2016, 8, 7), 4),
+            (date(2016, 8, 8), 2),
+            (date(2016, 8, 9), 6),
+            (date(2016, 8, 10), 1),
+            (date(2016, 8, 11), 7),
+        ]
+        expected = [
+            (date(2016, 8, 5), 4),
+            (date(2016, 8, 6), 3),
+            (date(2016, 8, 7), 4),
+            (date(2016, 8, 8), 2),
+            (date(2016, 8, 9), 6),
+            (date(2016, 8, 10), 1),
+            (date(2016, 8, 11), 7),
+        ]
+        with patch('utils.dateutils.timezone.now') as mock_now:
+            mock_now.return_value = tzdt(2016, 8, 11, 9, 0)  # 9am
+            self.assertEqual(list(user_feed._fill_streaks(data, days=7)), expected)
+
+    def test__fill_streaks_with_too_few(self):
+        # 4 values, we want 7
+        data = [
+            (date(2016, 8, 4), 21),
+            (date(2016, 8, 7), 4),
+            (date(2016, 8, 8), 2),
+            (date(2016, 8, 11), 5),
+        ]
+        expected = [
+            (date(2016, 8, 5), 0),
+            (date(2016, 8, 6), 0),
+            (date(2016, 8, 7), 4),
+            (date(2016, 8, 8), 2),
+            (date(2016, 8, 9), 0),
+            (date(2016, 8, 10), 0),
+            (date(2016, 8, 11), 5),
+        ]
+        with patch('utils.dateutils.timezone.now') as mock_now:
+            mock_now.return_value = tzdt(2016, 8, 11, 9, 0)  # 9am
+            self.assertEqual(list(user_feed._fill_streaks(data, days=7)), expected)
 
 
 class TestUserProgress(TestCase):
