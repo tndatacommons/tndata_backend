@@ -12,6 +12,6 @@ class CronLog(models.Model):
         return self.message
 
     class Meta:
-        ordering = ['created_on', 'command']
+        ordering = ['-created_on', 'command']
         verbose_name = "Cron Log"
         verbose_name_plural = "Cron Logs"
