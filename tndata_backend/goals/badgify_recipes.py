@@ -25,11 +25,19 @@ Typical workflow for best performances:
 # This one awards the badges, we need to run it more frequently, but we may
 # also need the signals (which will make it slower)
 
-TODO: This is currently only scheduled in staging, we need to schedul these
-      in production/worker.
+
+----
+
+CRON runs this command, but if you need to award badges manually, you can do
+so with:
+
+    $ python manage.py badgify_sync awards
+
+or with this version (which won't fire any signals)
 
     $ python manage.py badgify_sync awards --disable-signals
 
+----
 
 UPDATING BADGE IMAGES
 
@@ -43,10 +51,8 @@ If we need to update badge images, perform the following steps:
 
 NOTE on Recipes; A recipe class must implement:
 
-_ name class attribute
-    The badge name (humanized).
-- image property
-    The badge image/logo as a file object.
+- name class attribute -- The badge name (humanized).
+- image property -- The badge image/logo as a file object.
 
 Optionally, A recipe class may implement:
 
@@ -67,6 +73,8 @@ Optionally, A recipe class may implement:
     BADGIFY_BATCH_SIZE (500).
 
 """
+# NOTE: Badg recipe registration is at the bottom of this file.
+
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
