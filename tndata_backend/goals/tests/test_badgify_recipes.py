@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -35,6 +36,8 @@ from .. badgify_recipes import (
     ThoughtfulRecipe,
     TrioRecipe,
     TwoFerRecipe,
+    just_joined,
+    just_logged_in,
 )
 from .. models import (
     Action,
@@ -46,6 +49,74 @@ from .. models import (
     UserGoal,
     UserCompletedAction,
 )
+
+
+class TestBadgifyHelpers(TestCase):
+    """Tests for the helper functions in goals.badgify_recipes."""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create our test users
+        User = get_user_model()
+
+        now = timezone.now()
+        two_hrs = now - timedelta(hours=2)
+        yesterday = now - timedelta(days=1)
+        week_ago = now - timedelta(days=7)
+
+        # Some brand new users (now & 2 hours ago)
+        cls.new1 = mommy.make(User, date_joined=now, last_login=now)
+        cls.new2 = mommy.make(User, date_joined=two_hrs, last_login=two_hrs)
+
+        # Some less recent users, with recent logins
+        cls.recent1 = mommy.make(User, date_joined=yesterday, last_login=now)
+        cls.recent2 = mommy.make(User, date_joined=yesterday, last_login=two_hrs)
+
+        # Some Old users, with recent logins
+        cls.old1 = mommy.make(User, date_joined=week_ago, last_login=now)
+        cls.old2 = mommy.make(User, date_joined=week_ago, last_login=two_hrs)
+
+        # Set the nth login for each user
+        for user in [cls.new1, cls.new2, cls.recent1, cls.recent2]:
+            user.userprofile.app_logins = 1
+            user.userprofile.save()
+        for user in [cls.old1, cls.old2]:
+            user.userprofile.app_logins = 2
+            user.userprofile.save()
+
+    def test_just_joined(self):
+        # Users who joined within the past 10 minutes.
+        self.assertEqual(list(just_joined(minutes=10)), [self.new1.id])
+
+        # Users who joined within the past 3 hours.
+        self.assertEqual(
+            list(just_joined(minutes=180)),
+            [self.new1.id, self.new2.id]
+        )
+
+        # Users who joined yesterday
+        self.assertEqual(
+            list(just_joined(days=1)),
+            [self.recent1.id, self.recent2.id]
+        )
+
+    def test_just_logged_in(self):
+        # Users who first logged in within the past 10 minutes.
+        self.assertEqual(
+            list(just_logged_in(1, minutes=10)),
+            [self.new1.id, self.recent1.id]
+        )
+
+        # Users who first logged in within the past 3 hours
+        expected = [self.new1.id, self.new2.id, self.recent1.id, self.recent2.id]
+        self.assertEqual(list(just_logged_in(1, minutes=180)), expected)
+
+        # Users who logged in for the 2nd time within the past 10 minutes
+        self.assertEqual(list(just_logged_in(2, minutes=10)), [self.old1.id])
+
+        # Users who logged in for the 2nd time within the past 3 hours
+        expected = [self.old1.id, self.old2.id]
+        self.assertEqual(list(just_logged_in(2, minutes=180)), expected)
 
 
 class TestBadgifyRecipes(TestCase):

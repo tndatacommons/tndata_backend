@@ -101,7 +101,7 @@ def just_joined(minutes=None, days=None):
         joined_on = dateutils.date_range(since)
         users = User.objects.filter(date_joined__range=joined_on)
     elif minutes:
-        # Return all users who've joined in a 10-minute window at the given time
+        # Return all users who've joined in the past `minutes` time.
         since = timezone.now() - timedelta(minutes=minutes)
         users = User.objects.filter(date_joined__gte=since)
     return users.values_list("id", flat=True)
@@ -147,7 +147,7 @@ class SignupMixin:
 
     @property
     def user_ids(self):
-        """Returns a queryset of users who joined within the past 10 minutes"""
+        """Returns a queryset of users who joined within a given timeframe"""
         return just_joined(
             minutes=self.minutes_since_signup,
             days=self.days_since_signup
