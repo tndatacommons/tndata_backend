@@ -69,18 +69,40 @@ Optionally, A recipe class may implement:
 """
 from datetime import timedelta
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db.models import Case, Count, IntegerField, When
 from django.utils import timezone
 
-from badgify.recipe import BaseRecipe
+from badgify.recipe import BaseRecipe as BadgifyBaseRecipe
 import badgify
 
-from .models import DailyProgress
+from .models import DailyProgress, UserCompletedAction
 
 from utils import dateutils
+
+
+class BaseRecipe(BadgifyBaseRecipe):
+    """Badgify's built-in based Recipe checks for users that need to be
+    awarded a badge, as well as for users that no longer meet the criteria.
+
+    In the later case, those users are UNAWARDED the badge, which is NOT what
+    we want. Our recipes return a User queryset that for users that match
+    the award criteria *at that moment*.
+
+    It's possible that these recipes won't always return the set of Users that
+    should already have been awarded (e.g. the "just joined" and "recent logins"
+    style badges).
+
+    This based class overrides the following methods:
+
+    * `get_absolute_user_ids` -- We NEVER want to unaward, so this never returns
+      a set of users.
+
+    """
+    def get_obsolete_user_ids(self, db_read=None):
+        """Returns an empty list so users are never un-awarded."""
+        return ([], 0)
 
 
 # ----------------
@@ -117,7 +139,7 @@ def just_logged_in(nth, minutes=10):
 
 
 def checkin_streak(streak_number, badge_slug):
-    """Return a queryset of Users that have the a checkin-streak of
+    """Return a queryset of Users that have a checkin-streak of
     `streak_number`, but have not received this specified badge, yet."""
     User = get_user_model()
 
@@ -160,7 +182,7 @@ class StarterRecipe(SignupMixin, BaseRecipe):
     slug = 'starter'
     description = "Congrats on signing up! You're on your way to success!"
     badge_path = 'badges/glob-01-starter.png'
-    minutes_since_signup = 10
+    minutes_since_signup = 15
 
 
 class ExplorerRecipe(SignupMixin, BaseRecipe):
@@ -177,7 +199,7 @@ class LighthouseRecipe(SignupMixin, BaseRecipe):
     name = 'Lighthouse'
     slug = 'lighthouse'
     description = "You've used Compass for a month! Woo-hoo!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     days_since_signup = 30
 
 
@@ -271,7 +293,7 @@ class ThoughtfulRecipe(CheckinMixin, BaseRecipe):
     name = 'Thoughtful'
     slug = 'thoughtful'
     description = "This was your first time checking in! You're awesome!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 1
 
 
@@ -279,7 +301,7 @@ class ConscientiousRecipe(CheckinMixin, BaseRecipe):
     name = 'Conscientious'
     slug = 'conscientious'
     description = "This was your second time checking in! You're taking care of yourself!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 2
 
 
@@ -287,7 +309,7 @@ class StreakThreeDaysRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - three days!'
     slug = 'streak-three-days'
     description = "You've checked in three times in a row! Score!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 3
 
 
@@ -295,7 +317,7 @@ class StreakFiveDaysRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - five days!'
     slug = 'streak-five-days'
     description = "You've checked in five times in a row! Way to go!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 3
 
 
@@ -303,7 +325,7 @@ class StreakOneWeekRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - one week!'
     slug = 'streak-one-week'
     description = "You've checked in seven times in a row! Keep up the streak!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 7
 
 
@@ -311,7 +333,7 @@ class StreakTwoWeeksRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - two weeks!'
     slug = 'streak-two-weeks'
     description = "You've checked in every day for two weeks! Score!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 14
 
 
@@ -319,7 +341,7 @@ class StreakThreeWeeksRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - three weeks!'
     slug = 'streak-three-weeks'
     description = "You've checked in every day for three weeks! Score!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 21
 
 
@@ -327,7 +349,7 @@ class StreakFourWeeksRecipe(CheckinMixin, BaseRecipe):
     name = 'Streak - four weeks!'
     slug = 'streak-four-weeks'
     description = "You've checked in every day for four weeks! Score!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     checkin_days = 28
 
 
@@ -346,7 +368,7 @@ class ParticipantRecipe(BaseRecipe):
 
     @property
     def image(self):
-        return staticfiles_storage.open('badges/placeholder.png')
+        return staticfiles_storage.open('badges/placeholder.png')  # TODO
 
     @property
     def user_ids(self):
@@ -486,9 +508,11 @@ class UserCompletedActionCountMixin:
         since = timezone.now() - timedelta(minutes=10)
 
         # Find users that have completed an Action within the past 10 minutes.
-        # TODO: check that the state == "completed"
-        users = User.objects.filter(usercompletedaction__created_on__gte=since)
-        users = users.distinct()
+        user_ids = UserCompletedAction.objects.filter(
+            state=UserCompletedAction.COMPLETED,
+            created_on__gte=since
+        ).values_list("user", flat=True)
+        users = User.objects.filter(pk__in=user_ids).distinct()
         users = users.annotate(num_ucas=Count('usercompletedaction'))
         users = users.filter(num_ucas=self.num_completed)
         return users.values_list("id", flat=True)
@@ -536,10 +560,11 @@ class TenSpotRecipe(UserCompletedActionCountMixin, BaseRecipe):
 
 
 class UserCompletedBehaviorCountMixin:
-    """A mixin that counts a user's completed Behaviors.
+    """A mixin that counts a user's completed Behaviors. In order to get this,
+    a user must _complete_ all of the actions within a behavior.
 
     """
-    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    badge_path = 'badges/placeholder.png'  # TODO: Path to the badge.
     num_completed = 1  # Number of UserBehavior's marked complete
 
     @property
@@ -562,19 +587,19 @@ class UserCompletedBehaviorCountMixin:
 
 
 class BehaviorCompletedRecipe(UserCompletedBehaviorCountMixin, BaseRecipe):
+    # TODO: more behavior completion badges.
     name = 'Wayfarer'
     slug = 'wayfarer'
     description = "Congrats on completing a set of actions!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     num_completed = 1
-# TODO: more behavior completion badges.
 
 
 class UserCompletedGoalCountMixin:
     """A mixin that counts a user's completed Goals.
 
     """
-    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    badge_path = 'badges/placeholder.png'  # TODOPath to the badge.
     num_completed = 1  # Number of UserGoals's marked complete
 
     @property
@@ -596,12 +621,12 @@ class UserCompletedGoalCountMixin:
         return users.values_list("id", flat=True)
 
 
-# TODO: What to name Goal Completion goals & more of these
 class GoalCompletedRecipe(UserCompletedGoalCountMixin, BaseRecipe):
+    # TODO: What to name Goal Completion goals & more of these
     name = 'Voyager'
     slug = 'voyager'
     description = "Congrats on completing every action in a Goal!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     num_completed = 1
 
 
@@ -609,7 +634,7 @@ class UserCreatedCustomGoalCountMixin:
     """A mixin that counts a user's CustomGoals when one is created.
 
     """
-    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    badge_path = 'badges/placeholder.png'  # TODO: Path to the badge.
     num_custom_goals = 1
 
     @property
@@ -629,8 +654,8 @@ class UserCreatedCustomGoalCountMixin:
         return users.values_list("id", flat=True)
 
 
-# TODO: What to name Custom Goal Creation badges? More of these
 class CustomGoalCreatedRecipe(UserCreatedCustomGoalCountMixin, BaseRecipe):
+    # TODO: What to name Custom Goal Creation badges? More of these
     name = 'Captain'
     slug = 'captain'
     description = "Congrats on creating your first Custom Goal!"
@@ -642,7 +667,7 @@ class UserCompletedCustomActionCountMixin:
     """A mixin that counts a user's completed custom actions.
 
     """
-    badge_path = 'badges/placeholder.png'  # Path to the badge.
+    badge_path = 'badges/placeholder.png'  # TODO: Path to the badge.
     num_completed = 1
 
     @property
@@ -664,46 +689,62 @@ class UserCompletedCustomActionCountMixin:
         return users.values_list("id", flat=True)
 
 
-# TODO: What to name Custom Action Completion badges? More of these
 class CustomActionCompletedRecipe(UserCompletedCustomActionCountMixin, BaseRecipe):
+    # TODO: What to name Custom Action Completion badges? More of these
     name = 'Doer'
     slug = 'doer'
     description = "Congrats on creating your first Custom Action!"
-    badge_path = 'badges/placeholder.png'
+    badge_path = 'badges/placeholder.png'  # TODO
     num_completed = 1
 
 
-# Register our badges.
-if settings.DEBUG or settings.STAGING:
-    badgify.register(StarterRecipe)
-    badgify.register(ExplorerRecipe)
-    badgify.register(HomecomingRecipe)
-    badgify.register(SeekerRecipe)
-    badgify.register(PathfinderRecipe)
-    badgify.register(NavigatorRecipe)
-    # badgify.register(NavigatorRecipe)
-    # badgify.register(ThoughtfulRecipe)
-    # badgify.register(ConscientiousRecipe)
-    # badgify.register(StreakThreeDaysRecipe)
-    # badgify.register(StreakFiveDaysRecipe)
-    # badgify.register(StreakOneWeekRecipe)
-    # badgify.register(StreakTwoWeeksRecipe)
-    # badgify.register(StreakThreeWeeksRecipe)
-    # badgify.register(StreakFourWeeksRecipe)
-    # badgify.register(ParticipantRecipe)
-    badgify.register(GoalSetterRecipe)
-    badgify.register(StriverRecipe)
-    badgify.register(AchieverRecipe)
-    badgify.register(HighFiveRecipe)
-    badgify.register(PerfectTenRecipe)
-    badgify.register(SuperstarRecipe)
-    badgify.register(FirstTimerRecipe)
-    badgify.register(TwoFerRecipe)
-    badgify.register(TrioRecipe)
-    badgify.register(ActionHighFiveRecipe)
-    badgify.register(TenSpotRecipe)
-    # badgify.register(BehaviorCompletedRecipe)
-    # badgify.register(GoalCompletedRecipe)
-    # badgify.register(CustomGoalCreatedRecipe)
-    # badgify.register(LighthouseRecipe)
-    # badgify.register(CustomActionCompletedRecipe)
+# Register our badges
+# -------------------
+
+# Login-related badges.
+badgify.register(StarterRecipe)
+badgify.register(ExplorerRecipe)
+badgify.register(HomecomingRecipe)
+badgify.register(SeekerRecipe)
+badgify.register(PathfinderRecipe)
+badgify.register(NavigatorRecipe)
+
+# We've currently disabled the "checkin" so all of those badges are disabled.
+# badgify.register(ThoughtfulRecipe)
+# badgify.register(ConscientiousRecipe)
+# badgify.register(StreakThreeDaysRecipe)
+# badgify.register(StreakFiveDaysRecipe)
+# badgify.register(StreakOneWeekRecipe)
+# badgify.register(StreakTwoWeeksRecipe)
+# badgify.register(StreakThreeWeeksRecipe)
+# badgify.register(StreakFourWeeksRecipe)
+
+
+# Goal-selected badges. We've disabled these because we've got so many
+# ways a user can get auto-enrolled in a goal, it makes little sense to
+# magically get 10 badges without doing anything.
+# badgify.register(GoalSetterRecipe)
+# badgify.register(StriverRecipe)
+# badgify.register(AchieverRecipe)
+# badgify.register(HighFiveRecipe)
+# badgify.register(PerfectTenRecipe)
+# badgify.register(SuperstarRecipe)
+
+# When users *complete* actions.
+badgify.register(FirstTimerRecipe)
+badgify.register(TwoFerRecipe)
+badgify.register(TrioRecipe)
+badgify.register(ActionHighFiveRecipe)
+badgify.register(TenSpotRecipe)
+
+# Wen Users *complete* all actinos within a Behavior.
+badgify.register(BehaviorCompletedRecipe)
+
+# NOTE: These recipes are functionaly, but need appropriate Badge icons.
+# badgify.register(GoalCompletedRecipe)
+# badgify.register(CustomGoalCreatedRecipe)
+# badgify.register(LighthouseRecipe)
+# badgify.register(CustomActionCompletedRecipe)
+
+# Package enrollment acceptance (needs icon)
+# badgify.register(ParticipantRecipe)
