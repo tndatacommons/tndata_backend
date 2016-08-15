@@ -8,6 +8,7 @@ from model_mommy import mommy
 
 from .. badgify_recipes import (
     AchieverRecipe,
+    ActionHighFiveRecipe,
     BehaviorCompletedRecipe,
     ConscientiousRecipe,
     CustomActionCompletedRecipe,
@@ -149,6 +150,14 @@ class TestBadgifyRecipes(TestCase):
 
         cls.action = mommy.make(
             Action, title="Action", state="published", behavior=cls.behavior)
+        cls.action2 = mommy.make(
+            Action, title="Action2", state="published", behavior=cls.behavior)
+        cls.action3 = mommy.make(
+            Action, title="Action3", state="published", behavior=cls.behavior)
+        cls.action4 = mommy.make(
+            Action, title="Action4", state="published", behavior=cls.behavior)
+        cls.action5 = mommy.make(
+            Action, title="Action5", state="published", behavior=cls.behavior)
 
         cls.user = User.objects.create_user("badgifyuser", "bu@a.b", "pass")
         cls.user.last_login = timezone.now()  # assume we just logged in.
@@ -305,29 +314,84 @@ class TestBadgifyRecipes(TestCase):
         self.assertIsNotNone(recipe.user_ids)
 
     def test_firsttimer_recipe(self):
-        # TODO For a user's first 'got it' (e.g. UserCompletedAction)
+        # For a user's first 'got it' (e.g. UserCompletedAction)
         recipe = FirstTimerRecipe()
         ua = UserAction.objects.create(user=self.user, action=self.action)
-        uca = UserCompletedAction.objects.create(
+        UserCompletedAction.objects.create(
             user=self.user,
             useraction=ua,
-            action=self.action
+            action=self.action,
+            state=UserCompletedAction.COMPLETED
+
         )
         self.assertEqual(list(recipe.user_ids), [self.user.id])
 
         # clean up
-        uca.delete()
-        ua.delete()
+        self.user.useraction_set.all().delete()
+        self.user.usercompletedaction_set.all().delete()
 
     def test_twofer_recipe(self):
-        # TODO For a user's 2nd 'got it' (e.g. UserCompletedAction)
+        # For a user's 2nd 'got it' (e.g. UserCompletedAction)
         recipe = TwoFerRecipe()
         self.assertIsNotNone(recipe.user_ids)
 
+        for action in [self.action, self.action2]:
+            ua = UserAction.objects.create(user=self.user, action=action)
+            UserCompletedAction.objects.create(
+                user=self.user,
+                useraction=ua,
+                action=action,
+                state=UserCompletedAction.COMPLETED
+
+            )
+        self.assertEqual(list(recipe.user_ids), [self.user.id])
+
+        # clean up
+        self.user.useraction_set.all().delete()
+        self.user.usercompletedaction_set.all().delete()
+
     def test_trio_recipe(self):
-        # TODO For a user's 3rd 'got it' (e.g. UserCompletedAction)
+        # For a user's 3rd 'got it' (e.g. UserCompletedAction)
         recipe = TrioRecipe()
         self.assertIsNotNone(recipe.user_ids)
+
+        for action in [self.action, self.action2, self.action3]:
+            ua = UserAction.objects.create(user=self.user, action=action)
+            UserCompletedAction.objects.create(
+                user=self.user,
+                useraction=ua,
+                action=action,
+                state=UserCompletedAction.COMPLETED
+
+            )
+        self.assertEqual(list(recipe.user_ids), [self.user.id])
+
+        # clean up
+        self.user.useraction_set.all().delete()
+        self.user.usercompletedaction_set.all().delete()
+
+    def test_action_high_five_recipe(self):
+        # For a user's 5th 'got it' (e.g. UserCompletedAction)
+        recipe = ActionHighFiveRecipe()
+        self.assertIsNotNone(recipe.user_ids)
+        actions = [
+            self.action, self.action2, self.action3,
+            self.action4, self.action5
+        ]
+        for action in actions:
+            ua = UserAction.objects.create(user=self.user, action=action)
+            UserCompletedAction.objects.create(
+                user=self.user,
+                useraction=ua,
+                action=action,
+                state=UserCompletedAction.COMPLETED
+
+            )
+        self.assertEqual(list(recipe.user_ids), [self.user.id])
+
+        # clean up
+        self.user.useraction_set.all().delete()
+        self.user.usercompletedaction_set.all().delete()
 
     def test_behavior_completed_recipe(self):
         # When a user completes a behavior.
