@@ -13,20 +13,22 @@ KEY = "las98a890se4na908sdfanm32"
 @csrf_exempt
 def add_entry(request):
     results = {}
-
     if (
         request.method == "POST" and
         request.POST.get('key') == KEY and
         request.POST.get('command') and
         request.POST.get('message')
     ):
+        host = request.POST.get('host', request.get_host())
         item = CronLog.objects.create(
             command=request.POST['command'],
-            message=request.POST['message']
+            message=request.POST['message'],
+            host=host
         )
         return JsonResponse({
             'command': item.command,
             'message': item.message,
+            'host': item.host,
             'created_on': item.created_on,
         })
     elif request.method == "POST" and request.POST.get('key') is None:

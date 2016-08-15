@@ -5,6 +5,7 @@ class CronLog(models.Model):
     """A log of cron jobs."""
     command = models.CharField(max_length=256)
     message = models.TextField()
+    host = models.CharField(max_length=256, blank=True, default="")
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
