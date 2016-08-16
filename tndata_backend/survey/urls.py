@@ -1,8 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from . import views
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(
         r'^$',
         views.IndexView.as_view(),
@@ -162,5 +162,4 @@ urlpatterns = patterns('',
         views.OpenEndedQuestionDetailView.as_view(),
         name='openended-detail'
     ),
-
-)
+]

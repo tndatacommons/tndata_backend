@@ -1,8 +1,8 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from . import views
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(
         r'^password/reset/complete/$',
         views.PasswordResetCompleteView.as_view(),
@@ -29,4 +29,4 @@ urlpatterns = patterns('',
         name='set_new_password'
     ),
     url(r'^signup/$', views.signup, {'content_viewer': True}, name='signup'),
-)
+]
