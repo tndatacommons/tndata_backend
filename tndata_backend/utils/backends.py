@@ -4,7 +4,6 @@ Custom Authentication Backends.
 """
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import check_password
 
 
 class EmailAuthenticationBackend(ModelBackend):
@@ -20,7 +19,7 @@ class EmailAuthenticationBackend(ModelBackend):
 
         try:
             user = User.objects.get(email__iexact=email)
-            if check_password(password, user.password):
+            if user.check_password(password):
                 return user
         except User.DoesNotExist:
             pass
