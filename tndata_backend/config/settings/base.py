@@ -165,7 +165,6 @@ INSTALLED_APPS = (
     'axes',
     'badgify',
     'badgify_api',
-    'cacheops',
     'corsheaders',
     'crispy_forms',
     'crispy_forms_foundation',
@@ -303,22 +302,6 @@ REDIS_METRICS = {
 # Use the Redis cache as a session backend: https://goo.gl/U0xajQ
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
-
-# django-cacheops: https://github.com/Suor/django-cacheops#readme
-CACHEOPS_REDIS = {
-    'host': REDIS_HOST,
-    'port': REDIS_PORT,
-    'db': REDIS_CACHE_DB,
-    'socket_timeout': 5,
-    'password': REDIS_PASSWORD,
-}
-CACHEOPS_DEFAULTS = {'timeout': CACHE_TIMEOUT}
-CACHEOPS = {
-    'auth.*': {'ops': ('fetch', 'get')},
-    'auth.permission': {'ops': 'all'},
-}
-CACHEOPS_DEGRADE_ON_FAILURE = True
-
 
 # django.contrib.auth settings.
 LOGIN_URL = 'login'  # Named url patter for the built-in auth
