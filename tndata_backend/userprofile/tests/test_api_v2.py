@@ -40,6 +40,56 @@ class V2APITestCase(APITestCase):
 
 
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+class TestObtainAuthorization(V2APITestCase):
+    """Tests for obtaining an auth token via the api."""
+
+    def setUp(self):
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="test",
+            email="test@example.com",
+            password="secret"
+        )
+
+    def test_get_not_allowed(self):
+        """GET Requests are not allowed."""
+        url = self.get_url('auth-token')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_auth_token(self):
+        """Verify that we can acquire an auth token, and that doing so
+        increments UserProfile.app_logins."""
+
+        from clog.clog import clog
+
+        # Ensure we start w/ a value of 0
+        profile = UserProfile.objects.get(user__pk=self.user.id)
+        self.assertEqual(profile.app_logins, 0)
+
+        # POST to /api/auth/token/ with an email/password pair:
+        # {"email": "YOUR-EMAIL", "password": "YOUR-PASSWORD"}
+        url = self.get_url('auth-token')
+        payload = {'email': 'test@example.com', 'password': 'secret'}
+        response = self.client.post(url, payload)
+
+        clog(response.data, title="auth-token response data", color="magenta")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue('token' in response.data)
+        self.assertEqual(self.user.id, response.data['user_id'])
+
+        # Should now be 1.
+        profile = UserProfile.objects.get(user__pk=self.user.id)
+        self.assertTrue(profile.app_logins, 1)
+
+        # if we do it again, app_logins shoud be 2.
+        response = self.client.post(url, payload)
+        profile = UserProfile.objects.get(user__pk=self.user.id)
+        self.assertTrue(profile.app_logins, 2)
+
+
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
 class TestPlaceAPI(V2APITestCase):
     """Tests for the `Place` api endpoint. NOTE: We have a migration that
     creates Home, Work, School places."""
