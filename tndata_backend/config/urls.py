@@ -146,19 +146,19 @@ urlpatterns = [
         r'^api/users/behaviors/progress/$',
         goal_views.fake_api,
         kwargs={'option': 'behaviorprogress'},
-        name="goals:fake-api"
+        name="fake-api"
     ),
     url(
         r'^api/users/goals/progress/average/$',
         goal_views.fake_api,
         kwargs={'option': 'goalprogressaverage'},
-        name="goals:fake-api"
+        name="fake-api"
     ),
     url(
         r'^api/users/goals/progress/$',
         goal_views.fake_api,
         kwargs={'option': 'goalprogress'},
-        name="goals:fake-api"
+        name="fake-api"
     ),
     url(r'^api/', include(router.urls)),
     url(
