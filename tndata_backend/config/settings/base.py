@@ -474,7 +474,6 @@ QUERYCOUNT = {
 if DEBUG:
     INSTALLED_APPS = INSTALLED_APPS + (
         'debug_toolbar',
-        #'pympler',
         'querycount',
     )
 
@@ -487,7 +486,6 @@ if DEBUG:
     DEBUG_TOOLBAR_PANELS = [
         'debug_toolbar.panels.versions.VersionsPanel',
         'debug_toolbar.panels.timer.TimerPanel',
-        # 'pympler.panels.MemoryPanel',
         'debug_toolbar.panels.settings.SettingsPanel',
         'debug_toolbar.panels.headers.HeadersPanel',
         'debug_toolbar.panels.request.RequestPanel',
