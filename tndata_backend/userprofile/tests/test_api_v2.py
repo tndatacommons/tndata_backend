@@ -61,8 +61,6 @@ class TestObtainAuthorization(V2APITestCase):
         """Verify that we can acquire an auth token, and that doing so
         increments UserProfile.app_logins."""
 
-        from clog.clog import clog
-
         # Ensure we start w/ a value of 0
         profile = UserProfile.objects.get(user__pk=self.user.id)
         self.assertEqual(profile.app_logins, 0)
@@ -72,8 +70,6 @@ class TestObtainAuthorization(V2APITestCase):
         url = self.get_url('auth-token')
         payload = {'email': 'test@example.com', 'password': 'secret'}
         response = self.client.post(url, payload)
-
-        clog(response.data, title="auth-token response data", color="magenta")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue('token' in response.data)
