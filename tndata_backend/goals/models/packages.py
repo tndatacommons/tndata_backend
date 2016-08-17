@@ -157,7 +157,7 @@ class PackageEnrollment(models.Model):
             ug.save()
 
         # Enroll the User in the Behaviors
-        behaviors = Behavior.objects.published().filter(goals=goals).distinct()
+        behaviors = Behavior.objects.published().filter(goals__in=goals).distinct()
         for behavior in behaviors:
             UserBehavior.objects.get_or_create(user=self.user, behavior=behavior)
 

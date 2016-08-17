@@ -53,22 +53,24 @@ class TestSequencing(TestCase):
             return mommy.make(Trigger, time_of_day='morning', frequency='daily')
 
         def _goal(title, category, seq):  # Function to create a Goal
-            return mommy.make(
+            goal = mommy.make(
                 Goal,
                 title=title,
                 sequence_order=seq,
                 state='published',
-                categories=[category]
             )
+            goal.categories.add(category)
+            return goal
 
         def _behavior(title, goal, seq):  # Function to create a Behavior
-            return mommy.make(
+            b = mommy.make(
                 Behavior,
                 title=title,
                 sequence_order=seq,
                 state='published',
-                goals=[goal]
             )
+            b.goals.add(goal)
+            return b
 
         def _action(title, behavior, seq):  # Function to generate an Action
             return mommy.make(

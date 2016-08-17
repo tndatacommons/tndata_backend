@@ -361,7 +361,7 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
             ug.save()
 
         # Then enroll the user in the published Behaviors
-        behaviors = Behavior.objects.published().filter(goals=goals).distinct()
+        behaviors = Behavior.objects.published().filter(goals__in=goals).distinct()
         for behavior in behaviors:
             user.userbehavior_set.get_or_create(behavior=behavior)
 
