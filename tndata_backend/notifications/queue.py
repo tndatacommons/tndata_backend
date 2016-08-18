@@ -109,17 +109,13 @@ def messages():
 
 def clear():
     """Clear ALL scheduled jobs in the queue."""
-    scheduler = get_scheduler()
     for job in scheduler.get_jobs():
-        job.cancel()
+        scheduler.cancel(job)
 
 
 def cancel(job_id):
     """Cancel a scheduled job, given its ID."""
-    if job_id:
-        jobs = (job for job, _ in messages() if job.id == job_id)
-        for job in jobs:
-            job.cancel()
+    scheduler.cancel(job_id)
 
 
 class TotalCounter:
