@@ -247,7 +247,7 @@ class Trigger(models.Model):
             'morning': [9, 10, 11],
             'noonish': [11, 12, 13],
             'afternoon': [13, 14, 15, 16, 17],
-            'evening': [17, 18, 19, 20, 21],
+            'evening': [18, 19, 20, 21],
             'late': [22, 23, 0, 1, 2],
             'allday': [8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
         }
