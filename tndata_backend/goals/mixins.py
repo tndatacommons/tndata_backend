@@ -384,12 +384,17 @@ class StateMixin:
         Returns a queryset of the object's chilren.
         """
         children = self.get_children()
-        # only publish draft/pending children, but return the whole set
         if len(children) > 0:
+            # We'll only publish draft/pending children
             for obj in children.filter(state__in=['draft', 'pending-review']):
+                pre_state = obj.state
                 obj.publish()
                 obj.save(updated_by=updated_by)
-        return children
+
+        # NOTE: Since we may have updated some of these objects (by publishing
+        # them) we nee to re-fetch the children from the database. This is
+        # a bit inefficient, but otherwise we won't get saved content.
+        return self.get_children()
 
 
 class ModifiedMixin:
