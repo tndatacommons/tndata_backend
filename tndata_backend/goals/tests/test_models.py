@@ -754,7 +754,7 @@ class TestTrigger(TestCase):
         trigger = mommy.make(Trigger, **kwargs)
         times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
         hours = set([t.hour for t in times])
-        self.assertEqual(hours, {17, 18, 19, 20, 21})
+        self.assertEqual(hours, {18, 19, 20, 21})
 
         # Ensure late times are in [22, 23, 0, 1, 2]
         kwargs['time_of_day'] = 'late'
@@ -762,6 +762,13 @@ class TestTrigger(TestCase):
         times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
         hours = set([t.hour for t in times])
         self.assertEqual(hours, {22, 23, 0, 1, 2})
+
+        # Ensure allday times are in [8, ... 17]
+        kwargs['time_of_day'] = 'allday'
+        trigger = mommy.make(Trigger, **kwargs)
+        times = [trigger.dynamic_trigger_date(user=user) for i in range(100)]
+        hours = set([t.hour for t in times])
+        self.assertEqual(hours, {8, 9, 10, 11, 12, 13, 14, 15, 16, 17})
 
         # clean up
         trigger.delete()
