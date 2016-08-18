@@ -162,7 +162,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd-party apps
-    'axes',
+    # 'axes',
     'badgify',
     'badgify_api',
     'corsheaders',
@@ -334,10 +334,10 @@ TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
 RAINBOWTESTS_HIGHLIGHT_PATH = '/vagrant/tndata_backend/'
 
 # django-axes
-AXES_LOGIN_FAILURE_LIMIT = 1
-AXES_LOCK_OUT_AT_FAILURE = False  # Don't lock accounts.
-AXES_VERBOSE = True
-AXES_USERNAME_FORM_FIELD = 'email'
+# AXES_LOGIN_FAILURE_LIMIT = 1
+# AXES_LOCK_OUT_AT_FAILURE = False  # Don't lock accounts.
+# AXES_VERBOSE = True
+# AXES_USERNAME_FORM_FIELD = 'email'
 
 # rq & django_rq config, See:
 # - http://python-rq.org/docs/workers/
