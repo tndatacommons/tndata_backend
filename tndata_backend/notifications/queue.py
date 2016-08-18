@@ -21,7 +21,7 @@ def _log_slack(msg, username):
         'bkmontgomery': 'bkmontgomery',
         # 'ringram': 'ringram',
     }
-    if SLACK_USERS.get(username):
+    if SLACK_USERS.get(username) and settings.DEBUG and not settings.STAGING:
         post_private_message(SLACK_USERS[username], msg)
 
 
