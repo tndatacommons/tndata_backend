@@ -178,14 +178,26 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         return value
 
     def get_queryset(self):
-        self.queryset = super().get_queryset()
+        user = self.request.user
+
+        # If you're authenticated we DO Want to include your packages, too.
+        authenticated = self.request.user.is_authenticated()
+        if authenticated:
+            # Get all published categories (including packages)
+            qs = models.Category.objects.filter(state='published')
+            # But ONLY include packages in which the user has been enrolled.
+            packages = models.Category.objects.filter(packaged_content=True)
+            packages = packages.exclude(usercategory__user=user)
+            packages = packages.values_list("id", flat=True)
+            qs = qs.exclude(pk__in=packages)
+            self.queryset = qs
+        else:
+            self.queryset = super().get_queryset()
 
         # If the user is enrolled in a program/organization, we need to provide
         # the appropriate set of categories. (note: being in a program also
         # makes the user a member of the organization)
-        user = self.request.user
-
-        if user.is_authenticated() and user.member_organizations.exists():
+        if authenticated and user.member_organizations.exists():
             # We want them to see public content, but NOT categories that
             # are in an organization that the user is not enrolled in...
             others = models.Category.objects.filter(organizations__isnull=False)
