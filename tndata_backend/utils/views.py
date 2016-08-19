@@ -79,6 +79,10 @@ def _setup_enduser(request, user):
         program.members.add(user)
         program.organization.members.add(user)
         _enroll_user_in_program.delay(user.id, program.id)
+
+        # Don't make them go through onboarding
+        user.userprofile.needs_onboarding = False
+        user.userprofile.save()
     except Program.DoesNotExist:
         pass
 
