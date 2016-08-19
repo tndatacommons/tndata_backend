@@ -21,7 +21,9 @@ from .. models import (
     CustomGoal,
     DailyProgress,
     Goal,
+    Organization,
     PackageEnrollment,
+    Program,
     Trigger,
     UserGoal,
     UserBehavior,
@@ -148,6 +150,75 @@ class TestCategoryAPI(V2APITestCase):
         url = self.get_url('category-detail', args=[self.category.id])
         response = self.client.post(url, {})
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_category_list_when_user_has_packages(self):
+        """Ensure the user sees categories (packages) they've selected, but NOT
+        packages they haven't selected."""
+        # when the user is associated with the package, we should get a 200
+        User = get_user_model()
+        user = User.objects.create(username="a", email="a@b.co")
+
+        # Create additional categories / packages.
+        pkg1 = Category.objects.create(order=2, title="P1", packaged_content=True)
+        pkg2 = Category.objects.create(order=3, title="P2", packaged_content=True)
+        for pkg in [pkg1, pkg2]:
+            pkg.publish()
+            pkg.save()
+        pkg1.enroll(user)  # User is ONLY enrolled in P1
+
+        # Make an authenticated request
+        url = self.get_url('category-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        cats = sorted([c['title'] for c in response.data['results']])
+        self.assertEqual(cats, ['P1', 'Test Category'])
+
+    def test_category_list_when_user_in_program(self):
+        """Ensure the user sees categories from a Program in which they're
+        enrolled, but NOT categories that have been hidden from their Org."""
+
+        # when the user is associated with the package, we should get a 200
+        User = get_user_model()
+        user = User.objects.create(username="a", email="a@b.co")
+
+        # Create some Orgs & Programs
+        org1 = mommy.make(Organization, name="O1")
+        prog1 = mommy.make(Program, name="P1", organization=org1)
+        org2 = mommy.make(Organization, name="O2")
+        prog2 = mommy.make(Program, name="P2", organization=org2)
+
+        # Create additional categories, and add the user to Org/Prog 1
+        cat1 = Category.objects.create(order=2, title="C1")
+        cat1.organizations.add(org1)
+        cat1.hidden_from_organizations.add(org2)
+        prog1.categories.add(cat1)
+
+        cat2 = Category.objects.create(order=3, title="C2")
+        cat2.organizations.add(org2)
+        cat2.hidden_from_organizations.add(org1)
+        prog2.categories.add(cat2)
+        for cat in [cat1, cat2]:
+            cat.publish()
+            cat.save()
+
+        cat1.enroll(user)  # User is ONLY enrolled in P1
+        org1.members.add(user)
+        prog1.members.add(user)
+
+        # Make an authenticated request
+        url = self.get_url('category-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        cats = sorted([c['title'] for c in response.data['results']])
+        self.assertEqual(cats, ['C1', 'Test Category'])
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
@@ -3219,7 +3290,7 @@ class TestDailyProgressAPI(V2APITestCase):
         today = timezone.now()
 
         # Generate some data for the past 2 days.
-        #with patch('goals.models.progress.timezone.now') as mock_now:
+        # with patch('goals.models.progress.timezone.now') as mock_now:
         with patch('django.db.models.fields.timezone.now') as mock_now:
             # 2days ago, 8am UTC
             dt = today - timedelta(days=2)
