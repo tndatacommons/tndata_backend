@@ -1,6 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 
+import logging
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Min, Q
@@ -21,6 +22,9 @@ from .settings import (
 
 from utils import user_utils
 from utils.datastructures import flatten
+
+
+logger = logging.getLogger(__name__)
 
 
 class CustomActionManager(models.Manager):
@@ -61,7 +65,16 @@ class DailyProgressManager(models.Manager):
     def for_today(self, user):
         """Get/Create the current day's DailyProgress instance for the user"""
         start, end = user_utils.local_day_range(user)
-        obj, _ = self.get_or_create(user=user, created_on__range=(start, end))
+        try:
+            obj = self.get(user=user, created_on__range=(start, end))
+        except self.model.MultipleObjectsReturned:
+            # This is not supposed to happen but it did. Just resturn the
+            # first item and log it.
+            msg = "MultipleObjectsReturned for DailyProgress; user.id = {}"
+            logger.warning(msg.format(user.id))
+            obj = self.filter(user=user, created_on__range=(start, end))[0]
+        except self.model.DoesNotExist:
+            obj = self.create(user=user)
         return obj
 
 
