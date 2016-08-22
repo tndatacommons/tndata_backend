@@ -572,14 +572,15 @@ class UserAction(models.Model):
             # converting it back to the users local timezone
             trigger_times.append(to_localtime(self.next_trigger_date, self.user))
 
-        # For all non-dynmic triggers, we just regenerate a time.
+        # For all non-dynamic triggers, we just regenerate a time.
         if trigger and not is_dynamic:
             trigger_times.append(trigger.next(user=self.user))
 
         # Pick the "next up" trigger from our list of possibilities.
-        trigger_times = list(filter(None, trigger_times))
-        if len(trigger_times) > 0:
-            return min(trigger_times)
+        try:
+            return min(filter(None, trigger_times))
+        except ValueError:
+            pass  # we probably tried to pick the min from an empty list.
 
         return None
 
