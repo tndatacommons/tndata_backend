@@ -6,7 +6,7 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.utils import timezone
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class GCMMessageManager(models.Manager):

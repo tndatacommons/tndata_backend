@@ -7,7 +7,7 @@ from django.db.models import Q
 
 from goals.models import Category
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

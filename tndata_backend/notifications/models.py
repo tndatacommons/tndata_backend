@@ -35,7 +35,7 @@ from . settings import GCM, APNS_CERT_PATH
 from . signals import notification_snoozed
 
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class GCMDevice(models.Model):

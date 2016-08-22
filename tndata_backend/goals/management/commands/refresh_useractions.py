@@ -8,7 +8,7 @@ from django.db.models import Q
 from goals.sequence import get_next_useractions_in_sequence
 from goals.models import CustomAction, UserAction
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

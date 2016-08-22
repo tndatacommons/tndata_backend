@@ -8,7 +8,7 @@ from django.db.models import Q
 
 from notifications.models import GCMMessage
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

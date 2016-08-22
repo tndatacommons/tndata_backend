@@ -24,7 +24,7 @@ from utils.user_utils import to_utc
 
 import logging
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 ERROR = True
 WARNING = False
 

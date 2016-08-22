@@ -10,7 +10,7 @@ from django.utils import timezone
 from goals.models import DailyProgress
 
 import logging
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

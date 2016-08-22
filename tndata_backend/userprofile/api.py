@@ -24,7 +24,7 @@ from . import permissions
 from .serializers import v1, v2
 
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class PlaceViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):

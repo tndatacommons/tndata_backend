@@ -7,7 +7,7 @@ from django.utils import timezone
 from userprofile import email
 from userprofile.models import UserProfile
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):

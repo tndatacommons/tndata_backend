@@ -12,7 +12,7 @@ import waffle
 from utils.slack import post_private_message
 
 
-logger = logging.getLogger("loggly_logs")
+logger = logging.getLogger(__name__)
 
 
 def _log_slack(msg, username):
