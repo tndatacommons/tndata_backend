@@ -31,6 +31,22 @@ class BrowsableAPIRendererWithoutForms(BrowsableAPIRenderer):
         ctx['display_edit_forms'] = False
         return ctx
 
+    def show_form_for_method(self, view, method, request, obj):
+        return False
+
+    def get_rendered_html_form(self, data, view, method, request):
+        """
+        Return a string representing a rendered HTML form, possibly bound to
+        either the input or output data.
+
+        In the absence of the View having an associated form then return None.
+
+        See:
+
+        https://github.com/tomchristie/django-rest-framework/blob/3.4.4/rest_framework/renderers.py#L438
+        """
+        return ""
+
 
 class NoThrottle(BaseThrottle):
     """A throttling class to use for testing DRF api endpoints."""
