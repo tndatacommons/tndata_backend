@@ -525,6 +525,7 @@ if DEBUG:
 
 # Logging Config
 # --------------
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -539,6 +540,12 @@ LOGGING = {
         }
     },
     'handlers': {
+	# 'logging.handlers.SysLogHandler': {
+            # 'level': 'DEBUG',
+            # 'class': 'logging.handlers.SysLogHandler',
+            # 'facility': 'local7',
+            # 'formatter': 'django',
+	# },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -556,12 +563,18 @@ LOGGING = {
             'class': 'slacker_log_handler.SlackerLogHandler',
             'channel': '#logs'
         },
-        'loggers': {
-            'django.request': {
-                'handlers': ['mail_admins', 'slack-error', 'slack-info'],
-                'level': 'ERROR',
-                'propagate': True,
-            },
-        }
+    },
+    'loggers': {
+        # 'loggly_logs': {
+            # 'handlers': ['logging.handlers.SysLogHandler'],
+            # 'propagate': True,
+            # 'format': 'django: %(message)s',
+            # 'level': 'DEBUG',
+        # },
+        'django.request': {
+            'handlers': ['mail_admins', 'slack-error', 'slack-info'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
     }
 }
