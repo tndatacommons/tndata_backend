@@ -540,12 +540,12 @@ LOGGING = {
         }
     },
     'handlers': {
-	# 'logging.handlers.SysLogHandler': {
-            # 'level': 'DEBUG',
-            # 'class': 'logging.handlers.SysLogHandler',
-            # 'facility': 'local7',
-            # 'formatter': 'django',
-	# },
+        # 'logging.handlers.SysLogHandler': {
+        #    'level': 'DEBUG',
+        #    'class': 'logging.handlers.SysLogHandler',
+        #    'facility': 'local7',
+        #    'formatter': 'django',
+        # },
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
@@ -555,21 +555,23 @@ LOGGING = {
             'level': 'ERROR',
             'api_key': SLACK_API_TOKEN,
             'class': 'slacker_log_handler.SlackerLogHandler',
-            'channel': '#logs'
+            'channel': '#logs',
+            'username': SITE_DOMAIN,
         },
         'slack-info': {
             'level': 'INFO',
             'api_key': SLACK_API_TOKEN,
             'class': 'slacker_log_handler.SlackerLogHandler',
-            'channel': '#logs'
+            'channel': '#logs',
+            'username': SITE_DOMAIN,
         },
     },
     'loggers': {
         # 'loggly_logs': {
-            # 'handlers': ['logging.handlers.SysLogHandler'],
-            # 'propagate': True,
-            # 'format': 'django: %(message)s',
-            # 'level': 'DEBUG',
+        #    'handlers': ['logging.handlers.SysLogHandler'],
+        #    'propagate': True,
+        #    'format': 'django: %(message)s',
+        #    'level': 'DEBUG',
         # },
         'django.request': {
             'handlers': ['mail_admins', 'slack-error', 'slack-info'],
