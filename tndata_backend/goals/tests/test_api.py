@@ -1216,8 +1216,6 @@ class TestUserActionAPI(APITestCase):
         ua = response.data['results'][0]
         self.assertIn('id', ua)
         self.assertIn('user', ua)
-        self.assertIn('action', ua)
-        self.assertIn('custom_trigger', ua)
         self.assertIn('created_on', ua)
         self.assertEqual(ua['user'], self.user.id)
         self.assertTrue(ua['custom_triggers_allowed'])
