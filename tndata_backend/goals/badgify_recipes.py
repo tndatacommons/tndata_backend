@@ -599,7 +599,7 @@ class BehaviorCompletedRecipe(UserCompletedBehaviorCountMixin, BaseRecipe):
     name = 'Wayfarer'
     slug = 'wayfarer'
     description = "Congrats on completing a set of actions!"
-    badge_path = 'badges/goal-02-striver.png'
+    badge_path = 'badges/wayfarer.png'
     num_completed = 1
 
 
