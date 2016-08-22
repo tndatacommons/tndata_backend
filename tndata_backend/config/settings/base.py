@@ -525,11 +525,6 @@ if DEBUG:
 
 # Logging Config
 # --------------
-# This config is for loggly.com; It should work in addition to the django
-# default logging config.
-#
-# See https://docs.python.org/3/library/logging.handlers.html#sysloghandler
-# for information on the SysLogHandler.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -538,20 +533,35 @@ LOGGING = {
             'format': 'django: %(message)s',
         },
     },
-    'handlers': {
-        'logging.handlers.SysLogHandler': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.SysLogHandler',
-            'facility': 'local7',
-            'formatter': 'django',
-        },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
     },
-    'loggers': {
-        'loggly_logs': {
-            'handlers': ['logging.handlers.SysLogHandler'],
-            'propagate': True,
-            'format': 'django: %(message)s',
-            'level': 'DEBUG',
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
         },
+        'slack-error': {
+            'level': 'ERROR',
+            'api_key': SLACK_API_TOKEN,
+            'class': 'slacker_log_handler.SlackerLogHandler',
+            'channel': '#logs'
+        },
+        'slack-info': {
+            'level': 'INFO',
+            'api_key': SLACK_API_TOKEN,
+            'class': 'slacker_log_handler.SlackerLogHandler',
+            'channel': '#logs'
+        },
+        'loggers': {
+            'django.request': {
+                'handlers': ['mail_admins', 'slack-error', 'slack-info'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+        }
     }
 }
