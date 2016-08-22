@@ -636,9 +636,8 @@ class UserActionCompletedListFilter(admin.SimpleListFilter):
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'next_trigger_date', 'notification',
-        'sequence_order', 'action', 'behavior',
-        'primary_goal', 'primary_category',
-        'completed',
+        'sequence_order', 'action', 'behavior', 'primary_goal',
+        'primary_category', 'completed',
     )
     list_filter = (
         UserActionCompletedListFilter,
@@ -649,11 +648,7 @@ class UserActionAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'action__id', 'action__title', 'action__notification_text', 'id',
     )
-    readonly_fields = [
-        'prev_trigger_date', 'next_trigger_date', 'serialized_action',
-        'serialized_behavior', 'serialized_custom_trigger',
-        'serialized_primary_goal', 'serialized_primary_category',
-    ]
+    readonly_fields = ['prev_trigger_date', 'next_trigger_date']
     raw_id_fields = ("user", "action", 'custom_trigger', "primary_goal")
 
     def sequence_order(self, obj):

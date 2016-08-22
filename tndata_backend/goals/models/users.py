@@ -451,22 +451,6 @@ class UserAction(models.Model):
                   "is the goal through which a user navigated to find the action."
     )
 
-    # Pre-rendered FK Fields.
-    serialized_action = JSONField(blank=True, default=dict,
-                                  dump_kwargs=dump_kwargs)
-    serialized_behavior = JSONField(blank=True, default=dict,
-                                    dump_kwargs=dump_kwargs)
-    # TODO: deprecate this field in favor of only using `serialized_trigger`
-    serialized_custom_trigger = JSONField(blank=True, default=dict,
-                                          dump_kwargs=dump_kwargs)
-    serialized_primary_goal = JSONField(blank=True, default=dict,
-                                        dump_kwargs=dump_kwargs)
-    serialized_primary_category = JSONField(blank=True, default=dict,
-                                            dump_kwargs=dump_kwargs)
-    # This serialized trigger is a read-only field for either the default or
-    # custom trigger.
-    serialized_trigger = JSONField(blank=True, default=dict,
-                                   dump_kwargs=dump_kwargs)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -475,47 +459,6 @@ class UserAction(models.Model):
         unique_together = ("user", "action")
         verbose_name = "User Action"
         verbose_name_plural = "User Actions"
-
-    def _serialize_action(self):
-        if self.action:
-            from ..serializers.v1 import ActionSerializer
-            self.serialized_action = ActionSerializer(self.action).data
-
-    def _serialize_behavior(self):
-        if self.user_behavior and self.user_behavior.behavior:
-            from ..serializers.v1 import BehaviorSerializer
-            behavior = self.user_behavior.behavior
-            self.serialized_behavior = BehaviorSerializer(behavior).data
-
-    def _serialize_custom_trigger(self):
-        if self.custom_trigger:
-            from ..serializers.v1 import CustomTriggerSerializer
-            self.serialized_custom_trigger = CustomTriggerSerializer(self.custom_trigger).data
-        else:
-            self.serialized_custom_trigger = None
-
-    def _serialize_primary_goal(self):
-        from ..serializers.simple import SimpleGoalSerializer
-        pg = self.get_primary_goal()
-        if pg:
-            self.serialized_primary_goal = SimpleGoalSerializer(pg, user=self.user).data
-
-    def _serialize_primary_category(self):
-        cat = self.get_primary_category()
-        if cat:
-            from ..serializers.simple import SimpleCategorySerializer
-            self.serialized_primary_category = SimpleCategorySerializer(cat).data
-
-    def _serialize_trigger(self):
-        # XXX call this *after* _serialize_custom_trigger
-        # This a read-only field for triggers. If the user has a custom trigger,
-        # that value gets added hear, otherwise this contains the serialized
-        # default trigger.
-        if self.serialized_custom_trigger:
-            self.serialized_trigger = self.serialized_custom_trigger  # Yeah, just a copy :(
-        elif self.default_trigger:
-            from ..serializers.v1 import CustomTriggerSerializer
-            self.serialized_trigger = CustomTriggerSerializer(self.default_trigger).data
 
     def __str__(self):
         return "{0}".format(self.action.title)
@@ -724,14 +667,6 @@ class UserAction(models.Model):
         * update_triggers: (default is True).
 
         """
-        # XXX disable this serialization because that was an effort to speed
-        # up the v1 api.
-        # self._serialize_action()
-        # self._serialize_behavior()
-        # self._serialize_primary_goal()
-        # self._serialize_primary_category()
-        # self._serialize_custom_trigger()
-        # self._serialize_trigger()  # Keep *after* custom_trigger
         if kwargs.pop("update_triggers", True):
             self._set_next_trigger_date()
         return super().save(*args, **kwargs)
