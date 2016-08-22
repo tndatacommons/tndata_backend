@@ -1,6 +1,14 @@
 {% extends "goals/base.html" %}
+{% load static %}
 
 {% block title %}{{ organization }}{% endblock %}
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/clipboard.min.js' %}"></script>
+  <style type="text/css">
+    .clippy { margin-left:0.5em;}
+  </style>
+{% endblock %}
 
 {% block breadcrumbs %}
     <li><a href="{% url 'goals:organization-list' %}">Organizations</a></li>
@@ -16,32 +24,25 @@
     <a class="button pull-right tiny"
        href="{{ program.get_update_url }}">Edit</a>
   </h1>
-  <p class="panel callout">
-    <a href="{{ site_url }}{{ program.get_join_url }}"
-       class="button small info pull-right" target="_blank">
-      <i class="fa fa-external-link"></i> Go there!</a>
-    <i class="fa fa-share-alt"></i>
-    <strong>Signup link for this program: </strong><br/>
-    <code style="padding:0.3em">{{ site_url }}{{ program.get_join_url }}</code>
-  </p>
+
+
   <div class="row">
-    <div class="large-4 medium-4 small-12 columns">
+    {# --- Program Content --- #}
+    <div class="large-6 medium-6 small-12 columns">
       <h2 class="subheader">Categories</h2>
       <ul>
       {% for cat in program.categories.all %}
         <li><a href="{{ cat.get_absolute_url }}">{{ cat }}</a></li>
       {% endfor %}
       </ul>
-    </div>
-    <div class="large-4 medium-4 small-12 columns">
+
       <h2 class="subheader">Goals <small>Auto-enrolled</small></h2>
       <ul>
       {% for goal in program.auto_enrolled_goals.all %}
         <li><a href="{{ goal.get_absolute_url }}">{{ goal }}</a></li>
       {% endfor %}
       </ul>
-    </div>
-    <div class="large-4 medium-4 small-12 columns">
+
       <h2 class="subheader">Members</h2>
       <table>
         <thead><tr><th>Member</th><th>Joined</th></tr></thead>
@@ -56,5 +57,66 @@
         </tbody>
       </table>
     </div>
+    {# --- Sharing Menus --- #}
+    <div class="large-6 medium-6 small-12 columns">
+      <h2 class="subheader">Share This</h2>
+      <p class="clearfix">
+        <a href="{{ site_url }}{{ program.get_join_url }}"
+           class="button tiny info pull-right" target="_blank">
+          <i class="fa fa-external-link"></i> Go there!</a>
+        Share this link with people who should join this program. You can post
+        it on the web, in social media, or in an email:
+      </p>
+      <button class="button secondary tiny pull-right clippy"
+         data-clipboard-target="#program-link">
+        <i class="fa fa-clipboard"></i> Copy</button>
+      <pre class="panel" id="program-link"
+           style="margin:0.5rem;padding:0.5rem;">{{ site_url }}{{ program.get_join_url }}</pre>
+      <hr/>
+      <p class="clearfix">
+        Or, you can copy the code below to place this badge on your site:<br/>
+
+        {% comment %}
+        -----------------------------------------------------------------------
+        NOTE: If you edit the style of the button below, you need to copy it
+        into the following <pre> element (#button-code).
+        -----------------------------------------------------------------------
+        {% endcomment %}
+        <a href="{{ site_url }}{{ program.get_join_url }}" class="pull-right"
+           style="border: solid 1px rgba(0,0,0,1);-webkit-border-radius: 9px;-moz-border-radius: 9px;border-radius: 9px;margin: 10px;padding:4px 8px;display: inline-block;font-size: 24px;line-height: 48px;color: rgba(0,0,0,1);font-family:Helvetica;sans-serif;
+background-image: -webkit-linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);
+background-image:    -moz-linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);
+background-image:     -ms-linear-gradient(top, rgba(253,192,253,1) 26%,rgba(245,245,245,1) 100%);
+background-image:      -o-linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);
+background-image:         linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);"><img src="{% static 'img/app-icon-small.png' %}"> Get Compass</a>
+      </p>
+      <button class="button secondary tiny pull-right clippy"
+        data-clipboard-target="#button-code">
+        <i class="fa fa-clipboard"></i> Copy</button>
+      <pre class="panel" id="button-code" style="margin:0.5rem;padding:0.5rem;">
+&lt;a href="{{ site_url }}{{ program.get_join_url }}" style="border: solid 1px rgba(0,0,0,1);-webkit-border-radius: 9px;-moz-border-radius: 9px;border-radius: 9px;margin: 10px;padding:4px 8px;display: inline-block;font-size: 24px;line-height: 48px;color: rgba(0,0,0,1);font-family:Helvetica;sans-serif;background-image: -webkit-linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);background-image: -moz-linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);background-image: -ms-linear-gradient(top, rgba(253,192,253,1) 26%,rgba(245,245,245,1) 100%);background-image: -o-linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);background-image: linear-gradient(top, rgba(253,253,253,1) 26%,rgba(245,245,245,1) 100%);"&gt;&lt;img src="{% static 'img/app-icon-small.png' %}"&gt; Get Compass&lt;/a&gt;</pre>
+    </div>
   </div>
+{% endblock %}
+
+{% block bodyjs %}
+{{ block.super }}
+
+<script>
+{# Set up clipboard.js #}
+$(document).ready(function() {
+  var clipboard = new Clipboard(".clippy");
+  clipboard.on('success', function(e) {
+      console.info('Action:', e.action);
+      console.info('Text:', e.text);
+      console.info('Trigger:', e.trigger);
+
+      var button = $(e.trigger);
+      button.html("Copied!");
+      window.setTimeout(function() {
+        button.html('<i class="fa fa-clipboard"></i> Copy');
+      }, 1000);
+  });
+});
+</script>
 {% endblock %}
