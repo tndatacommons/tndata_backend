@@ -262,8 +262,12 @@ class Trigger(models.Model):
 
         Returns a datetime object in the user's local timezone.
 
-        Since this method is based on the current time, all returned values will
-        be at least a day in the future of the calling date.
+        ----
+
+        This method is based on the current time, and all returned values will
+        be in the future. For triggers with a `daily` frequency, we'll first
+        try to generate a trigger for "today", and if the generated time is in
+        the past, we'll push it to "tomorrow" (i.e. we'll add 1 day).
 
         This method also *must* either be given a user or the trigger must
         have a user instance. If called without a user, this method will
@@ -291,8 +295,8 @@ class Trigger(models.Model):
         # Choose a random number of days in the future based on the frequency;
         # This is when we'd like to queue up a message.
         days_from_now = {
-            'daily': [1],
-            'weekly': [6, 7],
+            'daily': [0],  # NOTE: We'll queue up item Today if possible...
+            'weekly': [5, 6, 7],
             'biweekly': [3, 5],
             'multiweekly': [2, 5, 7],
             'weekends': [saturday, sunday],
@@ -300,6 +304,11 @@ class Trigger(models.Model):
         days = random.choice(days_from_now[self.frequency])
         dt = today + timedelta(days=days)
         dt = dt.replace(hour=time_of_day.hour, minute=time_of_day.minute)
+
+        # Since we're trying to queue up items today, let's check to see if
+        # our selected time is in the past, and if so, push it 'till tomorrow.
+        if dt <= today:
+            dt = dt + timedelta(days=1)
         return dt  # will be in the user's tz because we used local_now
 
     @property
