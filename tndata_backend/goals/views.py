@@ -2,6 +2,7 @@ from calendar import Calendar
 from collections import defaultdict, Counter, OrderedDict
 from datetime import datetime, timedelta
 from hashlib import md5
+import logging
 
 from django.conf import settings
 from django.contrib import messages
@@ -85,6 +86,9 @@ from . permissions import (
 )
 from . sequence import get_next_useractions_in_sequence
 from . utils import num_user_selections
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseTransferView(FormView):
@@ -1698,6 +1702,7 @@ def accept_enrollment(request, pk):
             package.accept()
             request.session['user_id'] = package.user.id
             request.session['package_ids'] = [package.id]
+            logger.info("Existing user accepted PackageEnrollment: {}".format(pk))
             return redirect(reverse("goals:accept-enrollment-complete"))
         else:
             has_form_errors = True
@@ -1721,6 +1726,7 @@ def accept_enrollment(request, pk):
             package.accept()
             request.session['user_id'] = package.user.id
             request.session['package_ids'] = [package.id]
+            logger.info("New user accepted PackageEnrollment: {}".format(pk))
             return redirect(reverse("goals:accept-enrollment-complete"))
         else:
             has_form_errors = True
@@ -1854,6 +1860,7 @@ def file_upload(request, object_type, pk):
         model, form_class = objects.get(object_type, (None, None))
         obj = get_object_or_404(model, pk=pk)
     except ValueError:
+        logger.error("File upload failed {}.{}".format(object_type, pk))
         return HttpResponseBadRequest()
 
     errors = ""
@@ -1867,6 +1874,7 @@ def file_upload(request, object_type, pk):
         return HttpResponse()
 
     # Assume something went wrong.
+    logger.error("File upload failed {}".format(errors))
     return HttpResponseBadRequest(errors)
 
 
