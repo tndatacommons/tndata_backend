@@ -138,6 +138,10 @@ def signup(request, content_viewer=False, enduser=False):
                                       pk=request.GET.get('organization'))
     program = get_object_or_none(Program, pk=request.GET.get('program'))
 
+    # Stash these in a session for later... (see `confirm_join`).
+    request.session['organization'] = organization.id if organization else None
+    request.session['program'] = program.id if program else None
+
     # Set the template/redirection based on the type of user signup
     if enduser:
         template = 'utils/signup_enduser.html'
@@ -158,10 +162,6 @@ def signup(request, content_viewer=False, enduser=False):
                 u = User.objects.get(email=form.cleaned_data['email'])
                 messages.success(request, "It looks like you already have an "
                                           "account! Log in to continue.")
-                if program:
-                    request.session['program'] = program.id
-                if organization:
-                    request.session['organization'] = organization.id
                 return redirect(login_url)
             except User.DoesNotExist:
                 # Create & activate the account, and do initial record-keeping
@@ -189,10 +189,6 @@ def signup(request, content_viewer=False, enduser=False):
                                     "Please see the details, below.")
     elif enduser and request.user.is_authenticated():
         # Redirect to the confirmation page.
-        if program:
-            request.session['program'] = program.id
-        if organization:
-            request.session['organization'] = organization.id
         return redirect(reverse("utils:confirm"))
     else:
         password_form = SetNewPasswordForm(prefix='pw')
@@ -220,6 +216,7 @@ def signup(request, content_viewer=False, enduser=False):
         'completed': bool(request.GET.get("c", False)),
         'android_url': settings.PLAY_APP_URL,
         'ios_url': settings.IOS_APP_URL,
+        'login_url': login_url,
     }
     return render(request, template, context)
 

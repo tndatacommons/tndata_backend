@@ -47,7 +47,8 @@ label { margin-top:0.5em;}
     {% endif %}
     <hr/>
 
-    <p>Complete the following form to create your account.</p>
+    <p>Complete the following form to create your account. Already have
+    an account?  <a href="{{ login_url }}">Log In to continue</a>.</p>
     <form action="{% url 'join' %}" method="post">
       {% crispy form %}
       {% crispy password_form %}

@@ -12,7 +12,9 @@
          alt="Compass icon"
          style="width:60px;height:60px;"/> Welcome to Compass!
   </h1>
-  <h2 class="subheader">{{ program|default:organization }}</h2>
+  {% if program or organization %}
+    <h2 class="subheader">{{ program|default:organization }}</h2>
+  {% endif %}
 
   {% if confirmed %}
     <p class="lead">You're enrolled! What next?</p>
@@ -26,16 +28,14 @@
       <a href="{{ ios_url }}" class="button large">
         <i class="fa fa-apple"></i> iOS</a>
     </p>
-  {% else %}
-
-    {% if organization or program %}
+  {% elif organization or program %}
     <p class="lead">
     Compass is a free smartphone app that will send you useful tips that help
     you reach your goals. Compass is partnered with
     {{ organization|default:"your organization" }} to help
     {{ program|default:"you" }} succeed.
     </p>
-    {% endif %}
+
     <hr/>
 
     <p>You're almost finished. Click the button below to confirm your
@@ -47,6 +47,12 @@
         <button class="button large" type="submit">Yes, I'm in!</button>
       </p>
     </form>
+  {% else %}
+    <p>Oops! It looks like you got here by mistake. If you followed a link,
+    to get here, you may want to try it again.</p>
+
+    <p>Please feel free to <a href="mailto:feedback@tndata.org">contact us</a>
+    if you need help.</p>
   {% endif %}
   </div>
 </div> {# end .row #}
