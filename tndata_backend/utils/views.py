@@ -1,3 +1,5 @@
+import logging
+
 from django import http
 from django.conf import settings
 from django.contrib import messages
@@ -27,6 +29,9 @@ from . forms import EmailForm, SetNewPasswordForm
 from . models import ResetToken
 from . slack import post_message
 from . user_utils import username_hash, get_client_ip
+
+
+logger = logging.getLogger(__name__)
 
 
 @job
@@ -227,6 +232,9 @@ def confirm_join(request):
     # Intermediary step for the signup--for users with existing accounts.
     org = get_object_or_none(Organization, pk=request.session.get('organization'))
     program = get_object_or_none(Program, pk=request.session.get('program'))
+
+    if org is None and program is None:
+        logger.warning("Org & Program are None in utils.views.confirm_join")
 
     # POST: enroll the user and redirect to a placeholder page.
     if request.POST and bool(request.POST.get('confirmed', False)):
