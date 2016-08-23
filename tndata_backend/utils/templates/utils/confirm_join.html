@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block title %}Confirm{% endblock %}
+
+{% block body %}
+<div class="row">
+  <div class="large-8 large-offset-2 medium-10 medium-offset-1 small-12 columns end">
+  <h1>
+    <img src="{% static 'img/app-icon.png' %}"
+         alt="Compass icon"
+         style="width:60px;height:60px;"/> Welcome to Compass!
+  </h1>
+  <h2 class="subheader">{{ program|default:organization }}</h2>
+
+  {% if confirmed %}
+    <p class="lead">You're enrolled! What next?</p>
+    <p>Simply log into the app with your email and password, and you'll soon
+    see additional content from {{ organization }} in your feed.</p>
+    <hr/>
+    <p>If you haven't already, you can still download the app, too.</p>
+    <p style="text-align:center">
+      <a href="{{ android_url }}" class="button large success">
+        <i class="fa fa-android"></i> Android!</a>
+      <a href="{{ ios_url }}" class="button large">
+        <i class="fa fa-apple"></i> iOS</a>
+    </p>
+  {% else %}
+
+    {% if organization or program %}
+    <p class="lead">
+    Compass is a free smartphone app that will send you useful tips that help
+    you reach your goals. Compass is partnered with
+    {{ organization|default:"your organization" }} to help
+    {{ program|default:"you" }} succeed.
+    </p>
+    {% endif %}
+    <hr/>
+
+    <p>You're almost finished. Click the button below to confirm your
+    enrollment in {% if program %}{{ program }}{% else %}
+      {{ organization|default:"Compass" }}{% endif %}.</p>
+    <form action="{% url 'utils:confirm' %}" method="post">{% csrf_token %}
+      <input type="hidden" name="confirmed" value="1"/>
+      <p style="text-align:center;">
+        <button class="button large" type="submit">Yes, I'm in!</button>
+      </p>
+    </form>
+  {% endif %}
+  </div>
+</div> {# end .row #}
+{% endblock %}

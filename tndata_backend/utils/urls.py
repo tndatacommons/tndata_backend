@@ -29,4 +29,5 @@ urlpatterns = [
         name='set_new_password'
     ),
     url(r'^signup/$', views.signup, {'content_viewer': True}, name='signup'),
+    url(r'^signup/confirm-program/$', views.confirm_join, name='confirm'),
 ]

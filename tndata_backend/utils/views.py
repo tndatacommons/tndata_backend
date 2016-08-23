@@ -2,6 +2,7 @@ from django import http
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import redirect, render
@@ -65,7 +66,7 @@ def _setup_content_viewer(request, user, password):
     post_message("#tech", msg)
 
 
-def _setup_enduser(request, user):
+def _setup_enduser(request, user, send_welcome_email=True):
     """Handle addional post-account-creation tasks for end-users."""
     User = get_user_model()
 
@@ -87,7 +88,8 @@ def _setup_enduser(request, user):
         pass
 
     # Send some email notifications.
-    send_new_enduser_welcome(user)
+    if send_welcome_email:
+        send_new_enduser_welcome(user)
 
     # Ping slack so this doesn't go unnoticed.
     num_users = User.objects.filter(is_active=True).count()
@@ -100,13 +102,13 @@ def _setup_enduser(request, user):
     )
 
     # Set an appropriate message.
-    messages.success(request, "Welcome to Compass! Your account has been created.")
+    messages.success(request, "Welcome to Compass! Your account has been updated.")
     post_message("#tech", msg)
 
 
 def signup(request, content_viewer=False, enduser=False):
     """This view handles user account creation. There are different scenarios
-    for different types of users, as indicated by the keyward arguments to
+    for different types of users, as indicated by the keyword arguments to
     this function:
 
     - content_viewer: If True, the account will be created as a content viewer
@@ -132,15 +134,19 @@ def signup(request, content_viewer=False, enduser=False):
           program and will be auto-enrolled in certain goals from the program
 
     """
-    organization = None
-    program = None
+    organization = get_object_or_none(Organization,
+                                      pk=request.GET.get('organization'))
+    program = get_object_or_none(Program, pk=request.GET.get('program'))
 
     # Set the template/redirection based on the type of user signup
-    template = 'utils/signup_content_viewer.html'
-    redirect_to = '/'
     if enduser:
         template = 'utils/signup_enduser.html'
         redirect_to = 'join'
+        login_url = "{}?next={}".format(reverse('login'), reverse('utils:confirm'))
+    else:
+        template = 'utils/signup_content_viewer.html'
+        redirect_to = '/'
+        login_url = "{}".format(reverse('login'))
 
     if request.method == "POST":
         form = UserForm(request.POST)
@@ -151,9 +157,12 @@ def signup(request, content_viewer=False, enduser=False):
                 # Ensure the email isn't already tied to an account
                 u = User.objects.get(email=form.cleaned_data['email'])
                 messages.success(request, "It looks like you already have an "
-                                          "account! Either log in, or reset "
-                                          "your password to continue.")
-                return redirect(reverse("login"))
+                                          "account! Log in to continue.")
+                if program:
+                    request.session['program'] = program.id
+                if organization:
+                    request.session['organization'] = organization.id
+                return redirect(login_url)
             except User.DoesNotExist:
                 # Create & activate the account, and do initial record-keeping
                 u = form.save(commit=False)
@@ -178,12 +187,15 @@ def signup(request, content_viewer=False, enduser=False):
         else:
             messages.error(request, "We could not process your request. "
                                     "Please see the details, below.")
+    elif enduser and request.user.is_authenticated():
+        # Redirect to the confirmation page.
+        if program:
+            request.session['program'] = program.id
+        if organization:
+            request.session['organization'] = organization.id
+        return redirect(reverse("utils:confirm"))
     else:
         password_form = SetNewPasswordForm(prefix='pw')
-        organization = get_object_or_none(
-            Organization, pk=request.GET.get('organization'))
-        program = get_object_or_none(
-            Program, pk=request.GET.get('organization'))
         if organization:
             form = UserForm(for_organization=organization.name)
         elif program:
@@ -208,6 +220,26 @@ def signup(request, content_viewer=False, enduser=False):
         'completed': bool(request.GET.get("c", False)),
         'android_url': settings.PLAY_APP_URL,
         'ios_url': settings.IOS_APP_URL,
+    }
+    return render(request, template, context)
+
+
+@login_required
+def confirm_join(request):
+    # Intermediary step for the signup--for users with existing accounts.
+    org = get_object_or_none(Organization, pk=request.session.get('organization'))
+    program = get_object_or_none(Program, pk=request.session.get('program'))
+
+    # POST: enroll the user and redirect to a placeholder page.
+    if request.POST and bool(request.POST.get('confirmed', False)):
+        _setup_enduser(request, request.user, send_welcome_email=False)
+        return redirect(reverse("utils:confirm") + "?confirmed=1")
+
+    template = 'utils/confirm_join.html'
+    context = {
+        'organization': org,
+        'program': program,
+        'confirmed': bool(request.GET.get('confirmed', False)),
     }
     return render(request, template, context)
 
