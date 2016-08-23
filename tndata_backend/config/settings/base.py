@@ -580,3 +580,7 @@ LOGGING = {
         },
     }
 }
+
+if DEBUG:
+    # No logging in dev
+    LOGGING = {}
