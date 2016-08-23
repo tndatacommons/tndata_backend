@@ -139,8 +139,9 @@ def signup(request, content_viewer=False, enduser=False):
     program = get_object_or_none(Program, pk=request.GET.get('program'))
 
     # Stash these in a session for later... (see `confirm_join`).
-    request.session['organization'] = organization.id if organization else None
-    request.session['program'] = program.id if program else None
+    if organization or program:
+        request.session['organization'] = organization.id if organization else None
+        request.session['program'] = program.id if program else None
 
     # Set the template/redirection based on the type of user signup
     if enduser:
@@ -160,8 +161,8 @@ def signup(request, content_viewer=False, enduser=False):
             try:
                 # Ensure the email isn't already tied to an account
                 u = User.objects.get(email=form.cleaned_data['email'])
-                messages.success(request, "It looks like you already have an "
-                                          "account! Log in to continue.")
+                messages.info(request, "It looks like you already have an "
+                                       "account! Log in to continue.")
                 return redirect(login_url)
             except User.DoesNotExist:
                 # Create & activate the account, and do initial record-keeping
@@ -230,6 +231,11 @@ def confirm_join(request):
     # POST: enroll the user and redirect to a placeholder page.
     if request.POST and bool(request.POST.get('confirmed', False)):
         _setup_enduser(request, request.user, send_welcome_email=False)
+
+        # Do a little cleanup. At this point, we shouldn't need these anymore.
+        request.session.pop('organization', None)
+        request.session.pop('program', None)
+
         return redirect(reverse("utils:confirm") + "?confirmed=1")
 
     template = 'utils/confirm_join.html'
