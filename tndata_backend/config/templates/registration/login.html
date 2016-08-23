@@ -5,7 +5,8 @@
 <div class="row">
   <div class="large-4 large-offset-4 medium-6 medium-offset-3 small-12 columns end">
     <h1>Sign In</h1>
-    <form action="{% url 'login' %}" method="post">{% csrf_token %}
+    <form action="{% url 'login' %}{% if next %}?next={{next}}{% endif %}" method="post">
+    {% csrf_token %}
       {{ form }}<hr>
       <input type="hidden" name="next" value="{{ next|default:"/"}}" />
       <button class="button" type="submit">Sign In</button>
