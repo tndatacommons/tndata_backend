@@ -782,7 +782,7 @@ class BehaviorListView(ContentViewerMixin, StateFilterMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().only(
-            'state', 'icon', 'sequence_order', 'title',
+            'id', 'state', 'icon', 'sequence_order', 'title', 'title_slug',
             'description', 'informal_list'
         )
         if self.request.GET.get('goal', False):
