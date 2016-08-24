@@ -408,7 +408,8 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().filter(**self._filters())
         queryset = queryset.annotate(Count('usercategory'))
-        return queryset.prefetch_related("goal_set", "goal_set__behavior_set")
+        return queryset.prefetch_related(
+            "goal_set", "behavior_set", "organizations", "program_set")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

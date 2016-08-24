@@ -338,7 +338,7 @@ class BehaviorAdmin(ContentWorkflowAdmin):
                 num_objects = queryset.count()
                 for behavior in queryset:
                     # get the parent goals's list of categories
-                    categories = list(behavior.categories)
+                    categories = list(behavior.categories.all())
 
                     # create the new goal
                     goal = models.Goal.objects.create(

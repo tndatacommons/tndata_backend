@@ -84,7 +84,7 @@
       {% endif %}
       <h2 class="subheader">Categories</h2>
       <ul>
-      {% for cat in behavior.categories %}
+      {% for cat in behavior.categories.all %}
         <li>
           {{ cat|label }}
           <a href="{{ cat.get_absolute_url }}">{{ cat }}</a>
