@@ -129,7 +129,6 @@
                 <div id="category-{{category.id}}-goals" class="content">
                 {% for goal in category.goals %}
                   <a href="{{ goal.get_absolute_url }}"
-                     data-tooltip aria-haspopup="true"
                      title="[{{ goal.state }}] {{ goal.description }}">
                     <span class="label radius {{goal.state_label}}">
                       {{ goal }}</span>
@@ -142,7 +141,6 @@
                 <div id="category-{{category.id}}-behaviors" class="content">
                 {% for b in category.behaviors %}
                   <a href="{{ b.get_absolute_url }}"
-                     data-tooltip aria-haspopup="true"
                      title="[{{b.state}}] {{ b.description }}">
                     <span class="label radius {{b.state_label}}">{{ b }}</span>
                   </a>
