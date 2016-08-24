@@ -417,3 +417,13 @@ def notify_for_new_package(sender, instance, created, **kwargs):
             obj=instance,
             priority=GCMMessage.HIGH
         )
+
+
+@receiver(post_save, sender=Behavior, dispatch_uid="create_behavior_m2ms")
+def create_behavior_m2ms(sender, instance, created, **kwargs):
+    """When a Behavior is created, we need to save it again to populate some
+    of it's many-to-many fields.
+
+    """
+    if created and instance.id:
+        instance.save()

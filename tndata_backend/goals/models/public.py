@@ -26,6 +26,7 @@ from markdown import markdown
 from notifications.models import GCMMessage
 from utils import colors
 from utils.db import get_max_order
+from utils.datastructures import flatten
 
 from .organizations import Organization
 from .path import (
@@ -273,8 +274,7 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
     def behaviors(self):
         """Returns a QuerySet of all Behaviors nested beneath this category's
         set of goals."""
-        ids = self.goals.values_list('behavior', flat=True)
-        return Behavior.objects.filter(pk__in=ids)
+        return self.behavior_set.all()
 
     @property
     def actions(self):
@@ -725,6 +725,7 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
         blank=True,
         help_text="Optional ordering for a sequence of behaviors"
     )
+    categories = models.ManyToManyField(Category, blank=True, null=True)
     goals = models.ManyToManyField(
         Goal,
         blank=True,
@@ -863,11 +864,18 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
             self.action_buckets_helper = qs.filter(bucket=Action.HELPER).count()
             self.action_buckets_checkup = qs.filter(bucket=Action.CHECKUP).count()
 
+    def _set_categories(self):
+        """Populate the behavior's categories based on the selected goals."""
+        if self.id and self.goal_ids:
+            for cat_id in flatten(self.goals.values_list('category_ids', flat=True)):
+                self.categories.add(cat_id)
+
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
         self._set_goal_ids()
+        self._set_categories()
         self._count_actions()
         super().save(*args, **kwargs)
 
@@ -912,12 +920,6 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["behavior", self.id])
-
-    @property
-    def categories(self):
-        """Return a QuerySet of Categories for this object's selected Goals"""
-        cats = self.goals.values_list('categories', flat=True)
-        return Category.objects.filter(pk__in=cats)
 
     def get_user_mapping(self, user):
         """Return the first UserBehavior object that matches this Behavior and
