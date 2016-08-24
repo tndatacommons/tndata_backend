@@ -43,7 +43,6 @@
         <td>
           <a href="{{ goal.get_update_url }}" title="Edit"><i class="fa fa-edit"></i></a>
           <a href="{{ goal.get_absolute_url }}"
-             data-tooltip aria-haspopup="true"
              title="{{ goal.description }}">{{ goal }}</a>
         </td>
         <td>
@@ -54,7 +53,6 @@
         <td>
           {% for behavior in goal.behavior_set.all %}
             <span class="label {{ behavior.state_label }}"
-                  data-tooltip aria-haspopup="true"
                   title="{{ behavior.description }}">{{ behavior }}</span>
           {% endfor %}
         </td>
