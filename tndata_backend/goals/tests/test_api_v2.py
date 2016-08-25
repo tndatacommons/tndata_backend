@@ -220,6 +220,51 @@ class TestCategoryAPI(V2APITestCase):
         cats = sorted([c['title'] for c in response.data['results']])
         self.assertEqual(cats, ['C1', 'Test Category'])
 
+    def test_category_list_when_user_is_an_organization_member(self):
+        """Ensure the user sees categories from their Organization but not
+        from other Organizations. """
+
+        # when the user is associated with the package, we should get a 200
+        User = get_user_model()
+        user = User.objects.create(username="a", email="a@b.co")
+
+        # Create some Organizations + Categories.
+        org = mommy.make(Organization, name="Org")
+        org.members.add(user)
+
+        other_org = mommy.make(Organization, name="Other")
+
+        # Create additional categories, and add the user to Org/Prog 1
+        cat = Category.objects.create(order=2, title="Cat")
+        cat.organizations.add(org)
+        cat.hidden_from_organizations.add(other_org)
+        cat.save()
+
+        other_cat = Category.objects.create(order=3, title="Other Cat")
+        other_cat.organizations.add(other_org)
+        other_cat.hidden_from_organizations.add(org)
+        other_cat.save()
+
+        # AND a "public" category that's hidden from the User's organization.
+        hidden_cat = Category.objects.create(order=4, title="Hidden")
+        hidden_cat.hidden_from_organizations.add(org)
+        hidden_cat.save()
+
+        for category in [cat, other_cat, hidden_cat]:
+            category.publish()
+            category.save()
+
+        # Make an authenticated request
+        url = self.get_url('category-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        cats = sorted([c['title'] for c in response.data['results']])
+        self.assertEqual(cats, ['Cat', 'Test Category'])
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)

@@ -207,10 +207,8 @@ class CategoryViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
             # AND, we need to exclude the categories that have explicitly been
             # hidden from the user's organization(s)
-            results = results.exclude(
-                hidden_from_organizations=user.member_organizations.all()
-            )
-            return results
+            orgs = user.member_organizations.values_list('pk', flat=True)
+            return results.exclude(hidden_from_organizations__in=orgs)
 
         # Otherwise, filter results based on provided parameters.
         selected_by_default = self._as_bool(self.request, 'selected_by_default')
