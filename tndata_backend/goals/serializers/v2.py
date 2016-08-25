@@ -207,7 +207,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         required=False,
     )
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-    next_reminder = ReadOnlyDatetimeField(source='next')
+    next_reminder = ReadOnlyDatetimeField()
 
     class Meta:
         model = UserAction
