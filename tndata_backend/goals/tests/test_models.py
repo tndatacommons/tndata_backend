@@ -1247,6 +1247,55 @@ class TestTrigger(TestCase):
             actual = custom.next().strftime("%c %z")
             self.assertEqual(actual, expected)
 
+    def test_change_to_relative_reminder_generates_custom_trigger(self):
+        """If an Action's trigger is changed to relative or start_when_selected,
+        this should generate a new custom Trigger for the user.
+
+        1. A UserAction is a created, but only keeps it's default trigger (e.g
+           in the case of a dynamic trigger.
+        2. Its default trigger is then changed to be a relative or start when
+           selected trigger.
+        3. Saving the UserAction should generate a new custom trigger
+
+        """
+        cat = mommy.make(Category, title="Cat", state='published')
+        goal = mommy.make(Goal, title="Goa", state='published')
+        goal.categories.add(cat)
+        beh = mommy.make(Behavior, title="Beh", state="published")
+        beh.goals.add(goal)
+
+        # Action with a dynamic default trigger
+        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+        default = Trigger.objects.create(
+            name="Default", time_of_day="morning", frequency="daily"
+        )
+        act.default_trigger = default
+        act.save()
+
+        # Creating a UserAction, should *not* generate a custom trigger.
+        user = User.objects.create_user("un", "em@il.com", 'pass')
+        ua = UserAction.objects.create(user=user, action=act)
+        self.assertIsNone(ua.custom_trigger)
+        self.assertIsNotNone(ua.trigger)
+
+        # Now, let's change that default trigger to be a relative reminder
+        default.time_of_day = None
+        default.frequency = None
+        default.time = time(13, 30)
+        default.recurrences = "RRULE:FREQ=DAILY"
+        default.start_when_selected=True,
+        default.relative_value=1
+        default.relative_units="days"
+        default.save()
+
+        # A custom trigger should have been created
+        ua.save()
+        self.assertIsNotNone(ua.custom_trigger)
+        self.assertIsNotNone(ua.custom_trigger.trigger_date)
+
+        delta = ua.custom_trigger.trigger_date - ua.created_on
+        self.assertEqual(delta.days, 1)
+
     def test_relative_reminder_start_when_selected_series(self):
         """Test a series of generated relative reminder times."""
         cat = mommy.make(Category, title="Cat", state='published')
