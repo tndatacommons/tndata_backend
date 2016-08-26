@@ -12,6 +12,7 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from clog.clog import clog
 from goals.models import Action, Category, Trigger, UserAction
 
 
@@ -54,14 +55,14 @@ def parse_notification_text(action=None):
                 try:
                     date = datetime.strptime(datestring, datefmt)
                     # print("'{}' -> {} (using format '{}')".format(
-                        # datestring, date, datefmt))
+                    #     datestring, date, datefmt))
 
                     action.external_resource_name = "Add to calendar"
                     action.external_resource = date.strftime("%Y-%m-%d %H:%M:00")
                     action.save()
                     count += 1
                     matched = True
-                    break;  # dont try any other patterns.
+                    break  # dont try any other patterns.
                 except:
                     print("FAIL: action={}, '{}', with format: '{}'".format(
                         action.id, datestring, datefmt))
@@ -154,23 +155,23 @@ def _print_trigger(trigger):
 
 
 def print_triggers():
-    #rule='RRULE:FREQ=DAILY;INTERVAL=2'
-    #rule = 'RRULE:FREQ=DAILY;UNTIL=20150815T050000Z'  # Daily until 8/15
-    #rule = 'EXRULE:FREQ=WEEKLY;BYDAY=SA,SU'  # Weekly except Sat/Sun
-    #rule = 'RRULE:FREQ=WEEKLY;BYDAY=SA,SU;COUNT=4'
-    #rule = 'EXRULE:FREQ=WEEKLY;BYDAY=FR'  # every day but friday?
+    # rule='RRULE:FREQ=DAILY;INTERVAL=2'
+    # rule = 'RRULE:FREQ=DAILY;UNTIL=20150815T050000Z'  # Daily until 8/15
+    # rule = 'EXRULE:FREQ=WEEKLY;BYDAY=SA,SU'  # Weekly except Sat/Sun
+    # rule = 'RRULE:FREQ=WEEKLY;BYDAY=SA,SU;COUNT=4'
+    # rule = 'EXRULE:FREQ=WEEKLY;BYDAY=FR'  # every day but friday?
 
     # M, W, Th on Aug 17, 19, 20
-    #rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
-    #rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150821T050000Z;BYDAY=MO,WE,TH'
+    # rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150820T050000Z;BYDAY=MO,WE,TH'
+    # rule = 'RRULE:FREQ=WEEKLY;UNTIL=20150821T050000Z;BYDAY=MO,WE,TH'
 
     # Stacked:
     # Every Monday.
     # Every Tuesday until 8/15/2015 (sat)
-    rule = (
-        'RRULE:FREQ=WEEKLY;BYDAY=MO\n'
-        'RRULE:FREQ=WEEKLY;UNTIL=20150815T050000Z;BYDAY=TU'
-    )
+    # rule = (
+    #     'RRULE:FREQ=WEEKLY;BYDAY=MO\n'
+    #     'RRULE:FREQ=WEEKLY;UNTIL=20150815T050000Z;BYDAY=TU'
+    # )
 
     #     August 2015
     # Mo Tu We Th Fr Sa Su
@@ -193,7 +194,7 @@ def print_triggers():
         name="testing",
         time=time(12, 0),  # 12:00 pm
         trigger_date=date(2016, 1, 6),
-        #recurrences=rule
+        # recurrences=rule
         start_when_selected=True,
         relative_value=5,
         relative_units='days'
@@ -229,7 +230,6 @@ def print_triggers():
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
         print("------------------------------------")
     t.delete()
-
 
 
 def test_trigger():
@@ -313,7 +313,7 @@ def test_trigger():
             next_string = next_time.strftime(tf) if next_time else "None"
             print("Now: {0} --> Next: {1}".format(now_string, next_string))
             print("------------------------------------")
-    #t.delete()
+    # t.delete()
 
 
 def debug_useraction_dates(useraction):
@@ -371,3 +371,49 @@ def teen_np():
             print("{}, {} days & {} hours from now".format(
                 t.strftime("%c"), delta.days, int(delta.seconds / 3600)))
 
+
+def high_priority_stuff():
+    """
+    DEBUGGINg the following:
+
+        - a set of actions that are high-priority, relative/start-when-selected,
+          and have a recurrence.
+        - Some are weekly, some are daily
+        - Some users got these all at once (in a single day) WHY?
+
+    """
+    User = get_user_model()
+    user = User.objects.get(pk=1)
+
+    # Action IDs
+    ids = [
+        12638, 12592, 10983,
+        12593, 10940, 11231, 11001, 10995, 11234, 10986,
+        11033, 10942, 11058, 11006, 11022, 11024,
+    ]
+    actions = Action.objects.filter(id__in=ids)
+
+    for i, action in enumerate(actions):
+        colors = {0: 'yellow', 1: 'magenta'}
+        color = colors.get(i % 2)
+
+        t = action.default_trigger
+        clog(
+            t.time_details,
+            title="{}) {}".format(action.id, action.title),
+            color=color
+        )
+        next_trigger = t.next(user=user)
+        if next_trigger:
+            next_trigger = next_trigger.strftime("%c %z")
+        print("Next: {}".format(next_trigger))
+
+        # clog({
+            # 'time': t.time,
+            # 'trigger_date': t.trigger_date,
+            # 'start_when_selected': t.start_when_selected,
+            # 'recurrence': t.recurrences_as_text(),
+            # 'relative_value': t.relative_value,
+            # 'relative_units': t.relative_units,
+            # 'details': t.time_details,
+            # 'next': t.next(user=user),
