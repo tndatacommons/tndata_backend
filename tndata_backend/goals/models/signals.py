@@ -214,7 +214,7 @@ def create_parent_user_behavior(sender, instance, using, **kwargs):
 
 @receiver(post_save, sender=UserAction, dispatch_uid="create-relative-reminder")
 def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
-    """When a UserAction is created, we need to look at it's default_trigger
+    """When a UserAction is saved, we need to look at it's default_trigger
     and see if it's a relative reminder. If so, we automatically create a
     custom trigger for the user filling in it's trigger_date based on the
     UserAction's creation date.
@@ -225,7 +225,8 @@ def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
         instance.default_trigger is not None and
         instance.default_trigger.is_relative
     )
-    if created and is_relative:
+    # We should always check for a custom trigger in this case.
+    if is_relative and not instance.custom_trigger:
         trigger = Trigger.objects.create(
             user=instance.user,
             name="Trigger for {}".format(instance),
