@@ -10,6 +10,23 @@ import markdown
 register = template.Library()
 
 
+@register.filter("items", is_safe=True)
+def to_items(dictlike_object):
+    """This is a filter that makes something like an OrderedDict iterable
+    in a template.
+
+    Instead of doing this:
+
+        {% for key, value in data.items() %}
+
+    Do this:
+
+        {% for key, value in data|items %}
+
+    """
+    return [(k, v) for k, v in dictlike_object.items()]
+
+
 @register.filter("jsarray", is_safe=True)
 def to_js_array(iterable, index=None):
     """Convert the given iterable to a JavaScript array.
