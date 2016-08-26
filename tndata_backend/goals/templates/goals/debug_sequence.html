@@ -1,0 +1,64 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+{% load util_filters %}
+{% load tz %}
+
+{% block title %}Debug Sequence{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:debug_tools' %}">Debug Tools</a></li>
+  <li class="current">Debug Sequence</a>
+{% endblock %}
+
+{% block content %}
+<h1>Sequences</h1>
+
+<p>The following should be the current set of content from which the chosen
+user's notifications get queued.</p>
+
+<form action="{% url 'goals:debug_sequence' %}" method="get">
+  <div class="row">
+    <div class="large-6 column">
+      {{ form|crispy }}
+    </div>
+    <div class="large-3 column">
+      <input type="submit" value="Search" class="button"/>
+    </div>
+  </div>
+</form>
+
+{% if data %}
+  <div class="row">
+    <div class="large-6 column">
+      {% for goal, behaviors in data|items %}
+        <h2 class="subheader">
+          {{ goal }} <span class="label">Goal</span> </h2>
+        {% for behavior, actions in behaviors|items %}
+          <h3 class="subheader">
+            {{ behavior }} <span class="label">Behavior</span></h3>
+          <ul>
+          {% for action in actions %}
+            <li>{{action}}</li>
+          {% endfor %}
+          </ul>
+        {% endfor %}
+      {% endfor %}
+    </div>
+    <div class="large-6 column">
+      <h2>Goals</h2>
+      <ul>
+        {% for item in goals %}<li>{{ item }}</li>{% endfor %}
+      </ul>
+      <h2>Behaviors</h2>
+      <ul>
+        {% for item in behaviors %}<li>{{ item }}</li>{% endfor %}
+      </ul>
+      <h2>Actions</h2>
+      <ul>
+        {% for item in actions %}<li>{{ item }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div> {# end .row #}
+
+{% endif %}
+{% endblock %}

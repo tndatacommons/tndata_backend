@@ -342,6 +342,11 @@ urlpatterns = [
         name='debug_tools'
     ),
     url(
+        r'^debug-sequence/$',
+        views.debug_sequence,
+        name='debug_sequence'
+    ),
+    url(
         r'^debug-feed/$',
         views.debug_feed,
         name='debug_feed'

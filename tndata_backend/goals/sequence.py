@@ -2,9 +2,9 @@
 Tools/utils/playground for Goal/Behavior/Action sequences
 
 """
-from django.contrib.auth import get_user_model
+from collections import defaultdict
 from goals.models import Goal, Category
-from goals.models import UserAction, UserBehavior, UserGoal, UserCompletedAction
+from goals.models import UserCompletedAction
 
 
 def get_next_useractions_in_sequence(user, goal=None, category=None):
@@ -37,31 +37,54 @@ def get_next_useractions_in_sequence(user, goal=None, category=None):
 # --- the following are just debugging tools ------------
 
 
-def print_next(user):
-    User = get_user_model()
-    user = User.objects.get(username='bkmontgomery')
-
+def get_next_in_sequence_data(user, print_them=True):
     goals = []
     behaviors = []
+    behavior_ids = []
     actions = []
 
-    ugs = UserGoal.objects.next_in_sequence(user=user)
-    for ug in ugs:
-        goals.append("{} - {}".format(ug.goal.sequence_order, ug.goal.title))
-        print("{}] {}".format(ug.goal.sequence_order, ug.goal))
-        ubs = UserBehavior.objects.next_in_sequence(user=user, behavior__goals=ug.goal)
-        for ub in ubs:
-            behaviors.append("{} - {}".format(ub.behavior.sequence_order, ub.behavior.title))
-            print("- {}] {}".format(ub.behavior.sequence_order, ub.behavior))
-            uas = UserAction.objects.next_in_sequence(ub.behavior, user=user)
-            for ua in uas.order_by('action'):
-                actions.append("{} - {}".format(ua.action.sequence_order, ua.action.title))
-                print("-- {}] {}".format(ua.action.sequence_order, ua.action))
+    # Nested data containing
+    #   {
+    #       Goal: {
+    #           Behavior:  [
+    #               Actions, ... ]
+    #           }
+    #       }
+    #   }
+    data = {}
 
-    print("\n\nGOALS\n{}".format("\n".join(goals)))
-    print("\nBEHAVIORS\n{}".format("\n".join(behaviors)))
-    print("\nACTIONS\n{}".format("\n".join(actions)))
+    for ug in user.usergoal_set.next_in_sequence():
+        entry = "{}) {}".format(ug.goal.order, ug.goal.title)
+        goals.append(entry)
+        data[entry] = defaultdict(dict)
 
+    for ub in user.userbehavior_set.next_in_sequence():
+        entry = "{}) {}".format(ub.behavior.order, ub.behavior.title)
+        behaviors.append(entry)
+        behavior_ids.append(ub.behavior.id)
+        for goal in ub.behavior.goals.all():
+            goal = "{}) {}".format(goal.order, goal.title)
+            if goal in data:
+                data[goal][entry] = []
+
+    for ua in user.useraction_set.next_in_sequence(behaviors=behavior_ids):
+        entry = "{}) {}".format(ua.action.order, ua.action.title)
+        actions.append(entry)
+
+        for goal in ua.action.behavior.goals.all():
+            goal = "{}) {}".format(goal.order, goal.title)
+            behavior = "{}) {}".format(ua.action.behavior.order, ua.action.behavior.title)
+            if goal in data and behavior in data[goal]:
+                data[goal][behavior].append(entry)
+
+    if print_them:
+        from clog.clog import clog
+        print("\n\nGOALS\n{}".format("\n".join(goals)))
+        print("\nBEHAVIORS\n{}".format("\n".join(behaviors)))
+        print("\nACTIONS\n{}".format("\n".join(actions)))
+        clog(data, title="nested data")
+    else:
+        return data
 
 def complete_behavior(user, userbehavior):
     # GIVEN a behavior, set ALL of it's actions to compelted, and set it compelted

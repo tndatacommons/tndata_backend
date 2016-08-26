@@ -82,9 +82,11 @@
       <ol>
         {% for ua in upcoming_useractions %}
         <li>
-          {{ ua.action }} at
           <span class="label info">
             {{ ua.next_trigger_date|localtime|date:"M j Y P e" }}</span>
+          <span class="label secondary" title="Sequence Order">
+            {{ua.action.order}}</span>
+          {{ ua.action }}
         </li>
         {% empty %}
         <li><em>no upcoming actions</em></li>

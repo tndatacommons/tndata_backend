@@ -84,7 +84,7 @@ from . permissions import (
     staff_required,
     superuser_required,
 )
-from . sequence import get_next_useractions_in_sequence
+from . sequence import get_next_useractions_in_sequence, get_next_in_sequence_data
 from . utils import num_user_selections
 
 
@@ -1945,6 +1945,48 @@ def duplicate_content(request, pk, title_slug):
 
 class DebugToolsView(TemplateView):
     template_name = "goals/debug_tools.html"
+
+
+@user_passes_test(staff_required, login_url='/')
+def debug_sequence(request):
+    """
+    List all of the user's selected content ordered by "next_in_sequence"
+
+    """
+    User = get_user_model()
+    email = request.GET.get('email_address', None)
+    data = None
+
+    goals = []
+    behaviors = []
+    actions = []
+
+    if email is None:
+        form = EmailForm()
+    else:
+        form = EmailForm(initial={'email_address': email})
+        try:
+            user = User.objects.get(email__icontains=email)
+            data = get_next_in_sequence_data(user, print_them=False)
+
+            for goal, bevs in data.items():
+                goals.append(goal)
+                for behavior, actions in bevs.items():
+                    behaviors.append(behavior)
+                    actions.extend(list(actions))
+
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            messages.error(request, "Could not find that user")
+
+    context = {
+        'form': form,
+        'email': email,
+        'data': data,
+        'goals': goals,
+        'behaviors': behaviors,
+        'actions': actions,
+    }
+    return render(request, 'goals/debug_sequence.html', context)
 
 
 @user_passes_test(staff_required, login_url='/')
