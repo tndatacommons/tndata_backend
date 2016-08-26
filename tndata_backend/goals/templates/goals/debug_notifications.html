@@ -17,6 +17,10 @@
   </style>
 {% endblock %}
 
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:debug_tools' %}">Debug Tools</a></li>
+  <li class="current">Debug Notifications</a>
+{% endblock %}
 
 {% block content %}
 <h1>Today's Notifications</h1>

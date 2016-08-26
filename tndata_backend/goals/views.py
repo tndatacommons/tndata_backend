@@ -1943,6 +1943,46 @@ def duplicate_content(request, pk, title_slug):
     return render(request, 'goals/duplicate_content.html', context)
 
 
+class DebugToolsView(TemplateView):
+    template_name = "goals/debug_tools.html"
+
+
+@user_passes_test(staff_required, login_url='/')
+def debug_priority_notifications(request):
+    """
+
+    """
+    User = get_user_model()
+    useractions = None
+    email = request.GET.get('email_address', None)
+    devices = None
+
+    if email is None:
+        form = EmailForm()
+    else:
+        form = EmailForm(initial={'email_address': email})
+        try:
+            user = User.objects.get(email__icontains=email)
+
+            # HIGH-priority UserActions
+            useractions = user.useraction_set.filter(
+                action__priority=Action.HIGH
+            ).prefetch_related('action')
+
+            # Get the user's devices
+            devices = user.gcmdevice_set.values_list('device_name', 'device_type')
+        except (User.DoesNotExist, User.MultipleObjectsReturned):
+            messages.error(request, "Could not find that user")
+
+    context = {
+        'devices': devices,
+        'form': form,
+        'email': email,
+        'useractions': useractions,
+    }
+    return render(request, 'goals/debug_priority_notifications.html', context)
+
+
 @user_passes_test(staff_required, login_url='/')
 def debug_notifications(request):
     """A view to allow searching by email addresss, then listing all UserActions

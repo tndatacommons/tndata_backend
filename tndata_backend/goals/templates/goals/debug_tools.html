@@ -1,0 +1,36 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+{% load util_filters %}
+{% load tz %}
+
+{% block title %}Debug HIGH-priority Notifications{% endblock %}
+
+{% block breadcrumbs %}
+  <li class="current">Debug Tools</a>
+{% endblock %}
+
+
+{% block content %}
+<h1>Some Debugging Tools</h1>
+
+<ul>
+  <li>
+    <a href="{% url 'goals:debug_feed' %}">Debug Feed</a><br/>
+    For debugging the items that should appear in a user's feed.
+  </li>
+  <li>
+    <a href="{% url 'goals:debug_priority_notifications' %}">Debug Priority Notifications</a><br/>
+    To view the generated reminder times for high-priority notifications.
+  </li>
+  <li>
+    <a href="{% url 'goals:debug_notifications' %}">
+      Debug <em>Today's</em> Notifications</a><br/>
+    To view the generated reminder times for notifications + custom actions and
+    to view the user's current notification queue.
+  </li>
+  <li>
+    <a href="{% url 'goals:debug_progress' %}">Debug Progress</a><br/>
+    To see what we know about a user's progress (e.g. actions completed per day).
+  </li>
+</ul>
+{% endblock %}

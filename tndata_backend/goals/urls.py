@@ -337,9 +337,19 @@ urlpatterns = [
         name='batch-assign-keywords'
     ),
     url(
+        r'^debug/$',
+        views.DebugToolsView.as_view(),
+        name='debug_tools'
+    ),
+    url(
         r'^debug-feed/$',
         views.debug_feed,
         name='debug_feed'
+    ),
+    url(
+        r'^debug-priority-notifications/$',
+        views.debug_priority_notifications,
+        name='debug_priority_notifications'
     ),
     url(
         r'^debug-notifications/$',

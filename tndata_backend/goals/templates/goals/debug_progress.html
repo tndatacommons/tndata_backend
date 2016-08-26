@@ -26,6 +26,10 @@
   </style>
 {% endblock %}
 
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:debug_tools' %}">Debug Tools</a></li>
+  <li class="current">Debug Progress</a>
+{% endblock %}
 
 {% block content %}
 <h1>Daily Progress Stats <small>from {{ from_date|timesince }} ago</small></h1>

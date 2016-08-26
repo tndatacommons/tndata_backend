@@ -1,0 +1,89 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+{% load util_filters %}
+{% load tz %}
+
+{% block title %}Debug HIGH-priority Notifications{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:debug_tools' %}">Debug Tools</a></li>
+  <li class="current">Debug Priority Notifications</a>
+{% endblock %}
+
+{% block content %}
+<h1>High-Priority Notifications</h1>
+
+{% if devices %}
+  <p><strong>Devices</strong>:
+  {% for name, type in devices %}
+    {{ name }}
+    <span class="label secondary">{{ type }}</span>{% if not forloop.last %},  {% endif %}
+  {% endfor %}
+{% elif user %}
+  <div data-alert class="alert-box warning">{{ user }} has no devices.</div>
+{% endif %}
+
+<form action="{% url 'goals:debug_priority_notifications' %}" method="get">
+  <div class="row">
+    <div class="large-6 column">
+      {{ form|crispy }}
+    </div>
+    <div class="large-3 column">
+      <input type="submit" value="Search" class="button"/>
+    </div>
+  </div>
+</form>
+
+{% if email and useractions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Trigger</th>
+        <th>attrs</th>
+        <th>time/date</th>
+        <th>prev / next / next()</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ua in useractions %}
+        {% with trigger=ua.trigger %}
+        <tr>
+          <td>{{ ua.action }}<br/>
+            <span class="label secondary">UserAction.id: {{ ua.id }}</span><br/>
+            <span class="label secondary">Action.id: {{ ua.action.id }}</span><br/>
+            Selected: {{ ua.created_on }}<br/>
+            <a href="/admin/goals/trigger/{{ trigger.id }}/">
+              trigger {{ trigger.id}}</a>
+          </td>
+          <td>
+            <div class="panel">{{ trigger.time_details|linebreaksbr }}</div>
+          </td>
+          <td>
+            custom: {{ trigger.user|iconbool }}<br/>
+            dynamic: {{ trigger.is_dynamic|iconbool }}<br/>
+            relative: {{ trigger.is_relative|iconbool }}<br/>
+            start_when_selected: {{ trigger.start_when_selected|iconbool }}<br/>
+            stop_on_complete: {{ trigger.stop_on_complete|iconbool }}<br/>
+          </td>
+          <td>
+            <span class="label secondary">Time: {{ trigger.time }}</span><br/>
+            <span class="label secondary">Date: {{ trigger.trigger_date }}</span><br/>
+            <span class="label secondary">Rel:
+              {{ trigger.relative_value }} {{ trigger.relative_units }}</span>
+          </td>
+          <td>
+            <span class="label secondary">{{ ua.prev_trigger_date }}</span><br/>
+            <span class="label secondary">{{ ua.next_trigger_date }}</span><br/>
+            <span class="label secondary">{{ ua.next }}</span>
+          </td>
+        </tr>
+        {% endwith %}
+      {% empty %}
+        <tr><td colspan="5">No <code>UserAction</code>s found</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endif %} {# not email #}
+{% endblock %}
