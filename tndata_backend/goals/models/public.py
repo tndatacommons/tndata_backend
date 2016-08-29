@@ -725,7 +725,7 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
         blank=True,
         help_text="Optional ordering for a sequence of behaviors"
     )
-    categories = models.ManyToManyField(Category, blank=True, null=True)
+    categories = models.ManyToManyField(Category, blank=True)
     goals = models.ManyToManyField(
         Goal,
         blank=True,
