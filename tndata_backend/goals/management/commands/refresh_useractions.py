@@ -85,6 +85,10 @@ class Command(BaseCommand):
         limit = options.pop('limit')
         hours = options.pop('hours')
 
+        # If we passed in a user, dont' limit results
+        if options['user'] is not None:
+            limit = None
+
         # 1. Fetch the set of SEQUENCED UserActions to refresh.
         count = 0
         for user in self._users(options['user']):
@@ -96,7 +100,7 @@ class Command(BaseCommand):
 
         msg = "Refreshed Trigger Date for {0} UserActions".format(count)
         logger.info(msg)
-        self.stderr.write(msg)
+        self.stdout.write(msg)
 
         # 2. Refresh stale UserActions that have a custom trigger
         count = 0
@@ -112,7 +116,7 @@ class Command(BaseCommand):
 
         msg = "Refreshed Custom Triggers for {0} UserActions".format(count)
         logger.info(msg)
-        self.stderr.write(msg)
+        self.stdout.write(msg)
 
         # 3. Update all custom actions
         count = 0
@@ -122,4 +126,4 @@ class Command(BaseCommand):
 
         msg = "Refreshed Trigger Date for {0} CustomActions".format(count)
         logger.info(msg)
-        self.stderr.write(msg)
+        self.stdout.write(msg)
