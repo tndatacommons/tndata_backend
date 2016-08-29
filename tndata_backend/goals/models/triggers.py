@@ -536,9 +536,15 @@ class Trigger(models.Model):
         # specify a weekly recurrence for set days; these need to use
         # `recurrences.after`
         elif recurrences and "UNTIL" in recurrences and 'BYDAY' not in recurrences:
-            yesterday = alert_on - timedelta(days=1)  # yesterday's alert
-            tomorrow = now + timedelta(days=1)  # this time tomorrow
-            dates = self.recurrences.between(now, tomorrow, dtstart=yesterday)
+            if "WEEKLY" in recurrences:
+                start_date = alert_on
+            else:
+                start_date = alert_on - timedelta(days=1)  # yesterday's alert
+
+            # In order to support things like WEEKLY recurrences, we need to
+            # generate a large-enough rante of dates.
+            end = now + timedelta(days=60)
+            dates = self.recurrences.between(now, end, dtstart=start_date)
             if len(dates) > 0:
                 return dates[0]
             else:
