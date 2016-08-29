@@ -550,6 +550,14 @@ class UserAction(models.Model):
         )
         return output
 
+    @property
+    def next_in_sequence(self):
+        """Is this action the next in sequence. Returns True or False."""
+        return self.id in self.user.useraction_set.next_in_sequence(
+            [self.action.behavior],
+            published=True
+        ).values_list("pk", flat=True)
+
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
         or None. This method will either return the value of `next_trigger_date`
@@ -559,6 +567,12 @@ class UserAction(models.Model):
         trigger_times = []
         trigger = self.trigger
         is_dynamic = trigger and trigger.is_dynamic
+
+        # IF we have a recurring trigger OR if this Action is the next in a
+        # sequence, then we'll proceed with generating the appropriate time.
+        # Otherwise, we'll short-circuit this method.
+        if trigger and not any([trigger.serialized_recurrences(), self.next_in_sequence]):
+            return None
 
         # If we have a dynamic trigger, let's first determine wether or not
         # we need to re-generate a time; i.e. if the next_trigger_date is in
@@ -594,15 +608,14 @@ class UserAction(models.Model):
 
         """
         # ---------------------------------------------------------------------
-        # NOTE: Some triggers have time, but no date or recurrence. These will
-        # automatically generate a `next` value IFF the current time is before
-        # the trigger's time; However, when these get queued up, it seems the
-        # prev_trigger_date eventually gets overwritten. We need to figure out
-        # how to write that value when it makes sense, given that triggers are
-        # queued up every few minutes.
+        # Actions/Notifications should be queued up based on their sequence. So,
+        # unless this action is next in sequence for the user, we don't want to
+        # generate a next trigger date...
+        #
+        # UNLESS, the trigger has a recurrence.
         # ---------------------------------------------------------------------
         trigger = self.trigger
-        if trigger:
+        if trigger and (self.next_in_sequence or trigger.serialized_recurrences):
             # This trigger retuns the date in the user's timezone, so convert
             # it back to UTC.
             next_date = to_utc(self.next())

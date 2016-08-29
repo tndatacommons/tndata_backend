@@ -1117,6 +1117,8 @@ class TestTrigger(TestCase):
         ua3 = mommy.make(UserAction, user=user, action=a3)
 
         # We shouldn't get next trigger dates until they the sequence is active
+        for ua in [ua1, ua2, ua3]:
+            ua.save(update_triggers=True)
         self.assertIsNotNone(ua1.next_trigger_date)
         self.assertIsNone(ua2.next_trigger_date)
         self.assertIsNone(ua3.next_trigger_date)
@@ -1128,7 +1130,6 @@ class TestTrigger(TestCase):
         )
         for ua in [ua1, ua2, ua3]:
             ua.save()
-
         self.assertIsNone(ua1.next_trigger_date)
         self.assertIsNotNone(ua2.next_trigger_date)
         self.assertIsNone(ua3.next_trigger_date)
