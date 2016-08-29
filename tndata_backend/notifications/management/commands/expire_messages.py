@@ -5,8 +5,10 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
+from django.db import connection
 
 from notifications.models import GCMMessage
+from notifications import queue
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +117,16 @@ class Command(BaseCommand):
 
         elif options['remove_all']:
             # Remove all GCMMessages.
-            self._delete(GCMMessage.objects.all())
+            # -----------------------
+
+            # 1. Clear the Queue.
+            queue.clear()
+            logger.info("Cleared the notification queue")
+
+            # 2. Quickly remove all GCMMessage objects.
+            cursor = connection.cursor()
+            cursor.execute("DELETE FROM notifications_gcmmessage")
+            logger.info("Remove all GCMMessages")
 
         else:
             # Default action: Remove all expired messages.
