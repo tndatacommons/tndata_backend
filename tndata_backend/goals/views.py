@@ -2009,7 +2009,7 @@ def debug_priority_notifications(request):
             # HIGH-priority UserActions
             useractions = user.useraction_set.filter(
                 action__priority=Action.HIGH
-            ).prefetch_related('action')
+            ).prefetch_related('action').order_by("next_trigger_date")
 
             # Get the user's devices
             devices = user.gcmdevice_set.values_list('device_name', 'device_type')

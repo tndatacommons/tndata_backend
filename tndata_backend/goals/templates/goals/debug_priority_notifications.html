@@ -60,11 +60,20 @@
             <div class="panel">{{ trigger.time_details|linebreaksbr }}</div>
           </td>
           <td>
-            custom: {{ trigger.user|iconbool }}<br/>
-            dynamic: {{ trigger.is_dynamic|iconbool }}<br/>
-            relative: {{ trigger.is_relative|iconbool }}<br/>
-            start_when_selected: {{ trigger.start_when_selected|iconbool }}<br/>
-            stop_on_complete: {{ trigger.stop_on_complete|iconbool }}<br/>
+            <span class="label secondary">custom</span>
+              {{ trigger.user|iconbool }}<br/>
+            <span class="label secondary">dynamic</span>
+              {{ trigger.is_dynamic|iconbool }}<br/>
+            <span class="label secondary">relative</span>
+              {{ trigger.is_relative|iconbool }}<br/>
+            <span class="label secondary">start/selected</span>
+              {{ trigger.start_when_selected|iconbool }}<br/>
+            <span class="label secondary">stop/complete</span>
+              {{ trigger.stop_on_complete|iconbool }}<br/>
+            <span class="label secondary">completed</span>
+              {{ ua.completed|iconbool }}<br/>
+            <span class="label secondary" title="UserCompletedAction's">uca's</span>
+              {{ ua.usercompletedaction_set.count }}
           </td>
           <td>
             <span class="label secondary">Time: {{ trigger.time }}</span><br/>
@@ -74,7 +83,7 @@
           </td>
           <td>
             <span class="label secondary">{{ ua.prev_trigger_date }}</span><br/>
-            <span class="label secondary">{{ ua.next_trigger_date }}</span><br/>
+            <span class="label info">{{ ua.next_trigger_date }}</span><br/>
             <span class="label secondary">{{ ua.next }}</span>
           </td>
         </tr>
