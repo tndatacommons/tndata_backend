@@ -634,6 +634,51 @@ class TestTrigger(TestCase):
         # Clean up
         t.delete()
 
+    def test_weekly_recurrences(self):
+        """Test the value of `next` for recurrences that specify a distinct
+        a weekly recurrence."""
+
+        # Weekly until Sept 1, 2016 (starting Aug 1)
+        rrule = 'RRULE:FREQ=WEEKLY;UNTIL=20160901T050000Z'
+        t = Trigger.objects.create(
+            time=time(13, 30),
+            trigger_date=date(2016, 8, 1),  # Mon, 8/1/2016
+            recurrences=rrule
+        )
+
+        with patch("goals.models.triggers.timezone.now") as mock_now:
+            # now: 08/01 at 11:00am, expected: next is Mon 8/01, 1:30pm
+            mock_now.return_value = tzdt(2016, 8, 1, 11, 0)
+            expected = tzdt(2016, 8, 1, 13, 30)
+            self.assertEqual(t.next(), expected)
+
+            # now: Sun, 8/07 at 11:00am, expected next is 8/09 at 1:30pm
+            mock_now.return_value = tzdt(2016, 8, 7, 11, 0)
+            expected = tzdt(2016, 8, 8, 13, 30)
+            self.assertEqual(t.next(), expected)
+
+            # now: Sun, 8/14 at 11:00am, expected next is 8/15 at 1:30pm
+            mock_now.return_value = tzdt(2016, 8, 14, 11, 0)
+            expected = tzdt(2016, 8, 15, 13, 30)
+            self.assertEqual(t.next(), expected)
+
+            # now: Sat, 8/20 at 11:00am, expected next is 8/22 at 1:30pm
+            mock_now.return_value = tzdt(2016, 8, 20, 11, 0)
+            expected = tzdt(2016, 8, 22, 13, 30)
+            self.assertEqual(t.next(), expected)
+
+            # now: Thurs, 8/25 at 11:00am, expected next is 8/29 at 1:30pm
+            mock_now.return_value = tzdt(2016, 8, 25, 11, 0)
+            expected = tzdt(2016, 8, 29, 13, 30)
+            self.assertEqual(t.next(), expected)
+
+            # now: 8/30, we should be done.
+            mock_now.return_value = tzdt(2016, 8, 30, 22, 0)
+            self.assertIsNone(t.next())
+
+        # Clean up
+        t.delete()
+
     def test_next_with_multiple_rules(self):
         """Test `next` when we have multiple RRULE requirements."""
 
@@ -998,3 +1043,102 @@ class TestTrigger(TestCase):
             self.assertIsNone(t.next())
 
         t.delete()  # Clean up
+
+    def test_recurrences_continue_afer_usercompletedactions_are_set(self):
+        """A Trigger with a Recurrence should continue to get created for
+        the life of that recurrence, _even_ after a user's got a "completed"
+        UserCompletedAction."""
+        user = self.User.objects.create_user('x', 'y@z.com', 'xxx')
+
+        cat = mommy.make(Category, title="C", state="published")
+        goal = mommy.make(Goal, title="G", state="published")
+        goal.categories.add(cat)
+        behavior = mommy.make(Behavior, title="B", state="published",
+                              sequence_order=0)
+        behavior.goals.add(goal)
+        action = mommy.make(Action, title="A", state="published",
+                            behavior=behavior, sequence_order=0)
+
+        trigger = Trigger.objects.create(
+            user=user,
+            time=time(13, 30),
+            recurrences='RRULE:FREQ=DAILY',
+            start_when_selected=True,
+        )
+        ua = mommy.make(UserAction, user=user, action=action, custom_trigger=trigger)
+        ua.save()
+
+        # Saving this should generate a trigger date (within the next 24 hours)
+        self.assertIsNotNone(ua.next_trigger_date)
+
+        # Should happen before tomorrow
+        tomorrow = timezone.now() + timedelta(days=1)
+        self.assertTrue(ua.next_trigger_date < tomorrow)
+
+        # Even If we have *completed* an action, since this has a recurrence,
+        # we should still get a next date.
+        mommy.make(
+            UserCompletedAction, user=user, action=action, useraction=ua,
+            state=UserCompletedAction.COMPLETED
+        )
+        self.assertIsNotNone(ua.next())
+        user.delete()
+
+    def test_triggers_as_part_of_a_sequence(self):
+        """A Trigger with a Recurrence should continue to get created for
+        the life of that recurrence, _even_ after a user's got a "completed"
+        UserCompletedAction."""
+        user = self.User.objects.create_user('x', 'y@z.com', 'xxx')
+
+        cat = mommy.make(Category, title="C", state="published")
+        goal = mommy.make(Goal, title="G", state="published")
+        goal.categories.add(cat)
+        behavior = mommy.make(Behavior, title="B", state="published",
+                              sequence_order=0)
+        behavior.goals.add(goal)
+
+        trigger_args = {
+            'time': time(13, 30),
+            'time_of_day': "allday",
+            'frequency': "daily",
+        }
+        dt1 = Trigger.objects.create(**trigger_args)
+        a1 = mommy.make(Action, title="A1", state="published", behavior=behavior,
+                        sequence_order=1, default_trigger=dt1)
+        dt2 = Trigger.objects.create(**trigger_args)
+        a2 = mommy.make(Action, title="A2", state="published", behavior=behavior,
+                        sequence_order=2, default_trigger=dt2)
+        dt3 = Trigger.objects.create(**trigger_args)
+        a3 = mommy.make(Action, title="A3", state="published", behavior=behavior,
+                        sequence_order=3, default_trigger=dt3)
+
+        ua1 = mommy.make(UserAction, user=user, action=a1)
+        ua2 = mommy.make(UserAction, user=user, action=a2)
+        ua3 = mommy.make(UserAction, user=user, action=a3)
+
+        # We shouldn't get next trigger dates until they the sequence is active
+        self.assertIsNotNone(ua1.next_trigger_date)
+        self.assertIsNone(ua2.next_trigger_date)
+        self.assertIsNone(ua3.next_trigger_date)
+
+        # When we complete one, then the next in sequence should get queued.
+        mommy.make(
+            UserCompletedAction, user=user, action=a1, useraction=ua1,
+            state=UserCompletedAction.COMPLETED
+        )
+        for ua in [ua1, ua2, ua3]:
+            ua.save()
+
+        self.assertIsNone(ua1.next_trigger_date)
+        self.assertIsNotNone(ua2.next_trigger_date)
+        self.assertIsNone(ua3.next_trigger_date)
+
+        mommy.make(
+            UserCompletedAction, user=user, action=a2, useraction=ua2,
+            state=UserCompletedAction.COMPLETED
+        )
+        for ua in [ua1, ua2, ua3]:
+            ua.save()
+        self.assertIsNone(ua1.next_trigger_date)
+        self.assertIsNone(ua2.next_trigger_date)
+        self.assertIsNotNone(ua3.next_trigger_date)
