@@ -567,11 +567,15 @@ class UserAction(models.Model):
         trigger_times = []
         trigger = self.trigger
         is_dynamic = trigger and trigger.is_dynamic
+        is_custom = bool(self.custom_trigger)
 
-        # IF we have a recurring trigger OR if this Action is the next in a
-        # sequence, then we'll proceed with generating the appropriate time.
-        # Otherwise, we'll short-circuit this method.
-        if trigger and not any([trigger.serialized_recurrences(), self.next_in_sequence]):
+        # IF we have a custom trigger, a recurring trigger OR if this Action is
+        # the next in a sequence, then we'll proceed with generating the
+        # appropriate time. Otherwise, we'll short-circuit this method.
+        if trigger and not is_custom and not any([
+            trigger.serialized_recurrences(),
+            self.next_in_sequence
+        ]):
             return None
 
         # If we have a dynamic trigger, let's first determine wether or not
