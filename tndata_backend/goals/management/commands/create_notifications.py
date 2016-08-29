@@ -188,35 +188,6 @@ class Command(BaseCommand):
                         trigger=ua.trigger
                     )
 
-# XXX: Currently disabled
-#            # Dynamic Notifications based on Buckets
-#            for ub in user.userbehavior_set.published():
-#                try:
-#                    # Figure out which bucket they're in
-#                    dp = user.dailyprogress_set.latest()
-#                    bucket = dp.get_status(ub.behavior)
-#
-#                    # pluck the next useraction from the bucket (this excludes
-#                    # things they've already received).
-#                    for ua in user.useraction_set.select_from_bucket(bucket):
-#                        # Retrive the `next_reminder`, which will be in the
-#                        # user's timezone, and may have been created weeks or
-#                        # months ago.
-#                        # XXX: this is slightlly differnt from other UserActions,
-#                        # because we don't re-generate these on the fly
-#                        deliver_on = to_utc(ua.next_reminder)
-#                        self.create_message(
-#                            user,
-#                            ua.action,
-#                            ua.get_notification_title(),
-#                            ua.get_notification_text(),
-#                            deliver_on,
-#                            priority=ua.priority,
-#                            trigger=ua.trigger
-#                        )
-#                except DailyProgress.DoesNotExist:
-#                    pass
-
             # XXX; Very inefficient;
             # schedule the non-dynamic notifications.
             for ua in user.useraction_set.published().distinct():
@@ -275,7 +246,7 @@ class Command(BaseCommand):
         #
         # We also recently disabled the monthly option, so this should be safe.
         #
-        self.threshold = timezone.now() + timedelta(days=25)
+        self.threshold = timezone.now() + timedelta(days=30)
         # ---------------------------------------------------------------------
 
         # This switch allows us to completely disable creation of notifications
@@ -299,15 +270,6 @@ class Command(BaseCommand):
         if waffle.switch_is_active('goals-evening-checkin'):
             self.schedule_evening_goal_notifications(users)
 
-        # Finish with a confirmation message
-        # elapsed = (timezone.now() - self._start_time).seconds
-        # m = "[{}] Created {} notifications in {} seconds.".format(
-            # self._start_time.strftime("%c %z"),
-            # self._messages_created,
-            # elapsed
-        # )
         m = "Created {} notifications.".format(self._messages_created)
         self._log_messages.append((m, WARNING))
-        # self._to_slack('bkmontgomery', m)
-
         self.write_log()
