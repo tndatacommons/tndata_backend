@@ -230,11 +230,14 @@ def create_relative_reminder(sender, instance, created, raw, using, **kwargs):
         trigger = Trigger.objects.create(
             user=instance.user,
             name="Trigger for {}".format(instance),
+            time_of_day=instance.time_of_day,
+            frequency=instance.frequency,
             time=instance.default_trigger.time,
             trigger_date=instance.default_trigger.trigger_date,
             recurrences=instance.default_trigger.recurrences,
             start_when_selected=instance.default_trigger.start_when_selected,
             stop_on_complete=instance.default_trigger.stop_on_complete,
+            disabled=intance.disabled,
             relative_value=instance.default_trigger.relative_value,
             relative_units=instance.default_trigger.relative_units
         )
