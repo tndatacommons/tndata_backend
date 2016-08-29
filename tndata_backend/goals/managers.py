@@ -353,20 +353,22 @@ class UserActionManager(models.Manager):
                       to published Actions.
 
         """
+        from .models import Behavior
         from .models import UserCompletedAction as UCA
         sequences_by_behavior = {}
 
         if kwargs.pop('published', False):
             kwargs['action__state'] = 'published'
 
-        is_behavior_object = (
-            hasattr(behaviors, '__class__') and
-            behaviors.__class__.__name__ == "Behavior"
-        )
-        if is_behavior_object:
+        if isinstance(behaviors, Behavior):
             kwargs['action__behavior'] = behaviors
             sequences_by_behavior = {b.id: set() for b in behaviors}
+        elif len(behaviors) > 0 and isinstance(behaviors[0], Behavior):
+            # List or Queryset of Behavior objects
+            kwargs['action__behavior__in'] = behaviors
+            sequences_by_behavior = {b.id: set() for b in behaviors}
         else:
+            # List or ValuesQueryset of IDs
             kwargs['action__behavior__in'] = behaviors
             sequences_by_behavior = {bid: set() for bid in behaviors}
 
