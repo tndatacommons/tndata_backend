@@ -49,12 +49,24 @@
       {% for ua in useractions %}
         {% with trigger=ua.trigger %}
         <tr>
-          <td>{{ ua.action }}<br/>
+          <td>
+            <strong>{{ ua.action }}</strong><br/>
+            <span class="label info">{{ ua.action.order }}</span>
+            <span class="label secondary">
+              {{ ua.action.get_priority_display }}</span><br/>
             <span class="label secondary">UserAction.id: {{ ua.id }}</span><br/>
             <span class="label secondary">Action.id: {{ ua.action.id }}</span><br/>
             Selected: {{ ua.created_on }}<br/>
             <a href="/admin/goals/trigger/{{ trigger.id }}/">
-              trigger {{ trigger.id}}</a>
+              trigger {{ trigger.id}}</a><br/>
+
+            <span class="label info">B / {{ ua.action.behavior.order }}</span>
+              <a href="{{ ua.action.behavior.get_absolute_url }}">{{ ua.action.behavior }}</a><br/>
+            <span class="label info">G / {{ ua.primary_goal.order }}</span>
+              <a href="{{ ua.primary_goal.get_absolute_url }}">{{ ua.primary_goal }}</a><br/>
+            <span class="label info">C</span>
+              <a href="{{ ua.primary_category.get_absolute_url }}">{{ ua.primary_category }}</a><br/>
+
           </td>
           <td>
             <div class="panel">{{ trigger.time_details|linebreaksbr }}</div>
