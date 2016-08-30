@@ -1,0 +1,131 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load crispy_forms_tags %}
+{% load util_tags %}
+{% load util_filters %}
+
+{% block title %}Organizations and Goals{% endblock %}
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+    canvas {display:block; margin: 1em auto;}
+  </style>
+{% endblock %}
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:reports' %}">Reports</a></li>
+  <li class="current">Organizations &amp; Selected Goals</li>
+{% endblock %}
+
+{% block content %}
+<h1>Organizations &amp; Goals
+  {% if organization %}<small>{{ organization }}</small>{% endif %}
+</h1>
+
+<div class="panel pull-right">
+  <select name="org" id="org-selection">
+    <option value=""> --- Select Organization ---</option>
+    {% for id, name in organizations %}
+      <option value="{{ id }}" {% if organization.id == id %}selected="selected"{% endif %}>{{ name }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<p class="lead">Select an organization to view the top ten most-selected goals
+within the organization as well as the most popular public goals selected by
+members.</p>
+
+<p><strong>Note:</strong> This report excludes any goals in which all users
+are automatically enrolled. Therefore the numbers below indicate users who
+have actively found and self-enrolled in goals.</p>
+
+<hr/>
+{% if percentage %}
+<h2>{{ percentage|floatformat:2 }}% of members select public content</h2>
+{% endif %}
+
+<div class="row">
+  <div class="large-6 medium-6 small-12 columns">
+  {% if organization_goals %}
+    <canvas id="org-goal-counts"></canvas>
+    <script>
+    var ctx = document.getElementById("org-goal-counts").getContext("2d");
+    var data = [
+      {% for goal, count in organization_goals %}
+      {
+        value: {{ count }},
+        color: "{% random_color %}",
+        highlight: "#FF5A5E",
+        label: "{{ goal }}"
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Pie(data);
+    </script>
+
+    <table style="width:100%">
+    <caption>Top 10 Goals in<br/>{{ organization }} programs</caption>
+    <thead>
+      <tr><th>Goal</th><th>Users</th></tr>
+    </thead>
+    <tbody>
+    {% for goal, count in organization_goals %}
+      <tr><td>{{ goal }}</td><td>{{count}}</td></tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  {% endif %}
+  </div> {# end .columns#}
+
+  <div class="large-6 medium-6 small-12 columns">
+  {% if non_organization_goals %}
+
+    <canvas id="nonorg-goal-counts"></canvas>
+    <script>
+    var ctx = document.getElementById("nonorg-goal-counts").getContext("2d");
+    var data = [
+      {% for goal, count in non_organization_goals %}
+      {
+        value: {{ count }},
+        color: "{% random_color %}",
+        highlight: "#FF5A5E",
+        label: "{{ goal }}"
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+    var c = new Chart(ctx).Pie(data);
+    </script>
+
+    <table style="width:100%">
+    <caption>Top 10 Public Goals selected by<br/>{{ organization }} members</caption>
+    <thead>
+      <tr><th>Goal</th><th>Users</th></tr>
+    </thead>
+    <tbody>
+    {% for goal, count in non_organization_goals %}
+      <tr><td>{{ goal }}</td><td>{{count}}</td></tr>
+    {% endfor %}
+    </tbody>
+    </table>
+
+  {% endif %}
+  </div> {# end .columns#}
+</div> {# end .row #}
+{% endblock %}
+
+{% block bodyjs %}
+{{ block.super }}
+<script>
+$(document).ready(function() {
+    $('#org-selection').change(function(e) {
+      e.preventDefault();
+      var orgId = $(this).val();
+      if(orgId != "") {
+        window.location = "/goals/reports/organization/" + orgId + "/";
+      }
+    });
+});
+</script>
+{% endblock %}

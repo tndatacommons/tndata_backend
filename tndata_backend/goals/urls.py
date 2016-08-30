@@ -367,6 +367,16 @@ urlpatterns = [
         name='debug_progress'
     ),
     url(
+        r'^reports/organization/(?P<pk>\d+)/$',
+        views.report_organization,
+        name='report-organization'
+    ),
+    url(
+        r'^reports/organization/$',
+        views.report_organization,
+        name='report-organization'
+    ),
+    url(
         r'^reports/triggers/$',
         views.report_triggers,
         name='report-triggers'

@@ -2571,6 +2571,64 @@ def report_engagement(request):
     return render(request, 'goals/report_engagement.html', context)
 
 
+@user_passes_test(staff_required, login_url='/')
+def report_organization(request, pk=None):
+    """A report on Organization member's selected content.
+
+    If a `pk` is provided, we'll display info for that organization. Otherwise,
+    we'll list the organizations.
+
+    """
+    N = 10  # The top N goals.
+
+    try:
+        org = Organization.objects.get(pk=pk)
+        member_ids = org.members.values_list('pk', flat=True)
+        org_cats = org.program_set.values_list('categories', flat=True)
+
+        # All of the Goals selected by org members that aren't org-related goals.
+        org_goals = UserGoal.objects.filter(
+            user__in=member_ids,
+            goal__categories__in=org_cats
+        ).values_list("goal__title", flat=True)
+        org_goals = Counter(org_goals).most_common(N)
+        org_goals = sorted(org_goals, key=lambda t: t[1], reverse=True)
+
+        nonorg_goals = UserGoal.objects.filter(user__in=member_ids)
+        # Exclude the organization's program goals
+        nonorg_goals = nonorg_goals.exclude(goal__categories__in=org_cats)
+        # Exclude any goals in which users are globally auto-enrolled.
+        nonorg_goals = nonorg_goals.exclude(
+            goal__categories__selected_by_default=True
+        )
+
+        # User IDs for all of the org members who've selected content outside
+        # of the organization's programs.
+        public_users = set(nonorg_goals.values_list("user", flat=True))
+
+        nonorg_goals = nonorg_goals.values_list("goal__title", flat=True)
+        nonorg_goals = Counter(nonorg_goals).most_common(N)
+        nonorg_goals = sorted(nonorg_goals, key=lambda t: t[1], reverse=True)
+
+        # What % of org members select public goals.
+        percentage = (len(public_users) / len(set(member_ids))) * 100
+
+    except Organization.DoesNotExist:
+        org = None
+        org_goals = []
+        nonorg_goals = []
+        percentage = None
+
+    context = {
+        'organization': org,
+        'organizations': Organization.objects.values_list("id", "name"),
+        'organization_goals': org_goals,
+        'non_organization_goals': nonorg_goals,
+        'percentage': percentage,
+    }
+    return render(request, 'goals/report_organization.html', context)
+
+
 def fake_api(request, option=None):
     """Return a 'fake' api response. This is a view that returns fake/dummy
     data for api endpoints that we may have removed; This will prevent an
