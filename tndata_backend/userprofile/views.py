@@ -77,7 +77,7 @@ def report(request):
     since = now - timedelta(days=days)
 
     signups = User.objects.filter(date_joined__gte=since)
-    signups = signups.datetimes('date_joined', 'day')
+    signups = signups.values_list('date_joined', flat=True)
     signups = Counter([d.strftime("%Y-%m-%d") for d in signups])
 
     # Now that we have data, we need to zero-fill the missing parts.
