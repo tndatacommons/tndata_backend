@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
 from django.db.models import ObjectDoesNotExist
 from django.db.models.signals import (
-    pre_delete, pre_save, post_delete, post_save
+    m2m_changed, pre_delete, pre_save, post_delete, post_save
 )
 from django.dispatch import receiver
 from django.utils import timezone
@@ -19,9 +19,10 @@ from redis_metrics import metric
 from utils.user_utils import local_day_range
 
 from .custom import CustomAction
-from .packages import PackageEnrollment
+from .packages import PackageEnrollment, Program
 from .progress import DailyProgress, UserCompletedAction
 from .public import Action, Behavior, Category, Goal, action_unpublished
+from .public import _enroll_program_members
 from .users import UserAction, UserBehavior, UserCategory, UserGoal
 from .users import userbehavior_completed
 from .triggers import Trigger
@@ -67,6 +68,30 @@ def update_daily_progress(sender, instance, using, **kwargs):
     dp = DailyProgress.objects.for_today(instance.user)
     dp.update_stats()
     dp.save()
+
+
+@receiver(m2m_changed, dispatch_uid="program_goals_changed")
+def program_goals_changed(sender, instance, **kwargs):
+    """Handle the changes to Program.auto_enrolled_goals (M2M field).
+
+    Sender: goals.models.packages.Program_auto_enrolled_goals
+    Instance: A Program object.
+
+    Additional kwargs:
+
+    - model: Goal
+    - action: look for `post_add`
+    - pk_set: the set of Goal PKs added
+
+    """
+    model = kwargs.get('model', None)
+    action = kwargs.get('action', None)
+    pk_set = kwargs.get('pk_set', set())  # Set of PKs added or removed
+
+    if model is Program and action == "post_add" and len(pk_set) > 0:
+        goals = instance.auto_enrolled_goals.filter(id__in=pk_set, state='published')
+        for goal in goals:
+            _enroll_program_members.delay(goal)
 
 
 @receiver(pre_save, sender=DailyProgress, dispatch_uid='set_dp_checkin_streak')
