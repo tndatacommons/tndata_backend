@@ -93,10 +93,12 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         if not self.request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
+        code = status.HTTP_200_OK
         if request.method == "POST":
             try:
                 org = self.queryset.get(pk=request.data['organization'])
                 org.members.add(request.user)
+                code = status.HTTP_201_CREATED
             except (KeyError, ValueError):
                 return Response(
                     data={'error': "Missing or invalid value for organization"},
@@ -110,7 +112,7 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
         organizations = request.user.member_organizations.all()
         serializer = self.get_serializer(organizations, many=True)
-        return Response(resultset(serializer.data))
+        return Response(resultset(serializer.data), status=code)
 
 
 class ProgramViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
