@@ -373,6 +373,19 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
             ua.primary_goal = ua.get_primary_goal()
             ua.save()
 
+    def unenroll(self, user):
+        """Removes the user in this category and all of the published content
+        contained within it."""
+        # Fetch Actions / Behaviors in which this is the primary category.
+        useractions = user.useraction_set.filter(primary_category__id=self.id)
+        behavior_ids = useractions.values_list("action__behavior", flat=True)
+
+        # Now delete everything.
+        useractions.delete()
+        user.userbehavior_set.filter(id__in=behavior_ids).delete()
+        user.usergoal_set.filter(primary_category__id=self.id).delete()
+        user.usercategory_set.filter(category__id=self.id).delete()
+
     def duplicate_content(self, prefix="Copy of"):
         """This method will duplicate all of the content stored within this
         Category. That is, we'll create copies of all Goal, Behavior, and

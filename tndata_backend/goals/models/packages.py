@@ -87,6 +87,12 @@ class Program(models.Model):
             self.id
         )
 
+    def remove(self, user):
+        """Removes a user from a Program."""
+        self.members.remove(user)
+        for cat in self.categories.all():
+            cat.unenroll(user)
+
 
 class PackageEnrollment(models.Model):
     """A mapping of users who've been enrolled in various *Packaged Content*
