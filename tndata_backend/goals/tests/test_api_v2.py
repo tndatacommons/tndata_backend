@@ -3496,3 +3496,58 @@ class TestOrganizationAPI(V2APITestCase):
 
         # Ensure the user isn't in any Orgs
         self.assertFalse(self.user.member_organizations.exists())
+
+    def test_post_remove_member_deletes_program_data(self):
+        """Removing a member from an organization should also remove the
+        user from the program and remove all program data."""
+        # Set up some test data
+        User = get_user_model()
+        user = User.objects.create_user('x', 'x@y.z', 'password123')
+
+        category = Category.objects.create(order=99, title='C')
+        goal = Goal.objects.create(title="G")
+        goal.categories.add(self.category)
+        behavior = Behavior.objects.create(title="B")
+        behavior.goals.add(goal)
+        action = Action.objects.create(title="A", behavior=behavior)
+
+        for obj in [category, goal, behavior, action]:
+            obj.publish()
+            obj.save()
+
+        org = Organization.objects.create(name="Org")
+        program = Program.objects.create(
+            name="Program",
+            organization=org,
+        )
+        program.categories.add(category)
+        program.auto_enrolled_goals.add(goal)
+
+        # Now ensure the user is enrolled in everything
+        org.members.add(user)
+        program.members.add(user)
+        category.enroll(user)
+
+        # Ensure we did setup correctly
+        self.assertTrue(user.usercategory_set.exists())
+        self.assertTrue(user.usergoal_set.exists())
+        self.assertTrue(user.userbehavior_set.exists())
+        self.assertTrue(user.useraction_set.exists())
+        self.assertTrue(user.member_organizations.exists())
+        self.assertTrue(user.program_set.exists())
+
+        # Hit the remove api
+        url = self.get_url('organization-remove-member', args=[org.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure the user isn't in any Orgs
+        self.assertFalse(user.usercategory_set.exists())
+        self.assertFalse(user.usergoal_set.exists())
+        self.assertFalse(user.userbehavior_set.exists())
+        self.assertFalse(user.useraction_set.exists())
+        self.assertFalse(user.member_organizations.exists())
+        self.assertFalse(user.program_set.exists())
