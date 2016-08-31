@@ -4,6 +4,7 @@ import re
 from io import TextIOWrapper
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.termcolors import colorize
 
 # Import clog if we're in debug otherwise make it a noop
 if settings.DEBUG:
@@ -98,10 +99,26 @@ def read_uploaded_csv(uploaded_file, encoding='utf-8', errors='ignore'):
             yield row
 
 
-def debug_user_data(user):
-    """Given a user, print out their selected hierarchy of content."""
+def debug_user_data(user, **kwargs):
+    """Given a user, print out their selected hierarchy of content.
+
+    Available keywords:
+
+    * only_categories: Print only the user's selected categories.
+    * only_goals: Print only the user's selected goals.
+    * only_behaviors: Print only the user's selected behaviors.
+    * only_actions: Print only the user's selected actions.
+
+    The above options are mutually exclusive.
+
+    """
 
     data = {'orphaned': {'goals': [], 'actions': [], 'behaviors': []}}
+
+    only_categories = kwargs.pop('only_categories', False)
+    only_goals = kwargs.pop('only_goals', False)
+    only_behaviors = kwargs.pop('only_behaviors', False)
+    only_actions = kwargs.pop('only_actions', False)
 
     for uc in user.usercategory_set.all():
         data[uc.category.title] = {}
@@ -165,17 +182,22 @@ def debug_user_data(user):
     orphans = data.pop("orphaned")
     print("\nSelected content:")
     for cat, goals in data.items():
-        print(cat)
+        if not any([only_goals, only_behaviors, only_actions]):
+            print(colorize("\n" + cat, fg="yellow"))
         for goal, behaviors in goals.items():
-            print("- {0}".format(goal))
+            if not any([only_categories, only_behaviors, only_actions]):
+                print("- {0}".format(goal))
             for behavior, actions in behaviors.items():
-                print("-- {0}".format(behavior))
+                if not any([only_categories, only_goals, only_actions]):
+                    print("-- {0}".format(behavior))
                 for a in actions:
-                    print("--- {0}".format(a))
+                    if not any([only_categories, only_goals, only_behaviors]):
+                        print("--- {0}".format(a))
 
-    print("\nOrphaned data")
-    for t, items in orphans.items():
-        print("{0}: {1}".format(t, ", ".join(items)))
+    if not any([only_categories, only_goals, only_behaviors, only_actions]):
+        print("\nOrphaned data")
+        for t, items in orphans.items():
+            print("{0}: {1}".format(t, ", ".join(items)))
 
 
 def delete_content(prefix):
