@@ -3467,3 +3467,32 @@ class TestOrganizationAPI(V2APITestCase):
 
         # Clean up
         new_org.delete()
+
+    def test_get_remove_member_unauthenticated(self):
+        url = self.get_url('organization-remove-member', args=[self.org.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_post_remove_member_unauthenticated(self):
+        url = self.get_url('organization-remove-member', args=[self.org.id])
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_remove_member_invalid_org(self):
+        url = self.get_url('organization-remove-member', args=[999999])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_remove_member(self):
+        url = self.get_url('organization-remove-member', args=[self.org.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Ensure the user isn't in any Orgs
+        self.assertFalse(self.user.member_organizations.exists())

@@ -114,6 +114,29 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(organizations, many=True)
         return Response(resultset(serializer.data), status=code)
 
+    @detail_route(methods=['post'], url_path='remove-member')
+    def remove_member(self, request, pk=None):
+        """Remove a member from an Organization. No payload required, but the
+        member must be authenticated.
+
+        """
+        if not request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.method == "POST":
+            try:
+                org = self.queryset.get(pk=pk)
+                org.members.remove(request.user)
+                org.save()
+                return Response({}, status=status.HTTP_200_OK)
+            except models.Organization.DoesNotExist:
+                return Response(
+                    data={'error': "Specified Organization not found"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
 class ProgramViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for Programs"""
