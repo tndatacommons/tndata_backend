@@ -3373,3 +3373,97 @@ class TestDailyProgressAPI(V2APITestCase):
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(sum(d['count'] for d in response.data.get('results')), 2)
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
+@override_settings(CACHES=TEST_CACHES)
+class TestOrganizationAPI(V2APITestCase):
+
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user('m', 'm@mb.er', 'password123')
+
+        self.category = Category.objects.create(
+            order=1,
+            title='Org Category',
+        )
+        self.category.publish()
+        self.category.save()
+
+        self.org = Organization.objects.create(
+            name='Test Org',
+            name_slug='test-org'
+        )
+        self.org.members.add(self.user)
+
+    def test_get_organization_list(self):
+        """Test the List endpoint"""
+        url = self.get_url('organization-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['count'], 1)
+        c = response.data['results'][0]
+        self.assertEqual(c['id'], self.org.id)
+        self.assertEqual(c['name'], self.org.name)
+        self.assertEqual(c['name_slug'], self.org.name_slug)
+        self.assertEqual(c['object_type'], 'organization')
+
+    def test_get_organization_detail(self):
+        """Test the Detail endpoint"""
+        url = self.get_url('organization-detail', args=[self.org.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.org.id)
+        self.assertEqual(response.data['name'], self.org.name)
+        self.assertEqual(response.data['name_slug'], self.org.name_slug)
+        self.assertEqual(response.data['object_type'], 'organization')
+
+    def test_post_organization_list(self):
+        """Ensure this endpoint is read-only."""
+        url = self.get_url('organization-list')
+        resp = self.client.post(url, {})
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_put_organization_detail(self):
+        """Ensure this endpoint is read-only."""
+        url = self.get_url('organization-detail', args=[self.org])
+        resp = self.client.put(url, {})
+        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_get_members_unauthenticated(self):
+        url = self.get_url('organization-members')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_members_unauthenticated(self):
+        url = self.get_url('organization-members')
+        response = self.client.post(url, {'organization': self.org.id})
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_members_authenticated(self):
+        url = self.get_url('organization-members')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['id'], self.org.id)
+
+    def test_post_members_authenticated(self):
+        new_org = Organization.objects.create(name="NEW")
+        url = self.get_url('organization-members')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'organization': new_org.id})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Ensure our user was enrolled.
+        enrolled = self.user.member_organizations.filter(pk=new_org.id).exists()
+        self.assertTrue(enrolled)
+
+        # Clean up
+        new_org.delete()
