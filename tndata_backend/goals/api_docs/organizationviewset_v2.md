@@ -21,4 +21,18 @@ To add a user to a new organization, send a POST request to
     {'organization': <organization_id>}
 
 
+### Removal
+
+Users may be removed from an Organization by POSTing to the organization's
+_remove member_ endpoint:  `/api/organizations/{Organization ID}/remove-member/`
+
+**NOTE** removing a member from an organization is a destructive operation,
+and will also remove the following data associated with the Organization:
+
+- Programs in which the user is enrolled
+- The user's selected categories
+- The user's selected goals
+- The user's selected behaviors
+- The user's selected actions
+
 ----

@@ -3506,7 +3506,7 @@ class TestOrganizationAPI(V2APITestCase):
 
         category = Category.objects.create(order=99, title='C')
         goal = Goal.objects.create(title="G")
-        goal.categories.add(self.category)
+        goal.categories.add(category)
         behavior = Behavior.objects.create(title="B")
         behavior.goals.add(goal)
         action = Action.objects.create(title="A", behavior=behavior)

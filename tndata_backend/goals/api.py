@@ -126,14 +126,15 @@ class OrganizationViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
         if request.method == "POST":
             try:
                 org = self.queryset.get(pk=pk)
-                org.members.remove(request.user)
-                org.save()
-
                 # Remove the user from any programs.
                 # NOTE: this will also remove their content (e.g. goals/notifs)
                 programs = org.program_set.filter(members__in=[request.user.id])
                 for program in programs:
                     program.remove(request.user)
+
+                # Then remove them from the organization
+                org.members.remove(request.user)
+                org.save()
 
                 return Response({}, status=status.HTTP_200_OK)
             except models.Organization.DoesNotExist:
