@@ -70,17 +70,18 @@ def update_daily_progress(sender, instance, using, **kwargs):
     dp.save()
 
 
-@receiver(m2m_changed, dispatch_uid="program_goals_changed")
+@receiver(m2m_changed, sender=Program.auto_enrolled_goals.through,
+          dispatch_uid="program_goals_changed")
 def program_goals_changed(sender, instance, **kwargs):
     """Handle the changes to Program.auto_enrolled_goals (M2M field).
 
-    Sender: goals.models.packages.Program_auto_enrolled_goals
+    Sender: is the through model between Programs & Goals `Program_auto_enrolled_goals`
     Instance: A Program object.
 
     Additional kwargs:
 
-    - model: Goal
-    - action: look for `post_add`
+    - model: could be Goal or Program
+    - action: look for `post_add` (after we've finished adding the goal)
     - pk_set: the set of Goal PKs added
 
     """
@@ -88,7 +89,7 @@ def program_goals_changed(sender, instance, **kwargs):
     action = kwargs.get('action', None)
     pk_set = kwargs.get('pk_set', set())  # Set of PKs added or removed
 
-    if model is Program and action == "post_add" and len(pk_set) > 0:
+    if model in [Program, Goal] and action == "post_add" and len(pk_set) > 0:
         goals = instance.auto_enrolled_goals.filter(id__in=pk_set, state='published')
         for goal in goals:
             _enroll_program_members.delay(goal)
