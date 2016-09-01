@@ -240,7 +240,7 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
 
     @property
     def featured(self):
-        return self.grouping >= 0
+        return self.grouping and self.grouping >= 0
 
     @property
     def grouping_name(self):
