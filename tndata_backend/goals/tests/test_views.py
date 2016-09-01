@@ -1,15 +1,19 @@
 from unittest.mock import patch
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase, override_settings
+from django_rq import get_worker
 
 from .. models import (
     Action,
     Behavior,
     Category,
     Goal,
+    Organization,
+    Program,
     PackageEnrollment,
     Trigger,
 )
@@ -34,9 +38,12 @@ TEST_CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
+TEST_RQ_QUEUES = settings.RQ_QUEUES.copy()
+TEST_RQ_QUEUES['default']['ASYNC'] = False
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestPermissions(TestCase):
 
@@ -154,6 +161,7 @@ class TestPermissions(TestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCaseWithGroups(TestCase):
     """A TestCase Subclass that adds additional data and/or features for test
@@ -198,6 +206,7 @@ class TestCaseWithGroups(TestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestIndexView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -239,6 +248,7 @@ class TestIndexView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestMyContentView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -280,6 +290,7 @@ class TestMyContentView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryListView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -335,6 +346,7 @@ class TestCategoryListView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryDetailView(TestCaseWithGroups):
 
@@ -403,6 +415,7 @@ class TestCategoryDetailView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryCreateView(TestCaseWithGroups):
 
@@ -502,6 +515,7 @@ class TestCategoryCreateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryDuplicateView(TestCaseWithGroups):
 
@@ -535,6 +549,7 @@ class TestCategoryDuplicateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryPublishView(TestCaseWithGroups):
     # NOTE: tests are named with this convention:
@@ -623,6 +638,7 @@ class TestCategoryPublishView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryUpdateView(TestCaseWithGroups):
 
@@ -765,6 +781,7 @@ class TestCategoryUpdateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestCategoryDeleteView(TestCaseWithGroups):
 
@@ -854,6 +871,7 @@ class TestCategoryDeleteView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalListView(TestCaseWithGroups):
 
@@ -900,6 +918,7 @@ class TestGoalListView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalDetailView(TestCaseWithGroups):
 
@@ -958,6 +977,7 @@ class TestGoalDetailView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalCreateView(TestCaseWithGroups):
 
@@ -1057,6 +1077,7 @@ class TestGoalCreateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalDuplicateView(TestCaseWithGroups):
 
@@ -1088,6 +1109,7 @@ class TestGoalDuplicateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalPublishView(TestCaseWithGroups):
 
@@ -1173,6 +1195,7 @@ class TestGoalPublishView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalUpdateView(TestCaseWithGroups):
 
@@ -1463,6 +1486,7 @@ class TestGoalUpdateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestGoalDeleteView(TestCaseWithGroups):
 
@@ -1559,6 +1583,7 @@ class TestGoalDeleteView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorListView(TestCaseWithGroups):
 
@@ -1602,6 +1627,7 @@ class TestBehaviorListView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDetailView(TestCaseWithGroups):
 
@@ -1657,6 +1683,7 @@ class TestBehaviorDetailView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorCreateView(TestCaseWithGroups):
 
@@ -1763,6 +1790,7 @@ class TestBehaviorCreateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDuplicateView(TestCaseWithGroups):
 
@@ -1794,6 +1822,7 @@ class TestBehaviorDuplicateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorPublishView(TestCaseWithGroups):
 
@@ -1875,6 +1904,7 @@ class TestBehaviorPublishView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorUpdateView(TestCaseWithGroups):
 
@@ -2125,6 +2155,7 @@ class TestBehaviorUpdateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestBehaviorDeleteView(TestCaseWithGroups):
 
@@ -2195,6 +2226,7 @@ class TestBehaviorDeleteView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionListView(TestCaseWithGroups):
 
@@ -2241,6 +2273,7 @@ class TestActionListView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionDetailView(TestCaseWithGroups):
 
@@ -2300,6 +2333,7 @@ class TestActionDetailView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionCreateView(TestCaseWithGroups):
 
@@ -2469,6 +2503,7 @@ class TestActionCreateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionDuplicateView(TestCaseWithGroups):
 
@@ -2502,6 +2537,7 @@ class TestActionDuplicateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionPublishView(TestCaseWithGroups):
     # TODO: need to include a test case for actions with duplicate titles/slugs
@@ -2588,6 +2624,7 @@ class TestActionPublishView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionUpdateView(TestCaseWithGroups):
 
@@ -2830,6 +2867,7 @@ class TestActionUpdateView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionDeleteView(TestCaseWithGroups):
 
@@ -2908,6 +2946,7 @@ class TestActionDeleteView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestPackageEnrollmentDeleteView(TestCaseWithGroups):
 
@@ -2993,6 +3032,7 @@ class TestPackageEnrollmentDeleteView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestPackageEnrollmentView(TestCaseWithGroups):
 
@@ -3127,6 +3167,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestAcceptEnrollmentCompleteView(TestCase):
     """Simple, publicly-available template."""
@@ -3138,6 +3179,7 @@ class TestAcceptEnrollmentCompleteView(TestCase):
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestEnrollmentReminderView(TestCaseWithGroups):
 
@@ -3266,3 +3308,347 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
         self.client.login(username="viewer", password="pass")
         resp = self.client.post(self.url, self.payload)
         self.assertEqual(resp.status_code, 403)
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
+@override_settings(CACHES=TEST_CACHES)
+class TestProgramListView(TestCaseWithGroups):
+    # NOTE: tests are named with this convention:
+    # test_[auth-group]_[http-verb]
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+        cls.url = reverse("goals:program-list")
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # Staff user
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", "xxx")
+        user.is_staff = True
+        user.save()
+
+        # Create an Org
+        cls.org = Organization.objects.create(name="Org")
+        cls.program = Program.objects.create(name="Program", organization=cls.org)
+
+    def test_unauthed_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_staff_get(self):
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/program_list.html")
+        self.assertIn('programs', resp.context)
+        self.assertContains(resp, self.program.name)
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
+@override_settings(CACHES=TEST_CACHES)
+class TestProgramDetailView(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # Staff user
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", "xxx")
+        user.is_staff = True
+        user.save()
+
+        # Create an Org
+        cls.org = Organization.objects.create(name="Org")
+        cls.program = Program.objects.create(name="Program", organization=cls.org)
+        cls.url = cls.program.get_absolute_url()
+
+    def test_unauthed_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_staff_get(self):
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/program_detail.html")
+        self.assertIn("program", resp.context)
+        self.assertIn("organization", resp.context)
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
+@override_settings(CACHES=TEST_CACHES)
+class TestProgramCreateView(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # Staff user
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", "xxx")
+        user.is_staff = True
+        user.save()
+
+        # Create Content + an Org
+        cls.org = Organization.objects.create(name="Org")
+        cls.category = Category.objects.create(
+            order=1,
+            title="Cat",
+            state="published"
+        )
+        cls.category.organizations.add(cls.org)
+        cls.goal = Goal.objects.create(title="Goal", state="published")
+        cls.goal.categories.add(cls.category)
+        cls.goal.save()
+
+        cls.url = reverse('goals:program-create',
+                          args=[cls.org.id, cls.org.name_slug])
+
+        # Program Payload
+        cls.payload = {
+            'name': 'New Program',
+            'organization': cls.org.id,
+            'categories': [cls.category.id],
+            'auto_enrolled_goals': [cls.goal.id],
+        }
+
+    def test_unauthed_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unauthed_post(self):
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_staff_get(self):
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/program_form.html")
+        self.assertIn("organization", resp.context)
+
+    def test_staff_post(self):
+        # Test pre-condition
+        self.assertFalse(Program.objects.filter(name="New Program").exists())
+
+        self.client.login(username="x", password="xxx")
+        resp = self.client.post(self.url, self.payload)
+        self.assertEqual(resp.status_code, 302)
+
+        # Test post-condition
+        self.assertTrue(Program.objects.filter(name="New Program").exists())
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
+@override_settings(CACHES=TEST_CACHES)
+class TestProgramUpdateView(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # Staff user
+        User = get_user_model()
+        user = User.objects.create_user("x", "x@x.x", "xxx")
+        user.is_staff = True
+        user.save()
+
+        # Create Content + an Org
+        cls.org = Organization.objects.create(name="Org")
+        cls.category = Category.objects.create(
+            order=1,
+            title="Cat",
+            state="published"
+        )
+        cls.category.organizations.add(cls.org)
+
+        # Goal 1 is already part of the program.
+        cls.goal1 = Goal.objects.create(title="G1", state="published")
+        cls.goal1.categories.add(cls.category)
+        cls.goal1.save()
+
+        # Goal 2 (and it's content) will be added to the program later.
+        cls.goal2 = Goal.objects.create(title="G2", state="published")
+        cls.goal2.categories.add(cls.category)
+        cls.goal2.save()
+
+        cls.behavior = Behavior.objects.create(title="B", state="published")
+        cls.behavior.goals.add(cls.goal2)
+        cls.action = Action.objects.create(
+            title="A", state="published", behavior=cls.behavior)
+
+        cls.program = Program.objects.create(name="PRG", organization=cls.org)
+        cls.program.categories.add(cls.category)
+        cls.program.auto_enrolled_goals.add(cls.goal1)
+
+        cls.url = cls.program.get_update_url()
+
+    def test_unauthed_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unauthed_post(self):
+        resp = self.client.post(self.url, {})
+        self.assertEqual(resp.status_code, 302)
+
+    def test_staff_get(self):
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/program_form.html")
+        self.assertIn("organization", resp.context)
+
+    def test_staff_post(self):
+        program = Program.objects.create(name="Test", organization=self.org)
+        program.categories.add(self.category)
+        program.auto_enrolled_goals.add(self.goal1)
+
+        payload = {
+            'name': 'Updated',
+            'categories': [self.category.id],
+            'auto_enrolled_goals': [self.goal1.id],
+        }
+
+        self.client.login(username="x", password="xxx")
+        resp = self.client.post(program.get_update_url(), payload)
+        self.assertEqual(resp.status_code, 302)
+
+        # Verify Result
+        program = Program.objects.get(pk=program.id)
+        self.assertEqual(program.name, "Updated")
+
+    def test_staff_post_new_goals_enrolls_students(self):
+        """Adding a published goal to a program should enroll it's members."""
+        User = get_user_model()
+        user = User.objects.create(username="member", email="m@b.r")
+        self.org.members.add(user)
+        self.program.members.add(user)
+
+        # pre conditions (Goal 1 has no actions)
+        self.assertFalse(user.useraction_set.exists())
+
+        payload = {
+            'name': 'PRG (updated)',
+            'categories': [self.category.id],
+            'auto_enrolled_goals': [self.goal1.id, self.goal2.id],  # adding Goal2
+        }
+
+        self.client.login(username="x", password="xxx")
+        resp = self.client.post(self.url, payload)
+        self.assertEqual(resp.status_code, 302)
+
+        get_worker().work(burst=True)  # Processes all jobs then stop.
+
+        # Verify Result (user has Goal2, Behavior, and Action)
+        program = Program.objects.get(pk=self.program.id)
+        self.assertEqual(program.name, "PRG (updated)")
+
+        self.assertTrue(user.useraction_set.exists())
+        self.assertTrue(user.usergoal_set.filter(goal__title="G2").exists())
+        self.assertTrue(user.useraction_set.filter(action__title="A").exists())
+        self.assertTrue(user.userbehavior_set.filter(behavior__title="B").exists())
+
+
+@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
+@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
+@override_settings(CACHES=TEST_CACHES)
+class TestProgramDeleteView(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.ua_client = Client()  # Create an Unauthenticated client
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        # Staff user
+        User = get_user_model()
+        cls.user = User.objects.create_user("x", "x@x.x", "xxx")
+        cls.user.is_staff = True
+        cls.user.save()
+
+        cls.org = Organization.objects.create(name="Org")
+        cls.program = Program.objects.create(name="Program", organization=cls.org)
+        cls.url = cls.program.get_delete_url()
+
+    def test_unauthed_get(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unauthed_post(self):
+        resp = self.client.post(self.url, {})
+        self.assertEqual(resp.status_code, 302)
+
+    def test_staff_get(self):
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/program_confirm_delete.html")
+        self.assertIn("organization", resp.context)
+        self.client.logout()
+
+    def test_staff_get_when_members(self):
+        """You cannot delete a program with members."""
+
+        # Create a program with members
+        program = Program.objects.create(name="P", organization=self.org)
+        program.members.add(self.user)
+        program.save()
+
+        self.client.login(username="x", password="xxx")
+        resp = self.client.get(program.get_delete_url())
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, "goals/program_confirm_delete.html")
+        self.assertIn("organization", resp.context)
+        self.assertContains(resp, "Deletion is not currently supported.")
+        self.client.logout()
+
+        program.delete()
+
+    def test_staff_post(self):
+        self.client.login(username="x", password="xxx")
+        resp = self.client.post(self.url, {})
+        self.assertEqual(resp.status_code, 302)
+
+        # Test post-condition
+        self.assertFalse(Program.objects.filter(name="Program").exists())
+        self.client.logout()
+
+    def test_staff_post_when_members(self):
+        """You cannot delete a program with members."""
+
+        # Create a program with members
+        program = Program.objects.create(name="P", organization=self.org)
+        program.members.add(self.user)
+        program.save()
+
+        self.client.login(username="x", password="xxx")
+        resp = self.client.post(program.get_delete_url(), {})
+        self.assertEqual(resp.status_code, 403)
+        self.client.logout()
+
+        # Verify program still exists
+        self.assertTrue(Program.objects.filter(id=program.id).exists())
+        program.delete()
