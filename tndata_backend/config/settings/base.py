@@ -351,8 +351,10 @@ RQ_QUEUES = {
         'DB': REDIS_RQ_DB,
         'PASSWORD': REDIS_PASSWORD,
         'DEFAULT_TIMEOUT': 360,
+        'ASYNC': False if DEBUG else True
     },
 }
+
 
 # Crispy forms
 CRISPY_TEMPLATE_PACK = 'foundation-5'
