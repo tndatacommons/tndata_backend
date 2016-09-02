@@ -795,10 +795,12 @@ admin.site.register(models.CustomAction, CustomActionAdmin)
 class CustomActionFeedbackAdmin(UserRelatedModelAdmin):
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'customgoal__title', 'customaction__title', 'text'
+        'customgoal__title', 'goal__title', 'customaction__title', 'text'
     )
-    list_display = ('customgoal', 'customaction', 'text', 'created_on')
-    raw_id_fields = ('user', 'customgoal', 'customaction')
+    list_display = (
+        'user_email', 'customgoal', 'goal', 'customaction', 'text', 'created_on'
+    )
+    raw_id_fields = ('user', 'goal', 'customgoal', 'customaction')
 admin.site.register(models.CustomActionFeedback, CustomActionFeedbackAdmin)
 
 

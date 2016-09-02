@@ -272,8 +272,8 @@ class CustomActionFeedback(models.Model):
 
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    customgoal = models.ForeignKey(CustomGoal)
-    # TODO: goal = models.ForeignKey(Goal)
+    customgoal = models.ForeignKey(CustomGoal, null=True, blank=True)
+    goal = models.ForeignKey(Goal, null=True, blank=True)
     customaction = models.ForeignKey(CustomAction)
     text = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
@@ -285,3 +285,11 @@ class CustomActionFeedback(models.Model):
         ordering = ['-created_on', 'user']
         verbose_name = "Custom Action Feedback"
         verbose_name_plural = "Custom Action Feedback"
+
+    def save(self, *args, **kwargs):
+        # Set the customgoal/goal based on the customaction's values
+        if self.customaction and self.customgoal is None:
+            self.customgoal = self.customaction.customgoal
+        if self.customaction and self.goal is None:
+            self.goal = self.customaction.goal
+        super().save(*args, **kwargs)

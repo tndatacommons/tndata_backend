@@ -1580,6 +1580,7 @@ class CustomActionViewSet(VersionedViewSetMixin,
                     user=request.user,
                     customaction=customaction,
                     customgoal=customaction.customgoal,
+                    goal=customaction.goal,
                     text=text
                 )
                 data = {
