@@ -1676,6 +1676,10 @@ class TestUserCompletedCustomAction(TestCase):
     """Tests for the `UserCompletedCustomAction` model."""
 
     def setUp(self):
+        category = Category.objects.create(order=1, title="Cat", state="published")
+        goal = Goal.objects.create(title="Goal", state="published")
+        goal.categories.add(category)
+
         self.user = mommy.make(User)
         self.customgoal = mommy.make(CustomGoal, title='Goal', user=self.user)
         self.customaction = mommy.make(
@@ -1691,6 +1695,19 @@ class TestUserCompletedCustomAction(TestCase):
             customgoal=self.customgoal
         )
 
+        self.customaction_with_goal = mommy.make(
+            CustomAction,
+            user=self.user,
+            goal=goal,
+            title="Custom Action w/ Goal"
+        )
+        self.ucca_goal = mommy.make(
+            UserCompletedCustomAction,
+            user=self.user,
+            customaction=self.customaction_with_goal,
+            goal=goal
+        )
+
     def tearDown(self):
         UserCompletedCustomAction.objects.filter(id=self.ucca.id).delete()
 
@@ -1699,21 +1716,29 @@ class TestUserCompletedCustomAction(TestCase):
         actual = "{}".format(self.ucca)
         self.assertEqual(expected, actual)
 
+        expected = self.customaction_with_goal.title
+        actual = "{}".format(self.ucca_goal)
+        self.assertEqual(expected, actual)
+
     def test_uncompleted(self):
         # state is unset
         self.assertFalse(self.ucca.uncompleted)
+        self.assertFalse(self.ucca_goal.uncompleted)
 
     def test_completed(self):
         # state is unset
         self.assertFalse(self.ucca.completed)
+        self.assertFalse(self.ucca_goal.completed)
 
     def test_dismissed(self):
         # state is unset
         self.assertFalse(self.ucca.dismissed)
+        self.assertFalse(self.ucca_goal.dismissed)
 
     def test_snoozed(self):
         # state is unset
         self.assertFalse(self.ucca.snoozed)
+        self.assertFalse(self.ucca_goal.snoozed)
 
 
 class TestCustomActionFeedback(TestCase):
