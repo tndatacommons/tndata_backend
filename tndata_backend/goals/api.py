@@ -1388,13 +1388,17 @@ class CustomActionViewSet(VersionedViewSetMixin,
     def get_queryset(self):
         self.queryset = models.CustomAction.objects.filter(user=self.request.user)
 
-        # Filter on CustomGoals
+        # Filter on CustomGoals or Goals
         cg = self.request.GET.get('customgoal', None)
+        goal = self.request.GET.get('goal', None)
         if cg and cg.isnumeric():
             self.queryset = self.queryset.filter(customgoal__id=cg)
         elif cg:
             self.queryset = self.queryset.filter(customgoal__title_slug=cg)
-
+        if goal and goal.isnumeric():
+            self.queryset = self.queryset.filter(goal__id=goal)
+        elif goal:
+            self.queryset = self.queryset.filter(goal__title_slug=goal)
         return self.queryset
 
     def create(self, request, *args, **kwargs):
@@ -1460,8 +1464,12 @@ class CustomActionViewSet(VersionedViewSetMixin,
             request.data['title'] = customaction.title
         if 'customgoal' not in request.data and customaction.customgoal_id:
             request.data['customgoal'] = customaction.customgoal_id
+        elif 'goal' not in request.data and customaction.goal_id:
+            request.data['goal'] = customaction.goal.id
         elif customaction.customgoal:
             request.data['customgoal'] = customaction.customgoal.id
+        elif customaction.goal:
+            request.data['goal'] = customaction.goal.id
         if 'notification_text' not in request.data:
             request.data['notification_text'] = customaction.notification_text
         return request

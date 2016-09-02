@@ -508,8 +508,8 @@ class CustomActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = CustomAction
         fields = (
-            'id', 'user', 'customgoal', 'goal_title', 'title', 'title_slug',
-            'notification_text', 'trigger', 'next_reminder',
-            'updated_on', 'created_on', 'object_type',
+            'id', 'user', 'customgoal', 'goal', 'goal_title',
+            'title', 'title_slug', 'notification_text', 'trigger',
+            'next_reminder', 'updated_on', 'created_on', 'object_type',
         )
         read_only_fields = ("id", "title_slug", "updated_on", "created_on")

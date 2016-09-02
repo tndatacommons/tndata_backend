@@ -3,21 +3,24 @@
 
 A User's custom actions. This endpoint allows a user to retrieve a list
 of or create new custom actions. A `CustomAction` object must be associated
-with a parent `CustomGoal` object (see [Custom Goals](/api/users/customgoals/)).
+with a parent `CustomGoal` object (see [Custom Goals](/api/users/customgoals/))
+*OR* with a publicly available `Goal` ([/api/goals/](/api/goals/)).
 
 GET requests return an array of results containing the following:
 
 * `id`: The ID of the `CustomAction` object.
-* `user`: The ID of the action's owner
-* `customgoal`: The ID of the parent `CustomGoal` object.
-* `title`: Title of the custom action (required)
-* `title_slug`: sluggified version of the title
-* `notification_text`: Text that will be used in a notification (required)
-* `custom_trigger`: A `Trigger` object
+* `user`: The ID of the action's owner.
+* `customgoal`: The ID of the parent `CustomGoal` object (may be `null`).
+* `goal`: The ID of the parent `Goal` object (may be `null`).
+* `goal_title`: The title text of either the related `CustomGoal` or `Goal`.
+* `title`: Title of the custom action (required).
+* `title_slug`: sluggified version of the title.
+* `notification_text`: Text that will be used in a notification (required).
+* `custom_trigger`: A `Trigger` object.
 * `next_trigger_date`: The next date the notification will be sent.
-  May be `null`
+  May be `null`.
 * `prev_trigger_date`: The previous date the notficiation was sent.
-  May be `null`
+  May be `null`.
 * `updated_on`: Date the action was last updated.
 * `created_on`: Date the action was created.
 * `object_type`: Will always be the string, `customaction`.
@@ -25,11 +28,13 @@ GET requests return an array of results containing the following:
 ## Filtering
 
 You may filter the result of listing custom actions by their parent goals. To
-do so, include a querystring parameter of `customgoal` that includes either
-the goal's database ID or title slug.
+do so, include a querystring parameter of `customgoal` or `goal` that includes
+either the goal's database ID or title slug.
 
 * `/api/users/customactions/?customgoal={id}`
 * `/api/users/customactions/?customgoal={title_slug}`
+* `/api/users/customactions/?goal={id}`
+* `/api/users/customactions/?goal={title_slug}`
 
 ## Creating Custom Actions
 
@@ -41,6 +46,14 @@ following data:
         'title': 'Your action Title',
         'notification_text': 'Your action's notification',
         'customgoal': {ID of the parent custom goal},
+    }
+
+Or add a custom action associated with a public Goal:
+
+    {
+        'title': 'Your action Title',
+        'notification_text': 'Your action's notification',
+        'goal': {ID of the goal},
     }
 
 ## Custom Action Details
