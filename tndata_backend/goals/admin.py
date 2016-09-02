@@ -778,11 +778,17 @@ admin.site.register(models.CustomGoal, CustomGoalAdmin)
 class CustomActionAdmin(UserRelatedModelAdmin):
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'title', 'customgoal__title', 'notification_text'
+        'title', 'customgoal__title', 'notification_text', 'goal__title',
     )
-    list_display = ('title', 'customgoal', 'prev_trigger_date', 'next_trigger_date', 'created_on')
-    raw_id_fields = ('user', 'customgoal', 'custom_trigger')
-    readonly_fields = ('next_trigger_date', 'prev_trigger_date')
+    list_display = (
+        'user_email', 'title', 'customgoal', 'goal',
+        'prev_trigger_date', 'next_trigger_date', 'created_on',
+    )
+    raw_id_fields = ('user', 'goal', 'customgoal', 'custom_trigger')
+    readonly_fields = (
+        'next_trigger_date', 'prev_trigger_date',
+        'updated_on', 'created_on',
+    )
 admin.site.register(models.CustomAction, CustomActionAdmin)
 
 

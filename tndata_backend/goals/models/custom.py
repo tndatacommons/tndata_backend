@@ -97,7 +97,11 @@ class CustomAction(models.Model):
 
     @property
     def goal_title(self):
-        return self.customgoal.title
+        if self.customgoal_id:
+            return self.customgoal.title
+        elif self.goal_id:
+            return self.goal.title
+        return ''
 
     @property
     def priority(self):
@@ -220,6 +224,7 @@ class UserCompletedCustomAction(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     customaction = models.ForeignKey(CustomAction)
     customgoal = models.ForeignKey(CustomGoal)
+    # TODO: goal = models.ForeignKey(Goal)
     state = models.CharField(
         max_length=32,
         default=UserCompletedAction.UNSET,
@@ -260,6 +265,7 @@ class CustomActionFeedback(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     customgoal = models.ForeignKey(CustomGoal)
+    # TODO: goal = models.ForeignKey(Goal)
     customaction = models.ForeignKey(CustomAction)
     text = models.TextField()
     created_on = models.DateTimeField(auto_now_add=True)
