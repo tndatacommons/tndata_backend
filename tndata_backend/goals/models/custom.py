@@ -223,8 +223,8 @@ class UserCompletedCustomAction(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     customaction = models.ForeignKey(CustomAction)
-    customgoal = models.ForeignKey(CustomGoal)
-    # TODO: goal = models.ForeignKey(Goal)
+    customgoal = models.ForeignKey(CustomGoal, null=True, blank=True)
+    goal = models.ForeignKey(Goal, null=True, blank=True)
     state = models.CharField(
         max_length=32,
         default=UserCompletedAction.UNSET,
@@ -240,6 +240,14 @@ class UserCompletedCustomAction(models.Model):
         ordering = ['-updated_on', 'user', 'customaction']
         verbose_name = "User Completed Custom Action"
         verbose_name_plural = "User Completed Custom Actions"
+
+    def save(self, *args, **kwargs):
+        # Set the customgoal/goal based on the customaction's values
+        if self.customaction and self.customgoal is None:
+            self.customgoal = self.customaction.customgoal
+        if self.customaction and self.goal is None:
+            self.goal = self.customaction.goal
+        super().save(*args, **kwargs)
 
     @property
     def uncompleted(self):
