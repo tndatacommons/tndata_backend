@@ -2960,6 +2960,50 @@ class TestCustomActionAPI(V2APITestCase):
     def test_post_complete(self):
         """POSTing to the complete url should crate an UserCompletedCustomAction
         object for a user."""
+        cat = Category.objects.create(order=1, title="C", state="published")
+        goal = Goal.objects.create(title="G", state="published")
+        goal.categories.add(cat)
+
+        ca_with_goal = CustomAction.objects.create(
+            user=self.user,
+            goal=goal,
+            title="CA w/ Goal",
+            notification_text="CA w/ Goal"
+        )
+
+        # We shouldn't have any of these just yet.
+        qs = UserCompletedCustomAction.objects.filter(
+            user=self.user,
+            customaction=ca_with_goal
+        )
+        self.assertFalse(qs.exists())
+
+        url = self.get_url('customaction-complete', args=[ca_with_goal.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, {'state': 'completed'})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        qs = UserCompletedCustomAction.objects.filter(
+            user=self.user,
+            customaction=ca_with_goal
+        )
+        self.assertTrue(qs.exists())
+
+        obj = qs.get()
+        self.assertEqual(obj.state, "completed")
+        self.assertEqual(obj.goal.id, goal.id)
+
+        # clean up
+        obj.delete()
+        Goal.objects.all().delete()
+        Category.objects.all().delete()
+
+    def test_post_complete_with_goal(self):
+        """POSTing to the complete url should crate an UserCompletedCustomAction
+        object for a user, which should also contain a reference to the Goal
+        if that exists."""
         # We shouldn't have any just yet.
         qs = UserCompletedCustomAction.objects.filter(user=self.user)
         self.assertFalse(qs.exists())

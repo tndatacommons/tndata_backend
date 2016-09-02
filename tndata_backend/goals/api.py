@@ -1529,6 +1529,7 @@ class CustomActionViewSet(VersionedViewSetMixin,
                     user=request.user,
                     customaction=customaction,
                     customgoal=customaction.customgoal,
+                    goal=customaction.goal
                 )
                 ucca.state = state
                 ucca.save()
@@ -1538,6 +1539,7 @@ class CustomActionViewSet(VersionedViewSetMixin,
                     user=request.user,
                     customaction=customaction,
                     customgoal=customaction.customgoal,
+                    goal=customaction.goal,
                     state=state
                 )
 
