@@ -23,8 +23,12 @@ from .path import (  # NOQA -- we need these to satisfy old migrations.
 )
 from .signals import (  # NOQA
     action_completed,
+    auto_enroll,
     bust_cache,
+    check_user_goals,
     clean_content,
+    create_behavior_m2ms,
+    create_or_update_daily_progress,
     create_parent_user_behavior,
     create_relative_reminder,
     custom_trigger_updated,
@@ -34,9 +38,14 @@ from .signals import (  # NOQA
     delete_model_icon,
     delete_model_image,
     notify_for_new_package,
+    program_goals_changed,
     remove_action_reminders,
     remove_behavior_reminders,
+    remove_queued_messages,
     reset_next_trigger_date_when_snoozed,
+    set_dp_checkin_streak,
+    update_daily_progress,
+    update_parent_behavior_action_counts,
     user_adopted_content,
 )
 from .triggers import Trigger  # NOQA
