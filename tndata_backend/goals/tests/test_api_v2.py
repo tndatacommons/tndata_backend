@@ -2823,6 +2823,29 @@ class TestCustomActionAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(CustomAction.objects.filter(user=self.user).count(), 2)
 
+    def test_post_customaction_list_athenticated_with_goal(self):
+        """Authenticated users should be able to create a CustomAction."""
+        # Create some public content.
+        category = mommy.make(Category, title="cat", state="published")
+        goal = mommy.make(Goal, title="goal", state="published")
+        goal.categories.add(category)
+
+        # update the payload
+        payload = self.payload.copy()
+        payload['goal'] = goal.id
+        del payload['customgoal']
+
+        url = self.get_url('customaction-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.user.customaction_set.filter(goal=goal).exists())
+
+        goal.delete()
+        category.delete()
+
     def test_get_customaction_detail_unauthed(self):
         """Ensure unauthenticated users cannot view this endpoint."""
         url = self.get_url('customaction-detail', args=[self.customaction.id])
@@ -2872,6 +2895,36 @@ class TestCustomActionAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         ca = CustomAction.objects.get(pk=self.customaction.id)
         self.assertEqual(ca.title, 'Altered')
+
+    def test_put_customaction_detail_with_goal(self):
+        """Ensure PUTing to the detail endpoint updates."""
+        # Create some public content.
+        category = mommy.make(Category, title="cat", state="published")
+        goal = mommy.make(Goal, title="goal", state="published")
+        goal.categories.add(category)
+
+        ca = CustomAction.objects.create(
+            user=self.user,
+            goal=goal,
+            title="Test",
+            title_slug="test",
+            notification_text="test"
+        )
+
+        url = self.get_url('customaction-detail', args=[ca.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        payload = {
+            'title': 'Altered',
+            'notification_text': ca.notification_text,
+            'goal': goal.id,
+        }
+        response = self.client.put(url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ca = CustomAction.objects.get(pk=ca.id)
+        self.assertEqual(ca.title, 'Altered')
+        self.assertEqual(ca.goal.id, goal.id)
 
     def test_delete_customaction_detail_unauthed(self):
         """Ensure unauthenticated users cannot delete."""
