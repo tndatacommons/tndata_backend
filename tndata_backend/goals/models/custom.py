@@ -12,6 +12,7 @@ from notifications.models import GCMMessage
 from utils.user_utils import to_localtime, to_utc
 
 from .progress import UserCompletedAction
+from .public import Goal
 from .triggers import Trigger
 from ..managers import CustomActionManager
 
@@ -50,9 +51,17 @@ class CustomAction(models.Model):
         settings.AUTH_USER_MODEL,
         help_text="The user to which this action belongs."
     )
+    goal = models.ForeignKey(
+        Goal,
+        null=True,
+        blank=True,
+        help_text="The goal to which this custom action is associated."
+    )
     customgoal = models.ForeignKey(
         CustomGoal,
-        help_text="The custom goal to which this action belongs"
+        null=True,
+        blank=True,
+        help_text="The custom goal to which this action belongs."
     )
     title = models.CharField(
         max_length=128,
