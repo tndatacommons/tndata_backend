@@ -24,10 +24,10 @@ from .path import (  # NOQA -- we need these to satisfy old migrations.
 from .signals import (  # NOQA
     action_completed,
     auto_enroll,
+    behavior_goals_changed,
     bust_cache,
     check_user_goals,
     clean_content,
-    create_behavior_m2ms,
     create_or_update_daily_progress,
     create_parent_user_behavior,
     create_relative_reminder,

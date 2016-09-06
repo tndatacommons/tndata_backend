@@ -454,11 +454,26 @@ def notify_for_new_package(sender, instance, created, **kwargs):
         )
 
 
-@receiver(post_save, sender=Behavior, dispatch_uid="create_behavior_m2ms")
-def create_behavior_m2ms(sender, instance, created, **kwargs):
-    """When a Behavior is created, we need to save it again to populate some
-    of it's many-to-many fields.
+@receiver(m2m_changed, sender=Behavior.goals.through,
+          dispatch_uid="behavior_goals_changed")
+def behavior_goals_changed(sender, instance, **kwargs):
+    """When a Goal is added to Behavior.goals (m2m field), we want to update
+    the Behavior's list of goal_ids (an ArrayField)
+
+    Sender: goals.models.public.Behavior_goals
+    Instance: A Behavior object.
+
+    Additional kwargs:
+
+    - model: could be Goal or Program
+    - action: look for `post_add` (after we've finished adding the goal)
+    - pk_set: the set of Goal PKs added
 
     """
-    if created and instance.id:
-        instance.save()
+    changed = kwargs.get('action') in ['post_add', 'post_remove']
+    is_behavior = instance.__class__.__name__ == "Behavior"
+
+    # If `behavior.goals.add(goal)` is called, we need to update `behavior.goal_ids`
+    if changed and is_behavior:
+        instance.goal_ids = sorted(instance.goals.values_list('id', flat=True))
+        instance.save(update_fields=['goal_ids'])
