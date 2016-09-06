@@ -138,7 +138,12 @@ def remove_queued_messages(sender, instance, *args, **kwargs):
 def update_parent_behavior_action_counts(sender, instance, *args, **kwargs):
     """When an action is saved, we need to tell its parent Behavior to update
     it's count of all child actions (for dynamic behaviors)."""
-    instance.behavior.save()
+    if instance and instance.id:
+        # TODO: Saving an Action -> Saves it's parent Behavior, but this is
+        # expensive (because it does lookups on Goals + Categories. Additionally,
+        # our Views may call Action.save() several times in a row, so we really
+        # only want to do this once.
+        instance.behavior.save()
 
 
 @receiver(pre_save, sender=Action)
