@@ -7,6 +7,7 @@ Behavior content. They're organized as follows:
 Actions are the things we want to help people to do.
 
 """
+import logging
 import re
 from collections import defaultdict
 
@@ -15,6 +16,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.text import slugify
@@ -26,7 +28,6 @@ from markdown import markdown
 from notifications.models import GCMMessage
 from utils import colors
 from utils.db import get_max_order
-from utils.datastructures import flatten
 
 from .organizations import Organization
 from .path import (
@@ -44,6 +45,9 @@ from ..managers import (
     WorkflowManager
 )
 from ..mixins import ModifiedMixin, StateMixin, URLMixin
+
+
+logger = logging.getLogger(__file__)
 
 
 class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
@@ -860,28 +864,43 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
     def _set_goal_ids(self):
         """Save the parent Goal IDs in the `goal_ids` array field; this should
         get called every time the Behavior is saved."""
-        if self.id:
-            self.goal_ids = list(self.goals.values_list('id', flat=True))
+        if self.id and not hasattr(self, '_set_goal_ids_called'):
+            # Using a very-short-leved cache because this object is sometimes
+            # repeatedly saved
+            cache_key = "B{}_goal_ids".format(self.id)
+            goal_ids = cache.get(cache_key)
+            if goal_ids is None:
+                goal_ids = list(self.goals.values_list('id', flat=True))
+                cache.set(cache_key, goal_ids, 5)
+            self.goal_ids = goal_ids
+            self._set_goal_ids_called = True
 
     def _count_actions(self):
         """Count this behavior's child actions, and store a breakdown of
         how many exist in each bucket (if they're dynamic)"""
-        if self.id:
+        if self.id and not hasattr(self, '_set_actions_called'):
             # Count all of our published actions.
-            self.actions_count = self.action_set.published().count()
-
-            # Count the number of Actions in each bucket
-            qs = self.action_set.all()
-            self.action_buckets_prep = qs.filter(bucket=Action.PREP).count()
-            self.action_buckets_core = qs.filter(bucket=Action.CORE).count()
-            self.action_buckets_helper = qs.filter(bucket=Action.HELPER).count()
-            self.action_buckets_checkup = qs.filter(bucket=Action.CHECKUP).count()
+            cache_key = "B{}_actions_count".format(self.id)
+            actions_count = cache.get(cache_key)
+            if actions_count is None:
+                actions_count = self.action_set.published().count()
+                cache.set(cache_key, actions_count, 5)
+            self.actions_count = actions_count
+            self._set_actions_called = True
 
     def _set_categories(self):
         """Populate the behavior's categories based on the selected goals."""
-        if self.id and self.goal_ids:
-            for cat_id in flatten(self.goals.values_list('category_ids', flat=True)):
-                self.categories.add(cat_id)
+        # WANT: Set the M2M categories values, based on the selected goal...
+        # but to do that I need all the Goal IDs?
+        if self.id and self.goal_ids and not hasattr(self, '_set_categories_called'):
+            cache_key = "B{}_set_categories".format(self.id)
+            cats = cache.get(cache_key)
+            if cats is None:
+                cats = Category.objects.filter(goal__id__in=self.goal_ids)
+                cats = list(cats.values_list("id", flat=True))
+                cache.set(cache_key, cats, 5)
+            self.categories.add(*cats)
+            self._set_categories_called = True
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
@@ -982,6 +1001,28 @@ def _action_type_url_function(action_type):
         url = reverse('goals:action-create')
         return "{}?actiontype={}".format(url, action_type)
     return _reverse_url
+
+
+@job
+def _remove_queued_messages_for_action(action_id):
+    """An Async task that will delete GCMMessages that are associated with
+    the given Action.id."""
+    try:
+        action = Action.objects.get(pk=action_id)
+
+        # We need the content type for this object because we'll use it to
+        # query the queued messages.
+        action_type = ContentType.objects.get_for_model(action)
+
+        params = {
+            'content_type': action_type,
+            'object_id': action_id,
+            'success': None,  # only messages that haven't been sent.
+        }
+        GCMMessage.objects.filter(**params).delete()
+    except Action.DoesNotExist:
+        msg = "Could not remove GCMMessages for Action.id = {}"
+        logger.error(msg.format(action_id))
 
 
 class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
@@ -1289,10 +1330,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self.bucket = self.BUCKET_MAPPING.get(self.action_type, self.CORE)
 
     def _serialize_default_trigger(self):
-        if self.default_trigger:
+        already_serialized = getattr(self, "_serialized_default_trigger", False)
+        if self.default_trigger and not already_serialized:
             from ..serializers.v2 import TriggerSerializer
             srs = TriggerSerializer(self.default_trigger)
             self.serialized_default_trigger = srs.data
+            self._serialized_default_trigger = True
 
     def _set_external_resource_type(self):
         """Set the `external_resource_type` field based on the data detected in
@@ -1322,12 +1365,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         """
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
-        self._set_bucket()
+        # self._set_bucket()  # TODO: remove the bucket stuff from Actions.
         self._set_notification_text()
         self._serialize_default_trigger()
         self._set_external_resource_type()
         super().save(*args, **kwargs)
-        self.remove_queued_messages()
+        self.remove_queued_messages()  # Note: should be async.
 
     @property
     def behavior_title(self):
@@ -1399,19 +1442,17 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
             _changed(['notification_text', 'default_trigger__time', ... ])
 
-        """
-        if not getattr(self, "_removed_queued_messages", False):
-            # We need the content type for this object because we'll use it to
-            # query the queued messages.
-            action_type = ContentType.objects.get_for_model(self)
+        ----
 
-            params = {
-                'content_type': action_type,
-                'object_id': self.id,
-                'success': None,  # only messages that haven't been sent.
-            }
-            GCMMessage.objects.filter(**params).delete()
+        Spawns an async task and returns a Job.  Returns None if the task
+        is not queued (or doesn't need to be)
+
+        """
+        job = None
+        if not getattr(self, "_removed_queued_messages", False):
+            job = _remove_queued_messages_for_action.delay(self.id)
             self._removed_queued_messages = True
+        return job
 
     def get_notification_title(self, goal):
         return goal.title
