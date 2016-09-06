@@ -87,7 +87,6 @@ from . permissions import (
 from . sequence import get_next_useractions_in_sequence, get_next_in_sequence_data
 from . utils import num_user_selections
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -1150,15 +1149,13 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
         return form_class(**kwargs)
 
     def form_valid(self, form, trigger_form):
-        self.object = form.save()
-        default_trigger = trigger_form.save(commit=False)
-        trigger_name = "Default: {0}-{1}".format(self.object, self.object.id)
-        default_trigger.name = trigger_name
-        default_trigger.save()
-        self.object.default_trigger = default_trigger
-        self.object.save(updated_by=self.request.user)
+        self.object = form.save(commit=False)
+        self.object.default_trigger = trigger_form.save()
+
         # call up to the superclass's method to handle state transitions
+        # and set updated_by
         super().form_valid(form)
+
         messages.success(self.request, "Your notification has been saved")
         return redirect(self.get_success_url())
 
