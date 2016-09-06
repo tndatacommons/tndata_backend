@@ -79,6 +79,10 @@ class CIDRS(list):
             self.cidrs.append(IPv4Network(cidr))
 
     def __contains__(self, ip):
+        # in dev, we get this weird input, where IP is "b''".
+        # this hack is a fix for that.
+        if len(ip) < 7:
+            return True
         return any([IPv4Address(ip) in net for net in self.cidrs])
 
 
