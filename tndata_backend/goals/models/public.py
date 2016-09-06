@@ -861,20 +861,6 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
     def __str__(self):
         return "{}".format(self.title)
 
-    def _set_goal_ids(self):
-        """Save the parent Goal IDs in the `goal_ids` array field; this should
-        get called every time the Behavior is saved."""
-        if self.id and not hasattr(self, '_set_goal_ids_called'):
-            # Using a very-short-leved cache because this object is sometimes
-            # repeatedly saved
-            cache_key = "B{}_goal_ids".format(self.id)
-            goal_ids = cache.get(cache_key)
-            if goal_ids is None:
-                goal_ids = list(self.goals.values_list('id', flat=True))
-                cache.set(cache_key, goal_ids, 5)
-            self.goal_ids = goal_ids
-            self._set_goal_ids_called = True
-
     def _count_actions(self):
         """Count this behavior's child actions, and store a breakdown of
         how many exist in each bucket (if they're dynamic)"""
@@ -904,12 +890,15 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
     def save(self, *args, **kwargs):
         """Always slugify the name prior to saving the model."""
+        # Always slugify the title.
         self.title_slug = slugify(self.title)
-        kwargs = self._check_updated_or_created_by(**kwargs)
-        self._set_goal_ids()
-        self._set_categories()
-        self._count_actions()
-        super().save(*args, **kwargs)
+
+        # If we're updating specific fields don't do any of the custom
+        if 'update_fields' not in kwargs:
+            kwargs = self._check_updated_or_created_by(**kwargs)
+            self._set_categories()
+            self._count_actions()
+        return super().save(*args, **kwargs)
 
     @property
     def order(self):
