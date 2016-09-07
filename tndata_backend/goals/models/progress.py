@@ -7,7 +7,7 @@ from jsonfield import JSONField
 
 from .public import Action
 from .users import UserAction
-from ..managers import DailyProgressManager
+from ..managers import DailyProgressManager, UserCompletedActionManager
 
 from utils.user_utils import local_day_range
 
@@ -90,6 +90,8 @@ class UserCompletedAction(models.Model):
             usercompletedaction=None
         ).exists()
 
+    objects = UserCompletedActionManager()
+
 
 class DailyProgress(models.Model):
     """This model aggregates some information about the user's daily progress
@@ -141,6 +143,7 @@ class DailyProgress(models.Model):
         default=0,
         help_text="Total number of behaviors selected on this day"
     )
+
     # The Behaviors Status is a dict for storing info about the user's progress
     # toward a behavior (i.e. from what bucket should their notifications/actions
     # come from). Each entry is a key of `behavior-<id>` with a `bucket` value.
@@ -170,6 +173,12 @@ class DailyProgress(models.Model):
         help_text="A count of check-in streaks (how many days in a row a user "
                   "has submitted a daily check-in."
     )
+
+    # App / Notification engagement
+    # See: UserCompletedActionManager.engagement
+    engagement_15_days = models.FloatField(default=0, blank=True)
+    engagement_30_days = models.FloatField(default=0, blank=True)
+    engagement_60_days = models.FloatField(default=0, blank=True)
 
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
