@@ -23,6 +23,8 @@ This endpoint returns resources with the following fields.
   notifications received that are related to each selected Behavior.
 * `goal_status`: A JSON object that lists the user's daily check-in status
   for selected goals.
+* `engagement_rank`: Where you rank when compared with other user's
+  `engagement_15_days` value.
 * `engagement_15_days`: 15-day engagement percentage.
 * `engagement_30_days`: 30-day engagement percentage.
 * `engagement_60_days`: 60-day engagement percentage.

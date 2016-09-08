@@ -52,6 +52,7 @@ class OrganizationSerializer(ObjectTypeModelSerializer):
 
 
 class DailyProgressSerializer(ObjectTypeModelSerializer):
+    engagement_rank = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = DailyProgress
@@ -60,9 +61,10 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
             'actions_dismissed', 'customactions_total', 'customactions_completed',
             'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
             'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
-            'behaviors_status', 'goal_status',
+            'engagement_rank', 'behaviors_status', 'goal_status',
             'updated_on', 'created_on', 'object_type',
         )
+
 
     def to_representation(self, obj):
         results = super().to_representation(obj)
@@ -71,6 +73,9 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
         results['behaviors_status'] = obj.behaviors_status
         results['goal_status'] = obj.goal_status
         return results
+
+    def get_engagement_rank(self, obj):
+        return DailyProgress.objects.engagement_rank(obj.user)
 
 
 class CategorySerializer(ObjectTypeModelSerializer):

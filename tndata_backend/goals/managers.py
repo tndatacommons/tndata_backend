@@ -20,7 +20,7 @@ from .settings import (
     DEFAULT_EVENING_GOAL_TRIGGER_RRULE,
 )
 
-from utils import user_utils
+from utils import dateutils, user_utils
 from utils.datastructures import flatten
 
 
@@ -76,6 +76,36 @@ class DailyProgressManager(models.Manager):
         except self.model.DoesNotExist:
             obj = self.create(user=user)
         return obj
+
+    def engagement_rank(self, user):
+        """Given a user, find out how their 15-day engagement stats compare
+        with other users.
+
+        Strategy for doing this:
+
+        1. Get the user's latest DailyProgress
+        2. Filter all other DailyProgress objects within that range.
+        3. Calculate the user's engagement_15_days value compared with others
+           on the same day. Do do this, we count the number of values below
+           the user's divided by the total number of values
+
+        """
+        try:
+            dp = self.filter(user=user).latest()
+
+            daterange = dateutils.date_range(dp.created_on)
+            values = self.filter(created_on__range=daterange)
+            total = values.count()
+            values = values.values_list('engagement_15_days', flat=True)
+            values = sorted(values, reverse=True)  # Sort biggest -> smallest
+
+            # Find the first occurance of the user's value, and count the rest.
+            num_lower = len(values[values.index(dp.engagement_15_days) + 1:])
+            return round((num_lower / total) * 100, 2)
+
+        except (self.model.DoesNotExist, IndexError, ZeroDivisionError):
+            return 0.0
+
 
 
 class UserCategoryManager(models.Manager):
