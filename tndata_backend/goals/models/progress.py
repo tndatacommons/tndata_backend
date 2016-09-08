@@ -144,6 +144,10 @@ class DailyProgress(models.Model):
         help_text="Total number of behaviors selected on this day"
     )
 
+    # -------------------------------------------------------------------------
+    # TODO: Remove `behaviors_status` & `goal_status`
+    # TODO: REmove all bucket-related stuff.
+    # -------------------------------------------------------------------------
     # The Behaviors Status is a dict for storing info about the user's progress
     # toward a behavior (i.e. from what bucket should their notifications/actions
     # come from). Each entry is a key of `behavior-<id>` with a `bucket` value.
@@ -313,6 +317,15 @@ class DailyProgress(models.Model):
         """
         day_range = local_day_range(self.user, dt=self.created_on)
         return self.user.usercompletedaction_set.filter(updated_on__range=day_range)
+
+    def calculate_engagement(self, days=15):
+        func = UserCompletedAction.objects.engagement
+        if days == 15:
+            self.engagement_15_days = func(self.user, days=days)
+        elif days == 30:
+            self.engagement_30_days = func(self.user, days=days)
+        elif days == 60:
+            self.engagement_60_days = func(self.user, days=days)
 
     # The DailyProgress manager has custom convenience methods:
     # - for_user(user) -- Gets or creates an instance for "today"
