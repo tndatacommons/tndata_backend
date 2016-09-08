@@ -23,6 +23,9 @@ This endpoint returns resources with the following fields.
   notifications received that are related to each selected Behavior.
 * `goal_status`: A JSON object that lists the user's daily check-in status
   for selected goals.
+* `engagement_15_days`: 15-day engagement percentage.
+* `engagement_30_days`: 30-day engagement percentage.
+* `engagement_60_days`: 60-day engagement percentage.
 * `updated_on`: Date progress was last updated.
 * `created_on`: Date this instance was created.
 * `object_type`: Will always be 'dailyprogress'

@@ -3321,6 +3321,9 @@ class TestDailyProgressAPI(V2APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['id'], self.dp.id)
+        self.assertEqual(response.data['engagement_15_days'], 0.0)
+        self.assertEqual(response.data['engagement_30_days'], 0.0)
+        self.assertEqual(response.data['engagement_60_days'], 0.0)
 
     def test_post_dailyprogress_detail(self):
         url = self.get_url('dailyprogress-detail', args=[self.dp.id])

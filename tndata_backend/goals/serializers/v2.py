@@ -59,8 +59,9 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
             'id', 'user', 'actions_total', 'actions_completed', 'actions_snoozed',
             'actions_dismissed', 'customactions_total', 'customactions_completed',
             'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
-            'behaviors_status', 'goal_status', 'updated_on', 'created_on',
-            'object_type',
+            'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
+            'behaviors_status', 'goal_status',
+            'updated_on', 'created_on', 'object_type',
         )
 
     def to_representation(self, obj):
