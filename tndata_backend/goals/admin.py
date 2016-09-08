@@ -819,7 +819,10 @@ class DailyProgressAdmin(UserRelatedModelAdmin):
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
     )
-    list_display = ('user', 'actions_total', 'behaviors_total', 'created_on')
+    list_display = (
+        'user', 'actions_total', 'behaviors_total', 'engagement_15_days',
+        'engagement_30_days', 'engagement_60_days', 'created_on',
+    )
     raw_id_fields = ('user', )
     exclude = ('behaviors_status', 'goal_status')
     readonly_fields = (
