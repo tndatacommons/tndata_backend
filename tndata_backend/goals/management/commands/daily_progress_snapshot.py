@@ -76,9 +76,8 @@ class Command(BaseCommand):
             for user in users:
                 progress = DailyProgress.objects.for_today(user)
                 progress.update_stats()
-                progress.update_behavior_buckets()  # TODO: Remove
 
-                # TODO: Add methods to calculate engagement
+                # Add methods to calculate engagement
                 progress.calculate_engagement(days=15)
                 progress.calculate_engagement(days=30)
                 progress.calculate_engagement(days=60)
