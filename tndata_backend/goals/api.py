@@ -1640,6 +1640,25 @@ class DailyProgressViewSet(VersionedViewSetMixin,
             return self.update(request, *args, **kwargs)
         return super().create(request, *args, **kwargs)
 
+    @list_route(methods=['get'], url_path='latest')
+    def latest(self, request, pk=None):
+        """Get the latest daily progress instance for the authenticated user."""
+        if not request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            dp = self.queryset.filter(user=request.user).latest()
+            serializer_class = self.get_serializer_class()
+            data = serializer_class(dp).data
+            return Response(data, status=status.HTTP_200_OK)
+        except models.DailyProgress.DoesNotExist:
+            return Response(
+                data={'error': "Specified Progress not found"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
     @list_route(methods=['post'], permission_classes=[IsOwner], url_path='checkin')
     def set_progress(self, request, pk=None):
         """A route that allows us to set daily checkin values related to

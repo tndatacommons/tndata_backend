@@ -3,6 +3,13 @@
 
 A user's stats on their daily progress toward selected goals.
 
+<div class="alert alert-info">
+    <strong>NOTE:</strong> You can always fetch an authenticated user's
+    <a href="#latest-dailyprogress">latest values</a> from the
+    <a href="/api/users/progress/latest/"><code>/api/users/progress/latest/</code></a>
+    endpoint.
+</div>
+
 ## Fields
 
 This endpoint returns resources with the following fields.
@@ -50,6 +57,10 @@ number of actions completed: `{'actions_completed': 5}`
 There are a few additional API endpoints that you can use to work with
 `DailyProgress` data for a user. These include:
 
+
+### Latest DailyProgress
+
+You can always get the latest values from [/api/users/progress/latest/](/api/users/progress/latest/).
 
 ### Daily Check-in
 
