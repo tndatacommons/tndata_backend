@@ -44,7 +44,7 @@ class Command(BaseCommand):
                     criteria = (
                         Q(username=options['user']) | Q(email=options['user'])
                     )
-                users = list(User.objects.filter(criteria).distinct())
+                users = User.objects.filter(criteria).distinct()
             except User.DoesNotExist:
                 msg = "Could not find user: {0}".format(options['user'])
                 raise CommandError(msg)
@@ -56,6 +56,7 @@ class Command(BaseCommand):
             # Limit to active users by default
             users = User.objects.filter(is_active=True)
 
+        self.stdout.write("Generating snapshots for {} users".format(users.count()))
         return users
 
     def handle(self, *args, **options):
