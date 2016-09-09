@@ -1185,7 +1185,6 @@ class UserActionViewSet(VersionedViewSetMixin,
             )
 
 
-
 @api_view(['GET'])
 def user_action_consolidated(request, pk):
     """Return a consolidated set of data related to a UserAction objects. This
@@ -1227,6 +1226,7 @@ def user_action_consolidated(request, pk):
         pass
 
     return Response(None, status=status.HTTP_404_NOT_FOUND)
+
 
 class UserCategoryViewSet(VersionedViewSetMixin,
                           mixins.CreateModelMixin,
