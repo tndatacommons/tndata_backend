@@ -4,6 +4,12 @@ The User Feed of information: home-feed data for the user, include:
 * `progress` -- an object containing the number of actions completed today,
   the number of total actions scheduled for today, and the percentage of
   those completed.
+
+    - `total`: Total number of actions scheduled for today
+    - `completed`: Total number of actions completed today
+    - `progress`: A progress score (currently unused)
+    - `engagement_rank`: How the user ranks with their peers using the app.
+
 * `suggestions` -- (currently disabled)
 * `upcoming` -- an array of upcoming UserAction or CustomAction objects. This
   array contains objects with the following bits of data:

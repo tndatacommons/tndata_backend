@@ -211,6 +211,8 @@ def todays_actions_progress(user):
     """Return some stats indicating to user's progress toward completing their
     actions that were scheduled for 'today'.
 
+    Input:
+
     * user -- the user for whom we're calculating stats.
 
     Returns a dict of the form:
@@ -260,11 +262,13 @@ def todays_actions_progress(user):
 
 
 def todays_progress(user):
-    """A combination of todays progress on Actions + Custom Actions.  This
-    combines the results of the following:
+    """A combination of todays progress on Actions + Custom Actions + Enagement.
+    This combines the results of the following:
 
     * todays_actions_progress
     * todays_customactions_progress
+    * engagement_rank is a float that tells us how engaged the user has been
+      over the past 15 days compared to other Compass users.
 
     """
     results = todays_actions_progress(user)
@@ -273,6 +277,10 @@ def todays_progress(user):
     # Add the values together using a counter
     results = Counter(results)
     results.update(custom)
+
+    # Include Engagment score
+    results['engagement_rank'] = DailyProgress.objects.engagement_rank(user)
+
     return dict(results)
 
 
