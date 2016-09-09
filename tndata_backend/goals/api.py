@@ -1,6 +1,7 @@
 import waffle
 
 from django.conf import settings as project_settings
+from django.core.cache import cache
 from django.db.models import Q
 from django.utils import timezone
 
@@ -11,7 +12,7 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import api_view, detail_route, list_route
 from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
@@ -1183,6 +1184,49 @@ class UserActionViewSet(VersionedViewSetMixin,
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+
+
+@api_view(['GET'])
+def user_action_consolidated(request, pk):
+    """Return a consolidated set of data related to a UserAction objects. This
+    includes:
+
+    - UserAction data,
+    - Action title/description,
+    - Goal title
+    - Behavior description
+
+    # TODO: Make work with UserAction or CustomAction?
+
+    ----
+
+    """
+    if hasattr(request, "user") and not request.user.is_authenticated():
+        return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        cache_key = "ua-consolidated-{}".format(pk)
+        data = cache.get(cache_key)
+        if data is None:
+            user = request.user
+            related = ('action', 'primary_goal', 'action__behavior')
+            ua = user.useraction_set.select_related(*related).get(pk=pk)
+            data = {
+                'id': ua.id,
+                'title': ua.action.title,
+                'description': ua.action.description,
+                'behavior_title': ua.action.behavior.description,
+                'behavior_description': ua.action.behavior.description,
+                'goal_title': ua.primary_goal.title,
+                'goal_icon': ua.primary_goal.get_absolute_icon(),
+            }
+            cache.set(cache_key, data, 30)
+
+        return Response(data, status=status.HTTP_200_OK)
+    except models.UserAction.DoesNotExist:
+        pass
+
+    return Response(None, status=status.HTTP_404_NOT_FOUND)
 
 class UserCategoryViewSet(VersionedViewSetMixin,
                           mixins.CreateModelMixin,
