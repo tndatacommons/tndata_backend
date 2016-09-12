@@ -713,6 +713,11 @@ class UserAction(models.Model):
         """Return the title string for this object's primary goal."""
         return self.get_primary_goal(only='title').title
 
+    @property
+    def goal_description(self):
+        """Return the description string for this object's primary goal."""
+        return self.get_primary_goal(only='description').description
+
     def get_primary_goal(self, only=None):
         """Return a Goal (or None) representing the primary goal associated
         with this user's selected Action."""

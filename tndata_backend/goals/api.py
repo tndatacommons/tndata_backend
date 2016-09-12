@@ -1210,15 +1210,9 @@ def user_action_consolidated(request, pk):
             user = request.user
             related = ('action', 'primary_goal', 'action__behavior')
             ua = user.useraction_set.select_related(*related).get(pk=pk)
-            data = {
-                'id': ua.id,
-                'title': ua.action.title,
-                'description': ua.action.description,
-                'behavior_title': ua.action.behavior.description,
-                'behavior_description': ua.action.behavior.description,
-                'goal_title': ua.primary_goal.title,
-                'goal_icon': ua.primary_goal.get_absolute_icon(),
-            }
+
+            data = v2.UserActionSerializer(ua).data
+            data['goal'] = v2.GoalSerializer(ua.primary_goal).data
             cache.set(cache_key, data, 30)
 
         return Response(data, status=status.HTTP_200_OK)
