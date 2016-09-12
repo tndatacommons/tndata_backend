@@ -28,11 +28,10 @@ This endpoint returns resources with the following fields.
 * `id`: A unique identifier for the `UserAction`
 * `user`: A unique identifier for the `User`
 * `action`: An object that represents the `Action` selected by the user
-* `next_reminder`: a date/time in the user's local timezone for the
-  next push notification for this action (may be null if nothing is scheduled)
-* `custom_trigger`: An object that represent's the user's created `Trigger`,
-  i.e. information about when notifications for this action should be sent. It
-  will contain the following additional data:
+* `trigger`: An object that represent's the user's created `Trigger` or the
+  default trigger associated with the Action (i.e. information about when
+  notifications for this action should be sent). It will contain the following
+  additional data:
 
       - `id`: Unique ID of the Trigger
       - `name`: The trigger's name
@@ -42,11 +41,16 @@ This endpoint returns resources with the following fields.
       - `recurrences_display`: a human-readable version of recurrences
       - `disabled`: whether or not the trigger is disabled.
 
+* `next_reminder`: a date/time in the user's local timezone for the
+  next push notification for this action (may be null if nothing is scheduled)
 * `editable`: A boolean that indicates whether or not a user
   should be able to customize the reminders for this action.
-* `userbehvaior_id`: The ID of the `UserBehavior` object associated with the
   `Action`'s parent `Behavior`.
+* `goal_title`: A string, the title of the primary-goal.
+* `goal_description`: A string, the description from the primary-goal.
+* `userbehvaior_id`: The ID of the `UserBehavior` object associated with the
 * `primary_goal`: The ID of the goal under which the user selected this action.
+* `primary_usergoal`: The ID of the `UserGoal` related to the `primary_goal`.
 * `primary_category`: The ID of the category associated with this action.
 * `created_on`: Time at which the user selected this item.
 * `object_type`: A string that will always be `useraction`
