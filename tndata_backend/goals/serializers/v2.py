@@ -209,6 +209,8 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     next_reminder = ReadOnlyDatetimeField()
 
+    # TODO: How to optimze fetching the UserAction from the DB?
+
     class Meta:
         model = UserAction
         fields = (
@@ -229,6 +231,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         action_id = results.get('action', None)
         action = Action.objects.get(pk=action_id)
         results['action'] = ActionSerializer(action).data
+        results['goal'] = GoalSerializer(obj.primary_goal).data
         return results
 
     def create(self, validated_data):
