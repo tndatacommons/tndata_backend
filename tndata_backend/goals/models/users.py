@@ -718,6 +718,16 @@ class UserAction(models.Model):
         """Return the description string for this object's primary goal."""
         return self.get_primary_goal(only='description').description
 
+    def get_primary_usergoal(self, only=None):
+        """Return a UserGoal object for this instance's `primary_goal`."""
+        result = None
+        if self.primary_goal_id:
+            result = self.user.usergoal_set.filter(goal__id=self.primary_goal_id)
+            if only:
+                result = result.only(only)
+            result = result.first()
+        return result
+
     def get_primary_goal(self, only=None):
         """Return a Goal (or None) representing the primary goal associated
         with this user's selected Action."""

@@ -214,21 +214,27 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     )
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     next_reminder = ReadOnlyDatetimeField()
-    goal = GoalSerializer(source='primary_goal', required=False)
+    primary_usergoal = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserAction
         fields = (
             'id', 'user', 'action', 'trigger', 'next_reminder',
             'editable', 'created_on', 'goal_title', 'goal_description',
-            'userbehavior_id', 'primary_goal', 'goal', 'primary_category',
-            'object_type',
+            'userbehavior_id', 'primary_goal', 'primary_usergoal',
+            'primary_category', 'object_type',
         )
         read_only_fields = ("id", "created_on", 'userbehavior_id', 'goal')
 
     def __init__(self, *args, **kwargs):
         self.parents = kwargs.pop("parents", False)
         super().__init__(*args, **kwargs)
+
+    def get_primary_usergoal(self, obj):
+        result = obj.get_primary_usergoal(only='id')
+        if result:
+            return result.id
+        return None
 
     def to_representation(self, obj):
         """Replace the `action` ID with a serialized Action object."""
