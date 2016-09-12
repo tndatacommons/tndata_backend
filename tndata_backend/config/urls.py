@@ -29,7 +29,6 @@ from goals.api import (
     UserBehaviorViewSet,
     UserCategoryViewSet,
     UserGoalViewSet,
-    user_action_consolidated,
 )
 from goals import views as goal_views
 from notifications.api import GCMDeviceViewSet, GCMMessageViewSet
@@ -139,11 +138,6 @@ urlpatterns = [
         r'^api/reset-password/$',
         utils_views.reset_password,
         name="reset-password"
-    ),
-    url(
-        r'^api/users/actions-consolidated/(?P<pk>\d+)/$',  # TODO: better name?
-        user_action_consolidated,
-        name="user-action-consolidated"
     ),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),

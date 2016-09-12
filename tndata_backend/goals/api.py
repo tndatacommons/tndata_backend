@@ -1185,43 +1185,6 @@ class UserActionViewSet(VersionedViewSetMixin,
             )
 
 
-@api_view(['GET'])
-def user_action_consolidated(request, pk):
-    """Return a consolidated set of data related to a UserAction objects. This
-    includes:
-
-    - UserAction data,
-    - Action title/description,
-    - Goal title
-    - Behavior description
-
-    # TODO: Make work with UserAction or CustomAction?
-
-    ----
-
-    """
-    if hasattr(request, "user") and not request.user.is_authenticated():
-        return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-
-    try:
-        cache_key = "ua-consolidated-{}".format(pk)
-        data = cache.get(cache_key)
-        if data is None:
-            user = request.user
-            related = ('action', 'primary_goal', 'action__behavior')
-            ua = user.useraction_set.select_related(*related).get(pk=pk)
-
-            data = v2.UserActionSerializer(ua).data
-            data['goal'] = v2.GoalSerializer(ua.primary_goal).data
-            cache.set(cache_key, data, 30)
-
-        return Response(data, status=status.HTTP_200_OK)
-    except models.UserAction.DoesNotExist:
-        pass
-
-    return Response(None, status=status.HTTP_404_NOT_FOUND)
-
-
 class UserCategoryViewSet(VersionedViewSetMixin,
                           mixins.CreateModelMixin,
                           mixins.ListModelMixin,

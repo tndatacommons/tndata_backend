@@ -210,6 +210,8 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     next_reminder = ReadOnlyDatetimeField()
 
     # TODO: How to optimze fetching the UserAction from the DB?
+    # ua = user.useraction_set.select_related(
+    #       'action', 'primary_goal', 'action__behavior').get(pk=pk)
 
     class Meta:
         model = UserAction
