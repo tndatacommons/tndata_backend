@@ -3475,6 +3475,21 @@ class TestDailyProgressAPI(V2APITestCase):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(sum(d['count'] for d in response.data.get('results')), 2)
 
+    def test_latest(self):
+        """Test for the `latest` endpoint:
+
+            /api/users/progress/latest/
+
+        """
+        url = self.get_url('dailyprogress-latest')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], self.dp.id)
+        self.assertEqual(response.data['user'], self.user.id)
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
