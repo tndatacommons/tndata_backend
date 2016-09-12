@@ -214,7 +214,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         model = UserAction
         fields = (
             'id', 'user', 'action', 'trigger', 'next_reminder',
-            'editable', 'created_on', 'goal_title', 'goal_description',
+            'editable', 'created_on', 'goal_title', 'goal_icon',
             'userbehavior_id', 'primary_goal', 'primary_usergoal',
             'primary_category', 'object_type',
         )
