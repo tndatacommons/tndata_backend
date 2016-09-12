@@ -1,3 +1,5 @@
+import pytz
+
 from datetime import date, time
 from unittest.mock import patch
 
@@ -5,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
-import pytz
+from model_mommy import mommy
 from utils.user_utils import tzdt
 
 from .. models import (
@@ -16,7 +18,8 @@ from .. models import (
     Goal,
     Trigger,
     UserAction,
-    UserBehavior
+    UserBehavior,
+    UserCompletedAction,
 )
 from .. settings import (
     DEFAULT_BEHAVIOR_TRIGGER_NAME,
@@ -115,7 +118,7 @@ class TestDailyProgressManager(TestCase):
         u.delete()
         dp.delete()
 
-    def for_today(self):
+    def test_for_today(self):
         # When a user has no data
         u = User.objects.create_user('dp-exists', 'dp-exists@example.com', 'x')
         dp = DailyProgress.objects.for_today(u)
@@ -128,6 +131,38 @@ class TestDailyProgressManager(TestCase):
         # clean up
         u.delete()
         dp.delete()
+
+    def test_engagement_rank(self):
+        behavior = mommy.make(Behavior, title="B")
+        action = mommy.make(Action, behavior=behavior, title="A")
+        user_a = User.objects.create_user('a', 'a@a.a', 'p')
+        user_b = User.objects.create_user('b', 'b@b.b', 'p')
+
+        ua_a = mommy.make(UserAction, user=user_a, action=action)
+        ua_b = mommy.make(UserAction, user=user_b, action=action)
+
+        uca_a = mommy.make(UserCompletedAction, user=user_a, action=action,
+                           useraction=ua_a, state='completed')
+        uca_b = mommy.make(UserCompletedAction, user=user_b, action=action,
+                           useraction=ua_b, state='dismissed')
+
+        dp_a = DailyProgress.objects.for_today(user_a)
+        dp_a.calculate_engagement()
+        dp_a.save()
+
+        dp_b = DailyProgress.objects.for_today(user_a)
+        dp_b.calculate_engagement()
+        dp_b.save()
+
+        ua_rank = DailyProgress.objects.engagement_rank(user_a)
+        ub_rank = DailyProgress.objects.engagement_rank(user_b)
+
+        self.assertEqual(ua_rank, 50.0)
+        self.assertEqual(ub_rank, 0.0)
+
+        # clean up
+        for obj in [uca_a, uca_b, ua_a, ua_b, user_a, user_b, action, behavior]:
+            obj.delete()
 
 
 class TestGoalManager(TestCase):
