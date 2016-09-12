@@ -1847,3 +1847,20 @@ class TestDailyProgress(TestCase):
     def test_usercompleted_actions(self):
         # smoke test so we know if this works or not.
         self.assertEqual(self.progress.usercompletedactions().count(), 0)
+
+    def test_calculate_engagement(self):
+        # pre-test: all engagement values should be 0 by default
+        self.assertEqual(self.progress.engagement_15_days, 0.0)
+        self.assertEqual(self.progress.engagement_30_days, 0.0)
+        self.assertEqual(self.progress.engagement_60_days, 0.0)
+
+        # Create some some UserCompletedAction objects & test calculation
+        action = mommy.make(Action, user=self.user)
+        ua = mommy.make(UserAction, user=self.user, action=action)
+        uca = mommy.make(
+            UserCompletedAction, user=user, useraction=ua,
+            state=UserCompletedAction.COMPLETED
+        )
+
+        self.progress.calculate_engagement()  # 15-day
+        self.assertEqual(self.progress.engagement_15_days, 100.0)
