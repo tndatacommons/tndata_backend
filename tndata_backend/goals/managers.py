@@ -705,7 +705,7 @@ class PackageEnrollmentManager(models.Manager):
 
 class UserCompletedActionManager(models.Manager):
 
-    def engagement(self, user, goal=None, since=15):
+    def engagement(self, user, goal=None, days=15):
         """Measures a user's "engagement" within the app over some time period
         (default of 15 days). Engagment is calculated as:
 
@@ -714,11 +714,11 @@ class UserCompletedActionManager(models.Manager):
         - `user`: The user for whom engagement is calculated.
         - `goal`: If given, the calculation will be restricted to this Goal
           i.e. it filters on UserAction.primary_goal
-        - `since`: Integer number of days over which we calculate (default is 15)
+        - `days`: Integer number of days over which we calculate (default is 15)
 
         """
         result = 0.0
-        since = timezone.now() - timedelta(days=since)
+        since = timezone.now() - timedelta(days=days)
 
         # Count number of completed / total items over some timeframe
         qs = self.get_queryset().filter(user=user, created_on__gte=since)
