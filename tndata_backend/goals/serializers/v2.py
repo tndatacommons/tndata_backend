@@ -202,23 +202,21 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
 
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
+    action = ActionSerializer()
     trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False,
     )
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     next_reminder = ReadOnlyDatetimeField()
-
-    # TODO: How to optimze fetching the UserAction from the DB?
-    # ua = user.useraction_set.select_related(
-    #       'action', 'primary_goal', 'action__behavior').get(pk=pk)
+    goal = GoalSerializer(source='primary_goal')
 
     class Meta:
         model = UserAction
         fields = (
             'id', 'user', 'action', 'trigger', 'next_reminder',
             'editable', 'created_on', 'goal_title', 'goal_description',
-            'userbehavior_id', 'primary_goal', 'primary_category',
+            'userbehavior_id', 'primary_goal', 'goal', 'primary_category',
             'object_type',
         )
         read_only_fields = ("id", "created_on", 'userbehavior_id', )
@@ -226,15 +224,6 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     def __init__(self, *args, **kwargs):
         self.parents = kwargs.pop("parents", False)
         super().__init__(*args, **kwargs)
-
-    def to_representation(self, obj):
-        """Include a serialized Action object in the result."""
-        results = super().to_representation(obj)
-        action_id = results.get('action', None)
-        action = Action.objects.get(pk=action_id)
-        results['action'] = ActionSerializer(action).data
-        results['goal'] = GoalSerializer(obj.primary_goal).data
-        return results
 
     def create(self, validated_data):
         """Handle the primary_goal field correctly; We use `get_primary_goal`

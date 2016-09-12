@@ -1,7 +1,6 @@
 import waffle
 
 from django.conf import settings as project_settings
-from django.core.cache import cache
 from django.db.models import Q
 from django.utils import timezone
 
@@ -12,7 +11,7 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
-from rest_framework.decorators import api_view, detail_route, list_route
+from rest_framework.decorators import detail_route, list_route
 from rest_framework.pagination import PageNumberPagination, _positive_int
 from rest_framework.response import Response
 from redis_metrics import metric
@@ -883,6 +882,10 @@ class UserActionViewSet(VersionedViewSetMixin,
         # First, only expose content in Categories/Packages that are either
         # public or in which we've accepted the terms/consent form.
         self.queryset = super().get_queryset().filter(user=self.request.user)
+        self.queryset = self.queryset.select_related(
+            'user', 'custom_trigger', 'action', 'action__default_trigger',
+            'primary_goal', 'action__behavior',
+        )
 
         # Now, filter on category, goal, behavior, action if necessary
         filter_on_today = bool(self.request.GET.get('today', False))
@@ -921,7 +924,6 @@ class UserActionViewSet(VersionedViewSetMixin,
                 Q(prev_trigger_date__range=today) |
                 Q(next_trigger_date__range=today)
             )
-
         return self.queryset
 
     def get_serializer(self, *args, **kwargs):
