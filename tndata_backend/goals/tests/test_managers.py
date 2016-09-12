@@ -382,3 +382,22 @@ class TestTriggerManager(TestCase):
         # Clean up
         ua.delete()
         a.delete()
+
+
+class TestUserCompletedActionManager(TestCase):
+    """Tests for the `UserCompletedActionManager` manager."""
+
+    @classmethod
+    def setUpTestData(cls):
+        behavior = mommy.make(Behavior, title="B", state='published')
+        cls.action = mommy.make(Action, behavior=behavior,
+                                title="A", state='published')
+        cls.user = User.objects.create_user('u', 'x@y.z', 'p')
+        cls.useraction = mommy.make(UserAction, user=cls.user, action=cls.action)
+        cls.uca = mommy.make(UserCompletedAction, user=cls.user,
+                             action=cls.action, useraction=cls.useraction,
+                             state='completed')
+
+    def test_engagement(self):
+        value = UserCompletedAction.objects.engagement(self.user, days=15)
+        self.assertEqual(value, 100.0)
