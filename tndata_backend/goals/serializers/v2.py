@@ -202,14 +202,13 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
 
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
-    action = ActionSerializer()
     trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False,
     )
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
     next_reminder = ReadOnlyDatetimeField()
-    goal = GoalSerializer(source='primary_goal')
+    goal = GoalSerializer(source='primary_goal', required=False)
 
     class Meta:
         model = UserAction
@@ -219,11 +218,17 @@ class UserActionSerializer(ObjectTypeModelSerializer):
             'userbehavior_id', 'primary_goal', 'goal', 'primary_category',
             'object_type',
         )
-        read_only_fields = ("id", "created_on", 'userbehavior_id', )
+        read_only_fields = ("id", "created_on", 'userbehavior_id', 'goal')
 
     def __init__(self, *args, **kwargs):
         self.parents = kwargs.pop("parents", False)
         super().__init__(*args, **kwargs)
+
+    def to_representation(self, obj):
+        """Replace the `action` ID with a serialized Action object."""
+        results = super().to_representation(obj)
+        results['action'] = ActionSerializer(obj.action).data
+        return results
 
     def create(self, validated_data):
         """Handle the primary_goal field correctly; We use `get_primary_goal`

@@ -995,6 +995,7 @@ class UserActionViewSet(VersionedViewSetMixin,
 
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
+
         if isinstance(self.request.data, list):
             # We're creating multiple items
             for d in request.data:
