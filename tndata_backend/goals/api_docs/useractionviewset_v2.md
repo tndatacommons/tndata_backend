@@ -47,7 +47,7 @@ This endpoint returns resources with the following fields.
   should be able to customize the reminders for this action.
   `Action`'s parent `Behavior`.
 * `goal_title`: A string, the title of the primary-goal.
-* `goal_description`: A string, the description from the primary-goal.
+* `goal_icon`: A string, the URL for the Goal's icon image.
 * `userbehvaior_id`: The ID of the `UserBehavior` object associated with the
 * `primary_goal`: The ID of the goal under which the user selected this action.
 * `primary_usergoal`: The ID of the `UserGoal` related to the `primary_goal`.
