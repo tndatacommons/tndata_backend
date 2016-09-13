@@ -1839,11 +1839,12 @@ class TestDailyProgress(TestCase):
         self.assertEqual(self.progress.engagement_60_days, 0.0)
 
         # Create some some UserCompletedAction objects & test calculation
-        action = mommy.make(Action, user=self.user)
+        behavior = mommy.make(Behavior, title='B', state='published')
+        action = mommy.make(Action, behavior=behavior, title='a', state='published')
         ua = mommy.make(UserAction, user=self.user, action=action)
         mommy.make(
             UserCompletedAction, user=self.user, useraction=ua,
-            state=UserCompletedAction.COMPLETED
+            action=action, state=UserCompletedAction.COMPLETED
         )
 
         self.progress.calculate_engagement()  # 15-day
