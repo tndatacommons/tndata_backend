@@ -1,28 +1,21 @@
-<li><a href="{{ action_model.get_create_reinforcing_action_url}}">
-  <i class="fa fa-plus-circle"></i> Reinforcing</a></li>
-<li><a href="{{ action_model.get_create_enabling_action_url}}">
-  <i class="fa fa-plus-circle"></i> Enabling</a></li>
-<li><a href="{{ action_model.get_create_showing_action_url}}">
+<li><a href="{{link}}?actiontype={{ action_model.SHOWING}}">
   <i class="fa fa-plus-circle"></i> Showing</a></li>
-<li><a href="{{ action_model.get_create_resource_action_url}}">
+<li><a href="{{link}}?actiontype={{ action_model.RESOURCE}}">
   <i class="fa fa-plus-circle"></i> Resource Notification</a></li>
-{% comment %}
-<li><a href="{{ action_model.get_create_asking_action_url}}">
-  <i class="fa fa-plus-circle"></i> Status</a></li>
 
-<li class="has-dropdown">
-  <a href="#"><i class="fa fa-plus-circle"></i> Helping</a>
-  <ul class="dropdown">
-    <li><a href="{{ action_model.get_create_tiny_action_url}}">
-      <i class="fa fa-plus-circle"></i> Tiny Version</a></li>
-    <li><a href="{{ action_model.get_create_starter_action_url }}">
-      <i class="fa fa-plus-circle"></i> Starter Step</a></li>
-    <li><a href="{{ action_model.get_create_resource_action_url}}">
-      <i class="fa fa-plus-circle"></i> Resource Notification</a></li>
-    <li><a href="{{ action_model.get_create_now_action_url}}">
-      <i class="fa fa-plus-circle"></i> Do it now</a></li>
-    <li><a href="{{ action_model.get_create_later_action_url}}">
-      <i class="fa fa-plus-circle"></i> Do it later</a></li>
-  </ul>
-</li>
+{% comment %}
+<li><a href="{{link}}?actiontype={{action_model.REINFORCING}}">
+  <i class="fa fa-plus-circle"></i> Reinforcing</a></li>
+<li><a href="{{link}}?actiontype={{ action_model.ENABLING}}">
+  <i class="fa fa-plus-circle"></i> Enabling</a></li>
+<li><a href="{{link}}?actiontype={{ action_model.STARTER }}">
+  <i class="fa fa-plus-circle"></i> Starter Step</a></li>
+<li><a href="{{link}}?actiontype={{ action_model.TINY}}">
+  <i class="fa fa-plus-circle"></i> Tiny Version</a></li>
+<li><a href="{{link}}?actiontype={{ action_model.NOW}}">
+  <i class="fa fa-plus-circle"></i> Do it now</a></li>
+<li><a href="{{link}}?actiontype={{ action_model.LATER}}">
+  <i class="fa fa-plus-circle"></i> Do it later</a></li>
+<li><a href="{{link}}?actiontype={{ action_model.ASKING}}">
+  <i class="fa fa-plus-circle"></i> Checkup</a></li>
 {% endcomment %}

@@ -1,4 +1,5 @@
 from django import template
+from django.core.urlresolvers import reverse
 
 from goals.models import Category, Action
 from utils.db import get_model_name
@@ -11,7 +12,10 @@ register = template.Library()
 
 @register.inclusion_tag("goals/_action_creation_menu_items.html")
 def action_creation_menu():
-    return {'action_model': Action}
+    return {
+        'action_model': Action,
+        'link': reverse("goals:action-create")
+    }
 
 
 @register.inclusion_tag("goals/_object_controls.html", takes_context=True)

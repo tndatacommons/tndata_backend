@@ -949,16 +949,6 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
     objects = BehaviorManager()
 
 
-def _action_type_url_function(action_type):
-    """Return a function that reverses the Create Action url, but includes the
-    given action type. The returned function expects one argument (the class)
-    and can be used as a @classmethod."""
-    def _reverse_url(cls):
-        url = reverse('goals:action-create')
-        return "{}?actiontype={}".format(url, action_type)
-    return _reverse_url
-
-
 @job
 def _remove_queued_messages_for_action(action_id):
     """An Async task that will delete GCMMessages that are associated with
@@ -1005,15 +995,15 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     ASKING = 'asking'  # Asking the user about their current status
 
     ACTION_TYPE_CHOICES = (
-        (REINFORCING, 'Reinforcing'),
-        (ENABLING, 'Enabling'),
         (SHOWING, 'Showing'),
-        (STARTER, 'Starter Step'),
-        (TINY, 'Tiny Version'),
         (RESOURCE, 'Resource Notification'),
-        (NOW, 'Do it now'),
-        (LATER, 'Do it later'),
-        (ASKING, 'Checkup Notification'),
+        # (REINFORCING, 'Reinforcing'),
+        # (ENABLING, 'Enabling'),
+        # (STARTER, 'Starter Step'),
+        # (TINY, 'Tiny Version'),
+        # (NOW, 'Do it now'),
+        # (LATER, 'Do it later'),
+        # (ASKING, 'Checkup Notification'),
     )
 
     # Priorities. Lower number means higher priority, so we can sort.
