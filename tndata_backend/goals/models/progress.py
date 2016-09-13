@@ -144,23 +144,6 @@ class DailyProgress(models.Model):
         help_text="Total number of behaviors selected on this day"
     )
 
-    # -------------------------------------------------------------------------
-    # TODO: Remove `behaviors_status` & `goal_status`
-    # TODO: REmove all bucket-related stuff.
-    # -------------------------------------------------------------------------
-    # The Behaviors Status is a dict for storing info about the user's progress
-    # toward a behavior (i.e. from what bucket should their notifications/actions
-    # come from). Each entry is a key of `behavior-<id>` with a `bucket` value.
-    #
-    #   behavior-<id>: <bucket>
-    #
-    behaviors_status = JSONField(
-        blank=True,
-        default=dict,
-        help_text="Describes the user's status on work toward this behavior; "
-                  "i.e. From which bucket should Actions be delivered."
-    )
-
     # This is where we store the daily progress feedback for goals. It's a
     # dict of the form: {'goal-<id>': int_value}, where each value is the
     # user's self-reported feedback.
@@ -222,28 +205,6 @@ class DailyProgress(models.Model):
             self.goal_status[key] = value
         return self.goal_status
 
-    def set_status(self, behavior, status):
-        """Sets the status/current bucket for a given behavior. This method
-        will add an entry to the `behaviors_status` field."""
-        # NOTE: Action.PREP is an example of a bucket of actions/notifications.
-        key = 'behavior-{}'.format(behavior.id)
-        self.behaviors_status[key] = status
-
-    def get_status(self, behavior):
-        """Given a behavior, returns the user's current status; i.e. the bucket
-        from which actions should be delivered.
-
-        If the behavior cannot be found, it means a user hasn't set their
-        status for that behavior, yet. So, this method returns the default
-        first status/bucket (ie. the first item from Action.BUCKET_ORDER).
-
-        """
-        try:
-            key = 'behavior-{}'.format(behavior.id)
-            return self.behaviors_status[key]
-        except KeyError:
-            return Action.BUCKET_ORDER[0]
-
     def _update_useraction_stats(self):
         start, end = local_day_range(self.user, dt=self.created_on)
         from_date = self.user.useraction_set.aggregate(Min('created_on'))
@@ -296,20 +257,6 @@ class DailyProgress(models.Model):
         self._update_userbehavior_stats()
         self._update_useraction_stats()
         self._update_customaction_stats()
-
-    def update_behavior_buckets(self):
-        """Saves the user's current bucket for each behavior they've selected.
-        This method writes data to the `behaviors_status` field, but does not
-        save the model.
-
-        WARNING: This isn't restricted by date, so if you run this on old
-        instances their existing values will get overwritten.
-
-        """
-        for ub in self.user.userbehavior_set.all():
-            bucket_progress = ub.bucket_progress()
-            bucket = Action.next_bucket(bucket_progress)
-            self.set_status(ub.behavior, bucket)
 
     def usercompletedactions(self):
         """Return a queryset of UserCompletedAction objects that were updated
