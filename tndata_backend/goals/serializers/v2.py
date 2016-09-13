@@ -61,16 +61,14 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
             'actions_dismissed', 'customactions_total', 'customactions_completed',
             'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
             'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
-            'engagement_rank', 'behaviors_status', 'goal_status',
+            'engagement_rank', 'goal_status',
             'updated_on', 'created_on', 'object_type',
         )
 
-
     def to_representation(self, obj):
         results = super().to_representation(obj)
-        # The goal_status and behavior_status should just be simple dicts
-        # but the built-in serialization wants to leave them as strings.
-        results['behaviors_status'] = obj.behaviors_status
+        # The goal_status should just be a simple dict but the built-in
+        # serialization wants to leave them as strings.
         results['goal_status'] = obj.goal_status
         return results
 

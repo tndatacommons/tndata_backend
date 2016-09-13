@@ -3362,64 +3362,6 @@ class TestDailyProgressAPI(V2APITestCase):
         expected = {'goal-{}'.format(goal.id): 4}
         self.assertEqual(response.data['goal_status'], expected)
 
-    def test_get_dailyprogress_behavior_status_unauthed(self):
-        url = self.get_url('dailyprogress-behaviors')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_post_dailyprogress_behavior_status_unauthed(self):
-        url = self.get_url('dailyprogress-behaviors')
-        response = self.client.post(url, {'behavior': 1, 'bucket': 'core'})
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_get_dailyprogress_behavior_status(self):
-        url = self.get_url('dailyprogress-behaviors')
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        # When the user has not behaviors nor any progress data
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {})
-
-        # When the user DOES have behaviors and progress data
-        behavior = Behavior.objects.create(title='B')
-        ub = UserBehavior.objects.create(behavior=behavior, user=self.user)
-        self.dp.set_status(behavior, 'core')
-        self.dp.save()
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected = {'behavior-{}'.format(behavior.id): 'core'}
-        self.assertEqual(response.data, expected)
-
-        # clean up
-        behavior.delete()
-        ub.delete()
-        self.dp.behaviors_status = {}
-        self.dp.save()
-
-    def test_post_dailyprogress_behavior_status_invalid_data(self):
-        url = self.get_url('dailyprogress-behaviors')
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        payload = {
-            'behavior': '9999999999',
-            'bucket': 'not-a-valid-bucket',
-        }
-        # POST: invalid bucket name
-        response = self.client.post(url, payload)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data, {'error': 'Invalid bucket name'})
-
-        # POST: behavior not owned by the user
-        payload['bucket'] = 'core'
-        response = self.client.post(url, payload)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        expected = {'error': "UserBehavior matching query does not exist."}
-        self.assertEqual(response.data, expected)
-
     def test_streaks(self):
         """
         /api/users/progress/streaks.<format>/

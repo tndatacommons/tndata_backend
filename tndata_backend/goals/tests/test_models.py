@@ -1776,7 +1776,6 @@ class TestDailyProgress(TestCase):
         cls.user = mommy.make(User)
         cls.behavior = mommy.make(Behavior, id=1)
 
-        status = {'behavior-1': 'TEST'}
         cls.progress = mommy.make(
             DailyProgress,
             user=cls.user,
@@ -1789,7 +1788,6 @@ class TestDailyProgress(TestCase):
             customactions_snoozed=0,
             customactions_dismissed=1,
             behaviors_total=1,
-            behaviors_status=status,
         )
 
     def test_actions(self):
@@ -1809,20 +1807,6 @@ class TestDailyProgress(TestCase):
             'dismissed': 1,
         }
         self.assertDictEqual(self.progress.customactions, expected)
-
-    def test_get_status_when_empty(self):
-        """When there's no data, the get_status method should return the first
-        bucket, as defined on Action.BUCKET_ORDER"""
-        dp = DailyProgress()
-        self.assertEqual(dp.get_status(self.behavior), Action.BUCKET_ORDER[0])
-
-    def test_get_status(self):
-        self.assertEqual(self.progress.get_status(self.behavior), 'TEST')
-
-    def test_set_status(self):
-        behavior = Mock(id=2)
-        self.progress.set_status(behavior, 'FOO')
-        self.assertEqual(self.progress.behaviors_status['behavior-2'], 'FOO')
 
     def test_checkin_streak(self):
         """When a DailyProgress instance is saved, the pre-save signal handler
@@ -1857,8 +1841,8 @@ class TestDailyProgress(TestCase):
         # Create some some UserCompletedAction objects & test calculation
         action = mommy.make(Action, user=self.user)
         ua = mommy.make(UserAction, user=self.user, action=action)
-        uca = mommy.make(
-            UserCompletedAction, user=user, useraction=ua,
+        mommy.make(
+            UserCompletedAction, user=self.user, useraction=ua,
             state=UserCompletedAction.COMPLETED
         )
 

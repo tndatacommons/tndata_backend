@@ -824,18 +824,14 @@ class DailyProgressAdmin(UserRelatedModelAdmin):
         'engagement_30_days', 'engagement_60_days', 'created_on',
     )
     raw_id_fields = ('user', )
-    exclude = ('behaviors_status', 'goal_status')
+    exclude = ('goal_status', )
     readonly_fields = (
         'actions_total', 'actions_completed', 'actions_snoozed',
         'actions_dismissed', 'customactions_total', 'customactions_completed',
         'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
-        'behaviors_status_details', 'goal_status_details',
-        'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
-        'updated_on', 'created_on'
+        'goal_status_details', 'engagement_15_days', 'engagement_30_days',
+        'engagement_60_days', 'updated_on', 'created_on'
     )
-
-    def behaviors_status_details(self, obj):
-        return mark_safe("<pre>{0}</pre>".format(pformat(obj.behaviors_status)))
 
     def goal_status_details(self, obj):
         return mark_safe("<pre>{0}</pre>".format(pformat(obj.goal_status)))

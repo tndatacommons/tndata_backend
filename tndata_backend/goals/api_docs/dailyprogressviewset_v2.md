@@ -26,8 +26,6 @@ This endpoint returns resources with the following fields.
 * `customactions_snoozed`: Number of custom actions snoozed for the day
 * `customactions_dismissed`:  Number of custom actions dismissed for the day
 * `behaviors_total`: Total number of `Behavior`s selected by the user for all time.
-* `behaviors_status`: A JSON object that describes the user's status for
-  notifications received that are related to each selected Behavior.
 * `goal_status`: A JSON object that lists the user's daily check-in status
   for selected goals.
 * `engagement_rank`: Where you rank when compared with other user's
