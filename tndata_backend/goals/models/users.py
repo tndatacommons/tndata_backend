@@ -268,52 +268,6 @@ class UserBehavior(models.Model):
             instance=self,
         )
 
-    def bucket_progress(self):
-        """Calculates bucket progress for all actions within the related
-        Behavior. This returns a dict of the form:
-
-            {bucket: boolean}
-
-        Which tells us whether or not the user has "completed" the bucket.
-
-        """
-        from .progress import UserCompletedAction
-
-        # Organize child actions by bucket. This is a dict of the form:
-        # {bucket: [action, ... ]
-        buckets = self.behavior.action_buckets()
-
-        # Create a dict to store progress (completion state) for each action
-        # in each bucket. This is a cit of the form:
-        # {bucket: ['completed', 'snoozed', ...]}
-        progress = defaultdict(list)
-
-        for bucket, action_list in buckets.items():
-            for action in action_list:
-                try:
-                    # Check the user's state for each action in their behavior.
-                    uca = UserCompletedAction.objects.filter(
-                        user=self.user,
-                        action=action
-                    ).latest()
-                    progress[bucket].append(uca.state)
-                except UserCompletedAction.DoesNotExist:
-                    progress[bucket].append(UserCompletedAction.UNSET)
-
-        # Now, create a status dict for each bucket, tellinus whether or not
-        # the user has completed all of the actions within the bucket.
-        status = {}  # {bucket: True|False}
-        for bucket in progress.keys():
-            status[bucket] = all([
-                state == UserCompletedAction.COMPLETED
-                for state in progress[bucket]
-            ])
-        return status
-
-    @property
-    def behavior_progress(self):
-        return None
-
     @property
     def custom_triggers_allowed(self):
         """Check to see if the user/behavior is the child of a goal within a
@@ -522,33 +476,6 @@ class UserAction(models.Model):
         if self.next_trigger_date is not None:
             return to_localtime(self.next_trigger_date, self.user)
         return self.next()
-
-    def _print_next_details(self):
-        dp = self.user.dailyprogress_set.latest()
-        current_bucket = dp.get_status(self.action.behavior)
-
-        # Is this UserAction included in the available set from the user's
-        # currently selected bucket.
-        qs = self.user.useraction_set.select_from_bucket(current_bucket)
-        qs = qs.filter(pk=self.id)
-        included = qs.exists()
-
-        output = ("ID: {id}\n"
-                  "{current_bucket} | {behavior}\n"
-                  "{bucket} | {action}\n"
-                  "Included: {included}\n"
-                  "Next: {next_trigger}"
-                  "----------------------------")
-        output = output.format(
-            id=self.id,
-            behavior=self.action.behavior,
-            current_bucket=current_bucket,
-            bucket=self.action.bucket,
-            action=self.action.title,
-            included="YES" if included else "NO",
-            next_trigger=self.next()
-        )
-        return output
 
     @property
     def next_in_sequence(self):

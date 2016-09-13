@@ -9,7 +9,6 @@ Actions are the things we want to help people to do.
 """
 import logging
 import re
-from collections import defaultdict
 
 import django.dispatch
 from django.conf import settings
@@ -812,26 +811,7 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
         default=0,
         help_text="The number of (published) child actions in this Behavior"
     )
-    action_buckets_prep = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of PREP actions in this behavior."
-    )
-    action_buckets_core = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of CORE actions in this behavior."
-    )
-    action_buckets_helper = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of HELPER actions in this behavior."
-    )
-    action_buckets_checkup = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of CHECKUP actions in this behavior."
-    )
+
     # Record-keeping on who/when this was last changed this behavior
     # --------------------------------------------------------------
     updated_by = models.ForeignKey(
@@ -862,9 +842,8 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
         return "{}".format(self.title)
 
     def _count_actions(self):
-        """Count this behavior's child actions, and store a breakdown of
-        how many exist in each bucket (if they're dynamic)"""
-        if self.id and not hasattr(self, '_set_actions_called'):
+        """Count this behavior's child actions."""
+        if self.id and not hasattr(self, '_set_actions_counted'):
             # Count all of our published actions.
             cache_key = "B{}_actions_count".format(self.id)
             actions_count = cache.get(cache_key)
@@ -872,7 +851,7 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
                 actions_count = self.action_set.published().count()
                 cache.set(cache_key, actions_count, 5)
             self.actions_count = actions_count
-            self._set_actions_called = True
+            self._set_actions_counted = True
 
     def _set_categories(self):
         """Populate the behavior's categories based on the selected goals."""
@@ -955,8 +934,8 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
     def contains_dynamic(self):
         """Returns True or False; This method tells us if this Behavior
-        contains any dynamic notifications; i.e. Actions that have a bucket,
-        and whose default trigger contains a time_of_day and frequency value.
+        contains any dynamic notifications/Actions. i.e. Those whose default
+        trigger contains a time_of_day and frequency value.
 
         NOTE: This behavior may also contain some NON-Dynamic actions, as well.
 
@@ -966,18 +945,6 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
             default_trigger__frequency__isnull=False
         )
         return actions.distinct().exists()
-
-    def action_buckets(self):
-        """Return a dictionary of this Behavior's published Actions organized
-        by bucket. The dict is of the form:
-
-            {bucket: [Action, ...]}
-
-        """
-        buckets = defaultdict(list)
-        for action in self.action_set.published():
-            buckets[action.bucket].append(action)
-        return dict(buckets)
 
     objects = BehaviorManager()
 
@@ -1023,18 +990,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     reinforces some behavior while the `SHOWING` action type should contain
     content that models how to do something specific.
 
-    Actions are also placed within a "bucket", and this defines how an autotmatic
-    nofication will get queued up and delivered. The buckets include:
-
-    * PREP (Preparatory) notifications are all delivered first, and help the
-      user learn about things they can do to build a behavior.
-    * CORE notifications are sent when the user has compelted the PREP actions.
-      These help the user to keep working toward their goal
-    * HELPER notifications are delivered if the user asks for more help.
-      These are intended to help get you back on track or give an extra nudge.
-    * CHECKUP notifications are delivered infrequently, and ask the user how
-      they're doing or if they want to re-start the helper/core notifications.
-
     """
 
     # Action Types are just labels. They denote different "classes" of content
@@ -1048,49 +1003,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     NOW = "now"
     LATER = "later"
     ASKING = 'asking'  # Asking the user about their current status
-
-    # We group Action Types into "buckets" that determine the group of
-    # notifications they'll be sent over time.
-    PREP = 'prep'
-    CORE = 'core'
-    HELPER = 'helper'
-    CHECKUP = 'checkup'
-    HELPERS = [STARTER, TINY, RESOURCE, NOW, LATER]
-
-    # A mapping from action_type to bucket
-    BUCKET_MAPPING = {
-        REINFORCING: PREP,
-        ENABLING: CORE,
-        SHOWING: CORE,
-        STARTER: HELPER,
-        TINY: HELPER,
-        RESOURCE: HELPER,
-        NOW: HELPER,
-        LATER: HELPER,
-        ASKING: CHECKUP,
-    }
-
-    # A mapping of current -> next bucket. We have the buckets, but we need
-    # a way to determine their progression. When a user "positively" completes
-    # all actions within a bucket, we move on to the next. See the
-    # progress.UserCompletedAction model.
-    #
-    # PREP -> CORE -> (HELPER only if they ask?) -> CHECKUP
-    BUCKET_ORDER = [PREP, CORE, HELPER, CHECKUP]
-    BUCKET_PROGRESSION = {
-        PREP: CORE,
-        CORE: CHECKUP,
-        HELPER: CHECKUP,
-        CHECKUP: None,
-        None: PREP,
-    }
-
-    BUCKET_CHOICES = (  # The notification buckets.
-        (PREP, 'Preparatory'),
-        (CORE, 'Core'),
-        (HELPER, 'Helper'),
-        (CHECKUP, 'Checkup'),
-    )
 
     ACTION_TYPE_CHOICES = (
         (REINFORCING, 'Reinforcing'),
@@ -1212,14 +1124,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         choices=PRIORITY_CHOICES,
         help_text="Priority determine how notifications get queued for delivery"
     )
-    bucket = models.CharField(
-        max_length=32,
-        blank=True,
-        default=CORE,
-        choices=BUCKET_CHOICES,
-        help_text='The "bucket" from which this object is selected when '
-                  'queueing up notifications.'
-    )
     default_trigger = models.OneToOneField(
         Trigger,
         blank=True,
@@ -1258,65 +1162,12 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
             ("publish_action", "Can Publish Actions"),
         )
 
-    @classmethod
-    def next_bucket(cls, bucket_progress):
-        """This classmethod can be used to determine the next bucket from
-        which actions should be delivered. It can be provided a bucket name
-        or a dict of bucket progress values (see UserBehavior.bucket_progress).
-
-        Usage:
-
-            Action.next_bucket(Action.PREP) --> Action.CORE
-
-        or:
-
-            Action.next_behavior({Action.PREP: True}) --> Action.CORE
-
-        """
-        # If bucket_progress is actually the name of the bucket, then just
-        # return the next bucket in the progression.
-        # If bucket_progress is a dict, we'll get an 'unhashable type' error
-        try:
-            return cls.BUCKET_PROGRESSION[bucket_progress]
-        except TypeError:
-            pass
-
-        # Othewise, we expect bucket progress to be a dict of bucket:completed
-        # values, so we need to look up the order based on which ones have been
-        # completed.
-        result = None  # Which bucket is next
-        result_index = -1  # the order in which the buckets should be completed.
-        for bucket, completed in bucket_progress.items():
-            bucket_index = cls.BUCKET_ORDER.index(bucket)
-            if completed and bucket_index > result_index:
-                result = bucket
-                result_index = bucket_index
-        return cls.BUCKET_PROGRESSION[result]
-
-    @classmethod
-    def _add_action_type_creation_urls_to_action(cls):
-        """Add the get_create_ACTION_TYPE_action_url methods for all of the
-        different action_type options that we currently have defined on the
-        Action model.
-
-        This method is called in the app's config, GoalsConfig.ready.
-
-        """
-        for action_type in cls.BUCKET_MAPPING.keys():
-            func_name = 'get_create_{}_action_url'.format(action_type)
-            func = _action_type_url_function(action_type)
-            setattr(cls, func_name, classmethod(func))
-
     def __str__(self):
         return "{}".format(self.title)
 
     def _set_notification_text(self):
         if not self.notification_text:
             self.notification_text = self.title
-
-    def _set_bucket(self):
-        """Set this object's bucket based on it's action type."""
-        self.bucket = self.BUCKET_MAPPING.get(self.action_type, self.CORE)
 
     def _serialize_default_trigger(self):
         already_serialized = getattr(self, "_serialized_default_trigger", False)
@@ -1354,7 +1205,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         """
         self.title_slug = slugify(self.title)
         kwargs = self._check_updated_or_created_by(**kwargs)
-        # self._set_bucket()  # TODO: remove the bucket stuff from Actions.
         self._set_notification_text()
         self._serialize_default_trigger()
         self._set_external_resource_type()
@@ -1374,10 +1224,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     @property
     def order(self):
         return self.sequence_order
-
-    @property
-    def is_helper(self):
-        return self.action_type in self.HELPERS
 
     @property
     def rendered_description(self):
