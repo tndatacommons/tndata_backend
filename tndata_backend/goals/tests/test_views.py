@@ -2376,13 +2376,13 @@ class TestActionCreateView(TestCaseWithGroups):
 
     def test_admin_get_with_actiontype_params(self):
         self.client.login(username="admin", password="pass")
-        url = '{}?actiontype={}'.format(self.url, Action.TINY)
+        url = '{}?actiontype={}'.format(self.url, Action.SHOWING)
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn("form", resp.context)
         self.assertEqual(
             resp.context['form'].initial['action_type'],
-            Action.TINY
+            Action.SHOWING
         )
 
     def test_admin_get_with_date_get_params(self):
