@@ -139,7 +139,6 @@ class Command(BaseCommand):
     def schedule_customaction_notifications(self):
         # Schedule upcoming notifications for all CustomActions for users with:
         # - users that have a GCMDevice registered
-        # - TODO: custom actions that have some text
         customactions = CustomAction.objects.filter(
             user__gcmdevice__isnull=False
         )

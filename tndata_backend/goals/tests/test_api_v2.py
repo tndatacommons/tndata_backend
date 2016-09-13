@@ -2218,8 +2218,6 @@ class TestUserCategoryAPI(V2APITestCase):
             order=1,
             state='published'
         )
-        # TODO: Figure out how to test icon/image fields and their inclusion
-        # in the api. Maybe useful: http://goo.gl/nh7Vl4
 
         # Assign a Category to the User
         self.uc = UserCategory.objects.create(user=self.user, category=self.category)
@@ -2273,7 +2271,6 @@ class TestUserCategoryAPI(V2APITestCase):
             self.category.title
         )
         self.assertTrue(response.data['results'][0]['editable'])
-        # TODO: it'd be nice if these fields actually had data.
         self.assertEqual(response.data['results'][0]['category']['image_url'], None)
         self.assertEqual(response.data['results'][0]['category']['icon_url'], None)
 

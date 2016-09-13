@@ -1734,7 +1734,6 @@ class TestUserCategoryAPI(APITestCase):
             self.category.title
         )
         self.assertTrue(response.data['results'][0]['custom_triggers_allowed'])
-        # TODO: it'd be nice if these fields actually had data.
         self.assertEqual(response.data['results'][0]['category']['image_url'], None)
         self.assertEqual(response.data['results'][0]['category']['icon_url'], None)
 

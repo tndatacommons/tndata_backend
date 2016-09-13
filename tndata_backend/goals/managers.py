@@ -107,7 +107,6 @@ class DailyProgressManager(models.Manager):
             return 0.0
 
 
-
 class UserCategoryManager(models.Manager):
 
     def published(self, *args, **kwargs):
@@ -318,58 +317,6 @@ class UserActionManager(models.Manager):
             action__default_trigger__isnull=False,
         )
 
-    def select_from_bucket(self, bucket, *args, **kwargs):
-        """Returns a queryset of UserActions that are listed within the given
-        bucket. This method also restricts its results to published Actions.
-
-        - bucket: The bucket from which to pull a UserAction (ss Action.bucket)
-        - exclude_completed: A boolean, if provided as a keyword argument,
-          this will excluded actions that have a corresponding
-          UserCompletedAction whose status is COMPLETED. The default is True.
-
-        Usage:
-
-            UserAction.objects.select_from_bucket('core', user=some_user)
-        or:
-            user.useraction_set.select_from_bucket('core')
-
-        ----
-
-        **Support for `Action.sequence_order`**
-
-        This method respects the Action.sequence_order value, in that it will
-        filter results based on the lowest-value from un-completed Actions. For
-        example, we will only return items whose sequence_order is 0, until all
-        those are completed, at which point this method will only return results
-        whose sequence_order is 1, etc.
-
-        This filter is applied _after_ the bucket filter, so we still only
-        pull from a single bucket at a time.
-
-        """
-        from .models import UserCompletedAction as UCA
-        exclude_completed = kwargs.pop('exclude_completed', True)
-
-        # The accepted or public UserActions that are in the given bucket
-        qs = self.get_queryset().filter(*args, **kwargs)
-        qs = qs.filter(
-            action__state='published',
-            action__behavior__state='published',
-            action__bucket=bucket
-        )
-
-        if exclude_completed:
-            qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
-
-        # Respect Action.sequence_order.
-        # Look at the `sequence_order` values (which should be ordered,
-        # low-to-high), and pick the first value and filter on that.
-        sequences = qs.values_list('action__sequence_order', flat=True)
-        if len(sequences) > 0:
-            qs = qs.filter(action__sequence_order=sequences[0])
-
-        return qs
-
     def next_in_sequence(self, behaviors, **kwargs):
         """Given a behavior, return the queryset of UserActions that are
         related to the behavior, but have not yet been completed, and are
@@ -577,8 +524,8 @@ class BehaviorManager(WorkflowManager):
 
     def contains_dynamic(self):
         """Return a queryset of Behaviors that contain dynamic notifications,
-        i.e. Actions that have a bucket, and whose default trigger contains
-        a time_of_day and frequency value.
+        i.e. Actions whose default trigger contains a time_of_day and
+        frequency value.
 
         NOTE: These behaviors may also contain some NON-Dynamic actions, as well.
 

@@ -1,22 +1,6 @@
 """
-TODO: WIP - A feed of relevant content for the user.
-
 Our mobile app shows a feed of information to the user. This module compiles
 that data, and exposes some utilities to construct that information.
-
-Some possible data in the user's feed:
-
-- Up Next: The Action that is up next for the user.
-- Progress: Provide some sort of information regarding their progress toward
-  selected goals (possibly related to the action that is _up next_).
-- TEMPORARILY DISABLED Suggested Goals: If a user has no (or _few_) selected
-  goals, give them a few suggestions based on their selected categories and/or
-  demographics
-- Selected Goals: All of the user's selected Goals.
-
-
-See this trello card for more details:
-https://trello.com/c/zKedLoZe/170-initial-home-feed
 
 """
 import random

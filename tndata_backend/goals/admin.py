@@ -299,7 +299,7 @@ class ActionInline(admin.TabularInline):
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'sequence_order', 'state', 'in_goals', 'updated_on',
-        'has_prep_actions', 'num_actions', 'selected_by_users',
+        'num_actions', 'selected_by_users',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description', 'id',
@@ -310,11 +310,6 @@ class BehaviorAdmin(ContentWorkflowAdmin):
     filter_horizontal = ('goals', )
     inlines = [ActionInline, ]
     actions = ['convert_to_goal']
-
-    def has_prep_actions(self, obj):
-        return obj.action_buckets_prep > 0
-    has_prep_actions.boolean = True
-    has_prep_actions.admin_order_field = 'action_buckets_prep'
 
     def selected_by_users(self, obj):
         return models.UserBehavior.objects.filter(behavior=obj).count()

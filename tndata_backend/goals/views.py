@@ -699,7 +699,6 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
                         "external_resource": action.external_resource,
                         "external_resource_name": action.external_resource_name,
                         "priority": action.priority,
-                        "bucket": action.bucket,
                         "notes": note,
                     }
                     duplicate_actions.append(Action(**params))
@@ -807,13 +806,6 @@ class BehaviorDetailView(ContentViewerMixin, DetailView):
         context = super().get_context_data(**kwargs)
         behavior = context['object']
 
-        # XXX: Disabling bucket-related stuff
-        # Determine if this Behavior contains dynamic notifications
-        # obj = context['object']
-        # qs = Behavior.objects.contains_dynamic().filter(pk=obj.id)
-        # context['contains_dynamic'] = qs.exists()
-        # context['action_url'] = Action.get_create_reinforcing_action_url()
-
         # include values for the Action's sequence_orders
         result = behavior.action_set.aggregate(Max('sequence_order'))
         result = result.get('sequence_order__max') or 0
@@ -868,7 +860,6 @@ class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
                     "external_resource": action.external_resource,
                     "external_resource_name": action.external_resource_name,
                     "priority": action.priority,
-                    "bucket": action.bucket,
                     "notes": note,
                 }
                 duplicate_actions.append(Action(**params))
@@ -1089,7 +1080,6 @@ class ActionDuplicateView(ActionCreateView):
                 "external_resource": obj.external_resource,
                 "external_resource_name": obj.external_resource_name,
                 "priority": obj.priority,
-                "bucket": obj.bucket,
             })
         except self.model.DoesNotExist:
             pass
@@ -1674,7 +1664,6 @@ def enrollment_reminder(request, pk):
     return render(request, "goals/package_enrollment_reminder.html", ctx)
 
 
-# TODO: NEEDS TESTS.
 def accept_enrollment(request, pk):
     """This view lets new users "claim" their account, set a password, & agree
     to some terms/conditions and a consent form for each Package/Category,
@@ -1810,7 +1799,7 @@ def package_report(request, pk):
     # How long ago each enrollee's userprofile was updated. This corresponds
     # to opening the app (since their timezone is updated every time).
     profiles = UserProfile.objects.filter(user__in=enrollees)
-    accessed = profiles.datetimes('updated_on', 'day')  # TODO: change to updated_on
+    accessed = profiles.datetimes('updated_on', 'day')
     accessed = Counter([timesince(dt) for dt in accessed])
     accessed = sorted(accessed.items())
     accessed_labels = [a[0] for a in accessed]
@@ -2171,7 +2160,7 @@ def debug_progress(request):
 
     """
     # -------------------------------------------------------------------------
-    # TODO: Figure out how to compile data for user "streaks", ie. days in a
+    # Figure out how to compile data for user "streaks", ie. days in a
     # row in which a user has interacted with the app.
     # -------------------------------------------------------------------------
     # UserCompletedAction --> state=completed, updated_on dates
@@ -2505,8 +2494,7 @@ def report_engagement(request):
     - or make it searchable by user.
 
     """
-    since = timezone.now() - timedelta(days=30)  # TODO: ability to change this scale
-
+    since = timezone.now() - timedelta(days=30)
     dps = DailyProgress.objects.filter(created_on__gte=since, actions_total__gt=0)
     aggregates = dps.aggregate(
         Sum('actions_completed'),

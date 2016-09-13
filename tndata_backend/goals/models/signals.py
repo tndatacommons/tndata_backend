@@ -139,7 +139,7 @@ def update_parent_behavior_action_counts(sender, instance, *args, **kwargs):
     """When an action is saved, we need to tell its parent Behavior to update
     it's count of all child actions (for dynamic behaviors)."""
     if instance and instance.id:
-        # TODO: Saving an Action -> Saves it's parent Behavior, but this is
+        # NOTE: Saving an Action -> Saves it's parent Behavior, but this is
         # expensive (because it does lookups on Goals + Categories. Additionally,
         # our Views may call Action.save() several times in a row, so we really
         # only want to do this once.
@@ -419,8 +419,6 @@ def bust_cache(sender, instance, raw, using, **kwargs):
     """This is a little messy, but whenever a user's mapping to content is saved
     we need to bust some cache values. This is mostly for the giant api endpoint
     that exposes a lot of user data (e.g. in the userprofile app).
-
-    # TODO: extend this to bust all cache keys related to User* objects?
 
     """
     # A mapping of model to cache keys

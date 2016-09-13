@@ -571,43 +571,6 @@ class TestAction(TestCase):
         Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
-    def test_next_bucket(self):
-        # When the method is provided a bucket name.
-        self.assertEqual(Action.next_bucket(Action.PREP), Action.CORE)
-        self.assertEqual(Action.next_bucket(Action.CORE), Action.CHECKUP)
-        self.assertEqual(Action.next_bucket(Action.HELPER), Action.CHECKUP)
-        self.assertEqual(Action.next_bucket(Action.CHECKUP), None)
-        self.assertEqual(Action.next_bucket(None), Action.PREP)
-
-        # When the method is provided a dict of bucket progress
-        data = {
-            Action.PREP: False,
-            Action.CORE: False,
-            Action.HELPER: False,
-            Action.CHECKUP: False
-        }
-        self.assertEqual(Action.next_bucket(data), Action.PREP)
-
-        data[Action.PREP] = True
-        self.assertEqual(Action.next_bucket(data), Action.CORE)
-
-        data[Action.CORE] = True
-        self.assertEqual(Action.next_bucket(data), Action.CHECKUP)
-
-        data[Action.HELPER] = True
-        self.assertEqual(Action.next_bucket(data), Action.CHECKUP)
-
-        data[Action.CHECKUP] = True
-        self.assertEqual(Action.next_bucket(data), None)
-
-    def test__set_bucket(self):
-        """Ensure that _set_bucket puts an action in the correct bucket"""
-        action = Action(self.behavior, title='BUCKET-TEST')
-        for action_type, bucket in Action.BUCKET_MAPPING.items():
-            action.action_type = action_type
-            action._set_bucket()
-            self.assertEqual(action.bucket, bucket)
-
     def test__str__(self):
         expected = "Test Action"
         actual = "{}".format(self.action)
@@ -618,26 +581,6 @@ class TestAction(TestCase):
         action = Action.objects.create(behavior=self.behavior, title="New Name")
         action.save()
         self.assertEqual(action.title_slug, "new-name")
-
-    def test_is_helper(self):
-        self.assertFalse(self.action.is_helper)  # default is core.
-
-        self.action.action_type = Action.REINFORCING
-        self.assertFalse(self.action.is_helper)
-
-        self.action.action_type = Action.ENABLING
-        self.assertFalse(self.action.is_helper)
-
-        self.action.action_type = Action.SHOWING
-        self.assertFalse(self.action.is_helper)
-
-        self.action.action_type = Action.ASKING
-        self.assertFalse(self.action.is_helper)
-
-        # Test the Helpers...
-        for at in Action.HELPERS:
-            self.action.action_type = at
-            self.assertTrue(self.action.is_helper)
 
     def test_save_created_by(self):
         """Allow passing an `created_by` param into save."""
@@ -672,14 +615,6 @@ class TestAction(TestCase):
             self.action.get_delete_url(),
             "/goals/actions/{0}-test-action/delete/".format(self.action.id)
         )
-
-    def test_create_action_classmethod_urls(self):
-        """Ensure the auto-magically created classmethod urls work."""
-        for action_type in Action.BUCKET_MAPPING.keys():
-            meth = 'get_create_{}_action_url'.format(action_type)
-            url = getattr(Action, meth)()
-            expected = '/goals/new/action/?actiontype={}'.format(action_type)
-            self.assertEqual(url, expected)
 
     def test_default_state(self):
         """Ensure that the default state is 'draft'."""
@@ -1668,8 +1603,6 @@ class TestCustomAction(TestCase):
 
         # clean up
         msg.delete()
-
-    # TODO: test trigger-related stuff
 
 
 class TestUserCompletedCustomAction(TestCase):

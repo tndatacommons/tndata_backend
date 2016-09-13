@@ -125,7 +125,7 @@ class TestBadgifyRecipes(TestCase):
     our Badgify Recipe classes.
 
     NOTE: most of these are just smoke tests, they don't actually construct
-    the criteria needed to generate accurate results (see the TODOs)
+    the criteria needed to generate accurate results (see the below)
 
     """
 

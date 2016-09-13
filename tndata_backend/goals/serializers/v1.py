@@ -257,7 +257,6 @@ class BehaviorSerializer(ObjectTypeModelSerializer):
 class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    # TODO: We want to eventuall remove this Behavior field.
     behavior = SimpleBehaviorField(read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
@@ -367,8 +366,8 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserBehavior
         fields = (
-            'id', 'user', 'behavior', 'behavior_progress', 'custom_trigger',
-            'user_categories', 'user_goals', 'user_actions_count', 'user_actions',
+            'id', 'user', 'behavior', 'custom_trigger', 'user_categories',
+            'user_goals', 'user_actions_count', 'user_actions',
             'created_on', 'custom_triggers_allowed', 'editable', 'object_type',
         )
         read_only_fields = ("id", "created_on", )

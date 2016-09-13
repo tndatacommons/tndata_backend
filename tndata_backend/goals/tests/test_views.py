@@ -2540,7 +2540,6 @@ class TestActionDuplicateView(TestCaseWithGroups):
 @override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
 class TestActionPublishView(TestCaseWithGroups):
-    # TODO: need to include a test case for actions with duplicate titles/slugs
 
     @classmethod
     def setUpClass(cls):

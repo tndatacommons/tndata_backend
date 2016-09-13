@@ -11,8 +11,6 @@
       {% if p == page_obj.number %}
         <li class="current"><a href="#">{{ p }}</a></li>
       {% else %}
-        {# TODO: how to do ellipses to omit pages #}
-        {#<li class="unavailable"><a href="">&hellip;</a></li>#}
         <li><a href="?page={{ p }}">{{ p }}</a></li>
       {% endif %}
     {% endfor %}
