@@ -1,6 +1,39 @@
-{% extends "base_error.html" %}
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Not Found</title>
+    <style type="text/css">
+      body { width: 50%; margin: 1em auto; padding:1em;}
+      img.cat {margin:0px;margin-right: 2em; float:left;}
+      h1 { font-family:Georgia;margin-top:2em;}
+      p { font-family: Arial, sans-serif; font-size: large;}
+      hr {
+        padding: 0;
+        border: none;
+        border-top: medium double #333;
+        color: #333;
+        text-align: center;
+        clear:both;
+      }
+      hr:after {
+        content: "§";
+        display: inline-block;
+        position: relative;
+        top: -0.7em;
+        font-size: 1.5em;
+        padding: 0 0.25em;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="https://tndata-production.s3.amazonaws.com/static/img/disapproval-cat.png" class="cat"/>
+    <h1>Page not found</h1>
+    <p>The content you requested either doesn't exist or isn't currently
+    available.</p>
+    <hr/>
+  </body>
+</html>
 
-{% block heading_content %}Sorry. Not Found{% endblock %}
-{% block message_content %}
-  <p>There's no page matching <tt>{{ request_path }}</tt>.</p>
-{% endblock %}

@@ -1,25 +1,39 @@
-{% extends "base_error.html" %}
-
-{% block heading_content %}
-  Insufficient Permissions
-{% endblock %}
-
-{% block message_content %}
-
-  {% if message %}
-    <p>{{ message }}</p>
-  {% else %}
-    <p>Unfortunately, you don't have permission to view this page. If this seems
-    wrong, please get in touch with us:
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Insufficient Permissions</title>
+    <style type="text/css">
+      body { width: 50%; margin: 1em auto; padding:1em;}
+      img.cat {margin:0px;margin-right: 2em; float:left;}
+      h1 { font-family:Georgia;margin-top:2em;}
+      p { font-family: Arial, sans-serif; font-size: large;}
+      hr {
+        padding: 0;
+        border: none;
+        border-top: medium double #333;
+        color: #333;
+        text-align: center;
+        clear:both;
+      }
+      hr:after {
+        content: "§";
+        display: inline-block;
+        position: relative;
+        top: -0.7em;
+        font-size: 1.5em;
+        padding: 0 0.25em;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <img src="https://tndata-production.s3.amazonaws.com/static/img/disapproval-cat.png" class="cat"/>
+    <h1>Insufficient Permissions</h1>
+    <p>Unfortunately, you don't have permission to view this page. If you
+    think you should have access to this content, please get in touch with us:
     <a href="mailto:admin@tndata.org">admin@tndata.org</a>.</p>
-  {% endif %}
-
-  <p>
-  {% if user.is_authenticated %}
-    You can try <a href="{% url 'logout' %}">logging out</a> and logging back
-    in with a different account.
-  {% else %}
-    You may try <a href="{% url 'login' %}">logging in</a>.
-  {% endif %}
-  </p>
-{% endblock %}
+    <hr/>
+  </body>
+</html>
