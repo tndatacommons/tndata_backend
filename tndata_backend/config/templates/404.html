@@ -8,7 +8,7 @@
       body { width: 50%; margin: 1em auto; padding:1em;}
       img.cat {margin:0px;margin-right: 2em; float:left;}
       h1 { font-family:Georgia;margin-top:2em;}
-      p { font-family: Arial, sans-serif; font-size: large;}
+      p, blockquote { font-family: Arial, sans-serif; font-size: large;}
       hr {
         padding: 0;
         border: none;
@@ -26,6 +26,25 @@
         padding: 0 0.25em;
         background: white;
       }
+      #reward {display:none;}
+      blockquote {
+        width: 60%;
+        margin: 1em auto;
+        padding: 2em;
+        background-color: #eee;
+        quotes: "\201C""\201D""\2018""\2019";
+        position:relative;
+      }
+      blockquote:before {
+        color: #ccc;
+        content: open-quote;
+        font-size: 4em;
+        line-height: 0.1em;
+        margin-right: 0.25em;
+        vertical-align: -0.4em;
+      }
+      blockquote small { float: right; margin-top:0.5em;}
+      blockquote small:before { content: "\2014";}
     </style>
   </head>
   <body>
@@ -34,6 +53,34 @@
     <p>The content you requested either doesn't exist or isn't currently
     available.</p>
     <hr/>
+    <blockquote id="reward"></blockquote>
+    <script>
+      var url = "/api/rewards/?version=2&random=1&format=json";
+      fetch(url, {
+        method: 'get'
+      }).then(function(response) {
+
+        if(response.ok) {
+          response.json().then(function(data) {
+
+            var msg = data.results[0].message;
+            var author = data.results[0].author;
+            if(author) {
+              msg += "<small>" + author + "</small>";
+            }
+
+            var elt = document.getElementById("reward");
+            elt.innerHTML = msg;
+            elt.style.display = "block";
+
+          });
+        }
+
+      }).catch(function(err) {
+        // Error :(
+        console.log("fetch not supported");
+      });
+    </script>
   </body>
 </html>
 
