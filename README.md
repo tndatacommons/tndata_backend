@@ -26,19 +26,18 @@ Apps
 This project contains the following private apps, contained in the `tndata_backend`
 directory.
 
-- `diary`: (abandoned) This was originally started as a daily diary app for
-  users to record their thought, feelings, progress, whatever.
+- `badgify_api`: An API ship on top of the `django-badgify` app. This app
+  expopses badgify details using django-rest-framework.
+- `config`: The *Project configuration*. Contains the project settings, static
+  files, and project tempates as well as the Root URLConf and wsgi config.
+- `cronlog`: A simple log records the status of our management commands
+  scheduled with cron.
 - `goals`: This app contains the bulk of this project's features including
   a library of goal content and the api to serve it to the mobile app.
-- `notifications`: An app that interacts with GCM. It contains tools to create
-  messages that should be delivered and the features to send them to the GCM
-  service.
+- `notifications`: The laster that interacts with GCM and APNS. It contains
+  tools to create and queue push notifications that should be delivered.
 - `rewards`: Models and api for misc reward content, such as quotes, jokes, etc.
-- `rules`: (abandoned) originally an attempt to integrate venmo's business-rules
-  project to create arbitrary rules-based logic.
-- `survey`: Models, views, and api for surveys.
-- `tndata_backend`: This is our **project config** (which is unfortunately named)
-  it contains project settings, the Root URLConf, and our wsgi file.
+- `survey`: (*unused*) Models, views, and api for surveys.
 - `userprofile`: This app contains user profile-related models and apis. This
   project uses django's built-in User model, and this app is an extension for
   user-related data.
