@@ -3,14 +3,18 @@ Our mobile app shows a feed of information to the user. This module compiles
 that data, and exposes some utilities to construct that information.
 
 """
+import pickle
 import random
 
 from collections import Counter
 from datetime import timedelta
+
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db.models import F, Q
 from django.utils import timezone
 
+import django_rq
 from rewards.models import FunContent
 from utils.dateutils import dates_range, format_datetime, weekday
 from utils.user_utils import local_day_range
@@ -23,10 +27,48 @@ from .models import (
     UserGoal,
 )
 
-
-# Some Cache keys.
+# Cache Keys.
 TODAYS_ACTIONS = "todays_actions_{userid}"
 TODAYS_ACTIONS_TIMEOUT = 30
+
+FEED_DATA_KEY = "feed_data_{userid}"
+FEED_DATA_TIMEOUT = 24 * 60 * 60  # 24 hours
+
+
+# -----------------------------------------------------------------------------
+# Feed Data Caching Technique.
+# -----------------------------------------------------------------------------
+# 1. We have a function that will pre-load the cache for all (relevant) users
+#    (run by a cron job/ see the `cache_user_feed` managment command).
+# 2. That function then stores the list of User IDs that it's cached data for.
+# 3. We define a signal + handler that will invalidate & re-cache the feed data
+#   TODO: ^^^ write this...
+#   TODO: fire signal handler when a user (compeltes an action or adds a goal)
+# -----------------------------------------------------------------------------
+
+def cache_feed_data():
+    """Call `feed_data` for some set of users. Doing so should populate the
+    cache if it's not already cached.
+
+    """
+    User = get_user_model()
+
+    # When we pre-cache this data, we'll store a SET of user IDs in Redis, so
+    # we know whose data has been cached.
+    CACHED_USERS = 'cached_users_feed'
+    conn = django_rq.get_connection('default')
+
+    cached_users = {int(x) for x in conn.smembers(CACHED_USERS)}
+    users = User.objects.exclude(id__in=cached_users)
+
+    cached_users = set()
+    for user in users:
+        feed_data(user)
+        cached_users.add(user.id)
+
+    # Reset the list of cached users.
+    conn.sadd(CACHED_USERS, *cached_users)
+    conn.expire(CACHED_USERS, FEED_DATA_TIMEOUT)
 
 
 def feed_data(user):
@@ -36,6 +78,11 @@ def feed_data(user):
     feed into a single dict of content.
 
     """
+    cache_key = FEED_DATA_KEY.format(userid=user.id)
+    results = cache.get(cache_key)
+    if results is not None:
+        return pickle.loads(results)
+
     results = {
         'progress': None,
         'upcoming': [],
@@ -106,6 +153,7 @@ def feed_data(user):
     # Streaks data
     results['streaks'] = progress_streaks(user)
 
+    cache.set(cache_key, pickle.dumps(results), timeout=FEED_DATA_TIMEOUT)
     return results
 
 
