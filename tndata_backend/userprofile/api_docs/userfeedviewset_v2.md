@@ -9,6 +9,8 @@ The User Feed of information: home-feed data for the user, include:
     - `completed`: Total number of actions completed today
     - `progress`: A progress score (currently unused)
     - `engagement_rank`: How the user ranks with their peers using the app.
+    - `weekly_completions`: The number of tips the user has completed in the
+      last 7 days.
 
 * `suggestions` -- (currently disabled)
 * `upcoming` -- an array of upcoming UserAction or CustomAction objects. This

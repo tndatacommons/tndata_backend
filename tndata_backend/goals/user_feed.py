@@ -162,8 +162,7 @@ def todays_customactions(user):
     # Excluding those that have already been completed
     completed = user.usercompletedcustomaction_set.filter(
         updated_on__range=today,
-        state=UserCompletedAction.COMPLETED
-    )
+        state=UserCompletedAction.COMPLETED)
     completed = completed.values_list('customaction', flat=True)
     upcoming_cas = user.customaction_set.filter(
         next_trigger_date__range=(now, today[1])
@@ -322,6 +321,8 @@ def todays_progress(user):
     * todays_customactions_progress
     * engagement_rank is a float that tells us how engaged the user has been
       over the past 15 days compared to other Compass users.
+    * weekly_completions is the number of Actions / CustomActions that the user
+      has completed in the past 7 days.
 
     """
     results = todays_actions_progress(user)
@@ -333,6 +334,15 @@ def todays_progress(user):
 
     # Include Engagment score
     results['engagement_rank'] = DailyProgress.objects.engagement_rank(user)
+
+    # Completed tips in the past week.
+    criteria = {
+        'created_on__gte': timezone.now() - timedelta(days=7),
+        'state': UserCompletedAction.COMPLETED,
+    }
+    ucas = user.usercompletedaction_set.filter(**criteria).count()
+    uccas = user.usercompletedcustomaction_set.filter(**criteria).count()
+    results['weekly_completions'] = ucas + uccas
 
     return dict(results)
 
