@@ -26,6 +26,16 @@ The User Feed of information: home-feed data for the user, include:
     - `type`: will be `useraction` or `customaction`
     - `object_type`: will always be "`upcoming_item`"
 
+* `funcontent` -- An object representing _reward_ content. See also
+   the [/api/rewards/](/api/rewards/) endpoint. Will contain:
+
+    - `id`: ID for the reward content.
+    - `message`: Message for the reward content.
+    - `author`: (possibly empty). If the message has a author, they'll be
+      listed here.
+    - `message_type`: One of the following: `quote`|`fortune`|`fact`|`joke`
+    - `object_type`: A string that will always be "funcontent"
+
 * `object_type` -- a string. Will always be "feed"
 
 ----

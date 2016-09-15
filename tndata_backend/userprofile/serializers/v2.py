@@ -119,6 +119,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     suggestions = serializers.SerializerMethodField(read_only=True)
     upcoming = serializers.SerializerMethodField(read_only=True)
     streaks = serializers.SerializerMethodField(read_only=True)
+    funcontent = serializers.SerializerMethodField(read_only=True)
 
     # This object_type helps us differentiate from different but similar enpoints
     object_type = serializers.SerializerMethodField(read_only=True)
@@ -127,7 +128,7 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'username', 'email', 'token', 'object_type', 'upcoming',
-            'streaks', 'progress', 'suggestions',
+            'streaks', 'progress', 'suggestions', 'funcontent',
             'object_type',
         )
         read_only_fields = ("id", "username", "email")
@@ -153,6 +154,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
 
     def get_streaks(self, obj):
         return self._get_feed(obj)['streaks']
+
+    def get_funcontent(self, obj):
+        return self._get_feed(obj)['funcontent']
 
     def get_suggestions(self, obj):
         return []
