@@ -95,13 +95,14 @@ def feed_data(user):
 
     # Random FunContent objects.
     reward = FunContent.objects.random()
-    results['funcontent'] = {
-        'id': reward.id,
-        'message': reward.message,
-        'message_type': reward.message_type,
-        'author': reward.author,
-        'object_type': "funcontent"
-    }
+    if reward:
+        results['funcontent'] = {
+            'id': reward.id,
+            'message': reward.message,
+            'message_type': reward.message_type,
+            'author': reward.author,
+            'object_type': "funcontent"
+        }
 
     # Progress for today
     results['progress'] = todays_progress(user)
