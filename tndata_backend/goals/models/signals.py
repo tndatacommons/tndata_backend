@@ -10,6 +10,8 @@ from django.db.models import ObjectDoesNotExist
 from django.db.models.signals import (
     m2m_changed, pre_delete, pre_save, post_delete, post_save
 )
+
+import django.dispatch
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -28,6 +30,25 @@ from .users import userbehavior_completed
 from .triggers import Trigger
 
 from ..utils import clean_title, clean_notification, strip
+
+
+# Custom signal that we can fire when we need to invalidate the cached User feed.
+invalidate_feed = django.dispatch.Signal(providing_args=['user'])
+
+
+@receiver(invalidate_feed)
+def bust_feed_cache(sender, user, **kwargs):
+    """Kind of a hack, but in certain situations, we want to kill the feed's
+    cache and then re-create it. We do this by deleting it then re-setting it."""
+    from goals.user_feed import feed_data, FEED_DATA_KEY
+
+    # Delete the Cache
+    cache_key = FEED_DATA_KEY.format(userid=user.id)
+    cache.delete(cache_key)
+
+    # And Re-create it.
+    # TODO: Do this asychronously so the caller doesn't have to wait?
+    feed_data(user)
 
 
 @job

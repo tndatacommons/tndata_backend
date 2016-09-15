@@ -21,6 +21,7 @@ from utils.serializers import resultset
 from utils.user_utils import local_day_range
 
 from . import models
+from . models.signals import invalidate_feed
 from . serializers import v1, v2
 from . mixins import DeleteMultipleMixin
 from . permissions import is_content_author
@@ -639,6 +640,9 @@ class UserGoalViewSet(VersionedViewSetMixin,
         else:
             # We're creating a single items.
             request.data['user'] = request.user.id
+
+        # Adding a Goal should invalidate the Feed's cache
+        invalidate_feed.send(sender=self.__class__, user=request.user)
         return super(UserGoalViewSet, self).create(request, *args, **kwargs)
 
 
@@ -1179,6 +1183,9 @@ class UserActionViewSet(VersionedViewSetMixin,
             else:
                 data = {'created': uca.id}
                 status_code = status.HTTP_201_CREATED
+
+            # Completing an action should invalidate the Feed's cache
+            invalidate_feed.send(sender=self.__class__, user=request.user)
             return Response(data=data, status=status_code)
 
         except Exception as e:

@@ -42,9 +42,10 @@ FEED_DATA_TIMEOUT = 24 * 60 * 60  # 24 hours
 #    (run by a cron job/ see the `cache_user_feed` managment command).
 # 2. That function then stores the list of User IDs that it's cached data for.
 # 3. We define a signal + handler that will invalidate & re-cache the feed data
-#   TODO: ^^^ write this...
-#   TODO: fire signal handler when a user (compeltes an action or adds a goal)
+#   - When completing an action via the API.
+#   - When creating a UserGoal via the API
 # -----------------------------------------------------------------------------
+
 
 def cache_feed_data():
     """Call `feed_data` for some set of users. Doing so should populate the
