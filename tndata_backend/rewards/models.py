@@ -1,6 +1,8 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from . managers import FunContentManager
+
 
 class FunContent(models.Model):
 
@@ -56,3 +58,5 @@ class FunContent(models.Model):
         self.author = self.author.strip() if self.author else ''
         self._clean_keywords()
         super().save(*args, **kwargs)
+
+    objects = FunContentManager()
