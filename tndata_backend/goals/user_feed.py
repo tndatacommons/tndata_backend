@@ -11,6 +11,7 @@ from django.core.cache import cache
 from django.db.models import F, Q
 from django.utils import timezone
 
+from rewards.models import FunContent
 from utils.dateutils import dates_range, format_datetime, weekday
 from utils.user_utils import local_day_range
 
@@ -40,7 +41,18 @@ def feed_data(user):
         'upcoming': [],
         'streaks': [],
         'suggestions': [],  # Note: Goal Suggestions. Currently disabled.
+        'funcontent': None,
         'object_type': 'feed',
+    }
+
+    # Random FunContent objects.
+    reward = FunContent.objects.random()
+    results['funcontent'] = {
+        'id': reward.id,
+        'message': reward.message,
+        'message_type': reward.message_type,
+        'author': reward.author,
+        'object_type': "funcontent"
     }
 
     # Progress for today
