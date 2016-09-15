@@ -29,7 +29,6 @@ from .v1 import (  # NOQA
     AuthTokenSerializer,
 )
 from utils import user_utils
-from utils.dateutils import format_datetime
 from utils.serializers import ObjectTypeModelSerializer
 from utils.serializer_fields import NullableDateField
 
@@ -142,79 +141,9 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
         if not obj.is_authenticated():
             return {}
 
-        if hasattr(self, '_feed_results'):
-            return self._feed_results
-
-        feed = {
-            'progress': None,
-            'suggestions': [],
-            'object_type': 'feed',
-            'upcoming': [],
-            'streaks': [],
-        }
-
-        # Progress for today
-        feed['progress'] = user_feed.todays_progress(obj)
-
-        # Goal Suggestions -- XXX: Disabled for now.
-        # ------------------------------------------------------
-        # suggestions = user_feed.suggested_goals(obj)
-        # srz = GoalSerializer(suggestions, many=True, user=obj)
-        # feed['suggestions'] = srz.data
-        # ------------------------------------------------------
-
-        # Upcoming info (UserActions/CustomActions)
-        # First, the User Actions
-        upcoming_uas = user_feed.todays_actions(obj)
-        upcoming_uas = upcoming_uas.values_list('id', flat=True)
-        upcoming_uas = list(upcoming_uas)
-
-        related = ('action', 'primary_goal', 'primary_category')
-        useractions = obj.useraction_set.select_related(*related)
-        for ua in useractions.filter(id__in=upcoming_uas):
-            primary_category = ua.get_primary_category()
-            primary_goal = ua.get_primary_goal()
-            feed['upcoming'].append({
-                'action_id': ua.id,
-                'action': ua.action.title,
-                'goal_id': primary_goal.id,
-                'goal': primary_goal.title,
-                'category_color': primary_category.color,
-                'category_id': primary_category.id,
-                'trigger': "{}".format(format_datetime(ua.next_reminder)),
-                'type': 'useraction',
-                'object_type': 'upcoming_item',
-            })
-
-        # Custom Actions
-        upcoming_cas = user_feed.todays_customactions(obj)
-        upcoming_cas = upcoming_cas.values_list('id', flat=True)
-        upcoming_cas = list(upcoming_cas)
-
-        related = ('customgoal', 'custom_trigger')
-        customactions = obj.customaction_set.select_related(*related)
-        for ca in customactions.filter(id__in=upcoming_cas):
-            feed['upcoming'].append({
-                'action_id': ca.id,
-                'action': ca.title,
-                'goal_id': ca.customgoal.id,
-                'goal': ca.customgoal.title,
-                'category_color': '#176CC4',
-                'category_id': '-1',
-                'trigger': "{}".format(format_datetime(ca.next_reminder)),
-                'type': 'customaction',
-                'object_type': 'upcoming_item',
-            })
-
-        # Sort upcoming data (UserActions/CustomActions) by trigger
-        results = feed['upcoming']
-        results = sorted(results, key=lambda d: d['trigger'])
-        feed['upcoming'] = results
-
-        # Streaks data
-        feed['streaks'] = user_feed.progress_streaks(obj)
-        self._feed_results = feed
-        return feed
+        if not hasattr(self, '_feed_results'):
+            self._feed_results = user_feed.feed_data(obj)
+        return self._feed_results
 
     def get_progress(self, obj):
         return self._get_feed(obj)['progress']
@@ -222,11 +151,11 @@ class UserFeedSerializer(ObjectTypeModelSerializer):
     def get_upcoming(self, obj):
         return self._get_feed(obj)['upcoming']
 
-    def get_suggestions(self, obj):
-        return []   # XXX Disabled: self._get_feed(obj)['suggestions']
-
     def get_streaks(self, obj):
         return self._get_feed(obj)['streaks']
+
+    def get_suggestions(self, obj):
+        return []
 
 
 class UserSerializer(ObjectTypeModelSerializer):

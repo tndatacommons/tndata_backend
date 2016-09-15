@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.db.models import F, Q
 from django.utils import timezone
 
-from utils.dateutils import dates_range, weekday
+from utils.dateutils import dates_range, format_datetime, weekday
 from utils.user_utils import local_day_range
 
 from .models import (
@@ -26,6 +26,75 @@ from .models import (
 # Some Cache keys.
 TODAYS_ACTIONS = "todays_actions_{userid}"
 TODAYS_ACTIONS_TIMEOUT = 30
+
+
+def feed_data(user):
+    """Return a dict of all Feed Data for a given users.
+
+    This function aggregates all of the data that's displayed in a users's
+    feed into a single dict of content.
+
+    """
+    results = {
+        'progress': None,
+        'upcoming': [],
+        'streaks': [],
+        'suggestions': [],  # Note: Goal Suggestions. Currently disabled.
+        'object_type': 'feed',
+    }
+
+    # Progress for today
+    results['progress'] = todays_progress(user)
+
+    # Upcoming info (UserActions/CustomActions)
+    upcoming_uas = todays_actions(user)
+    upcoming_uas = upcoming_uas.values_list('id', flat=True)
+    upcoming_uas = list(upcoming_uas)
+
+    related = ('action', 'primary_goal', 'primary_category')
+    useractions = user.useraction_set.select_related(*related)
+    for ua in useractions.filter(id__in=upcoming_uas):
+        primary_category = ua.get_primary_category()
+        primary_goal = ua.get_primary_goal()
+        results['upcoming'].append({
+            'action_id': ua.id,
+            'action': ua.action.title,
+            'goal_id': primary_goal.id,
+            'goal': primary_goal.title,
+            'category_color': primary_category.color,
+            'category_id': primary_category.id,
+            'trigger': "{}".format(format_datetime(ua.next_reminder)),
+            'type': 'useraction',
+            'object_type': 'upcoming_item',
+        })
+
+    # Custom Actions
+    upcoming_cas = todays_customactions(user)
+    upcoming_cas = upcoming_cas.values_list('id', flat=True)
+    upcoming_cas = list(upcoming_cas)
+
+    related = ('customgoal', 'custom_trigger')
+    customactions = user.customaction_set.select_related(*related)
+    for ca in customactions.filter(id__in=upcoming_cas):
+        results['upcoming'].append({
+            'action_id': ca.id,
+            'action': ca.title,
+            'goal_id': ca.customgoal.id,
+            'goal': ca.customgoal.title,
+            'category_color': '#176CC4',
+            'category_id': '-1',
+            'trigger': "{}".format(format_datetime(ca.next_reminder)),
+            'type': 'customaction',
+            'object_type': 'upcoming_item',
+        })
+
+    # Sort upcoming data (UserActions/CustomActions) by trigger
+    results['upcoming'] = sorted(results['upcoming'], key=lambda d: d['trigger'])
+
+    # Streaks data
+    results['streaks'] = progress_streaks(user)
+
+    return results
 
 
 def _fill_streaks(input_values, days):
