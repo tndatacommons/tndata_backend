@@ -15,6 +15,8 @@ from django.db.models import F, Q
 from django.utils import timezone
 
 import django_rq
+import waffle
+
 from rewards.models import FunContent
 from utils.dateutils import dates_range, format_datetime, weekday
 from utils.user_utils import local_day_range
@@ -52,6 +54,9 @@ def cache_feed_data():
     cache if it's not already cached.
 
     """
+    if not waffle.switch_is_active("cache-user-feed"):
+        return None
+
     User = get_user_model()
 
     # When we pre-cache this data, we'll store a SET of user IDs in Redis, so
@@ -79,9 +84,10 @@ def feed_data(user):
     feed into a single dict of content.
 
     """
+    cache_enabled = waffle.switch_is_active("cache-user-feed")
     cache_key = FEED_DATA_KEY.format(userid=user.id)
     results = cache.get(cache_key)
-    if results is not None:
+    if cache_enabled and results is not None:
         return pickle.loads(results)
 
     results = {
@@ -155,7 +161,8 @@ def feed_data(user):
     # Streaks data
     results['streaks'] = progress_streaks(user)
 
-    cache.set(cache_key, pickle.dumps(results), timeout=FEED_DATA_TIMEOUT)
+    if cache_enabled:
+        cache.set(cache_key, pickle.dumps(results), timeout=FEED_DATA_TIMEOUT)
     return results
 
 
