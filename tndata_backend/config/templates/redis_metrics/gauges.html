@@ -1,8 +1,12 @@
 {% extends "redis_metrics/base.html" %}
 {% load redis_metric_tags %}
 
+{% block titletext %}Gauges{% endblock %}
+{% block breadcrumb %}
+    <li class="active">Gauges</li>
+{% endblock %}
+
 {% block content %}
-    <h1>Gauges</h1>
     <div class="row">
     {% for slug in gauges %}
         <div class="col-lg-4 col-md-4 col-sm-2">
