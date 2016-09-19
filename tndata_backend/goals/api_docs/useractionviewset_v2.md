@@ -117,11 +117,12 @@ UserActions can be filtered using a query string parameter. Currently,
 filtering is availble for Goals, Behaviors, Actions, and for Actions
 whose notification is scheduled during the current day.
 
-**To filter on actions scheduled for _today_**, or to limit the result size,
-use the following:
+**To filter on actions scheduled for _today_**, limit the result size, or
+exclude actions which a user has already completed, use on of the following:
 
-* `/api/users/actions/?today=1`  -- only show items for today.
-* `/api/users/actions/?page_size=3`  -- retreive only 3 items.
+* `/api/users/actions/?today=1` -- only show items for today.
+* `/api/users/actions/?page_size=3` -- retreive only 3 items.
+* `/api/users/actions/?exclude_completed=1` -- Excluded completed items
 
 For the following examples, you may filter using a numeric ID or a titl slug.
 UserActions may be filtered by their parent Category, Goal, Behavior or by

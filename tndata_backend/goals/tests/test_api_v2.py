@@ -1592,6 +1592,8 @@ class TestUserActionAPI(V2APITestCase):
         self.ua = UserAction.objects.create(
             user=self.user,
             action=self.action,
+            next_trigger_date=timezone.now() + timedelta(hours=1)
+
         )
 
     def tearDown(self):
@@ -1633,73 +1635,62 @@ class TestUserActionAPI(V2APITestCase):
         self.assertTrue(ua['editable'])
 
     def test_get_useraction_list_with_filters(self):
-        # Test with goal id
         url = self.get_url('useraction-list')
-        url = "{0}&goal={1}".format(url, self.goal.id)
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
-        response = self.client.get(url)
+
+        # Test with goal id
+        filtered_url = "{0}&goal={1}".format(url, self.goal.id)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
         # Test with category title_slug filter
-        url = self.get_url('useraction-list')
-        url = "{0}&category={1}".format(url, self.category.title_slug)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.get(url)
+        filtered_url = "{0}&category={1}".format(url, self.category.title_slug)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
         # Test with category id filter
-        url = self.get_url('useraction-list')
-        url = "{0}&category={1}".format(url, self.category.id)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.get(url)
+        filtered_url = "{0}&category={1}".format(url, self.category.id)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
         # Test with WRONG category id filter
-        url = self.get_url('useraction-list')
-        url = "{0}&category=99999".format(url)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.get(url)
+        filtered_url = "{0}&category=99999".format(url)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
 
         # Test with goal title_slug
-        url = self.get_url('useraction-list')
-        url = "{0}&goal={1}".format(url, self.goal.title_slug)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.get(url)
+        filtered_url = "{0}&goal={1}".format(url, self.goal.title_slug)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
         # Test with Behavior id
-        url = self.get_url('useraction-list')
-        url = "{0}&behavior={1}".format(url, self.behavior.id)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.get(url)
+        filtered_url = "{0}&behavior={1}".format(url, self.behavior.id)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
         # Test with Behavior title_slug
-        url = self.get_url('useraction-list')
-        url = "{0}&behavior={1}".format(url, self.behavior.title_slug)
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.get(url)
+        filtered_url = "{0}&behavior={1}".format(url, self.behavior.title_slug)
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test wit today filter
+        filtered_url = "{0}&today=1".format(url)
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Test with completed actions excluded
+        filtered_url = "{0}&exclude_completed=1".format(url)
+        response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
@@ -1712,7 +1703,7 @@ class TestUserActionAPI(V2APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 0)
+        self.assertEqual(response.data['count'], 1)
 
     def test_post_useraction_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post"""
@@ -2739,7 +2730,8 @@ class TestCustomActionAPI(V2APITestCase):
             user=self.user,
             customgoal=self.customgoal,
             title="Existing Custom Action",
-            notification_text='Do it'
+            notification_text='Do it',
+            next_trigger_date=timezone.now() + timedelta(hours=1)
         )
 
         # POST payload data
@@ -2802,6 +2794,24 @@ class TestCustomActionAPI(V2APITestCase):
         response = self.client.get(filtered_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 0)
+
+        # Filter by page_size
+        filtered_url = url + "&page_size=1"
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Filter by today
+        filtered_url = url + "&today=1"
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+        # Filter, excluding completed
+        filtered_url = url + "&exclude_completed=1"
+        response = self.client.get(filtered_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
 
     def test_post_customaction_list_unathenticated(self):
         """Unauthenticated requests should not be allowed to post new

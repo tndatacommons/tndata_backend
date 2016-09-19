@@ -27,11 +27,12 @@ GET requests return an array of results containing the following:
 
 ## Filtering
 
-**To filter on custom actions scheduled for _today_**, or to limit the result
-size, use the following:
+**To filter on custom actions scheduled for _today_**, limit the result size,
+or exclude actions which a user has already completed, use on of the following:
 
 * `/api/users/actions/?today=1`  -- only show items for today.
 * `/api/users/actions/?page_size=3`  -- retreive only 3 items.
+* `/api/users/actions/?exclude_completed=1` -- Excluded completed items
 
 You may filter the result of listing custom actions by their parent goals. To
 do so, include a querystring parameter of `customgoal` or `goal` that includes

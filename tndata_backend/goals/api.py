@@ -883,9 +883,12 @@ class UserActionViewSet(VersionedViewSetMixin,
         return super().get_serializer_class()
 
     def get_queryset(self):
+        user = self.request.user
+        today = local_day_range(self.request.user)
+
         # First, only expose content in Categories/Packages that are either
         # public or in which we've accepted the terms/consent form.
-        self.queryset = super().get_queryset().filter(user=self.request.user)
+        self.queryset = super().get_queryset().filter(user=user)
         self.queryset = self.queryset.select_related(
             'user', 'custom_trigger', 'action', 'action__default_trigger',
             'primary_goal', 'action__behavior',
@@ -893,6 +896,7 @@ class UserActionViewSet(VersionedViewSetMixin,
 
         # Now, filter on category, goal, behavior, action if necessary
         filter_on_today = bool(self.request.GET.get('today', False))
+        exclude_completed = bool(self.request.GET.get('exclude_completed', False))
         category = self.request.GET.get('category', None)
         goal = self.request.GET.get('goal', None)
         behavior = self.request.GET.get('behavior', None)
@@ -923,11 +927,19 @@ class UserActionViewSet(VersionedViewSetMixin,
             self.queryset = self.queryset.filter(action__title_slug=action)
 
         if filter_on_today:
-            today = local_day_range(self.request.user)
             self.queryset = self.queryset.filter(
                 Q(prev_trigger_date__range=today) |
                 Q(next_trigger_date__range=today)
             )
+
+        if exclude_completed:
+            cids = user.usercompletedaction_set.filter(
+                updated_on__range=today,
+                state=models.UserCompletedAction.COMPLETED
+            )
+            cids = set(cids.values_list("useraction", flat=True))
+            self.queryset = self.queryset.exclude(id__in=cids)
+
         return self.queryset
 
     def get_serializer(self, *args, **kwargs):
@@ -1397,12 +1409,15 @@ class CustomActionViewSet(VersionedViewSetMixin,
     pagination_class = PageSizePagination
 
     def get_queryset(self):
-        self.queryset = models.CustomAction.objects.filter(user=self.request.user)
+        user = self.request.user
+        today = local_day_range(user)
+        self.queryset = models.CustomAction.objects.filter(user=user)
 
         # Filter on CustomGoals, Goals, or items for *today*
         cg = self.request.GET.get('customgoal', None)
         goal = self.request.GET.get('goal', None)
         filter_on_today = bool(self.request.GET.get('today', False))
+        exclude_completed = bool(self.request.GET.get('exclude_completed', False))
 
         if cg and cg.isnumeric():
             self.queryset = self.queryset.filter(customgoal__id=cg)
@@ -1414,11 +1429,18 @@ class CustomActionViewSet(VersionedViewSetMixin,
             self.queryset = self.queryset.filter(goal__title_slug=goal)
 
         if filter_on_today:
-            today = local_day_range(self.request.user)
             self.queryset = self.queryset.filter(
                 Q(prev_trigger_date__range=today) |
                 Q(next_trigger_date__range=today)
             )
+
+        if exclude_completed:
+            cids = user.usercompletedcustomaction_set.filter(
+                updated_on__range=today,
+                state=models.UserCompletedAction.COMPLETED
+            )
+            cids = set(cids.values_list("customaction", flat=True))
+            self.queryset = self.queryset.exclude(id__in=cids)
         return self.queryset
 
     def create(self, request, *args, **kwargs):
