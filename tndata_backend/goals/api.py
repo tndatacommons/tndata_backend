@@ -1399,9 +1399,11 @@ class CustomActionViewSet(VersionedViewSetMixin,
     def get_queryset(self):
         self.queryset = models.CustomAction.objects.filter(user=self.request.user)
 
-        # Filter on CustomGoals or Goals
+        # Filter on CustomGoals, Goals, or items for *today*
         cg = self.request.GET.get('customgoal', None)
         goal = self.request.GET.get('goal', None)
+        filter_on_today = bool(self.request.GET.get('today', False))
+
         if cg and cg.isnumeric():
             self.queryset = self.queryset.filter(customgoal__id=cg)
         elif cg:
@@ -1410,6 +1412,13 @@ class CustomActionViewSet(VersionedViewSetMixin,
             self.queryset = self.queryset.filter(goal__id=goal)
         elif goal:
             self.queryset = self.queryset.filter(goal__title_slug=goal)
+
+        if filter_on_today:
+            today = local_day_range(self.request.user)
+            self.queryset = self.queryset.filter(
+                Q(prev_trigger_date__range=today) |
+                Q(next_trigger_date__range=today)
+            )
         return self.queryset
 
     def create(self, request, *args, **kwargs):

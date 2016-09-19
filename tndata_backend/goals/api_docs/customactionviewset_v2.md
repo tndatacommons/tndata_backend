@@ -27,6 +27,12 @@ GET requests return an array of results containing the following:
 
 ## Filtering
 
+**To filter on custom actions scheduled for _today_**, or to limit the result
+size, use the following:
+
+* `/api/users/actions/?today=1`  -- only show items for today.
+* `/api/users/actions/?page_size=3`  -- retreive only 3 items.
+
 You may filter the result of listing custom actions by their parent goals. To
 do so, include a querystring parameter of `customgoal` or `goal` that includes
 either the goal's database ID or title slug.
