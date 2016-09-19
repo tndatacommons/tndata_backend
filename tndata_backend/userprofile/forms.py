@@ -18,6 +18,24 @@ class UserForm(forms.ModelForm):
         model = get_user_model()
         fields = ('first_name', 'last_name', 'email')
 
+    def clean_first_name(self):
+        value = self.cleaned_data['first_name']
+        if len(value.strip()) == 0:
+            raise forms.ValidationError("This field is required")
+        return value
+
+    def clean_last_name(self):
+        value = self.cleaned_data['last_name']
+        if len(value.strip()) == 0:
+            raise forms.ValidationError("This field is required")
+        return value
+
+    def clean_email(self):
+        value = self.cleaned_data['email']
+        if len(value.strip()) == 0:
+            raise forms.ValidationError("This field is required")
+        return value
+
     def __init__(self, *args, **kwargs):
         self._organization = kwargs.pop('for_organization', None)
         super().__init__(*args, **kwargs)
