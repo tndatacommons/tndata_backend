@@ -19,6 +19,8 @@ Alternatively, you can follow these steps:
 3. Install the requirements: `pip install -r requirements.txt`
 4. Run the development server `cd tndata_backend; python manage.py runserver`
 
+*Note*: This project also uses postgres, redis, and elasticearch, so you'll
+also need those services available to work on everything.
 
 Apps
 ----
