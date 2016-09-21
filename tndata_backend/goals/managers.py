@@ -149,6 +149,35 @@ class UserGoalManager(models.Manager):
         seq = seq.get('goal__sequence_order__min') or 0
         return qs.filter(goal__sequence_order=seq)
 
+    def engagement_rank(self, user, goal):
+        """Given a user and a goal, find out how their 15-day engagement stats
+        compare with other users within that goal.
+
+        Strategy for doing this:
+
+        1. Get the user's latest UserGoal object
+        2. Get all other UserGoal objects within that date range.
+        3. Calculate the user's engagement_15_days value compared with others
+           on the same day. To do this, we count the number of values below
+           the user's divided by the total number of values
+
+        """
+        try:
+            ug = self.filter(user=user, goal=goal).latest('created_on')
+
+            daterange = dateutils.date_range(ug.created_on)
+            values = self.filter(goal=goal, created_on__range=daterange)
+            total = values.count()
+            values = values.values_list('engagement_15_days', flat=True)
+            values = sorted(values, reverse=True)  # Sort biggest -> smallest
+
+            # Find the first occurance of the user's value, and count the rest.
+            num_lower = len(values[values.index(ug.engagement_15_days) + 1:])
+            return round((num_lower / total) * 100, 2)
+
+        except (self.model.DoesNotExist, IndexError, ZeroDivisionError):
+            return 0.0
+
 
 class UserBehaviorManager(models.Manager):
 
