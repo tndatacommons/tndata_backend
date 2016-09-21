@@ -76,10 +76,14 @@
   </form>
 
   {# display a redis-metrics chart of sent messages #}
+  <h2>Notifications <small>{{ num_jobs }} total scheduled messages</small></h2>
   {% aggregate_history metrics %}
 
+  <h3>Queued Messages</h3>
+  {% with user_count=jobs|length %}
+  {% if user_count %}
   <table class="object-list"{% if email %} data-search="{{ email }}"{% endif %}>
-    <caption>{{ jobs|length }} Enqueued Messages</caption>
+    <caption>{{ user_count }} Enqueued Messages</caption>
     <thead>
       <tr>
         <th>User</th>
@@ -136,18 +140,29 @@
       {% endfor %}
     </tbody>
   </table>
+  {% else %}
+    <p>Search for a user to view their queued messages</p>
+  {% endif %}
+  {% endwith %}
 
+
+  <hr/>
   <div class="panel clearfix">
-    <div class="pull-right">
-    <form action="{% url 'notifications:cancel-jobs' %}" method="post">
-      {% csrf_token %}
-      <input type="submit" value="Clear Notification Queue"
-        class="button alert"/>
-      <label for="id_orphaned">Orphaned Only?
-        <input type="checkbox" name="orphaned" id="id_orphaned" />
-      </label>
-    </form>
+    <h3>DANGER</h3>
+    <div class="pull-right" style="margin-left:1em;">
+      <form action="{% url 'notifications:cancel-jobs' %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Clear Notification Queue"
+          class="button alert"/>
+        <label for="id_orphaned">Orphaned Only?
+          <input type="checkbox" name="orphaned" id="id_orphaned" />
+        </label>
+      </form>
     </div>
+    <p><i class="fa fa-warning"></i> This button will remove all scheduled
+    messages from the notification queue. Select <em>Orphaned Only</em>
+    to remove the notifications that do not have a corresponding
+    <code>GCMMessage</code> object.</p>
   </div>
 
   <div id="queueModal" class="reveal-modal"

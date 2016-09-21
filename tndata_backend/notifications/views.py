@@ -9,8 +9,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 
-from utils.datastructures import flatten
-
 from . import queue
 from .forms import GCMMessageForm
 from .models import GCMMessage
@@ -74,30 +72,37 @@ def dashboard(request):
     except User.MultipleObjectsReturned:
         messages.warning(request, "Multiple Users found for '{}'".format(user))
 
-    jobs = queue.messages()  # Get the enqueued messages
-    ids = [job.args[0] for job, _ in jobs]
+    if user:
+        # Get all the enqueued jobs, & keep a list of the Job.ID values.
+        jobs = queue.messages()
+        job_ids = [job.args[0] for job, _ in jobs]
 
-    message_data = defaultdict(dict)
-    for msg in GCMMessage.objects.filter(pk__in=ids):
-        message_data[msg.id] = {
-            'id': msg.id,
-            'title': msg.title,
-            'user_id': msg.user_id,
-            'email': msg.user.email,
-            'message': msg.message,
-            'title': msg.title,
-            'date_string': msg.deliver_on.strftime("%Y-%m-%d"),
-            'queue_id': msg.queue_id,
-        }
+        # Build a dict of the user's message data matching those Jobs.
+        message_data = defaultdict(dict)
+        for msg in user.gcmmessage_set.filter(pk__in=job_ids):
+            message_data[msg.id] = {
+                'id': msg.id,
+                'title': msg.title,
+                'user_id': msg.user_id,
+                'email': msg.user.email,
+                'message': msg.message,
+                'title': msg.title,
+                'date_string': msg.deliver_on.strftime("%Y-%m-%d"),
+                'queue_id': msg.queue_id,
+            }
 
-    jobs = [
-        (job, scheduled_for, message_data[job.args[0]])
-        for job, scheduled_for in jobs
-    ]
+        # Restrict the list of jobs to those intended for the given user.
+        jobs = [
+            (job, scheduled_for, message_data[job.args[0]])
+            for job, scheduled_for in jobs if job.args[0] in message_data
+        ]
+    else:
+        jobs = []
 
     context = {
         'devices': devices,
         'email': email,
+        'num_jobs': queue.get_scheduler().count(),
         'jobs': jobs,
         'metrics': ['GCM Message Sent', 'GCM Message Scheduled'],
         'selected_date': date,
