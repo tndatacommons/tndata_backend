@@ -138,7 +138,7 @@ class TestBadgifyRecipes(TestCase):
         # Create our test data
         User = get_user_model()
 
-        cls.category = mommy.make(Category, state="published")
+        cls.category = mommy.make(Category, packaged_content=False, state="published")
 
         cls.goal = mommy.make(Goal, state="published")
         cls.goal.categories.add(cls.category)
@@ -285,7 +285,7 @@ class TestBadgifyRecipes(TestCase):
     def test_goal_setter_recipe(self):
         # When a user is enrolled in a goal.
         recipe = GoalSetterRecipe()
-        self.user.usergoal_set.create(goal=self.goal)
+        self.user.usergoal_set.create(goal=self.goal, primary_category=self.category)
         self.assertEqual(list(recipe.user_ids), [self.user.id])
 
     def test_striver_recipe(self):
