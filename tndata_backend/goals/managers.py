@@ -149,6 +149,14 @@ class UserGoalManager(models.Manager):
         seq = seq.get('goal__sequence_order__min') or 0
         return qs.filter(goal__sequence_order=seq)
 
+    def latest_items(self):
+        """Return a queryset of the most recent UserGoal objects per user."""
+        sql = (
+            "SELECT id, user_id, goal_id, MAX(created_on) FROM goals_usergoal "
+            "GROUP BY id, user_id, goal_id ORDER BY user_id ASC, goal_id ASC"
+        )
+        return self.raw(sql)
+
     def engagement_rank(self, user, goal):
         """Given a user and a goal, find out how their 15-day engagement stats
         compare with other users within that goal.
