@@ -31,7 +31,6 @@ from .v1 import (  # flake8: noqa
     CustomActionSerializer,
     CustomGoalSerializer,
     PackageEnrollmentSerializer,
-    ReadOnlyUserGoalSerializer,
     ReadOnlyUserActionSerializer,
     TriggerSerializer,
 )

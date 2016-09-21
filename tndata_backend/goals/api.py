@@ -595,7 +595,7 @@ class UserGoalViewSet(VersionedViewSetMixin,
 
         """
         if self.request.method == "GET" and self.request.version == "1":
-            return v1.ReadOnlyUserGoalSerializer
+            return v1.UserGoalSerializer
         return super().get_serializer_class()
 
     def get_queryset(self):

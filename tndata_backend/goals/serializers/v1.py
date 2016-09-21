@@ -310,33 +310,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         return obj.get_user_behaviors().count()
 
 
-class ReadOnlyUserGoalSerializer(ObjectTypeModelSerializer):
-    """A Serializer for READING the `UserGoal` model instances."""
-    user_categories = serializers.ReadOnlyField(source='serialized_user_categories')
-    user_behaviors_count = serializers.SerializerMethodField()
-    user_behaviors = serializers.ReadOnlyField(source='serialized_user_behaviors')
-    goal = serializers.ReadOnlyField(source='serialized_goal')
-    goal_progress = serializers.ReadOnlyField(source='serialized_goal_progress')
-    custom_triggers_allowed = serializers.ReadOnlyField()
-    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-    primary_category = serializers.ReadOnlyField(source="serialized_primary_category")
-
-    class Meta:
-        model = UserGoal
-        fields = (
-            'id', 'user', 'goal', 'goal_progress', 'user_categories',
-            'user_behaviors_count', 'user_behaviors', 'created_on',
-            'progress_value', 'custom_triggers_allowed', 'editable', 'object_type',
-            'primary_category',
-        )
-        read_only_fields = ("id", "created_on")
-
-    def get_user_behaviors_count(self, obj):
-        """Return the number of user-selected Behaviors that are children of
-        this Goal."""
-        return len(obj.serialized_user_behaviors)
-
-
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
     user_categories = SimpleCategoryField(
