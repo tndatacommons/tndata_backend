@@ -164,8 +164,9 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserGoal
         fields = (
-            'id', 'user', 'goal', 'editable', 'created_on',
-             'primary_category', 'object_type',
+            'id', 'user', 'goal', 'editable', 'primary_category',
+            'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
+            'engagement_rank', 'created_on', 'object_type',
         )
         read_only_fields = ("id", "created_on")
 

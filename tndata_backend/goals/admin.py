@@ -530,7 +530,8 @@ admin.site.register(models.UserCategory, UserCategoryAdmin)
 
 class UserGoalAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'goal', 'categories', 'completed',
+        'user_email', 'goal', 'categories', 'completed', 'engagement_15_days',
+        'engagement_30_days', 'engagement_60_days', 'engagement_rank',
     )
     list_filter = ('completed', 'goal__categories', )
     search_fields = (
