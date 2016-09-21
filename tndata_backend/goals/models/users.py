@@ -10,23 +10,18 @@ Mappings between users and their selected public content.
                         [ User ]
 
 """
-
-from collections import defaultdict
-
 import django.dispatch
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
-from jsonfield import JSONField
 from utils.user_utils import local_day_range, to_localtime, to_utc
 from notifications.models import GCMMessage
 
 from .misc import _custom_triggers_allowed
 from .public import Action, Behavior, Category, Goal
 from .triggers import Trigger
-from ..encoder import dump_kwargs
 from ..managers import (
     UserActionManager,
     UserBehaviorManager,
@@ -85,13 +80,6 @@ class UserGoal(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    # Pre-rendered FK Fields.
-    serialized_goal = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_goal_progress = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_user_categories = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_user_behaviors = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-    serialized_primary_category = JSONField(blank=True, default=dict, dump_kwargs=dump_kwargs)
-
     class Meta:
         ordering = ['user', 'goal']
         unique_together = ("user", "goal")
@@ -102,34 +90,9 @@ class UserGoal(models.Model):
         return "{0}".format(self.goal.title)
 
     def save(self, *args, **kwargs):
-        self._serialize_goal()
-        self._serialize_user_behaviors()
-        self._serialize_user_categories()
-        self._serialize_primary_category()
-        return super().save(*args, **kwargs)
-
-    def _serialize_goal(self):
-        if self.goal:
-            from ..serializers.simple import SimpleGoalSerializer
-            self.serialized_goal = SimpleGoalSerializer(self.goal, user=self.user).data
-
-    def _serialize_user_categories(self):
-        cats = self.get_user_categories()
-        if cats:
-            from ..serializers.simple import SimpleCategorySerializer
-            self.serialized_user_categories = SimpleCategorySerializer(cats, many=True).data
-
-    def _serialize_user_behaviors(self):
-        behaviors = self.get_user_behaviors()
-        if behaviors:
-            from ..serializers.simple import SimpleBehaviorSerializer
-            self.serialized_user_behaviors = SimpleBehaviorSerializer(behaviors, many=True).data
-
-    def _serialize_primary_category(self):
-        cat = self.get_primary_category()
-        if cat:
-            from ..serializers.simple import SimpleCategorySerializer
-            self.serialized_primary_category = SimpleCategorySerializer(cat).data
+        result = super().save(*args, **kwargs)
+        self.get_primary_category()  # will actually set the primary category.
+        return result
 
     def complete(self):
         """Mark this goal as complete"""
