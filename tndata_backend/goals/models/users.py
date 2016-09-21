@@ -75,6 +75,12 @@ class UserGoal(models.Model):
         help_text="A primary category associated with the Goal. Typically this "
                   "is the Category through which the goal was selected."
     )
+
+    # Goal-realted app engagment numbers. Similar to values on the DailyProgress
+    engagement_15_days = models.FloatField(default=0, blank=True)
+    engagement_30_days = models.FloatField(default=0, blank=True)
+    engagement_60_days = models.FloatField(default=0, blank=True)
+
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -88,6 +94,19 @@ class UserGoal(models.Model):
 
     def __str__(self):
         return "{0}".format(self.goal.title)
+
+    def calculate_engagement(self, days=15):
+        result = None
+        if days in [15, 30, 60]:
+            result = self.user.usercompletedaction_set.engagement(
+                user=self.user, goal=self.goal, days=days
+            )
+        if result and days == 15:
+            self.engagement_15_days = result
+        elif result and days == 30:
+            self.engagement_30_days = result
+        elif result and days == 60:
+            self.engagement_60_days = result
 
     def save(self, *args, **kwargs):
         result = super().save(*args, **kwargs)
