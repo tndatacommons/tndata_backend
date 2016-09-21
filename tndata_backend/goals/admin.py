@@ -538,10 +538,6 @@ class UserGoalAdmin(UserRelatedModelAdmin):
         'goal__title', 'goal__id', 'id',
     )
     raw_id_fields = ("user", "goal")
-    readonly_fields = [
-        'serialized_goal', 'serialized_user_behaviors',
-        'serialized_user_categories', 'serialized_primary_category',
-    ]
 
     def categories(self, obj):
         cats = set()
