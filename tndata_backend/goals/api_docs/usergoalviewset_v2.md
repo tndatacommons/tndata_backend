@@ -26,9 +26,14 @@ This endpoint returns resources with the following fields.
 * `user`: The Unique identifier for the `User`
 * `goal`: An object that represents the `Goal` selected by the user
 * `primary_category`: The ID of the primary category for this goal
-* `created_on`: Time at which the user selected this item.
 * `editable`: A boolean that indicates whether or not a user
+* `engagement_15_days`: User's engagment with this goal over the past 15 days
+* `engagement_30_days`: User's engagment with this goal over the past 30 days
+* `engagement_60_days`: User's engagment with this goal over the past 60 days
+* `engagement_rank`: User's engagment with this goal compared to other users
+* `created_on`: Time at which the user selected this item.
   should be able to customize the reminders beneath this content
+* `object_type`: A string, will always be 'usergoal'
 
 ## Adding a Goal <a href="#adding-a-goal">&para;</a>
 
