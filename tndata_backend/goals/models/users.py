@@ -76,10 +76,14 @@ class UserGoal(models.Model):
                   "is the Category through which the goal was selected."
     )
 
-    # Goal-realted app engagment numbers. Similar to values on the DailyProgress
+    # Goal-related app engagment numbers. Similar to values on the DailyProgress
     engagement_15_days = models.FloatField(default=0, blank=True)
     engagement_30_days = models.FloatField(default=0, blank=True)
     engagement_60_days = models.FloatField(default=0, blank=True)
+
+    # NOTE: See UserGoal.objects.engagement_rank
+    # This value is periodically updated by a management command.
+    engagement_rank = models.FloatField(default=0, blank=True)
 
     completed = models.BooleanField(default=False)
     completed_on = models.DateTimeField(blank=True, null=True)
