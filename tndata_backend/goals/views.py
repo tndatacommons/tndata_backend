@@ -1,8 +1,10 @@
+import logging
+import time
+
 from calendar import Calendar
 from collections import defaultdict, Counter, OrderedDict
 from datetime import datetime, timedelta
 from hashlib import md5
-import logging
 
 from django.conf import settings
 from django.contrib import messages
@@ -2106,13 +2108,12 @@ def debug_feed(request):
 
     """
     User = get_user_model()
+    feed_data = {}
     today = None
-    useractions = None
-    feed_useractions = None
-    progress = None
     notifs = None
-    ucas = None
+    ucas = []
     email = request.GET.get('email_address', None)
+    feed_data_time = None
 
     if email is None:
         form = EmailForm()
@@ -2122,33 +2123,32 @@ def debug_feed(request):
             user = User.objects.get(email__icontains=email)
             today = local_day_range(user)
 
-            # UserActions
-            useractions = user.useraction_set.published()
-            useractions = useractions.filter(next_trigger_date__range=today)
-            useractions = useractions.distinct()
-
-            # UserCompletedActions
-            ucas = user.usercompletedaction_set.filter(updated_on__range=today)
-
-            # GCMMessages
-            notifs = user.gcmmessage_set.filter(deliver_on__range=today)
-
             # Feed data
-            feed_useractions = user_feed.todays_actions(user)
-            progress = user_feed.todays_actions_progress(user)
+            # feed_useractions = user_feed.todays_actions(user)
+            # progress = user_feed.todays_actions_progress(user)
+            fd_start = time.time()
+            feed_data = user_feed.feed_data(user)
+            fd_end = time.time()
+            feed_data_time = fd_end - fd_start
+
+            # Additional info / UserCompletedActions + GCMMessages
+            ucas = user.usercompletedaction_set.filter(updated_on__range=today)
+            ucas = ucas.order_by("-updated_on")
+
+            notifs = user.gcmmessage_set.filter(deliver_on__range=today)
+            notifs = notifs.order_by('-deliver_on')
 
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
     context = {
         'form': form,
-        'today': today,
         'email': email,
-        'notifs': notifs,
-        'useractions': useractions,
+        'today': today,
+        'feed_data': feed_data,
+        'feed_data_time': feed_data_time,
         'ucas': ucas,
-        'feed_useractions': feed_useractions,
-        'progress': progress,
+        'notifs': notifs,
     }
     return render(request, 'goals/debug_feed.html', context)
 

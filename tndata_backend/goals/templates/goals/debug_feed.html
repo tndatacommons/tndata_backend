@@ -24,51 +24,88 @@
 
 {% block content %}
 <h1>Feed Debugging
-  {% if today %}<small>{{ today.0 }} - {{ today.1 }}</small>{% endif %}
+  {% if today %}<small>{{ today.0.date }} - {{ today.1.date }}</small>{% endif %}
 </h1>
 
 <form action="{% url 'goals:debug_feed' %}" method="get">
   <div class="row">
-    <div class="large-6 column">
-      {{ form|crispy }}
-      <input type="submit" value="Search" class="button"/>
-    </div>
-    <div class="large-6 columns">
-      {% if progress %}
-      <h2>Progress</h2>
-      <pre class="panel">{{ progress|pprint }}</pre>
-      {% else %}
-        <p><em>No progress data</em></p>
-      {% endif %}
+    <div class="large-12 column">
+      <h2>User</h2>
+      <div class="panel clearfix">
+        {{ form|crispy }}
+        <input type="submit" value="Search" class="button small pull-right"/>
+      </div>
     </div>
   </div>
 </form>
 
 {% if email %}
+<h2>Feed Data <small>Generated in {{ feed_data_time|floatformat }}s</small></h2>
 <div class="row">
   <div class="large-6 medium-6 small-12 columns">
-    <h3>Feed <small>Data displayed on the feed</small></h3>
+    <h3>Upcoming</h3>
     <table>
       <thead>
-      <tr><th>id</th><th>Action (id)</th><th>Next trigger date</th></tr>
+      <tr>
+        <th>Type</th>
+        <th>Goal</th>
+        <th>Action</th>
+        <th>Trigger</th>
+      </tr>
       </thead>
       <tbody>
-      {% for ua in feed_useractions %}
+      {% for obj in feed_data.upcoming %}
         <tr>
-          <td>{{ ua.id }}</td>
-          <td>{{ ua.action }} ({{ ua.action_id }})</td>
-          <td>{{ ua.next_trigger_date }}</td>
+          <td><code>{{ obj.type }}</code></td>
+          <td>({{ obj.goal_id}}) {{ obj.goal }}</td>
+          <td>({{ obj.action_id}}) {{ obj.action }}</td>
+          <td>{{ obj.trigger }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Streaks</h3>
+    <table>
+      <thead><tr><th>Day</th><th>Date</th><th>Count</th></tr></thead>
+      <tbody>
+      {% for obj in feed_data.streaks %}
+        <tr>
+          <td>{{ obj.day }}</td>
+          <td>{{ obj.date }}</td>
+          <td>{{ obj.count }}</td>
         </tr>
       {% endfor %}
       </tbody>
     </table>
   </div>
   <div class="large-6 medium-6 small-12 columns">
+    <h3>Progress</h3>
+    <pre class="panel">{{ feed_data.progress|pprint }}</pre>
+
+    {% with content=feed_data.funcontent %}
+      <h3>Reward Content
+        <small>{{ content.message_type }} /  {{ content.id }}</small></h3>
+      <blockquote>
+        {{ content.message }}
+        {% if content.author %}<small>- {{ content.author }}</small>{% endif %}
+      </blockquote>
+    {% endwith %}
+
+    <h3>Suggestions</h3>
+    <pre class="panel">{{ feed_data.suggestions|pprint }}</pre>
+  </div>
+</div>
+
+<hr/>
+<h2>Related Data</h2>
+<div class="row">
+  <div class="large-6 medium-6 small-12 columns">
     <h3>GCM Messages <small>may not be queued</small></h3>
     <table>
       <thead>
       <tr>
-        <th>X</th>
+        <th>Sent</th>
         <th>Message</th>
         <th>Object (id)</th>
         <th>Deliver On</th>
@@ -84,26 +121,10 @@
               {{ msg.content_object }} ({{ msg.object_id }})
             {% else %} n/a {% endif %}
           </td>
-          <td>{{ msg.deliver_on }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
-<div class="row">
-  <div class="large-6 medium-6 small-12 columns">
-    <h3>UserActions <small>next_trigger_date = today</small></h3>
-    <table>
-      <thead>
-      <tr><th>id</th><th>Action (id)</th><th>Next trigger date</th></tr>
-      </thead>
-      <tbody>
-      {% for ua in useractions %}
-        <tr>
-          <td>{{ ua.id }}</td>
-          <td>{{ ua.action }} ({{ ua.action_id }})</td>
-          <td>{{ ua.next_trigger_date }}</td>
+          <td>
+            <span class="label secondary">{{ msg.deliver_on.date }}</span>
+            <span class="label secondary">{{ msg.deliver_on.time }}</span>
+          </td>
         </tr>
       {% endfor %}
       </tbody>
@@ -113,7 +134,12 @@
     <h3>UserCompletedActions <small>updated today</small></h3>
     <table>
       <thead>
-      <tr><th>Status</th><th>Action (id)</th><th>Next trigger date</th></tr>
+        <tr>
+          <th>Status</th>
+          <th>Action (id)</th>
+          <th>Next trigger date</th>
+          <th>Updated</th>
+        </tr>
       </thead>
       <tbody>
       {% for uca in ucas %}
@@ -121,6 +147,7 @@
           <td>{{ uca.get_state_display }}</td>
           <td>{{ uca.action }} ({{ uca.action_id }})</td>
           <td>{{ uca.useraction.next_trigger_date }}</td>
+          <td>{{ uca.updated_on }}</td>
         </tr>
       {% endfor %}
       </tbody>
