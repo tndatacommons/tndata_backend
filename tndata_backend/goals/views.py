@@ -2133,10 +2133,10 @@ def debug_feed(request):
 
             # Additional info / UserCompletedActions + GCMMessages
             ucas = user.usercompletedaction_set.filter(updated_on__range=today)
-            ucas = ucas.order_by("-updated_on")
+            ucas = ucas.order_by("updated_on")
 
             notifs = user.gcmmessage_set.filter(deliver_on__range=today)
-            notifs = notifs.order_by('-deliver_on')
+            notifs = notifs.order_by('deliver_on')
 
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
