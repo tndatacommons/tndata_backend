@@ -299,7 +299,6 @@ class IndexView(ContentViewerMixin, TemplateView):
             mapping = {
                 'categories': Category.objects.only(*only_fields).filter,
                 'goals': Goal.objects.only(*only_fields).filter,
-                'behaviors': Behavior.objects.only(*only_fields).filter,
                 'actions': Action.objects.only(*only_fields).filter,
             }
             for key, func in mapping.items():
@@ -313,7 +312,6 @@ class IndexView(ContentViewerMixin, TemplateView):
         mapping = {
             'my_categories': Category.objects.filter,
             'my_goals': Goal.objects.only(*only_fields).filter,
-            'my_behaviors': Behavior.objects.only(*only_fields).filter,
             'my_actions': Action.objects.only(*only_fields).filter,
         }
         for key, func in mapping.items():
@@ -323,7 +321,6 @@ class IndexView(ContentViewerMixin, TemplateView):
         total_items = sum([
             context['my_categories'].count(),
             context['my_goals'].count(),
-            context['my_behaviors'].count(),
             context['my_actions'].count(),
         ])
         context['has_my_content'] = total_items > 0
@@ -353,7 +350,7 @@ class MyContentView(ContentViewerMixin, TemplateView):
         """
         context = self.get_context_data(**kwargs)
 
-        # Only the fields needed for Category, Goal, Behavior, Action objects
+        # Only the fields needed for Category, Goal, Action objects
         # on this page.
         only_fields = [
             'id', 'title', 'title_slug', 'updated_on', 'updated_by',
@@ -364,7 +361,6 @@ class MyContentView(ContentViewerMixin, TemplateView):
         mapping = {
             'my_categories': Category.objects.filter,
             'my_goals': Goal.objects.only(*only_fields).filter,
-            'my_behaviors': Behavior.objects.only(*only_fields).filter,
             'my_actions': Action.objects.only(*only_fields).filter,
         }
         for key, func in mapping.items():
@@ -373,7 +369,6 @@ class MyContentView(ContentViewerMixin, TemplateView):
         total_items = sum([
             context['my_categories'].count(),
             context['my_goals'].count(),
-            context['my_behaviors'].count(),
             context['my_actions'].count(),
         ])
         context['has_my_content'] = total_items > 0

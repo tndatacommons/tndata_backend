@@ -56,30 +56,13 @@
       </td>
     </tr>
   {% endfor %}
-  {% for obj in my_behaviors %}
-    <tr>
-      <td>
-        {% goal_object_controls obj %}
-      </td>
-      <td>
-        <span class="label secondary">Behavior</span>
-        {{ obj|label }}
-      </td>
-      <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>
-      <td>
-        {{ obj.updated_on|date:"n-j-Y" }}<br/>
-        <small class="label secondary">
-          {{ obj.updated_on|timesince }} ago</small>
-      </td>
-    </tr>
-  {% endfor %}
   {% for obj in my_actions %}
     <tr>
       <td>
         {% goal_object_controls obj %}
       </td>
       <td>
-        <span class="label secondary">Action</span>
+        <span class="label secondary">Notification</span>
         {{ obj|label }}
       </td>
       <td><a href="{{ obj.get_absolute_url }}">{{ obj }}</a></td>

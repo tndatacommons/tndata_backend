@@ -40,14 +40,6 @@
     {% form_buttons object "Behavior" %}
   </div>
   <div class="large-6 small-12 columns">
-    <p>The structure of our data looks something like the following:</p>
-    <pre class="panel">
-Category
-  - Goal
-  -- Behavior
-  --- Action 1
-  --- Action 2
-    </pre>
     <p class="panel">
       {{ form.notes.label_tag }}
       {{ form.notes }} <span class="helptext">{{ form.notes.help_text }}</span>

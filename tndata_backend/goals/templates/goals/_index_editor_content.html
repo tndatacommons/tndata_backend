@@ -16,33 +16,6 @@ the content requires your action.</p>
   </tr>
 </thead>
 <tbody>
-  {% for behavior in dynamic_behaviors %}
-    <tr>
-      <td>
-        <span class="label warning" data-tooltip aria-haspopup="true"
-              title="This Behavior contains Dynamic Notifications, and requires at least one Reinforcing Notification"><i class="fa fa-warning"></i> Action Required</span>
-      </td>
-      <td><span class="label secondary">Behavior</span></td>
-      <td>
-        <a href="{{ behavior.get_update_url }}" title="Edit"><i class="fa fa-edit"></i></a>
-        <a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a>
-      </td>
-      <td>
-        {{ behavior.updated_on|date:"n-j-Y" }}<br/>
-        by
-        {% if behavior.created_by %}
-          {{ behavior.created_by.email|truncatechars:15 }}
-        {% elif behavior.updated_by %}
-          {{ behavior.updated_by.email|truncatechars:15 }}
-        {% else %}
-          nobody
-        {% endif %}
-        <br/>
-        <small class="label secondary">
-          {{ behavior.updated_on|timesince }} ago</small>
-      </td>
-    </tr>
-  {% endfor %}
   {% for obj in categories %}
     <tr>
       <td>{% publish_deny_form user obj "dropdown" %}</td>
@@ -79,29 +52,11 @@ the content requires your action.</p>
       </td>
     </tr>
   {% endfor %}
-  {% for obj in behaviors %}
-    <tr>
-      <td>{% publish_deny_form user obj "dropdown" %}</td>
-      <td>
-        <span class="label secondary">Behavior</span>
-      </td>
-      <td>
-        <a href="{{ obj.get_update_url }}" title="Edit"><i class="fa fa-edit"></i></a>
-        <a href="{{ obj.get_absolute_url }}">{{ obj }}</a>
-      </td>
-      <td>
-        {{ obj.updated_on|date:"n-j-Y" }}<br/>
-        by: {{ obj.created_by|default:obj.updated_by }}<br/>
-        <small class="label secondary">
-          {{ obj.updated_on|timesince }} ago</small>
-      </td>
-    </tr>
-  {% endfor %}
   {% for obj in actions %}
     <tr>
       <td>{% publish_deny_form user obj "dropdown" %}</td>
       <td>
-        <span class="label secondary">Action</span>
+        <span class="label secondary">Notification</span>
       </td>
       <td>
         <a href="{{ obj.get_update_url }}" title="Edit"><i class="fa fa-edit"></i></a>
