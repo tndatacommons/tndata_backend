@@ -1,0 +1,168 @@
+{% extends "goals/base.html" %}
+{% load static from staticfiles %}
+{% load goal_filters %}
+{% load goal_tags %}
+{% load util_tags %}
+
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+    canvas#state-counts {
+      display: block;
+      margin: .5em auto;
+      width: 200px;
+      height: 200px;
+    }
+  </style>
+{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:reports' %}">Reports</a></li>
+  <li class="current">Behaviors</li>
+{% endblock %}
+
+
+{% block content %}
+<div class="row">
+  <div class="large-12 columns">
+    <h1>Behaviors <small>{{ total }} total</small></h1>
+    <p class="lead">Information about our Behavior content.</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="large-8 medium-8 small-12 columns">
+    <h2 class="secondary">Sub-reports</h2>
+    <ul>
+      <li><a href="?sub=emptyfields">Empty Fields</a>.<br/>
+        List the number of Behaviors that have empty text fields. This report
+        counts the text in the following:
+        <ul>
+        <li><code>description</code></li>
+        <li><code>more_info</code></li>
+        <li><code>informal_list</code></li>
+        <li><code>notes</code></li>
+        <li><code>source_link</code></li>
+        <li><code>source_notes</code></li>
+        <li><code>external_resource</code></li>
+        <li><code>external_resource_name</code></li>
+        </ul>
+      </li>
+    </ul>
+
+    {% if subreport_title %}
+    <h3>
+      {{ subreport_title }}
+      {% if total %}<small>{{ total}} behaviors</small>{% endif %}
+    </h3>
+    {% endif %}
+
+    {% if subreport == "emptyfields" %}
+      <table style="width: 100%">
+        <thead>
+          <tr>
+            <th>Field name</th>
+            <th>Empty items</th>
+            <th>Chart</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for field, count, diff in report %}
+          <tr>
+            <td>
+              <code>{{ field }}</code><br/>
+              <a href="{% url 'goals:behavior-list' %}?filter=empty-{{ field }}">
+                view empty</a> |
+              <a href="{% url 'goals:behavior-list' %}?filter=contains-{{ field }}">
+                view items with text</a>
+            </td>
+            <td>{{ count }} / {{ total }}</td>
+            <td>
+              <canvas id="ef-{{ field }}" width="80" height="80"></canvas>
+              <script>
+              var ctx = document.getElementById("ef-{{ field }}").getContext("2d");
+              var data = [
+                {
+                  value: {{ diff }},
+                  color: "#e7e7e7",
+                  highlight: "#e9e9e9",
+                  label: "Contains Text"
+                },
+                {
+                  value: {{ count }},
+                  color: "#f04124",
+                  highlight: "#cf2a0e",
+                  label: "Empty"
+                }
+              ]
+              var c = new Chart(ctx).Doughnut(data);
+              </script>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div> {# end .columns #}
+
+  <div class="large-4 medium-4 small-12 columns">
+    <h2>States
+      <small><a href="#" data-reveal-id="pop-state-modal">Data</a></small>
+    </h2>
+    <p>The current states for all behavior content.</p>
+
+    {# Modal showing a table w/ numbers #}
+    <div id="pop-state-modal" class="reveal-modal"
+         data-reveal aria-labelledby="state-data" aria-hidden="true" role="dialog">
+      <h2 id="state-data">Behavior States</h2>
+        <table style="width:100%">
+          <thead><tr><th>State</th><th>Count</th></tr></thead>
+          <tbody>
+            <tr><td>Draft</td><td>{{ draft_count }}</td></tr>
+            <tr><td>Published</td><td>{{ published_count }}</td></tr>
+            <tr><td>Pending Review</td><td>{{ pendingreview_count }}</td></tr>
+            <tr><td>Declined</td><td>{{ declined_count }}</td></tr>
+          </tbody>
+        </table>
+      <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    </div>
+
+    <canvas id="state-counts"></canvas>
+    <script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("state-counts").getContext("2d");
+    var data = [
+      {
+        value: {{ draft_count }},
+        color: "#e7e7e7",
+        highlight: "#e9e9e9",
+        label: "Draft"
+      },
+      {
+        value: {{ published_count }},
+        color: "#43AC6A",
+        highlight: "#368a55",
+        label: "Published"
+      },
+      {
+        value: {{ pendingreview_count }},
+        color: "#f08a24",
+        highlight: "#cf6e0e",
+        label: "Pending Review"
+      },
+      {
+        value: {{ declined_count }},
+        color: "#f04124",
+        highlight: "#cf2a0e",
+        label: "Declined"
+      }
+    ]
+    var c = new Chart(ctx).Doughnut(data);
+    </script>
+  </div> {# end .columns #}
+
+</div> {# end .rows #}
+{% endblock %}

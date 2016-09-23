@@ -2406,6 +2406,47 @@ def report_authors(request):
 
 
 @user_passes_test(staff_required, login_url='/')
+def report_behaviors(request):
+    """Information about our Behaviro content."""
+    subreport = request.GET.get('sub', None)
+    behaviors = Behavior.objects.all()
+    total = behaviors.count()
+    context = {
+        'total': total,
+        'subreport': subreport,
+    }
+    for state in ['draft', 'published', 'pending-review', 'declined']:
+        key = "{}_count".format(state.replace('-', ''))
+        data = {key: behaviors.filter(state=state).count()}
+        context.update(data)
+
+    if subreport == "emptyfields":
+        context['subreport_title'] = "Empty Behavior Fields"
+        description = behaviors.filter(description='').count()
+        more_info = behaviors.filter(more_info='').count()
+        informal_list = behaviors.filter(informal_list='').count()
+        source_link = behaviors.filter(source_link='').count()
+        source_notes = behaviors.filter(source_notes='').count()
+        notes = behaviors.filter(notes='').count()
+        external_resource = behaviors.filter(external_resource='').count()
+        external_resource_name = behaviors.filter(external_resource_name='').count()
+
+        # report is a list of (fieldname, empty_count, difference)
+        context['report'] = [
+            ('description', description, total - description),
+            ('more_info', more_info, total - more_info),
+            ('informal_list', informal_list, total - informal_list),
+            ('source_link', source_link, total - source_link),
+            ('source_notes', source_notes, total - source_notes),
+            ('notes', notes, total - notes),
+            ('external_resource', external_resource, total - external_resource),
+            ('external_resource_name', external_resource_name,
+                total - external_resource_name),
+        ]
+    return render(request, 'goals/report_behaviors.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
 def report_actions(request):
     """Information about our Action content.
 

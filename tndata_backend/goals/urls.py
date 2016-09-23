@@ -387,6 +387,11 @@ urlpatterns = [
         name='report-popular'
     ),
     url(
+        r'^reports/behaviors/$',
+        views.report_behaviors,
+        name='report-behaviors'
+    ),
+    url(
         r'^reports/actions/$',
         views.report_actions,
         name='report-actions'
