@@ -983,6 +983,8 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
         queryset = queryset.annotate(Count('useraction'))
         if self.request.GET.get('behavior', False):
             queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
+        if self.request.GET.get('goal', False):
+            queryset = queryset.filter(goals__id=self.request.GET['goal'])
         # Run the result through any of our filters.
         queryset = self._filter_queryset(queryset)
         return queryset.order_by('-updated_on')
@@ -990,8 +992,11 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         behavior_id = self.request.GET.get('behavior', None)
+        goal_id = self.request.GET.get('goal', None)
         if behavior_id:
             ctx['behavior'] = Behavior.objects.get(pk=behavior_id)
+        if goal_id:
+            ctx['goal'] = Goal.objects.get(pk=goal_id)
         ctx['action_filter'] = self.request.GET.get('filter', None)
         return ctx
 
@@ -1035,6 +1040,7 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         data = self.initial.copy()
         data.update(self.form_class.INITIAL[self.action_type])
         data['behavior'] = self.request.GET.get('behavior', None)
+        data['goals'] = self.request.GET.getlist('goal', None)
         return data
 
     def get(self, request, *args, **kwargs):
