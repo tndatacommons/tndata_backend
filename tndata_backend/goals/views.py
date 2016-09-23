@@ -781,6 +781,31 @@ class BehaviorListView(ContentViewerMixin, StateFilterMixin, ListView):
     context_object_name = 'behaviors'
     paginate_by = 200
 
+    def _filter_queryset(self, queryset):
+        search = self.request.GET.get('filter', None)
+        lookups = {
+            'empty-source_link': Q(source_link=''),
+            'empty-source_link': Q(source_link=''),
+            'empty-source_notes': Q(source_notes=''),
+            'empty-notes': Q(notes=''),
+            'empty-more_info': Q(more_info=''),
+            'empty-description': Q(description=''),
+            'empty-external_resource': Q(external_resource=''),
+            'empty-external_resource_name': Q(external_resource_name=''),
+            'empty-informal_list': Q(informal_list=''),
+            'contains-source_link': Q(source_link__gt=''),
+            'contains-source_notes': Q(source_notes__gt=''),
+            'contains-notes': Q(notes__gt=''),
+            'contains-more_info': Q(more_info__gt=''),
+            'contains-description': Q(description__gt=''),
+            'contains-external_resource': Q(external_resource__gt=''),
+            'contains-external_resource_name': Q(external_resource_name__gt=''),
+            'contains-informal_list': Q(informal_list=''),
+        }
+        if search in lookups:
+            return queryset.filter(lookups[search])
+        return queryset
+
     def get_queryset(self):
         queryset = super().get_queryset().only(
             'id', 'state', 'icon', 'sequence_order', 'title', 'title_slug',
@@ -788,6 +813,7 @@ class BehaviorListView(ContentViewerMixin, StateFilterMixin, ListView):
         )
         if self.request.GET.get('goal', False):
             queryset = queryset.filter(goals__pk=self.request.GET['goal'])
+        queryset = self._filter_queryset(queryset)
         queryset = queryset.annotate(Count('userbehavior'))
         return queryset.order_by('-updated_on')
 
