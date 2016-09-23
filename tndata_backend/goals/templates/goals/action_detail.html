@@ -22,21 +22,20 @@
         <span class="label info">{{ action.get_action_type_display }}</span>
       </div>
       <dl>
-        {% if action.notification_text %}
-          <dt>Notification Text</dt><dd>{{ action.notification_text }}</dd>
-        {% endif %}
-        {% if action.description %}
-          <dt>Description</dt><dd>{{ action.description|markdown }}</dd>
-        {% endif %}
-        {% if action.more_info %}
-          <dt>More Info</dt><dd>{{ action.more_info|markdown }}</dd>
-        {% endif %}
-        {% if action.external_resource_name %}
-          <dt>Resource Name</dt><dd>{{ action.external_resource_name }}</dd>
-        {% endif %}
-        {% if action.external_resource %}
-          <dt>External Resource</dt><dd>{{ action.external_resource|urlize}}</dd>
-        {% endif %}
+        <dt>Notification Text</dt>
+        <dd>{{ action.notification_text|default:"none" }}</dd>
+        <dt>Description</dt>
+        <dd>{{ action.description|markdown|default:"none" }}</dd>
+        <dt>More Info</dt>
+        <dd>{{ action.more_info|markdown|default:"none" }}</dd>
+        <dt>Resource Name</dt>
+        <dd>{{ action.external_resource_name|default:"none"  }}</dd>
+        <dt>External Resource</dt>
+        <dd>{{ action.external_resource|urlize|default:"none" }}</dd>
+        <dt>Source Link</dt>
+        <dd>{{ action.source_link|urlize|default:"none" }}</dd>
+        <dt>Source Notes</dt>
+        <dd>{{ action.source_notes|markdown|default:"none"  }}</dd>
 
         {% with trigger=action.default_trigger %}
           {% if trigger %}
@@ -84,14 +83,6 @@
           {% endwith %}
 
           </dd>
-
-        {% if action.source_link %}
-        <dt>Source Link</dt><dd>{{ action.source_link|urlize}}</dd>
-        {% endif %}
-
-        {% if action.source_notes %}
-        <dt>Source Notes</dt><dd>{{ action.source_notes|markdown }}</dd>
-        {% endif %}
       </dl>
       {% modified action %}
       {% publish_deny_form user action %}
