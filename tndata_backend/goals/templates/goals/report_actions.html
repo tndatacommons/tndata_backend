@@ -113,7 +113,7 @@
     {% endif %}
 
     {% if subreport == "emptyfields" %}
-      <table>
+      <table style="width: 100%">
         <thead>
           <tr>
             <th>Field name</th>
@@ -124,7 +124,13 @@
         <tbody>
           {% for field, count, diff in report %}
           <tr>
-            <td><code>{{ field }}</code></td>
+            <td>
+              <code>{{ field }}</code><br/>
+              <a href="{% url 'goals:action-list' %}?q=empty-{{ field }}">
+                view empty</a> |
+              <a href="{% url 'goals:action-list' %}?q=contains-{{ field }}">
+                view items with text</a>
+            </td>
             <td>{{ count }} / {{ total_actions }}</td>
             <td>
               <canvas id="ef-{{ field }}" width="80" height="80"></canvas>
