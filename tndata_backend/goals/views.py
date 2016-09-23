@@ -968,13 +968,14 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
             queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
         # Run the result through any of our filters.
         queryset = self._filter_queryset(queryset)
-        return queryset.select_related("behavior__title").order_by('-updated_on')
+        return queryset.order_by('-updated_on')
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
         behavior_id = self.request.GET.get('behavior', None)
         if behavior_id:
             ctx['behavior'] = Behavior.objects.get(pk=behavior_id)
+        ctx['action_filter'] = self.request.GET.get('filter', None)
         return ctx
 
 

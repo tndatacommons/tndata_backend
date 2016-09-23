@@ -12,8 +12,8 @@
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Notifications
-      {% if behavior %}
-        <small>for {{ behavior }}</small>
+      {% if behavior or action_filter %}
+        <small>for {{ behavior }} {{ action_filter }}</small>
       {% endif %}
       </h2>
 
@@ -35,7 +35,6 @@
         <th>Order</th>
         <th>Title</th>
         <th>Notification</th>
-        <th>Behavior</th>
         <th>Icon</th>
       </tr>
       </thead>
@@ -58,7 +57,6 @@
                title="{{ action.description }}">{{ action }}</a>
           </td>
           <td>{{ action.notification_text }}</td>
-          <td>{{ action.behavior }}</td>
           <td class="gray">
             {% with icon=action.get_absolute_icon %}
               {% if icon %}
