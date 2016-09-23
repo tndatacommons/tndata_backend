@@ -93,11 +93,25 @@
         <div class="panel">{{ action.notes|markdown }}</div>
       {% endif %}
 
+      <h2>Parent Goal(s)</h2>
+
+      {% for goal in action.goals.all %}
+        <h3>{{ goal }}
+          <small><a href="{{ goal.get_absolute_url }}"
+            class="button secondary tiny pull-right">View</a></small></h3>
+        <p>
+          {{ goal|label }}
+          <span class="label secondary">Order: {{ goal.sequence_order }}</span>
+        </p>
+        {{ goal.description|markdown }}
+        <hr/>
+      {% endfor %}
+
+      {# --- TODO: Remove behaviors ---------------------------------------- #}
       {% with behavior=action.behavior %}
-      <h2 class="subheader">
-        Behavior
-        <small>{{ behavior }}</small>
-      </h2>
+      {% if behavior %}
+      <h2 class="subheader">Behavior <small>{{ behavior }}</small></h2>
+      <div class="alert-box warning">Behaviors will soon be removed.</div>
       <div>
         <a href="{{ behavior.get_absolute_url }}"
            class="button tiny secondary pull-right">View</a>
@@ -113,7 +127,9 @@
         <tr><th>Updated</th><td>{{ behavior.updated_on|timesince }} ago
           by {{ behavior.updated_by.get_full_name }}.</td></tr>
       </table>
+      {% endif %}
       {% endwith %}
+      {# ------------------------------------------------------------------- #}
     </div>
   </div>
 {% endblock %}

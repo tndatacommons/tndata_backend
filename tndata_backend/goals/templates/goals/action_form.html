@@ -44,32 +44,19 @@
 {% block content %}
 
 <div class="row">
-  <div class="large-6 small-12 columns">
+  <div class="large-12 small-12 columns">
     <h1>
     {% if object %}
-      Update {{acton_type_name}} {{object }}
+      Update
+      <small>{{acton_type_name}} {{object }}</small>
     {% else %}
-      Create {{action_type_name}}
+      Create <small>{{action_type_name}}</small>
     {% endif %}
     </h1>
     <p>A <strong>Notification</strong> is a container for information that
     is delivered to a user. It also contains information regarding the frequency
     with which notifications are delivered.</p>
     {% include "goals/_action_type_info.html" %}
-  </div>
-  <div class="large-6 small-12 columns">
-    <div class="panel">
-    <p><i class="fa fa-info-circle"></i> Notifications are related to other
-    pieces of data in the following manner. Categories contain goals, goals
-    contain behaviors, and behavior may have numerous notifications.</p>
-    <hr/>
-    <pre>
-Category
-  - Goal
-  -- Behavior
-  --- Notification
-    </pre>
-    </div>
   </div>
 </div>
 
