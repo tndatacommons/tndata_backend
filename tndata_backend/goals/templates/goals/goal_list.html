@@ -24,7 +24,6 @@
         <th>State</th>
         <th>Title</th>
         <th>Keywords</th>
-        <th>Behaviors</th>
         <th>Categories</th>
         <th>Icon</th>
         <th>Selected By</th>
@@ -32,7 +31,7 @@
       </thead>
       <tbody>
       {% for goal in goals %}
-        <tr>
+      <tr>
         <td>
           {% if user|is_editor or user|is_contributor:goal %}
             {% publish_deny_form user goal "dropdown" %}
@@ -51,17 +50,10 @@
           {% endfor %}
         </td>
         <td>
-          {% for behavior in goal.behavior_set.all %}
-            <span class="label {{ behavior.state_label }}"
-                  title="{{ behavior.description }}">{{ behavior }}</span>
+          {% for category in goal.categories.all %}
+            <span class="label secondary">{{ category }}</span>
           {% endfor %}
         </td>
-        <td>
-        {% for category in goal.categories.all %}
-          {{ category }}{% if not forloop.last %},<br/>{% endif %}
-        {% endfor %}
-        </td>
-
         <td class="gray">
           {% with icon=goal.get_absolute_icon %}
             {% if icon %}
@@ -70,7 +62,7 @@
           {% endwith %}
         </td>
         <td>{{ goal.usergoal__count }}</td>
-        </tr>
+      </tr>
       {% endfor %}
       </tbody>
       </table>

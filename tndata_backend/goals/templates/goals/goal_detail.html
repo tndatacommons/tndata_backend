@@ -18,16 +18,16 @@
       <h1>{{ goal }} {% goal_object_controls goal %}</h1>
       <dl>
       <dt>State</dt><dd>{{ goal|label }}</dd>
-      {% if goal.keywords %}
-        <dt>Keywords</dt>
-        <dd>
-        {% for kw in goal.keywords %}
-          <span class="label secondary">{{ kw }}</span>
-        {% endfor %}
-        </dd>
-      {% endif %}
-      <dt>Description</dt><dd>{{ goal.description|markdown }}</dt>
-      <dt>More Info</dt><dd>{{ goal.more_info|markdown }}</dt>
+      <dt>Keywords</dt>
+      <dd>
+      {% for kw in goal.keywords %}
+        <span class="label secondary">{{ kw }}</span>
+      {% empty %}
+        <em>none</em>
+      {% endfor %}
+      </dd>
+      <dt>Description</dt><dd>{{ goal.description|markdown|default:"none" }}</dt>
+      <dt>More Info</dt><dd>{{ goal.more_info|markdown|default:"none" }}</dt>
       <dt>Icon</dt><dd class="gray">
         {# ------------- Async file upload form ------------------- #}
         {% if user == goal.created_by or user|is_editor %}
@@ -57,10 +57,8 @@
       {% publish_deny_form user goal %}
     </div>
     <div class="large-6 small-12 columns">
-      {% if goal.notes %}
-        <h2 class="subheader">Notes</h2>
-        <div class="panel">{{ goal.notes|markdown }}</div>
-      {% endif %}
+      <h2 class="subheader">Notes</h2>
+      <div class="panel">{{ goal.notes|markdown|default:"none" }}</div>
       <h2 class="subheader">Categories</h2>
       <p><strong>{{goal}}</strong> is listed in the following Categories.</p>
       <ul>
@@ -72,76 +70,47 @@
       {% endfor %}
       </ul>
 
-      <h2 class="subheader">Behaviors</h2>
+      <h2 class="subheader">Notifications
+        <small> <a class="pull-right button tiny secondary"
+           href="{% url 'goals:action-list' %}?goal={{ goal.id }}">
+           <i class="fa fa-eye"></i> View Notifications</a></small>
+      </h2>
       {% csrf_token %} {# needed by our ordering forms #}
-      <p>
-        <a class="pull-right button tiny secondary"
-           href="{% url 'goals:behavior-list' %}?goal={{ goal.id }}">
-           <i class="fa fa-eye"></i> View Behaviors</a>
-        <strong>{{ goal }}</strong>
-        contains the following behaviors and notifications.
-      </p>
-      <ul style="list-style-type: none">
-      {% for behavior in goal.behavior_set.all %}
-        <li>
-          {{behavior|label}}
-          <strong>
-            <a href="{{ behavior.get_absolute_url }}"
-               data-tooltip aria-haspopup="true"
-               title="{{ behavior.description }}">{{behavior}}</a>
-          </strong>
-          {# -- Allow re-ordering behaviors --------------- #}
+      <p><strong>{{ goal }}</strong> contains the following notifications.</p>
+      <ul class="action-list clearfix">
+      {% for action in goal.action_set.all %}
+        <li class="clearfix">
+          {# -- Allow re-ordering actions --------------- #}
           {% if user|is_author %}
           <select
-            id="behavior-update-{{behavior.id}}"
+            id="action-update-{{action.id}}"
             class="pull-left no-chosen behavior-update"
             style="margin: 0 20px 0 0;width:50px;"
-            data-behaviorid="{{behavior.id}}">
+            data-actionid="{{action.id}}">
           {% for v in order_values %}
             <option
               value="{{v}}"
-              {% if behavior.sequence_order == v %} selected="selected"{% endif %}>
+              {% if action.sequence_order == v %} selected="selected"{% endif %}>
               {{v}}</option>
           {% endfor %}
           </select>
           {% endif %}
           {# -------------------------------------------- #}
-          <ul class="action-list clearfix">
-            {% for action in behavior.action_set.all %}
-              <li>
-                {# -- Allow re-ordering actions --------------- #}
-                {% if user|is_author %}
-                <select
-                  id="action-update-{{action.id}}"
-                  class="pull-left no-chosen action-update"
-                  style="margin: 0 20px 0 0;width:50px;"
-                  data-actionid="{{action.id}}">
-                {% for v in order_values %}
-                  <option
-                    value="{{v}}"
-                    {% if action.sequence_order == v %} selected="selected"{% endif %}>
-                    {{v}}</option>
-                {% endfor %}
-                </select>
-                {% endif %}
-                {# -------------------------------------------- #}
-                {{ action|label }}
-                <a href="{{ action.get_absolute_url }}"
-                   data-tooltip aria-haspopup="true"
-                   title="{{ action.description }}">{{ action }}</a>
-                <small>{{ action.default_trigger.time_details }}</small>
-              </li>
-            {% endfor %}
-          </ul>
+          {{action|label}}
+          <strong>
+            <a href="{{ action.get_absolute_url }}"
+               data-tooltip aria-haspopup="true"
+               title="{{ action.description }}">{{action}}</a>
+          </strong>
         </li>
       {% empty %}
-        <li><em>There are currently no Behaviors listed in this Goal</em></li>
+        <li><em>There are no Notifications in this Goal</em></li>
       {% endfor %}
       </ul>
 
       <p><a class="button tiny info pull-right"
-            href="{% url 'goals:behavior-create' %}?goal={{ goal.id }}">
-            <i class="fa fa-plus-circle"></i> New Behavior</a></p>
+            href="{% url 'goals:action-create' %}?goal={{ goal.id }}">
+            <i class="fa fa-plus-circle"></i> New Notification</a></p>
 
     </div>
   </div> {# end .row #}

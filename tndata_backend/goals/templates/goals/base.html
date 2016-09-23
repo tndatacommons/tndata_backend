@@ -16,7 +16,7 @@ select.success {background-color: #8f8;}
 select.error {background-color: #f88;}
 
 select[multiple] {min-height: 100px;}
-/* Nested lists; i.e. the tree of Goals/Behaviors/Actions */
+/* Nested lists; i.e. the tree of Goals/Actions */
 ul.nested {list-style-type:none; margin-left: 0px;}
 ul.nested ul {list-style-type:none;}
 ul.nested ul li ul {list-style-type:none;}
@@ -169,6 +169,7 @@ td {overflow-wrap: break-word;}
           </ul>
         </li>
       {% endif %}
+
       {% if perms.goals.view_category %}
         <li class="divider"></li>
         {% with addobj=perms.goals.add_category %}
@@ -184,6 +185,7 @@ td {overflow-wrap: break-word;}
         </li>
         {% endwith %}
       {% endif %}
+
       {% if perms.goals.view_goal %}
         <li class="divider"></li>
         {% with addobj=perms.goals.add_goal %}
@@ -198,20 +200,7 @@ td {overflow-wrap: break-word;}
         </li>
         {% endwith %}
       {% endif %}
-      {% if perms.goals.view_behavior %}
-        <li class="divider"></li>
-        {% with addobj=perms.goals.add_goal %}
-        <li{% if addobj %} class="has-dropdown"{% endif %}>
-          <a href="{% url 'goals:behavior-list' %}">Behaviors</a>
-          {% if addobj %}
-          <ul class="dropdown">
-            <li><a href="{% url 'goals:behavior-create' %}">
-            <i class="fa fa-plus-circle"></i> Behavior</a></li>
-          </ul>
-          {% endif %}
-        </li>
-        {% endwith %}
-      {% endif %}
+
       {% if perms.goals.view_action %}
         <li class="divider"></li>
         {% with addobj=perms.goals.add_action %}
@@ -242,7 +231,7 @@ td {overflow-wrap: break-word;}
         <div class="row collapse">
           <div class="small-10 columns">
             <input id="id_q" name="q" type="search"
-                   placeholder="Search Categories, Goals, Behaviors, Notifications">
+                   placeholder="Search Categories, Goals, Notifications">
           </div>
           <div class="small-2 columns">
             <button class="button postfix"><i class="fa fa-search"></i> Search</button>

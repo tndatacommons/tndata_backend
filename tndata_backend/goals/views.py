@@ -592,7 +592,7 @@ class GoalListView(ContentViewerMixin, StateFilterMixin, ListView):
         queryset = queryset.annotate(Count('usergoal'))
         if self.request.GET.get('category', False):
             queryset = queryset.filter(categories__pk=self.request.GET['category'])
-        return queryset.prefetch_related("behavior_set", "categories")
+        return queryset.prefetch_related("categories")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -611,21 +611,11 @@ class GoalDetailView(ContentViewerMixin, DetailView):
         context = super().get_context_data(**kwargs)
         goal = context['object']
 
-        # IDs for this Goal's child behaviors
-        bids = goal.behavior_set.values_list('pk', flat=True)
-        order_values = Behavior.objects.filter(pk__in=bids).aggregate(
-            Max('sequence_order')
-        )
-        order_values = order_values.get('sequence_order__max') or 0
-
-        # include values for the Action's sequence_orders
-        result = Action.objects.filter(behavior__id__in=bids).aggregate(
-            Max('sequence_order')
-        )
-
-        # Pick the larger order value from Behaviors and Actions
-        result = max(order_values, result.get('sequence_order__max') or 0)
-        context['order_values'] = list(range(result + 5))
+        # Generate a list of int Ordering values based on existing numbers
+        # used for this Goal's actions.
+        max_order = goal.action_set.aggregate(Max('sequence_order'))
+        max_order = max_order.get('sequence_order__max') or 0
+        context['order_values'] = list(range(max_order + 5))
         return context
 
 
