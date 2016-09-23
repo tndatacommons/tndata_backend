@@ -24,10 +24,9 @@ from utils.user_utils import local_day_range
 from .custom import CustomAction
 from .packages import PackageEnrollment, Program
 from .progress import DailyProgress, UserCompletedAction
-from .public import Action, Behavior, Category, Goal, action_unpublished
+from .public import Action, Category, Goal, action_unpublished
 from .public import _enroll_program_members
-from .users import UserAction, UserBehavior, UserCategory, UserGoal
-from .users import userbehavior_completed
+from .users import UserAction, UserCategory, UserGoal
 from .triggers import Trigger
 
 from ..utils import clean_title, clean_notification, strip
@@ -66,11 +65,10 @@ def auto_enroll(sender, **kwargs):
 
 
 @receiver(post_save, sender=CustomAction, dispatch_uid="coru_daily_progress")
-@receiver(post_save, sender=UserBehavior, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserAction, dispatch_uid="coru_daily_progress")
 @receiver(post_save, sender=UserCompletedAction, dispatch_uid="coru_daily_progress")
 def create_or_update_daily_progress(sender, instance, created, raw, using, **kwargs):
-    """When a CustomAction, UserAction, UserBehavior, or UserCompletedAction
+    """When a CustomAction, UserAction, or UserCompletedAction
     is created, we want to create (if necessary) or update the day's
     DailyProgress for the user.
     """
@@ -81,11 +79,10 @@ def create_or_update_daily_progress(sender, instance, created, raw, using, **kwa
 
 
 @receiver(post_delete, sender=CustomAction, dispatch_uid="coru_daily_progress")
-@receiver(post_delete, sender=UserBehavior, dispatch_uid="coru_daily_progress")
 @receiver(post_delete, sender=UserAction, dispatch_uid="coru_daily_progress")
 def update_daily_progress(sender, instance, using, **kwargs):
-    """When a CustomAction, UserAction or UserBehavior is deleted, we want to
-    update the day's DailyProgress again to reflect the change.
+    """When a CustomAction, UserAction is deleted, we want to update the day's
+    DailyProgress again to reflect the change.
     """
     dp = DailyProgress.objects.for_today(instance.user)
     dp.update_stats()
@@ -156,20 +153,7 @@ def remove_queued_messages(sender, instance, *args, **kwargs):
         pass
 
 
-@receiver(post_save, sender=Action, dispatch_uid="set-parent-behavior-action-counts")
-def update_parent_behavior_action_counts(sender, instance, *args, **kwargs):
-    """When an action is saved, we need to tell its parent Behavior to update
-    it's count of all child actions (for dynamic behaviors)."""
-    if instance and instance.id and instance.behavior:
-        # NOTE: Saving an Action -> Saves it's parent Behavior, but this is
-        # expensive (because it does lookups on Goals + Categories. Additionally,
-        # our Views may call Action.save() several times in a row, so we really
-        # only want to do this once.
-        instance.behavior.save()
-
-
 @receiver(pre_save, sender=Action)
-@receiver(pre_save, sender=Behavior)
 @receiver(pre_save, sender=Goal)
 @receiver(pre_save, sender=Category)
 def clean_content(sender, instance, raw, using, **kwargs):
@@ -187,7 +171,6 @@ def clean_content(sender, instance, raw, using, **kwargs):
 
 
 @receiver(post_delete, sender=Action)
-@receiver(post_delete, sender=Behavior)
 @receiver(post_delete, sender=Goal)
 @receiver(post_delete, sender=Category)
 def delete_model_images(sender, instance, using, **kwargs):
@@ -204,72 +187,6 @@ def delete_model_images(sender, instance, using, **kwargs):
         if hasattr(instance, 'icon') and instance.icon:
             # instance.icon.delete()
             msg += "\nIcon: {}".format(instance.icon.url)
-
-        if hasattr(instance, 'image') and instance.image:
-            # instance.image.delete()
-            msg += "\nImage: {}".format(instance.image.url)
-
-        post_private_message("bkmontgomery", msg)
-
-
-@receiver(pre_delete, sender=UserGoal, dispatch_uid="del_goal_behaviors")
-def delete_goal_child_behaviors(sender, instance, using, **kwargs):
-    """If a user is removing a goal, delete all of the user's selected
-    behaviors that have *no other* parent goal."""
-    # Get a list of all goals selected by the user, excluding the one
-    # we're about to remove.
-    user_goals = UserGoal.objects.filter(user=instance.user)
-    user_goals = user_goals.exclude(id=instance.id)
-    user_goals = user_goals.values_list('goal', flat=True)
-
-    # Delete all the user's behaviors that lie ONLY in the goal we're
-    # about to remove
-    user_behaviors = instance.user.userbehavior_set.all()
-    user_behaviors = user_behaviors.exclude(behavior__goals__in=user_goals)
-    user_behaviors.delete()
-
-
-@receiver(pre_delete, sender=UserBehavior, dispatch_uid="del_behavior_actions")
-def delete_behavior_child_actions(sender, instance, using, **kwargs):
-    """If a user is removing a behavior, delete all of the user's selected
-    actions that are a child of this behavior."""
-    if instance and instance.id and instance.behavior:
-        user_actions = instance.user.useraction_set.filter(
-            action__behavior=instance.behavior
-        )
-        user_actions.delete()
-
-
-@receiver(post_delete, sender=UserBehavior)
-def remove_behavior_reminders(sender, instance, using, **kwargs):
-    """If a user deletes ALL of their UserBehavior instances, we should also
-    remove the currently-queued GCMMessage for the Behavior reminder.
-
-    """
-    # NOTE: All behavior reminders use the default trigger, and we're not
-    # actually connecting them to any content types, so that's null.
-    if not UserBehavior.objects.filter(user=instance.user).exists():
-        try:
-            from notifications.models import GCMMessage
-            messages = GCMMessage.objects.for_model("behavior", include_null=True)
-            messages = messages.filter(user=instance.user)
-            messages.delete()
-        except (ImportError, ContentType.DoesNotExist):
-            pass
-
-
-@receiver(post_save, sender=UserAction, dispatch_uid="create-parent-userbehavior")
-def create_parent_user_behavior(sender, instance, using, **kwargs):
-    """If a user doens't have a UserBehavior object for the UserAction's
-    parent behavior this will create one.
-
-    """
-    params = {'user': instance.user, 'behavior': instance.action.behavior}
-    if not UserBehavior.objects.filter(**params).exists():
-        UserBehavior.objects.create(
-            user=instance.user,
-            behavior=instance.action.behavior
-        )
 
 
 @receiver(post_save, sender=UserAction, dispatch_uid="create-relative-reminder")
@@ -373,43 +290,14 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
         )
         messages.delete()
 
-    # Check the Action's parent behavior. If all of the UserActions
+    # TODO: Check the Action's parent behavior. If all of the UserActions
     # within that behavior are completed, mark the Behavior as complete.
     # Don't really like altering a behavior here, but... :-/
-    if completed and instance.sibling_actions_completed():
-        behavior = instance.action.behavior
-        ub = instance.user.userbehavior_set.get(behavior=behavior)
-        ub.complete()
-        ub.save()
-
-
-@receiver(userbehavior_completed, sender=UserBehavior, dispatch_uid="ub-compt")
-def check_user_goals(sender, instance, **kwargs):
-    """When a UserBehavior is marked as completed, that means all of the
-    Behavior's Actions have a related UserCompletedAction object, and that
-    the Behavior is "done". We now need to check if the Behavior's parent Goal
-    is "done", by checking to see if all of the user's selected behaviors
-    within that goal have been completed.
-
-    """
-    user = instance.user
-
-    # Parent goals for this Behavior
-    goals = instance.behavior.goals.values_list('pk', flat=True)
-
-    # Those that are selected by the user.
-    usergoals = user.usergoal_set.filter(goal__pk__in=goals)
-    goals = usergoals.values_list('goal__pk', flat=True)
-
-    # If there are no, uncompletd UserBehaviors, then the goal is compelted.
-    incomplete_userbehaviors = user.userbehavior_set.filter(
-        behavior__goals__in=goals,
-        completed=False
-    )
-    if not incomplete_userbehaviors.exists():
-        for ug in usergoals:
-            ug.complete()
-            ug.save()
+    # if completed and instance.sibling_actions_completed():
+        # behavior = instance.action.behavior
+        # ub = instance.user.userbehavior_set.get(behavior=behavior)
+        # ub.complete()
+        # ub.save()
 
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")
@@ -431,36 +319,12 @@ def delete_category_child_goals(sender, instance, using, **kwargs):
 
 @receiver(post_save, sender=UserCategory, dispatch_uid="adopt_usercategories")
 @receiver(post_save, sender=UserGoal, dispatch_uid="adopt_usergoals")
-@receiver(post_save, sender=UserBehavior, dispatch_uid="adopt_userbehaviors")
 @receiver(post_save, sender=UserAction, dispatch_uid="adopt_useractions")
 def user_adopted_content(sender, instance, created, raw, using, **kwargs):
-    """Record some metrics when a user adopts a piece of behavior content."""
+    """Record some metrics when a user adopts a piece of content."""
     if created:
         key = "{}-created".format(sender.__name__.lower())
         metric(key, category="User Interactions")
-
-
-@receiver(pre_save, sender=UserAction, dispatch_uid='bust_useraction_cache')
-@receiver(pre_save, sender=UserBehavior, dispatch_uid='bust_userbehavior_cache')
-@receiver(pre_save, sender=UserGoal, dispatch_uid='bust_usergoal_cache')
-@receiver(pre_save, sender=UserCategory, dispatch_uid='bust_usercategory_cache')
-def bust_cache(sender, instance, raw, using, **kwargs):
-    """This is a little messy, but whenever a user's mapping to content is saved
-    we need to bust some cache values. This is mostly for the giant api endpoint
-    that exposes a lot of user data (e.g. in the userprofile app).
-
-    """
-    # A mapping of model to cache keys
-    cache_key = {
-        UserAction: '{}-User.get_actions',
-        UserBehavior: '{}-User.get_behaviors',
-        UserGoal: '{}-User.get_goals',
-        UserCategory: '{}-User.get_categories',
-    }
-    cache_key = cache_key.get(sender, None)
-    if cache_key:
-        cache_key = cache_key.format(instance.user.id)
-        cache.delete(cache_key)
 
 
 @receiver(post_save, sender=PackageEnrollment, dispatch_uid="notifiy_for_new_package")
@@ -479,28 +343,3 @@ def notify_for_new_package(sender, instance, created, **kwargs):
             obj=instance,
             priority=GCMMessage.HIGH
         )
-
-
-@receiver(m2m_changed, sender=Behavior.goals.through,
-          dispatch_uid="behavior_goals_changed")
-def behavior_goals_changed(sender, instance, **kwargs):
-    """When a Goal is added to Behavior.goals (m2m field), we want to update
-    the Behavior's list of goal_ids (an ArrayField)
-
-    Sender: goals.models.public.Behavior_goals
-    Instance: A Behavior object.
-
-    Additional kwargs:
-
-    - model: could be Goal or Program
-    - action: look for `post_add` (after we've finished adding the goal)
-    - pk_set: the set of Goal PKs added
-
-    """
-    changed = kwargs.get('action') in ['post_add', 'post_remove']
-    is_behavior = instance.__class__.__name__ == "Behavior"
-
-    # If `behavior.goals.add(goal)` is called, we need to update `behavior.goal_ids`
-    if changed and is_behavior:
-        instance.goal_ids = sorted(instance.goals.values_list('id', flat=True))
-        instance.save(update_fields=['goal_ids'])
