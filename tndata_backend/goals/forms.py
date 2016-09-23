@@ -129,14 +129,14 @@ class ActionForm(forms.ModelForm):
         Action.ASKING: {'action_type': Action.ASKING},
     }
 
-    behavior = forms.ModelChoiceField(
-        queryset=Behavior.objects.all().order_by("title")
+    goals = forms.ModelMultipleChoiceField(
+        queryset=Goal.objects.all().order_by("title")
     )
 
     class Meta:
         model = Action
         fields = [
-            'notification_text', 'sequence_order', 'behavior', 'title',
+            'notification_text', 'sequence_order', 'title', 'goals',
             'description', 'more_info', 'external_resource',
             'external_resource_name', 'source_link', 'source_notes',
             'notes', 'icon', 'priority', 'action_type',
@@ -183,7 +183,7 @@ class ActionForm(forms.ModelForm):
                         _("Notification Details"),
                         "notification_text",
                         "title",
-                        "behavior",
+                        "goals",
                         "description",
                         "more_info",
                         "icon",
