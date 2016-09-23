@@ -57,6 +57,8 @@ def label_state(obj):
         {{ category.state|label }}
 
     """
+    if obj is None:
+        return ''
     markup = '<span class="{0} label">{1}</span>'
     return mark_safe(markup.format(obj.state_label, obj.state_title))
 
@@ -70,6 +72,8 @@ def label_priority(obj):
         {{ action.priority|label }}
 
     """
+    if obj is None:
+        return ''
     labels = {
         1: 'alert',
         2: 'warning',
