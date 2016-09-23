@@ -2478,7 +2478,33 @@ def report_actions(request):
         context['subreport_title'] = "Trigger options"
         context['len_options'] = []
         context['trigger'] = 'none'
+    elif subreport == "emptyfields":
+        context['subreport_title'] = "Empty Action Fields"
+        total_actions = Action.objects.count()
+        source_link = Action.objects.filter(source_link='').count()
+        source_notes = Action.objects.filter(source_notes='').count()
+        notes = Action.objects.filter(notes='').count()
+        more_info = Action.objects.filter(more_info='').count()
+        description = Action.objects.filter(description='').count()
+        external_resource = Action.objects.filter(external_resource='').count()
+        external_resource_name = Action.objects.filter(external_resource_name='').count()
+        notification_text = Action.objects.filter(notification_text='').count()
 
+        # report is a list of (fieldname, empty_count, difference)
+        context['report'] = [
+            ('source_link', source_link, total_actions - source_link),
+            ('source_notes', source_notes, total_actions - source_notes),
+            ('notes', notes, total_actions - notes),
+            ('more_info', more_info, total_actions - more_info),
+            ('description', description, total_actions - description),
+            ('external_resource', external_resource,
+                total_actions - external_resource),
+            ('external_resource_name', external_resource_name,
+                total_actions - external_resource_name),
+            ('notification_text', notification_text,
+                total_actions - notification_text),
+        ]
+        context['total_actions'] = total_actions
     return render(request, 'goals/report_actions.html', context)
 
 

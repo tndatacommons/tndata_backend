@@ -9,7 +9,7 @@
   {{ block.super }}
   <script src="{% static 'js/Chart.min.js' %}"></script>
   <style type="text/css">
-    canvas {
+    canvas#state-counts {
       display: block;
       margin: .5em auto;
       width: 200px;
@@ -52,12 +52,27 @@
       <li><a href="?sub=triggers">Dynamic vs. Advanced Triggers</a>.<br/>
         List  notifications based on their default trigger settings. Click this
         report to see additional search options.
+      <li><a href="?sub=emptyfields">Empty Fields</a>.<br/>
+        List a count notifications that have empty text fields. This report counts
+        the text in the following:
+        <ul>
+        <li><code>source_link</code></li>
+        <li><code>source_notes</code></li>
+        <li><code>notes</code></li>
+        <li><code>more_info</code></li>
+        <li><code>description</code></li>
+        <li><code>external_resource</code></li>
+        <li><code>external_resource_name</code></li>
+        <li><code>external_resource_type</code></li>
+        <li><code>notification_text</code></li>
+        </ul>
+      </li>
     </ul>
 
-    {% if subreport and actions %}
+    {% if subreport_title %}
     <h3>
       {{ subreport_title }}
-      <small>{{ actions.count }} items</small>
+      {% if actions %}<small>{{ actions.count }} items</small>{% endif %}
     </h3>
     {% endif %}
 
@@ -95,6 +110,47 @@
       {% endfor %}
       characters.
     </p>
+    {% endif %}
+
+    {% if subreport == "emptyfields" %}
+      <table>
+        <thead>
+          <tr>
+            <th>Field name</th>
+            <th>Empty items</th>
+            <th>Chart</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for field, count, diff in report %}
+          <tr>
+            <td><code>{{ field }}</code></td>
+            <td>{{ count }} / {{ total_actions }}</td>
+            <td>
+              <canvas id="ef-{{ field }}" width="80" height="80"></canvas>
+              <script>
+              var ctx = document.getElementById("ef-{{ field }}").getContext("2d");
+              var data = [
+                {
+                  value: {{ diff }},
+                  color: "#e7e7e7",
+                  highlight: "#e9e9e9",
+                  label: "Contains Text"
+                },
+                {
+                  value: {{ count }},
+                  color: "#f04124",
+                  highlight: "#cf2a0e",
+                  label: "Empty"
+                }
+              ]
+              var c = new Chart(ctx).Doughnut(data);
+              </script>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     {% endif %}
 
     {% if actions %}
