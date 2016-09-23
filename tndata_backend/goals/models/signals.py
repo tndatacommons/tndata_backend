@@ -160,7 +160,7 @@ def remove_queued_messages(sender, instance, *args, **kwargs):
 def update_parent_behavior_action_counts(sender, instance, *args, **kwargs):
     """When an action is saved, we need to tell its parent Behavior to update
     it's count of all child actions (for dynamic behaviors)."""
-    if instance and instance.id:
+    if instance and instance.id and instance.behavior:
         # NOTE: Saving an Action -> Saves it's parent Behavior, but this is
         # expensive (because it does lookups on Goals + Categories. Additionally,
         # our Views may call Action.save() several times in a row, so we really
@@ -233,10 +233,11 @@ def delete_goal_child_behaviors(sender, instance, using, **kwargs):
 def delete_behavior_child_actions(sender, instance, using, **kwargs):
     """If a user is removing a behavior, delete all of the user's selected
     actions that are a child of this behavior."""
-    user_actions = instance.user.useraction_set.filter(
-        action__behavior=instance.behavior
-    )
-    user_actions.delete()
+    if instance and instance.id and instance.behavior:
+        user_actions = instance.user.useraction_set.filter(
+            action__behavior=instance.behavior
+        )
+        user_actions.delete()
 
 
 @receiver(post_delete, sender=UserBehavior)
