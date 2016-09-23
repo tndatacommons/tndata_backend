@@ -936,43 +936,38 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     context_object_name = 'actions'
     paginate_by = 50
 
+    def _filter_queryset(self, queryset):
+        search = self.request.GET.get('filter', None)
+        lookups = {
+            'empty-source_link': Q(source_link=''),
+            'empty-source_link': Q(source_link=''),
+            'empty-source_notes': Q(source_notes=''),
+            'empty-notes': Q(notes=''),
+            'empty-more_info': Q(more_info=''),
+            'empty-description': Q(description=''),
+            'empty-external_resource': Q(external_resource=''),
+            'empty-external_resource_name': Q(external_resource_name=''),
+            'empty-notification_text': Q(notification_text=''),
+            'contains-source_link': Q(source_link__gt=''),
+            'contains-source_notes': Q(source_notes__gt=''),
+            'contains-notes': Q(notes__gt=''),
+            'contains-more_info': Q(more_info__gt=''),
+            'contains-description': Q(description__gt=''),
+            'contains-external_resource': Q(external_resource__gt=''),
+            'contains-external_resource_name': Q(external_resource_name__gt=''),
+            'contains-notification_text': Q(notification_text__gt=''),
+        }
+        if search in lookups:
+            return queryset.filter(lookups[search])
+        return queryset
+
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.annotate(Count('useraction'))
         if self.request.GET.get('behavior', False):
             queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
-        elif self.request.GET.get('empty-source_link', None):
-            queryset = queryset.filter(source_link='')
-        elif self.request.GET.get('empty-source_notes', None):
-            queryset = queryset.filter(source_notes='')
-        elif self.request.GET.get('empty-notes', None):
-            queryset = queryset.filter(notes='')
-        elif self.request.GET.get('empty-more_info', None):
-            queryset = queryset.filter(more_info='')
-        elif self.request.GET.get('empty-description', None):
-            queryset = queryset.filter(description='')
-        elif self.request.GET.get('empty-external_resource', None):
-            queryset = queryset.filter(external_resource='')
-        elif self.request.GET.get('empty-external_resource_name', None):
-            queryset = queryset.filter(external_resource_name='')
-        elif self.request.GET.get('empty-notification_text', None):
-            queryset = queryset.filter(notification_text='')
-        elif self.request.GET.get('contains-source_link', None):
-            queryset = queryset.filter(source_link__gt='')
-        elif self.request.GET.get('contains-source_notes', None):
-            queryset = queryset.filter(source_notes__gt='')
-        elif self.request.GET.get('contains-notes', None):
-            queryset = queryset.filter(notes__gt='')
-        elif self.request.GET.get('contains-more_info', None):
-            queryset = queryset.filter(more_info__gt='')
-        elif self.request.GET.get('contains-description', None):
-            queryset = queryset.filter(description__gt='')
-        elif self.request.GET.get('contains-external_resource', None):
-            queryset = queryset.filter(external_resource__gt='')
-        elif self.request.GET.get('contains-external_resource_name', None):
-            queryset = queryset.filter(external_resource_name__gt='')
-        elif self.request.GET.get('contains-notification_text', None):
-            queryset = queryset.filter(notification_text__gt='')
+        # Run the result through any of our filters.
+        queryset = self._filter_queryset(queryset)
         return queryset.select_related("behavior__title").order_by('-updated_on')
 
     def get_context_data(self, *args, **kwargs):

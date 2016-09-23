@@ -126,9 +126,9 @@
           <tr>
             <td>
               <code>{{ field }}</code><br/>
-              <a href="{% url 'goals:action-list' %}?q=empty-{{ field }}">
+              <a href="{% url 'goals:action-list' %}?filter=empty-{{ field }}">
                 view empty</a> |
-              <a href="{% url 'goals:action-list' %}?q=contains-{{ field }}">
+              <a href="{% url 'goals:action-list' %}?filter=contains-{{ field }}">
                 view items with text</a>
             </td>
             <td>{{ count }} / {{ total_actions }}</td>
