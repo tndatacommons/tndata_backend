@@ -431,67 +431,20 @@ class ActionAdmin(ContentWorkflowAdmin):
     )
     search_fields = [
         'id', 'title', 'source_notes', 'notes', 'more_info', 'description',
-        'notification_text', 'behavior__title',
+        'notification_text', 'goals__title',
     ]
     list_filter = (
         'state', ActionTriggerListFilter, 'action_type', 'priority',
         'external_resource_type', ActionCategoryListFilter,
     )
     prepopulated_fields = {"title_slug": ("title", )}
-    raw_id_fields = ('behavior', 'default_trigger', 'updated_by', 'created_by')
-    actions = ['convert_to_behavior']
+    raw_id_fields = (
+        'behavior', 'goals', 'default_trigger',
+        'updated_by', 'created_by'
+    )
 
     def selected_by_users(self, obj):
         return models.UserAction.objects.filter(action=obj).count()
-
-    def convert_to_behavior(self, request, queryset):
-        """Converts the Action into a Behavior. The goals that were associated
-        with the Action's Parent behavior and now associated with the Behavior
-        created from the action."""
-
-        try:
-            with transaction.atomic():
-                num_actions = queryset.count()
-                for action in queryset:
-                    # get the parent behavior's list of goals
-                    goals = list(action.behavior.goals.all())
-
-                    # create the new behavior
-                    behavior = models.Behavior.objects.create(
-                        title=action.title,
-                        title_slug=action.title_slug,
-                        source_link=action.source_link,
-                        source_notes=action.source_notes,
-                        notes=action.notes,
-                        more_info=action.more_info,
-                        description=action.description,
-                        external_resource=action.external_resource,
-                        default_trigger=action.default_trigger,
-                        notification_text=action.notification_text,
-                        state=action.state,
-                        created_by=request.user,
-                        updated_by=request.user,
-                    )
-                    # add in the goals
-                    for g in goals:
-                        behavior.goals.add(g)
-                    behavior.save()
-
-            # Once all behavior's have been created, delete the Actions.
-            with transaction.atomic():
-                # Call each item's .delete() method so the post_delete
-                # signal gets sent... which will remove the icon/image
-                for obj in queryset:
-                    obj.delete()
-
-            msg = "Converted {0} Actions into Behaviors".format(num_actions)
-            self.message_user(request, msg)
-        except IntegrityError:
-            msg = (
-                "There was an error converting Actions. All changes have been "
-                "rolled back."
-            )
-            self.message_user(request, msg, level=ERROR)
 
 admin.site.register(models.Action, ActionAdmin)
 
