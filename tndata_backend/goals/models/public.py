@@ -614,7 +614,6 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
         - Always clean keywords (strip & lowercase)
         - Set the updated_by/created_by fields when possible.
         - Set the category_ids if possible
-        - Set the behaviors_count field.
 
         """
         self.title_slug = slugify(self.title)
@@ -622,7 +621,6 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
         if self.id:
             parents = self.categories.published().values_list("id", flat=True)
             self.category_ids = list(parents)
-            self.behaviors_count = self.behavior_set.published().count()
         kwargs = self._check_updated_or_created_by(**kwargs)
         super(Goal, self).save(*args, **kwargs)
 
