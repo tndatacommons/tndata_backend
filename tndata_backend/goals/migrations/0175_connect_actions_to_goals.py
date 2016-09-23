@@ -15,7 +15,7 @@ def add_action_goals(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('goals', '0174_action_goals'),
+        ('goals', '0174_add_action_goals_optional_behavior'),
     ]
 
     operations = [

@@ -1040,7 +1040,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     )
     title_slug = models.SlugField(max_length=256, db_index=True)
 
-    behavior = models.ForeignKey(Behavior, verbose_name="behavior")
+    behavior = models.ForeignKey(Behavior, verbose_name="behavior", null=True, blank=True)
     goals = models.ManyToManyField(Goal)
 
     action_type = models.CharField(
