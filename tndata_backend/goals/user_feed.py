@@ -140,14 +140,23 @@ def feed_data(user):
     upcoming_cas = upcoming_cas.values_list('id', flat=True)
     upcoming_cas = list(upcoming_cas)
 
-    related = ('customgoal', 'custom_trigger')
+    related = ('goal', 'customgoal', 'custom_trigger')
     customactions = user.customaction_set.select_related(*related)
     for ca in customactions.filter(id__in=upcoming_cas):
+        goal_id = None
+        goal = None
+        if ca.customgoal:
+            goal_id = ca.customgoal.id
+            goal = ca.customgoal.title
+        elif ca.goal:
+            goal_id = ca.goal.id
+            goal = ca.goal.title
+
         results['upcoming'].append({
             'action_id': ca.id,
             'action': ca.title,
-            'goal_id': ca.customgoal.id,
-            'goal': ca.customgoal.title,
+            'goal_id': goal_id,
+            'goal': goal,
             'category_color': '#176CC4',
             'category_id': '-1',
             'trigger': "{}".format(format_datetime(ca.next_reminder)),
