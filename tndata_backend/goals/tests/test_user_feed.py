@@ -11,6 +11,8 @@ from .. models import (
     Action,
     Behavior,
     Category,
+    CustomAction,
+    CustomGoal,
     Goal,
     Trigger,
     UserAction,
@@ -387,3 +389,28 @@ class TestUserFeed(TestCase):
             user_feed.selected_goals(self.user),
             [(0, self.ug)]
         )
+
+    def test_feed_data_with_custom_actions(self):
+        """Ensure that feed_data works when a user has a CustomAction with
+        a corresponding CustomGoal, as well as a CustomAction tied to an
+        existnig Goal."""
+        ca_with_goal = CustomAction.objects.create(
+            user=self.user,
+            goal=self.goal,
+            title="Custom Action with Goal",
+            next_trigger_date=timezone.now() + timedelta(minutes=5)
+        )
+
+        custom_goal = CustomGoal.objects.create(user=self.user, title="Custom Goal")
+        ca_with_custom_goal = CustomAction.objects.create(
+            user=self.user,
+            customgoal=custom_goal,
+            title="Custom Action with Custom Goal",
+            next_trigger_date=timezone.now() + timedelta(minutes=5)
+        )
+        data = user_feed.feed_data(self.user)
+
+        # Pull all the titles from the upcoming actions
+        upcoming = [a['action'] for a in data['upcoming']]
+        self.assertIn(ca_with_goal.title, upcoming)
+        self.assertIn(ca_with_custom_goal.title, upcoming)
