@@ -117,6 +117,16 @@ class UserGoal(models.Model):
         self.get_primary_category()  # will actually set the primary category.
         return result
 
+    def weekly_completions(self):
+        """The number of Actions / CustomActions that the user has completed
+        in the past 7 days within this goal"""
+        uccas = self.user.usercompletedcustomaction_set.filter(
+            state='completed', customaction__goal=self.goal).distinct().count()
+        ucas = self.user.usercompletedaction_set.filter(
+            state='completed',
+            useraction__primary_goal=self.goal).distinct().count()
+        return uccas + ucas
+
     def complete(self):
         """Mark this goal as complete"""
         self.completed = True

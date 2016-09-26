@@ -166,7 +166,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'user', 'goal', 'editable', 'primary_category',
             'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
-            'engagement_rank', 'created_on', 'object_type',
+            'engagement_rank', 'weekly_completions', 'created_on', 'object_type',
         )
         read_only_fields = ("id", "created_on")
 
