@@ -315,9 +315,19 @@ urlpatterns = [
         name='organization-delete'
     ),
     url(
+        r'^organizations/(?P<organization_id>\d+)-(?P<name_slug>.+)/add-member/$',
+        views.organization_add_member,
+        name='organization-add-member'
+    ),
+    url(
         r'^organizations/(?P<pk>\d+)-(?P<name_slug>.+)/$',
         views.OrganizationDetailView.as_view(),
         name='organization-detail'
+    ),
+    url(
+        r'^programs/(?P<program_id>\d+)/add-member/$',
+        views.program_add_member,
+        name='program-add-member'
     ),
     url(
         r'^programs/$',

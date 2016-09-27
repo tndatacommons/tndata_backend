@@ -1,0 +1,35 @@
+{% extends "goals/base.html" %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}Add Members{% endblock %}
+
+
+{% block breadcrumbs %}
+  <li><a href="{% url 'goals:organization-list' %}">Organization</a></li>
+  <li><a href="{{ organization.get_absolute_url }}">{{ organization }}</a></li>
+  <li class="current">Add Members</li>
+{% endblock %}
+
+
+{% block content %}
+<h1>{{ organization }} <small>Add Members</small></h1>
+
+<form action="{{ organization.get_add_member_url }}" method="post">
+  {% crispy form %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <hr/>
+      <p><input class="button" type="submit" value="Add"/></p>
+    </div>
+  </div>
+</form>
+
+<h2>Current Members <small>{{ organization.members.count }} members</small></h2>
+<ul>
+{% for member in organization.members.all %}
+  <li>{{ member.get_full_name }} <code>&lt;{{ member.email }}&gt;</code></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

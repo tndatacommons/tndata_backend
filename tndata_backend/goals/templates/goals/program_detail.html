@@ -43,7 +43,15 @@
       {% endfor %}
       </ul>
 
-      <h2 class="subheader">Members</h2>
+      <h2 class="subheader">Members
+          {% if user.is_staff %}
+            <small>
+            <a href="{{ program.get_add_member_url }}"
+               class="button tiny secondary">
+              <i class="fa fa-plus"></i> Add Member</a>
+            </small>
+          {% endif %}
+      </h2>
       <table>
         <thead><tr><th>Member</th><th>Joined</th></tr></thead>
         <tbody>

@@ -40,7 +40,13 @@
       {# --- Members --- #}
       {% with members=organization.members.all %}
         <h2 class="subheader">Members
-          <small>({{ members.count }})</small></h2>
+          <small>({{ members.count }})</small>
+          {% if user.is_staff %}
+            <a href="{{ organization.get_add_member_url }}"
+               class="button tiny secondary">
+              <i class="fa fa-plus"></i> Add Member</a>
+          {% endif %}
+        </h2>
         {% for obj in members %}
           {{ obj.get_full_name }}
           <small>&lt;<a href="mailto:{{ obj.email }}">

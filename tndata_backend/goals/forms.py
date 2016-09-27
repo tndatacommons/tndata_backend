@@ -475,6 +475,22 @@ class OrganizationForm(forms.ModelForm):
         return obj
 
 
+class MembersForm(forms.Form):
+    """A form to select new members for an Organization or Program."""
+    members = UserMultipleChoiceField(queryset=_users())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # Don't generate <form> tags
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Select one or more members"),
+                "members",
+            )
+        )
+
+
 class ProgramForm(forms.ModelForm):
     class Meta:
         model = Program

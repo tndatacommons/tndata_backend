@@ -73,3 +73,7 @@ class Organization(models.Model):
     def get_new_program_url(self):
         args = [self.pk, self.name_slug]
         return reverse('goals:program-create', args=args)
+
+    def get_add_member_url(self):
+        args = [self.pk, self.name_slug]
+        return reverse('goals:organization-add-member', args=args)

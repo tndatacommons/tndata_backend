@@ -49,6 +49,7 @@ from . forms import (
     DisableTriggerForm,
     EnrollmentReminderForm,
     GoalForm,
+    MembersForm,
     OrganizationForm,
     PackageEnrollmentForm,
     ProgramForm,
@@ -1315,6 +1316,47 @@ class OrganizationDeleteView(StaffRequiredMixin, DeleteView):
             "Your organization ({}) has been deleted.".format(obj.name)
         )
         return result
+
+
+@user_passes_test(staff_required, login_url='/')
+def organization_add_member(request, organization_id, name_slug=None):
+    """Allow a staff user to add a member to an organization."""
+    organization = get_object_or_404(Organization, pk=organization_id)
+
+    if request.method == "POST":
+        form = MembersForm(request.POST)
+        if form.is_valid():
+            for member in form.cleaned_data['members']:
+                organization.members.add(member)
+            organization.save()
+            messages.success(request, "Users have been added")
+            return redirect(organization.get_absolute_url())
+    else:
+        form = MembersForm()
+
+    context = {'organization': organization, 'form': form}
+    return render(request, 'goals/organization_add_member.html', context)
+
+
+@user_passes_test(staff_required, login_url='/')
+def program_add_member(request, program_id):
+    """Allow a staff user to add a member to a program."""
+    program = get_object_or_404(Program, pk=program_id)
+
+    if request.method == "POST":
+        form = MembersForm(request.POST)
+        if form.is_valid():
+            for member in form.cleaned_data['members']:
+                program.members.add(member)
+            program.save()
+            messages.success(request, "Users have been added")
+            return redirect(program.get_absolute_url())
+    else:
+        form = MembersForm()
+
+    context = {'program': program, 'form': form}
+    return render(request, 'goals/program_add_member.html', context)
+
 
 
 class ProgramListView(StaffRequiredMixin, ListView):

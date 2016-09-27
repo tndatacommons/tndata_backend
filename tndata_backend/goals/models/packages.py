@@ -80,6 +80,9 @@ class Program(models.Model):
                 self.pk, self.name_slug]
         return reverse('goals:program-delete', args=args)
 
+    def get_add_member_url(self):
+        return reverse('goals:program-add-member', args=[self.pk])
+
     def get_join_url(self):
         return "{}?organization={}&program={}".format(
             reverse("join"),
