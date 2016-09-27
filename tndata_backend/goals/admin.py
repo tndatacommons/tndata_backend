@@ -504,6 +504,13 @@ class OrganizationAdmin(admin.ModelAdmin):
 admin.site.register(models.Organization, OrganizationAdmin)
 
 
+class ProgramAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization', 'created_on', 'updated_on')
+    search_fields = ['name', 'organization__name']
+    prepopulated_fields = {"name_slug": ("name", )}
+    raw_id_fields = ('organization', 'members', 'categories', 'auto_enrolled_goals')
+admin.site.register(models.Program, ProgramAdmin)
+
 
 class UserCategoryAdmin(UserRelatedModelAdmin):
     list_display = (
