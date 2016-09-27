@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from utils.mixins import LoginRequiredMixin
 from utils.user_utils import get_all_permissions
+from . user_data import USER_OBJECT_TYPES, remove_app_data
 from . forms import UserForm, UserProfileForm
 from . models import UserProfile
 
@@ -133,61 +134,35 @@ def admin_remove_app_data(request):
     users = User.objects.filter(id__in=ids)
 
     # Info to populate select fields for the types of objects to delete.
-    object_types = [
-        ('awards', 'Badges', "Delete all of the user's awarded Badges"),
-        ('customgoal', 'Custom Goals', "Delete all of the user's custom goals"),
-        ('customaction', 'Custom Actions',
-            "Delete all of the user's custom actions"),
-        ('usercompletedcustomaction', 'Completed Custom Actions',
-            "Delete all of the user's history of completed custom actions"),
-        ('customactionfeedback', 'Custom Action Feedback',
-            "Delete all of the user-supplied feedback associated with their "
-            "custom actions"),
-        ('useraction', 'Actions', "Remove the user's selected Action data"),
-        ('userbehavior', 'Behaviors', "Remove the user's selected Behavior data"),
-        ('usergoal', 'Goals', "Remove the user's selected Goal data"),
-        ('usercategory', 'Categories',
-            "Remove the user's selected Categories. This will also force them"
-            " through onboarding again"),
-        ('trigger', 'Triggers', "Remove the user's custom triggers"),
-        ('usercompletedaction', 'Completed Actions',
-            "Remove the user's history of completed actions"),
-        ('dailyprogress', 'Daily Progress',
-            "Remove the user's daily progress snapshots"),
-        ('packageenrollment', 'Package Enrollment',
-            "Remove the user from all packages"),
-        ('gcmmessage', 'GCM Messages', "Delete all queued GCM Messages"),
-    ]
 
+    object_types = USER_OBJECT_TYPES
     if request.method == "POST":
-        to_remove = [
+        # See which items have been selected
+        items_to_remove = [
             obj for obj, status in request.POST.items() if status == 'on'
         ]
-        for user in users:
-            for ot in to_remove:
-                if ot == "awards":
-                    user.badges.all().delete()
-                else:
-                    # e.g. call: user.useraction_set.all().delete()
-                    attr = "{}_set".format(ot)
-                    getattr(user, attr).all().delete()
 
-        if 'usercategory' in to_remove:
-            user.userprofile.needs_onboarding = True
-            user.userprofile.save()
-
-        messages.success(request, "The appliation data was cleared.")
+        # Do the deletion.
+        remove_app_data(users, items_to_remove)
+        messages.success(request, "The data has been queued for removal.")
 
         url = "/admin/auth/user/"
         if query:
             url = "{}?q={}".format(url, query)
         return HttpResponseRedirect(url)
     else:
+        # Include a count of the number of items each user has.
         counts = {t[0]: 0 for t in object_types}
         for user in users:
             for ot in object_types:
                 if ot[0] == "awards":
                     counts['awards'] = user.badges.count()
+                elif ot[0] == "organization":
+                    counts['organization'] = (
+                        user.member_organizations.count() +
+                        user.admin_organizations.count() +
+                        user.staff_organizations.count()
+                    )
                 else:
                     counts[ot[0]] += getattr(user, ot[0] + "_set").count()
         object_types = [t + (counts[t[0]], ) for t in object_types]
