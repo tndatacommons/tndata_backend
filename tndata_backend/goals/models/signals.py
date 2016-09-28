@@ -290,14 +290,12 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
         )
         messages.delete()
 
-    # TODO: Check the Action's parent behavior. If all of the UserActions
-    # within that behavior are completed, mark the Behavior as complete.
-    # Don't really like altering a behavior here, but... :-/
-    # if completed and instance.sibling_actions_completed():
-        # behavior = instance.action.behavior
-        # ub = instance.user.userbehavior_set.get(behavior=behavior)
-        # ub.complete()
-        # ub.save()
+    # Check the UserAction's primary goal. If all of the UserActions
+    # within taht primary goal are completed, mark the UserGoal as completed.
+    if completed and instance.sibling_actions_completed():
+        ug = instance.usergoal
+        ug.complete()
+        ug.save()
 
 
 @receiver(pre_delete, sender=UserCategory, dispatch_uid="del_cat_goals")

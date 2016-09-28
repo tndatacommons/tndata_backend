@@ -74,21 +74,26 @@ class UserCompletedAction(models.Model):
     def snoozed(self):
         return self.state == "snoozed"
 
+    @property
+    def usergoal(self):
+        ug = self.user.usergoal_set.filter(goal=self.useraction.primary_goal)
+        return ug.first()
+
     def sibling_actions_completed(self):
-        """Query to see if sibling actions (those under the same Behavior)
+        """Query to see if sibling actions (those under the same primary goal)
         have been completed.
 
         Returns True if all the actions are completed, False otherwise.
 
         """
-        # Note: this query is for UserActions under the same behavior that
+        # Note: this query is for UserActions under the same primary goal that
         # have not been completed. If this returns results, the sibling actions
         # have not been completed.
         return not UserAction.objects.filter(
             user=self.user,
-            action__behavior=self.action.behavior,
+            primary_goal=self.useraction.primary_goal,
             usercompletedaction=None
-        ).exists()
+        ).distinct().exists()
 
     objects = UserCompletedActionManager()
 
