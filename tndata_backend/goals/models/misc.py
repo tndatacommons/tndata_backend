@@ -5,7 +5,7 @@ Misc functions and utilities that are used by this app's models.
 from django.core.cache import cache
 from django.db import connection
 
-from .public import Action, Behavior, Goal, Category
+from .public import Action, Goal, Category
 
 
 def _custom_triggers_allowed(user, user_object, timeout=90):
@@ -15,7 +15,7 @@ def _custom_triggers_allowed(user, user_object, timeout=90):
     for a period.
 
     That way we don't have to perform this operation for every UserCategory,
-    UserGoal, UserBehavior, UserAction selected by the user during serialization.
+    UserGoal, UserAction selected by the user during serialization.
 
     """
     object_type = user_object.__class__.__name__.lower()
@@ -35,18 +35,13 @@ def _custom_triggers_allowed(user, user_object, timeout=90):
         qs = user.usergoal_set.filter(goal__id__in=restricted_goals)
         restricted_user_goals = qs.values_list('id', flat=True)
 
-        # List of UserBehavior IDs that don't allow custom triggers
-        qs = user.userbehavior_set.filter(behavior__goals__id__in=restricted_goals)
-        restricted_user_behaviors = qs.values_list('id', flat=True)
-
         # List of UserAction IDs that don't allow custom triggers
-        qs = user.useraction_set.filter(action__behavior__goals__id__in=restricted_goals)
+        qs = user.useraction_set.filter(action__goals__id__in=restricted_goals)
         restricted_user_actions = qs.values_list('id', flat=True)
 
         restricted = {
             'usercategory': restricted_user_categories,
             'usergoal': restricted_user_goals,
-            'userbehavior': restricted_user_behaviors,
             'useraction': restricted_user_actions,
         }
         cache.set(cache_key, restricted, timeout=timeout)
@@ -75,26 +70,6 @@ limit %s
     counts = [t[0] for t in results]
     ids = [t[1] for t in results]
     titles = Action.objects.filter(id__in=ids).values_list('title', flat=True)
-    return list(zip(titles, counts))
-
-
-def popular_behaviors(top=10):
-    """Returns a list of [(title, count), ... ] tuples for popular Behaviors."""
-
-    cursor = connection.cursor()
-    query = """
-select count(behavior_id) as bid_count, behavior_id
-from goals_userbehavior group by behavior_id
-order by bid_count desc
-limit %s
-"""
-    cursor.execute(query, [top])
-    results = cursor.fetchall()
-
-    # split out the counts & action ids so we can look up the relevant titles
-    counts = [t[0] for t in results]
-    ids = [t[1] for t in results]
-    titles = Behavior.objects.filter(id__in=ids).values_list('title', flat=True)
     return list(zip(titles, counts))
 
 

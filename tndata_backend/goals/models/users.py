@@ -273,9 +273,7 @@ class UserBehavior(models.Model):
 
     @property
     def custom_triggers_allowed(self):
-        """Check to see if the user/behavior is the child of a goal within a
-        Package where custom triggers are restricted. """
-        return _custom_triggers_allowed(self.user, self)
+        return False
 
     def get_user_categories(self):
         """Returns a QuerySet of published Categories related to this Behavior,

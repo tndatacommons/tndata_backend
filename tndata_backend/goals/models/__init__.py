@@ -6,7 +6,6 @@ from .custom import (  # NOQA
 )
 from .misc import (  # NOQA
     popular_actions,
-    popular_behaviors,
     popular_goals,
     popular_categories
 )

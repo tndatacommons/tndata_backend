@@ -75,7 +75,6 @@ from . models import (
     UserCompletedAction,
     UserGoal,
     popular_actions,
-    popular_behaviors,
     popular_goals,
     popular_categories,
 )
@@ -2363,7 +2362,6 @@ class ReportPopularView(ContentViewerMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         context['popular_categories'] = popular_categories()
         context['popular_goals'] = popular_goals()
-        context['popular_behaviors'] = popular_behaviors()
         context['popular_actions'] = popular_actions()
         return self.render_to_response(context)
 
