@@ -10,12 +10,14 @@ Mappings between users and their selected public content.
                         [ User ]
 
 """
+from datetime import timedelta
 import django.dispatch
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
 
+from utils.dateutils import date_range
 from utils.user_utils import local_day_range, to_localtime, to_utc
 from notifications.models import GCMMessage
 
@@ -120,11 +122,16 @@ class UserGoal(models.Model):
     def weekly_completions(self):
         """The number of Actions / CustomActions that the user has completed
         in the past 7 days within this goal"""
-        uccas = self.user.usercompletedcustomaction_set.filter(
-            state='completed', customaction__goal=self.goal).distinct().count()
-        ucas = self.user.usercompletedaction_set.filter(
-            state='completed',
-            useraction__primary_goal=self.goal).distinct().count()
+        # Build the time period over which we'll query for data.
+        dates = date_range(timezone.now())
+        dates = (dates[0] - timedelta(days=7), dates[1])
+
+        crit = {'state': 'completed', 'created_on__range': dates}
+        uccas = self.user.usercompletedcustomaction_set.filter(**crit)
+        uccas = uccas.filter(customaction__goal=self.goal).distinct().count()
+
+        ucas = self.user.usercompletedaction_set.filter(**crit)
+        ucas = ucas.filter(useraction__primary_goal=self.goal).distinct().count()
         return uccas + ucas
 
     def complete(self):
