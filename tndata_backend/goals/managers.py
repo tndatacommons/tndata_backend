@@ -149,13 +149,27 @@ class UserGoalManager(models.Manager):
         seq = seq.get('goal__sequence_order__min') or 0
         return qs.filter(goal__sequence_order=seq)
 
-    def latest_items(self):
+    def latest_items(self, user=None):
         """Return a queryset of the most recent UserGoal objects per user."""
-        sql = (
-            "SELECT id, user_id, goal_id, MAX(created_on) FROM goals_usergoal "
-            "GROUP BY id, user_id, goal_id ORDER BY user_id ASC, goal_id ASC"
-        )
-        return self.raw(sql)
+        if user:
+            try:
+                params = [user.id]
+            except AttributeError:  # assume user is an ID.
+                params = [user]
+            sql = (
+                "SELECT id, user_id, goal_id, MAX(created_on) "
+                "FROM goals_usergoal WHERE user_id=%s "
+                "GROUP BY id, user_id, goal_id "
+                "ORDER BY user_id ASC, goal_id ASC"
+            )
+        else:
+            params = None
+            sql = (
+                "SELECT id, user_id, goal_id, MAX(created_on) "
+                "FROM goals_usergoal GROUP BY id, user_id, goal_id "
+                "ORDER BY user_id ASC, goal_id ASC"
+            )
+        return self.raw(sql, params)
 
     def engagement_rank(self, user, goal):
         """Given a user and a goal, find out how their 15-day engagement stats
@@ -174,15 +188,22 @@ class UserGoalManager(models.Manager):
             ug = self.filter(user=user, goal=goal).latest('created_on')
 
             daterange = dateutils.date_range(ug.created_on)
+            # XXX: let's pull in a couple days worth of data, because it's
+            # likely that we may not get enough values to compare.
+            daterange = (daterange[0] - timedelta(days=2), daterange[1])
             values = self.filter(goal=goal, created_on__range=daterange)
             total = values.count()
             values = values.values_list('engagement_15_days', flat=True)
             values = sorted(values, reverse=True)  # Sort biggest -> smallest
 
             # Find the first occurance of the user's value, and count the rest.
-            num_lower = len(values[values.index(ug.engagement_15_days) + 1:])
-            return round((num_lower / total) * 100, 2)
-
+            if len(values) > 2:
+                num_lower = len(values[values.index(ug.engagement_15_days) + 1:])
+                return round((num_lower / total) * 100, 2)
+            # If there's only 1 or 2 values, let's fudge this a bit. 1 value
+            # would put us at 100, but 2 at 50. 90% seems a good compromise in
+            # those cases.
+            return 90.0
         except (self.model.DoesNotExist, IndexError, ZeroDivisionError):
             return 0.0
 
