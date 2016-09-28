@@ -363,13 +363,12 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
             ug.primary_category = self
             ug.save()
 
-        # Finally, enroll the user in the Actions
-        actions = Action.objects.published().filter(goals__in=goals)
-        for action in actions.distinct():
-            ua, _ = user.useraction_set.get_or_create(action=action)
-            ua.primary_category = self
-            ua.primary_goal = ua.get_primary_goal()
-            ua.save()
+            # Finally, enroll the user in the Actions
+            for action in goal.action_set.published():
+                ua, _ = user.useraction_set.get_or_create(action=action)
+                ua.primary_category = self
+                ua.primary_goal = goal
+                ua.save()
 
     def unenroll(self, user):
         """Removes the user in this category and all of the published content
@@ -678,13 +677,8 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
         ug.primary_category = primary_category
         ug.save()
 
-        # Then enroll the user in the published Behaviors
-        behaviors = Behavior.objects.published().filter(goals=self).distinct()
-        for behavior in behaviors:
-            user.userbehavior_set.get_or_create(behavior=behavior)
-
         # Finally, enroll the user in the Behavior's Actions
-        actions = Action.objects.published().filter(behavior__in=behaviors)
+        actions = Action.objects.published().filter(goals=self)
         for action in actions.distinct():
             ua, _ = user.useraction_set.get_or_create(action=action)
             ua.primary_category = primary_category
@@ -692,16 +686,6 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
             ua.save()
 
     objects = GoalManager()
-
-
-@job
-def _enroll_users_in_published_behavior(behavior):
-    """When we publish a behavior, we need to enroll everyone that has selected
-    the behavior's parents' (goal) and in all the published child actions."""
-    for goal in behavior.goals.published():
-        # For everyone that's selected the parent Goals:
-        for ug in goal.usergoal_set.all():
-            ug.add_behaviors(behaviors=[behavior])
 
 
 class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
@@ -904,7 +888,7 @@ class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
         NOTE: this is implemented as an async job since it'll be slow.
 
         """
-        _enroll_users_in_published_behavior.delay(self)
+        pass
 
     def get_async_icon_upload_url(self):
         return reverse("goals:file-upload", args=["behavior", self.id])
@@ -1296,12 +1280,13 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     @transition(field=state, source=["draft", "pending-review"], target='published')
     def publish(self):
         """When an action is published, we need to auto-enroll all the users
-        that have selected the parent behavior."""
+        that have selected the parent goal(s)."""
+        pass
+        # TODO: For everyone that's selected this action's parent Goals
+        # for goal in self.goals.all():
+        #   for ug in goal.usergoal_set.all():
+        #       ug.add_actions(action_id=self.id)
 
-        # For everyone that's selected this action's parent Behavior:
-        for ub in self.behavior.userbehavior_set.all():
-            # Add this new action.
-            ub.add_actions(action_id=self.id)
     objects = WorkflowManager()
 
 

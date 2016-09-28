@@ -481,10 +481,9 @@ class UserAction(models.Model):
     @property
     def next_in_sequence(self):
         """Is this action the next in sequence. Returns True or False."""
-        return self.id in self.user.useraction_set.next_in_sequence(
-            [self.action.behavior],
-            published=True
-        ).values_list("pk", flat=True)
+        next_actions = self.user.useraction_set.next_in_sequence(published=True)
+        next_actions = next_actions.values_list("pk", flat=True)
+        return self.id in next_actions
 
     def next(self):
         """Return the next trigger datetime object in the user's local timezone
