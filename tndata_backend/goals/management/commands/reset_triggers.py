@@ -9,7 +9,6 @@ class Command(BaseCommand):
     Example usage:
 
         ./manage reset_triggers --category 42 --timeofday morning
-        ./manage reset_triggers --behavior 123 --frequency daily
         ./manage reset_triggers --category 42 --timeofday allday --frequency daily
 
     """
@@ -29,13 +28,6 @@ class Command(BaseCommand):
             dest='goal',
             default=None,
             help="Update triggers for all actions within a Goal (pk or title). "
-        )
-        parser.add_argument(
-            '--behavior',
-            action='store',
-            dest='behavior',
-            default=None,
-            help="Update triggers for all actions within a Behavior (pk or title). "
         )
         parser.add_argument(
             '--timeofday',
@@ -71,13 +63,10 @@ class Command(BaseCommand):
     def _get_actions(self, options):
         if options['category']:
             cat = self._get_parent(options['category'], Category)
-            return Action.objects.filter(behavior__goals__categories=cat).distinct()
+            return Action.objects.filter(goals__categories=cat).distinct()
         elif options['goal']:
             goal = self._get_parent(options['goal'], Goal)
-            return Action.objects.filter(behavior__goals=goal).distinct()
-        elif options['behavior']:
-            behavior = self._get_parent(options['behavior'], Behavior)
-            return Action.objects.filter(behavior=behavior).distinct()
+            return Action.objects.filter(goals=goal).distinct()
         else:
             raise CommandError("Specify a parent Category, Goal, or Behavior")
 
