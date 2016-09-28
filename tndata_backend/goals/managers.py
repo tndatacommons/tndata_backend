@@ -375,63 +375,36 @@ class UserActionManager(models.Manager):
             action__default_trigger__isnull=False,
         )
 
-    def next_in_sequence(self, behaviors, **kwargs):
-        """Given a behavior, return the queryset of UserActions that are
-        related to the behavior, but have not yet been completed, and are
-        the next in a sequence.
+    def next_in_sequence(self, **kwargs):
+        """Return the queryset of UserActions that have not yet been completed
+        and are 'up next' based on the sequence order.
 
-        * behaviors - Either a Behavior instance, a queryset of Behaviors, or
-                      an iterable of Behavior IDs. This will filter UserActions
-                      related to the given Behavior(s).
+        Possible arguments:
+
+        * goals - Either a queryset or iterable of Goals or Goal IDS. This will
+                  filter UserActions related to the given Goal(s).
         * published - (optional). You may provide `published=True` as a keyword
                       argument, and this method will only return objects related
                       to published Actions.
 
         """
-        from .models import Behavior
         from .models import UserCompletedAction as UCA
-        sequences_by_behavior = {}
-
-        if kwargs.pop('published', False):
+        goals = kwargs.pop('goals', None)  # see if we're filtering on goals.
+        if kwargs.pop('published', False): # or if we want published content
             kwargs['action__state'] = 'published'
 
-        if isinstance(behaviors, Behavior):
-            kwargs['action__behavior'] = behaviors
-            sequences_by_behavior = {b.id: set() for b in behaviors}
-        elif len(behaviors) > 0 and isinstance(behaviors[0], Behavior):
-            # List or Queryset of Behavior objects
-            kwargs['action__behavior__in'] = behaviors
-            sequences_by_behavior = {b.id: set() for b in behaviors}
-        else:
-            # List or ValuesQueryset of IDs
-            kwargs['action__behavior__in'] = behaviors
-            sequences_by_behavior = {bid: set() for bid in behaviors}
-
+        # Get the UserActions, excluding those that have been completed
         qs = self.get_queryset().filter(**kwargs)
-
-        # Then exluded the ones we've marked as completed.
         qs = qs.exclude(usercompletedaction__state=UCA.COMPLETED)
+        if goals:
+            qs = qs.filter(primary_goal__in=goals)
 
-        # Now, find the minimum sequence_order value, based for the set of
-        # actions in each parent behavior.
-        for ua in qs:
-            sequences_by_behavior[ua.action.behavior_id].add(
-                (ua.action_id, ua.action.sequence_order)
-            )
+        # get the smallest sequence order...
+        min_order = qs.aggregate(Min('action__sequence_order'))
+        min_order = min_order.get('action__sequence_order__min') or 0
 
-        # Now find the min sequence value per behavior & filter out the others.
-        for behavior_id, values in sequences_by_behavior.items():
-            try:
-                min_seq = min(t[1] for t in values)
-                sequences_by_behavior[behavior_id] = [
-                    t[0] for t in values if t[1] == min_seq
-                ]
-            except ValueError:
-                pass  # min() might fail if there are no values
-
-        # Flatten that list & do a lookup
-        action_ids = list(flatten(sequences_by_behavior.values()))
-        return qs.filter(action__pk__in=action_ids)
+        # Return those that match.
+        return qs.filter(action__sequence_order=min_order)
 
 
 class TriggerManager(models.Manager):
