@@ -9,13 +9,11 @@ from django_rq import get_worker
 
 from .. models import (
     Action,
-    Behavior,
     Category,
     Goal,
     Organization,
     Program,
     PackageEnrollment,
-    Trigger,
 )
 from .. permissions import (
     ContentPermissions,
@@ -29,7 +27,6 @@ from .. permissions import (
     CONTENT_EDITORS,
     CONTENT_VIEWERS,
 )
-from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
 TEST_SESSION_ENGINE = 'django.contrib.sessions.backends.db'
@@ -1410,19 +1407,15 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 302)
 
         # NOTE: This should still be draft, because this goal doesn't have any
-        # child behaviors that are in pending/published states.,
+        # child content in pending/published states.,
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "draft")
 
-        # Add a child behavior (that's pending/published) and request again.
-        behavior = Behavior.objects.create(title="B", state="pending-review")
-        behavior.goals.add(self.goal)
         resp = self.client.post(updated_goal.get_update_url(), payload)
         self.assertEqual(resp.status_code, 302)
 
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
-        behavior.delete()
 
     def test_admin_submit_for_review(self):
         """Ensure admins can submit for review."""
@@ -1434,20 +1427,15 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 302)
 
         # NOTE: This should still be draft, because this goal doesn't have any
-        # child behaviors that are in pending/published states.,
+        # child content in pending/published states.,
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "draft")
-
-        # Add a child behavior (that's pending/published) and request again.
-        behavior = Behavior.objects.create(title="B", state="pending-review")
-        behavior.goals.add(updated_goal)
 
         resp = self.client.post(updated_goal.get_update_url(), payload)
         self.assertEqual(resp.status_code, 302)
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
         # FAILING with 'draft' != 'pending-review'
-        behavior.delete()
 
     def test_author_submit_for_review(self):
         """Ensure authors can submit for review."""
@@ -1459,20 +1447,14 @@ class TestGoalUpdateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 302)
 
         # NOTE: This should still be draft, because this goal doesn't have any
-        # child behaviors that are in pending/published states.,
+        # child content in pending/published states.,
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "draft")
-
-        # Add a child behavior (that's pending/published) and request again.
-        behavior = Behavior.objects.create(title="B", state="pending-review")
-        behavior.goals.add(self.goal)
-        behavior.save()
 
         resp = self.client.post(updated_goal.get_update_url(), payload)
         self.assertEqual(resp.status_code, 302)
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
-        behavior.delete()
 
     def test_redirect_after_save(self):
         """Ensure we redirect to the detail page after saving"""
@@ -1585,649 +1567,6 @@ class TestGoalDeleteView(TestCaseWithGroups):
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
 @override_settings(CACHES=TEST_CACHES)
-class TestBehaviorListView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorListView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-        cls.url = reverse("goals:behavior-list")
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestBehaviorListView).setUpTestData()
-        # Create Behavior
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_list.html")
-        self.assertIn("behaviors", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
-class TestBehaviorDetailView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorDetailView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestBehaviorDetailView).setUpTestData()
-        # Create Behavior
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.url = cls.behavior.get_absolute_url()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_detail.html")
-        self.assertContains(resp, self.behavior.title)
-        self.assertIn("behavior", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_viewer_get_changed_url(self):
-        """Ensure we can still access a page if the title_slug changes."""
-        self.client.login(username="viewer", password="pass")
-
-        # if the object's title changes, the old url should still work.
-        self.behavior.title = "Some New thing that's different"
-        self.behavior.save()
-        self.assertNotEqual(self.behavior.get_absolute_url(), self.url)
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
-class TestBehaviorCreateView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorCreateView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-        cls.url = reverse("goals:behavior-create")
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestBehaviorCreateView).setUpTestData()
-        # Define a user that will be a package contributor.
-        User = get_user_model()
-        args = ("contrib", "contrib@example.com", "pass")
-        cls.contributor = User.objects.create_user(*args)
-        cls.contributor.groups.add(get_or_create_content_viewers())
-
-        # Create a Category
-        cls.category = Category.objects.create(
-            order=1,
-            title='Test Category',
-            description='Some explanation!',
-        )
-        cls.category.contributors.add(cls.contributor)
-
-        # Create a Goal to be used as an FK
-        cls.goal = Goal.objects.create(
-            title="Title for Test Goal",
-            description="A Description",
-        )
-        cls.goal.categories.add(cls.category)
-        cls.trigger = Trigger.objects.create(
-            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-        )
-        cls.payload = {'title': 'New', 'goals': cls.goal.id, 'sequence_order': 0}
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_form.html")
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_contributor_get(self):
-        self.client.login(username="contrib", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_post(self):
-        resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_post(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Behavior.objects.filter(title="New").exists())
-
-        # Ensure we redirect to the detail page afterwards
-        obj = Behavior.objects.get(title="New")
-        self.assertIn(obj.get_absolute_url(), resp.get('Location', ''))
-
-    def test_editor_post(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Behavior.objects.filter(title="New").exists())
-
-    def test_author_post(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Behavior.objects.filter(title="New").exists())
-
-    def test_contributor_post(self):
-        self.client.login(username="contrib", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertTrue(Behavior.objects.filter(title="New").exists())
-
-    def test_viewer_post(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
-class TestBehaviorDuplicateView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorDuplicateView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestBehaviorDuplicateView).setUpTestData()
-        cls.trigger = Trigger.objects.create(
-            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-        )
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.url = cls.behavior.get_duplicate_url()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_form.html")
-        title_copy = "Copy of {0}".format(self.behavior.title)
-        self.assertContains(resp, title_copy)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
-class TestBehaviorPublishView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorPublishView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestBehaviorPublishView).setUpTestData()
-        # Create Behavior
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.url = cls.behavior.get_publish_url()
-
-    def setUp(self):
-        self.behavior.review()
-        self.behavior.save()
-
-    def tearDown(self):
-        self.behavior.draft()
-        self.behavior.save()
-
-    def test_anon_publish(self):
-        resp = self.ua_client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_publish(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 302)
-        state = Behavior.objects.get(pk=self.behavior.pk).state
-        self.assertEqual(state, "published")
-
-    def test_editor_publish(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 302)
-        state = Behavior.objects.get(pk=self.behavior.pk).state
-        self.assertEqual(state, "published")
-
-    def test_author_publish(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_publish(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, {"publish": "1"})
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_decline(self):
-        resp = self.ua_client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_decline(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 302)
-        state = Behavior.objects.get(pk=self.behavior.pk).state
-        self.assertEqual(state, "declined")
-
-    def test_editor_decline(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 302)
-        state = Behavior.objects.get(pk=self.behavior.pk).state
-        self.assertEqual(state, "declined")
-
-    def test_author_decline(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_decline(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, {"decline": "1"})
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
-class TestBehaviorUpdateView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorUpdateView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestBehaviorUpdateView).setUpTestData()
-        # Define a user that will be a package contributor.
-        User = get_user_model()
-        args = ("contrib", "contrib@example.com", "pass")
-        cls.contributor = User.objects.create_user(*args)
-        cls.contributor.groups.add(get_or_create_content_viewers())
-
-        # Create a Category
-        cls.category = Category.objects.create(
-            order=1,
-            title='Test Category',
-            description='Some explanation!',
-        )
-        cls.category.contributors.add(cls.contributor)
-
-        # Create a Goal
-        cls.goal = Goal.objects.create(
-            title="Title for Test Goal",
-            description="A Description",
-        )
-        cls.goal.categories.add(cls.category)
-        cls.trigger = Trigger.objects.create(
-            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-        )
-        cls.payload = {'title': 'U', 'goals': cls.goal.id, 'sequence_order': 0}
-
-    def setUp(self):
-        # Re-create the behavior
-        self.behavior = Behavior.objects.create(
-            title="Title for Test Behavior",
-            description="A Description",
-            created_by=self.author
-        )
-        self.behavior.goals.add(self.goal)
-        self.behavior.save()
-        self.url = self.behavior.get_update_url()
-
-    def tearDown(self):
-        Behavior.objects.filter(id=self.behavior.id).delete()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_form.html")
-        self.assertContains(resp, self.behavior.title)
-        self.assertIn("behaviors", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_contributor_get(self):
-        self.client.login(username="contrib", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_other_contributor_get(self):
-        """Ensure a package contributor cannot update a Behavior that's not
-        in their package."""
-        User = get_user_model()
-        user = User.objects.create_user("x", "x@x.x", 'xxx')
-        user.groups.add(get_or_create_content_viewers())
-
-        # Other category in which user is a contributor
-        cat = Category.objects.create(order=2, title="other cat")
-        cat.contributors.add(user)
-
-        # This contributor should not be able to update this Category
-        self.client.login(username="x", password="xxx")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-        cat.delete()
-        user.delete()
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get_other_object(self):
-        """Ensure authors cannot update someone else's content."""
-        b = Behavior.objects.create(title="Other", created_by=self.editor)
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(b.get_update_url())
-        self.assertEqual(resp.status_code, 403)
-        b.delete()  # Clean up
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_post(self):
-        resp = self.ua_client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_post(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Behavior.objects.get(id=self.behavior.id).title, "U")
-
-    def test_editor_post(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Behavior.objects.get(id=self.behavior.id).title, "U")
-
-    def test_editor_post_duplicate_title(self):
-        """If you change the title of an existing object to somethign that
-        would be a duplicate, well, that's should be OK now."""
-        behavior = Behavior.objects.create(
-            title="Some Behavior to Edit",
-            created_by=self.editor
-        )
-        behavior.goals.add(self.goal)
-        behavior.save()
-
-        self.client.login(username="editor", password="pass")
-        existing_title = "Title for Test Behavior"  # A pre-existing title.
-        payload = self.payload.copy()
-        payload['title'] = existing_title
-        resp = self.client.post(behavior.get_update_url(), payload)
-
-        # Ensure that we can an error warning in the returned HTML content
-        self.assertEqual(resp.status_code, 302)
-        qs = Behavior.objects.filter(title=existing_title)
-        self.assertEqual(qs.count(), 2)  # There should now be 2 of these.
-
-        # Clean up.
-        behavior.delete()
-
-    def test_contributor_post(self):
-        self.client.login(username="contrib", password="pass")
-        payload = self.payload.copy()
-        payload['title'] = 'contrib edit'
-        resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(
-            Behavior.objects.get(id=self.behavior.id).title,
-            "contrib edit"
-        )
-
-    def test_other_contributor_post(self):
-        """Ensure a package contributor cannot update a Behavior that's not
-        in their package."""
-        User = get_user_model()
-        user = User.objects.create_user("x", "x@x.x", 'xxx')
-        content_viewer_group = get_or_create_content_viewers()
-        user.groups.add(content_viewer_group)
-
-        # Other category in which user is a contributor
-        cat = Category.objects.create(order=2, title="other cat")
-        cat.contributors.add(user)
-
-        self.client.login(username="x", password="xxx")
-        payload = self.payload.copy()
-        payload['title'] = 'contrib edit'
-        resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 403)
-
-        cat.delete()
-        user.delete()
-
-    def test_author_post(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Behavior.objects.get(id=self.behavior.id).title, "U")
-
-    def test_author_post_other_object(self):
-        """Ensure authors cannot update someone else's content."""
-        b = Behavior.objects.create(title="Other", created_by=self.editor)
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(b.get_update_url(), self.payload)
-        self.assertEqual(resp.status_code, 403)
-        b.delete()  # Clean up
-
-    def test_viewer_post(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, self.payload)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_submit_for_review(self):
-        """Ensure viewers cannot submit for review."""
-        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        payload = self.payload.copy()
-        payload['review'] = 1
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_editor_submit_for_review(self):
-        """Ensure editors can submit for review."""
-        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        payload = self.payload.copy()
-        payload['review'] = 1  # Include the review in the payload
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
-
-    def test_admin_submit_for_review(self):
-        """Ensure admins can submit for review."""
-        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        payload = self.payload.copy()
-        payload['review'] = 1  # Include the review in the payload
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
-
-    def test_author_submit_for_review(self):
-        """Ensure authors can submit for review."""
-        self.assertEqual(self.behavior.state, "draft")  # Ensure we start as draft
-        payload = self.payload.copy()
-        payload['review'] = 1  # Include the review in the payload
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url, payload)
-        self.assertEqual(resp.status_code, 302)
-        self.assertEqual(Behavior.objects.get(pk=self.behavior.pk).state, "pending-review")
-
-    def test_redirect_after_save(self):
-        """Ensure we redirect to the detail page after saving"""
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url, self.payload.copy())
-        self.assertEqual(resp.status_code, 302)
-
-        behavior = Behavior.objects.get(pk=self.behavior.id)
-        self.assertIn(behavior.get_absolute_url(), resp.get("Location", ''))
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
-class TestBehaviorDeleteView(TestCaseWithGroups):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, TestBehaviorDeleteView).setUpClass()
-        cls.ua_client = Client()  # Create an Unauthenticated client
-
-    def setUp(self):
-        # Create a Behavior
-        self.behavior = Behavior.objects.create(title="Test Behavior")
-        self.url = self.behavior.get_delete_url()
-
-    def tearDown(self):
-        Behavior.objects.filter(id=self.behavior.id).delete()
-
-    def test_anon_get(self):
-        resp = self.ua_client.get(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_get(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, "goals/behavior_confirm_delete.html")
-        self.assertIn("behavior", resp.context)
-
-    def test_editor_get(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
-
-    def test_author_get(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_get(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_anon_post(self):
-        resp = self.ua_client.post(self.url)
-        self.assertEqual(resp.status_code, 302)
-
-    def test_admin_post(self):
-        self.client.login(username="admin", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(resp, reverse("goals:index"))
-
-    def test_editor_post(self):
-        self.client.login(username="editor", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 302)
-        self.assertRedirects(resp, reverse("goals:index"))
-
-    def test_author_post(self):
-        self.client.login(username="author", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-    def test_viewer_post(self):
-        self.client.login(username="viewer", password="pass")
-        resp = self.client.post(self.url)
-        self.assertEqual(resp.status_code, 403)
-
-
-@override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
-@override_settings(RQ_QUEUES=TEST_RQ_QUEUES)
-@override_settings(CACHES=TEST_CACHES)
 class TestActionListView(TestCaseWithGroups):
 
     @classmethod
@@ -2239,11 +1578,7 @@ class TestActionListView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionListView).setUpTestData()
-        cls.behavior = Behavior.objects.create(title='Test Behavior')
-        cls.action = Action.objects.create(
-            behavior=cls.behavior,
-            title="Test Action"
-        )
+        cls.action = Action.objects.create(title="Test Action")
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -2285,12 +1620,7 @@ class TestActionDetailView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionDetailView).setUpTestData()
-        # Create Behavior
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.action = Action.objects.create(
-            behavior=cls.behavior,
-            title="Test Action",
-        )
+        cls.action = Action.objects.create(title="Test Action")
         cls.url = cls.action.get_absolute_url()
 
     def test_anon_get(self):
@@ -2346,12 +1676,9 @@ class TestActionCreateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionCreateView).setUpTestData()
-        # Create a Behavior to be used as an FK
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
         cls.payload = {
             'sequence_order': 1,
             'title': 'New',
-            'behavior': cls.behavior.id,
             'action_type': Action.SHOWING,
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
@@ -2372,7 +1699,6 @@ class TestActionCreateView(TestCaseWithGroups):
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, "goals/action_form.html")
         self.assertIn("actions", resp.context)
-        self.assertIn("behaviors", resp.context)
 
     def test_admin_get_with_actiontype_params(self):
         self.client.login(username="admin", password="pass")
@@ -2420,7 +1746,6 @@ class TestActionCreateView(TestCaseWithGroups):
         data = {
             'sequence_order': 0,
             'title': '',
-            'behavior': '',
             'action_type': '',
             'trigger-time': '',
             'trigger-trigger_date': '',
@@ -2460,7 +1785,6 @@ class TestActionCreateView(TestCaseWithGroups):
             'sequence_order': 0,
             'title': 'X' * 256,
             'notification_text': 'Y' * 256,
-            'behavior': self.behavior.id,
             'action_type': 'showing',
             'priority': '3',
             'more_info': '',
@@ -2515,11 +1839,7 @@ class TestActionDuplicateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionDuplicateView).setUpTestData()
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.action = Action.objects.create(
-            behavior=cls.behavior,
-            title="Test Action",
-        )
+        cls.action = Action.objects.create(title="Test Action")
         cls.url = cls.action.get_duplicate_url()
 
     def test_anon_get(self):
@@ -2549,12 +1869,7 @@ class TestActionPublishView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionPublishView).setUpTestData()
-        # Create Behavior
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.action = Action.objects.create(
-            behavior=cls.behavior,
-            title="Test Action"
-        )
+        cls.action = Action.objects.create(title="Test Action")
         cls.url = cls.action.get_publish_url()
 
     def setUp(self):
@@ -2650,13 +1965,10 @@ class TestActionUpdateView(TestCaseWithGroups):
         cls.category.contributors.add(cls.contributor)
         cls.goal = Goal.objects.create(title="Goal")
         cls.goal.categories.add(cls.category)
-        cls.behavior = Behavior.objects.create(title='Test Behavior')
-        cls.behavior.goals.add(cls.goal)
 
         cls.payload = {
             'sequence_order': 1,
             'title': 'U',
-            'behavior': cls.behavior.id,
             'action_type': Action.SHOWING,
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
@@ -2670,7 +1982,6 @@ class TestActionUpdateView(TestCaseWithGroups):
     def setUp(self):
         # Re-create the Action
         self.action = Action.objects.create(
-            behavior=self.behavior,
             title="Test Action",
             sequence_order=1,
             created_by=self.author
@@ -2704,7 +2015,6 @@ class TestActionUpdateView(TestCaseWithGroups):
     def test_author_get_other_object(self):
         """Ensure authors cannot update someone else's content."""
         a = Action.objects.create(
-            behavior=self.behavior,
             title="Other",
             sequence_order=2,
             created_by=self.editor
@@ -2801,7 +2111,6 @@ class TestActionUpdateView(TestCaseWithGroups):
     def test_author_post_other_object(self):
         """Ensure authors cannot update someone else's content."""
         a = Action.objects.create(
-            behavior=self.behavior,
             title="Other",
             sequence_order=2,
             created_by=self.editor
@@ -2875,17 +2184,9 @@ class TestActionDeleteView(TestCaseWithGroups):
         super(cls, TestActionDeleteView).setUpClass()
         cls.ua_client = Client()  # Create an Unauthenticated client
 
-    @classmethod
-    def setUpTestData(cls):
-        super(cls, TestActionDeleteView).setUpTestData()
-        cls.behavior = Behavior.objects.create(title='Test Behavior')
-
     def setUp(self):
         # Create an Action
-        self.action = Action.objects.create(
-            behavior=self.behavior,
-            title="Test Action",
-        )
+        self.action = Action.objects.create(title="Test Action")
         self.url = self.action.get_delete_url()
 
     def tearDown(self):
@@ -2959,7 +2260,7 @@ class TestPackageEnrollmentDeleteView(TestCaseWithGroups):
         super().tearDownClass()
         User = get_user_model()
         User.objects.all().delete()
-        for model in [Category, Goal, Behavior, Action]:
+        for model in [Category, Goal, Action]:
             model.objects.all().delete()
 
     @classmethod
@@ -2990,13 +2291,8 @@ class TestPackageEnrollmentDeleteView(TestCaseWithGroups):
         cls.category.save()
         cls.goal_a = Goal.objects.create(title="Pkg Goal A", state="published")
         cls.goal_a.categories.add(cls.category)
-        cls.behavior_a = Behavior.objects.create(title='BA', state="published")
-        cls.behavior_a.goals.add(cls.goal_a)
-        cls.action_a = Action.objects.create(
-            behavior=cls.behavior_a,
-            title="Pkg Action A",
-            state="published"
-        )
+        cls.action_a = Action.objects.create(title="Pkg Action A", state="published")
+        cls.action_a.goals.add(cls.goal_a)
 
         # Set up an enrolled user
         args = ('user', 'user@example.com', 'pass')
@@ -3045,7 +2341,7 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
         super().tearDownClass()
         User = get_user_model()
         User.objects.all().delete()
-        for model in [Category, Goal, Behavior, Action]:
+        for model in [Category, Goal, Action]:
             model.objects.all().delete()
 
     @classmethod
@@ -3075,21 +2371,10 @@ class TestPackageEnrollmentView(TestCaseWithGroups):
         cls.goal_a.categories.add(cls.category)
         cls.goal_b.categories.add(cls.category)
 
-        cls.behavior_a = Behavior.objects.create(title='BA', state="published")
-        cls.behavior_a.goals.add(cls.goal_a)
-        cls.behavior_b = Behavior.objects.create(title='BB', state="published")
-        cls.behavior_b.goals.add(cls.goal_b)
-
-        cls.action_a = Action.objects.create(
-            behavior=cls.behavior_a,
-            title="Pkg Action A",
-            state="published"
-        )
-        cls.action_b = Action.objects.create(
-            behavior=cls.behavior_b,
-            title="Pkg Action B",
-            state="published"
-        )
+        cls.action_a = Action.objects.create(title="Pkg Action A", state="published")
+        cls.action_a.goals.add(cls.goal_a)
+        cls.action_b = Action.objects.create(title="Pkg Action B", state="published")
+        cls.action_b.goals.add(cls.goal_b)
 
         # URL and POST payload
         cls.payload = {
@@ -3192,7 +2477,7 @@ class TestEnrollmentReminderView(TestCaseWithGroups):
         super().tearDownClass()
         User = get_user_model()
         User.objects.all().delete()
-        for model in [Category, Goal, Behavior, Action]:
+        for model in [Category, Goal, Action]:
             model.objects.all().delete()
 
     @classmethod
@@ -3492,10 +2777,8 @@ class TestProgramUpdateView(TestCase):
         cls.goal2.categories.add(cls.category)
         cls.goal2.save()
 
-        cls.behavior = Behavior.objects.create(title="B", state="published")
-        cls.behavior.goals.add(cls.goal2)
-        cls.action = Action.objects.create(
-            title="A", state="published", behavior=cls.behavior)
+        cls.action = Action.objects.create(title="A", state="published")
+        cls.action.goals.add(cls.goal1)
 
         cls.program = Program.objects.create(name="PRG", organization=cls.org)
         cls.program.categories.add(cls.category)
@@ -3566,7 +2849,6 @@ class TestProgramUpdateView(TestCase):
         self.assertTrue(user.useraction_set.exists())
         self.assertTrue(user.usergoal_set.filter(goal__title="G2").exists())
         self.assertTrue(user.useraction_set.filter(action__title="A").exists())
-        self.assertTrue(user.userbehavior_set.filter(behavior__title="B").exists())
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
