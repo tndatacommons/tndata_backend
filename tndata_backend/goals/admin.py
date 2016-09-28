@@ -4,7 +4,7 @@ from pprint import pformat
 from django.contrib import admin
 from django.contrib.messages import ERROR
 from django.core.urlresolvers import reverse
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template.defaultfilters import timesince
@@ -113,28 +113,24 @@ class CategoryAdmin(ContentWorkflowAdmin):
             if parents.issubset(categories_to_delete):
                 goals_to_delete.add(goal.id)
 
-        # Find all behaviors in those goals
-        behaviors = models.Behavior.objects.filter(goals__in=goals_to_delete)
-        behaviors_to_delete = set()
-        for behavior in behaviors:
-            parents = set(behavior.goals.values_list('id', flat=True))
+        # Remove the Actions that are in no other goals.
+        actions = models.Action.objects.filter(goals__in=goals_to_delete)
+        actions_to_delete = set()
+        for action in actions:
+            parents = set(action.goals.values_list('id', flat=True))
             if parents.issubset(goals_to_delete):
-                behaviors_to_delete.add(behavior.id)
-
-        actions = models.Action.objects.filter(behavior__in=behaviors_to_delete)
+                actions_to_delete.add(action.id)
 
         # Build a confirmation message
-        msg = "Deleted {a} Actions, {b} Behaviors, {g} Goals, and {c} Categories."
+        msg = "Deleted {a} Actions, {g} Goals, and {c} Categories."
         msg = msg.format(
             a=actions.count(),
-            b=len(behaviors_to_delete),
             g=len(goals_to_delete),
             c=len(categories_to_delete),
         )
 
         # NOW, delete stuff.
-        actions.delete()
-        models.Behavior.objects.filter(id__in=behaviors_to_delete).delete()
+        models.Action.objects.filter(id__in=actions_to_delete).delete()
         models.Goal.objects.filter(id__in=goals_to_delete).delete()
         queryset.delete()  # the categories.
         self.message_user(request, msg)
@@ -279,95 +275,20 @@ class GoalListFilter(admin.SimpleListFilter):
         return queryset
 
 
-class BehaviorCategoryListFilter(CategoryListFilter):
-    """Filters behaviors by their parent goal's category."""
-    def queryset(self, request, queryset):
-        category_id = self.value()
-        if category_id:
-            queryset = queryset.filter(goals__categories__id=category_id)
-        return queryset
-
-
-class ActionInline(admin.TabularInline):
-    model = models.Action
-    fields = (
-        'sequence_order', 'notification_text',
-        'title', 'action_type', 'description', 'more_info',
-    )
-
-
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
-        'title', 'sequence_order', 'state', 'in_goals', 'updated_on',
-        'num_actions', 'selected_by_users',
+        'title', 'sequence_order', 'state', 'selected_by_users',
     )
     search_fields = [
         'title', 'source_notes', 'notes', 'more_info', 'description', 'id',
     ]
-    list_filter = ('state', BehaviorCategoryListFilter, GoalListFilter)
+    list_filter = ('state', GoalListFilter)
     prepopulated_fields = {"title_slug": ("title", )}
     raw_id_fields = ('updated_by', 'created_by')
     filter_horizontal = ('goals', )
-    inlines = [ActionInline, ]
-    actions = ['convert_to_goal']
 
     def selected_by_users(self, obj):
         return models.UserBehavior.objects.filter(behavior=obj).count()
-
-    def num_actions(self, obj):
-        return obj.action_set.count()
-
-    def in_categories(self, obj):
-        return ", ".join(sorted([cat.title for cat in obj.categories.all()]))
-
-    def in_goals(self, obj):
-        return ", ".join(sorted([g.title for g in obj.goals.all()]))
-
-    def convert_to_goal(self, request, queryset):
-        """Converts the Behavior into a Goal. The categories that were associated
-        with the Behavior's Parent Goal and now associated with the new Goal
-        created from the behavior."""
-
-        try:
-            with transaction.atomic():
-                num_objects = queryset.count()
-                for behavior in queryset:
-                    # get the parent goals's list of categories
-                    categories = list(behavior.categories.all())
-
-                    # create the new goal
-                    goal = models.Goal.objects.create(
-                        title=behavior.title,
-                        title_slug=behavior.title_slug,
-                        subtitle='',
-                        notes=behavior.notes,
-                        more_info=behavior.more_info,
-                        description=behavior.description,
-                        state=behavior.state,
-                        created_by=request.user,
-                        updated_by=request.user,
-                    )
-                    # add in the goals
-                    for cat in categories:
-                        goal.categories.add(cat)
-                    goal.save()
-
-            # When the goals have been created, delete the set of Behaviors.
-            with transaction.atomic():
-                # Call each item's .delete() method so the post_delete
-                # signal gets sent... which will remove the icon/image
-                for obj in queryset:
-                    obj.delete()
-
-            msg = "Converted {0} Behaviors into Goals".format(num_objects)
-            self.message_user(request, msg)
-        except IntegrityError:
-            msg = (
-                "There was an error converting Behaviors. All changes have been "
-                "rolled back."
-            )
-            self.message_user(request, msg, level=ERROR)
-
 admin.site.register(models.Behavior, BehaviorAdmin)
 
 
@@ -505,31 +426,17 @@ class UserGoalAdmin(UserRelatedModelAdmin):
         for title in obj.goal.categories.values_list("title", flat=True):
             cats.add(title)
         return ", ".join(cats)
-
 admin.site.register(models.UserGoal, UserGoalAdmin)
 
 
 class UserBehaviorAdmin(UserRelatedModelAdmin):
-    list_display = (
-        'user_email', 'behavior', 'goals', 'categories', 'completed',
-    )
+    list_display = ('user_email', 'behavior', 'completed',)
     list_filter = ('completed', 'behavior__goals__categories', )
     search_fields = (
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
         'behavior__id', 'behavior__title', 'id',
     )
     raw_id_fields = ("user", "behavior")
-
-    def goals(self, obj):
-        return ", ".join(obj.behavior.goals.values_list("title", flat=True))
-
-    def categories(self, obj):
-        cats = set()
-        for g in obj.behavior.goals.all():
-            for title in g.categories.values_list("title", flat=True):
-                cats.add(title)
-        return ", ".join(cats)
-
 admin.site.register(models.UserBehavior, UserBehaviorAdmin)
 
 
