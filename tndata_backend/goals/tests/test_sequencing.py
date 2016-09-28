@@ -10,7 +10,6 @@ from model_mommy import mommy
 
 from .. models import (
     Action,
-    Behavior,
     Category,
     Goal,
     Trigger,
@@ -21,10 +20,6 @@ from .. sequence import get_next_useractions_in_sequence
 
 def _complete_goal(user, title):
     user.usergoal_set.filter(goal__title=title).update(completed=True)
-
-
-def _complete_behavior(user, title):
-    user.userbehavior_set.filter(behavior__title=title).update(completed=True)
 
 
 def _complete_action(user, action_title):
@@ -62,83 +57,68 @@ class TestSequencing(TestCase):
             goal.categories.add(category)
             return goal
 
-        def _behavior(title, goal, seq):  # Function to create a Behavior
-            b = mommy.make(
-                Behavior,
-                title=title,
-                sequence_order=seq,
-                state='published',
-            )
-            b.goals.add(goal)
-            return b
-
-        def _action(title, behavior, seq):  # Function to generate an Action
-            return mommy.make(
+        def _action(title, goal, seq):  # Function to generate an Action
+            action = mommy.make(
                 Action,
                 title=title,
                 sequence_order=seq,
-                behavior=behavior,
                 default_trigger=_t(),
                 state='published'
             )
+            action.goals.add(goal)
+            return action
 
         # Create a series of sequenced content.
         # The number in parenthesis indicates the object's sequence_order.
         # ----------------------------------------------------------------
         # GA (0)
-        # - BA (0) -- AA (0), AB (0), AC (0)
-        # - BB (0) -- AD (0), AE (1), AF (1)
-        # - BC (1) -- AG (0), AH (1), AI (1)
+        # - AA (0), AB (0), AC (0),
+        # - AD (1), AE (1), AF (1),
+        # - AG (2), AH (2), AI (2),
+        #
         # GB (0)
-        # - BD (0) -- AJ (0), AK (1)
-        # - BE (1) -- AL (0), AM (1)
+        # - BJ (0), BK (0)
+        # - BL (1), BM (1)
+        #
         # GC (1)
-        # - BF (0) -- AN (0), AO (0)
-        # - BG (0) -- AP (0), AQ (0)
-        # - BH (1) -- AR (0), AS (0)
+        # - CN (0), CO (0)
+        # - CP (1), CQ (1)
+        # - CR (2), CS (2)
 
         cat = mommy.make(Category, title="C0", order=0, state='published')
 
         # Goal GA
         ga = _goal('GA', cat, 0)
-        ba = _behavior("BA", ga, 0)
-        _action("AA", ba, 0)
-        _action("AB", ba, 0)
-        _action("AC", ba, 0)
+        _action("AA", ga, 0)
+        _action("AB", ga, 0)
+        _action("AC", ga, 0)
 
-        bb = _behavior("BB", ga, 0)
-        _action("AD", bb, 0)
-        _action("AE", bb, 1)
-        _action("AF", bb, 1)
+        _action("AD", ga, 1)
+        _action("AE", ga, 1)
+        _action("AF", ga, 1)
 
-        bc = _behavior("BC", ga, 1)
-        _action("AG", bc, 0)
-        _action("AH", bc, 1)
-        _action("AI", bc, 1)
+        _action("AG", ga, 2)
+        _action("AH", ga, 2)
+        _action("AI", ga, 2)
 
         # Goal GB
         gb = _goal('GB', cat, 0)
-        bd = _behavior('BD', gb, 0)
-        _action("AJ", bd, 0)
-        _action("AK", bd, 1)
+        _action("BJ", gb, 0)
+        _action("BK", gb, 0)
 
-        be = _behavior('BE', gb, 1)
-        _action("AL", be, 0)
-        _action("AM", be, 1)
+        _action("BL", gb, 1)
+        _action("BM", gb, 1)
 
         # Goal GC
         gc = _goal('GC', cat, 1)
-        bf = _behavior("BF", gc, 0)
-        _action("AN", bf, 0)
-        _action("AO", bf, 0)
+        _action("CN", gc, 0)
+        _action("CO", gc, 0)
 
-        bg = _behavior('BG', gc, 0)
-        _action("AP", bg, 0)
-        _action("AQ", bg, 0)
+        _action("CP", gc, 1)
+        _action("CQ", gc, 1)
 
-        bh = _behavior("BH", gc, 1)
-        _action("AR", bh, 0)
-        _action("AS", bh, 0)
+        _action("CR", gc, 2)
+        _action("CS", gc, 2)
 
         # Enroll the user in all of the above content.
         cat.enroll(cls.user)
@@ -148,7 +128,7 @@ class TestSequencing(TestCase):
         self.assertEqual(self.user.useraction_set.count(), 19)
 
         # ---------------------------------------------------------------------
-        # The we we'll test this methods is to call it, and verify a list of
+        # The way we'll test this methods is to call it, and verify a list of
         # titles, then change the user's completed actions and do it again.
         # ---------------------------------------------------------------------
 
@@ -156,7 +136,7 @@ class TestSequencing(TestCase):
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AA', 'AB', 'AC', 'AD', 'AJ', ]
+            ['AA', 'AB', 'AC', 'BJ', 'BK']
         )
 
         # Completed AA and AB
@@ -166,83 +146,66 @@ class TestSequencing(TestCase):
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AC', 'AD', 'AJ', ]
+            ['AC', 'BJ', 'BK']
         )
 
-        # Completed the rest of the actions with sequence_order = 0
+        # Completed the rest of the actions with goal = 0, sequence_order = 0
         _complete_action(self.user, 'AC')
-        _complete_action(self.user, 'AD')
-        _complete_action(self.user, 'AG')
-        _complete_action(self.user, 'AJ')
-        _complete_action(self.user, 'AL')
+        _complete_action(self.user, 'BJ')
+        _complete_action(self.user, 'BK')
 
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AE', 'AF', 'AK']
+            ['AD', 'AE', 'AF', 'BL', 'BM']
         )
 
-        # complete the rest of the actions... in BA, BB, BD
-        _complete_action(self.user, 'AE')
-        _complete_action(self.user, 'AF')
-        _complete_action(self.user, 'AJ')
-        _complete_action(self.user, 'AK')
+        # complete the rest of the actions = 1
+        for action in ['AD', 'AE', 'AF', 'BL', 'BM']:
+            _complete_action(self.user, action)
 
-        # Complete Behaviors with sequence_order = 0 in Goals with seq = 0
-        _complete_behavior(self.user, 'BA')
-        _complete_behavior(self.user, 'BB')
-        _complete_behavior(self.user, 'BD')
-
-        # Leaving BC, BD active (they both have seq = 1)
+        # Leaving actions with order = 2, goal = 0
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AH', 'AI', 'AM']
+            ['AG', 'AH', 'AI']
         )
 
         # Then completing those actions.. as well as their Behaviors/Goals.
-        _complete_action(self.user, 'AH')
-        _complete_action(self.user, 'AI')
-        _complete_action(self.user, 'AM')
-        _complete_behavior(self.user, 'BC')
-        _complete_behavior(self.user, 'BE')
+        for action in ['AG', 'AH', 'AI']:
+            _complete_action(self.user, action)
         _complete_goal(self.user, 'GA')
         _complete_goal(self.user, 'GB')
 
-        # This leaves goal GC, and we start over with Behaviors with seq = 0
+        # This leaves goal GC, and we start over with actions with seq = 0
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AN', 'AO', 'AP', 'AQ']
+            ['CN', 'CO']
         )
 
-        # Now, complete all of the above actions, and behaviors...
-        _complete_action(self.user, 'AN')
-        _complete_action(self.user, 'AO')
-        _complete_action(self.user, 'AP')
-        _complete_action(self.user, 'AQ')
-        _complete_behavior(self.user, 'BF')
-        _complete_behavior(self.user, 'BG')
+        # Now, complete all of the above actions
+        _complete_action(self.user, 'CN')
+        _complete_action(self.user, 'CO')
 
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AR', 'AS']
+            ['CP', 'CQ']
         )
 
         # complete one action
-        _complete_action(self.user, 'AS')
+        _complete_action(self.user, 'CP')
 
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
             sorted(list(results.values_list("action__title", flat=True))),
-            ['AR']
+            ['CQ']
         )
 
-        # complete the rest
-        _complete_action(self.user, 'AR')
-        _complete_behavior(self.user, 'BH')
-        _complete_goal(self.user, 'GC')
+        # complete the rest (including seq = 2)
+        for action in ['CQ', 'CR', 'CS']:
+            _complete_action(self.user, action)
 
         results = get_next_useractions_in_sequence(self.user)
         self.assertEqual(
@@ -252,12 +215,11 @@ class TestSequencing(TestCase):
 
 
 class TestContentCompletion(TestCase):
-    """Ensure that when a user completes all actions in a Behavior, the
-    UserBehavior is marked as completed, and when all Behaviors in a Goal are
-    compelted the UserGoal is also marked as completed.
+    """Ensure that when a user completes all actions in a Goal, the UserGoal
+    is marked as completed.
 
     This work was implemented to support content sequencing so the test
-    is included here as well.
+    is included in this module.
 
     """
 
