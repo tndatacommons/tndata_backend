@@ -46,7 +46,7 @@
         </thead>
         <tbody>
           <tr>
-            <td>Category</td>
+            <td style="vertical-align: top;">Category</td>
             <td>{{ category }}</td>
             <td>
               <strong>{{ category_progresses.count }}</strong> records from:<br/>
@@ -55,7 +55,7 @@
             </td>
           </tr>
           <tr>
-            <td>Goals</td>
+            <td style="vertical-align: top;">Goals</td>
             <td>{{ user_goals|join:"<br/>" }}</td>
             <td>
               <strong>{{ goal_progresses.count }}</strong> records from:<br/>
@@ -64,16 +64,7 @@
             </td>
           </tr>
           <tr>
-            <td>Behaviors</td>
-            <td>{{ user_behaviors|join:"<br/>" }}</td>
-            <td>
-              <strong>{{ behavior_progresses.count }}</strong> records from:<br/>
-              {{ bp_dates.reported_on__min|date:"M j, Y" }} -
-              {{ bp_dates.reported_on__max|date:"M j, Y" }}
-            </td>
-          </tr>
-          <tr>
-            <td>Actions</td>
+            <td style="vertical-align: top;">Actions</td>
             <td>{{ user_actions|join:"<br/>" }}</td>
             <td>
               Completed: {{ ucas_completed }}<br/>

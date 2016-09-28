@@ -363,13 +363,8 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
             ug.primary_category = self
             ug.save()
 
-        # Then enroll the user in the published Behaviors
-        behaviors = Behavior.objects.published().filter(goals__in=goals).distinct()
-        for behavior in behaviors:
-            user.userbehavior_set.get_or_create(behavior=behavior)
-
-        # Finally, enroll the user in the Behavior's Actions
-        actions = Action.objects.published().filter(behavior__in=behaviors)
+        # Finally, enroll the user in the Actions
+        actions = Action.objects.published().filter(goals__in=goals)
         for action in actions.distinct():
             ua, _ = user.useraction_set.get_or_create(action=action)
             ua.primary_category = self
@@ -379,13 +374,8 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
     def unenroll(self, user):
         """Removes the user in this category and all of the published content
         contained within it."""
-        # Fetch Actions / Behaviors in which this is the primary category.
         useractions = user.useraction_set.filter(primary_category__id=self.id)
-        behavior_ids = useractions.values_list("action__behavior", flat=True)
-
-        # Now delete everything.
         useractions.delete()
-        user.userbehavior_set.filter(id__in=behavior_ids).delete()
         user.usergoal_set.filter(primary_category__id=self.id).delete()
         user.usercategory_set.filter(category__id=self.id).delete()
 

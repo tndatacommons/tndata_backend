@@ -38,7 +38,7 @@
           {% endif %}
         </td>
         <td>{{ pe.goals.all|join:"<br/>" }}</td>
-        <td>{{ pe.accepted|iconbool:"True" }}</td>
+        <td>{{ pe.accepted|iconbool }}</td>
         <td>{{ pe.enrolled_on }}</td>
         <td><a href="{% url 'goals:package-enrollment-delete' pe.id %}"
                class="button alert">

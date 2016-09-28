@@ -1348,7 +1348,6 @@ def program_add_member(request, program_id):
     return render(request, 'goals/program_add_member.html', context)
 
 
-
 class ProgramListView(StaffRequiredMixin, ListView):
     """A list of all programs (not filtered by Organization)."""
     model = Program
@@ -1507,19 +1506,16 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
 
     def get_package_data(self, package):
         user = package.user
-        # UserGoals, UserBehaviors, UserActions
-        goals = package.goals.values_list('pk', flat=True)
-        user_goals = user.usergoal_set.filter(goal__id__in=goals)
-        user_behaviors = user.userbehavior_set.filter(behavior__goals__id__in=goals)
-        behaviors = user_behaviors.values_list('behavior', flat=True)
-        user_actions = user.useraction_set.filter(action__behavior__id__in=behaviors)
+        # UserGoals & UserActions
+        criteria = {"primary_category": package.category}
+        user_goals = user.usergoal_set.filter(**criteria)
+        user_actions = user.useraction_set.filter(**criteria)
 
         # UserCompletedActions
         ucas = UserCompletedAction.objects.filter(useraction__in=user_actions)
 
         return {
             'user_goals': user_goals,
-            'user_behaviors': user_behaviors,
             'user_actions': user_actions,
             'ucas': ucas,
         }
@@ -1530,7 +1526,6 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         data = self.get_package_data(package)
 
         user_goals = data['user_goals']
-        user_behaviors = data['user_behaviors']
         user_actions = data['user_actions']
 
         ucas = data['ucas']
@@ -1543,7 +1538,6 @@ class PackageEnrollmentDeleteView(PackageManagerMixin, DeleteView):
         context['package'] = package
         context['package_user'] = package.user
         context['user_goals'] = user_goals
-        context['user_behaviors'] = user_behaviors
         context['user_actions'] = user_actions
         context['ucas_count'] = ucas_count
         context['ucas_completed'] = ucas_completed
@@ -1765,7 +1759,6 @@ def accept_enrollment(request, pk):
     has_form_errors = False
     password_form = None
     user_form = None
-
     package = get_object_or_404(PackageEnrollment, pk=pk)
 
     if request.method == "POST" and package.user.is_active:

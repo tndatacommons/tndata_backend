@@ -749,7 +749,7 @@ class PackageEnrollmentForm(forms.Form):
     )
 
     def __init__(self, category, *args, **kwargs):
-        """Provice a specific category for this for in order to enroll users
+        """Provide a specific category for this for in order to enroll users
         in it's set of Goals."""
 
         # set the initial value for this field if it's defined on the category
