@@ -9,7 +9,6 @@ MODELS = {
     'category': models.Category,
     'goal': models.Goal,
     'trigger': models.Trigger,
-    'behavior': models.Behavior,
     'action': models.Action,
 }
 

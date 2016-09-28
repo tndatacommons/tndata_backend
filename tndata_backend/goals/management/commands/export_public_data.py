@@ -8,7 +8,7 @@ class Command(BaseCommand):
     """Exports a CSV file of titles for all public, published content. The
     content hierarchy is flattened into columns:
 
-        Action, Behavior, Goals, Categories
+        Action, Goals, Categories
 
     Cells with multiple items (e.g. goals) are separated by newlines.
 
@@ -17,18 +17,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        headers = ['Action', 'Behavior', 'Goals', 'Categories']
+        headers = ['Action', 'Goals', 'Categories']
         data = tablib.Dataset([], headers=headers)
 
         for action in Action.objects.published():
 
-            # Action, Parent behavior
-            row = [action.title, action.behavior.title]
-
+            row = [action.title]
             goals = []
             categories = []
 
-            for goal in action.behavior.goals.filter(state='published'):
+            for goal in action.goals.filter(state='published'):
                 goals.append(goal.title)
                 for category in goal.categories.filter(state='published'):
                     categories.append(category.title)
