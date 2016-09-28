@@ -10,14 +10,8 @@ from django.utils import timezone
 
 import waffle
 
-from goals.models import CustomAction, Goal, Trigger
+from goals.models import CustomAction
 from goals.sequence import get_next_useractions_in_sequence
-from goals.settings import (
-    DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
-    DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
-    DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE,
-    DEFAULT_EVENING_GOAL_NOTIFICATION_TEXT,
-)
 from notifications.models import GCMDevice, GCMMessage
 from utils.slack import post_private_message
 from utils.user_utils import to_utc
@@ -163,12 +157,12 @@ class Command(BaseCommand):
 
         1. Schedule all of their dynamic notifications, based on the item's
            Sequencing (e.g. items that have not been completed, ordered by their
-           specified Goal/Behavior/Action sequence number)
+           specified Goal/Action sequence number)
         2. Schedule their non-dynamic (e.g. recurring) notifications.
 
         """
         for user in users:
-            # Sequenced Goals, Behaviors, Actions
+            # Sequenced Goals, Actions
             for ua in get_next_useractions_in_sequence(user):
                 # Retrive the `next_reminder`, which will be in the
                 # user's timezone, and may have been created weeks or
@@ -203,40 +197,6 @@ class Command(BaseCommand):
                             priority=ua.priority
                         )
 
-    def schedule_morning_goal_notifications(self, users):
-        trigger = Trigger.objects.get_default_morning_goal_trigger()
-        for user in users:
-            # Convert trigger to the user's timezone
-            deliver_on = trigger.next(user=user)
-            deliver_on = to_utc(deliver_on)
-
-            if deliver_on and deliver_on < self.threshold:
-                self.create_message(
-                    user,
-                    ContentType.objects.get_for_model(Goal),
-                    DEFAULT_MORNING_GOAL_NOTIFICATION_TITLE,
-                    DEFAULT_MORNING_GOAL_NOTIFICATION_TEXT,
-                    deliver_on,
-                    priority=GCMMessage.LOW
-                )
-
-    def schedule_evening_goal_notifications(self, users):
-        trigger = Trigger.objects.get_default_evening_goal_trigger()
-        for user in users:
-            # Convert trigger to the user's timezone
-            deliver_on = trigger.next(user=user)
-            deliver_on = to_utc(deliver_on)
-
-            if deliver_on and deliver_on < self.threshold:
-                self.create_message(
-                    user,
-                    ContentType.objects.get_for_model(Goal),
-                    DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE,
-                    DEFAULT_EVENING_GOAL_NOTIFICATION_TEXT,
-                    deliver_on,
-                    priority=GCMMessage.LOW
-                )
-
     def handle(self, *args, **options):
         # ---------------------------------------------------------------------
         # XXX: Don't create notifications that are too far in the future
@@ -263,11 +223,6 @@ class Command(BaseCommand):
 
         if waffle.switch_is_active('goals-customactions'):
             self.schedule_customaction_notifications()
-
-        if waffle.switch_is_active('goals-morning-checkin'):
-            self.schedule_morning_goal_notifications(users)
-        if waffle.switch_is_active('goals-evening-checkin'):
-            self.schedule_evening_goal_notifications(users)
 
         m = "Created {} notifications.".format(self._messages_created)
         self._log_messages.append((m, WARNING))
