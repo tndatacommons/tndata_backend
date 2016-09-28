@@ -1,6 +1,5 @@
 {% extends "goals/base.html" %}
 {% load crispy_forms_tags %}
-{% load util_filters %}
 {% load tz %}
 
 {% block title %}Debug Sequence{% endblock %}
@@ -27,38 +26,34 @@ user's notifications get queued.</p>
   </div>
 </form>
 
-{% if data %}
-  <div class="row">
-    <div class="large-6 column">
-      {% for goal, behaviors in data|items %}
-        <h2 class="subheader">
-          {{ goal }} <span class="label">Goal</span> </h2>
-        {% for behavior, actions in behaviors|items %}
-          <h3 class="subheader">
-            {{ behavior }} <span class="label">Behavior</span></h3>
-          <ul>
-          {% for action in actions %}
-            <li>{{action}}</li>
-          {% endfor %}
-          </ul>
-        {% endfor %}
-      {% endfor %}
-    </div>
-    <div class="large-6 column">
-      <h2>Goals</h2>
-      <ul>
-        {% for item in goals %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      <h2>Behaviors</h2>
-      <ul>
-        {% for item in behaviors %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      <h2>Actions</h2>
-      <ul>
-        {% for item in actions %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-    </div>
-  </div> {# end .row #}
-
+{% if useractions %}
+<div class="row">
+  <div class="large-12 columns">
+    <table>
+    <thead>
+      <tr>
+        <th>UA.id</th>
+        <th>Order</th>
+        <th>Action</th>
+        <th>Next Trigger Date</th>
+        <th>Goal Order</th>
+        <th>Goal</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for ua in useractions %}
+      <tr>
+      <td>{{ ua.id }}</td>
+      <td>{{ ua.action.sequence_order }}</td>
+      <td>{{ ua.action_id }} / {{ ua.action }}</td>
+      <td>{{ ua.next_trigger_date }}</td>
+      <td>{{ ua.primary_goal.sequence_order }}</td>
+      <td>{{ ua.primary_goal_id }} / {{ ua.primary_goal }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div>
+</div> {# end .row #}
 {% endif %}
 {% endblock %}

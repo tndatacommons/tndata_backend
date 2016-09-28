@@ -86,7 +86,7 @@ from . permissions import (
     staff_required,
     superuser_required,
 )
-from . sequence import get_next_useractions_in_sequence, get_next_in_sequence_data
+from . sequence import get_next_useractions_in_sequence
 from . utils import num_user_selections
 
 logger = logging.getLogger(__name__)
@@ -2022,36 +2022,22 @@ def debug_sequence(request):
     """
     User = get_user_model()
     email = request.GET.get('email_address', None)
-    data = None
 
-    goals = []
-    behaviors = []
-    actions = []
-
+    useractions = []
     if email is None:
         form = EmailForm()
     else:
         form = EmailForm(initial={'email_address': email})
         try:
             user = User.objects.get(email__icontains=email)
-            data = get_next_in_sequence_data(user, print_them=False)
-
-            for goal, bevs in data.items():
-                goals.append(goal)
-                for behavior, actions in bevs.items():
-                    behaviors.append(behavior)
-                    actions.extend(list(actions))
-
+            useractions = get_next_useractions_in_sequence(user)
         except (User.DoesNotExist, User.MultipleObjectsReturned):
             messages.error(request, "Could not find that user")
 
     context = {
         'form': form,
         'email': email,
-        'data': data,
-        'goals': goals,
-        'behaviors': behaviors,
-        'actions': actions,
+        'useractions': useractions,
     }
     return render(request, 'goals/debug_sequence.html', context)
 
