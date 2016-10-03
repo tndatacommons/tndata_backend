@@ -39,13 +39,17 @@ def _do_object_removal(users, items_to_remove):
     for user in users:
         for item in items_to_remove:
             if item == "awards":
-                user.badges.all().delete()
+                user.badges.all().delete()  # removes the user's Awards
             elif item == "program":
-                user.program_set.all().delete()
+                for program in user.program_set.all():
+                    program.members.remove(user)
             elif item == "organization":
-                user.member_organizations.all().delete()
-                user.admin_organizations.all().delete()
-                user.staff_organizations.all().delete()
+                for org in user.member_organizations.all():
+                    org.members.remove(user)
+                for org in user.admin_organizations.all():
+                    org.admins.remove(user)
+                for org in user.staff_organizations.all():
+                    org.staff.remove(user)
             else:
                 # e.g. call: user.useraction_set.all().delete()
                 attr = "{}_set".format(item)
