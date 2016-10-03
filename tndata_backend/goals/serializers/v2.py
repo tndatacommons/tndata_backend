@@ -72,7 +72,7 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
         return results
 
     def get_engagement_rank(self, obj):
-        return DailyProgress.objects.engagement_rank(obj.user)
+        return max([DailyProgress.objects.engagement_rank(obj.user), 15.0])
 
 
 class CategorySerializer(ObjectTypeModelSerializer):
@@ -160,6 +160,7 @@ class UserCategorySerializer(ObjectTypeModelSerializer):
 class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
     editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
+    engagement_rank = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserGoal
@@ -177,6 +178,9 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         goal = Goal.objects.get(pk=goal_id)
         results['goal'] = GoalSerializer(goal).data
         return results
+
+    def get_engagement_rank(self, obj):
+        return max([obj.engagement_rank, 15.0])
 
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):

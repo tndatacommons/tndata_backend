@@ -410,8 +410,11 @@ def todays_progress(user):
     results = Counter(results)
     results.update(custom)
 
-    # Include Engagment score
-    results['engagement_rank'] = DailyProgress.objects.engagement_rank(user)
+    # Include Engagment score (15% at minimum)
+    results['engagement_rank'] = max([
+        DailyProgress.objects.engagement_rank(user),
+        15.0
+    ])
 
     # Completed tips in the past week.
     criteria = {
