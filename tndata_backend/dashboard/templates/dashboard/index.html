@@ -1,0 +1,236 @@
+{% extends "dashboard/base.html" %}
+{% load static from staticfiles %}
+{% load util_tags %}
+
+{% block head %}
+  {{ block.super }}
+  <script src="{% static 'js/Chart.min.js' %}"></script>
+  <style type="text/css">
+    div.panel > span { display:block; text-align:center; line-height:1;}
+    div.panel > span.number { /* numeric statistic value */
+      font-weight: bold;
+      font-size:4em;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      <div class="panel pull-right">
+        <span>Total Users</span>
+        <span class="number">{{ total_users }}</span>
+      </div>
+      {# ---------------------------------------------------------------- #}
+      <h2>Signups
+        <small>Accounts created over the last {{ days }} days</small>
+      </h2>
+      <canvas id="signupsChart" width="1000" height="300"></canvas>
+      <script type="text/javascript">
+      var data = {
+        labels: [
+          {% for day, num in signups %}"{{day}}"{% if not forloop.last %},{% endif %}{% endfor %}
+        ],
+        datasets: [
+          {
+            label: "Signups",
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(151,187,205,1)",
+            pointColor: "rgba(151,187,205,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,187,205,1)",
+            data: [
+            {% for day, num in signups %}{{ num }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]
+          }
+        ]
+      };
+      var ctx = document.getElementById("signupsChart").getContext("2d");
+      var c = new Chart(ctx).Line(data);
+      </script>
+      {# ---------------------------------------------------------------- #}
+
+      <hr/>
+
+      {# ---------------------------------------------------------------- #}
+      <h2>Daily App usage <small>Active in-app sessions</small></h2>
+      <p>The number of times users have signed into the compass app during
+      a set timeframe.</p>
+      <canvas id="loginsChart" width="1000" height="300"></canvas>
+      <script type="text/javascript">
+      var data = {
+        labels: ["Today", "This Week", "30 days", "60 days", "90 days", "> 90"],
+        datasets: [
+          {
+              label: "User Logins",
+              fillColor: "rgba(151,187,205,0.5)",
+              strokeColor: "rgba(151,187,205,0.8)",
+              highlightFill: "rgba(151,187,205,0.75)",
+              highlightStroke: "rgba(151,187,205,1)",
+              data: [
+                {{logins.1}}, {{logins.7}}, {{logins.30}},
+                {{logins.60}}, {{logins.90}}, {{logins.91}}
+              ]
+          },
+        ]
+      };
+      var ctx = document.getElementById("loginsChart").getContext("2d");
+      var c = new Chart(ctx).Bar(data);
+      </script>
+      {# ---------------------------------------------------------------- #}
+    </div>
+  </div> {# end .row #}
+
+  <hr/>
+
+  <div class="row">
+    <div class="large-4 medium-4 small-12 columns">
+      {# ---------------------------------------------------------------- #}
+      <h3>Devices</h3>
+      <p>The brand of device registered to receive notifications.</p>
+      <canvas id="device-counts"></canvas>
+      <script>
+      var ctx = document.getElementById("device-counts").getContext("2d");
+      var data = [
+        {
+          value: {{ devices.android|default:0 }},
+          color: "#50B252",
+          highlight: "#72D474",
+          label: "Android"
+        },
+        {
+          value: {{ devices.ios|default:0 }},
+          color: "#288BF5",
+          highlight: "#4AADF7",
+          label: "iOS"
+        }
+      ]
+      var c = new Chart(ctx).Doughnut(data);
+      </script>
+      {# ---------------------------------------------------------------- #}
+    </div>
+    <div class="large-8 medium-8 small-12 columns">
+      <h3>Device Ownership</h3>
+      <div class="row">
+        <div class="large-4 small-4 columns">
+          <div class="panel">
+            <span>Device Owners</span>
+            <span class="number">{{ device_owners }}</span>
+          </div>
+        </div>
+        <div class="large-4 small-4 columns">
+          <div class="panel">
+            <span>Total Devices</span>
+            <span class="number">{{ total_devices }}</span>
+          </div>
+        </div>
+        <div class="large-4 small-4 columns">
+          <div class="panel number">
+            <span>Devices / User</span>
+            <span class="number">{{ devices_per_user|floatformat:2 }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> {# end .row #}
+
+  <hr/>
+
+  <div class="row">
+    <div class="large-12 small-12 columns">
+      {# ---------------------------------------------------------------- #}
+      <h2>Notifications
+        <small>&ldquo;Got it&rdquo; vs. Dismissed / {{ days }} days</small>
+      </h2>
+      <canvas id="completedChart" width="1000" height="300"></canvas>
+      <script type="text/javascript">
+      var data = {
+        labels: [
+          {% for day, num in completed %}"{{day}}"{% if not forloop.last %},{% endif %}{% endfor %}
+        ],
+        datasets: [
+          {
+            label: "Got it",
+            fillColor: "rgba(151,220,162,0.2)",
+            strokeColor: "rgba(151,220,162,1)",
+            pointColor: "rgba(151,220,162,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,220,162,1)",
+            data: [
+            {% for day, num in completed %}{{ num }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]
+          },
+          {
+            label: "Dismissed",
+            fillColor: "rgba(205,100,100,0.2)",
+            strokeColor: "rgba(205,100,100,1)",
+            pointColor: "rgba(205,100,100,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(205,100,100,1)",
+            data: [
+            {% for day, num in dismissed %}{{ num }}{% if not forloop.last %},{% endif %}{% endfor %}
+            ]
+          },
+        ]
+      };
+      var ctx = document.getElementById("completedChart").getContext("2d");
+      var c = new Chart(ctx).Line(data);
+      </script>
+      {# ---------------------------------------------------------------- #}
+    </div>
+  </div> {# end .row #}
+
+  <hr/>
+
+  <div class="row">
+    <div class="large-4 medium-4 small-12 columns">
+      {# ---------------------------------------------------------------- #}
+      <h3>User Limits</h3>
+      <p>Limits users have placed on the daily number of notifications they
+      may receive.</p>
+      <canvas id="user-limit-counts"></canvas>
+      <script>
+      var ctx = document.getElementById("user-limit-counts").getContext("2d");
+      var data = [
+        {% for limit, count in max_messages.items %}
+        {
+          value: {{ count }},
+          color: "{% random_color %}",
+          highlight: "#D47274",
+          label: "{{ limit }} per day"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+      var c = new Chart(ctx).Doughnut(data);
+      </script>
+      {# ---------------------------------------------------------------- #}
+    </div>
+    <div class="large-8 medium-8 small-12 columns">
+      <h3>Push Notifications <small>queued &amp; delivered today</small></h3>
+      <div class="row">
+        <div class="large-4 small-4 columns">
+          <div class="panel">
+            <span>Total Messages</span>
+            <span class="number">{{ messages_total }}</span>
+          </div>
+        </div>
+        <div class="large-4 small-4 columns">
+          <div class="panel">
+            <span>Delivered</span>
+            <span class="number">{{ messages_delivered }}</span>
+          </div>
+        </div>
+        <div class="large-4 small-4 columns">
+          <div class="panel number">
+            <span>Queued</span>
+            <span class="number">{{ messages_remaining }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> {# end .row #}
+
+{% endblock %}

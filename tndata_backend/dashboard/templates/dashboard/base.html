@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block topnav %}
+<div class="sticky">
+  <nav class="top-bar" data-topbar role="navigation">
+  <ul class="title-area">
+    <li class="name">
+      <h1>
+        <a href="/" title="Project Home"><i class="fa fa-chevron-left"></i> </a>
+      </h1>
+    </li>
+    <li class="toggle-topbar menu-icon"><a href="#"><span></span></a></li>
+  </ul>
+
+  <section class="top-bar-section">
+    {# Right Nav Section #}
+    <ul class="right">
+      <li class="divider"></li>
+      <li class="has-dropdown">
+        <a href="#"><i class="fa fa-line-chart"></i> Reports</a>
+        <ul class="dropdown">
+          <li><a href="{% url 'goals:reports' %}">About</a></li>
+          <li><a href="{% url 'goals:report-organization' %}">Member Selections</a></li>
+          <li><a href="{% url 'goals:report-popular' %}">Popular Content</a></li>
+          <li><a href="{% url 'goals:report-actions' %}">Notifications</a></li>
+          <li><a href="{% url 'goals:report-triggers' %}">Triggers</a></li>
+          <li><a href="{% url 'goals:report-authors' %}">Authors</a></li>
+          <li><a href="{% url 'goals:report-engagement' %}">App Engagement</a></li>
+          <li><a href="{% url 'userprofile:report' %}">Users</a></li>
+          <li><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        </ul>
+      </li>
+      <li class="divider"></li>
+      <li class="has-dropdown">
+        <a href="{% url 'userprofile:index' %}"><i class="fa fa-user"></i> Account</a>
+        <ul class="dropdown">
+          <li><a href="{% url 'logout' %}">
+            <i class="fa fa-sign-out"></i> Sign Out</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+    {# Left Nav Section #}
+    <ul class="left">
+      <li class="divider"></li>
+      <li>
+        <a href="{% url 'dashboard:index' %}">
+          <i class="fa fa-line-chart"></i> Compass Dashboard
+        </a>
+      </li>
+    </ul>
+  </section>
+  </nav>
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="row" style="margin-top:25px;">
+  <div class="large-12 medium-12 small-12 columns">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
+

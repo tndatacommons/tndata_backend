@@ -173,6 +173,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'crispy_forms_foundation',
     'cronlog',
+    'dashboard',
     'django_extensions',
     'django_rq',
     'haystack',
