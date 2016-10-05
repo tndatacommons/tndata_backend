@@ -38,8 +38,6 @@ class UserCompletedAction(models.Model):
     action = models.ForeignKey(Action)
 
     # NOTE: See the `action_completed` signal handler (in models.signals)
-    # It also checks if all of a user's actions within a behavior have been
-    # completed, and if so, marks the behavior as completed.
     state = models.CharField(
         max_length=32,
         default=UNSET,
@@ -100,7 +98,7 @@ class UserCompletedAction(models.Model):
 
 class DailyProgress(models.Model):
     """This model aggregates some information about the user's daily progress
-    toward adopting behaviors (or achieving a goal).
+    toward achieving a goal.
 
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -143,12 +141,6 @@ class DailyProgress(models.Model):
         help_text="Number of custom actions the user dismissed"
     )
 
-    # Aggregate Behavior Data
-    behaviors_total = models.IntegerField(
-        default=0,
-        help_text="Total number of behaviors selected on this day"
-    )
-
     # This is where we store the daily progress feedback for goals. It's a
     # dict of the form: {'goal-<id>': int_value}, where each value is the
     # user's self-reported feedback.
@@ -183,6 +175,10 @@ class DailyProgress(models.Model):
         verbose_name = 'Daily Progress'
         verbose_name_plural = 'Daily Progresses'
         get_latest_by = 'updated_on'
+
+    @property
+    def behaviors_total(self):
+        return 0
 
     @property
     def actions(self):
@@ -229,15 +225,6 @@ class DailyProgress(models.Model):
         self.actions_dismissed = ucas.filter(
             state=UserCompletedAction.DISMISSED).count()
 
-    def _update_userbehavior_stats(self):
-        start, end = local_day_range(self.user, dt=self.created_on)
-        from_date = self.user.userbehavior_set.aggregate(Min('created_on'))
-        from_date = from_date['created_on__min'] or start
-
-        # Count the total number of UserBehaviors selected (ever)
-        self.behaviors_total = self.user.userbehavior_set.filter(
-            created_on__range=(from_date, end)).count()
-
     def _update_customaction_stats(self):
         start, end = local_day_range(self.user, dt=self.created_on)
         from_date = self.user.customaction_set.aggregate(Min('created_on'))
@@ -259,7 +246,6 @@ class DailyProgress(models.Model):
             state=UserCompletedAction.DISMISSED).count()
 
     def update_stats(self):
-        self._update_userbehavior_stats()
         self._update_useraction_stats()
         self._update_customaction_stats()
 

@@ -1720,7 +1720,6 @@ class TestDailyProgress(TestCase):
             customactions_completed=0,
             customactions_snoozed=0,
             customactions_dismissed=1,
-            behaviors_total=1,
         )
 
     def test_actions(self):

@@ -3395,7 +3395,6 @@ class TestDailyProgressAPI(V2APITestCase):
                 user=user,
                 actions_total=1,
                 actions_completed=1,
-                behaviors_total=1,
                 checkin_streak=1,
             )
 
@@ -3406,7 +3405,6 @@ class TestDailyProgressAPI(V2APITestCase):
                 user=user,
                 actions_total=1,
                 actions_completed=1,
-                behaviors_total=1,
                 checkin_streak=1,
             )
 

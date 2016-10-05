@@ -679,15 +679,15 @@ class DailyProgressAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
     )
     list_display = (
-        'user', 'actions_total', 'behaviors_total', 'engagement_15_days',
-        'engagement_30_days', 'engagement_60_days', 'created_on',
+        'user', 'actions_total', 'engagement_15_days', 'engagement_30_days',
+        'engagement_60_days', 'created_on',
     )
     raw_id_fields = ('user', )
     exclude = ('goal_status', )
     readonly_fields = (
         'actions_total', 'actions_completed', 'actions_snoozed',
         'actions_dismissed', 'customactions_total', 'customactions_completed',
-        'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
+        'customactions_snoozed', 'customactions_dismissed',
         'goal_status_details', 'engagement_15_days', 'engagement_30_days',
         'engagement_60_days', 'updated_on', 'created_on'
     )
