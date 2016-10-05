@@ -9,7 +9,6 @@ from model_mommy import mommy
 from .. badgify_recipes import (
     AchieverRecipe,
     ActionHighFiveRecipe,
-    BehaviorCompletedRecipe,
     ConscientiousRecipe,
     CustomActionCompletedRecipe,
     CustomGoalCreatedRecipe,
@@ -42,11 +41,9 @@ from .. badgify_recipes import (
 )
 from .. models import (
     Action,
-    Behavior,
     Category,
     Goal,
     UserAction,
-    UserBehavior,
     UserGoal,
     UserCompletedAction,
 )
@@ -144,20 +141,13 @@ class TestBadgifyRecipes(TestCase):
         cls.goal.categories.add(cls.category)
         cls.goal.save()
 
-        cls.behavior = mommy.make(Behavior, state="published")
-        cls.behavior.goals.add(cls.goal)
-        cls.behavior.save()
-
-        cls.action = mommy.make(
-            Action, title="Action", state="published", behavior=cls.behavior)
-        cls.action2 = mommy.make(
-            Action, title="Action2", state="published", behavior=cls.behavior)
-        cls.action3 = mommy.make(
-            Action, title="Action3", state="published", behavior=cls.behavior)
-        cls.action4 = mommy.make(
-            Action, title="Action4", state="published", behavior=cls.behavior)
-        cls.action5 = mommy.make(
-            Action, title="Action5", state="published", behavior=cls.behavior)
+        cls.action = mommy.make(Action, title="Action", state="published")
+        cls.action2 = mommy.make(Action, title="Action2", state="published")
+        cls.action3 = mommy.make(Action, title="Action3", state="published")
+        cls.action4 = mommy.make(Action, title="Action4", state="published")
+        cls.action5 = mommy.make(Action, title="Action5", state="published")
+        for act in [cls.action, cls.action2, cls.action3, cls.action4, cls.action5]:
+            act.goals.add(cls.goal)
 
         cls.user = User.objects.create_user("badgifyuser", "bu@a.b", "pass")
         cls.user.last_login = timezone.now()  # assume we just logged in.
@@ -392,17 +382,6 @@ class TestBadgifyRecipes(TestCase):
         # clean up
         self.user.useraction_set.all().delete()
         self.user.usercompletedaction_set.all().delete()
-
-    def test_behavior_completed_recipe(self):
-        # When a user completes a behavior.
-        recipe = BehaviorCompletedRecipe()
-        ub = UserBehavior.objects.create(user=self.user, behavior=self.behavior)
-        ub.complete()
-        ub.save()
-        self.assertEqual(list(recipe.user_ids), [self.user.id])
-
-        # clean up
-        ub.delete()
 
     def test_goal_completed_recipe(self):
         # When a user completes a goal.
