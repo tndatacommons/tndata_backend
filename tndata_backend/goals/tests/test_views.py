@@ -2764,6 +2764,8 @@ class TestProgramUpdateView(TestCase):
 
         cls.action = Action.objects.create(title="A", state="published")
         cls.action.goals.add(cls.goal1)
+        cls.action2 = Action.objects.create(title="A2", state="published")
+        cls.action2.goals.add(cls.goal2)
 
         cls.program = Program.objects.create(name="PRG", organization=cls.org)
         cls.program.categories.add(cls.category)
@@ -2833,7 +2835,7 @@ class TestProgramUpdateView(TestCase):
 
         self.assertTrue(user.useraction_set.exists())
         self.assertTrue(user.usergoal_set.filter(goal__title="G2").exists())
-        self.assertTrue(user.useraction_set.filter(action__title="A").exists())
+        self.assertTrue(user.useraction_set.filter(action__title="A2").exists())
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
