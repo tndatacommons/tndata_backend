@@ -9,14 +9,12 @@ from model_mommy import mommy
 
 from .. models import (
     Action,
-    Behavior,
     Category,
     CustomAction,
     CustomGoal,
     Goal,
     Trigger,
     UserAction,
-    UserBehavior,
     UserCategory,
     UserCompletedAction,
     UserGoal,
@@ -111,26 +109,20 @@ class TestUserProgress(TestCase):
         cls.user = cls.User.objects.create_user('user', 'u@example.com', 'secret')
         # NOTE: User's default timezone is America/Chicago
 
-        # Create a Category/Goal/Behavior/Action(s) content
+        # Create a Category/Goal/Action(s) content
         cls.category = mommy.make(Category, title="CAT", state="published")
         cls.goal = mommy.make(Goal, title="GTITLE", state='published')
         cls.goal.categories.add(cls.category)
-        cls.behavior = mommy.make(Behavior, title="BEH", state='published')
-        cls.behavior.goals.add(cls.goal)
-        cls.action1 = mommy.make(
-            Action, title='A1', behavior=cls.behavior, state='published'
-        )
-        cls.action2 = mommy.make(
-            Action, title='A2', behavior=cls.behavior, state='published'
-        )
-        cls.action3 = mommy.make(
-            Action, title='A3', behavior=cls.behavior, state='published'
-        )
+        cls.action1 = mommy.make(Action, title='A1', state='published')
+        cls.action1.goals.add(cls.goal)
+        cls.action2 = mommy.make(Action, title='A2', state='published')
+        cls.action2.goals.add(cls.goal)
+        cls.action3 = mommy.make(Action, title='A3', state='published')
+        cls.action3.goals.add(cls.goal)
 
         # Assign the user the above content
         cls.uc = mommy.make(UserCategory, user=cls.user, category=cls.category)
         cls.ug = mommy.make(UserGoal, user=cls.user, goal=cls.goal)
-        cls.ub = mommy.make(UserBehavior, user=cls.user, behavior=cls.behavior)
 
         dt = timezone.now()
         cls.dt = tzdt(dt.year, dt.month, dt.day, 9, 0)  # Today, 9am
@@ -321,17 +313,11 @@ class TestUserFeed(TestCase):
         cls.goal.publish()
         cls.goal.save()
 
-        # A Behavior
-        cls.behavior = Behavior.objects.create(title="Test Behavior")
-        cls.behavior.goals.add(cls.goal)
-        cls.behavior.publish()
-        cls.behavior.save()
-
         # An Action
         cls.action = Action.objects.create(
             title="Test Action",
             sequence_order=1,
-            behavior=cls.behavior
+            goals=[cls.goal]
         )
         cls.action.publish()
         cls.action.save()
@@ -339,7 +325,6 @@ class TestUserFeed(TestCase):
         # Give the user all the defined info.
         cls.uc = UserCategory.objects.create(user=cls.user, category=cls.category)
         cls.ug = UserGoal.objects.create(user=cls.user, goal=cls.goal)
-        cls.ub = UserBehavior.objects.create(user=cls.user, behavior=cls.behavior)
 
         dt = timezone.now()
         with patch('goals.models.triggers.timezone.now') as mock_now:

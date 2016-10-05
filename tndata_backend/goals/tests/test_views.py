@@ -6,6 +6,7 @@ from django.contrib.auth.models import Permission
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase, override_settings
 from django_rq import get_worker
+from model_mommy import mommy
 
 from .. models import (
     Action,
@@ -58,32 +59,26 @@ class TestPermissions(TestCase):
 
         expected_codenames = [
             'add_action',
-            'add_behavior',
             'add_category',
             'add_goal',
             'add_trigger',
             'change_action',
-            'change_behavior',
             'change_category',
             'change_goal',
             'change_trigger',
             'decline_action',
-            'decline_behavior',
             'decline_category',
             'decline_goal',
             'decline_trigger',
             'delete_action',
-            'delete_behavior',
             'delete_category',
             'delete_goal',
             'delete_trigger',
             'publish_action',
-            'publish_behavior',
             'publish_category',
             'publish_goal',
             'publish_trigger',
             'view_action',
-            'view_behavior',
             'view_category',
             'view_goal',
             'view_trigger'
@@ -100,22 +95,16 @@ class TestPermissions(TestCase):
 
         expected_codenames = [
             'add_action',
-            'add_behavior',
             'add_goal',
             'change_action',
-            'change_behavior',
             'change_goal',
             'decline_action',
-            'decline_behavior',
             'decline_goal',
             'delete_action',
-            'delete_behavior',
             'delete_goal',
             'publish_action',
-            'publish_behavior',
             'publish_goal',
             'view_action',
-            'view_behavior',
             'view_category',
             'view_goal',
         ]
@@ -131,13 +120,10 @@ class TestPermissions(TestCase):
 
         expected_codenames = [
             'add_action',
-            'add_behavior',
             'add_goal',
             'change_action',
-            'change_behavior',
             'change_goal',
             'view_action',
-            'view_behavior',
             'view_category',
             'view_goal'
         ]
@@ -151,7 +137,7 @@ class TestPermissions(TestCase):
         self.assertEqual(sorted(perms), sorted(ContentPermissions.viewers))
 
         expected_codenames = [
-            'view_action', 'view_behavior', 'view_category', 'view_goal'
+            'view_action', 'view_category', 'view_goal'
         ]
         codenames = sorted(ContentPermissions.viewer_codenames)
         self.assertEqual(codenames, expected_codenames)
@@ -1234,10 +1220,17 @@ class TestGoalUpdateView(TestCaseWithGroups):
             created_by=self.author
         )
         self.goal.categories.add(self.category)
+
+        # Note: We can't submit a goal for review unless it has a
+        # published/in-review child action.
+        self.action = mommy.make(Action, title='A', state='published')
+        self.action.goals.add(self.goal)
+
         self.url = self.goal.get_update_url()
 
     def tearDown(self):
         Goal.objects.filter(id=self.goal.id).delete()
+        Action.objects.filter(id=self.action.id).delete()
 
     def test_anon_get(self):
         resp = self.ua_client.get(self.url)
@@ -1406,14 +1399,6 @@ class TestGoalUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
 
-        # NOTE: This should still be draft, because this goal doesn't have any
-        # child content in pending/published states.,
-        updated_goal = Goal.objects.get(pk=self.goal.pk)
-        self.assertEqual(updated_goal.state, "draft")
-
-        resp = self.client.post(updated_goal.get_update_url(), payload)
-        self.assertEqual(resp.status_code, 302)
-
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
 
@@ -1426,16 +1411,8 @@ class TestGoalUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
 
-        # NOTE: This should still be draft, because this goal doesn't have any
-        # child content in pending/published states.,
-        updated_goal = Goal.objects.get(pk=self.goal.pk)
-        self.assertEqual(updated_goal.state, "draft")
-
-        resp = self.client.post(updated_goal.get_update_url(), payload)
-        self.assertEqual(resp.status_code, 302)
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
-        # FAILING with 'draft' != 'pending-review'
 
     def test_author_submit_for_review(self):
         """Ensure authors can submit for review."""
@@ -1446,13 +1423,6 @@ class TestGoalUpdateView(TestCaseWithGroups):
         resp = self.client.post(self.url, payload)
         self.assertEqual(resp.status_code, 302)
 
-        # NOTE: This should still be draft, because this goal doesn't have any
-        # child content in pending/published states.,
-        updated_goal = Goal.objects.get(pk=self.goal.pk)
-        self.assertEqual(updated_goal.state, "draft")
-
-        resp = self.client.post(updated_goal.get_update_url(), payload)
-        self.assertEqual(resp.status_code, 302)
         updated_goal = Goal.objects.get(pk=self.goal.pk)
         self.assertEqual(updated_goal.state, "pending-review")
 
@@ -1676,9 +1646,14 @@ class TestActionCreateView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionCreateView).setUpTestData()
+        cls.cat = mommy.make(Category, title="C", order=0, state='published')
+        cls.goal = mommy.make(Goal, title="Goal", state='published')
+        cls.goal.categories.add(cls.cat)
+
         cls.payload = {
             'sequence_order': 1,
             'title': 'New',
+            'goals': [cls.goal.id],
             'action_type': Action.SHOWING,
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
@@ -1784,6 +1759,7 @@ class TestActionCreateView(TestCaseWithGroups):
         payload = {
             'sequence_order': 0,
             'title': 'X' * 256,
+            'goals': [self.goal.id],
             'notification_text': 'Y' * 256,
             'action_type': 'showing',
             'priority': '3',
@@ -1869,7 +1845,14 @@ class TestActionPublishView(TestCaseWithGroups):
     @classmethod
     def setUpTestData(cls):
         super(cls, TestActionPublishView).setUpTestData()
+
+        cls.cat = mommy.make(Category, title="C", order=0, state='published')
+        cls.goal = mommy.make(Goal, title="Goal", state='published')
+        cls.goal.categories.add(cls.cat)
+
         cls.action = Action.objects.create(title="Test Action")
+        cls.action.goals.add(cls.goal)
+
         cls.url = cls.action.get_publish_url()
 
     def setUp(self):
@@ -1970,6 +1953,7 @@ class TestActionUpdateView(TestCaseWithGroups):
             'sequence_order': 1,
             'title': 'U',
             'action_type': Action.SHOWING,
+            'goals': [cls.goal.id],
             'trigger-time': '22:00',
             'trigger-trigger_date': '08/20/2015',
             'trigger-recurrences': 'RRULE:FREQ=WEEKLY;BYDAY=SA',
@@ -1986,6 +1970,7 @@ class TestActionUpdateView(TestCaseWithGroups):
             sequence_order=1,
             created_by=self.author
         )
+        self.action.goals.add(self.goal)
         self.url = self.action.get_update_url()
 
     def tearDown(self):
@@ -2842,7 +2827,7 @@ class TestProgramUpdateView(TestCase):
 
         get_worker().work(burst=True)  # Processes all jobs then stop.
 
-        # Verify Result (user has Goal2, Behavior, and Action)
+        # Verify Result (user has Goal2 and Action)
         program = Program.objects.get(pk=self.program.id)
         self.assertEqual(program.name, "PRG (updated)")
 
