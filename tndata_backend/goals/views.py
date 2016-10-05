@@ -1119,13 +1119,17 @@ class ActionDuplicateView(ActionCreateView):
             obj = self.get_object()
             initial.update({
                 "title": "Copy of {0}".format(obj.title),
+                'action_type': obj.action_type,
+                'goals': [g.id for g in obj.goals.all()],
                 "sequence_order": obj.sequence_order,
-                "behavior": obj.behavior.id,
-                "description": obj.description,
+                'source_link': obj.source_link,
+                'source_notes': obj.source_notes,
+                'notes': obj.notes,
                 "more_info": obj.more_info,
-                "notification_text": obj.notification_text,
+                "description": obj.description,
                 "external_resource": obj.external_resource,
                 "external_resource_name": obj.external_resource_name,
+                "notification_text": obj.notification_text,
                 "priority": obj.priority,
             })
         except self.model.DoesNotExist:
