@@ -13,7 +13,6 @@ from utils.user_utils import tzdt
 
 from .. models import (
     Action,
-    Behavior,
     Category,
     CustomAction,
     CustomActionFeedback,
@@ -24,7 +23,6 @@ from .. models import (
     PackageEnrollment,
     Trigger,
     UserAction,
-    UserBehavior,
     UserCategory,
     UserCompletedAction,
     UserCompletedCustomAction,
@@ -165,9 +163,6 @@ class TestCategory(TestCase):
 
     def test_goals(self):
         self.assertIsInstance(self.category.goals, QuerySet)
-
-    def test_behaviors(self):
-        self.assertIsInstance(self.category.behaviors, QuerySet)
 
     def test__format_color(self):
         self.assertEqual(self.category._format_color("ffaabb"), "#ffaabb")
@@ -361,24 +356,15 @@ class TestGoalEnrollment(TestCase):
                 categories=[category]
             )
 
-        def _behavior(title, goal, seq):  # creates a published Behavior
-            return mommy.make(
-                Behavior,
-                title=title,
-                sequence_order=seq,
-                state='published',
-                goals=[goal]
-            )
-
-        def _action(title, behavior, seq):  # creates a published Action
-            return mommy.make(
+        def _action(title, goal, seq):  # creates a published Action
+            action = mommy.make(
                 Action,
                 title=title,
                 sequence_order=seq,
-                behavior=behavior,
                 default_trigger=_t(),
                 state='published'
             )
+            action.goals.add(goal)
 
         # Create the content of library for the user.
         cls.cat = mommy.make(Category, title="C", order=0, state='published')
@@ -387,21 +373,15 @@ class TestGoalEnrollment(TestCase):
         cls.goal1 = _goal('G1', cls.cat, 0)
         cls.goal2 = _goal('G2', cls.cat, 0)
 
-        # and behaviors
-
-        b1 = _behavior("B1", cls.goal1, 0)
-        b2 = _behavior("B2", cls.goal2, 0)
-
         # and actions
-        _action("A10", b1, 0)
-        _action("A11", b1, 1)
-        _action("A20", b2, 0)
-        _action("A21", b2, 1)
+        _action("A10", cls.goal1, 0)
+        _action("A11", cls.goal1, 1)
+        _action("A20", cls.goal2, 0)
+        _action("A21", cls.goal2, 1)
 
     def tearDown(self):
         # Rest user-selected content
         UserAction.objects.all().delete()
-        UserBehavior.objects.all().delete()
         UserGoal.objects.all().delete()
         UserCategory.objects.all().delete()
 
@@ -413,14 +393,11 @@ class TestGoalEnrollment(TestCase):
         categories = self.user.usercategory_set.values_list(
             'category__title', flat=True)
         goals = self.user.usergoal_set.values_list('goal__title', flat=True)
-        behaviors = self.user.userbehavior_set.values_list(
-            'behavior__title', flat=True)
         actions = self.user.useraction_set.values_list(
             'action__title', flat=True)
 
         self.assertEqual(sorted(list(categories)), ['C'])
         self.assertEqual(sorted(list(goals)), ['G1'])
-        self.assertEqual(sorted(list(behaviors)), ['B1'])
         self.assertEqual(sorted(list(actions)), ['A10', 'A11'])
 
     def test_enroll_without_primary_category(self):
@@ -431,124 +408,12 @@ class TestGoalEnrollment(TestCase):
         categories = self.user.usercategory_set.values_list(
             'category__title', flat=True)
         goals = self.user.usergoal_set.values_list('goal__title', flat=True)
-        behaviors = self.user.userbehavior_set.values_list(
-            'behavior__title', flat=True)
         actions = self.user.useraction_set.values_list(
             'action__title', flat=True)
 
         self.assertEqual(sorted(list(categories)), ['C'])
         self.assertEqual(sorted(list(goals)), ['G2'])
-        self.assertEqual(sorted(list(behaviors)), ['B2'])
         self.assertEqual(sorted(list(actions)), ['A20', 'A21'])
-
-
-class TestBehavior(TestCase):
-    """Tests for the `Behavior` model."""
-
-    def setUp(self):
-        self.category = Category.objects.create(
-            order=1,
-            title='Test Category',
-            description='Category Description',
-        )
-        self.goal = Goal.objects.create(title="Test Goal")
-        self.goal.categories.add(self.category)
-        self.behavior = Behavior.objects.create(
-            title='Test Behavior',
-        )
-        self.behavior.goals.add(self.goal)
-
-    def tearDown(self):
-        Category.objects.filter(id=self.category.id).delete()
-        Goal.objects.filter(id=self.goal.id).delete()
-        Behavior.objects.filter(id=self.behavior.id).delete()
-
-    def test__str__(self):
-        expected = "Test Behavior"
-        actual = "{}".format(self.behavior)
-        self.assertEqual(expected, actual)
-
-    def test_save(self):
-        """Verify that saving generates a title_slug"""
-        behavior = Behavior.objects.create(title="New Name")
-        behavior.save()
-        self.assertEqual(behavior.title_slug, "new-name")
-
-    def test_save_created_by(self):
-        """Allow passing an `created_by` param into save."""
-        u = User.objects.create_user('user', 'u@example.com', 'secret')
-        b = Behavior(title="New")
-        b.save(created_by=u)
-        self.assertEqual(b.created_by, u)
-        u.delete()  # Clean up
-        b.delete()
-
-    def test_save_updated_by(self):
-        """Allow passing an `updated_by` param into save."""
-        u = User.objects.create_user('user', 'u@example.com', 'secret')
-        self.behavior.save(updated_by=u)
-        self.assertEqual(self.behavior.updated_by, u)
-        u.delete()  # Clean up
-
-    def test_get_absolute_url(self):
-        self.assertEqual(
-            self.behavior.get_absolute_url(),
-            "/goals/behaviors/{0}-test-behavior/".format(self.behavior.id)
-
-
-        )
-
-    def test_get_update_url(self):
-        self.assertEqual(
-            self.behavior.get_update_url(),
-            "/goals/behaviors/{0}-test-behavior/update/".format(self.behavior.id)
-
-        )
-
-    def test_get_delete_url(self):
-        self.assertEqual(
-            self.behavior.get_delete_url(),
-            "/goals/behaviors/{0}-test-behavior/delete/".format(self.behavior.id)
-
-        )
-
-    def test_default_state(self):
-        """Ensure that the default state is 'draft'."""
-        self.assertEqual(self.behavior.state, "draft")
-
-    def test_review(self):
-        self.behavior.review()  # Switch to pending-review
-        self.assertEqual(self.behavior.state, "pending-review")
-
-    def test_decline(self):
-        self.behavior.review()  # Switch to pending-review
-        self.behavior.decline()  # then decline
-        self.assertEqual(self.behavior.state, "declined")
-
-    def test_publish(self):
-        self.behavior.review()  # Switch to pending-review
-        self.behavior.publish()  # then publish
-        self.assertEqual(self.behavior.state, "published")
-
-    def test_publish_from_draft(self):
-        self.assertEqual(self.behavior.state, "draft")
-        self.behavior.publish()  # then publish
-        self.assertEqual(self.behavior.state, "published")
-
-    def test_clean_title_on_save(self):
-        self.behavior.title = "    A NEW title."
-        self.behavior.save()
-        self.assertEqual(self.behavior.title, "A NEW title")
-
-    def test_clean_more_info_on_save(self):
-        self.behavior.more_info = "    more.   "
-        self.behavior.save()
-        self.assertEqual(self.behavior.more_info, "more.")
-
-    def test_clean_description_on_save(self):
-        self.behavior.description = "  more descriptions.   "
-        self.behavior.save()
-        self.assertEqual(self.behavior.description, "more descriptions.")
 
 
 class TestAction(TestCase):
@@ -562,13 +427,10 @@ class TestAction(TestCase):
         cls.goal.categories.add(cls.cat)
 
     def setUp(self):
-        self.behavior = mommy.make(Behavior, title='Test Behavior')
-        self.action = mommy.make(
-            Action, behavior=self.behavior, title="Test Action"
-        )
+        self.action = mommy.make(Action, title="Test Action")
+        self.action.goals.add(self.goal)
 
     def tearDown(self):
-        Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
     def test__str__(self):
@@ -578,14 +440,14 @@ class TestAction(TestCase):
 
     def test_save(self):
         """Verify that saving generates a name_slug"""
-        action = Action.objects.create(behavior=self.behavior, title="New Name")
+        action = Action(title="New Name")
         action.save()
         self.assertEqual(action.title_slug, "new-name")
 
     def test_save_created_by(self):
         """Allow passing an `created_by` param into save."""
         u = User.objects.create_user('user', 'u@example.com', 'secret')
-        a = Action(title="New", behavior=self.behavior)
+        a = Action(title="New")
         a.save(created_by=u)
         self.assertEqual(a.created_by, u)
         u.delete()  # Clean up
@@ -734,57 +596,6 @@ class TestUserGoal(TestCase):
         admin.delete()
 
 
-class TestUserBehavior(TestCase):
-    """Tests for the `UserBehavior` model."""
-
-    def setUp(self):
-        self.user, created = User.objects.get_or_create(
-            username="test",
-            email="test@example.com"
-        )
-        self.goal = Goal.objects.create(title="Goal for Behavior")
-        self.behavior = Behavior.objects.create(title='Test Behavior')
-        self.behavior.goals.add(self.goal)
-        self.ub = UserBehavior.objects.create(
-            user=self.user,
-            behavior=self.behavior
-        )
-
-    def tearDown(self):
-        User.objects.filter(id=self.user.id).delete()
-        Behavior.objects.filter(id=self.behavior.id).delete()
-        UserBehavior.objects.filter(id=self.ub.id).delete()
-
-    def test__str__(self):
-        expected = "Test Behavior"
-        actual = "{}".format(self.ub)
-        self.assertEqual(expected, actual)
-
-    def test_custom_triggers_allowed(self):
-        """Ensure that custom triggers are allowed when the user is not
-        enrolled in any packages (the default)."""
-        self.assertEqual(self.user.packageenrollment_set.count(), 0)
-        self.assertTrue(self.ub.custom_triggers_allowed)
-
-    def test_custom_triggers_not_allowed(self):
-        """Ensure that custom triggers are not allowed when the user is
-        enrolled in a package that restricts this feature."""
-        cat = Category.objects.create(order=1, title="PE Cat")
-        admin = User.objects.create_superuser('x', 'x@y.z', '-')
-        pe = PackageEnrollment.objects.create(
-            user=self.user,
-            category=cat,
-            prevent_custom_triggers=True,
-            enrolled_by=admin
-        )
-        pe.goals.add(self.goal)
-
-        self.assertEqual(self.user.packageenrollment_set.count(), 1)
-        self.assertFalse(self.ub.custom_triggers_allowed)
-        cat.delete()
-        admin.delete()
-
-
 class TestUserAction(TestCaseDates):
     """Tests for the `UserAction` model."""
 
@@ -796,18 +607,10 @@ class TestUserAction(TestCaseDates):
         self.user.userprofile.needs_onboarding = False
         self.user.userprofile.save()
 
-        self.goal = Goal.objects.create(title="Goal for Behavior", state='published')
+        self.goal = Goal.objects.create(title="Goal", state='published')
         self.ug = UserGoal.objects.create(user=self.user, goal=self.goal)
-        self.behavior = Behavior.objects.create(title='Test Behavior')
-        self.behavior.goals.add(self.goal)
-        self.ub = UserBehavior.objects.create(
-            user=self.user,
-            behavior=self.behavior
-        )
-        self.action = Action.objects.create(
-            title='Test Action',
-            behavior=self.behavior
-        )
+        self.action = Action.objects.create(title='Test Action')
+        self.action.goals.add(self.goal)
         self.ua = UserAction.objects.create(
             user=self.user,
             action=self.action
@@ -815,7 +618,6 @@ class TestUserAction(TestCaseDates):
 
     def tearDown(self):
         User.objects.filter(id=self.user.id).delete()
-        Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
         UserAction.objects.filter(id=self.ua.id).delete()
 
@@ -908,9 +710,6 @@ class TestUserAction(TestCaseDates):
         # When the user has not completed the action, this should return False.
         self.assertFalse(self.ua.completed_today)
 
-    def test_user_behavior(self):
-        self.assertEqual(self.ua.user_behavior, self.ub)
-
     def test_get_user_goals(self):
         self.assertEqual(
             list(self.ua.get_user_goals()),
@@ -919,7 +718,7 @@ class TestUserAction(TestCaseDates):
 
     def test_get_primary_goal(self):
         # When the `primary_goal` field is null, return the first of the
-        # user's goals based on the action's parent behavior
+        # user's goals based on the action's parent
         self.assertIsNone(self.ua.primary_goal)
         self.assertEqual(self.ua.get_primary_goal(), self.goal)
 
@@ -1033,28 +832,6 @@ class TestUserAction(TestCaseDates):
         self.assertEqual(self.ua.next_trigger_date, tzdt(2015, 10, 10, 11, 30))
         self.assertEqual(self.ua.prev_trigger_date, tzdt(2015, 10, 8, 11, 30))
 
-    def test_create_parent_user_behavior(self):
-        """If a user somehow adds an Action without adding that Action's parent
-        Behavior, the `create_parent_user_behavior` signal handler should
-        create it."""
-        b = Behavior.objects.create(title="Other", state="published")
-        b.goals.add(self.goal)
-        a = Action.objects.create(title="Do Other", behavior=b, state="published")
-
-        # Ensure user does not have the behavior selected
-        params = {'user': self.user, 'behavior': b}
-        self.assertFalse(UserBehavior.objects.filter(**params).exists())
-
-        # Add the action, and the behavior gets added too
-        UserAction.objects.create(user=self.user, action=a)
-        self.assertTrue(UserBehavior.objects.filter(**params).exists())
-
-        # Clean up
-        UserBehavior.objects.filter(behavior=b).delete()
-        UserAction.objects.filter(action=a).delete()
-        a.delete()
-        b.delete()
-
     def test_relative_reminder_daily_with_count_until_stopped(self):
         """A relative reminder that repeats daily for a set number of days, but
         should stop when completed."""
@@ -1076,7 +853,7 @@ class TestUserAction(TestCaseDates):
             relative_value=1,  # NOTE: 1 day after selected.
             relative_units='days',
         )
-        action = Action.objects.create(title='NEW', behavior=self.behavior)
+        action = Action.objects.create(title='NEW')
         action.default_trigger = default
         action.save()
 
@@ -1165,7 +942,7 @@ class TestUserAction(TestCaseDates):
             relative_value=1,  # NOTE: 1 day after selected.
             relative_units='days',
         )
-        action = Action.objects.create(title='NEW', behavior=self.behavior)
+        action = Action.objects.create(title='NEW')
         action.default_trigger = default
         action.save()
 
@@ -1250,7 +1027,7 @@ class TestUserAction(TestCaseDates):
 
     def test_enable_trigger_when_no_custom_trigger(self):
         """When there's no custom_trigger, this shouldn't do anything."""
-        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        act = Action.objects.create(title="Foo")
         ua = UserAction.objects.create(user=self.user, action=act)
         self.assertIsNone(ua.custom_trigger)
         ua.enable_trigger()
@@ -1262,7 +1039,7 @@ class TestUserAction(TestCaseDates):
 
     def test_enable_trigger_when_custom_trigger(self):
         """When there IS a custom_trigger, this should set disabled=False."""
-        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        act = Action.objects.create(title="Foo")
         ua = UserAction.objects.create(user=self.user, action=act)
         ua.custom_trigger = mommy.make(Trigger, user=self.user, disabled=True)
 
@@ -1277,7 +1054,7 @@ class TestUserAction(TestCaseDates):
     def test_disable_trigger_when_no_custom_trigger_or_default_trigger(self):
         """When there's no custom_trigger OR default trigger, this shouldn't
         do anything."""
-        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        act = Action.objects.create(title="Foo")
         ua = UserAction.objects.create(user=self.user, action=act)
         self.assertIsNone(ua.custom_trigger)
         ua.disable_trigger()
@@ -1290,7 +1067,7 @@ class TestUserAction(TestCaseDates):
     def test_disable_trigger_when_no_custom_trigger(self):
         """When there's no custom_trigger BUT there IS a default trigger, this
         should create one and disable it"""
-        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        act = Action.objects.create(title="Foo")
         act.default_trigger = mommy.make(Trigger, disabled=False)
         ua = UserAction.objects.create(user=self.user, action=act)
 
@@ -1304,7 +1081,7 @@ class TestUserAction(TestCaseDates):
 
     def test_disable_trigger_when_custom_trigger(self):
         """When there IS a custom_trigger, this should set disabled=True."""
-        act = Action.objects.create(title="Foo", behavior=self.behavior)
+        act = Action.objects.create(title="Foo")
         ua = UserAction.objects.create(user=self.user, action=act)
         ua.custom_trigger = mommy.make(Trigger, disabled=False)
 
@@ -1325,11 +1102,7 @@ class TestUserCompletedAction(TestCase):
             username="test",
             email="test@example.com"
         )
-        self.behavior = Behavior.objects.create(title='Test Behavior')
-        self.action = Action.objects.create(
-            title='Test Action',
-            behavior=self.behavior
-        )
+        self.action = Action.objects.create(title='Test Action')
         self.ua = UserAction.objects.create(
             user=self.user,
             action=self.action
@@ -1344,7 +1117,6 @@ class TestUserCompletedAction(TestCase):
 
     def tearDown(self):
         User.objects.filter(id=self.user.id).delete()
-        Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
         UserAction.objects.filter(id=self.ua.id).delete()
         UserCompletedAction.objects.filter(id=self.uca.id).delete()
@@ -1449,11 +1221,8 @@ class TestPackageEnrollment(TestCase):
         cls.goal = Goal.objects.create(title="G", description="G.")
         cls.goal.publish()
         cls.goal.categories.add(cls.category)
-        cls.behavior = Behavior.objects.create(title='B')
-        cls.behavior.publish()
-        cls.behavior.save()
-        cls.behavior.goals.add(cls.goal)
-        cls.action = Action.objects.create(behavior=cls.behavior, title="A")
+        cls.action = Action.objects.create(title="A")
+        cls.action.goals.add(cls.goal)
         cls.action.publish()
         cls.action.save()
 
@@ -1468,7 +1237,7 @@ class TestPackageEnrollment(TestCase):
 
     def tearDown(self):
         PackageEnrollment.objects.all().delete()
-        for m in [UserCategory, UserGoal, UserBehavior, UserAction]:
+        for m in [UserCategory, UserGoal, UserAction]:
             m.objects.all().delete()
 
     def test__str__(self):
@@ -1513,12 +1282,10 @@ class TestPackageEnrollment(TestCase):
     def test_create_user_mappings(self):
         self.assertFalse(self.user.usercategory_set.exists())
         self.assertFalse(self.user.usergoal_set.exists())
-        self.assertFalse(self.user.userbehavior_set.exists())
         self.assertFalse(self.user.useraction_set.exists())
         self.pe.create_user_mappings()
         self.assertTrue(self.user.usercategory_set.exists())
         self.assertTrue(self.user.usergoal_set.exists())
-        self.assertTrue(self.user.userbehavior_set.exists())
         self.assertTrue(self.user.useraction_set.exists())
 
 
@@ -1707,8 +1474,6 @@ class TestDailyProgress(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = mommy.make(User)
-        cls.behavior = mommy.make(Behavior, id=1)
-
         cls.progress = mommy.make(
             DailyProgress,
             user=cls.user,
@@ -1771,8 +1536,7 @@ class TestDailyProgress(TestCase):
         self.assertEqual(self.progress.engagement_60_days, 0.0)
 
         # Create some some UserCompletedAction objects & test calculation
-        behavior = mommy.make(Behavior, title='B', state='published')
-        action = mommy.make(Action, behavior=behavior, title='a', state='published')
+        action = mommy.make(Action, title='a', state='published')
         ua = mommy.make(UserAction, user=self.user, action=action)
         mommy.make(
             UserCompletedAction, user=self.user, useraction=ua,
