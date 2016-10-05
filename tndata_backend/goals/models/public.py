@@ -678,8 +678,8 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
         ug.save()
 
         # Finally, enroll the user in the Behavior's Actions
-        actions = Action.objects.published().filter(goals=self)
-        for action in actions.distinct():
+        actions = self.action_set.filter(state='published').distinct()
+        for action in actions:
             ua, _ = user.useraction_set.get_or_create(action=action)
             ua.primary_category = primary_category
             ua.primary_goal = self
