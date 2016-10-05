@@ -386,7 +386,6 @@ class StateMixin:
         if len(children) > 0:
             # We'll only publish draft/pending children
             for obj in children.filter(state__in=['draft', 'pending-review']):
-                pre_state = obj.state
                 obj.publish()
                 obj.save(updated_by=updated_by)
 
