@@ -277,19 +277,19 @@ class ReviewableUpdateMixin:
         from goals.models import Goal
         return isinstance(obj, Goal)
 
-    def _goal_has_behaviors_in_review(self, obj):
+    def _goal_has_actions_in_review(self, obj):
         """Ensure this scenario is true:
 
         > No goal can be submitted for review until at least one child
-        > behavior has been submitted for review.
+        > action has been submitted for review.
 
-        Returns True (the goes DOES have child behaviors in review) or False,
-        (the goal DOES NOT have child behaviors in review).
+        Returns True (the goal HAS child actions in review) or False,
+        (the goal DOES NOT have child actions in review).
 
         """
         if self._is_goal(obj):
-            status = set(obj.behavior_set.values_list("state", flat=True))
-            return ('pending-review' in status) or ('published' in status)
+            states = ['pending-review', 'published']
+            return obj.action_set.filter(state__in=states).exists()
         raise TypeError("{0} is not a Goal".format(obj))
 
     def form_valid(self, form):
@@ -300,12 +300,12 @@ class ReviewableUpdateMixin:
         # the "Submit for Review" button.
         if self.request.POST.get('review', False) and self._is_goal(obj):
             # Ensure goals have published or pending children.
-            if self._goal_has_behaviors_in_review(obj):
+            if self._goal_has_actions_in_review(obj):
                 obj.review()  # Transition to the new state
                 msg = "{0} has been submitted for review".format(obj)
                 messages.success(self.request, msg)
             else:
-                msg = ("This goal must have child behaviors that are either "
+                msg = ("This goal must have child actions that are either "
                        "published or in review before it can be reviewed.")
                 messages.warning(self.request, msg)
 
@@ -369,8 +369,7 @@ class StateMixin:
         """Return a queryset of all child objects for the model."""
         children = {
             'Category': 'goals',
-            'Goal': 'behavior_set',
-            'Behavior': 'action_set'
+            'Goal': 'action_set',
         }
         if self.__class__.__name__ in children.keys():
             attr = children[self.__class__.__name__]
