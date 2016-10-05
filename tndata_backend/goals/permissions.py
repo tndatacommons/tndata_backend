@@ -4,9 +4,9 @@ custom groups for people who create and review content:
 
 
 1. Content Viewers: Have read-only permissions for content models: Category,
-   Goals, Behaviors, Actions.
+   Goals, Actions.
 2. Content Authors: Have Read, create, update permissions for content models;
-   (Goals, Behaviors, Actions) and read for Categories.
+   (Goals, Actions) and read for Categories.
 3. Content Editors: Have the above plus the ability to delete and publish or
    decline content created by authors.
 
@@ -41,16 +41,16 @@ class ContentPermissions:
 
     """
     # Objects in the goals app that that have CRUD perms
-    _objects = ['action', 'behavior', 'category', 'goal', 'trigger']
+    _objects = ['action', 'category', 'goal', 'trigger']
 
     # Objects that should have view-only permissions
-    _viewer_objects = ['action', 'behavior', 'category', 'goal']
+    _viewer_objects = ['action', 'category', 'goal']
 
     # Objects that authors have Create/Update permissions
-    _author_objects = ['action', 'behavior', 'goal']
+    _author_objects = ['action', 'goal']
 
     # Objects with publish/decline permissions
-    _workflow_objects = ['action', 'behavior', 'goal']
+    _workflow_objects = ['action', 'goal']
 
     @property
     def all(self):
@@ -238,7 +238,7 @@ def is_contributor(user, obj=None):
 
     - When `obj` is None, returns True if the given user is a superuser, staff,
       or a contributor for *any* category.
-    - When an `obj` is provided (a Category, Goal, Behavior, or Action), we
+    - When an `obj` is provided (a Category, Goal, or Action), we
       check to see if it is related to a Category in which the give user is
       listed as a contributor.
 
@@ -252,8 +252,7 @@ def is_contributor(user, obj=None):
     # If an object is provided, we want to compare it to the list of
     # objects within the category(ies) for which the user is a contributor.
     lookups = {
-        'action': 'goal__behavior__action',
-        'behavior': 'goal__behavior',
+        'action': 'goal__action',
         'goal': 'goal',
         'category': 'id',
     }
