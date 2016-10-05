@@ -567,42 +567,6 @@ class TenSpotRecipe(UserCompletedActionCountMixin, BaseRecipe):
     num_completed = 10
 
 
-class UserCompletedBehaviorCountMixin:
-    """A mixin that counts a user's completed Behaviors. In order to get this,
-    a user must _complete_ all of the actions within a behavior.
-
-    """
-    badge_path = 'badges/placeholder.png'  # TODO: Path to the badge.
-    num_completed = 1  # Number of UserBehavior's marked complete
-
-    @property
-    def image(self):
-        return staticfiles_storage.open(self.badge_path)
-
-    @property
-    def user_ids(self):
-        User = get_user_model()
-        since = timezone.now() - timedelta(minutes=10)
-
-        # Find users that have completed a Behavior within the past 10 minutes.
-        users = User.objects.filter(
-            userbehavior__completed=True,
-            userbehavior__completed_on__gte=since
-        ).distinct()
-        users = users.annotate(num_completed=Count('userbehavior'))
-        users = users.filter(num_completed=self.num_completed)
-        return users.values_list("id", flat=True)
-
-
-class BehaviorCompletedRecipe(UserCompletedBehaviorCountMixin, BaseRecipe):
-    # TODO: more behavior completion badges.
-    name = 'Wayfarer'
-    slug = 'wayfarer'
-    description = "Congrats on completing a set of actions!"
-    badge_path = 'badges/wayfarer.png'
-    num_completed = 1
-
-
 class UserCompletedGoalCountMixin:
     """A mixin that counts a user's completed Goals.
 
@@ -630,11 +594,10 @@ class UserCompletedGoalCountMixin:
 
 
 class GoalCompletedRecipe(UserCompletedGoalCountMixin, BaseRecipe):
-    # TODO: What to name Goal Completion goals & more of these
-    name = 'Voyager'
-    slug = 'voyager'
+    name = 'Wayfarer'
+    slug = 'wayfarer'
     description = "Congrats on completing every action in a Goal!"
-    badge_path = 'badges/placeholder.png'  # TODO
+    badge_path = 'badges/wayfarer.png'
     num_completed = 1
 
 
@@ -745,11 +708,8 @@ badgify.register(TrioRecipe)
 badgify.register(ActionHighFiveRecipe)
 badgify.register(TenSpotRecipe)
 
-# Wen Users *complete* all actinos within a Behavior.
-badgify.register(BehaviorCompletedRecipe)
-
 # NOTE: These recipes are functionaly, but need appropriate Badge icons.
-# badgify.register(GoalCompletedRecipe)
+badgify.register(GoalCompletedRecipe)
 # badgify.register(CustomGoalCreatedRecipe)
 # badgify.register(LighthouseRecipe)
 # badgify.register(CustomActionCompletedRecipe)
