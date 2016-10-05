@@ -87,11 +87,14 @@ class UserCompletedAction(models.Model):
         # Note: this query is for UserActions under the same primary goal that
         # have not been completed. If this returns results, the sibling actions
         # have not been completed.
-        return not UserAction.objects.filter(
-            user=self.user,
-            primary_goal=self.useraction.primary_goal,
-            usercompletedaction=None
-        ).distinct().exists()
+        goal = self.useraction.primary_goal
+        if goal:
+            return not UserAction.objects.filter(
+                user=self.user,
+                primary_goal=goal,
+                usercompletedaction=None
+            ).distinct().exists()
+        return False
 
     objects = UserCompletedActionManager()
 

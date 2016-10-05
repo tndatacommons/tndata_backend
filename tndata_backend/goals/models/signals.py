@@ -292,8 +292,8 @@ def action_completed(sender, instance, created, raw, using, **kwargs):
 
     # Check the UserAction's primary goal. If all of the UserActions
     # within taht primary goal are completed, mark the UserGoal as completed.
-    if completed and instance.sibling_actions_completed():
-        ug = instance.usergoal
+    ug = instance.usergoal
+    if ug and completed and instance.sibling_actions_completed():
         ug.complete()
         ug.save()
 
