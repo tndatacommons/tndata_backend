@@ -172,7 +172,7 @@ class TestActionForm(TestCase):
     def test_unbound(self):
         form = ActionForm()
         fields = sorted([
-            'sequence_order', 'behavior', 'title', 'description',
+            'sequence_order', 'goals', 'title', 'description',
             'more_info', 'external_resource', 'external_resource_name',
             'icon', 'notification_text', 'source_link', 'source_notes',
             'notes', 'priority', 'action_type',
@@ -180,11 +180,11 @@ class TestActionForm(TestCase):
         self.assertEqual(fields, sorted(list(form.fields.keys())))
 
     def test_bound(self):
-        b = Behavior.objects.create(title="asdf")
+        goal = Goal.objects.create(title="Goal")
         data = {
             'action_type': 'showing',
             'sequence_order': '1',
-            'behavior': b.id,
+            'goals': [goal.id],
             'title': 'Some Title',
             'description': 'ASDF',
             'more_info': '',
@@ -197,14 +197,14 @@ class TestActionForm(TestCase):
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())
-        b.delete()
+        goal.delete()
 
     def test_is_valid(self):
-        b = Behavior.objects.create(title="asdf")
+        goal = Goal.objects.create(title="Goal")
         data = {
             'action_type': 'showing',
             'sequence_order': '0',
-            'behavior': b.id,
+            'goals': [goal.id],
             'title': 'X' * 256,
             'description': 'some description',
             'more_info': '',
@@ -217,14 +217,14 @@ class TestActionForm(TestCase):
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())
-        b.delete()
+        goal.delete()
 
     def test_not_valid(self):
-        b = Behavior.objects.create(title="asdf")
+        goal = Goal.objects.create(title="Goal")
         data = {
             'action_type': 'showing',
             'sequence_order': '0',
-            'behavior': b.id,
+            'goals': [goal.id],
             'title': 'X' * 512,  # TOO long
             'description': 'some description',
             'more_info': '',
@@ -237,16 +237,17 @@ class TestActionForm(TestCase):
         }
         form = ActionForm(data)
         self.assertFalse(form.is_valid())
-        b.delete()
+        goal.delete()
 
     def test_duplicate_title(self):
         """Ensure that duplicate titles are OK."""
-        b = Behavior.objects.create(title="B")
-        a = Action.objects.create(sequence_order=1, behavior=b, title="title")
+        goal = Goal.objects.create(title="Goal")
+        a = Action.objects.create(sequence_order=1, title="title")
+        a.goals.add(goal)
         data = {
             'action_type': 'showing',
             'sequence_order': '1',
-            'behavior': b.id,
+            'goals': [goal.id],
             'title': 'TITLE',  # Duplicate, even tho differs by case
             'description': '',
             'more_info': '',
@@ -260,7 +261,7 @@ class TestActionForm(TestCase):
         }
         form = ActionForm(data)
         self.assertTrue(form.is_valid())
-        b.delete()
+        goal.delete()
         a.delete()
 
 
