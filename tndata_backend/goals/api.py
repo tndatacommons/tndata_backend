@@ -910,17 +910,17 @@ class UserActionViewSet(VersionedViewSetMixin,
 
         if category is not None and category.isnumeric():
             self.queryset = self.queryset.filter(
-                action__behavior__goals__categories__id=category)
+                action__goals__categories__id=category)
         elif category is not None:
             self.queryset = self.queryset.filter(
-                action__behavior__goals__categories__title_slug=category)
+                action__goals__categories__title_slug=category)
 
         if goal is not None and goal.isnumeric():
             self.queryset = self.queryset.filter(
-                action__behavior__goals__id=goal)
+                action__goals__id=goal)
         elif goal is not None:
             self.queryset = self.queryset.filter(
-                action__behavior__goals__title_slug=goal)
+                action__goals__title_slug=goal)
 
         if behavior is not None and behavior.isnumeric():
             self.queryset = self.queryset.filter(action__behavior__id=behavior)

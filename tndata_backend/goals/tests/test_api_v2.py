@@ -3432,6 +3432,7 @@ class TestOrganizationAPI(V2APITestCase):
         goal = Goal.objects.create(title="G")
         goal.categories.add(category)
         action = Action.objects.create(title="A")
+        action.goals.add(goal)
 
         for obj in [category, goal, action]:
             obj.publish()

@@ -750,7 +750,7 @@ class TestUserAction(TestCaseDates):
         pe.goals.add(self.goal)
 
         self.assertEqual(self.user.packageenrollment_set.count(), 1)
-        self.assertFalse(self.ua.custom_triggers_allowed)
+        self.assertTrue(self.ua.custom_triggers_allowed)  # Always True, now.
         cat.delete()
         admin.delete()
 
