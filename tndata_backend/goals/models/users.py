@@ -670,12 +670,12 @@ class UserAction(models.Model):
         else:
             result = self.get_user_goals().first()
 
-        # Somehow, this user has no goals selected for this Action/Behavior,
-        # so fall back to the first goal on the parent behavior.
-        if not result and self.user_behavior and only:
-            result = self.user_behavior.behavior.goals.only(only).first()
-        elif not result and self.user_behavior:
-            result = self.user_behavior.behavior.goals.first()
+        # Somehow, this user has no goals selected for this Action,
+        # so fall back to the first parent goal.
+        if not result and only:
+            result = self.action.goals.only(only).first()
+        elif not result:
+            result = self.action.goals.first()
         return result
 
     def get_primary_category(self):
@@ -694,7 +694,7 @@ class UserAction(models.Model):
             if uc:
                 category = uc.category
         if category is None:
-            goal = self.action.behavior.goals.first()
+            goal = self.action.goals.first()
             if goal:
                 category = goal.categories.first()
         self.primary_category = category  # Save this locally
