@@ -185,7 +185,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
 
 class UserBehaviorSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
-    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
+    editable = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserBehavior
@@ -198,6 +198,9 @@ class UserBehaviorSerializer(ObjectTypeModelSerializer):
     def __init__(self, *args, **kwargs):
         self.parents = kwargs.pop("parents", False)
         super().__init__(*args, **kwargs)
+
+    def get_editable(self, obj):
+        return True  # XXX Temporarily enabling this for everyone.
 
     def to_representation(self, obj):
         """Include a serialized Behavior object in the result."""

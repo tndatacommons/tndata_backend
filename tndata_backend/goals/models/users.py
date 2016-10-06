@@ -719,9 +719,7 @@ class UserAction(models.Model):
 
     @property
     def custom_triggers_allowed(self):
-        """Check to see if the user/behavior is the child of a goal within a
-        Package where custom triggers are restricted. """
-        return _custom_triggers_allowed(self.user, self)
+        return True
 
     @property
     def default_trigger(self):
