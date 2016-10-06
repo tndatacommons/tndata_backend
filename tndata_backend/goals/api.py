@@ -503,35 +503,41 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = PublicViewSetPagination
     docstring_prefix = "goals/api_docs"
 
+    def _filter_by_category(self, category):
+        # Fiter by either a category id or a slug, filtering through goals.
+        criteria = {}
+        if category and category.isnumeric():
+            criteria = {'goals__categories__pk': category}
+        elif category is not None:
+            criteria = {'goals__categories__title_slug': category}
+        return self.queryset.filter(**criteria)
+
+    def _filter_by_goal(self, goal):
+        # Fiter by either a goal id or a slug
+        criteria = {}
+        if goal and goal.isnumeric():
+            criteria = {'goals__pk': goal}
+        elif goal is not None:
+            criteria = {'goals__title_slug': goal}
+        return self.queryset.filter(**criteria)
+
+    def _filter_by_behavior(self, behavior):
+        # Fiter by either a Behavior id or a slug
+        criteria = {}
+        if behavior and behavior.isnumeric():
+            criteria = {'behavior__pk': behavior}
+        elif behavior is not None:
+            criteria = {'behavior__title_slug': behavior}
+        return self.queryset.filter(**criteria)
+
     def get_queryset(self):
         category = self.request.GET.get("category", None)
         goal = self.request.GET.get("goal", None)
         behavior = self.request.GET.get("behavior", None)
-        if behavior is None and 'sequence' in self.request.GET:
-            behavior = self.request.GET.get("sequence", None)
 
-        if category is not None and category.isnumeric():
-            # Filter by Category.id
-            self.queryset = self.queryset.filter(
-                behavior__goals__categories__id=category
-            )
-        elif category is not None:
-            # Filter by Category.title_slug
-            self.queryset = self.queryset.filter(
-                behavior__goals__categories__title_slug=category
-            )
-
-        if goal is not None and goal.isnumeric():
-            # Filter by Goal.id
-            self.queryset = self.queryset.filter(behavior__goals__id=goal)
-        elif goal is not None:
-            # Filter by Goal.title_slug
-            self.queryset = self.queryset.filter(behavior__goals__title_slug=goal)
-
-        if behavior is not None and behavior.isnumeric():
-            self.queryset = self.queryset.filter(behavior__pk=behavior)
-        elif behavior is not None:
-            self.queryset = self.queryset.filter(behavior__title_slug=behavior)
+        self.queryset = self._filter_by_category(category)
+        self.queryset = self._filter_by_goal(goal)
+        self.queryset = self._filter_by_behavior(behavior)
 
         # WE Want to exclude values from this endpoint that the user has already
         # selected (if the user is authenticated AND we're hitting api v2)
