@@ -181,34 +181,6 @@ class UserGoal(models.Model):
     def progress_value(self):
         return 0.0
 
-    def add_behaviors(self, behaviors=None, create_actions=True):
-        """Create UserBehavior instances for all of the published Behaviors
-        within the associated Goal. This method will not create duplicate
-        instances of UserBehavior.
-
-        - behaviors: Only create UserBehavior objects for the Behaviors in the
-          provided list (this should be a list of Behavior objects)
-        - create_actions: If True, this method will also create UserActions
-          for all of the published Actions beneath the Behavior.
-
-        """
-        if behaviors is None:
-            behaviors = Behavior.objects.published()
-
-        for behavior in behaviors:
-            UserBehavior.objects.update_or_create(
-                user=self.user,
-                behavior=behavior,
-            )
-            if create_actions:
-                for action in behavior.action_set.published():
-                    UserAction.objects.update_or_create(
-                        user=self.user,
-                        action=action,
-                        primary_goal=self.goal,
-                        primary_category=self.get_primary_category()
-                    )
-
     objects = UserGoalManager()
 
 
