@@ -317,8 +317,8 @@ class TestUserFeed(TestCase):
         cls.action = Action.objects.create(
             title="Test Action",
             sequence_order=1,
-            goals=[cls.goal]
         )
+        cls.action.goals.add(cls.goal)
         cls.action.publish()
         cls.action.save()
 
