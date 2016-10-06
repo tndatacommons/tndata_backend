@@ -627,13 +627,11 @@ class UserAction(models.Model):
         return self.action.get_notification_text()
 
     def get_user_goals(self):
-        """Returns a QuerySet of published Goals related to this Action (and
-        it's parent Behavior), but restricts those goals to those which the
-        user has selected."""
-        user_behavior = self.user_behavior
-        if user_behavior:
-            return user_behavior.get_user_goals()
-        return Goal.objects.none()
+        """Returns a QuerySet of published, user-selected Goals that are a
+        parent of the related Action."""
+        selected_goal_ids = self.user.usergoal_set.filter(goal__action=self.action)
+        selected_goal_ids = selected_goal_ids.values_list("goal", flat=True)
+        return Goal.objects.filter(id__in=selected_goal_ids)
 
     @property
     def goal_title(self):

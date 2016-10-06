@@ -711,10 +711,7 @@ class TestUserAction(TestCaseDates):
         self.assertFalse(self.ua.completed_today)
 
     def test_get_user_goals(self):
-        self.assertEqual(
-            list(self.ua.get_user_goals()),
-            list(self.ub.get_user_goals())
-        )
+        self.assertEqual(list(self.ua.get_user_goals()), [self.goal])
 
     def test_get_primary_goal(self):
         # When the `primary_goal` field is null, return the first of the
