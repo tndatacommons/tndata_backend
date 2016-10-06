@@ -549,9 +549,6 @@ class TestBehaviorAPI(V2APITestCase):
         self.assertEqual(obj['html_description'], self.behavior.rendered_description)
         self.assertEqual(obj['more_info'], self.behavior.more_info)
         self.assertEqual(obj['html_more_info'], self.behavior.rendered_more_info)
-        self.assertEqual(len(obj['goals']), 1)  # Should have 1 goal
-        self.assertEqual(obj['goals'][0], self.goal.id)
-        self.assertEqual(obj['actions_count'], self.behavior.action_set.count())
 
     def test_behavior_list_by_category_id(self):
         """Ensure we can filter by category.id."""
@@ -1248,7 +1245,6 @@ class TestUserBehaviorAPI(V2APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
         self.assertEqual(response.data['count'], 1)
         self.assertTrue(response.data['results'][0]['editable'])
         self.assertEqual(response.data['results'][0]['user'], self.user.id)
@@ -1476,29 +1472,6 @@ class TestUserBehaviorAPI(V2APITestCase):
 
         # Clean up.
         other_behavior.delete()
-
-    def test_delete_userbehavior_should_delete_useractions(self):
-        """Ensure authenticated users can delete their UserBehaviors, but that
-        doing so also deletes the related UserAction objects."""
-
-        # Ensure the user has selected the child actions
-        UserAction.objects.get_or_create(user=self.user, action=self.action1)
-        UserAction.objects.get_or_create(user=self.user, action=self.action2)
-        self.assertEqual(self.user.useraction_set.count(), 2)
-
-        url = self.get_url('userbehavior-detail', args=[self.ub.id])
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
-        )
-        response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-        # Verify side-effects
-        userbehaviors = self.user.userbehavior_set.filter(id=self.ub.id)
-        self.assertEqual(userbehaviors.count(), 0)
-        useractions = self.user.useraction_set.filter(
-            action__behavior=self.behavior)
-        self.assertEqual(useractions.count(), 0)
 
     def test_post_userbehavior_with_parent_data(self):
         """POSTing to create a UserBehavior with parent object IDs"""
