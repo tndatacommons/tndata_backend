@@ -709,29 +709,19 @@ class TestActionAPI(V2APITestCase):
         self.goal.publish()
         self.goal.save()
 
-        self.behavior = Behavior.objects.create(
-            title="Test Behavior",
-            description="This is a test",
-            informal_list="Do this",
-        )
-        self.behavior.goals.add(self.goal)
-        self.behavior.publish()
-        self.behavior.save()
-
         self.action = Action.objects.create(
             title="Test Action",
             sequence_order=1,
-            behavior=self.behavior,
             description="This is a test",
             more_info="* a bullet"
         )
+        self.action.goals.add(self.goal)
         self.action.publish()
         self.action.save()
 
     def tearDown(self):
         Category.objects.filter(id=self.category.id).delete()
         Goal.objects.filter(id=self.goal.id).delete()
-        Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
     def test_action_list(self):
@@ -747,16 +737,12 @@ class TestActionAPI(V2APITestCase):
         self.assertEqual(obj['html_description'], self.action.rendered_description)
         self.assertEqual(obj['more_info'], self.action.more_info)
         self.assertEqual(obj['html_more_info'], self.action.rendered_more_info)
-        self.assertEqual(obj['behavior'], self.behavior.id)
+        self.assertEqual(obj['goals'], [self.goal.id])
 
     def test_action_list_by_category_id(self):
         """Ensure we can filter by category.id."""
         # Create another Action (with no Category)
-        b = Behavior.objects.create(title='ignore me')
-        b.publish()
-        b.save()
-
-        a = Action.objects.create(title="ignore me", behavior=b)
+        a = Action.objects.create(title="ignore me")
         a.publish()
         a.save()
 
@@ -774,16 +760,11 @@ class TestActionAPI(V2APITestCase):
 
         # Clean up.
         a.delete()
-        b.delete()
 
     def test_action_list_by_category_title_slug(self):
         """Ensure we can filter by category.title_slug."""
         # Create another Action (with no Category)
-        b = Behavior.objects.create(title='ignore me')
-        b.publish()
-        b.save()
-
-        a = Action.objects.create(title="ignore me", behavior=b)
+        a = Action.objects.create(title="ignore me")
         a.publish()
         a.save()
 
@@ -801,16 +782,11 @@ class TestActionAPI(V2APITestCase):
 
         # Clean up.
         a.delete()
-        b.delete()
 
     def test_action_list_by_goal_id(self):
         """Ensure we can filter by goal.id"""
         # Create another Action (with no Goal)
-        b = Behavior.objects.create(title='ignore me')
-        b.publish()
-        b.save()
-
-        a = Action.objects.create(title="ignore me", behavior=b)
+        a = Action.objects.create(title="ignore me")
         a.publish()
         a.save()
 
@@ -828,16 +804,11 @@ class TestActionAPI(V2APITestCase):
 
         # Clean up.
         a.delete()
-        b.delete()
 
     def test_action_list_by_goal_title_slug(self):
         """Ensure we can filter by goal.title_slug"""
         # Create another Action (with no Goal)
-        b = Behavior.objects.create(title='ignore me')
-        b.publish()
-        b.save()
-
-        a = Action.objects.create(title="ignore me", behavior=b)
+        a = Action.objects.create(title="ignore me")
         a.publish()
         a.save()
 
@@ -855,62 +826,6 @@ class TestActionAPI(V2APITestCase):
 
         # Clean up.
         a.delete()
-        b.delete()
-
-    def test_action_list_by_behavior_id(self):
-        """Ensure we can filter by behavior.id"""
-        # Create another Action
-        b = Behavior.objects.create(title='ignore me')
-        b.publish()
-        b.save()
-
-        a = Action.objects.create(title="ignore me", behavior=b)
-        a.publish()
-        a.save()
-
-        url = self.get_url('action-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
-
-        # Check the filtered result
-        url = "{0}&behavior={1}".format(url, self.behavior.id)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(response.data['results'][0]['id'], self.action.id)
-
-        # Clean up.
-        a.delete()
-        b.delete()
-
-    def test_action_list_by_behavior_title_slug(self):
-        """Ensure we can filter by behavior.title_slug"""
-        # Create another Action
-        b = Behavior.objects.create(title='ignore me')
-        b.publish()
-        b.save()
-
-        a = Action.objects.create(title="ignore me", behavior=b)
-        a.publish()
-        a.save()
-
-        url = self.get_url('action-list')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
-
-        # Check the filtered result
-        url = "{0}&behavior={1}".format(url, self.behavior.title_slug)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(response.data['results'][0]['id'], self.action.id)
-
-        # Clean up.
-        a.delete()
-        b.delete()
 
     def test_post_action_list(self):
         """Ensure this endpoint is read-only."""
@@ -1550,15 +1465,8 @@ class TestUserActionAPI(V2APITestCase):
         )
         self.goal.categories.add(self.category)
 
-        self.behavior = Behavior.objects.create(title="Test Action")
-        self.behavior.publish()
-        self.behavior.goals.add(self.goal)
-        self.behavior.save()
-
-        self.action = Action.objects.create(
-            title="Test Action",
-            behavior=self.behavior
-        )
+        self.action = Action.objects.create(title="Test Action")
+        self.action.goals.add(self.goal)
         self.action.publish()
         self.action.save()
 
@@ -1566,7 +1474,6 @@ class TestUserActionAPI(V2APITestCase):
             user=self.user,
             action=self.action,
             next_trigger_date=timezone.now() + timedelta(hours=1)
-
         )
 
     def tearDown(self):
@@ -1575,7 +1482,6 @@ class TestUserActionAPI(V2APITestCase):
         User.objects.filter(id=self.user.id).delete()
 
         Goal.objects.filter(id=self.goal.id).delete()
-        Behavior.objects.filter(id=self.behavior.id).delete()
         Action.objects.filter(id=self.action.id).delete()
 
     def test_get_useraction_list_unauthenticated(self):
@@ -1643,18 +1549,6 @@ class TestUserActionAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
-        # Test with Behavior id
-        filtered_url = "{0}&behavior={1}".format(url, self.behavior.id)
-        response = self.client.get(filtered_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-
-        # Test with Behavior title_slug
-        filtered_url = "{0}&behavior={1}".format(url, self.behavior.title_slug)
-        response = self.client.get(filtered_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-
         # Test wit today filter
         filtered_url = "{0}&today=1".format(url)
         response = self.client.get(filtered_url)
@@ -1686,7 +1580,7 @@ class TestUserActionAPI(V2APITestCase):
 
     def test_post_useraction_list_athenticated(self):
         """Authenticated users should be able to create a UserAction."""
-        newaction = Action.objects.create(title="New", behavior=self.behavior)
+        newaction = Action.objects.create(title="New")
 
         url = self.get_url('useraction-list')
         self.client.credentials(
@@ -1706,7 +1600,7 @@ class TestUserActionAPI(V2APITestCase):
     def test_post_useraction_list_athenticated_including_primary_goal(self):
         """Authenticated users should be able to create a UserAction. This test
         also includes a primary goal with the POST request."""
-        newaction = Action.objects.create(title="New2", behavior=self.behavior)
+        newaction = Action.objects.create(title="New2")
 
         url = self.get_url('useraction-list')
         self.client.credentials(
@@ -1726,8 +1620,8 @@ class TestUserActionAPI(V2APITestCase):
 
     def test_post_useraction_list_multiple_athenticated(self):
         """Authenticated users should be able to create multiple UserActions."""
-        action_a = Action.objects.create(title="Action A", behavior=self.behavior)
-        action_b = Action.objects.create(title="Action B", behavior=self.behavior)
+        action_a = Action.objects.create(title="Action A")
+        action_b = Action.objects.create(title="Action B")
 
         url = self.get_url('useraction-list')
         self.client.credentials(
@@ -1750,8 +1644,8 @@ class TestUserActionAPI(V2APITestCase):
     def test_post_useraction_list_multiple_athenticated_with_primary_goal(self):
         """Authenticated users should be able to create multiple UserActions AND
         include a primary goal with each."""
-        action_a = Action.objects.create(title="Action A", behavior=self.behavior)
-        action_b = Action.objects.create(title="Action B", behavior=self.behavior)
+        action_a = Action.objects.create(title="Action A")
+        action_b = Action.objects.create(title="Action B")
 
         url = self.get_url('useraction-list')
         self.client.credentials(
@@ -2062,10 +1956,7 @@ class TestUserActionAPI(V2APITestCase):
 
     def test_delete_useraction_multiple_unauthenticated(self):
         """Ensure unauthenticated users cannot delete UserAction's"""
-        other_action = Action.objects.create(
-            title="Second Action",
-            behavior=self.behavior
-        )
+        other_action = Action.objects.create(title="Second Action")
         other_ua = UserAction.objects.create(user=self.user, action=other_action)
 
         url = self.get_url('useraction-list')
@@ -2083,10 +1974,7 @@ class TestUserActionAPI(V2APITestCase):
 
     def test_delete_usercategory_multiple_authenticated(self):
         """Ensure that we can delete multiple UserCategory objects."""
-        other_action = Action.objects.create(
-            title="Second Action",
-            behavior=self.behavior
-        )
+        other_action = Action.objects.create(title="Second Action")
         other_ua = UserAction.objects.create(user=self.user, action=other_action)
 
         url = self.get_url('useraction-list')
@@ -2139,6 +2027,8 @@ class TestUserActionAPI(V2APITestCase):
         category = mommy.make(Category, title="cat", state="published")
         goal = mommy.make(Goal, title="goal", state="published")
         goal.categories.add(self.category)
+
+        # TODO: revise this one to handle goals, category w/o the behavior
         behavior = mommy.make(Behavior, title="behavior", state="published")
         behavior.goals.add(goal)
         action = mommy.make(Action, title="a", behavior=behavior, state='published')
@@ -3421,10 +3311,7 @@ class TestOrganizationAPI(V2APITestCase):
         User = get_user_model()
         self.user = User.objects.create_user('m', 'm@mb.er', 'password123')
 
-        self.category = Category.objects.create(
-            order=1,
-            title='Org Category',
-        )
+        self.category = Category.objects.create(order=1, title='Org Category')
         self.category.publish()
         self.category.save()
 
@@ -3544,11 +3431,9 @@ class TestOrganizationAPI(V2APITestCase):
         category = Category.objects.create(order=99, title='C')
         goal = Goal.objects.create(title="G")
         goal.categories.add(category)
-        behavior = Behavior.objects.create(title="B")
-        behavior.goals.add(goal)
-        action = Action.objects.create(title="A", behavior=behavior)
+        action = Action.objects.create(title="A")
 
-        for obj in [category, goal, behavior, action]:
+        for obj in [category, goal, action]:
             obj.publish()
             obj.save()
 
@@ -3568,7 +3453,6 @@ class TestOrganizationAPI(V2APITestCase):
         # Ensure we did setup correctly
         self.assertTrue(user.usercategory_set.exists())
         self.assertTrue(user.usergoal_set.exists())
-        self.assertTrue(user.userbehavior_set.exists())
         self.assertTrue(user.useraction_set.exists())
         self.assertTrue(user.member_organizations.exists())
         self.assertTrue(user.program_set.exists())
@@ -3584,7 +3468,6 @@ class TestOrganizationAPI(V2APITestCase):
         # Ensure the user isn't in any Orgs
         self.assertFalse(user.usercategory_set.exists())
         self.assertFalse(user.usergoal_set.exists())
-        self.assertFalse(user.userbehavior_set.exists())
         self.assertFalse(user.useraction_set.exists())
         self.assertFalse(user.member_organizations.exists())
         self.assertFalse(user.program_set.exists())
