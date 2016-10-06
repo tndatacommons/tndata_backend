@@ -152,7 +152,7 @@ class Command(BaseCommand):
                     self.create_message(
                         customaction.user,
                         customaction,
-                        customaction.customgoal.title,
+                        "{}".format(customaction.customgoal or "Try this"),
                         customaction.notification_text,
                         deliver_on,
                         priority=customaction.priority
