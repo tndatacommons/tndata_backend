@@ -56,8 +56,7 @@ class ActionPriorityForm(forms.Form):
 
 
 class ActionForm(forms.ModelForm):
-    """A Form for creating/updating actions. This form orders related behaviors
-    alphabetically."""
+    """A Form for creating/updating actions."""
 
     # Initial content for differnt types of Actions
     INITIAL = {
@@ -531,8 +530,8 @@ class GoalForm(forms.ModelForm):
     alphabetically."""
     categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all().order_by("title"))
 
-    # If we're duplicating a Behavior, we'll also include  reference to the
-    # original behavior's ID, so we know how to duplicate its Actions.
+    # If we're duplicating a Goal, we'll also include  reference to the
+    # original goals's ID, so we know how to duplicate its Actions.
     original_goal = forms.IntegerField(widget=forms.widgets.HiddenInput, required=False)
 
     class Meta:
