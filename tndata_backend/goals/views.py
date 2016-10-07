@@ -960,7 +960,7 @@ class BehaviorDeleteView(ContentEditorMixin, ContentDeleteView):
 class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     model = Action
     context_object_name = 'actions'
-    paginate_by = 50
+    paginate_by = 100
 
     def _filter_queryset(self, queryset):
         search = self.request.GET.get('filter', None)
@@ -994,9 +994,14 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
             queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
         if self.request.GET.get('goal', False):
             queryset = queryset.filter(goals__id=self.request.GET['goal'])
+        if self.request.GET.get('category', False):
+            queryset = queryset.filter(goals__categories__pk=self.request.GET['category'])
+
+        ordering = self.request.GET.get("ordering", "-updated_on")
+
         # Run the result through any of our filters.
         queryset = self._filter_queryset(queryset)
-        return queryset.order_by('-updated_on')
+        return queryset.order_by(ordering).distinct()
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
