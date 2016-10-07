@@ -11,7 +11,7 @@ from utils.admin import UserRelatedModelAdmin
 
 def remove_app_data(modeladmin, request, queryset):
     """Remove a user's selected content from the mobile app. This essentialy
-    deletes their: UserAction, UserBehavior, UserCategory, PackageEnrollment,
+    deletes their: UserAction, UserCategory, PackageEnrollment,
     Trigger, UserCompletedAction, DailyProgress instances as well as their
     GCMMessages (which should also clear their queue)
 

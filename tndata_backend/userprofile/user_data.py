@@ -15,7 +15,6 @@ USER_OBJECT_TYPES = [
         "Delete all of the user-supplied feedback associated with their "
         "custom actions"),
     ('useraction', 'Actions', "Remove the user's selected Action data"),
-    ('userbehavior', 'Behaviors', "Remove the user's selected Behavior data"),
     ('usergoal', 'Goals', "Remove the user's selected Goal data"),
     ('usercategory', 'Categories',
         "Remove the user's selected Categories. This will also force them"

@@ -29,6 +29,7 @@ from .v1 import (  # NOQA
     AuthTokenSerializer,
 )
 from utils import user_utils
+from utils.mixins import TombstoneMixin
 from utils.serializers import ObjectTypeModelSerializer
 from utils.serializer_fields import NullableDateField
 
@@ -53,7 +54,8 @@ class SimpleProfileSerializer(ObjectTypeModelSerializer):
         return 'profile'
 
 
-class UserDataSerializer(ObjectTypeModelSerializer):
+class UserDataSerializer(TombstoneMixin, ObjectTypeModelSerializer):
+    # TODO: Kill this and the related endpoint
     needs_onboarding = serializers.ReadOnlyField(
         source='userprofile.needs_onboarding'
     )
