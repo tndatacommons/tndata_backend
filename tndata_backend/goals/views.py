@@ -433,10 +433,18 @@ class CategoryDetailView(ContentViewerMixin, DetailView):
         actions = Action.objects.prefetch_related('goals', 'default_trigger')
         actions = actions.filter(goals__categories=category).distinct()
         goals = defaultdict(set)
-        for action in actions:
+        for action in actions.order_by("sequence_order"):
             for goal in action.goals.all():
                 goals[goal].add(action)
-        context['goals'] = [(goal, actions) for goal, actions in goals.items()]
+
+        # ensure results are sorted by goals' sequence_order, and all actions
+        # are also sorted by sequence order.
+        goals = [
+            (goal, sorted(actions, key=lambda a: a.sequence_order))
+            for goal, actions in goals.items()
+        ]
+        goals = sorted(goals, key=lambda t: t[0].sequence_order)
+        context['goals'] = goals
         return context
 
 
