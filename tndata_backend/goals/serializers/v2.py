@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework import serializers
+from utils.mixins import TombstoneMixin
 from utils.serializers import ObjectTypeModelSerializer
 from utils.serializer_fields import ReadOnlyDatetimeField
 
@@ -109,7 +110,7 @@ class GoalSerializer(ObjectTypeModelSerializer):
         )
 
 
-class BehaviorSerializer(ObjectTypeModelSerializer):
+class BehaviorSerializer(TombstoneMixin, ObjectTypeModelSerializer):
     """A Serializer for `Behavior`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     html_description = serializers.ReadOnlyField(source="rendered_description")
@@ -183,7 +184,7 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         return max([obj.engagement_rank, 15.0])
 
 
-class UserBehaviorSerializer(ObjectTypeModelSerializer):
+class UserBehaviorSerializer(TombstoneMixin, ObjectTypeModelSerializer):
     """A Serializer for the `UserBehavior` model."""
     editable = serializers.SerializerMethodField(read_only=True)
 
