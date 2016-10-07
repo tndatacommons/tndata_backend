@@ -404,8 +404,7 @@ class CategoryListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().filter(**self._filters())
         queryset = queryset.annotate(Count('usercategory'))
-        return queryset.prefetch_related(
-            "goal_set", "behavior_set", "organizations", "program_set")
+        return queryset.prefetch_related("goal_set", "organizations", "program_set")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -430,6 +429,14 @@ class CategoryDetailView(ContentViewerMixin, DetailView):
         result = category.goals.aggregate(Max('sequence_order'))
         result = result.get('sequence_order__max') or 0
         context['order_values'] = list(range(result + 5))
+
+        actions = Action.objects.prefetch_related('goals', 'default_trigger')
+        actions = actions.filter(goals__categories=category).distinct()
+        goals = defaultdict(set)
+        for action in actions:
+            for goal in action.goals.all():
+                goals[goal].add(action)
+        context['goals'] = [(goal, actions) for goal, actions in goals.items()]
         return context
 
 

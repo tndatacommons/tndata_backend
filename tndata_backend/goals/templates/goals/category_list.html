@@ -23,7 +23,7 @@
         <th>Category</th>
         <th>
           <span data-tooltip aria-haspopup="true"
-            title="Content contained within the category">Child Content</span>
+            title="Content contained within the category">Goals</span>
         </th>
         <th>
           <span data-tooltip aria-haspopup="true"
@@ -122,10 +122,11 @@
               {% endwith %}
           </td>
           <td>
-            {# Accordian containing Goals / Behaviors #}
+            {# Accordian containing Goals #}
+            {% with count=category.goals.count %}
             <ul class="accordion" data-accordion>
               <li class="accordion-navigation">
-                <a href="#category-{{category.id}}-goals">Goals</a>
+                <a href="#category-{{category.id}}-goals">{{ count }} Goals</a>
                 <div id="category-{{category.id}}-goals" class="content">
                 {% for goal in category.goals %}
                   <a href="{{ goal.get_absolute_url }}"
@@ -136,18 +137,8 @@
                 {% endfor %}
                 </div>
               </li>
-              <li class="accordion-navigation">
-                <a href="#category-{{category.id}}-behaviors">Behaviors</a>
-                <div id="category-{{category.id}}-behaviors" class="content">
-                {% for b in category.behaviors %}
-                  <a href="{{ b.get_absolute_url }}"
-                     title="[{{b.state}}] {{ b.description }}">
-                    <span class="label radius {{b.state_label}}">{{ b }}</span>
-                  </a>
-                {% endfor %}
-                </div>
-              </li>
             </ul>
+            {% endwith %}
           </td>
           <td>{{ category.usercategory__count }}</td>
         </tr>

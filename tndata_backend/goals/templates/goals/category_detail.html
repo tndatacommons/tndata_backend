@@ -170,10 +170,10 @@
            href="{% url 'goals:goal-list' %}?category={{ category.id }}">
            <i class="fa fa-eye"></i> View Goals</a>
         <strong>{{ category }}</strong>
-        contains the following Goals, Behaviors, and Notifications.
+        contains the following goals &amp; notifications.
       </p>
       <ul class="accordion" data-accordion>
-      {% for goal in category.goals %}
+      {% for goal, actions in goals %}
         <li class="accordion-navigation clearfix">
           <a href="#goal-{{goal.id}}">
             <div class="pull-right">{{ goal|label }}</div>
@@ -204,41 +204,25 @@
             </a>
           </p>
 
-          {% for behavior in goal.behavior_set.all %}
-            <dl>
-              <dt class="clearfix">
-                <div class="pull-right">{{ behavior|label }}</div>
-                {{ behavior.sequence_order }}:
-                <a href="{{ behavior.get_absolute_url }}"
-                   data-tooltip aria-haspopup="true"
-                   title="{{ behavior.description }}">{{behavior}}</a>
-              </dt>
-              <dd class="clearfix">
-                <ul class="action-list">
-                {% for action in behavior.action_set.all %}
-                  <li>
-                    {{ action|label }}
-                    {{ action.sequence_order }}:
-                    <a href="{{ action.get_absolute_url }}"
-                       data-tooltip aria-haspopup="true"
-                       title="{{ action.description }}">{{ action }}</a>
-                    {% with trigger=action.default_trigger %}
-                      {% if trigger %}
-                        <br/><small>{{ trigger.time_details }}</small>
-                      {% endif %}
-                    {% endwith %}
-                    <small>| {{ action.get_priority_display }} priority.</small>
-                  </li>
-                {% empty %}
-                  <li><em>There are no actions in this behavior</em></li>
-                {% endfor %}
-                </ul>
-              </dd>
-            </dl>
+          <ul class="action-list">
+          {% for action in actions %}
+            <li>
+              {{ action|label }}
+              {{ action.sequence_order }}:
+              <a href="{{ action.get_absolute_url }}"
+                 data-tooltip aria-haspopup="true"
+                 title="{{ action.description }}">{{ action }}</a>
+              {% with trigger=action.default_trigger %}
+                {% if trigger %}
+                  <br/><small>{{ trigger.time_details }}</small>
+                {% endif %}
+              {% endwith %}
+              <small>| {{ action.get_priority_display }} priority.</small>
+            </li>
           {% empty %}
-            <em>There are no Behaviors/Actions in this Goal.</em>
+            <li><em>There are no actions in this goal</em></li>
           {% endfor %}
-          </div>
+          </ul>
         </li>
       {% endfor %}
       </ul>
