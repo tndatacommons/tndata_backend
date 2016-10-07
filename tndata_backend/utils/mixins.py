@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
+from redis_metrics import metric
 from rest_framework.exceptions import APIException
 
 
@@ -92,3 +93,12 @@ class VersionedViewSetMixin:
             except FileNotFoundError:  # noqa
                 pass
         return docstring
+
+
+class TombstoneMixin:
+    """This mixin records a metric when an object is created."""
+
+    def __init__(self, *args, **kwargs):
+        key = "{} created".format(self.__class__.__name__)
+        metric(key, category="Tombstones")
+        return super().__init__(*args, **kwargs)
