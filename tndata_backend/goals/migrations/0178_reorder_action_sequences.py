@@ -13,15 +13,32 @@ def reorder_actions_sequence_values(apps, schema_editor):
     """
     Action = apps.get_model("goals", "Action")
     Behavior = apps.get_model("goals", "Behavior")
+    Category = apps.get_model("goals", "Category")
 
-    previous = 0
-    for behavior in Behavior.objects.all().order_by('sequence_order'):
-        actions = Action.objects.filter(behavior__id=behavior.id).order_by('sequence_order')
-        for action in actions:
-            if action.sequence_order < previous:
-                action.sequence_order = previous
-                action.save()
-            previous = max([action.sequence_order, previous])
+    for cat in Category.objects.all():
+        for goal in cat.goal_set.all().order_by('sequence_order'):
+
+            prev_behavior = 0
+            max_action_seq = 0
+
+            behaviors = Behavior.objects.filter(goals__pk=goal.id)
+            for behavior in behaviors.order_by('sequence_order'):
+
+                offset = 0
+                if behavior.sequence_order > prev_behavior:
+                    offset = max_action_seq
+
+                actions = Action.objects.filter(behavior__id=behavior.id)
+                for action in actions.order_by('sequence_order'):
+
+                    if behavior.sequence_order > prev_behavior:
+                        action.sequence_order += offset
+                        action.save()
+
+                    if action.sequence_order > max_action_seq:
+                        max_action_seq = action.sequence_order
+
+                prev_behavior = behavior.sequence_order
 
 
 class Migration(migrations.Migration):
