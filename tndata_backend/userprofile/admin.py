@@ -45,8 +45,8 @@ admin.site.register(models.UserPlace, UserPlaceAdmin)
 
 class UserProfileAdmin(UserRelatedModelAdmin):
     list_display = (
-        'user_email', 'user_first', 'user_last', 'timezone',
-        'needs_onboarding', 'zipcode', 'ip_address',
+        'user_email', 'full_name', 'timezone',
+        'needs_onboarding', 'maximum_daily_notifications', 'zipcode',
     )
     list_filter = (
         'zipcode', 'sex', 'employed', 'is_parent',
@@ -57,6 +57,10 @@ class UserProfileAdmin(UserRelatedModelAdmin):
         'user__username', 'user__email', 'user__first_name', 'user__last_name',
     )
     actions = [remove_app_data]
+
+    def get_full_name(self, obj):
+        return obj.get_full_name()
+
 admin.site.register(models.UserProfile, UserProfileAdmin)
 
 
