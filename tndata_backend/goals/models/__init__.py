@@ -29,7 +29,6 @@ from .signals import (  # NOQA
     create_relative_reminder,
     custom_trigger_updated,
     delete_category_child_goals,
-    delete_goal_child_behaviors,
     delete_model_images,
     notify_for_new_package,
     program_goals_changed,
