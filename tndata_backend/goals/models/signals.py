@@ -176,7 +176,7 @@ def clean_content(sender, instance, raw, using, **kwargs):
 def delete_model_images(sender, instance, using, **kwargs):
     """Once a model instance has been deleted, this will remove its `icon`
     and `image` (if it has one) from the filesystem."""
-    if not (settings.DEBUG or settings.STAGING):
+    if not (settings.DEBUG or settings.STAGING or settings.TESTING):
         msg = "In `delete_model_images` for *{}* / {}\nLast updated {} by {}".format(
             sender.__name__,
             instance,

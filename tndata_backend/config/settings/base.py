@@ -62,6 +62,7 @@ be set prior to running the project:
 
 from ipaddress import IPv4Network, IPv4Address
 import os
+import sys
 
 
 class CIDRS(list):
@@ -89,6 +90,7 @@ class CIDRS(list):
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
 STAGING = bool(int(os.environ.get('STAGING', 0)))
+TESTING = sys.argv[1:2] == ['test']
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 # Admins & Managers for the site.
