@@ -11,6 +11,15 @@
   <li class="current">Authors</li>
 {% endblock %}
 
+{% block head %}
+  {{ block.super }}
+  <style type="text/css">
+    .table-wrapper {display: flex;}
+    .table-column {flex: 4; padding:.5em;}
+  </style>
+{% endblock %}
+
+
 {% block content %}
 <h1>Author Stats</h1>
 
@@ -27,8 +36,10 @@
 
 <h2>Goals</h2>
 <div class="row">
+<div class="large-12 columns">
+<div class="table-wrapper">
 {% for state, counter in goals.items %}
-  <div class="large-3 small-6 columns">
+  <div class="table-column">
     <table>
     <caption>{{ state }}</caption>
     <thead>
@@ -43,38 +54,20 @@
     {% endfor %}
     </tbody>
     </table>
-  </div> {# end .columns #}
+  </div>
 {% endfor %}
+</div> {# end table-wrapper #}
+</div> {# end .columns #}
 </div> {# end .row #}
 <hr/>
 
-<h2>Behaviors</h2>
-<div class="row">
-{% for state, counter in behaviors.items %}
-  <div class="large-3 small-6 columns">
-    <table>
-    <caption>{{ state }}</caption>
-    <thead>
-      <tr><th>User</th><th>Number of items</th></tr>
-    </thead>
-    <tbody>
-    {% for email, count in counter.items %}
-      <tr>
-        <td>{{ email|default:"Unkown" }}</td>
-        <td>{{ count }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-    </table>
-  </div> {# end .columns #}
-{% endfor %}
-</div> {# end .row #}
-<hr/>
 
 <h2>Actions</h2>
 <div class="row">
+<div class="large-12 columns">
+<div class="table-wrapper">
 {% for state, counter in actions.items %}
-  <div class="large-3 small-6 columns">
+  <div class="table-column">
     <table>
     <caption>{{ state }}</caption>
     <thead>
@@ -89,32 +82,12 @@
     {% endfor %}
     </tbody>
     </table>
-  </div> {# end .columns #}
+  </div>
 {% endfor %}
+</div> {# end table-wrapper #}
+</div> {# end .columns #}
 </div> {# end .row #}
-
 <hr/>
 
 
-{% comment %}
-<div class="large-8 small-12 columns">
-  <h2>Default Frequency usage</h2>
-  <div id="freq_counts-legend" class="pull-right panel legend"></div>
-  <canvas id="freq_counts" width="200" height="200"></canvas>
-  <script>
-  var ctx = document.getElementById("freq_counts").getContext("2d");
-  var data = [{% for freq, count in freq_counter.items %}
-    {
-        value: {{ count }},
-        color:"{% random_color %}",
-        highlight: "#FF5A5E",
-        label: "{{ freq }}"
-    }{% if not forloop.last %},{% endif %}
-  {% endfor %}];
-  var c = new Chart(ctx).Pie(data);
-  document.getElementById("freq_counts-legend").innerHTML = c.generateLegend();
-  </script>
-  <hr/>
-</div>
-{% endcomment %}
 {% endblock %}

@@ -2429,7 +2429,6 @@ def report_authors(request):
     # Count of who's got how many items in what state.
     states = ['draft', 'published', 'pending-review', 'declined']
     goals = {}
-    behaviors = {}
     actions = {}
     for state in states:
         items = Goal.objects.filter(state=state)
@@ -2437,12 +2436,6 @@ def report_authors(request):
             items = items.filter(author_criteria)
         items = items.values_list('created_by__email', flat=True)
         goals[state] = dict(Counter(items))
-
-        items = Behavior.objects.filter(state=state)
-        if author_criteria:
-            items = items.filter(author_criteria)
-        items = items.values_list('created_by__email', flat=True)
-        behaviors[state] = dict(Counter(items))
 
         items = Action.objects.filter(state=state)
         if author_criteria:
@@ -2452,7 +2445,6 @@ def report_authors(request):
 
     context = {
         'goals': goals,
-        'behaviors': behaviors,
         'actions': actions,
     }
     return render(request, 'goals/report_authors.html', context)
