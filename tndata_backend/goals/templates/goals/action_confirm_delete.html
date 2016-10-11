@@ -1,13 +1,13 @@
 {% extends "goals/base.html" %}
 {% block title %}Delete Notification{% endblock %}
 
-{% block content %}
 
 {% block breadcrumbs %}
   <li><a href="{% url 'goals:behavior-list' %}">Notifications</a></li>
   <li class="current">{{ object }}</li>
 {% endblock %}
 
+{% block content %}
 {% if num_user_selections %}
   <div data-alert class="alert-box alert">
     <i class="fa fa-warning"></i>

@@ -18,6 +18,7 @@ from django.utils import timezone
 from django_rq import job
 from notifications.signals import notification_snoozed
 from redis_metrics import metric
+from utils.slack import post_private_message
 from utils.user_utils import local_day_range
 
 from .custom import CustomAction
@@ -189,20 +190,26 @@ def clean_content(sender, instance, raw, using, **kwargs):
 @receiver(post_delete, sender=Behavior)
 @receiver(post_delete, sender=Goal)
 @receiver(post_delete, sender=Category)
-def delete_model_icon(sender, instance, using, **kwargs):
-    """Once a model instance has been deleted, this will remove its `icon` from
-    the filesystem."""
-    if hasattr(instance, 'icon') and instance.icon:
-        instance.icon.delete()
+def delete_model_images(sender, instance, using, **kwargs):
+    """Once a model instance has been deleted, this will remove its `icon`
+    and `image` (if it has one) from the filesystem."""
+    if not settings.DEBUG or settings.STAGING:
+        msg = "In `delete_model_images` for *{}* / {}\nLast updated {} by {}".format(
+            sender.__name__,
+            instance,
+            instance.updated_on.strftime("%c %z"),
+            instance.updated_by.get_full_name()
+        )
 
+        if hasattr(instance, 'icon') and instance.icon:
+            # instance.icon.delete()
+            msg += "\nIcon: {}".format(instance.icon.url)
 
-@receiver(post_delete, sender=Action)
-@receiver(post_delete, sender=Behavior)
-def delete_model_image(sender, instance, using, **kwargs):
-    """Once a model instance has been deleted, this will remove its `image`
-    from the filesystem."""
-    if hasattr(instance, 'image') and instance.image:
-        instance.image.delete()
+        if hasattr(instance, 'image') and instance.image:
+            # instance.image.delete()
+            msg += "\nImage: {}".format(instance.image.url)
+
+        post_private_message("bkmontgomery", msg)
 
 
 @receiver(pre_delete, sender=UserGoal, dispatch_uid="del_goal_behaviors")
