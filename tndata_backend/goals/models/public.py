@@ -1177,13 +1177,16 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
 
     @property
     def behavior_title(self):
-        """Return only the title for the related Behavior."""
-        return self.behavior.title
+        """Deprecated"""
+        if self.behavior_id:
+            return self.behavior.title
+        return ""
 
     @property
     def behavior_description(self):
-        """Return only the description for the related Behavior."""
-        return self.behavior.description
+        """NOTE: Returns the Action's more_info fields which was populated
+        with the behavior's description in the `behavior-removal` work."""
+        return self.more_info
 
     @property
     def order(self):
