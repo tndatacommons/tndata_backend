@@ -2261,7 +2261,6 @@ def debug_progress(request):
     user = None
     form = EmailForm(initial={'email_address': email})
     next_goals = []
-    next_behaviors = []
     next_actions = []
     streaks = []
 
@@ -2282,21 +2281,16 @@ def debug_progress(request):
     )
 
     # Completed Actions/Behaviors/Goals.
-    completed = {'actions': [], 'behaviors': [], 'goals': []}
+    completed = {'actions': [], 'goals': []}
     if user:
         ucas = user.usercompletedaction_set.all()
         completed['actions'] = ucas.filter(updated_on__gte=from_date)
-        behaviors = user.userbehavior_set.filter(completed=True)
-        completed['behaviors'] = behaviors.filter(completed_on__gte=from_date)
         goals = user.usergoal_set.filter(completed=True)
         completed['goals'] = goals.filter(completed_on__gte=from_date)
 
         # NEXT in sequence objeccts.
         next_goals = user.usergoal_set.next_in_sequence(published=True)
-        next_behaviors = user.userbehavior_set.next_in_sequence(
-            goals=next_goals.values_list('goal', flat=True), published=True)
-        next_actions = user.useraction_set.next_in_sequence(
-            next_behaviors.values_list('behavior', flat=True), published=True)
+        next_actions = get_next_useractions_in_sequence(user)
         next_actions = next_actions.order_by("next_trigger_date")
 
         # Streaks.
@@ -2345,7 +2339,6 @@ def debug_progress(request):
         'daily_progresses': daily_progresses,
         'completed': completed,
         'next_goals': next_goals,
-        'next_behaviors': next_behaviors,
         'next_actions': next_actions,
     }
     return render(request, 'goals/debug_progress.html', context)
