@@ -93,7 +93,7 @@
         <div class="panel">{{ action.notes|markdown }}</div>
       {% endif %}
 
-      <h2>Parent Goal(s)</h2>
+      <h2>Parent Goal{{action.goals.count|pluralize }}</h2>
 
       {% for goal in action.goals.all %}
         <h3>{{ goal }}
@@ -106,30 +106,6 @@
         {{ goal.description|markdown }}
         <hr/>
       {% endfor %}
-
-      {# --- TODO: Remove behaviors ---------------------------------------- #}
-      {% with behavior=action.behavior %}
-      {% if behavior %}
-      <h2 class="subheader">Behavior <small>{{ behavior }}</small></h2>
-      <div class="alert-box warning">Behaviors will soon be removed.</div>
-      <div>
-        <a href="{{ behavior.get_absolute_url }}"
-           class="button tiny secondary pull-right">View</a>
-        {{ behavior.description|markdown }}
-      </div>
-      <table>
-        <tbody>
-        <tr><th>State</th><td>{{ behavior|label }}</td></tr>
-        <tr><th>Sequence Order</th><td>{{ action.sequence_order }}</td></tr>
-        <tr><th>Informal List</th><td>{{ behavior.informal_list|markdown }}</td></tr>
-        <tr><th>Categories</th><td>{{ behavior.categories.all|join:", " }}</td></tr>
-        <tr><th>Goals</th><td>{{ behavior.goals.all|join:", " }}</td></tr>
-        <tr><th>Updated</th><td>{{ behavior.updated_on|timesince }} ago
-          by {{ behavior.updated_by.get_full_name }}.</td></tr>
-      </table>
-      {% endif %}
-      {% endwith %}
-      {# ------------------------------------------------------------------- #}
     </div>
   </div>
 {% endblock %}
