@@ -14,7 +14,6 @@ from badgify_api.api import (
 )
 from goals.api import (
     ActionViewSet,
-    BehaviorViewSet,
     CategoryViewSet,
     CustomActionViewSet,
     CustomGoalViewSet,
@@ -26,7 +25,6 @@ from goals.api import (
     SearchViewSet,
     TriggerViewSet,
     UserActionViewSet,
-    UserBehaviorViewSet,
     UserCategoryViewSet,
     UserGoalViewSet,
 )
@@ -85,12 +83,10 @@ router.register(r'search', SearchViewSet, base_name="search")
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
 router.register(r'triggers', TriggerViewSet, base_name="trigger")
-router.register(r'behaviors', BehaviorViewSet)
 router.register(r'actions', ActionViewSet)
 router.register(r'organizations', OrganizationViewSet)
 router.register(r'programs', ProgramViewSet)
 router.register(r'users/actions', UserActionViewSet)
-router.register(r'users/behaviors', UserBehaviorViewSet)
 router.register(r'users/categories', UserCategoryViewSet)
 router.register(r'users/customgoals', CustomGoalViewSet)
 router.register(r'users/customactions', CustomActionViewSet)
@@ -141,6 +137,18 @@ urlpatterns = [
     ),
     url(r'^api/auth/logout/$', api_logout, name="auth-logout"),
     url(r'^api/auth/token/$', obtain_auth_token, name="auth-token"),
+    url(
+        r'^api/behaviors/$',
+        goal_views.fake_api,
+        kwargs={'option': 'behavior'},
+        name="fake-api"
+    ),
+    url(
+        r'^api/users/behaviors/$',
+        goal_views.fake_api,
+        kwargs={'option': 'userbehavior'},
+        name="fake-api"
+    ),
     url(
         r'^api/users/behaviors/progress/$',
         goal_views.fake_api,

@@ -103,11 +103,6 @@ urlpatterns = [
         name='goal-create'
     ),
     url(
-        r'^new/behavior/$',
-        views.BehaviorCreateView.as_view(),
-        name='behavior-create'
-    ),
-    url(
         r'^new/action/$',
         views.ActionCreateView.as_view(),
         name='action-create'
@@ -153,43 +148,6 @@ urlpatterns = [
         r'^actions/(?P<pk>\d+)-(?P<title_slug>.+)/$',
         views.ActionDetailView.as_view(),
         name='action-detail'
-    ),
-
-    # Behaviors
-    url(
-        r'^behaviors/$',
-        views.BehaviorListView.as_view(),
-        name='behavior-list'
-    ),
-    url(
-        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/publish/$',
-        views.BehaviorPublishView.as_view(),
-        name='behavior-publish'
-    ),
-    url(
-        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/transfer/$',
-        views.BehaviorTransferView.as_view(),
-        name='behavior-transfer'
-    ),
-    url(
-        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/update/$',
-        views.BehaviorUpdateView.as_view(),
-        name='behavior-update'
-    ),
-    url(
-        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/delete/$',
-        views.BehaviorDeleteView.as_view(),
-        name='behavior-delete'
-    ),
-    url(
-        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/duplicate/$',
-        views.BehaviorDuplicateView.as_view(),
-        name='behavior-duplicate'
-    ),
-    url(
-        r'^behaviors/(?P<pk>\d+)-(?P<title_slug>.+)/$',
-        views.BehaviorDetailView.as_view(),
-        name='behavior-detail'
     ),
 
     # Triggers
@@ -400,11 +358,6 @@ urlpatterns = [
         r'^reports/popular/$',
         views.ReportPopularView.as_view(),
         name='report-popular'
-    ),
-    url(
-        r'^reports/behaviors/$',
-        views.report_behaviors,
-        name='report-behaviors'
     ),
     url(
         r'^reports/actions/$',

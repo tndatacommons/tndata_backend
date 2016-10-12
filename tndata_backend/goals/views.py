@@ -29,6 +29,7 @@ from django.utils.text import slugify
 from django_fsm import TransitionNotAllowed
 from django_rq import job
 from notifications import queue
+from redis_metrics import metric
 from userprofile.forms import UserForm
 from userprofile.models import UserProfile
 from utils.db import get_max_order
@@ -43,7 +44,6 @@ from . forms import (
     ActionPriorityForm,
     AcceptEnrollmentForm,
     ActionTriggerForm,
-    BehaviorForm,
     CategoryForm,
     ContentAuthorForm,
     CTAEmailForm,
@@ -65,7 +65,6 @@ from . mixins import (
 )
 from . models import (
     Action,
-    Behavior,
     Category,
     DailyProgress,
     Goal,
@@ -243,7 +242,7 @@ class ContentDeleteView(DeleteView):
     """This is a Base DeleteView for our Content models.It doesn't allow for
     deletion if users have selected the object (e.g. Content or Goal).
 
-    Works with: Category, Goal, Behavior, Action
+    Works with: Category, Goal, Action
 
     """
     def get_num_user_selections(self):
@@ -284,7 +283,7 @@ class IndexView(ContentViewerMixin, TemplateView):
         * some stats on the most popular content.
 
         """
-        # Only the fields needed for Category, Goal, Behavior, Action objects
+        # Only the fields needed for Category, Goal, Action objects
         # on this page.
         only_fields = [
             'id', 'title', 'title_slug', 'updated_on', 'updated_by',
@@ -441,8 +440,8 @@ class CategoryDetailView(ContentViewerMixin, DetailView):
         # ensure results are sorted by goals' sequence_order, and all actions
         # are also sorted by sequence order.
         goals = [
-            (goal, sorted(actions, key=lambda a: a.sequence_order))
-            for goal, actions in goals.items()
+            (goal, sorted(action_set, key=lambda a: a.sequence_order))
+            for goal, action_set in goals.items()
         ]
         goals = sorted(goals, key=lambda t: t[0].sequence_order)
         context['goals'] = goals
@@ -649,7 +648,7 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
         """Upons saving, also check if this was submitted for review."""
         result = super().form_valid(form)
         if self.request.POST.get('review', False):
-            msg = ("This goal must have child behaviors that are either "
+            msg = ("This goal must have child actions that are either "
                    "published or in review before it can be reviewed.")
             messages.warning(self.request, msg)
 
@@ -661,51 +660,31 @@ class GoalCreateView(ContentAuthorMixin, CreatedByView):
         )
 
         # If we've duplicated a Goal, look up the original's id and
-        # duplicate all of it's Behaviors & Actions.
-        # NOTE: This will be slow and inefficient.
+        # duplicate all of it's Actions. NOTE: This will be slow and inefficient.
         original = form.cleaned_data.get('original_goal', None)
 
         if original:
             prefix = md5(timezone.now().strftime("%c").encode('utf8')).hexdigest()[:6]
             original_goal = Goal.objects.get(pk=original)
 
-            for old_behavior in original_goal.behavior_set.all():
-                title = "({}) Copy of {}".format(prefix, old_behavior.title)
-                note = "Created when duplicating Goal {}: {}".format(
-                    goal.id, goal.title)
+            duplicate_actions = []
+            for action in original_goal.action_set.all():
+                title = "({}) Copy of {}".format(prefix, action.title)
                 params = {
                     "title": title,
-                    "sequence_order": old_behavior.sequence_order,
-                    "description": old_behavior.description,
-                    "more_info": old_behavior.more_info,
-                    "informal_list": old_behavior.informal_list,
-                    "external_resource": old_behavior.external_resource,
-                    "source_link": old_behavior.source_link,
-                    "source_notes": old_behavior.source_notes,
-                    "notes": note,
+                    "title_slug": slugify(title),
+                    "sequence_order": action.sequence_order,
+                    "description": action.description,
+                    "more_info": action.more_info,
+                    "notification_text": action.notification_text,
+                    "external_resource": action.external_resource,
+                    "external_resource_name": action.external_resource_name,
+                    "priority": action.priority,
+                    "notes": action.notes,
+                    "goals": [goal.id],
                 }
-                new_behavior = Behavior.objects.create(**params)
-                new_behavior.goals.add(goal)
-                new_behavior.save()
-
-                duplicate_actions = []
-                for action in old_behavior.action_set.all():
-                    title = "({}) Copy of {}".format(prefix, action.title)
-                    params = {
-                        "title": title,
-                        "title_slug": slugify(title),
-                        "sequence_order": action.sequence_order,
-                        "behavior": new_behavior,
-                        "description": action.description,
-                        "more_info": action.more_info,
-                        "notification_text": action.notification_text,
-                        "external_resource": action.external_resource,
-                        "external_resource_name": action.external_resource_name,
-                        "priority": action.priority,
-                        "notes": note,
-                    }
-                    duplicate_actions.append(Action(**params))
-                Action.objects.bulk_create(duplicate_actions)
+                duplicate_actions.append(Action(**params))
+            Action.objects.bulk_create(duplicate_actions)
         return result
 
 
@@ -746,10 +725,7 @@ class GoalUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(GoalUpdateView, self).get_context_data(**kwargs)
-        context['goals'] = Goal.objects.all().prefetch_related(
-            "categories",
-            "behavior_set"
-        )
+        context['goals'] = Goal.objects.all().prefetch_related("categories")
         return context
 
 
@@ -775,187 +751,6 @@ class TriggerDetailView(ContentEditorMixin, DetailView):
     queryset = Trigger.objects.default()
     slug_field = "name_slug"
     slug_url_kwarg = "name_slug"
-
-
-class BehaviorListView(ContentViewerMixin, StateFilterMixin, ListView):
-    model = Behavior
-    context_object_name = 'behaviors'
-    paginate_by = 200
-
-    def _filter_queryset(self, queryset):
-        search = self.request.GET.get('filter', None)
-        lookups = {
-            'empty-source_link': Q(source_link=''),
-            'empty-source_link': Q(source_link=''),
-            'empty-source_notes': Q(source_notes=''),
-            'empty-notes': Q(notes=''),
-            'empty-more_info': Q(more_info=''),
-            'empty-description': Q(description=''),
-            'empty-external_resource': Q(external_resource=''),
-            'empty-external_resource_name': Q(external_resource_name=''),
-            'empty-informal_list': Q(informal_list=''),
-            'contains-source_link': Q(source_link__gt=''),
-            'contains-source_notes': Q(source_notes__gt=''),
-            'contains-notes': Q(notes__gt=''),
-            'contains-more_info': Q(more_info__gt=''),
-            'contains-description': Q(description__gt=''),
-            'contains-external_resource': Q(external_resource__gt=''),
-            'contains-external_resource_name': Q(external_resource_name__gt=''),
-            'contains-informal_list': Q(informal_list=''),
-        }
-        if search in lookups:
-            return queryset.filter(lookups[search])
-        return queryset
-
-    def get_queryset(self):
-        queryset = super().get_queryset().only(
-            'id', 'state', 'icon', 'sequence_order', 'title', 'title_slug',
-            'description', 'informal_list'
-        )
-        if self.request.GET.get('goal', False):
-            queryset = queryset.filter(goals__pk=self.request.GET['goal'])
-        queryset = self._filter_queryset(queryset)
-        queryset = queryset.annotate(Count('userbehavior'))
-        return queryset.order_by('-updated_on')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        goal_id = self.request.GET.get('goal', None)
-        if goal_id:
-            context['goal'] = Goal.objects.get(pk=goal_id)
-        return context
-
-
-class BehaviorDetailView(ContentViewerMixin, DetailView):
-    queryset = Behavior.objects.all()
-    slug_field = "title_slug"
-    slug_url_kwarg = "title_slug"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        behavior = context['object']
-
-        # include values for the Action's sequence_orders
-        result = behavior.action_set.aggregate(Max('sequence_order'))
-        result = result.get('sequence_order__max') or 0
-        context['order_values'] = list(range(result + 5))
-        return context
-
-
-class BehaviorCreateView(ContentAuthorMixin, CreatedByView):
-    model = Behavior
-    form_class = BehaviorForm
-    slug_field = "title_slug"
-    slug_url_kwarg = "title_slug"
-
-    def get_initial(self):
-        data = self.initial.copy()
-        data['goals'] = self.request.GET.getlist('goal', None)
-        return data
-
-    def form_valid(self, form):
-        """Submitting for review on creation should to the appropriate state
-        transition. """
-        result = super().form_valid(form)
-        if self.request.POST.get('review', False):
-            self.object.review()  # Transition to the new state
-            msg = "{0} has been submitted for review".format(self.object)
-            messages.success(self.request, msg)
-        else:
-            messages.success(self.request, "Your behavior has been created.")
-
-        self.object.save(
-            created_by=self.request.user,
-            updated_by=self.request.user
-        )
-
-        # If we've duplicated a behavior, look up the original's id and
-        # duplicate all of it's Actions
-        original = form.cleaned_data.get('original_behavior', None)
-        if original:
-            original = Behavior.objects.get(pk=original)
-            duplicate_actions = []
-            for action in original.action_set.all():
-                note = "Created when duplicating Behavior {}: {}".format(
-                    self.object.id, self.object.title)
-                params = {
-                    "title": "Copy of {0}".format(action.title),
-                    "title_slug": slugify("Copy of {0}".format(action.title)),
-                    "sequence_order": action.sequence_order,
-                    "behavior": self.object,
-                    "description": action.description,
-                    "more_info": action.more_info,
-                    "notification_text": action.notification_text,
-                    "external_resource": action.external_resource,
-                    "external_resource_name": action.external_resource_name,
-                    "priority": action.priority,
-                    "notes": note,
-                }
-                duplicate_actions.append(Action(**params))
-            Action.objects.bulk_create(duplicate_actions)
-        return result
-
-
-class BehaviorDuplicateView(BehaviorCreateView):
-    """Initializes the Create form with a copy of data from another object.
-
-    NOTE: This view simply populates the BehaviorForm's initial data; creating
-    the new behavior is handled by BehaviorCreateView.
-
-    """
-    def get_initial(self, *args, **kwargs):
-        initial = super(BehaviorDuplicateView, self).get_initial(*args, **kwargs)
-        try:
-            obj = self.get_object()
-            title = "({}) Copy of {}".format(
-                md5(timezone.now().strftime("%c").encode('utf8')).hexdigest()[:6],
-                obj.title
-            )
-            initial.update({
-                "title": title,
-                "sequence_order": obj.sequence_order,
-                "description": obj.description,
-                "more_info": obj.more_info,
-                "informal_list": obj.informal_list,
-                "external_resource": obj.external_resource,
-                "goals": obj.goals.values_list("id", flat=True),
-                "source_link": obj.source_link,
-                "source_notes": obj.source_notes,
-                "original_behavior": obj.id,
-            })
-        except self.model.DoesNotExist:
-            pass
-        return initial
-
-
-class BehaviorPublishView(ContentEditorMixin, PublishView):
-    model = Behavior
-    slug_field = 'title_slug'
-
-
-class BehaviorTransferView(BaseTransferView):
-    model = Behavior
-    pk_field = "pk"
-    owner_field = "created_by"
-
-
-class BehaviorUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
-    model = Behavior
-    slug_field = "title_slug"
-    slug_url_kwarg = "title_slug"
-    form_class = BehaviorForm
-
-    def get_context_data(self, **kwargs):
-        context = super(BehaviorUpdateView, self).get_context_data(**kwargs)
-        context['behaviors'] = Behavior.objects.all()
-        return context
-
-
-class BehaviorDeleteView(ContentEditorMixin, ContentDeleteView):
-    model = Behavior
-    slug_field = "title_slug"
-    slug_url_kwarg = "title_slug"
-    success_url = reverse_lazy('goals:index')
 
 
 class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
@@ -991,8 +786,6 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.annotate(Count('useraction'))
-        if self.request.GET.get('behavior', False):
-            queryset = queryset.filter(behavior__id=self.request.GET['behavior'])
         if self.request.GET.get('goal', False):
             queryset = queryset.filter(goals__id=self.request.GET['goal'])
         if self.request.GET.get('category', False):
@@ -1006,10 +799,7 @@ class ActionListView(ContentViewerMixin, StateFilterMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         ctx = super().get_context_data(*args, **kwargs)
-        behavior_id = self.request.GET.get('behavior', None)
         goal_id = self.request.GET.get('goal', None)
-        if behavior_id:
-            ctx['behavior'] = Behavior.objects.get(pk=behavior_id)
         if goal_id:
             ctx['goal'] = Goal.objects.get(pk=goal_id)
         ctx['action_filter'] = self.request.GET.get('filter', None)
@@ -1054,7 +844,6 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
     def get_initial(self):
         data = self.initial.copy()
         data.update(self.form_class.INITIAL[self.action_type])
-        data['behavior'] = self.request.GET.get('behavior', None)
         data['goals'] = self.request.GET.getlist('goal', None)
         return data
 
@@ -1115,13 +904,9 @@ class ActionCreateView(ContentAuthorMixin, CreatedByView):
         context['action_type_name'] = self.action_type_name
 
         # We also list all existing actions & link to them.
-        context['actions'] = Action.objects.all().select_related("behavior__title")
+        context['actions'] = Action.objects.all()
 
-        # pre-populate some dynamic content displayed to the user regarding
-        # an action's parent behavior.
-        context['behaviors'] = Behavior.objects.values(
-            "id", "description", "informal_list"
-        )
+        # pre-populate some dynamic content displayed to the user
         if 'trigger_form' not in context and self.trigger_date:
             context['trigger_form'] = ActionTriggerForm(
                 prefix="trigger",
@@ -1228,12 +1013,6 @@ class ActionUpdateView(ContentAuthorMixin, ReviewableUpdateMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(ActionUpdateView, self).get_context_data(**kwargs)
         context['Action'] = self.model
-
-        # pre-populate some dynamic content displayed to the user regarding
-        # an action's parent behavior.
-        context['behaviors'] = Behavior.objects.values(
-            "id", "description", "informal_list"
-        )
 
         # Include a form for the default trigger
         if 'trigger_form' not in context:
@@ -1625,7 +1404,7 @@ class PackageEnrollmentView(ContentAuthorMixin, FormView):
 
     1. Create user accounts if they don't already exist.
     2. Assign users to all of the content in the package (i.e. create the
-       intermediary UserAction, UserBehavior, UserGoal, and UserCategory objects)
+       intermediary UserAction, UserGoal, and UserCategory objects)
        as if the user navigated through the app and selected them.
     3. Send the user an email letting them know they've been enrolled.
 
@@ -1738,7 +1517,7 @@ def package_calendar(request, pk):
             action_data.append((dt.date(), dt, action, stop_counter))
 
         # include a list of goal-ids in the action
-        action.goal_ids = list(action.behavior.goals.values_list('id', flat=True))
+        action.goal_ids = list(action.goals.values_list('id', flat=True))
         action.is_relative = action.default_trigger.is_relative
         if action.default_trigger.is_relative:
             contains_relative_reminders = True
@@ -1973,7 +1752,7 @@ def package_report(request, pk):
 
 
 def file_upload(request, object_type, pk):
-    """Handler for drag-n-drop file uploads for Goals, Behaviors, and Actions.
+    """Handler for drag-n-drop file uploads for Goals, and Actions.
 
     NOTE: This only works for the `icon` field at the moment.
     See: https://docs.djangoproject.com/en/1.8/topics/http/file-uploads/
@@ -1983,7 +1762,6 @@ def file_upload(request, object_type, pk):
     objects = {
         'goal': (Goal, UploadImageForm),
         'action': (Action, UploadImageForm),
-        'behavior': (Behavior, UploadImageForm),
     }
     try:
         model, form_class = objects.get(object_type, (None, None))
@@ -2317,7 +2095,7 @@ def debug_progress(request):
         updated_on__gte=from_date
     )
 
-    # Completed Actions/Behaviors/Goals.
+    # Completed Actions/Goals.
     completed = {'actions': [], 'goals': []}
     if user:
         ucas = user.usercompletedaction_set.all()
@@ -2488,47 +2266,6 @@ def report_authors(request):
 
 
 @user_passes_test(staff_required, login_url='/')
-def report_behaviors(request):
-    """Information about our Behaviro content."""
-    subreport = request.GET.get('sub', None)
-    behaviors = Behavior.objects.all()
-    total = behaviors.count()
-    context = {
-        'total': total,
-        'subreport': subreport,
-    }
-    for state in ['draft', 'published', 'pending-review', 'declined']:
-        key = "{}_count".format(state.replace('-', ''))
-        data = {key: behaviors.filter(state=state).count()}
-        context.update(data)
-
-    if subreport == "emptyfields":
-        context['subreport_title'] = "Empty Behavior Fields"
-        description = behaviors.filter(description='').count()
-        more_info = behaviors.filter(more_info='').count()
-        informal_list = behaviors.filter(informal_list='').count()
-        source_link = behaviors.filter(source_link='').count()
-        source_notes = behaviors.filter(source_notes='').count()
-        notes = behaviors.filter(notes='').count()
-        external_resource = behaviors.filter(external_resource='').count()
-        external_resource_name = behaviors.filter(external_resource_name='').count()
-
-        # report is a list of (fieldname, empty_count, difference)
-        context['report'] = [
-            ('description', description, total - description),
-            ('more_info', more_info, total - more_info),
-            ('informal_list', informal_list, total - informal_list),
-            ('source_link', source_link, total - source_link),
-            ('source_notes', source_notes, total - source_notes),
-            ('notes', notes, total - notes),
-            ('external_resource', external_resource, total - external_resource),
-            ('external_resource_name', external_resource_name,
-                total - external_resource_name),
-        ]
-    return render(request, 'goals/report_behaviors.html', context)
-
-
-@user_passes_test(staff_required, login_url='/')
 def report_actions(request):
     """Information about our Action content.
 
@@ -2569,12 +2306,12 @@ def report_actions(request):
 
     if subreport == "desc":  # Long descriptions
         actions = actions.annotate(text_len=Length('description'))
-        actions = actions.filter(text_len__gt=max_len).select_related('behavior')
+        actions = actions.filter(text_len__gt=max_len)
         context['actions'] = actions.order_by('-text_len')[:limit]
         context['subreport_title'] = "Long Descriptions"
     elif subreport == "notif":  # Long notifiation text
         actions = actions.annotate(text_len=Length('notification_text'))
-        actions = actions.filter(text_len__gt=max_len).select_related('behavior')
+        actions = actions.filter(text_len__gt=max_len)
         context['actions'] = actions.order_by('-text_len')[:limit]
         context['subreport_title'] = "Long Notification Text"
     elif subreport == "links":  # description / more_info contains URLs
@@ -2796,8 +2533,11 @@ def fake_api(request, option=None):
     data for api endpoints that we may have removed; This will prevent an
     older version of the app from crashing when it tries to hit an endpoint.
     """
-    if option in ['goalprogress', 'behaviorprogress']:
+    metric("fake-api-{}".format(option), category="Tombstones")
+    if option in ['goalprogress', 'behaviorprogress', 'userbehavior', 'behavior']:
         # /api/users/behaviors/progress/
+        # /api/users/behaviors/
+        # /api/behaviors/
         # /api/users/goals/progress/
         return JsonResponse({
             "count": 0,
