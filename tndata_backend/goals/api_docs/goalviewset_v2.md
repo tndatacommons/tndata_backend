@@ -1,8 +1,8 @@
 
 **API Version 2**
 
-Goals may be associated with multiple categories, and may contain multiple
-Behaviors. This enpoint lists an array of published goals.
+Goals may be associated with multiple categories, and they contain multiple
+Actions (Notifications). This enpoint lists an array of published goals.
 
 
 ## Fields

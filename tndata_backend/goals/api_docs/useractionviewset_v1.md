@@ -11,7 +11,6 @@ This endpoint returns resources with the following fields.
 * `id`: A unique identifier for the `UserAction` mapping.
 * `user`: A unique identifier for the `User`
 * `action`: An object that represents the `Action` selected by the user
-* `behavior`: An object that represents the `Action`'s parent `Behavior`.
 * `next_reminder`: a date/time in the user's local timezone for the
   next push notification for this action (may be null if nothing is scheduled)
 * `custom_trigger`: An object that represent's the user's created `Trigger`,
@@ -85,7 +84,7 @@ with the following information:
 ## Filtering
 
 UserActions can be filtered using a querystring parameter. Currently,
-filtering is availble for Goals, Behaviors, Actions, and for Actions
+filtering is availble for Goals, Actions, and for Actions
 whose notification is scheduled during the current day.
 
 To filter for actions scheduled _today_, use the following:
@@ -99,12 +98,6 @@ one of the following:
 
 * `/api/users/actions/?goal={goal_id}` or by slug
 * `/api/users/actions/?goal={goal_title_slug}`
-
-To retrieve all *UserAction*s that belong to a particular Behavior, use
-one of the following:
-
-* `/api/users/actions/?behavior={behavior_id}` or by slug
-* `/api/users/actions/?behavior={behavior_title_slug}`
 
 To retrive all *UserActions*s that belong to a particular Action, use one
 of the following:

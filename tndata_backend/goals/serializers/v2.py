@@ -6,7 +6,6 @@ from utils.serializer_fields import ReadOnlyDatetimeField
 
 from ..models import (
     Action,
-    Behavior,
     Category,
     DailyProgress,
     Goal,
@@ -15,13 +14,11 @@ from ..models import (
     Trigger,
     UserAction,
     UserGoal,
-    UserBehavior,
     UserCategory,
 )
 from ..serializer_fields import (
     CustomTriggerField,
     SimpleActionField,
-    SimpleBehaviorField,
     SimpleCategoryField,
     SimpleGoalField,
     SimpleTriggerField,
@@ -59,7 +56,7 @@ class DailyProgressSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'user', 'actions_total', 'actions_completed', 'actions_snoozed',
             'actions_dismissed', 'customactions_total', 'customactions_completed',
-            'customactions_snoozed', 'customactions_dismissed', 'behaviors_total',
+            'customactions_snoozed', 'customactions_dismissed',
             'engagement_15_days', 'engagement_30_days', 'engagement_60_days',
             'engagement_rank', 'goal_status',
             'updated_on', 'created_on', 'object_type',
@@ -110,24 +107,6 @@ class GoalSerializer(ObjectTypeModelSerializer):
         )
 
 
-class BehaviorSerializer(TombstoneMixin, ObjectTypeModelSerializer):
-    """A Serializer for `Behavior`."""
-    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    html_description = serializers.ReadOnlyField(source="rendered_description")
-    html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    goals = serializers.ReadOnlyField(source="goal_ids")
-
-    class Meta:
-        model = Behavior
-        fields = (
-            'id', 'sequence_order', 'title', 'description', 'html_description',
-            'more_info', 'html_more_info', 'external_resource',
-            'external_resource_name', 'icon_url', 'actions_count', 'goals',
-            'object_type',
-        )
-        read_only_fields = ("actions_count", )
-
-
 class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
@@ -138,8 +117,7 @@ class ActionSerializer(ObjectTypeModelSerializer):
         model = Action
         fields = (
             'id', 'sequence_order', 'title', 'description', 'html_description',
-            'goals', 'behavior', 'behavior_title', 'behavior_description',
-            'more_info', 'html_more_info', 'external_resource',
+            'goals', 'more_info', 'html_more_info', 'external_resource',
             'external_resource_name', 'external_resource_type',
             'notification_text', 'icon_url', 'object_type',
         )
@@ -184,34 +162,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         return max([obj.engagement_rank, 15.0])
 
 
-class UserBehaviorSerializer(TombstoneMixin, ObjectTypeModelSerializer):
-    """A Serializer for the `UserBehavior` model."""
-    editable = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = UserBehavior
-        fields = (
-            'id', 'user', 'behavior', 'created_on', 'editable',
-            'object_type',
-        )
-        read_only_fields = ("id", "created_on", )
-
-    def __init__(self, *args, **kwargs):
-        self.parents = kwargs.pop("parents", False)
-        super().__init__(*args, **kwargs)
-
-    def get_editable(self, obj):
-        return True  # XXX Temporarily enabling this for everyone.
-
-    def to_representation(self, obj):
-        """Include a serialized Behavior object in the result."""
-        results = super().to_representation(obj)
-        behavior_id = results.get('behavior', None)
-        behavior = Behavior.objects.get(pk=behavior_id)
-        results['behavior'] = BehaviorSerializer(behavior).data
-        return results
-
-
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
     trigger = CustomTriggerField(
@@ -227,10 +177,10 @@ class UserActionSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'user', 'action', 'trigger', 'next_reminder',
             'editable', 'created_on', 'goal_title', 'goal_icon',
-            'userbehavior_id', 'primary_goal', 'primary_usergoal',
+            'primary_goal', 'primary_usergoal',
             'primary_category', 'object_type',
         )
-        read_only_fields = ("id", "created_on", 'userbehavior_id', 'goal')
+        read_only_fields = ("id", "created_on", 'goal')
 
     def __init__(self, *args, **kwargs):
         self.parents = kwargs.pop("parents", False)

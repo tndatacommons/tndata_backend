@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Action, Behavior, Category, Goal, Trigger
+from .models import Action, Category, Goal, Trigger
 
 
 def _get_object(model, pk):
@@ -14,7 +14,7 @@ def _get_object(model, pk):
 
 class CustomTriggerField(serializers.RelatedField):
     """A field that lets us create/update a custom trigger, whenever a user
-    updates a UserBehavior/UserAction."""
+    updates a UserAction."""
 
     def to_internal_value(self, data):
         # This is only called by by the CustomTriggerSerializer, which will
@@ -97,28 +97,6 @@ class SimpleCategoryField(serializers.RelatedField):
         }
 
 
-class SimpleBehaviorField(serializers.RelatedField):
-    """A simplified representation of a `Behavior`."""
-
-    def to_internal_value(self, data):
-        return _get_object(Behavior, data)
-
-    def to_representation(self, value):
-        return {
-            'id': value.id,
-            'title': value.title,
-            'title_slug': value.title_slug,
-            'description': value.description,
-            'html_description': value.rendered_description,
-            'more_info': value.more_info,
-            'html_more_info': value.rendered_more_info,
-            'external_resource': value.external_resource,
-            'external_resource_name': value.external_resource_name,
-            'icon_url': value.get_absolute_icon(),
-            'actions_count': value.action_set.filter(state="published").count(),
-        }
-
-
 class SimpleGoalField(serializers.RelatedField):
     """A simple view of a goal."""
 
@@ -161,7 +139,6 @@ class SimpleActionField(serializers.RelatedField):
             'external_resource': value.external_resource,
             'external_resource_name': value.external_resource_name,
             'icon_url': value.get_absolute_icon(),
-            'behavior_id': value.behavior.id,
             'default_trigger': default_trigger,
         }
 

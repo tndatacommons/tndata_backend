@@ -45,10 +45,8 @@ This endpoint returns resources with the following fields.
   next push notification for this action (may be null if nothing is scheduled)
 * `editable`: A boolean that indicates whether or not a user
   should be able to customize the reminders for this action.
-  `Action`'s parent `Behavior`.
 * `goal_title`: A string, the title of the primary-goal.
 * `goal_icon`: A string, the URL for the Goal's icon image.
-* `userbehvaior_id`: The ID of the `UserBehavior` object associated with the
 * `primary_goal`: The ID of the goal under which the user selected this action.
 * `primary_usergoal`: The ID of the `UserGoal` related to the `primary_goal`.
 * `primary_category`: The ID of the category associated with this action.
@@ -69,7 +67,7 @@ parent goal and category for the action).
 
 ## Adding a UserAction and all parent objects at once <a href="#adding-a-useraction-and-all-parent-objects-at-once">&para;</a>
 
-If you submit a `category`, `goal`, `behavior`, and `action` all in a single
+If you submit a `category`, `goal`, and `action` all in a single
 payload, each object will be added to the user's collection at once; This will
 simplify adding the tree of data. When using this payload, all items are required,
 and the given `goal` and `category` IDs will be set as the `primary_goal` and
@@ -77,7 +75,6 @@ and the given `goal` and `category` IDs will be set as the `primary_goal` and
 
     {
         'action': ACTION_ID,
-        'behavior': BEHAVIOR_ID,
         'goal': GOAL_ID,
         'category': CATEGORY_ID
     }
@@ -114,7 +111,7 @@ To do this, send a PUT request to the detail url
 ## Filtering  <a href="#filtering">&para;</a>
 
 UserActions can be filtered using a query string parameter. Currently,
-filtering is availble for Goals, Behaviors, Actions, and for Actions
+filtering is availble for Goals, Actions, and for Actions
 whose notification is scheduled during the current day.
 
 **To filter on actions scheduled for _today_**, limit the result size, or
@@ -125,15 +122,13 @@ exclude actions which a user has already completed, use on of the following:
 * `/api/users/actions/?exclude_completed=1` -- Excluded completed items
 
 For the following examples, you may filter using a numeric ID or a titl slug.
-UserActions may be filtered by their parent Category, Goal, Behavior or by
+UserActions may be filtered by their parent Category, Goal, or by
 the associated Action. Examples:
 
 * `/api/users/actions/?category={category_id}`
 * `/api/users/actions/?category={category_title_slug}`
 * `/api/users/actions/?goal={goal_id}`
 * `/api/users/actions/?goal={goal_title_slug}`
-* `/api/users/actions/?behavior={behavior_id}`
-* `/api/users/actions/?behavior={behavior_title_slug}`
 * `/api/users/actions/?action={action_id}`
 * `/api/users/actions/?action={action_title_slug}`
 
