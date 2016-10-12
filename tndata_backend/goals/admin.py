@@ -297,11 +297,11 @@ admin.site.register(models.Behavior, BehaviorAdmin)
 
 
 class ActionCategoryListFilter(CategoryListFilter):
-    """Filters actions by their parent behavior's parent goal's category."""
+    """Filters actions by their parent goal's category."""
     def queryset(self, request, queryset):
         category_id = self.value()
         if category_id:
-            queryset = queryset.filter(behavior__goals__categories__id=category_id)
+            queryset = queryset.filter(goals__categories__id=category_id)
         return queryset
 
 
@@ -363,10 +363,7 @@ class ActionAdmin(ContentWorkflowAdmin):
         'external_resource_type', ActionCategoryListFilter,
     )
     prepopulated_fields = {"title_slug": ("title", )}
-    raw_id_fields = (
-        'behavior', 'goals', 'default_trigger',
-        'updated_by', 'created_by'
-    )
+    raw_id_fields = ('goals', 'default_trigger', 'updated_by', 'created_by')
 
     def selected_by_users(self, obj):
         return models.UserAction.objects.filter(action=obj).count()
@@ -433,17 +430,6 @@ class UserGoalAdmin(UserRelatedModelAdmin):
 admin.site.register(models.UserGoal, UserGoalAdmin)
 
 
-class UserBehaviorAdmin(UserRelatedModelAdmin):
-    list_display = ('user_email', 'behavior', 'completed',)
-    list_filter = ('completed', 'behavior__goals__categories', )
-    search_fields = (
-        'user__username', 'user__email', 'user__first_name', 'user__last_name',
-        'behavior__id', 'behavior__title', 'id',
-    )
-    raw_id_fields = ("user", "behavior")
-admin.site.register(models.UserBehavior, UserBehaviorAdmin)
-
-
 class UACategoryListFilter(admin.SimpleListFilter):
     title = "Primary Category"
     parameter_name = 'category'
@@ -499,7 +485,7 @@ class UserActionCompletedListFilter(admin.SimpleListFilter):
 class UserActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'next_trigger_date', 'notification',
-        'sequence_order', 'action', 'behavior', 'primary_goal',
+        'sequence_order', 'action', 'primary_goal',
         'primary_category', 'completed',
     )
     list_filter = (
@@ -520,10 +506,6 @@ class UserActionAdmin(UserRelatedModelAdmin):
     def completed(self, obj):
         return obj.completed
     completed.boolean = True
-
-    def behavior(self, obj):
-        return obj.action.behavior.title
-    behavior.admin_order_field = 'action__behavior_id'
 
     def action_state(self, obj):
         return obj.action.state
@@ -576,7 +558,7 @@ class UCACategoryListFilter(admin.SimpleListFilter):
 class UserCompletedActionAdmin(UserRelatedModelAdmin):
     list_display = (
         'user_email', 'action', 'state', 'updated_on',
-        'behavior', 'primary_goal', 'primary_category',
+        'primary_goal', 'primary_category',
     )
     list_filter = ('state', UCACategoryListFilter, )
     search_fields = (
@@ -585,10 +567,6 @@ class UserCompletedActionAdmin(UserRelatedModelAdmin):
     )
     raw_id_fields = ("user", "action", "useraction")
     actions = [tablib_export_user_completed_actions]
-
-    def behavior(self, obj):
-        return obj.action.behavior
-    behavior.admin_order_field = 'action__behavior__title'
 
     def primary_goal(self, obj):
         return obj.useraction.primary_goal
