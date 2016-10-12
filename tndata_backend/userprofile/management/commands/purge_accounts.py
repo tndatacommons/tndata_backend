@@ -52,7 +52,6 @@ class Command(BaseCommand):
             'usercompletedcustomaction',
             'customactionfeedback',
             'useraction',
-            'userbehavior',
             'usergoal',
             'usercategory',
             'trigger',
@@ -74,8 +73,6 @@ class Command(BaseCommand):
             user.categories_created.clear()
             user.goals_updated.clear()
             user.goals_created.clear()
-            user.behaviors_created.clear()
-            user.behaviors_updated.clear()
             user.actions_created.clear()
             user.actions_updated.clear()
 

@@ -8,7 +8,6 @@ of results containing objects that consist of the following.
 * `places`: an array of `Place` objects.
 * `user_categories`: An array of `Usercategory` objects.
 * `user_goals`: An array of `UserGoal` objects.
-* `user_behaviors`: An array of `UserBehavior` objects
 * `user_actions`: An array of `UserAction` objects.
 
 

@@ -6,7 +6,6 @@ from rest_framework import serializers
 from goals import user_feed
 from goals.models import (
     UserAction,
-    UserBehavior,
     UserCategory,
     UserGoal,
 )
@@ -15,7 +14,6 @@ from goals.serializers.v2 import (
     CustomGoalSerializer,
     UserActionSerializer,
     UserGoalSerializer,
-    UserBehaviorSerializer,
     UserCategorySerializer,
 )
 from .. import models
@@ -63,7 +61,6 @@ class UserDataSerializer(TombstoneMixin, ObjectTypeModelSerializer):
 
     user_categories = serializers.SerializerMethodField(read_only=True)
     user_goals = serializers.SerializerMethodField(read_only=True)
-    user_behaviors = serializers.SerializerMethodField(read_only=True)
     user_actions = serializers.SerializerMethodField(read_only=True)
     customgoals = serializers.SerializerMethodField(read_only=True)
     customactions = serializers.SerializerMethodField(read_only=True)
@@ -72,7 +69,7 @@ class UserDataSerializer(TombstoneMixin, ObjectTypeModelSerializer):
         model = get_user_model()
         fields = (
             'id', 'needs_onboarding', 'places', 'user_categories', 'user_goals',
-            'user_behaviors', 'user_actions', 'customgoals', 'customactions',
+            'user_actions', 'customgoals', 'customactions',
             'object_type',
         )
 
@@ -90,12 +87,6 @@ class UserDataSerializer(TombstoneMixin, ObjectTypeModelSerializer):
     def get_user_goals(self, obj):
         qs = UserGoal.objects.published(user=obj).select_related('goal')
         serialized = UserGoalSerializer(qs, many=True)
-        return serialized.data
-
-    def get_user_behaviors(self, obj):
-        qs = UserBehavior.objects.published(user=obj)
-        qs = qs.select_related('behavior')
-        serialized = UserBehaviorSerializer(qs, many=True)
         return serialized.data
 
     def get_user_actions(self, obj):

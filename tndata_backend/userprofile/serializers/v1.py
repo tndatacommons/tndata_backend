@@ -7,23 +7,20 @@ from rest_framework import serializers
 from goals import user_feed
 from goals.models import (
     UserAction,
-    UserBehavior,
     UserCategory,
     UserGoal,
 )
 from goals.serializers.v1 import (
     ReadOnlyUserActionSerializer,
     UserGoalSerializer,
-    UserBehaviorSerializer,
     UserCategorySerializer,
 )
 from goals.serializers.simple import (
-    SimpleUserBehaviorSerializer,
     SimpleUserCategorySerializer,
 )
 from utils import user_utils
 from utils.decorators import cached_method
-from utils.serializers import ObjectTypeModelSerializer
+from utils.serializers import ObjectTypeModelSerializer, TombstoneMixin
 
 from .. import models
 
@@ -38,7 +35,6 @@ ACTION_FEEDBACK = {
     'title': "You're doing great!",
     'subtitle': 'Even small steps can help you reach your goal'
 }
-
 
 
 class PlaceSerializer(ObjectTypeModelSerializer):
@@ -166,7 +162,6 @@ class UserSerializer(ObjectTypeModelSerializer):
 
     categories = serializers.SerializerMethodField(read_only=True)
     goals = serializers.SerializerMethodField(read_only=True)
-    behaviors = serializers.SerializerMethodField(read_only=True)
     actions = serializers.SerializerMethodField(read_only=True)
 
     next_action = serializers.SerializerMethodField(read_only=True)
@@ -183,7 +178,7 @@ class UserSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id', "password",
-            'token', 'needs_onboarding', "places", "goals", "behaviors",
+            'token', 'needs_onboarding', "places", "goals",
             "actions", "categories", "next_action", "action_feedback",
             "progress", "upcoming_actions", "suggestions", 'object_type',
         )
@@ -253,12 +248,6 @@ class UserSerializer(ObjectTypeModelSerializer):
         serialized = UserGoalSerializer(qs, many=True)
         return serialized.data
 
-    @cached_method(cache_key="{0}-User.get_behaviors", timeout=60)
-    def get_behaviors(self, obj):
-        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
-        serialized = UserBehaviorSerializer(qs, many=True)
-        return serialized.data
-
     @cached_method(cache_key="{0}-User.get_actions", timeout=60)
     def get_actions(self, obj):
         qs = UserAction.objects.published(user=obj)
@@ -315,7 +304,7 @@ class UserSerializer(ObjectTypeModelSerializer):
         return user
 
 
-class UserDataSerializer(ObjectTypeModelSerializer):
+class UserDataSerializer(TombstoneMixin, ObjectTypeModelSerializer):
     token = serializers.ReadOnlyField(source='auth_token.key')
     full_name = serializers.ReadOnlyField(source='get_full_name')
     userprofile_id = serializers.ReadOnlyField(source='userprofile.id')
@@ -326,9 +315,7 @@ class UserDataSerializer(ObjectTypeModelSerializer):
 
     user_categories = serializers.SerializerMethodField(read_only=True)
     user_goals = serializers.SerializerMethodField(read_only=True)
-    user_behaviors = serializers.SerializerMethodField(read_only=True)
     user_actions = serializers.SerializerMethodField(read_only=True)
-    data_graph = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = get_user_model()
@@ -336,7 +323,7 @@ class UserDataSerializer(ObjectTypeModelSerializer):
             'id', 'username', 'email', 'is_staff', 'first_name', 'last_name',
             "timezone", "full_name", 'date_joined', 'userprofile_id',
             'token', 'needs_onboarding', 'places',
-            'user_categories', 'user_goals', 'user_behaviors', 'user_actions',
+            'user_categories', 'user_goals', 'user_actions',
             'data_graph', 'object_type',
         )
         read_only_fields = ("id", "date_joined", )
@@ -356,71 +343,10 @@ class UserDataSerializer(ObjectTypeModelSerializer):
         serialized = UserGoalSerializer(qs, many=True)
         return serialized.data
 
-    def get_user_behaviors(self, obj):
-        qs = UserBehavior.objects.published(user=obj).select_related('behavior')
-        serialized = SimpleUserBehaviorSerializer(qs, many=True)
-        return serialized.data
-
     def get_user_actions(self, obj):
         qs = UserAction.objects.published(user=obj)
         serialized = ReadOnlyUserActionSerializer(qs, many=True)
         return serialized.data
-
-    def get_data_graph(self, obj):
-        """This is a list of the user's selected content, organized so we can
-        see the relationships from one model to another. The result is a
-        dictionary containing lists of IDs:
-
-            {
-                'categories': [
-                    [<category_id>, <goal_id>], ...
-                ],
-                'goals': [
-                    [<goal_id>, <behavior_id>], ...
-                ],
-                'behaviors': [
-                    [<behavior_id>, <action_id>], ...
-                ],
-                'primary_categories': [
-                    [<goal_id>, <category_id>], ...
-                ],
-                'primary_goals': [
-                    [<action_id>, <goal_id>], ...
-                ],
-            }
-
-        NOTE: These are IDs for the Category, Goal, Behavior, and Action models,
-        and are NOT the User* models.
-
-        """
-        # user's selected Goal IDs + parent Category IDs
-        cg = obj.usergoal_set.values_list('goal__categories', 'goal__id')
-
-        # user's selected Behavior IDs + parent Goal IDs
-        gb = obj.userbehavior_set.values_list('behavior__goals', 'behavior__id')
-
-        # user's selected Action IDs + parent Behavior IDs
-        ba = obj.useraction_set.values_list('action__behavior__id', 'action__id')
-
-        # For a goal's primary category, we'r just keeping the first one we find
-        # primary_categories: [[<goal_id>, <primary_category_id>], ...]
-        pcats = {}
-        for catid, goalid in cg:
-            if goalid not in pcats:
-                pcats[goalid] = catid
-        pcats = [[gid, catid] for gid, catid in pcats.items()]
-
-        # The Actions' primary Goal
-        # primary_goals: [[<action_id>, <primary_goal_id>], ...]
-        pgoals = obj.useraction_set.values_list('action__id', 'primary_goal__id')
-
-        return {
-            'categories': list(cg),
-            'goals': list(gb),
-            'behaviors': list(ba),
-            'primary_categories': list(pcats),
-            'primary_goals': list(pgoals),
-        }
 
 
 class UserFeedSerializer(ObjectTypeModelSerializer):
