@@ -28,7 +28,7 @@ from utils.user_utils import date_hash
 from utils.widgets import TextareaWithMarkdownHelperWidget
 
 from . models import (
-    Action, Behavior, Category, Goal, Organization, Program, Trigger
+    Action, Category, Goal, Organization, Program, Trigger
 )
 from . permissions import ContentPermissions, is_content_editor
 from . utils import read_uploaded_csv
@@ -232,31 +232,6 @@ class ActionForm(forms.ModelForm):
         # XXX getting the follownig error when this is == 256.
         # DataError: value too long for type character varying(256) when == 256
         return self.cleaned_data['notification_text'][:255]
-
-
-class BehaviorForm(forms.ModelForm):
-    """A Form for creating/updating behaviors. This form orders related
-    goals alphabetically."""
-    goals = forms.ModelMultipleChoiceField(
-        queryset=Goal.objects.all().order_by("title")
-    )
-    # If we're duplicating a Behavior, we'll also include  reference to the
-    # original behavior's ID, so we know how to duplicate its Actions.
-    original_behavior = forms.IntegerField(widget=forms.widgets.HiddenInput, required=False)
-
-    class Meta:
-        model = Behavior
-        fields = [
-            'title', 'sequence_order', 'description', 'more_info',
-            'informal_list', 'notes', 'external_resource',
-            'external_resource_name', 'goals', 'icon',
-            'source_link', 'source_notes',
-        ]
-        labels = {"notes": "Scratchpad", 'informal_list': 'Action List'}
-        widgets = {
-            "description": TextareaWithMarkdownHelperWidget(),
-            "more_info": TextareaWithMarkdownHelperWidget(),
-        }
 
 
 def _authors():
