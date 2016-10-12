@@ -15,12 +15,8 @@ This endpoint returns resources with the following fields.
   that are also parents of this goal.
 * `primary_category`: The primary category for this goal, based on the
   user's selection.
-* `user_behaviors_count`: the number of child Behaviors that the user has
-  selected that are contained in this goal.
-* `user_behaviors`: An array of `Behavior` objects selected by the user.
 * `created_on`: Time at which the user selected this item.
-* `progress_value`: The user's self-reported progress toward *Behaviors* in
-  this goal.
+* `progress_value`: The user's self-reported progress toward this goal.
 * `goal_progress`: An object containing information on the user's progress
   toward the completion of their scheduled actions within this goal. It
   contains the following information:
@@ -28,10 +24,9 @@ This endpoint returns resources with the following fields.
     - `id`: a unique id for the GoalProgress instance.
     - `goal`: the goal's unique id
     - `usergoal`: The unique id of the parent UserGoal
-    - `current_score`: The aggregate Behavior-rerporting score.
-    - `current_total`: The sum of user-reported behavior progresses within
-      this goal.
-    - `max_total`: The maximum possible value for the Behavior-reported score.
+    - `current_score`: The aggregate reporting score.
+    - `current_total`: The sum of user-reported progresses within this goal.
+    - `max_total`: The maximum possible value for the reported score.
     - `daily_actions_total`: Number of actions scheduled for _this day_.
     - `daily_actions_completed`: Number of actions the user completed in
       _this day_

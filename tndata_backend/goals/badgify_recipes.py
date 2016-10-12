@@ -487,12 +487,11 @@ class SuperstarRecipe(UserGoalCountMixin, BaseRecipe):
 
 
 # -----------------------------------------------------------------------------
-# Goal/Behavior/Action *Custom* Completions...
+# Goal/Action *Custom* Completions...
 # -----------------------------------------------------------------------------
 #
 # Additional ideas, here:
 # -X- when users complete an Action (ie. create UserComplatedAction objects)
-# -X- when users complete a Behavior (all actions within a behavior)
 # -X- when users complete a Goal (all behaviors within a goal are completed)
 # --- when users create a Custom Goal
 # --- when users complete a Custom Action

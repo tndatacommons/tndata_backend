@@ -2,7 +2,7 @@
 **API Version 2**
 
 Categories are containers for similar Goals, but they may also represent a
-_Package_ of goals/behaviors/actions. A Goal may appear in more than one category.
+_Package_ of goals/actions. A Goal may appear in more than one category.
 
 Each Category has at least the following bits of information:
 

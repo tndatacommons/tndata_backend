@@ -32,7 +32,6 @@ and will also remove the following data associated with the Organization:
 - Programs in which the user is enrolled
 - The user's selected categories
 - The user's selected goals
-- The user's selected behaviors
 - The user's selected actions
 
 ----

@@ -1,10 +1,8 @@
-"""A Behavior Action (aka an *Action*) is a concrete action that an person
-can perform.
+"""An Action is a concrete action that an person can perform.
 
 Each Action object contains the following:
 
 * id: The unique database identifier for the action
-* behavior: The [Behavior](/api/behaviors/) to which the action belongs
 * sequence_order: The order in which actions should be displayed/performed (if any)
 * title: A unique, Formal title. Use this to refer to this item.
 * title_slug: A url-friendly version of title.
@@ -30,12 +28,9 @@ Each item is available at an endpoint based on it's database ID: `/api/actions/{
 ## Filtering
 
 Actions can be filtered using a querystring parameter. Currently,
-filtering is availble for goals, categories, and behaviors. You can filter
+filtering is availble for goals, categories. You can filter
 by an ID or a slug.
 
-* Retrieve all *Actions*s that belong to a particular Behavior:
-  `/api/actions/?behavior={behavior_id}`, or by slug:
-  `/api/actions/?behavior={behavior_title_slug}`
 * Retrieve all *Action*s that belong to a particular goal:
   `/api/actions/?goal={goal_id}`, or by slug:
   `/api/actions/?goal={goal_title_slug}`

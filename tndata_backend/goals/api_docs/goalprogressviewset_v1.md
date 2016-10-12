@@ -8,10 +8,9 @@ Each item in this result contains a number of fields. The basic ones are:
 * `usergoal`: The ID of the `UserGoal` (user-to-goal mapping)
 * `reported_on`: The date/time on which this object was initially created.
 
-The following fields were used in a (now deprecated) daily 3-scale behavior
-check-in:
+The following fields were used in a (now deprecated) daily 3-scale check-in:
 
-* `current_score`: aggregate value for the user's behaviors in this goal.
+* `current_score`: aggregate value for the user's goal.
 * `current_total`: sum of user's check-in values.
 * `max_total`: maximum possible value
 

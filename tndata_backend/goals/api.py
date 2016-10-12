@@ -428,72 +428,6 @@ class TriggerViewSet(VersionedViewSetMixin,
         return super().update(request, *args, **kwargs)
 
 
-class BehaviorViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
-    """ViewSet for public Behaviors. See the api_docs/ for more info"""
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.Behavior.objects.published()
-    serializer_class_v1 = v1.BehaviorSerializer
-    serializer_class_v2 = v2.BehaviorSerializer
-    pagination_class = PublicViewSetPagination
-    docstring_prefix = "goals/api_docs"
-
-    def get_queryset(self):
-        category = self.request.GET.get('category', None)
-        goal = self.request.GET.get('goal', None)
-
-        if category is not None and category.isnumeric():
-            # Filter by Category.id
-            self.queryset = self.queryset.filter(goals__categories__id=category)
-        elif category is not None:
-            # Filter by Category.title_slug
-            self.queryset = self.queryset.filter(goals__categories__title_slug=category)
-
-        if goal is not None and goal.isnumeric():
-            # Filter by Goal.id
-            self.queryset = self.queryset.filter(goals__id=goal)
-        elif goal is not None:
-            # Filter by Goal.title_slug
-            self.queryset = self.queryset.filter(goals__title_slug=goal)
-
-        # WE Want to exclude values from this endpoint that the user has already
-        # selected (if the user is authenticated AND we're hitting api v2)
-        user = self.request.user
-        if self.request.version == '2' and user.is_authenticated():
-            chosen = user.userbehavior_set.values_list('behavior__id', flat=True)
-            self.queryset = self.queryset.exclude(id__in=chosen)
-
-        return self.queryset
-
-    @detail_route(methods=['post'],
-                  permission_classes=[IsContentAuthor],
-                  url_path='order')
-    def set_order(self, request, pk=None):
-        """Allow certin users to update Behaviors through the api; but only
-        to set the order.
-
-            /api/behaviors/<id>/order/
-
-        """
-        try:
-            # NOTE: we can't use self.get_object() here, because we're allowing
-            # users to change items that may not yet be published.
-            #
-            # WE *do* still need to check object permissions, so we have to
-            # retrive the whole thing.
-            obj = models.Behavior.objects.get(pk=pk)
-            self.check_object_permissions(request, obj)
-            obj.sequence_order = int(request.data.get('sequence_order'))
-            obj.save()
-
-            return Response(data={'updated': True}, status=status.HTTP_200_OK)
-
-        except (ValueError, models.Behavior.DoesNotExist) as e:
-            return Response(
-                data={'error': "{0}".format(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-
 class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """ViewSet for public Actions. See the api_docs/ for more info"""
     authentication_classes = (TokenAuthentication, SessionAuthentication)
@@ -521,23 +455,12 @@ class ActionViewSet(VersionedViewSetMixin, viewsets.ReadOnlyModelViewSet):
             criteria = {'goals__title_slug': goal}
         return self.queryset.filter(**criteria)
 
-    def _filter_by_behavior(self, behavior):
-        # Fiter by either a Behavior id or a slug
-        criteria = {}
-        if behavior and behavior.isnumeric():
-            criteria = {'behavior__pk': behavior}
-        elif behavior is not None:
-            criteria = {'behavior__title_slug': behavior}
-        return self.queryset.filter(**criteria)
-
     def get_queryset(self):
         category = self.request.GET.get("category", None)
         goal = self.request.GET.get("goal", None)
-        behavior = self.request.GET.get("behavior", None)
 
         self.queryset = self._filter_by_category(category)
         self.queryset = self._filter_by_goal(goal)
-        self.queryset = self._filter_by_behavior(behavior)
 
         # WE Want to exclude values from this endpoint that the user has already
         # selected (if the user is authenticated AND we're hitting api v2)
@@ -620,7 +543,7 @@ class UserGoalViewSet(VersionedViewSetMixin,
                 Q(next_trigger_date__range=today)
             )
             goal_ids = useractions.values_list(
-                "action__behavior__goals__id", flat=True)
+                "action__goals__id", flat=True)
             self.queryset = self.queryset.filter(goal__id__in=goal_ids)
 
         # We may also filter this list of content by a goal id
@@ -650,214 +573,6 @@ class UserGoalViewSet(VersionedViewSetMixin,
         # Adding a Goal should invalidate the Feed's cache
         invalidate_feed.send(sender=self.__class__, user=request.user)
         return super(UserGoalViewSet, self).create(request, *args, **kwargs)
-
-
-class UserBehaviorViewSet(VersionedViewSetMixin,
-                          mixins.CreateModelMixin,
-                          mixins.ListModelMixin,
-                          mixins.RetrieveModelMixin,
-                          mixins.DestroyModelMixin,
-                          mixins.UpdateModelMixin,
-                          DeleteMultipleMixin,
-                          viewsets.GenericViewSet):
-    """ViewSet for UserBehaviors. See the api_docs/ for more info"""
-    authentication_classes = (TokenAuthentication, SessionAuthentication)
-    queryset = models.UserBehavior.objects.published()
-    serializer_class_v1 = v1.UserBehaviorSerializer
-    serializer_class_v2 = v2.UserBehaviorSerializer
-    docstring_prefix = "goals/api_docs"
-    permission_classes = [IsOwner]
-    pagination_class = PageSizePagination
-
-    def get_queryset(self):
-        # First, only expose content in Categories/Packages that are either
-        # public or in which we've accepted the terms/consent form.
-        self.queryset = super().get_queryset().filter(user=self.request.user)
-
-        # Now, filter on category or goal if necessary
-        goal = self.request.GET.get('goal', None)
-        self.queryset = self.queryset.filter(user__id=self.request.user.id)
-
-        if goal is not None and goal.isnumeric():
-            self.queryset = self.queryset.filter(behavior__goals__id=goal)
-        elif goal is not None:
-            self.queryset = self.queryset.filter(behavior__goals__title_slug=goal)
-        return self.queryset
-
-    def get_serializer(self, *args, **kwargs):
-        """Ensure we pass `many=True` into the serializer if we're dealing
-        with a list of items."""
-        if isinstance(self.request.data, list):
-            kwargs['many'] = True
-        return super(UserBehaviorViewSet, self).get_serializer(*args, **kwargs)
-
-    def create_parent_objects(self, request):
-        """If the request includes all 3: category, goal, behavior, then
-        let's try to get or create all of the user's objects at once.
-
-        Returns a tuple containing a possibly modified request object, and a
-        dict of parent object IDs, containing keys for `category` and `goal`.
-
-        """
-        # We'll *only* do this if we have all the necessary data.
-        parents = {}
-        checks = [
-            'category' in request.data and bool(request.data['category']),
-            'goal' in request.data and bool(request.data['goal']),
-            'behavior' in request.data and bool(request.data['behavior']),
-        ]
-        if all(checks):
-            # NOTE: request.data.pop returns a list, and we have to look up
-            # each object individually in order to Create them.
-            cat_id = pop_first(request.data, 'category')
-            uc, _ = models.UserCategory.objects.get_or_create(
-                user=request.user,
-                category=models.Category.objects.filter(id=cat_id).first()
-            )
-            parents['category'] = cat_id
-
-            goal_id = pop_first(request.data, 'goal')
-            ug, _ = models.UserGoal.objects.get_or_create(
-                user=request.user,
-                goal=models.Goal.objects.filter(id=goal_id).first()
-            )
-            ug.primary_category = uc.category  # Set the primary goal.
-            ug.save()
-            parents['goal'] = goal_id
-        return (request, parents)
-
-    def create_child_objects(self, instance):
-        try:
-            instance.add_actions()
-        except AttributeError:
-            # If we added multiple behaviors, instance will be a list;
-            for item in instance:
-                item.add_actions()
-
-    def create(self, request, *args, **kwargs):
-        """Only create objects for the authenticated user."""
-        if isinstance(request.data, list):
-            # We're creating multiple items
-            for d in request.data:
-                d['user'] = request.user.id
-        else:
-            request.data['user'] = request.user.id
-
-        # Call out to the superclass to create the UserBehavior for v1...
-        if request.version == "1":
-            return super().create(request, *args, **kwargs)
-
-        # look for category, and goal objects then add them;
-        # otherwise, this doesn't really do anything.
-        request, parents = self.create_parent_objects(request)
-
-        # The rest of this is pulled from DRFs mixins.CreateModelMixin, with
-        # 1 change: We pass in parent object IDs to the serializer so it knows
-        # if parent objets should be included in the response (for v2 of the api).
-        serializer = self.get_serializer(data=request.data, parents=parents)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-
-        # As of v2 of the api, we also want to create UserActions for all
-        # content within the selected behavior.
-        # ... at this point the created UserBehavior is `serializer.instance`
-        self.create_child_objects(serializer.instance)
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers
-        )
-
-    def _include_trigger(self, request, rrule, time):
-        """Inserts a Trigger object into the request's payload"""
-        if rrule and time:
-            # Apparently these will always be lists, but for some reason the
-            # rest framework plumbing doesn't actually convert them to their
-            # primary values; And I can't override this in the Serializer subclass
-            # because it fails before field-level validation is called
-            # (e.g. validate_time or validate_rrule)
-            if isinstance(rrule, list) and len(rrule) > 0:
-                rrule = rrule[0]
-            if isinstance(time, list) and len(time) > 0:
-                time = time[0]
-
-            obj = self.get_object()
-            request.data['user'] = obj.user.id
-            request.data['behavior'] = obj.behavior.id
-
-            # Generate a name for the Trigger. MUST be unique.
-            tname = obj.get_custom_trigger_name()
-            try:
-                trigger = models.Trigger.objects.get(user=obj.user, name=tname)
-            except models.Trigger.DoesNotExist:
-                trigger = None
-
-            trigger_data = {
-                'user_id': obj.user.id,
-                'time': time,
-                'name': tname,
-                'rrule': rrule
-            }
-            trigger_serializer = v1.CustomTriggerSerializer(
-                instance=trigger,
-                data=trigger_data
-            )
-            if trigger_serializer.is_valid(raise_exception=True):
-                trigger = trigger_serializer.save()
-
-            if hasattr(obj, 'custom_trigger'):
-                obj.custom_trigger = trigger
-                obj.save(update_fields=['custom_trigger'])
-            request.data['custom_trigger'] = trigger
-        return request
-
-    def update(self, request, *args, **kwargs):
-        """Allow setting/creating a custom trigger using only two pieces of
-        information:
-
-        * custom_trigger_rrule
-        * custom_trigger_time
-
-        """
-        rrule = request.data.pop("custom_trigger_rrule", None)
-        time = request.data.pop("custom_trigger_time", None)
-        request = self._include_trigger(request, rrule, time)
-        result = super(UserBehaviorViewSet, self).update(request, *args, **kwargs)
-        return result
-
-    @detail_route(methods=['post'], permission_classes=[IsOwner], url_path='disable')
-    def disable(self, request, pk=None):
-        """"Allow users to disable all triggers for all actions within
-        this Behavior.
-
-        To disable all triggers, send a POST request with the following payload:
-
-            {'disabled': True}
-
-        Upon success, this endpoint will return the number of Actions that were
-        disabled:
-
-            {'count': 42}
-
-        ----
-
-        """
-        try:
-            userbehavior = self.get_object()
-            count = 0
-            if bool(request.data.get('disabled', False)):
-                for ua in userbehavior.get_useractions():
-                    ua.disable_trigger()
-                    ua.save()
-                    count += 1
-            return Response(data={'count': count}, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(
-                data={'error': "{0}".format(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class UserActionViewSet(VersionedViewSetMixin,
@@ -897,15 +612,14 @@ class UserActionViewSet(VersionedViewSetMixin,
         self.queryset = super().get_queryset().filter(user=user)
         self.queryset = self.queryset.select_related(
             'user', 'custom_trigger', 'action', 'action__default_trigger',
-            'primary_goal', 'action__behavior',
+            'primary_goal',
         )
 
-        # Now, filter on category, goal, behavior, action if necessary
+        # Now, filter on category, goal, action if necessary
         filter_on_today = bool(self.request.GET.get('today', False))
         exclude_completed = bool(self.request.GET.get('exclude_completed', False))
         category = self.request.GET.get('category', None)
         goal = self.request.GET.get('goal', None)
-        behavior = self.request.GET.get('behavior', None)
         action = self.request.GET.get('action', None)
 
         if category is not None and category.isnumeric():
@@ -922,11 +636,6 @@ class UserActionViewSet(VersionedViewSetMixin,
             self.queryset = self.queryset.filter(
                 action__goals__title_slug=goal)
 
-        if behavior is not None and behavior.isnumeric():
-            self.queryset = self.queryset.filter(action__behavior__id=behavior)
-        elif behavior is not None:
-            self.queryset = self.queryset.filter(
-                action__behavior__title_slug=behavior)
         if action is not None and action.isnumeric():
             self.queryset = self.queryset.filter(action__id=action)
         elif action is not None:
@@ -968,12 +677,11 @@ class UserActionViewSet(VersionedViewSetMixin,
         return super().retrieve(request, *args, **kwargs)
 
     def create_parent_objects(self, request):
-        """If the request includes all 4: category, goal, behavior, action,
+        """If the request includes all 3: category, goal, action,
         let's try to get or create all of the user's objects at once.
 
         Returns a tuple containing a possibly modified request object, and a
-        dict of parent object IDs, containing keys for `category`, `behavior`,
-        and `goal`.
+        dict of parent object IDs, containing keys for `category` and `goal`.
 
         """
         # We'll *only* do this if we have all the necessary data.
@@ -981,7 +689,6 @@ class UserActionViewSet(VersionedViewSetMixin,
         checks = [
             'category' in request.data and bool(request.data['category']),
             'goal' in request.data and bool(request.data['goal']),
-            'behavior' in request.data and bool(request.data['behavior']),
             'action' in request.data and bool(request.data['action']),
         ]
         if all(checks):
@@ -1003,13 +710,6 @@ class UserActionViewSet(VersionedViewSetMixin,
             ug.save()
             parents['goal'] = goal_id
 
-            behavior_id = pop_first(request.data, 'behavior')
-            ub, _ = models.UserBehavior.objects.get_or_create(
-                user=request.user,
-                behavior=models.Behavior.objects.filter(id=behavior_id).first()
-            )
-            parents['behavior'] = behavior_id
-
             # Also set the category & goal as primary
             request.data['primary_category'] = cat_id
             request.data['primary_goal'] = goal_id
@@ -1030,7 +730,7 @@ class UserActionViewSet(VersionedViewSetMixin,
         if request.version == "1":
             return super().create(request, *args, **kwargs)
 
-        # look for action, category, behavior, goal objects, and add them;
+        # look for action, category & goal objects, and add them;
         # otherwise, this doesn't really do anything.
         request, parents = self.create_parent_objects(request)
 

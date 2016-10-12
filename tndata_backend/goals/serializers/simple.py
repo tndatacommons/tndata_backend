@@ -4,19 +4,16 @@ from utils.serializers import ObjectTypeModelSerializer
 
 from ..models import (
     Action,
-    Behavior,
     Category,
     Goal,
     Trigger,
     UserAction,
     UserGoal,
-    UserBehavior,
     UserCategory,
 )
 from ..serializer_fields import (
     CustomTriggerField,
     SimpleActionField,
-    SimpleBehaviorField,
     SimpleCategoryField,
     SimpleGoalField,
 )
@@ -68,28 +65,6 @@ class SimpleGoalSerializer(ObjectTypeModelSerializer):
         return None
 
 
-class SimpleBehaviorSerializer(ObjectTypeModelSerializer):
-    """A Serializer for `Behavior` instances without related fields."""
-    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    html_description = serializers.ReadOnlyField(source="rendered_description")
-    html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    actions_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Behavior
-        fields = (
-            'id', 'sequence_order', 'title', 'title_slug', 'description',
-            'html_description', 'more_info', 'html_more_info',
-            'external_resource', 'external_resource_name', 'icon_url',
-            'actions_count', 'object_type',
-        )
-        read_only_fields = ("actions_count", )
-
-    def get_actions_count(self, obj):
-        """Return the number of child Actions for the given Behavior (obj)."""
-        return obj.action_set.filter(state="published").count()
-
-
 class SimpleUserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model containing only goal data"""
     goal = SimpleGoalField(queryset=Goal.objects.none())
@@ -103,26 +78,6 @@ class SimpleUserGoalSerializer(ObjectTypeModelSerializer):
             'editable', 'object_type'
         )
         read_only_fields = ("id", "created_on")
-
-
-class SimpleUserBehaviorSerializer(ObjectTypeModelSerializer):
-    """A Serializer for the `UserBehavior` model with *only* Behavior data."""
-    behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
-    custom_triggers_allowed = serializers.ReadOnlyField()
-    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-
-    class Meta:
-        model = UserBehavior
-        fields = (
-            'id', 'user', 'behavior', 'created_on',
-            'custom_triggers_allowed', 'editable', 'object_type'
-        )
-        read_only_fields = ("id", "created_on", )
-
-    def get_user_actions_count(self, obj):
-        """Return the number of user-selected actions that are children of
-        this Behavior."""
-        return obj.get_actions().count()
 
 
 class SimpleUserActionSerializer(ObjectTypeModelSerializer):

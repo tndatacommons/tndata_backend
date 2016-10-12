@@ -6,7 +6,6 @@ from utils.serializers import ObjectTypeModelSerializer
 
 from ..models import (
     Action,
-    Behavior,
     Category,
     CustomGoal,
     CustomAction,
@@ -16,7 +15,6 @@ from ..models import (
     Trigger,
     UserAction,
     UserGoal,
-    UserBehavior,
     UserCategory,
 )
 from ..search_indexes import GoalIndex
@@ -26,7 +24,6 @@ from ..serializer_fields import (
     GoalListField,
     PackagedCategoryField,
     SimpleActionField,
-    SimpleBehaviorField,
     SimpleCategoryField,
     SimpleGoalField,
     SimpleTriggerField,
@@ -104,7 +101,6 @@ class GoalSerializer(ObjectTypeModelSerializer):
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
     categories = CategoryListField(many=True, read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
-    behaviors_count = serializers.SerializerMethodField()
     primary_category = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -116,12 +112,8 @@ class GoalSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'title', 'title_slug', 'description', 'html_description',
             'icon_url', 'categories', 'primary_category',
-            'behaviors_count', 'object_type',
+            'object_type',
         )
-
-    def get_behaviors_count(self, obj):
-        """Return the number of child Behaivors for the given Goal (obj)."""
-        return obj.behavior_set.filter(state="published").count()
 
     def get_primary_category(self, obj):
         """Include a primary category object for a Goal, when possible"""
@@ -147,8 +139,8 @@ class TriggerSerializer(ObjectTypeModelSerializer):
 
 class CustomTriggerSerializer(serializers.Serializer):
     """This serializer is used to create custom triggers that are associated
-    with other models (e.g. UserBehaviors and UserActions). It accepts input
-    that differs from a trigger:
+    with other models (e.g. UserActions). It accepts input that differs from
+    a trigger:
 
     * user_id: An integer representing the ID of the user who *owns* the trigger
 
@@ -231,33 +223,9 @@ class CustomTriggerSerializer(serializers.Serializer):
         return instance
 
 
-class BehaviorSerializer(ObjectTypeModelSerializer):
-    """A Serializer for `Behavior`."""
-    icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    goals = GoalListField(many=True, read_only=True)
-    html_description = serializers.ReadOnlyField(source="rendered_description")
-    html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
-    actions_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Behavior
-        fields = (
-            'id', 'title', 'title_slug', 'description', 'html_description',
-            'more_info', 'html_more_info', 'external_resource',
-            'external_resource_name', 'icon_url', 'goals', 'actions_count',
-            'object_type',
-        )
-        read_only_fields = ("actions_count", )
-
-    def get_actions_count(self, obj):
-        """Return the number of child Actions for the given Behavior (obj)."""
-        return obj.action_set.filter(state="published").count()
-
-
 class ActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for `Action`."""
     icon_url = serializers.ReadOnlyField(source="get_absolute_icon")
-    behavior = SimpleBehaviorField(read_only=True)
     html_description = serializers.ReadOnlyField(source="rendered_description")
     html_more_info = serializers.ReadOnlyField(source="rendered_more_info")
     default_trigger = SimpleTriggerField(read_only=True)
@@ -265,7 +233,7 @@ class ActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = Action
         fields = (
-            'id', 'behavior', 'sequence_order', 'title', 'title_slug',
+            'id', 'sequence_order', 'title', 'title_slug',
             'title', 'description', 'html_description', 'more_info',
             'html_more_info', 'external_resource', 'external_resource_name',
             'default_trigger', 'notification_text', 'icon_url',
@@ -277,12 +245,6 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserGoal` model."""
     user_categories = SimpleCategoryField(
         source="get_user_categories",
-        many=True,
-        read_only=True,
-    )
-    user_behaviors_count = serializers.SerializerMethodField()
-    user_behaviors = SimpleBehaviorField(
-        source="get_user_behaviors",
         many=True,
         read_only=True,
     )
@@ -298,67 +260,15 @@ class UserGoalSerializer(ObjectTypeModelSerializer):
         model = UserGoal
         fields = (
             'id', 'user', 'goal', 'goal_progress', 'user_categories',
-            'user_behaviors_count', 'user_behaviors', 'created_on',
-            'progress_value', 'custom_triggers_allowed', 'editable', 'object_type',
-            'primary_category',
+            'created_on', 'progress_value', 'custom_triggers_allowed',
+            'editable', 'object_type', 'primary_category',
         )
         read_only_fields = ("id", "created_on")
-
-    def get_user_behaviors_count(self, obj):
-        """Return the number of user-selected Behaviors that are children of
-        this Goal."""
-        return obj.get_user_behaviors().count()
-
-
-class UserBehaviorSerializer(ObjectTypeModelSerializer):
-    """A Serializer for the `UserBehavior` model."""
-    user_categories = SimpleCategoryField(
-        source="get_user_categories",
-        many=True,
-        read_only=True
-    )
-    user_goals = SimpleGoalField(
-        source="get_user_goals",
-        many=True,
-        read_only=True,
-    )
-    user_actions_count = serializers.SerializerMethodField()
-    user_actions = SimpleActionField(
-        source="get_actions",
-        many=True,
-        read_only=True,
-    )
-    behavior = SimpleBehaviorField(queryset=Behavior.objects.all())
-    custom_trigger = CustomTriggerField(
-        queryset=Trigger.objects.custom(),
-        required=False
-    )
-    custom_triggers_allowed = serializers.ReadOnlyField()
-    editable = serializers.ReadOnlyField(source='custom_triggers_allowed')
-
-    class Meta:
-        model = UserBehavior
-        fields = (
-            'id', 'user', 'behavior', 'custom_trigger', 'user_categories',
-            'user_goals', 'user_actions_count', 'user_actions',
-            'created_on', 'custom_triggers_allowed', 'editable', 'object_type',
-        )
-        read_only_fields = ("id", "created_on", )
-
-    def get_user_actions_count(self, obj):
-        """Return the number of user-selected actions that are children of
-        this Behavior."""
-        return obj.get_actions().count()
 
 
 class UserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for the `UserAction` model."""
     action = SimpleActionField(queryset=Action.objects.all())
-    behavior = SimpleBehaviorField(
-        source='user_behavior.behavior',
-        queryset=Behavior.objects.all(),
-        required=False
-    )
     custom_trigger = CustomTriggerField(
         queryset=Trigger.objects.custom(),
         required=False
@@ -380,7 +290,7 @@ class UserActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserAction
         fields = (
-            'id', 'user', 'action', 'behavior', 'custom_trigger', 'next_reminder',
+            'id', 'user', 'action', 'custom_trigger', 'next_reminder',
             'custom_triggers_allowed', 'editable', 'created_on',
             'object_type', 'primary_goal', 'primary_category',
         )
@@ -401,7 +311,6 @@ class UserActionSerializer(ObjectTypeModelSerializer):
 class ReadOnlyUserActionSerializer(ObjectTypeModelSerializer):
     """A Serializer for READING `UserAction` instances."""
     action = serializers.ReadOnlyField(source="serialized_action")
-    behavior = serializers.ReadOnlyField(source="serialized_behavior")
     trigger = serializers.ReadOnlyField(source="serialized_trigger")
     custom_trigger = serializers.ReadOnlyField(source="serialized_custom_trigger")
     custom_triggers_allowed = serializers.ReadOnlyField()
@@ -413,7 +322,7 @@ class ReadOnlyUserActionSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = UserAction
         fields = (
-            'id', 'user', 'action', 'behavior', 'trigger', 'custom_trigger',
+            'id', 'user', 'action', 'trigger', 'custom_trigger',
             'custom_triggers_allowed', 'next_reminder', 'editable', 'created_on',
             'object_type', 'primary_goal', 'primary_category',
         )
