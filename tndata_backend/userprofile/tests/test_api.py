@@ -263,9 +263,8 @@ class TestUsersAPI(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
-        # There should also be a section for categories, goals, behaviors, actions
+        # There should also be a section for categories, goals, actions
         self.assertIn('goals', response.data['results'][0])
-        self.assertIn('behaviors', response.data['results'][0])
         self.assertIn('actions', response.data['results'][0])
         self.assertIn('categories', response.data['results'][0])
         self.assertIn('places', response.data['results'][0])
