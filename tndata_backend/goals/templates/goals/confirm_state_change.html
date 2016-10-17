@@ -33,43 +33,14 @@
 
     {# for Categories #}
     {% if object.goal_set.exists %}
-      <h3>Affected Goals, Behaviors, &amp; Notifications </h3>
-      <p>The folowing Goals, Behaviors and their Notifications may also
+      <h3>Affected Goals &amp; Notifications </h3>
+      <p>The folowing Goals and their Notifications may also
          be unpublished.</p>
       <ul>
       {% for goal in object.goal_set.published %}
         <li>{{ goal }}
           <ul>
-          {% for behavior in goal.behavior_set.published %}
-            <li>{{ behavior }}
-              <ul>
-              {% for action in behavior.action_set.published %}
-                <li>{{ action }}</li>
-              {% empty %}
-                <li><em>No published Notifications.</em></li>
-              {% endfor %}
-              </ul>
-            </li>
-          {% empty %}
-            <li><em>No published Behaviors.</em></li>
-          {% endfor %}
-          </ul>
-        </li>
-      {% empty %}
-        <li><em>No published Goals.</em></li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-
-    {# for Goals #}
-    {% if object.behavior_set.exists %}
-      <h3>Affected Behaviors</h3>
-      <p>The folowing Behaviors and Notifcations may also be unpublished.</p>
-      <ul>
-      {% for behavior in object.behavior_set.published %}
-        <li>{{ behavior }}
-          <ul>
-          {% for action in behavior.action_set.published %}
+          {% for action in goal.action_set.published %}
             <li>{{ action }}</li>
           {% empty %}
             <li><em>No published Notifications.</em></li>
@@ -77,20 +48,7 @@
           </ul>
         </li>
       {% empty %}
-        <li><em>No published Behaviors.</em></li>
-      {% endfor %}
-      </ul>
-    {% endif %}
-
-    {# for Behaviors #}
-    {% if object.action_set.exists %}
-      <h3>Affected Notifications</h3>
-      <p>The folowing Notifcations may also be unpublished.</p>
-      <ul>
-      {% for action in object.action_set.published %}
-        <li>{{ action }}</li>
-      {% empty %}
-        <li><em>No published Notifications.</em></li>
+        <li><em>No published Goals.</em></li>
       {% endfor %}
       </ul>
     {% endif %}

@@ -12,8 +12,8 @@
   <div class="row">
     <div class="large-12 small-12 columns">
       <h1>Notifications
-      {% if behavior or goal or action_filter %}
-        <small>for {{ behavior }} {{ goal }} {{ action_filter|default:"" }}</small>
+      {% if goal or action_filter %}
+        <small>for {{ goal }} {{ action_filter|default:"" }}</small>
       {% endif %}
       </h2>
 

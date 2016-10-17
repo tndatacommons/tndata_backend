@@ -5,12 +5,6 @@
 
 {% block head %}
   {{ block.super }}
-  {# Custom CSS for behavior lists in the side panel #}
-  <style type="text/css">
-    #behavior-info{display: none;}
-    #behaviors-table{display:none;width:100%;}
-    .existing-action{ display:none;}
-  </style>
   {{ form.media }}
   {{ trigger_form.media }}  {# load the recurrences widget #}
   <script type="text/javascript" src="{% url 'django.views.i18n.javascript_catalog' %}"></script>
@@ -86,33 +80,11 @@
   method="post"
   enctype="multipart/form-data">{% csrf_token %}
 
-  {# --- Panel with details on behaviors; activated on <select> chagned ---- #}
-  <div id="behavior-info" class="panel">
-    <h2>Behavior</h2>
-    {% for behavior in behaviors %}
-      <div class="behaviors" id="behavior-{{behavior.id}}">
-        {% if behavior.description or behavior.informal_list %}
-          {% if behavior.description %}
-            <em>{{behavior.description}}</em>
-          {% endif %}
-          {% if behavior.informal_list %}
-            <hr/><strong>Informal List</strong><br/>
-            {{behavior.informal_list|linebreaks}}
-          {% endif %}
-        {% else %}
-          <em>No description available.</em>
-        {% endif %}
-      </div>
-    {% endfor %}
-  </div>
-  {# ----------------------------------------------------------------------- #}
-
   {% crispy form %}
 
   <div class="row">
     <div class="large-6 small-12 columns">
       {% crispy trigger_form %}
-      {#{% form_buttons object "Action" %}#}
     </div>
     <div class="large-6 small-12 columns">
       {% with icon=object.get_absolute_icon %}
