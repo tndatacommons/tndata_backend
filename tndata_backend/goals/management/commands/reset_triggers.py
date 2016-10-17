@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from goals.models import Action, Behavior, Category, Goal, Trigger
+from goals.models import Action, Category, Goal, Trigger
 
 
 class Command(BaseCommand):
@@ -12,7 +12,7 @@ class Command(BaseCommand):
         ./manage reset_triggers --category 42 --timeofday allday --frequency daily
 
     """
-    help = "Reset some value for all triggers in a given Category, Goal, or Behavior"
+    help = "Reset some value for all triggers in a given Category, or Goal"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -68,7 +68,7 @@ class Command(BaseCommand):
             goal = self._get_parent(options['goal'], Goal)
             return Action.objects.filter(goals=goal).distinct()
         else:
-            raise CommandError("Specify a parent Category, Goal, or Behavior")
+            raise CommandError("Specify a parent Category or Goal")
 
     def _verify_timeofday(self, value):
         opts = [t[0] for t in Trigger.TOD_CHOICES]

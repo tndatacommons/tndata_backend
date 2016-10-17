@@ -8,8 +8,8 @@ from goals.models import UserCompletedAction
 
 def get_next_useractions_in_sequence(user, goal=None, category=None):
     """Return a queryset of UserActions that are due for delivery based on
-    the sequeunce of Goals, Behaviors, Actions, and whether or not a user
-    has completed the Action, the entire Behavior, and/or the Goal.
+    the sequeunce of Goals and Actions and whether or not a user
+    has completed the Action or all actions within the Goal.
 
     """
     # Goals that are 'up next' (lowest sequence number that is not completed)
