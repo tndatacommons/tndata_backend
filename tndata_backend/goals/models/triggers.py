@@ -535,7 +535,7 @@ class Trigger(models.Model):
         # dates after their specified ending (but don't clobber rules that
         # specify a weekly recurrence for set days; these need to use
         # `recurrences.after`
-        elif recurrences and "UNTIL" in recurrences and 'BYDAY' not in recurrences:
+        elif alert_on and recurrences and "UNTIL" in recurrences and 'BYDAY' not in recurrences:
             if "WEEKLY" in recurrences:
                 start_date = alert_on
             else:
