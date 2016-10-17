@@ -20,7 +20,8 @@ from goals.serializers.simple import (
 )
 from utils import user_utils
 from utils.decorators import cached_method
-from utils.serializers import ObjectTypeModelSerializer, TombstoneMixin
+from utils.mixins import TombstoneMixin
+from utils.serializers import ObjectTypeModelSerializer
 
 from .. import models
 
