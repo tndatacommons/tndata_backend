@@ -1,5 +1,5 @@
 /*
- * JS behavior for the actions' Trigger form.
+ * JS for the actions' Trigger form.
  *
  */
 

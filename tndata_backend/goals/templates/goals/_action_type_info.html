@@ -1,12 +1,12 @@
 {% if action_type == Action.REINFORCING %}
 <p><i class="fa fa-info-circle"></i> <strong>Reinforcing</strong> notifications
-reward and recognize a a person for their commitment to a behavior. These
+reward and recognize a a person for their commitment to a goal. These
 messages get delivered at the beginning of a program.</p>
 {% endif %}
 
 {% if action_type == Action.ENABLING %}
 <p><i class="fa fa-info-circle"></i> <strong>Enabling</strong> notifications
-are supportive or persuasive. They seek to make the behavior more relevant and
+are supportive or persuasive. They seek to make the goal more relevant and
 accessible to the user. Enabling messages get delivered interspersed with
 <em>showing</em> messages.</p>
 {% endif %}
@@ -14,7 +14,7 @@ accessible to the user. Enabling messages get delivered interspersed with
 
 {% if action_type == "showing" %}
 <p><i class="fa fa-info-circle"></i> <strong>Showing</strong> notifications
-should provide actionable examples of the behavior the user can choose to do.
+should provide actionable examples of the goal the user can choose to do.
 These messages are delivered alongside "enabling" messages.</p>
 {% endif %}
 

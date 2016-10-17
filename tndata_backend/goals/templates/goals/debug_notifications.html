@@ -254,7 +254,6 @@
                 title="{% if ua.upcoming %}Upcoming{% else %}Past{% endif %}">
             {{ ua.primary_category }} /<br/>
             {{ ua.primary_goal }} / <br/>
-            {{ ua.action.behavior }} / <br/>
             {{ ua.action }} (Sequence: {{ ua.sequence_order }})
             </span>
 
@@ -292,22 +291,6 @@
               {% endwith %}
               </div>
             {% endif %}
-
-            {% comment %}
-            <div class="panel">
-              <strong data-tooltip aria-haspopup="true"
-                      class="has-tip" title="Primary Category">
-                {{ ua.primary_category }}</strong><br/>
-              <span class="label info" data-tooltip aria-haspopup="true"
-                    class="has-tip" title="Sequence Order for this Goal">
-                    {{ ua.primary_goal.sequence_order }}</span>
-              {{ ua.primary_goal }}<br/>
-              <span class="label info" data-tooltip aria-haspopup="true"
-                    class="has-tip" title="Sequence Order for this Behavior">
-                    {{ ua.action.behavior.sequence_order }}</span>
-              {{ ua.action.behavior }}
-            </div>
-            {% endcomment %}
           </td>
 
           {# --- Previous Notification --- #}

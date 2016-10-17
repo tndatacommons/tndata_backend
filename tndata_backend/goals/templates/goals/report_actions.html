@@ -170,12 +170,10 @@
           {% else %}
             <th>Text Length</th>
           {% endif %}
-          <th>Behavior</th>
         </tr>
       </thead>
       <tbody>
       {% for action in actions %}
-        {% with behavior=action.behavior %}
         <tr>
           <td>
             <a href="{{ action.get_absolute_url }}">{{ action }}</a>
@@ -199,11 +197,7 @@
           {% else %}
             <td>{{ action.text_len }}</td>
           {% endif %}
-          <td>
-            <a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a>
-          </td>
         </tr>
-        {% endwith %}
       {% endfor %}
       </tbody>
     </table>

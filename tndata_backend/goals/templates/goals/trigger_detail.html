@@ -50,14 +50,6 @@
               {{ trigger.action_default }}</a>
           </dd>
         {% endif %}
-        {% if trigger.behavior_set.exists %}
-          <dt>Default for Behavior(s):</dt>
-          <dd>
-            {% for behavior in trigger.behavior_set.all %}
-              <a href="{{ behavior.get_absolute_url }}">{{ behavior }}</a><br/>
-            {% endfor %}
-          </dd>
-        {% endif %}
         <dt>Start When Selected</dt><dd>{{ trigger.start_when_selected }}</dd>
         <dt>Stop On Complete</dt><dd>{{ trigger.stop_on_complete }}</dd>
       </dl>
