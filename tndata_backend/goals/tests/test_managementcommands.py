@@ -6,14 +6,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from waffle.testutils import override_switch
-
-from .. models import (
-    Action,
-    Behavior,
-    Trigger,
-    UserAction,
-    UserBehavior,
-)
+from .. models import Action, Trigger, UserAction
 
 
 class TestCreateNotifications(TestCase):
@@ -44,16 +37,13 @@ class TestCreateNotifications(TestCase):
             time=time(12, 34),
             recurrences="RRULE:FREQ=DAILY"
         )
-        behavior = Behavior.objects.create(title='B', state="published")
         action1 = Action.objects.create(
-            behavior=behavior,
             title="A1",
             state="published",
             default_trigger=default_trigger,
             notification_text="do A1"
         )
         action2 = Action.objects.create(
-            behavior=behavior,
             title="A2",
             state="published",
             notification_text="do A2"
@@ -65,7 +55,6 @@ class TestCreateNotifications(TestCase):
             time=time(9, 30),
             recurrences="RRULE:FREQ=DAILY"
         )
-        UserBehavior.objects.create(user=user, behavior=behavior)
         UserAction.objects.create(user=user, action=action1)
         UserAction.objects.create(
             user=user,
@@ -81,6 +70,5 @@ class TestCreateNotifications(TestCase):
             logger.warning.assert_called_with("Created 2 notifications.")
 
         # Count the number of notifications that should exist for the user.
-        # 3 total, 2 actions and 1 behavior
         self.assertEqual(user.gcmmessage_set.all().count(), 2)
         self.assertEqual(user.gcmmessage_set.filter(content_type=None).count(), 0)

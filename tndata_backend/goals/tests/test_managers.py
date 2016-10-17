@@ -12,19 +12,14 @@ from utils.user_utils import tzdt
 
 from .. models import (
     Action,
-    Behavior,
     Category,
     DailyProgress,
     Goal,
     Trigger,
     UserAction,
-    UserBehavior,
     UserCompletedAction,
 )
 from .. settings import (
-    DEFAULT_BEHAVIOR_TRIGGER_NAME,
-    DEFAULT_BEHAVIOR_TRIGGER_TIME,
-    DEFAULT_BEHAVIOR_TRIGGER_RRULE,
     DEFAULT_MORNING_GOAL_TRIGGER_NAME,
     DEFAULT_MORNING_GOAL_TRIGGER_TIME,
     DEFAULT_MORNING_GOAL_TRIGGER_RRULE,
@@ -133,8 +128,7 @@ class TestDailyProgressManager(TestCase):
         dp.delete()
 
     def test_engagement_rank(self):
-        behavior = mommy.make(Behavior, title="B")
-        action = mommy.make(Action, behavior=behavior, title="A")
+        action = mommy.make(Action, title="A")
         user_a = User.objects.create_user('a', 'a@a.a', 'p')
         user_b = User.objects.create_user('b', 'b@b.b', 'p')
 
@@ -161,7 +155,7 @@ class TestDailyProgressManager(TestCase):
         self.assertEqual(ub_rank, 0.0)
 
         # clean up
-        for obj in [uca_a, uca_b, ua_a, ua_b, user_a, user_b, action, behavior]:
+        for obj in [uca_a, uca_b, ua_a, ua_b, user_a, user_b, action]:
             obj.delete()
 
 
@@ -248,18 +242,6 @@ class TestTriggerManager(TestCase):
             recurrences="RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
         )
 
-    def test_get_default_behavior_trigger(self):
-        # There is not default trigger at the moment, so calling this should
-        # create one.
-        t = Trigger.objects.get_default_behavior_trigger()
-        self.assertEqual(t.name, DEFAULT_BEHAVIOR_TRIGGER_NAME)
-        self.assertEqual(t.serialized_recurrences(), DEFAULT_BEHAVIOR_TRIGGER_RRULE)
-        self.assertEqual(t.time.strftime("%H:%M"), DEFAULT_BEHAVIOR_TRIGGER_TIME)
-
-        # Calling this again should return the original.
-        obj = Trigger.objects.get_default_behavior_trigger()
-        self.assertEqual(obj.id, t.id)
-
     def test_get_default_morning_goal_trigger(self):
         # There's no default trigger at the moment, so calling this creates one
         t = Trigger.objects.get_default_morning_goal_trigger()
@@ -340,32 +322,9 @@ class TestTriggerManager(TestCase):
                 expected.strftime("%c %z")
             )
 
-    def test_create_for_userbehavior(self):
-        b = Behavior.objects.create(title='Test Behavior')
-        ub = UserBehavior.objects.create(user=self.user, behavior=b)
-
-        trigger = Trigger.objects.create_for_user(
-            self.user,
-            ub.get_custom_trigger_name(),
-            time(8, 30),
-            None,
-            "RRULE:FREQ=WEEKLY;BYDAY=MO",
-            ub
-        )
-
-        ub = UserBehavior.objects.get(pk=ub.id)
-        self.assertEqual(trigger.userbehavior_set.count(), 1)
-        self.assertEqual(ub.custom_trigger, trigger)
-
-        # Clean up
-        ub.delete()
-        b.delete()
-
     def test_create_for_useraction(self):
-        b = Behavior.objects.create(title='Test Behavior')
-        a = Action.objects.create(title='Test Action', behavior=b)
+        a = Action.objects.create(title='Test Action')
         ua = UserAction.objects.create(user=self.user, action=a)
-
         trigger = Trigger.objects.create_for_user(
             self.user,
             ua.get_custom_trigger_name(),
@@ -389,9 +348,7 @@ class TestUserCompletedActionManager(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        behavior = mommy.make(Behavior, title="B", state='published')
-        cls.action = mommy.make(Action, behavior=behavior,
-                                title="A", state='published')
+        cls.action = mommy.make(Action, title="A", state='published')
         cls.user = User.objects.create_user('u', 'x@y.z', 'p')
         cls.useraction = mommy.make(UserAction, user=cls.user, action=cls.action)
         cls.uca = mommy.make(UserCompletedAction, user=cls.user,

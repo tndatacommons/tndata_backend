@@ -3,7 +3,6 @@ from django.test import TestCase
 from .. forms import (
     ActionForm,
     ActionTriggerForm,
-    BehaviorForm,
     CategoryForm,
     EnrollmentReminderForm,
     GoalForm,
@@ -11,13 +10,10 @@ from .. forms import (
 )
 from .. models import (
     Action,
-    Behavior,
     Category,
     Goal,
-    Trigger,
 )
 from .. widgets import TimeSelectWidget
-from .. settings import DEFAULT_BEHAVIOR_TRIGGER_NAME
 
 
 class TestActionTriggerForm(TestCase):
@@ -263,69 +259,6 @@ class TestActionForm(TestCase):
         self.assertTrue(form.is_valid())
         goal.delete()
         a.delete()
-
-
-class TestBehaviorForm(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.trigger = Trigger.objects.create(
-            name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-        )
-
-    def test_unbound(self):
-        form = BehaviorForm()
-        fields = sorted([
-            'title', 'description', 'more_info', 'informal_list', 'notes',
-            'external_resource', 'external_resource_name', 'goals', 'icon',
-            'source_link', 'source_notes', 'sequence_order', 'original_behavior',
-        ])
-        self.assertEqual(fields, sorted(list(form.fields.keys())))
-
-    def test_bound(self):
-        g = Goal.objects.create(title="G")
-        data = {
-            'title': 'New Behavior',
-            'sequence_order': 0,
-            'description': '',
-            'more_info': '',
-            'informal_list': '',
-            'external_resource': '',
-            'external_resource_name': '',
-            'goals': [g.id],
-            'icon': '',
-            'source_link': '',
-            'source_notes': '',
-            'notes': '',
-            'original_behavior': '',
-        }
-        form = BehaviorForm(data)
-        self.assertTrue(form.is_valid())
-        g.delete()
-
-    def test_duplicate_title(self):
-        """Ensure that duplicate titles now pass validation."""
-        g = Goal.objects.create(title="G")
-        b = Behavior.objects.create(title="B")  # Existing Behavior
-        data = {
-            'title': 'b',  # should be a duplicate!
-            'sequence_order': 0,
-            'description': '',
-            'more_info': '',
-            'informal_list': '',
-            'external_resource': '',
-            'external_resource_name': '',
-            'goals': [g.id],
-            'icon': '',
-            'source_link': '',
-            'source_notes': '',
-            'notes': '',
-            'original_behavior': '',
-        }
-        form = BehaviorForm(data)
-        self.assertTrue(form.is_valid())
-        b.delete()
-        g.delete()
 
 
 class TestCategoryForm(TestCase):
