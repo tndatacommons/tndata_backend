@@ -1,8 +1,8 @@
 """
-Public content models for the Goals app. This is our collection of Goal &
-Behavior content. They're organized as follows:
+Public content models for the Goals app. This is our collection of Goals &
+related content. They're organized as follows:
 
-    [Category] <-> [Goal] <-> [Behavior] <- [Action]
+    [Category] <-> [Goal] <-> [Action]
 
 Actions are the things we want to help people to do.
 
@@ -15,7 +15,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
-from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.text import slugify
@@ -33,12 +32,11 @@ from .path import (
     _category_icon_path,
     _catetgory_image_path,
     _goal_icon_path,
-    _behavior_icon_path,
+    _action_icon_path,
 )
 from .triggers import Trigger
 from ..encoder import dump_kwargs
 from ..managers import (
-    BehaviorManager,
     CategoryManager,
     GoalManager,
     WorkflowManager
@@ -52,7 +50,7 @@ logger = logging.getLogger(__file__)
 class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
     """A Broad grouping of possible Goals from which users can choose.
 
-    We also have content (goals, behaviors, actions) that is associated with
+    We also have content (goals & actions) that is associated with
     a single organization. We've been referring to this scenario as "packaged
     content", and in this case a Category serves as the Organization's content
     "container".
@@ -198,7 +196,7 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
     # Until the user does this, they do not gain access to the content within
     # the package. Additionally, differnt package enrollments may contain
     # different goals within the category. Being enrolled in a package does not
-    # meant that you have all goals / behaviors / actions within that category.
+    # meant that you have all goals / actions within that category.
     # -------------------------------------------------------------------------
     packaged_content = models.BooleanField(
         default=False,
@@ -274,16 +272,10 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
         return self.goal_set.all().distinct()
 
     @property
-    def behaviors(self):
-        """Returns a QuerySet of all Behaviors nested beneath this category's
-        set of goals."""
-        return self.behavior_set.all()
-
-    @property
     def actions(self):
         """Returns a QuerySet of all Actions nested beneath this category's
-        set of Goals & Behaviors. """
-        ids = self.behaviors.values_list('action', flat=True)
+        set of Goals. """
+        ids = self.goals.values_list('action', flat=True)
         return Action.objects.filter(pk__in=ids)
 
     def _format_color(self, color):
@@ -311,7 +303,7 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
     def draft(self):
         """Drafting a Category will also set its child Goals to draft IFF
         they have no other published parent categories; this in turn will cause
-        the Behaviors & Actions within that Goal (if drafted) to also be drafted.
+        the Actions within that Goal (if drafted) to also be drafted.
 
         """
         # Fetch all child goals...
@@ -321,7 +313,7 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
             other_parents = goal.categories.exclude(id=self.id)
             if not other_parents.filter(state='published').exists():
                 goal.draft()
-                goal.save()  # drafting a goal will draft its child behaviors
+                goal.save()  # drafting a goal will draft its child objects
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
@@ -380,8 +372,8 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
 
     def duplicate_content(self, prefix="Copy of"):
         """This method will duplicate all of the content stored within this
-        Category. That is, we'll create copies of all Goal, Behavior, and
-        Action objects that are children for this category.
+        Category. That is, we'll create copies of all Goal and Action objects
+        that are children for this category.
 
         Every newly created object will be a clone, except for the title, which
         will be prefixed with the given text.
@@ -420,48 +412,33 @@ class Category(ModifiedMixin, StateMixin, URLMixin, models.Model):
             new_goal.categories.add(new_category)
             new_goal.save()
 
-            for behavior in goal.behavior_set.all():
-                new_behavior, _ = Behavior.objects.update_or_create(
-                    title="{} {}".format(prefix, behavior.title),
-                    description=behavior.description,
-                    informal_list=behavior.informal_list,
-                    source_link=behavior.source_link,
-                    source_notes=behavior.source_notes,
-                    more_info=behavior.more_info,
-                    external_resource=behavior.external_resource,
-                    external_resource_name=behavior.external_resource_name,
-                    icon=behavior.icon,
-                )
-                new_behavior.save()
-                new_behavior.goals.add(new_goal)
-
-                for action in behavior.action_set.all():
-                    default_trigger = None
-                    if action.default_trigger:
-                        default_trigger = action.default_trigger
-                        default_trigger.pk = None  # HACK to get a new object.
-                        default_trigger.name = "{} {}".format(
-                            prefix,
-                            action.default_trigger.name
-                        )
-                        default_trigger.save()
-
-                    Action.objects.create(
-                        title=action.title,
-                        behavior=new_behavior,
-                        action_type=action.action_type,
-                        sequence_order=action.sequence_order,
-                        source_link=action.source_link,
-                        source_notes=action.source_notes,
-                        notes=action.notes,
-                        more_info=action.more_info,
-                        description=action.description,
-                        external_resource=action.external_resource,
-                        external_resource_name=action.external_resource_name,
-                        notification_text=action.notification_text,
-                        icon=action.icon,
-                        default_trigger=default_trigger,
+            for action in goal.action_set.all():
+                default_trigger = None
+                if action.default_trigger:
+                    default_trigger = action.default_trigger
+                    default_trigger.pk = None  # HACK to get a new object.
+                    default_trigger.name = "{} {}".format(
+                        prefix,
+                        action.default_trigger.name
                     )
+                    default_trigger.save()
+
+                new_action = Action.objects.create(
+                    title=action.title,
+                    action_type=action.action_type,
+                    sequence_order=action.sequence_order,
+                    source_link=action.source_link,
+                    source_notes=action.source_notes,
+                    notes=action.notes,
+                    more_info=action.more_info,
+                    description=action.description,
+                    external_resource=action.external_resource,
+                    external_resource_name=action.external_resource_name,
+                    notification_text=action.notification_text,
+                    icon=action.icon,
+                    default_trigger=default_trigger,
+                )
+                new_action.goals.add(goal)
 
         return new_category
 
@@ -556,11 +533,6 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
         help_text="Add keywords for this goal. These will be used to generate "
                   "suggestions for the user."
     )
-    behaviors_count = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of (published) child Behaviors in this Goal"
-    )
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
@@ -615,19 +587,18 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
 
     @transition(field=state, source="*", target='draft')
     def draft(self):
-        """Drafting a Goal will also set its published child Behaviors to draft
-        IFF they have no other published parent goals; this in turn will cause
-        the Actions within that behavior (if drafted) to also be drafted.
+        """Drafting a Goal will also set its published child Actions to draft
+        IFF they have no other published parent goals.
 
         """
-        # Fetch all child behaviors...
-        for behavior in self.behavior_set.filter(state='published'):
+        # Fetch all child actions...
+        for action in self.action_set.filter(state='published'):
             # If they have any other parent goals that are published, just
             # skip over them; other wise unpublish them.
-            other_parents = behavior.goals.exclude(id=self.id)
+            other_parents = action.goals.exclude(id=self.id)
             if not other_parents.filter(state='published').exists():
-                behavior.draft()
-                behavior.save()  # drafting a behavior will draft its Actions.
+                action.draft()
+                action.save()
 
     @transition(field=state, source=["draft", "declined"], target='pending-review')
     def review(self):
@@ -677,7 +648,7 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
         ug.primary_category = primary_category
         ug.save()
 
-        # Finally, enroll the user in the Behavior's Actions
+        # Finally, enroll the user in the Actions
         actions = self.action_set.filter(state='published').distinct()
         for action in actions:
             ua, _ = user.useraction_set.get_or_create(action=action)
@@ -686,239 +657,6 @@ class Goal(ModifiedMixin, StateMixin, URLMixin, models.Model):
             ua.save()
 
     objects = GoalManager()
-
-
-class Behavior(URLMixin, ModifiedMixin, StateMixin, models.Model):
-    """A Behavior. Behaviors have many actions associated with them and contain
-    several bits of information for a user."""
-
-    # URLMixin attributes
-    urls_app_namespace = "goals"
-    urls_model_name = "behavior"
-    urls_fields = ["pk", "title_slug"]
-    urls_icon_field = "icon"
-    urls_image_field = "image"
-
-    # Data Fields
-    # -----------
-    title = models.CharField(
-        max_length=256,
-        db_index=True,
-        help_text="A title for this Behavior (~50 characters)"
-    )
-    title_slug = models.SlugField(max_length=256, db_index=True)
-    sequence_order = models.IntegerField(
-        default=0,
-        db_index=True,
-        blank=True,
-        help_text="Optional ordering for a sequence of behaviors"
-    )
-    categories = models.ManyToManyField(Category, blank=True)
-    goals = models.ManyToManyField(
-        Goal,
-        blank=True,
-        help_text="Select the Goal(s) that this Behavior achieves."
-    )
-    goal_ids = ArrayField(
-        models.IntegerField(blank=True),
-        default=list,
-        blank=True,
-        help_text="Pre-rendered list of parent goal IDs"
-    )
-    description = models.TextField(
-        blank=True,
-        help_text="A brief (250 characters) description about this item."
-    )
-    informal_list = models.TextField(
-        blank=True,
-        help_text="Use this section to create a list of specific actions for "
-                  "this behavior. This list will be reproduced as a mnemonic "
-                  "on the Action entry page"
-    )
-    source_link = models.URLField(
-        max_length=256,
-        blank=True,
-        null=True,
-        help_text="A link to the source."
-    )
-    source_notes = models.TextField(
-        blank=True,
-        help_text="Narrative notes about the source of this item."
-    )
-    notes = models.TextField(
-        blank=True,
-        help_text="Misc notes about this item. This is for your use and will "
-                  "not be displayed in the app."
-    )
-    more_info = models.TextField(
-        blank=True,
-        help_text="Optional tips and tricks or other small, associated ideas. "
-                  "Consider using bullets."
-    )
-    external_resource = models.CharField(
-        blank=True,
-        max_length=256,
-        help_text=("An external resource is something that will help a user "
-                   "accomplish a task. It could be a phone number, link to a "
-                   "website, link to another app, or GPS coordinates. ")
-    )
-    external_resource_name = models.CharField(
-        blank=True,
-        max_length=256,
-        help_text=("A human-friendly name for your external resource. This is "
-                   "especially helpful for web links.")
-    )
-    icon = models.ImageField(
-        upload_to=_behavior_icon_path,
-        null=True,
-        blank=True,
-        help_text="A square icon for this item in the app, preferrably 512x512."
-    )
-    state = FSMField(default="draft")
-
-    # Reporting roll-up fields
-    # ------------------------
-    actions_count = models.IntegerField(
-        blank=True,
-        default=0,
-        help_text="The number of (published) child actions in this Behavior"
-    )
-
-    # Record-keeping on who/when this was last changed this behavior
-    # --------------------------------------------------------------
-    updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="behaviors_updated",
-        null=True
-    )
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="behaviors_created",
-        null=True
-    )
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ['sequence_order', 'title']
-        verbose_name = "Behavior"
-        verbose_name_plural = "Behaviors"
-        # add_behavior, change_behavior, delete_behavior are created by default.
-        permissions = (
-            ("view_behavior", "Can view Permissions"),
-            ("decline_behavior", "Can Decline Permissions"),
-            ("publish_behavior", "Can Publish Permissions"),
-        )
-
-    def __str__(self):
-        return "{}".format(self.title)
-
-    def _count_actions(self):
-        """Count this behavior's child actions."""
-        if self.id and not hasattr(self, '_set_actions_counted'):
-            # Count all of our published actions.
-            cache_key = "B{}_actions_count".format(self.id)
-            actions_count = cache.get(cache_key)
-            if actions_count is None:
-                actions_count = self.action_set.published().count()
-                cache.set(cache_key, actions_count, 5)
-            self.actions_count = actions_count
-            self._set_actions_counted = True
-
-    def _set_categories(self):
-        """Populate the behavior's categories based on the selected goals."""
-        # WANT: Set the M2M categories values, based on the selected goal...
-        # but to do that I need all the Goal IDs?
-        if self.id and self.goal_ids and not hasattr(self, '_set_categories_called'):
-            cache_key = "B{}_set_categories".format(self.id)
-            cats = cache.get(cache_key)
-            if cats is None:
-                cats = Category.objects.filter(goal__id__in=self.goal_ids)
-                cats = list(cats.values_list("id", flat=True))
-                cache.set(cache_key, cats, 5)
-            self.categories.add(*cats)
-            self._set_categories_called = True
-
-    def save(self, *args, **kwargs):
-        """Always slugify the name prior to saving the model."""
-        # Always slugify the title.
-        self.title_slug = slugify(self.title)
-
-        # If we're updating specific fields don't do any of the custom
-        if 'update_fields' not in kwargs:
-            kwargs = self._check_updated_or_created_by(**kwargs)
-            self._set_categories()
-            self._count_actions()
-        return super().save(*args, **kwargs)
-
-    @property
-    def order(self):
-        return self.sequence_order
-
-    @property
-    def rendered_description(self):
-        """Render the description markdown"""
-        return markdown(self.description)
-
-    @property
-    def rendered_more_info(self):
-        """Render the more_info markdown"""
-        return markdown(self.more_info)
-
-    @transition(field=state, source="*", target='draft')
-    def draft(self):
-        """Setting a behavior to draft will also draft it's child Actions."""
-        self.action_set.filter(state='published').update(state='draft')
-
-    @transition(field=state, source=["draft", "declined"], target='pending-review')
-    def review(self):
-        pass
-
-    @transition(field=state, source="pending-review", target='declined')
-    def decline(self):
-        pass
-
-    @transition(field=state, source=["draft", "pending-review"], target='published')
-    def publish(self):
-        """
-        When a Behavior is published, we need to auto-enroll all of the users
-        that have selected the parent goal, AND look for all of the child
-        Actions that are published, and auto-enroll the user in those as well.
-
-        NOTE: this is implemented as an async job since it'll be slow.
-
-        """
-        pass
-
-    def get_async_icon_upload_url(self):
-        return reverse("goals:file-upload", args=["behavior", self.id])
-
-    def get_user_mapping(self, user):
-        """Return the first UserBehavior object that matches this Behavior and
-        the given user. There _should_ only be one of these. Returns None if
-        the object is not found.
-
-        Note: This method can be used by other apps that may have a generic
-        relationships (e.g. notifications).
-
-        """
-        return self.userbehavior_set.filter(user=user, behavior=self).first()
-
-    def contains_dynamic(self):
-        """Returns True or False; This method tells us if this Behavior
-        contains any dynamic notifications/Actions. i.e. Those whose default
-        trigger contains a time_of_day and frequency value.
-
-        NOTE: This behavior may also contain some NON-Dynamic actions, as well.
-
-        """
-        actions = self.action_set.filter(
-            default_trigger__time_of_day__isnull=False,
-            default_trigger__frequency__isnull=False
-        )
-        return actions.distinct().exists()
-
-    objects = BehaviorManager()
 
 
 @job
@@ -945,11 +683,11 @@ def _remove_queued_messages_for_action(action_id):
 
 class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     """Actions are essentially the content of a Notification. They are things
-    that we ask people to do or that reinforce a Behavior.
+    that we ask people to do or that reinforce a Goal.
 
     Actions have an `action_type` which is a just a label for a content author.
     For example, the `REINFORCING` action type will contain contant that
-    reinforces some behavior while the `SHOWING` action type should contain
+    reinforces some goal while the `SHOWING` action type should contain
     content that models how to do something specific.
 
     """
@@ -1011,8 +749,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         help_text="A short (50 character) title for this Action"
     )
     title_slug = models.SlugField(max_length=256, db_index=True)
-
-    behavior = models.ForeignKey(Behavior, verbose_name="behavior", null=True, blank=True)
     goals = models.ManyToManyField(Goal)
 
     action_type = models.CharField(
@@ -1024,7 +760,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
     sequence_order = models.IntegerField(
         default=0,
         db_index=True,
-        help_text="Order/number of action in stepwise sequence of behaviors"
+        help_text="Order/number of action in stepwise sequence."
     )
 
     source_link = models.URLField(
@@ -1077,7 +813,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         help_text="Text of the notification (50 characters)"
     )
     icon = models.ImageField(
-        upload_to=_behavior_icon_path,
+        upload_to=_action_icon_path,
         null=True,
         blank=True,
         help_text="A square icon for this item in the app, preferrably 512x512."
@@ -1092,7 +828,7 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         Trigger,
         blank=True,
         null=True,
-        help_text="A trigger/reminder for this behavior",
+        help_text="A trigger/reminder for this action",
         related_name="action_default"
     )
     # pre-serialize the default trigger for the api, so we can avoid some joins
@@ -1174,19 +910,6 @@ class Action(URLMixin, ModifiedMixin, StateMixin, models.Model):
         self._set_external_resource_type()
         super().save(*args, **kwargs)
         self.remove_queued_messages()  # Note: should be async.
-
-    @property
-    def behavior_title(self):
-        """Deprecated"""
-        if self.behavior_id:
-            return self.behavior.title
-        return ""
-
-    @property
-    def behavior_description(self):
-        """NOTE: Returns the Action's more_info fields which was populated
-        with the behavior's description in the `behavior-removal` work."""
-        return self.more_info
 
     @property
     def order(self):

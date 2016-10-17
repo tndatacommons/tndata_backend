@@ -11,14 +11,16 @@ from .misc import (  # NOQA
 )
 from .organizations import Organization  # NOQA
 from .packages import Program, PackageEnrollment  # NOQA
-from .public import Action, Behavior, Category, Goal  # NOQA
+from .public import Action, Category, Goal  # NOQA
 from .progress import DailyProgress, UserCompletedAction  # NOQA
 from .path import (  # NOQA -- we need these to satisfy old migrations.
     _category_icon_path,
     _catetgory_image_path,
     _goal_icon_path,
-    _behavior_icon_path,
+    _action_icon_path,
+    _action_img_path,
     _behavior_img_path,
+    _behavior_icon_path,
 )
 from .signals import (  # NOQA
     action_completed,
@@ -40,4 +42,4 @@ from .signals import (  # NOQA
     user_adopted_content,
 )
 from .triggers import Trigger  # NOQA
-from .users import UserAction, UserBehavior, UserCategory, UserGoal  # NOQA
+from .users import UserAction, UserCategory, UserGoal  # NOQA
