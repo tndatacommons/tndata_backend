@@ -193,23 +193,26 @@ def clean_content(sender, instance, raw, using, **kwargs):
 def delete_model_images(sender, instance, using, **kwargs):
     """Once a model instance has been deleted, this will remove its `icon`
     and `image` (if it has one) from the filesystem."""
-    if not settings.DEBUG or settings.STAGING:
-        msg = "In `delete_model_images` for *{}* / {}\nLast updated {} by {}".format(
-            sender.__name__,
-            instance,
-            instance.updated_on.strftime("%c %z"),
-            instance.updated_by.get_full_name()
-        )
+    if instance and not (settings.DEBUG or settings.STAGING):
+        try:
+            msg = "In `delete_model_images` for *{}* / {}\nLast updated {} by {}".format(
+                sender.__name__,
+                instance,
+                instance.updated_on.strftime("%c %z"),
+                instance.updated_by.get_full_name() if instance.updated_by else "n/a"
+            )
 
-        if hasattr(instance, 'icon') and instance.icon:
-            # instance.icon.delete()
-            msg += "\nIcon: {}".format(instance.icon.url)
+            if hasattr(instance, 'icon') and instance.icon:
+                # instance.icon.delete()
+                msg += "\nIcon: {}".format(instance.icon.url)
 
-        if hasattr(instance, 'image') and instance.image:
-            # instance.image.delete()
-            msg += "\nImage: {}".format(instance.image.url)
+            if hasattr(instance, 'image') and instance.image:
+                # instance.image.delete()
+                msg += "\nImage: {}".format(instance.image.url)
 
-        post_private_message("bkmontgomery", msg)
+            post_private_message("bkmontgomery", msg)
+        except:
+            pass
 
 
 @receiver(pre_delete, sender=UserGoal, dispatch_uid="del_goal_behaviors")
