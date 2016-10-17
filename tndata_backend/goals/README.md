@@ -9,7 +9,7 @@ License
 
 This code is the property of Tennessee Data Commons.
 
-(c) 2014 all rights reserved.
+(c) 2016 all rights reserved.
 
 
 Workflow
@@ -20,7 +20,7 @@ The following are notes on new workflow additions:
 **Groups of Users**
 
 * Content Creators: Internal or External users who create content
-  (Goals/Behaviors/Actions)
+  (Goals/Actions)
 * Editors/Publishers: Internal users who can review and publish content
 
 

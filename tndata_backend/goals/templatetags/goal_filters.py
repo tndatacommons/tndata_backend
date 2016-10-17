@@ -38,7 +38,7 @@ def user_is_editor(user):
 @register.filter("is_contributor")
 def user_is_contributor(user, obj):
     """Return True if the user is a package contributor for the given object
-    (a Category, Goal, Behavior, or Action). Return False otherwise.
+    (a Category, Goal, or Action). Return False otherwise.
 
     Handy for using in an if/else:
 

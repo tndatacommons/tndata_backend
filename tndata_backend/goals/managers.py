@@ -1,4 +1,3 @@
-from collections import defaultdict
 from datetime import datetime, timedelta
 
 import logging
@@ -9,9 +8,6 @@ from django.template.defaultfilters import slugify
 from django.utils import timezone
 
 from .settings import (
-    DEFAULT_BEHAVIOR_TRIGGER_NAME,
-    DEFAULT_BEHAVIOR_TRIGGER_TIME,
-    DEFAULT_BEHAVIOR_TRIGGER_RRULE,
     DEFAULT_MORNING_GOAL_TRIGGER_NAME,
     DEFAULT_MORNING_GOAL_TRIGGER_TIME,
     DEFAULT_MORNING_GOAL_TRIGGER_RRULE,
@@ -21,7 +17,6 @@ from .settings import (
 )
 
 from utils import dateutils, user_utils
-from utils.datastructures import flatten
 
 
 logger = logging.getLogger(__name__)
@@ -308,7 +303,7 @@ class UserActionManager(models.Manager):
         """
         from .models import UserCompletedAction as UCA
         goals = kwargs.pop('goals', None)  # see if we're filtering on goals.
-        if kwargs.pop('published', False): # or if we want published content
+        if kwargs.pop('published', False):  # or if we want published content
             kwargs['action__state'] = 'published'
 
         # Get the UserActions, excluding those that have been completed
