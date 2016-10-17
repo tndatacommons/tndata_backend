@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        # Slugs for the default behavior & morning/evening checkins
+        # Slugs for the default morning/evening checkins
         default_slugs = [
             slugify(DEFAULT_BEHAVIOR_TRIGGER_NAME),
             slugify(DEFAULT_MORNING_GOAL_TRIGGER_NAME),
