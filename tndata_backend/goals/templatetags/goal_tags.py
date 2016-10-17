@@ -65,7 +65,7 @@ def goal_object_controls(context, obj):
             result['can_duplicate'] = True
 
     # Transfers only apply to Content instances.
-    if model_name in ['category', 'goal', 'action', 'behavior']:
+    if model_name in ['category', 'goal', 'action']:
         result['can_transfer'] = any([
             user.is_staff,
             user.is_superuser,
@@ -130,7 +130,6 @@ def publish_deny_form(user, obj, layout=None):
     publish_perms = {
         'category': 'goals.publish_category',
         'goal': 'goals.publish_goal',
-        'behavior': 'goals.publish_behavior',
         'action': 'goals.publish_action',
     }
     model_name = get_model_name(obj)

@@ -419,7 +419,7 @@ class URLMixin:
     get_XXXX_url methods that I use on models, particularly for Read, Update,
     and Delete actions.
 
-    Models using this mixin can customize its behavior by specifying the
+    Models using this mixin can customize its actions by specifying the
     following:
 
     * (required) urls_app_namespace: The url namespace used for the app

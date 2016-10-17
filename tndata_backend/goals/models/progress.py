@@ -180,10 +180,6 @@ class DailyProgress(models.Model):
         get_latest_by = 'updated_on'
 
     @property
-    def behaviors_total(self):
-        return 0
-
-    @property
     def actions(self):
         """Return a dict of all action stats."""
         return {

@@ -23,7 +23,7 @@ def parse_notification_text(action=None):
 
     if action is None:
         cat = Category.objects.get(pk=44)  # Explore Memphis...
-        actions = Action.objects.filter(behavior__goals__categories=cat)
+        actions = Action.objects.filter(goals__categories=cat)
         actions = actions.distinct()
         print("Found: {} Actions".format(actions.count()))
     else:
@@ -349,27 +349,6 @@ def sample_trigger_times(useraction, number=100):
     print("Hours: {}".format(set([t.hour for t in times])))
 
     return times
-
-
-def teen_np():
-    User = get_user_model()
-    user = User.objects.get(username='bkmontgomery')
-    actions = Action.objects.filter(
-        behavior__goals__categories__id=35,
-        default_trigger__frequency='monthly'
-    )
-
-    now = timezone.now()
-
-    with patch("goals.models.triggers.timezone.now") as now:
-        # Early morning
-        now.return_value = tzdt(2016, 4, 15, 7, 0)
-
-        for action in actions:
-            t = action.default_trigger.next(user=user)
-            delta = t - now()
-            print("{}, {} days & {} hours from now".format(
-                t.strftime("%c"), delta.days, int(delta.seconds / 3600)))
 
 
 def high_priority_stuff():
