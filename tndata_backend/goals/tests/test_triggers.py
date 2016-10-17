@@ -11,7 +11,6 @@ from utils.user_utils import tzdt
 
 from .. models import (
     Action,
-    Behavior,
     Category,
     Goal,
     Trigger,
@@ -157,8 +156,6 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
         goal.categories.add(cat)
-        beh = mommy.make(Behavior, title="Beh", state="published")
-        beh.goals.add(goal)
 
         trigger = mommy.make(
             Trigger,
@@ -169,11 +166,11 @@ class TestTrigger(TestCase):
         )
         act = mommy.make(
             Action,
-            behavior=beh,
             title='Act',
             state='published',
             default_trigger=trigger
         )
+        act.goals.add(goal)
 
         user = mommy.make(self.User)
         ua = mommy.make(UserAction, action=act, user=user)
@@ -193,9 +190,8 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
         goal.categories.add(cat)
-        beh = mommy.make(Behavior, title="Beh", state="published")
-        beh.goals.add(goal)
-        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+        act = mommy.make(Action, title='Act', state='published')
+        act.goals.add(goal)
 
         user = mommy.make(self.User)
         trigger = mommy.make(
@@ -808,9 +804,8 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
         goal.categories.add(cat)
-        beh = mommy.make(Behavior, title="Beh", state="published")
-        beh.goals.add(goal)
-        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+        act = mommy.make(Action, title='Act', state='published')
+        act.goals.add(goal)
 
         default = Trigger.objects.create(
             name="Default", time=time(13, 30), recurrences="RRULE:FREQ=DAILY",
@@ -842,9 +837,8 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
         goal.categories.add(cat)
-        beh = mommy.make(Behavior, title="Beh", state="published")
-        beh.goals.add(goal)
-        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+        act = mommy.make(Action, title='Act', state='published')
+        act.goals.add(goal)
 
         default = Trigger.objects.create(
             name="Default", time=time(13, 30), recurrences="RRULE:FREQ=DAILY",
@@ -885,11 +879,11 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
         goal.categories.add(cat)
-        beh = mommy.make(Behavior, title="Beh", state="published")
-        beh.goals.add(goal)
 
         # Action with a dynamic default trigger
-        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+        act = mommy.make(Action, title='Act', state='published')
+        act.goals.add(goal)
+
         default = Trigger.objects.create(
             name="Default", time_of_day="morning", frequency="daily"
         )
@@ -925,9 +919,8 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="Cat", state='published')
         goal = mommy.make(Goal, title="Goa", state='published')
         goal.categories.add(cat)
-        beh = mommy.make(Behavior, title="Beh", state="published")
-        beh.goals.add(goal)
-        act = mommy.make(Action, behavior=beh, title='Act', state='published')
+        act = mommy.make(Action, title='Act', state='published')
+        act.goals.add(goal)
 
         default = Trigger.objects.create(
             name="RR-start upon selection",
@@ -1053,11 +1046,8 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="C", state="published")
         goal = mommy.make(Goal, title="G", state="published")
         goal.categories.add(cat)
-        behavior = mommy.make(Behavior, title="B", state="published",
-                              sequence_order=0)
-        behavior.goals.add(goal)
-        action = mommy.make(Action, title="A", state="published",
-                            behavior=behavior, sequence_order=0)
+        action = mommy.make(Action, title="A", state="published", sequence_order=0)
+        action.goals.add(goal)
 
         trigger = Trigger.objects.create(
             user=user,
@@ -1093,9 +1083,6 @@ class TestTrigger(TestCase):
         cat = mommy.make(Category, title="C", state="published")
         goal = mommy.make(Goal, title="G", state="published")
         goal.categories.add(cat)
-        behavior = mommy.make(Behavior, title="B", state="published",
-                              sequence_order=0)
-        behavior.goals.add(goal)
 
         trigger_args = {
             'time': time(13, 30),
@@ -1103,14 +1090,17 @@ class TestTrigger(TestCase):
             'frequency': "daily",
         }
         dt1 = Trigger.objects.create(**trigger_args)
-        a1 = mommy.make(Action, title="A1", state="published", behavior=behavior,
+        a1 = mommy.make(Action, title="A1", state="published",
                         sequence_order=1, default_trigger=dt1)
+        a1.goals.add(goal)
         dt2 = Trigger.objects.create(**trigger_args)
-        a2 = mommy.make(Action, title="A2", state="published", behavior=behavior,
+        a2 = mommy.make(Action, title="A2", state="published",
                         sequence_order=2, default_trigger=dt2)
+        a2.goals.add(goal)
         dt3 = Trigger.objects.create(**trigger_args)
-        a3 = mommy.make(Action, title="A3", state="published", behavior=behavior,
+        a3 = mommy.make(Action, title="A3", state="published",
                         sequence_order=3, default_trigger=dt3)
+        a3.goals.add(goal)
 
         ua1 = mommy.make(UserAction, user=user, action=a1)
         ua2 = mommy.make(UserAction, user=user, action=a2)

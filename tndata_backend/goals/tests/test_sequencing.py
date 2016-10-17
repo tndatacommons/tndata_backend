@@ -171,7 +171,7 @@ class TestSequencing(TestCase):
             ['AG', 'AH', 'AI']
         )
 
-        # Then completing those actions.. as well as their Behaviors/Goals.
+        # Then completing those actions.. as well as their Goals.
         for action in ['AG', 'AH', 'AI']:
             _complete_action(self.user, action)
         _complete_goal(self.user, 'GA')
