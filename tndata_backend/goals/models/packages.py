@@ -8,8 +8,8 @@ from django.db import models
 from django.utils.text import slugify
 
 from .organizations import Organization
-from .public import Action, Behavior, Category, Goal
-from .users import UserAction, UserBehavior, UserCategory, UserGoal
+from .public import Action, Category, Goal
+from .users import UserAction, UserCategory, UserGoal
 from ..managers import PackageEnrollmentManager
 
 

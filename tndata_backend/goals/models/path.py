@@ -41,11 +41,13 @@ def _goal_icon_path(instance, filename):
     return _upload_path("goals/{}", instance, filename)
 
 
-def _behavior_icon_path(instance, filename):
-    """Return the path for uploaded icons for `Behavior` and `Action` objects."""
+def _action_icon_path(instance, filename):
+    """Return the path for uploaded icons for `Action` objects."""
     return _upload_path("goals/{}/icons", instance, filename)
+_behavior_icon_path = _action_icon_path  # Keep for old migrations.
 
 
-def _behavior_img_path(instance, filename):
-    """Return the path for uploaded images for `Behavior` and `Action` objects."""
+def _action_img_path(instance, filename):
+    """Return the path for uploaded images for `Action` objects."""
     return _upload_path("goals/{}/images", instance, filename)
+_behavior_img_path = _action_img_path  # Keep for old migrations.

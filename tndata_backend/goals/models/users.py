@@ -1,13 +1,13 @@
 """
 Mappings between users and their selected public content.
 
-    [Category] <-> [Goal] <-> [Behavior] <- [Action]
-        |            |            |            |
-  [UserCategory] [UserGoal]  [UserBehavior] [UserAction]
-        \            \            /            /
-         \            \          /            /
+    [Category] <-> [Goal] <->  [Action]
+        |            |            |
+  [UserCategory] [UserGoal]  [UserAction]
+        \            \            /
+         \            \          /
 
-                        [ User ]
+                    [ User ]
 
 """
 from datetime import timedelta
@@ -22,11 +22,10 @@ from utils.user_utils import local_day_range, to_localtime, to_utc
 from notifications.models import GCMMessage
 
 from .misc import _custom_triggers_allowed
-from .public import Action, Behavior, Category, Goal
+from .public import Action, Category, Goal
 from .triggers import Trigger
 from ..managers import (
     UserActionManager,
-    UserBehaviorManager,
     UserCategoryManager,
     UserGoalManager,
 )
@@ -149,14 +148,6 @@ class UserGoal(models.Model):
         are restricted. """
         return _custom_triggers_allowed(self.user, self)
 
-    def get_user_behaviors(self):
-        """Returns a QuerySet of published Behaviors related to this Goal, but
-        restricts those behaviors to those which the user has selected.
-
-        """
-        bids = self.user.userbehavior_set.values_list('behavior_id', flat=True)
-        return self.goal.behavior_set.filter(id__in=bids, state='published')
-
     def get_user_categories(self):
         """Returns a QuerySet of published Categories related to this Goal, but
         restricts those categories to those which the user has selected.
@@ -184,147 +175,6 @@ class UserGoal(models.Model):
     objects = UserGoalManager()
 
 
-# -----------------------------------------------------------------------------
-#
-# A signal that will be fired when a UserBehavior is "completed", meaning that
-# the user has completed all of the actions within the related Behavior.
-#
-# The provided arguments include:
-#
-# - sender: the UserBehavior class
-# - instance: the instance of the UserBehavior class.
-#
-# -----------------------------------------------------------------------------
-userbehavior_completed = django.dispatch.Signal(providing_args=['instance'])
-
-
-class UserBehavior(models.Model):
-    """A Mapping between Users and the Behaviors they've selected.
-
-    - notifications for this are scheduled by the `create_notifications`
-      management command.
-    - As of the API version 2, when a user selects a behavior (i.e. an instance
-      of UserBehavior is created), we also create UserAction objects for all
-      of the Behavior's child Actions.
-
-    """
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    behavior = models.ForeignKey(Behavior)
-    custom_trigger = models.ForeignKey(
-        Trigger,
-        blank=True,
-        null=True,
-        help_text="A User-defined trigger for this behavior"
-    )
-    completed = models.BooleanField(default=False)
-    completed_on = models.DateTimeField(blank=True, null=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "{0}".format(self.behavior.title)
-
-    class Meta:
-        ordering = ['user', 'behavior']
-        unique_together = ("user", "behavior")
-        verbose_name = "User Behavior"
-        verbose_name_plural = "User Behaviors"
-
-    def complete(self):
-        """Mark this behavior as complete, and fire a signal to notify the
-        user's selected goals that are parents of this behavior.
-        """
-        self.completed = True
-        self.completed_on = timezone.now()
-        self.save()  # WE MUST save this prior to firing the signal.
-        # fire a signal
-        userbehavior_completed.send(
-            sender=self.__class__,
-            instance=self,
-        )
-
-    @property
-    def custom_triggers_allowed(self):
-        return False
-
-    def get_user_categories(self):
-        """Returns a QuerySet of published Categories related to this Behavior,
-        but restricts the result to those Categories which the user has selected.
-
-        """
-        # User-selected categories
-        a = set(self.user.usercategory_set.values_list('category__id', flat=True))
-        # Parent categories (through goals)
-        b = set(self.behavior.goals.values_list("categories", flat=True))
-        # The overlap
-        ids = a.intersection(b)
-        return Category.objects.published().filter(id__in=ids)
-
-    def get_user_goals(self):
-        """Returns a QuerySet of published Goals related to this Behavior, but
-        restricts those goals to those which the user has selected."""
-        gids = self.user.usergoal_set.values_list('goal__id', flat=True)
-        return self.behavior.goals.filter(id__in=gids, state='published')
-
-    def get_custom_trigger_name(self):
-        """This should generate a unique name for this object's custom
-        trigger."""
-        return "custom trigger for userbehavior-{0}".format(self.id)
-
-    def get_useractions(self):
-        """Returns a QuerySet of UserAction objects whose Action is a child of
-        this object's associated Behavior.
-        """
-        return self.user.useraction_set.filter(action__behavior=self.behavior)
-
-    def get_actions(self):
-        """Returns a QuerySet of published Actions related to this Behavior, but
-        restricts the results to those which the user has selected.
-
-        """
-        uids = self.user.useraction_set.values_list('action_id', flat=True)
-        return self.behavior.action_set.filter(id__in=uids, state='published')
-
-    def add_actions(self, primary_category=None, primary_goal=None, action_id=None):
-        """Create UserAction instances for all of the published Actions within
-        the associated behavior. This method will not create duplicate instances
-        of UserAction.
-
-        - primary_category: If specified, will be set as the UserAction's
-          primary_category field. If omitted, this value is looked up.
-        - primary_goal: If specified, will be set as the UserAction's
-          primary_goal field. If omitted, this value is looked up.
-        - action_id: If specified, we only create a UserAction whose action
-          field matches the given value (e.g. if we only want to add a single
-          action).
-
-        """
-
-        defaults = {
-            'primary_goal': primary_goal,
-            'primary_category': primary_category
-        }
-        if primary_goal is None:
-            defaults['primary_goal'] = self.get_user_goals().first()
-        if primary_category is None:
-            defaults['primary_category'] = self.get_user_categories().first()
-
-        if action_id:
-            # Note: may not be saved as "published", yet, but that's OK
-            actions = Action.objects.filter(id=action_id)
-        else:
-            actions = Action.objects.published(behavior=self.behavior)
-
-        for action in actions:
-            UserAction.objects.update_or_create(
-                user=self.user,
-                action=action,
-                defaults=defaults
-            )
-
-    objects = UserBehaviorManager()
-
-
 class UserAction(models.Model):
     """A Mapping between Users and the Actions they've selected. This model
     essentially encapusaltes information about a notification we send to the
@@ -344,7 +194,7 @@ class UserAction(models.Model):
         Trigger,
         blank=True,
         null=True,
-        help_text="A User-defined trigger for this behavior"
+        help_text="A User-defined trigger for this action"
     )
     next_trigger_date = models.DateTimeField(
         blank=True,
@@ -564,30 +414,6 @@ class UserAction(models.Model):
         if kwargs.pop("update_triggers", True):
             self._set_next_trigger_date()
         return super().save(*args, **kwargs)
-
-    @property
-    def user_behavior(self):
-        """Return the `UserBehavior` object that is related to the Action's
-        parent Behavior.
-
-        Returns a UserBehavior instance or None.
-
-        """
-        qs = UserBehavior.objects.select_related('behavior')
-        qs = qs.prefetch_related('behavior__goals')
-        return qs.filter(user=self.user, behavior=self.action.behavior).first()
-
-    @property
-    def userbehavior_id(self):
-        """Return the UserBehavior ID for the related Action's Behavior."""
-        try:
-            userbehavior = UserBehavior.objects.get(
-                user__id=self.user_id,
-                behavior__action__id=self.action_id
-            )
-            return userbehavior.id
-        except UserBehavior.DoesNotExist:
-            return None
 
     def get_notification_title(self):
         """Return the string to be used in this user's notification title."""

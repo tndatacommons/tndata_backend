@@ -208,88 +208,6 @@ class UserGoalManager(models.Manager):
             return 0.0
 
 
-class UserBehaviorManager(models.Manager):
-
-    def published(self, *args, **kwargs):
-        """Return a QuerySet of UserBehavior objects with at least one
-        published Behavior.
-
-        """
-        qs = super().get_queryset()
-        qs = qs.filter(behavior__state='published')
-        return qs.filter(**kwargs).distinct()
-
-    def next_in_sequence(self, **kwargs):
-        """Return a queryset of UserBehaviors that are:
-
-        - not completed,
-        - the next in the sequence (based on sequence_order)
-
-        Allowed keyword arguments include:
-
-        - published -- restrict results to published Behaviors
-        - goals -- filters by goals.
-
-        """
-        # Allow a published=True kwarg
-        if kwargs.pop('published', False):
-            kwargs['behavior__state'] = 'published'
-        kwargs['completed'] = False
-
-        # Filter on provided goals (if any)
-        goals = kwargs.pop('goals', None)
-        if goals:
-            kwargs['behavior__goals__in'] = goals
-        qs = self.get_queryset().select_related('behavior').filter(**kwargs)
-
-        # ---------------------------------------------------------------------
-        # NOTE: We need to make the minimum sequence_order values dependent on
-        # the behavior's parent goals. For example, I may be in Goal A (seq 0),
-        # but also in Goal B (seq 1), and Goal A's min sequence value might be
-        # 0 while Goal B's min sequence value might be 1. We can't exclude the
-        # Behaviors in Goal B.
-        #
-        # To do this, we need to determine what the min Behavior.sequence_order
-        # is for each goal.
-        # ---------------------------------------------------------------------
-        #
-        # populate data, like:
-        #
-        # {
-        #   goal_id: [(behavior_id, sequence_order)]
-        #   ...
-        # }
-        #
-        # THEN, filter on the minimum sequence_order value for each goal, and
-        # flatten the  remaining behavior_ids, and return a queryset of
-        # matching those behavior ids.
-        # ---------------------------------------------------------------------
-        if goals is None and hasattr(self, 'instance') and self.instance:
-            # If we werent' given any goals, use those selected by the user.
-            goals = self.instance.usergoal_set.next_in_sequence()
-            goals = goals.values_list("goal", flat=True)
-        elif goals is None:
-            # No user, use all of the behaviors' parent goals.
-            goals = set(flatten(ub.behavior.goal_ids for ub in qs))
-
-        sequences_by_goal = defaultdict(set)
-        for goal_id in goals:
-            for ub in qs:
-                if goal_id in ub.behavior.goal_ids:
-                    sequences_by_goal[goal_id].add(
-                        (ub.behavior_id, ub.behavior.sequence_order)
-                    )
-
-        # Now find the min sequence value per goal & filter out the others.
-        for goal_id, values in sequences_by_goal.items():
-            min_seq = min(t[1] for t in values)
-            sequences_by_goal[goal_id] = [t[0] for t in values if t[1] == min_seq]
-
-        # Flatten that list
-        behavior_ids = list(flatten(sequences_by_goal.values()))
-        return qs.filter(behavior__id__in=behavior_ids)
-
-
 class UserActionQuerySet(models.QuerySet):
     """QuerySet methods to filter UserActions; these are accessed through
     the UserActionManager, but implemented as a QuserySet subclass so they
@@ -411,8 +329,6 @@ class TriggerManager(models.Manager):
     """A simple manager for the Trigger model. This class adds a few convenience
     methods to the regular api:
 
-    * get_default_behavior_trigger() -- returns the default trigger for
-      `Behavior` reminders.
     * get_default_morning_goal_trigger() -- returns the default trigger for the
       morning Goal reminder.
     * get_default_evening_goal_trigger() -- returns the default trigger for the
@@ -422,25 +338,6 @@ class TriggerManager(models.Manager):
     * for_user(user) -- returns all the triggers for a specific user.
 
     """
-
-    def get_default_behavior_trigger(self):
-        """Retrieve (or create) the default Behavior trigger.
-        """
-        try:
-            slug = slugify(DEFAULT_BEHAVIOR_TRIGGER_NAME)
-            trigger = self.default(name_slug=slug).first()
-            assert trigger is not None
-            return trigger
-        except (self.model.DoesNotExist, AssertionError):
-            trigger_time = datetime.strptime(DEFAULT_BEHAVIOR_TRIGGER_TIME, "%H:%M")
-            trigger_time = trigger_time.time().replace(tzinfo=timezone.utc)
-            return self.model.objects.create(
-                name=DEFAULT_BEHAVIOR_TRIGGER_NAME,
-                time=trigger_time,
-                recurrences=DEFAULT_BEHAVIOR_TRIGGER_RRULE,
-
-            )
-
     def get_default_morning_goal_trigger(self):
         """Retrieve (or create) the default morning Goal trigger."""
         try:
@@ -526,8 +423,7 @@ class WorkflowQuerySet(models.QuerySet):
         lookups = {
             'category': 'contributors',
             'goal': 'categories__contributors',
-            'behavior': 'goals__categories__contributors',
-            'action': 'behavior__goals__categories__contributors',
+            'action': 'goals__categories__contributors',
         }
         lookup = {lookups[self.model.__name__.lower()]: user}
         return self.filter(**lookup).distinct()
@@ -549,22 +445,6 @@ class WorkflowManager(models.Manager):
     def for_contributor(self, user):
         qs = self.get_queryset()
         return qs.filter(contributors=user)
-
-
-class BehaviorManager(WorkflowManager):
-
-    def contains_dynamic(self):
-        """Return a queryset of Behaviors that contain dynamic notifications,
-        i.e. Actions whose default trigger contains a time_of_day and
-        frequency value.
-
-        NOTE: These behaviors may also contain some NON-Dynamic actions, as well.
-
-        """
-        return self.filter(
-            action__default_trigger__time_of_day__isnull=False,
-            action__default_trigger__frequency__isnull=False
-        ).distinct()
 
 
 class CategoryManager(WorkflowManager):
