@@ -1358,11 +1358,9 @@ class SearchViewSet(HaystackViewSet):
     filter_backends = [HaystackHighlightFilter]
 
     def list(self, request, *args, **kwargs):
-        for query in request.GET.getlist('q'):
-            # Split all search terms and flatten into a single list
-            for term in query.split():
-                if len(term) > 2:
-                    metric('q={}'.format(term), category='Search Terms')
+        query = request.GET.get('q')
+        if query and len(query) > 2:
+            metric(query, category='Search Terms')
         return super().list(request, *args, **kwargs)
 
 
