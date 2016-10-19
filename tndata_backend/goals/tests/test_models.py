@@ -1351,12 +1351,7 @@ class TestCustomAction(TestCase):
         ca = mommy.make(
             CustomAction, user=self.user, customgoal=self.customgoal, title="X"
         )
-        ca.enable_trigger()  # Shoudl do nothing.
-        self.assertIsNone(ca.custom_trigger)
-
-        # Now create a Trigger
-        ca.custom_trigger = mommy.make(Trigger, user=self.user, disabled=True)
-        ca.enable_trigger()
+        ca.enable_trigger()  # Creates a trigger.
         self.assertFalse(ca.custom_trigger.disabled)
 
         # Clean up
