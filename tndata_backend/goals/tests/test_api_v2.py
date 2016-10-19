@@ -2796,6 +2796,73 @@ class TestCustomActionAPI(V2APITestCase):
         self.assertEqual(ca.title, 'Altered')
         self.assertEqual(ca.goal.id, goal.id)
 
+    def test_put_customaction_trigger_details(self):
+        """Test updating various trigger details for custom actions."""
+        ca = CustomAction.objects.create(
+            user=self.user,
+            customgoal=self.customgoal,
+            title="X",
+            title_slug="x",
+            notification_text="x"
+        )
+        payload = {
+            "custom_trigger_disabled": False,
+            "custom_trigger_date": "2016-10-21",
+            "custom_trigger_time": "11:00:00",
+            "custom_trigger_rrule": ""
+        }
+        url = self.get_url('customaction-detail', args=[ca.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        resp = self.client.put(url, payload)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        ca = CustomAction.objects.get(pk=ca.id)
+        self.assertFalse(ca.custom_trigger.disabled)
+        self.assertEqual(ca.custom_trigger.trigger_date, date(2016, 10, 21))
+        self.assertEqual(ca.custom_trigger.time, time(11, 0))
+
+    def test_put_customaction_trigger_toggle(self):
+        """Test enabling / disabling the custom action's trigger."""
+        trigger = Trigger.objects.create(
+            user=self.user,
+            disabled=False,
+            trigger_date=date(2016, 10, 21),
+            time=time(11, 30)
+        )
+        ca = CustomAction.objects.create(
+            user=self.user,
+            customgoal=self.customgoal,
+            title="X",
+            title_slug="x",
+            notification_text="x",
+            custom_trigger=trigger
+        )
+
+        # verification criteria
+        crit = {'pk': ca.trigger.id, 'disabled': True}
+
+        # Disable the trigger
+        payload = {"custom_trigger_disabled": True}
+        url = self.get_url('customaction-detail', args=[ca.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        resp = self.client.put(url, payload)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(Trigger.objects.filter(**crit).exists())
+
+        # Enable the trigger
+        payload = {"custom_trigger_disabled": False}
+        url = self.get_url('customaction-detail', args=[ca.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        resp = self.client.put(url, payload)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        crit['disabled'] = False
+        self.assertTrue(Trigger.objects.filter(**crit).exists())
+
     def test_delete_customaction_detail_unauthed(self):
         """Ensure unauthenticated users cannot delete."""
         url = self.get_url('customaction-detail', args=[self.customaction.id])

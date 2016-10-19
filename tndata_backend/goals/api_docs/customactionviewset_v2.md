@@ -17,6 +17,15 @@ GET requests return an array of results containing the following:
 * `title_slug`: sluggified version of the title.
 * `notification_text`: Text that will be used in a notification (required).
 * `custom_trigger`: A `Trigger` object.
+
+      - `id`: Unique ID of the Trigger
+      - `name`: The trigger's name
+      - `trigger_date`: Date on which the trigger shoudl start
+      - `time`: Time at which the trigger should fire
+      - `recurrences`: an RFC 2445 RRULE string (or null)
+      - `recurrences_display`: a human-readable version of recurrences
+      - `disabled`: whether or not the trigger is disabled.
+
 * `next_trigger_date`: The next date the notification will be sent.
   May be `null`.
 * `prev_trigger_date`: The previous date the notficiation was sent.
@@ -95,6 +104,8 @@ To do this, send a PUT request to the detail url
   should next fire. The date should be relative to the user's local time.
 * `custom_trigger_rrule`: A Unicode RFC 2445 string representing the days &amp;
   frequencies at which the reminder should occur.
+* `custom_trigger_disabled`: (optional) A `true` or `false` value; if `true`
+  the trigger will be disabled.
 
 ## Completing Custom Action
 
