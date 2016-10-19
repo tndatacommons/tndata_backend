@@ -128,6 +128,13 @@ class CustomAction(models.Model):
         if self.custom_trigger:
             self.custom_trigger.disabled = False
             self.custom_trigger.save()
+        else:
+            # Create a custom trigger and disable it.
+            self.custom_trigger = Trigger.objects.create(
+                user=self.user,
+                name=self.title,
+                disabled=False,
+            )
 
     def disable_trigger(self):
         """Disables the trigger for this action."""
