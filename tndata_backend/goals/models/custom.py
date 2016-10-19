@@ -122,6 +122,26 @@ class CustomAction(models.Model):
             return to_localtime(self.next_trigger_date, self.user)
         return self.next()
 
+    def enable_trigger(self):
+        """If the user has a custom trigger, this method will ensure it
+        is enabled."""
+        if self.custom_trigger:
+            self.custom_trigger.disabled = False
+            self.custom_trigger.save()
+
+    def disable_trigger(self):
+        """Disables the trigger for this action."""
+        if self.custom_trigger:
+            self.custom_trigger.disabled = True
+            self.custom_trigger.save()
+        else:
+            # Create a custom trigger and disable it.
+            self.custom_trigger = Trigger.objects.create(
+                user=self.user,
+                name=self.title,
+                disabled=True,
+            )
+
     def next(self):  # NOTE: Copy/pasted from UserAction.next
         """Return the next trigger datetime object in the user's local timezone
         or None. This method will either return the value of `next_trigger_date`

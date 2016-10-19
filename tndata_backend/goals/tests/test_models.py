@@ -1346,6 +1346,43 @@ class TestCustomAction(TestCase):
         self.assertEqual(customaction.title_slug, "new-cg")
         customaction.delete()  # Clean up.
 
+    def test_enable_trigger(self):
+        # Create a custom action with no trigger.
+        ca = mommy.make(
+            CustomAction, user=self.user, customgoal=self.customgoal, title="X"
+        )
+        ca.enable_trigger()  # Shoudl do nothing.
+        self.assertIsNone(ca.custom_trigger)
+
+        # Now create a Trigger
+        ca.custom_trigger = mommy.make(Trigger, user=self.user, disabled=True)
+        ca.enable_trigger()
+        self.assertFalse(ca.custom_trigger.disabled)
+
+        # Clean up
+        ca.delete()
+
+    def test_disable_trigger(self):
+        # Create a custom action with no trigger.
+        ca = mommy.make(
+            CustomAction, user=self.user, customgoal=self.customgoal, title="X"
+        )
+        self.assertIsNone(ca.custom_trigger)
+        ca.disable_trigger()  # Will create a disabled trigger
+        self.assertIsNotNone(ca.custom_trigger)
+        self.assertTrue(ca.custom_trigger.disabled)
+
+        # Now that we have a trigger, let's enabled it.
+        ca.enable_trigger()
+        self.assertFalse(ca.custom_trigger.disabled)
+
+        # and then disable it again.
+        ca.disable_trigger()
+        self.assertTrue(ca.custom_trigger.disabled)
+
+        # Clean up
+        ca.delete()
+
     def test_queued_notifications(self):
         """CustomAction.queued_notifications should return the right thing"""
         from notifications.models import GCMDevice, GCMMessage
