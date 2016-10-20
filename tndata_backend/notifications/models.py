@@ -305,20 +305,10 @@ class GCMMessage(models.Model):
     # Each accepts a dictionary argument which it may modify, and each returns
     # a possibly modified dict.
     #
-    #   * _payload_action
     #   * _payload_badge
     #   * _payload_checkin
-    #   * _payloadd_customaction
     #
     # -------------------------------------------------------------------------
-
-    def _payload_action(self, payload):
-        from goals.models import UserAction
-        from goals.serializers.v2 import UserActionSerializer
-        ua = UserAction.objects.get(user=self.user, action=self.content_object)
-        serializer = UserActionSerializer(ua)
-        payload['user_action'] = serializer.data
-        return payload
 
     def _payload_badge(self, payload):
         """If this is an Award, lets include it's badge data with the payload."""
@@ -346,13 +336,6 @@ class GCMMessage(models.Model):
             payload['object_id'] = 1
         elif payload['title'] == DEFAULT_EVENING_GOAL_NOTIFICATION_TITLE:
             payload['object_id'] = 2
-        return payload
-
-    def _payload_customaction(self, payload):
-        from goals.serializers.v2 import CustomActionSerializer
-        """If this is a custom action notifictaion, serialize the CustomAction"""
-        serializer = CustomActionSerializer(self.content_object)
-        payload['custom_action'] = serializer.data
         return payload
 
     @property
@@ -397,11 +380,6 @@ class GCMMessage(models.Model):
             payload = self._payload_checkin(payload)
         elif payload['object_type'] == 'award' and self.content_object:
             payload = self._payload_badge(payload)
-        elif payload['object_type'] == 'action' and self.content_object:
-            payload = self._payload_action(payload)
-        elif payload['object_type'] == 'customaction' and self.content_object:
-            payload = self._payload_customaction(payload)
-
         return payload
 
     @property
