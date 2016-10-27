@@ -103,15 +103,18 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         return qs
 
     def create(self, request, *args, **kwargs):
-        """Alter the returned response, so that it includes an API token for a
-        newly created user.
+        """Handle the optional username/email scenario and include an Auth
+        token for the API in the returned response.
         """
-        # NOTE: We expect an email address to be given, here, but this api
-        # used to support a username. If we receive a username, but no email
-        # address, we swap them. This'll prevent an edge case where we might
-        # end up with duplicate accounts.
-        if request.data.get("username") and request.data.get("email") is None:
-            request.data['email'] = request.data.get('username')
+        # We typically expect an email address to be given, here, but this api
+        # also supports a username. If we receive a username, but no email
+        # address, we'll check to see if we should swap them, which may prevent
+        # an edge case where we might end up with duplicate accounts.
+        username = request.data.get('username')
+        email = request.data.get('email')
+
+        if email is None and '@' in username:
+            request.data['email'] = username
             request.data.pop('username')
 
         resp = super(UserViewSet, self).create(request, *args, **kwargs)

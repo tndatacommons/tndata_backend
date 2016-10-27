@@ -348,7 +348,7 @@ class TestUsersAPI(V2APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
 
-    def test_post_user_list(self):
+    def test_post_user_list_with_email(self):
         """POSTing to the user-list should create a new user."""
         url = self.get_url('user-list')
         data = {'email': 'new@user.com', 'password': 'secret'}
@@ -358,6 +358,34 @@ class TestUsersAPI(V2APITestCase):
 
         # Ensure retrieved info contains an auth token
         u = self.User.objects.get(email='new@user.com')
+        self.assertEqual(response.data['token'], u.auth_token.key)
+
+        # Clean up.
+        u.delete()
+
+    def test_post_user_list_with_username(self):
+        """POSTing to the user-list should create a new user."""
+        url = self.get_url('user-list')
+        data = {'username': '1234567890123456', 'password': 'secret'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Ensure retrieved info contains an auth token
+        u = self.User.objects.get(username='1234567890123456')
+        self.assertEqual(response.data['token'], u.auth_token.key)
+
+        # Clean up.
+        u.delete()
+
+    def test_post_user_list_with_email_and_username(self):
+        """POSTing to the user-list should create a new user."""
+        url = self.get_url('user-list')
+        data = {'username': 'aabb', 'email': 'aa@bb.co', 'password': 'secret'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Ensure retrieved info contains an auth token
+        u = self.User.objects.get(username='aabb', email='aa@bb.co')
         self.assertEqual(response.data['token'], u.auth_token.key)
 
         # Clean up.
