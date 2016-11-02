@@ -2,6 +2,7 @@ import logging
 import requests
 import waffle
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
@@ -13,7 +14,11 @@ from utils.user_utils import to_utc
 
 logger = logging.getLogger(__name__)
 
-FB_MESSENGER_URL = 'https://brad.ngrok.io/send/{user_id}'
+
+if settings.DEBUG:
+    FB_MESSENGER_URL = 'https://brad.ngrok.io/send/{user_id}'
+else:
+    FB_MESSENGER_URL = 'https://compass-fb-messenger.herokuapp.com/send/{user_id}'
 
 
 # -----------------------------------------------------------------------------
