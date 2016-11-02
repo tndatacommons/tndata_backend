@@ -43,3 +43,15 @@ class TestFunContentManager(TestCase):
         """If tehre are no FunContent items this should return None"""
         obj = FunContent.objects.random()
         self.assertIsNone(obj)
+
+    def test_manager_with_specified_message_type(self):
+        FunContent.objects.create(message_type='quote', message='a')
+        FunContent.objects.create(message_type='quote', message='b')
+        FunContent.objects.create(message_type='quote', message='c')
+        FunContent.objects.create(message_type='joke', message='joke1')
+        FunContent.objects.create(message_type='joke', message='joke2')
+        FunContent.objects.create(message_type='joke', message='joke3')
+
+        for i in range(10):
+            obj = FunContent.objects.random(message_type='joke')
+            self.assertEqual(obj.message_type, 'joke')

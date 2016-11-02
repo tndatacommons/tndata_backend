@@ -49,7 +49,7 @@ class FunContentViewSet(viewsets.ReadOnlyModelViewSet):
         # Track metrics on the number of random reward content objects requested
         if random:
             metric('viewed-random-reward', category="Rewards")
-            return [models.FunContent.objects.random()]
+            return [models.FunContent.objects.random(message_type=message_type)]
 
         queryset = super().get_queryset()
         if message_type is not None:
