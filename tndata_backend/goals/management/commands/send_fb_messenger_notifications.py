@@ -63,8 +63,8 @@ class Command(BaseCommand):
             gcmdevice__isnull=True
         ).distinct()
 
-    def send(self, user_id, message):
-        payload = {'message': message}
+    def send(self, user_id, message, useraction_id):
+        payload = {'message': message, 'id': useraction_id}
         requests.post(FB_MESSENGER_URL.format(user_id=user_id), payload)
         self.stdout.write("Sent to {}: {}".format(user_id, message))
 
@@ -77,7 +77,7 @@ class Command(BaseCommand):
 
         # XXX: Assume we're all in central time, don't send at night.
         if now.hour < 12 or now.hour > 23:
-            console.log("not running during evening/early morning")
+            self.stderr.write("not running during evening/early morning")
             return None
 
         users = self._get_users(options)
@@ -98,5 +98,5 @@ class Command(BaseCommand):
                         ua.get_notification_text(),
                         ua.action.description
                     )
-                    self.send(user.username, text)
+                    self.send(user.username, text, ua.id)
                     break  # only send 1 message.
