@@ -9,9 +9,12 @@ An Organization can be associated with:
     - admins (Users who have some administrative access to an organization)
 
 """
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 
 
@@ -77,3 +80,17 @@ class Organization(models.Model):
     def get_add_member_url(self):
         args = [self.pk, self.name_slug]
         return reverse('goals:organization-add-member', args=args)
+
+    def daily_progresses(self):
+        """Returns a queryset of DailyProgress objects for members in
+        this organization for "today"."""
+        from . progress import DailyProgress
+
+        now = timezone.now()
+        users = self.members.values_list("id", flat=True)
+        return DailyProgress.objects.filter(
+            user__in=users,
+            created_on__year=now.year,
+            created_on__month=now.month,
+            created_on__day=now.day
+        )

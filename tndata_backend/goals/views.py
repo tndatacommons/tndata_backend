@@ -1278,6 +1278,11 @@ class OrganizationDetailView(StaffRequiredMixin, DetailView):
     slug_field = "title_slug"
     slug_url_kwarg = "title_slug"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['daily_progresses'] = self.object.daily_progresses()
+        return context
+
 
 class OrganizationCreateView(StaffRequiredMixin, CreateView):
     model = Organization

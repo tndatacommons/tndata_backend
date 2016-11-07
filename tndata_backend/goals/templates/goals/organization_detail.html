@@ -91,6 +91,38 @@
       {% endfor %}
       </tbody>
       </table>
+
+      <h2>Engagement
+        <small>
+          <a href="#" class="button secondary tiny">
+          <i class="fa fa-download"></i> Download Report</a>
+        </small>
+      </h2>
+      <p>How engaged organization members are when compared with other Compass
+      users. Values listed are percentiles.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>15-days</th>
+            <th>30-days</th>
+            <th>60-days</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for dp in daily_progresses %}
+          <tr>
+            <td>
+              {{ dp.user.get_full_name }}<br/>
+              <small>{{ dp.user.email }}</small>
+            </td>
+            <td>{{ dp.engagement_15_days }}</td>
+            <td>{{ dp.engagement_30_days }}</td>
+            <td>{{ dp.engagement_60_days }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div> {# end .row #}
 
