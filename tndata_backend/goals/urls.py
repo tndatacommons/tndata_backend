@@ -377,6 +377,11 @@ urlpatterns = [
         name='debug_progress'
     ),
     url(
+        r'^reports/organization/(?P<pk>\d+)/membership-download/$',
+        views.organization_membership_download,
+        name='organization-membership-download'
+    ),
+    url(
         r'^reports/organization/(?P<pk>\d+)/$',
         views.report_organization,
         name='report-organization'

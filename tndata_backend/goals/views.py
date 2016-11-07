@@ -1,5 +1,6 @@
 import logging
 import time
+import tablib
 
 from calendar import Calendar
 from collections import defaultdict, Counter, OrderedDict
@@ -1335,6 +1336,37 @@ class OrganizationDeleteView(StaffRequiredMixin, DeleteView):
             "Your organization ({}) has been deleted.".format(obj.name)
         )
         return result
+
+
+@user_passes_test(staff_required, login_url='/')
+def organization_membership_download(request, pk):
+    """Allow a staff user to download an Organization's membership report."""
+    organization = get_object_or_404(Organization, pk=pk)
+
+    dataset = tablib.Dataset()
+    now = timezone.now()
+    for dp in organization.daily_progresses():
+        values = [
+            dp.user.get_full_name(), dp.user.email,
+            dp.engagement_15_days, dp.engagement_30_days, dp.engagement_60_days,
+        ]
+        for days in [7, 30, 60, 90, 120, 150]:
+            since = now - timedelta(days=days)
+            ucas = dp.user.usercompletedaction_set.filter(created_on__gte=since)
+            ucas = ucas.filter(state=UserCompletedAction.COMPLETED)
+            values.append(ucas.count())
+
+        dataset.append(values)
+
+    dataset.headers = [
+        'Student', 'Email', '15-Day Engagement', '30-Day Engagement',
+        '60-Day Engagement', '7-Day Actions', '30-Day Actions', '60-Day Actions',
+        '90-Day Actions', '120-Day Actions', '150-Day Actions'
+    ]
+    filename = '{}-member_engagement_report.csv'.format(slugify(organization))
+    response = HttpResponse(dataset.csv, content_type="text/csv")
+    response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+    return response
 
 
 @user_passes_test(staff_required, login_url='/')

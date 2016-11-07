@@ -81,6 +81,10 @@ class Organization(models.Model):
         args = [self.pk, self.name_slug]
         return reverse('goals:organization-add-member', args=args)
 
+    def get_membership_download_url(self):
+        args = [self.pk]
+        return reverse('goals:organization-membership-download', args=args)
+
     def daily_progresses(self):
         """Returns a queryset of DailyProgress objects for members in
         this organization for "today"."""
