@@ -93,10 +93,16 @@
       </table>
 
       <h2>Engagement
+        {% if user.is_staff %}
         <small>
-          <a href="#" class="button secondary tiny">
-          <i class="fa fa-download"></i> Download Report</a>
+          <a href="{{ organization.get_membership_download_url }}"
+             class="button secondary tiny tip-right"
+             data-tooltip
+             aria-haspopup="true"
+             title="Download a CSV file with additional engagment metrics">
+            <i class="fa fa-download"></i> Download Report</a>
         </small>
+        {% endif %}
       </h2>
       <p>How engaged organization members are when compared with other Compass
       users. Values listed are percentiles.</p>
