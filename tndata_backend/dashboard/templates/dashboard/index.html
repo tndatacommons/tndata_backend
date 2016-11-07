@@ -11,6 +11,9 @@
       font-weight: bold;
       font-size:4em;
     }
+    div.metric {
+      overflow:hidden;
+    }
   </style>
 {% endblock %}
 
@@ -113,20 +116,20 @@
     <div class="large-8 medium-8 small-12 columns">
       <h3>Device Ownership</h3>
       <div class="row">
-        <div class="large-4 small-4 columns">
-          <div class="panel">
+        <div class="large-4 medium-4 small-12 columns">
+          <div class="panel metric">
             <span>Device Owners</span>
             <span class="number">{{ device_owners }}</span>
           </div>
         </div>
-        <div class="large-4 small-4 columns">
-          <div class="panel">
+        <div class="large-4 medium-4 small-12 columns">
+          <div class="panel metric">
             <span>Total Devices</span>
             <span class="number">{{ total_devices }}</span>
           </div>
         </div>
-        <div class="large-4 small-4 columns">
-          <div class="panel number">
+        <div class="large-4 medium-4 small-12 columns">
+          <div class="panel metric">
             <span>Devices / User</span>
             <span class="number">{{ devices_per_user|floatformat:2 }}</span>
           </div>
@@ -211,20 +214,20 @@
     <div class="large-8 medium-8 small-12 columns">
       <h3>Push Notifications <small>queued &amp; delivered today</small></h3>
       <div class="row">
-        <div class="large-4 small-4 columns">
-          <div class="panel">
+        <div class="large-4 medium-4 small-12 columns">
+          <div class="panel metric">
             <span>Total Messages</span>
             <span class="number">{{ messages_total }}</span>
           </div>
         </div>
-        <div class="large-4 small-4 columns">
-          <div class="panel">
+        <div class="large-4 medium-4 small-12 columns">
+          <div class="panel metric">
             <span>Delivered</span>
             <span class="number">{{ messages_delivered }}</span>
           </div>
         </div>
-        <div class="large-4 small-4 columns">
-          <div class="panel number">
+        <div class="large-4 medium-4 small-12 columns">
+          <div class="panel metric">
             <span>Queued</span>
             <span class="number">{{ messages_remaining }}</span>
           </div>

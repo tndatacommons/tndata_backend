@@ -57,8 +57,8 @@ def index(request):
     # updates the userprofile).
     logins = {}
     for dt in [1, 7, 30, 60, 90]:
-        since = now - timedelta(days=dt)
-        logins[dt] = UserProfile.objects.filter(updated_on__lte=since).count()
+        login_date = now - timedelta(days=dt)
+        logins[dt] = UserProfile.objects.filter(updated_on__gte=login_date).count()
 
     # > 90 days == 91
     ninety = now - timedelta(days=91)
