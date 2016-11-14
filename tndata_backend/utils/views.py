@@ -75,11 +75,12 @@ def _setup_enduser(request, user, send_welcome_email=True):
     """Handle addional post-account-creation tasks for end-users."""
     User = get_user_model()
 
-    # Check for any Organization & Program parameters, and make the user a member
-    # and enroll them in the Program's goals (if applicable).
+    # Check for any Organization & Program parameters (falling back to the
+    # session values), and make the user an organization member and enroll
+    # them in the Program's goals (if applicable).
     try:
-        program_id = request.POST.get('program')
-        org_id = request.POST.get('organization')
+        program_id = request.POST.get('program', request.session.get('program'))
+        org_id = request.POST.get('organization', request.session.get('organization'))
 
         program = Program.objects.get(pk=program_id, organization__id=org_id)
         program.members.add(user)
