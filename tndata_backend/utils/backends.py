@@ -21,6 +21,10 @@ class EmailAuthenticationBackend(ModelBackend):
             user = User.objects.get(email__iexact=email)
             if user.check_password(password):
                 return user
+        except User.MultipleObjectsReturned:
+            user = User.objects.filter(email__iexact=email).latest('date_joined')
+            if user.check_password(password):
+                return user
         except User.DoesNotExist:
             pass
 
