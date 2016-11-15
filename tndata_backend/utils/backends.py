@@ -2,8 +2,11 @@
 Custom Authentication Backends.
 
 """
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
+
+from utils.slack import post_message
 
 
 class EmailAuthenticationBackend(ModelBackend):
@@ -23,6 +26,11 @@ class EmailAuthenticationBackend(ModelBackend):
                 return user
         except User.MultipleObjectsReturned:
             user = User.objects.filter(email__iexact=email).latest('date_joined')
+            # Fire off a notification about this
+            if not settings.DEBUG and not settings.STAGING:
+                err = ":warning: :bug: Duplicate account for user {}"
+                post_message("#tech", err.format(user.email))
+
             if user.check_password(password):
                 return user
         except User.DoesNotExist:
