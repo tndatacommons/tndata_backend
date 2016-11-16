@@ -85,17 +85,30 @@
           </div>
         </header>
         <nav class="demo-navigation mdl-navigation mdl-color--blue-grey-800">
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">home</i>Home</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">inbox</i>Inbox</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">delete</i>Trash</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">report</i>Spam</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">forum</i>Forums</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">flag</i>Updates</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">local_offer</i>Promos</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">shopping_cart</i>Purchases</a>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">people</i>Social</a>
+          <a class="mdl-navigation__link" href="/">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">home</i>Home</a>
+          <a class="mdl-navigation__link" href="#">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">event</i>Schedule</a>
+          <!--
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">delete</i>Trash</a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">report</i>Spam</a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">forum</i>Forums</a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">flag</i>Updates</a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">local_offer</i>Promos</a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">shopping_cart</i>Purchases</a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">people</i>Social</a>
+          -->
           <div class="mdl-layout-spacer"></div>
-          <a class="mdl-navigation__link" href=""><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i><span class="visuallyhidden">Help</span></a>
+          <a class="mdl-navigation__link" href="">
+            <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">help_outline</i>
+            <span class="visuallyhidden">Help</span></a>
         </nav>
       </div>
       <!-- /NAV Drawer -->
@@ -121,8 +134,8 @@
             <div class="demo-separator mdl-cell--1-col"></div>
 
             <!-- Teacher Info -->
-            <div class="demo-options mdl-card mdl-color--teal-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-              <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
+            <div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card__supporting-text">
                 <h3>Add your information</h3>
                 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                   <input class="mdl-textfield__input" type="text" id="name">
@@ -138,7 +151,7 @@
                 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Next</a>
+                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Next</a>
               </div>
             </div>
 
@@ -146,18 +159,18 @@
             <div class="demo-separator mdl-cell--1-col"></div>
 
             <!-- Office Hours -->
-            <div class="demo-options mdl-card mdl-color--teal-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-              <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
+            <div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card__supporting-text">
                 <h3>Office Hours</h3>
 
-                <!-- HEre's an exmaple of a text input with a drop-down menu at the right. -->
+                <!-- Here's an exmaple of a text input with a drop-down menu at the right. -->
                 <div class="demo-avatar-dropdown">
                   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                     <input class="mdl-textfield__input" type="text" id="from">
                     <label class="mdl-textfield__label" for="from">From</label>
                   </div>
-                  <div class="mdl-layout-spacer"></div>
-                  <button id="from-time" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+                  <!--<div class="mdl-layout-spacer"></div>-->
+                  <button id="from-time" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
                     <i class="material-icons" role="presentation">arrow_drop_down</i>
                     <span class="visuallyhidden">Times</span>
                   </button>
@@ -169,10 +182,23 @@
                   </ul>
                 </div>
 
-                <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
-                  <input class="mdl-textfield__input" type="text" id="to">
-                  <label class="mdl-textfield__label" for="to">To</label>
+                <div class="demo-avatar-dropdown">
+                  <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
+                    <input class="mdl-textfield__input" type="text" id="to">
+                    <label class="mdl-textfield__label" for="to">To</label>
+                  </div>
+                  <button id="from-time" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+                    <i class="material-icons" role="presentation">arrow_drop_down</i>
+                    <span class="visuallyhidden">Times</span>
+                  </button>
+                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="from-time">
+                    <li class="mdl-menu__item">8:00 am</li>
+                    <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider">10:00 am</li>
+                    <li class="mdl-menu__item">1:00 pm</li>
+                    <li class="mdl-menu__item">2:00 pm</li>
+                  </ul>
                 </div>
+
                 <div class="mdl-textfield mdl-js-textfield">
                   <ul>
                     <li>
@@ -220,9 +246,9 @@
                   </ul>
                 </div>
               </div>
-              <div class="mdl-card__actions mdl-card--border">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Add another</a>
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Next</a>
+              <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
+                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Add another</a>
+                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Next</a>
               </div>
             </div>
 
@@ -230,8 +256,8 @@
             <div class="demo-separator mdl-cell--1-col"></div>
 
             <!-- Add Course -->
-            <div class="demo-options mdl-card mdl-color--teal-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-              <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
+            <div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+              <div class="mdl-card__supporting-text">
                 <h3>Add your Course</h3>
                 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                   <input class="mdl-textfield__input" type="text" id="coursename">
@@ -248,98 +274,60 @@
                 <div class="mdl-textfield mdl-js-textfield">
                   <ul>
                     <li>
-                      <label for="day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-sunday" class="mdl-checkbox__input">
+                      <label for="a-day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-sunday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Sunday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-monday" class="mdl-checkbox__input">
+                      <label for="a-day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-monday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Monday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-tuesday" class="mdl-checkbox__input">
+                      <label for="a-day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-tuesday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Tuesday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-wednesday" class="mdl-checkbox__input">
+                      <label for="a-day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-wednesday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Wednesday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-thursday" class="mdl-checkbox__input">
+                      <label for="a-day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-thursday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Thursday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-friday" class="mdl-checkbox__input">
+                      <label for="a-day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-friday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Friday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-saturday" class="mdl-checkbox__input">
+                      <label for="a-day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="a-day-saturday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Saturday</span>
                       </label>
                     </li>
                   </ul>
                 </div>
               </div>
-              <div class="mdl-card__actions mdl-card--border">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Add another</a>
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Share</a>
+              <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
+                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Add another</a>
+                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Share</a>
                 <div class="mdl-layout-spacer"></div>
-                <i class="material-icons">share</i>
+                <i class="material-icons mdl-primary">share</i>
               </div>
             </div>
 
             <!-- Separator -->
             <div class="demo-separator mdl-cell--1-col"></div>
-
-            <!-- View options example -->
-            <div class="demo-options mdl-card mdl-color--deep-purple-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
-              <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
-                <h3>View options</h3>
-                <ul>
-                  <li>
-                    <label for="chkbox1" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                      <input type="checkbox" id="chkbox1" class="mdl-checkbox__input">
-                      <span class="mdl-checkbox__label">Click per object</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label for="chkbox2" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                      <input type="checkbox" id="chkbox2" class="mdl-checkbox__input">
-                      <span class="mdl-checkbox__label">Views per object</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label for="chkbox3" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                      <input type="checkbox" id="chkbox3" class="mdl-checkbox__input">
-                      <span class="mdl-checkbox__label">Objects selected</span>
-                    </label>
-                  </li>
-                  <li>
-                    <label for="chkbox4" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                      <input type="checkbox" id="chkbox4" class="mdl-checkbox__input">
-                      <span class="mdl-checkbox__label">Objects viewed</span>
-                    </label>
-                  </li>
-                </ul>
-              </div>
-              <div class="mdl-card__actions mdl-card--border">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Change location</a>
-                <div class="mdl-layout-spacer"></div>
-                <i class="material-icons">location_on</i>
-              </div>
-            </div>
 
           </div>
         </div>
