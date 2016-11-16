@@ -240,3 +240,4 @@ _:-ms-input-placeholder, :root .demo-graph {
   text-align: center;
   font-size: xx-large;
 }
+.hidden {display:none;}
