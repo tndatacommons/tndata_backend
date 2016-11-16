@@ -111,9 +111,16 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         # address, we'll check to see if we should swap them, which may prevent
         # an edge case where we might end up with duplicate accounts.
         username = request.data.get('username')
-        email = request.data.get('email')
+        if username:
+            username = username.lower()
+            request.data['username'] = username
 
-        if email is None and '@' in username:
+        email = request.data.get('email')
+        if email:
+            email = email.lower()
+            request.data['email'] = email
+
+        if email is None and username is not None and '@' in username:
             request.data['email'] = username
             request.data.pop('username')
 

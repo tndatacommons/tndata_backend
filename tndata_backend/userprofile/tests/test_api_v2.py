@@ -363,6 +363,18 @@ class TestUsersAPI(V2APITestCase):
         # Clean up.
         u.delete()
 
+    def test_post_user_list_with_duplicate_email(self):
+        """POSTing to the user-list with an existing email of differing case
+        should NOT create a new user, with that email address"""
+        url = self.get_url('user-list')
+        data = {'email': 'ME@example.com', 'password': 'secret'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Ensure there's only 1 account
+        results = self.User.objects.filter(email__iexact='me@example.com')
+        self.assertEqual(results.count(), 1)
+
     def test_post_user_list_with_username(self):
         """POSTing to the user-list should create a new user."""
         url = self.get_url('user-list')
@@ -376,6 +388,21 @@ class TestUsersAPI(V2APITestCase):
 
         # Clean up.
         u.delete()
+
+    def test_post_user_list_with_duplicate_username(self):
+        """POSTing to the user-list should NOT create a new user if given a
+        duplicate username."""
+
+        self.assertTrue(self.User.objects.filter(username__iexact='ME').exists())
+
+        url = self.get_url('user-list')
+        data = {'username': 'ME', 'password': 'secret'}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Ensure there's only 1 account
+        results = self.User.objects.filter(username__iexact='ME')
+        self.assertEqual(results.count(), 1)
 
     def test_post_user_list_with_email_and_username(self):
         """POSTing to the user-list should create a new user."""
