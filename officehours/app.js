@@ -15,4 +15,21 @@ $(document).ready(function() {
         $(this).parents('.mdl-card').hide();
         $(next).removeClass('hidden').hide().fadeIn();
     });
+
+    // handle nav links
+    $(".mdl-navigation__link").click(function() {
+        console.log("clicked nav link: " + $(this).attr('href'));
+        switch($(this).attr('href')) {
+            case '/':
+                console.log("Re-setting...");
+                window.location.pathname = "/";
+                break;
+            case '#schedule':
+                console.log("TODO: show the schedule");
+                break;
+            default:
+                console.log("no matches");
+                break;
+        }
+    });
 });
