@@ -19,17 +19,18 @@ var generateCode = function(length) {
 // ID attribute for the element that gets displayed.
 var TOAST_MESSAGES = {
     '#notimplemented': "Sorry, we haven've built this yet.",
-    '#add-code': 'Wooo',  // add-code -> list-schedule
+    '#add-code': 'Add a class code to populate your schedule.',  // add-code -> student-schedule
     '#teacher-info': 'Add your contact info to get started', // select-role -> teacher-info
     '#office-hours': 'Great! Now, list your office hours.', // teacher-info -> office-hours
     '#add-course': 'Perfect! Add your course info, next.', // office-hours -> add-course
     '#share-code': 'Done! Share this code with your students.', // add-course -> share-code
+    '#student-schedule': 'Your class has been added to your schedule.'
 };
 
 $(document).ready(function() {
     console.log("OK, we're ready ... ");
 
-    $(".mdl-button").click(function () {
+    $(".mdl-button, #main-fab").click(function () {
 
         // The basic idea, is that when a card's button is clicked, we:
         // 1. hide the current mdl-card
@@ -37,8 +38,14 @@ $(document).ready(function() {
         // 3. Show that card.
         var next = "#" + $(this).data('next');
         if(next !== "#notimplemented") {
-            $(this).parents('.mdl-card').hide();
+            //$(this).parents('.mdl-card').hide();
+            $('.mdl-card').hide();
             $(next).removeClass('hidden').hide().fadeIn();
+        }
+
+        // Clear code if we go back to the add-code section
+        if(next === '#add-code') {
+            $('.code-input').val('');
         }
 
         // generate code for the share code card.

@@ -173,7 +173,7 @@
                 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Add code</a>
+                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="student-schedule">Add code</a>
                 <div class="mdl-layout-spacer"></div>
                 <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">event</i>
               </div>
@@ -392,6 +392,61 @@
               </div>
             </div>
 
+            <!-- Student Schedule -->
+            <div class="demo-options hidden mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="student-schedule">
+              <div class="mdl-card__title mdl-card--expand mdl-color--indigo-300">
+                <h2 class="mdl-card__title-text">Your Schedule</h2>
+              </div>
+              <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+
+                <ul class="mdl-list">
+                  <li class="mdl-list__item mdl-list__item--three-line">
+                    <span class="mdl-list__item-primary-content">
+                      <i class="material-icons mdl-list__item-avatar">person</i>
+                      <span>ENGR 1000 - 101</span>
+                      <span class="mdl-list__item-text-body">
+                        Dr Otto Octavius. <small>11:00am MWF</small><br/>
+                        <small>Smith Hall, 232</small>
+                      </span>
+                    </span>
+                    <span class="mdl-list__item-secondary-content">
+                      <a class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent" href="#" data-next="notimplemented"><i class="material-icons">phone</i></a>
+                    </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--three-line">
+                    <span class="mdl-list__item-primary-content">
+                      <i class="material-icons  mdl-list__item-avatar">person</i>
+                      <span>ENGL 2500 - 100</span>
+                      <span class="mdl-list__item-text-body">
+                        Ms. Kamala Khan. <small>9:00am TR</small><br/>
+                        <small>Herring Library, 400</small>
+                      </span>
+                    </span>
+                    <span class="mdl-list__item-secondary-content">
+                      <a class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent" href="#" data-next="notimplemented"><i class="material-icons">phone</i></a>
+                    </span>
+                  </li>
+                  <li class="mdl-list__item mdl-list__item--three-line">
+                    <span class="mdl-list__item-primary-content">
+                      <i class="material-icons  mdl-list__item-avatar">person</i>
+                      <span>PSYCH 1200 - 101</span>
+                      <span class="mdl-list__item-text-body">
+                        Prof. Charles Xavier. <small>1:00pm MWF</small><br/>
+                        <small>Central Hall, 123</small>
+                      </span>
+                    </span>
+                    <span class="mdl-list__item-secondary-content">
+                      <a class="mdl-list__item-secondary-action mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent" href="#" data-next="notimplemented"><i class="material-icons">phone</i></a>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <!--<div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">-->
+                <!--<a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" data-next="add-code">-->
+                  <!--Add Code</a>-->
+              <!--</div>-->
+            </div>
+
             <!-- Teacher Schedule -->
             <div class="demo-options hidden mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="teacher-schedule">
               <div class="mdl-card__title mdl-card--expand mdl-color--indigo-300">
@@ -438,9 +493,9 @@
       </main>
       <!-- /MAIN -->
     </div>
-    <!--<a href="#" id="main-fab" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">-->
-      <!--<i class="material-icons">add</i>-->
-    <!--</a>-->
+    <a href="#" id="main-fab" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored" data-next="add-code">
+      <i class="material-icons">add</i>
+    </a>
 
     <!-- Snackbar / Toast -->
     <div id="toast-container" aria-live="assertive" aria-atomic="true" aria-relevant="text" class="mdl-snackbar mdl-js-snackbar">
