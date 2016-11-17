@@ -317,22 +317,24 @@
                   <input class="mdl-textfield__input" type="text" id="coursename">
                   <label class="mdl-textfield__label" for="coursename">Course Name</label>
                 </div>
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                  <input class="mdl-textfield__input" type="text" id="course-time">
-                  <label class="mdl-textfield__label" for="course-time">Time</label>
+                <div class="demo-avatar-dropdown">
+                  <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                    <input class="mdl-textfield__input" type="text" id="course-time">
+                    <label class="mdl-textfield__label" for="course-time">Time</label>
+                  </div>
+                  <button id="course-time-button"
+                          class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+                    <i class="material-icons" role="presentation">arrow_drop_down</i>
+                    <span class="visuallyhidden">Times</span>
+                  </button>
+                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+                      for="course-time-button">
+                    <li class="mdl-menu__item" data-val="8:00 am" data-forid="course-time">8:00 am</li>
+                    <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="course-time">10:00 am</li>
+                    <li class="mdl-menu__item" data-val="1:00 pm" data-forid="course-time">1:00 pm</li>
+                    <li class="mdl-menu__item" data-val="2:00 pm" data-forid="course-time">2:00 pm</li>
+                  </ul>
                 </div>
-                <button id="course-gfrom-button"
-                        class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
-                  <i class="material-icons" role="presentation">arrow_drop_down</i>
-                  <span class="visuallyhidden">Times</span>
-                </button>
-                <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-                    for="course-gfrom-button">
-                  <li class="mdl-menu__item" data-val="8:00 am" data-forid="course-time">8:00 am</li>
-                  <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="course-time">10:00 am</li>
-                  <li class="mdl-menu__item" data-val="1:00 pm" data-forid="course-time">1:00 pm</li>
-                  <li class="mdl-menu__item" data-val="2:00 pm" data-forid="course-time">2:00 pm</li>
-                </ul>
                 <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
                   <input class="mdl-textfield__input" type="text" id="location">
                   <label class="mdl-textfield__label" for="location">Location</label>

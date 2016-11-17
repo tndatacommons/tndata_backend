@@ -46,6 +46,7 @@ $(document).ready(function() {
             $('.code-input, input[type=text]').val('');
             $('input[type=checkbox]').prop('checked', false);
             $('label.is-checked').removeClass('is-checked');
+            $('.is-dirty').removeClass('is-dirty');
         }
 
         // generate code for the share code card.
