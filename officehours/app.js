@@ -53,6 +53,13 @@ $(document).ready(function() {
             $('span.share-code-display').text(generateCode());
         }
 
+        // if we're viewnig the student schedule, also show the fab
+        if(next === "#student-schedule") {
+            $('#main-fab').removeClass('hidden').hide().fadeIn();
+        } else {
+            $('#main-fab').addClass('hidden');
+        }
+
         // show a toast message if applicable.
         if(TOAST_MESSAGES[next]) {
             var toast = document.querySelector('.mdl-js-snackbar');
