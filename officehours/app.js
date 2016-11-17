@@ -1,5 +1,6 @@
 /*
  * XXX: We're faking the user interaction but hiding & displaying stuff.
+ *
  */
 
 
@@ -30,10 +31,9 @@ var TOAST_MESSAGES = {
 $(document).ready(function() {
     console.log("OK, we're ready ... ");
 
-    $(".mdl-button, #main-fab").click(function () {
-
+    $(".card-cta, #main-fab").click(function () {
         // The basic idea, is that when a card's button is clicked, we:
-        // 1. hide the current mdl-card
+        // 1. Hide all the other cards...
         // 2. Look up that data-next attribute on the button (which should be the ID of a card)
         // 3. Show that card.
         var next = "#" + $(this).data('next');
@@ -43,9 +43,11 @@ $(document).ready(function() {
             $(next).removeClass('hidden').hide().fadeIn();
         }
 
-        // Clear code if we go back to the add-code section
-        if(next === '#add-code') {
-            $('.code-input').val('');
+        // Clear input fields if we go back to them.
+        if(next === '#add-code' || next === '#office-hours' || next === '#add-course') {
+            $('.code-input, input[type=text]').val('');
+            $('input[type=checkbox]').prop('checked', false);
+            $('label.is-checked').removeClass('is-checked');
         }
 
         // generate code for the share code card.
@@ -64,6 +66,23 @@ $(document).ready(function() {
         if(TOAST_MESSAGES[next]) {
             var toast = document.querySelector('.mdl-js-snackbar');
             toast.MaterialSnackbar.showSnackbar({message: TOAST_MESSAGES[next]});
+        }
+    });
+
+    // Handle Time helpers.
+    $(".mdl-menu__item").click(function() {
+        var val = $(this).data('val');
+        var forId = $(this).data('forid');
+        if(val && forId) {
+            forId = "#" + forId;
+
+            // Add .is-dirty to the parent container, so the label does the
+            // right thing: https://github.com/google/material-design-lite/issues/903
+            $(forId).parent().addClass("is-dirty");
+
+            $(forId).val(val);
+
+            console.log($(forId).parent().attr('class'));
         }
     });
 

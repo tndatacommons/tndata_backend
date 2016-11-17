@@ -78,9 +78,7 @@
               <span class="visuallyhidden">Accounts</span>
             </button>
             <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
-              <li class="mdl-menu__item">hello@example.com</li>
-              <li class="mdl-menu__item">info@example.com</li>
-              <li class="mdl-menu__item"><i class="material-icons">add</i>Add another account...</li>
+              <li class="mdl-menu__item">Log out</li>
             </ul>
           </div>
         </header>
@@ -128,7 +126,7 @@
                 Just click the button to get started.
               </div>
               <div class="mdl-card__actions mdl-card--border">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="select-role">Get Started</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="select-role">Get Started</a>
               </div>
             </div>
 
@@ -145,8 +143,8 @@
                 <p>If you're a <em>teacher</em>, you can set up your class, now.</p>
               </div>
               <div class="mdl-card__actions mdl-card--border">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-code">Add Code</a>
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="teacher-info">I'm a teacher</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-code">Add Code</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="teacher-info">I'm a teacher</a>
               </div>
             </div>
 
@@ -173,7 +171,7 @@
                 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="student-schedule">Add code</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="student-schedule">Add code</a>
                 <div class="mdl-layout-spacer"></div>
                 <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">event</i>
               </div>
@@ -201,7 +199,7 @@
                 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="office-hours">Next</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="office-hours">Next</a>
               </div>
             </div>
 
@@ -216,80 +214,84 @@
                 <!-- Here's an exmaple of a text input with a drop-down menu at the right. -->
                 <div class="demo-avatar-dropdown">
                   <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                    <input class="mdl-textfield__input" type="text" id="from">
+                    <input class="mdl-textfield__input" type="text" id="office-hours-from">
                     <label class="mdl-textfield__label" for="from">From</label>
                   </div>
                   <!--<div class="mdl-layout-spacer"></div>-->
-                  <button id="from-time" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+                  <button id="office-hours-from-button"
+                          class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
                     <i class="material-icons" role="presentation">arrow_drop_down</i>
                     <span class="visuallyhidden">Times</span>
                   </button>
-                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="from-time">
-                    <li class="mdl-menu__item">8:00 am</li>
-                    <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider">10:00 am</li>
-                    <li class="mdl-menu__item">1:00 pm</li>
-                    <li class="mdl-menu__item">2:00 pm</li>
+                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+                      for="office-hours-from-button">
+                    <li class="mdl-menu__item" data-val="8:00 am" data-forid="office-hours-from">8:00 am</li>
+                    <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="office-hours-from">10:00 am</li>
+                    <li class="mdl-menu__item" data-val="1:00 pm" data-forid="office-hours-from">1:00 pm</li>
+                    <li class="mdl-menu__item" data-val="2:00 pm" data-forid="office-hours-from">2:00 pm</li>
                   </ul>
                 </div>
 
                 <div class="demo-avatar-dropdown">
                   <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
-                    <input class="mdl-textfield__input" type="text" id="to">
+                    <input class="mdl-textfield__input" type="text" id="office-hours-to">
                     <label class="mdl-textfield__label" for="to">To</label>
                   </div>
-                  <button id="from-time" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+                  <button id="office-hours-to-button"
+                          class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
                     <i class="material-icons" role="presentation">arrow_drop_down</i>
                     <span class="visuallyhidden">Times</span>
                   </button>
-                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="from-time">
-                    <li class="mdl-menu__item">8:00 am</li>
-                    <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider">10:00 am</li>
-                    <li class="mdl-menu__item">1:00 pm</li>
-                    <li class="mdl-menu__item">2:00 pm</li>
+                  <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+                      for="office-hours-to-button">
+                    <li class="mdl-menu__item" data-val="8:00 am" data-forid="office-hours-to">8:00 am</li>
+                    <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="office-hours-to">10:00 am</li>
+                    <li class="mdl-menu__item" data-val="1:00 pm" data-forid="office-hours-to">1:00 pm</li>
+                    <li class="mdl-menu__item" data-val="2:00 pm" data-forid="office-hours-to">2:00 pm</li>
                   </ul>
                 </div>
 
                 <div class="mdl-textfield mdl-js-textfield">
                   <ul>
                     <li>
-                      <label for="day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-sunday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-sunday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Sunday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-monday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-monday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Monday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-tuesday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-tuesday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Tuesday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-wednesday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-wednesday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Wednesday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-thursday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-thursday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Thursday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-friday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-friday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Friday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="day-saturday" class="mdl-checkbox__input">
+                      <label for="office-hours-day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="office-hours-day-saturday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Saturday</span>
                       </label>
                     </li>
@@ -297,8 +299,8 @@
                 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="office-hours">Add another</a>
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-course">Next</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="office-hours">Add another</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-course">Next</a>
               </div>
             </div>
 
@@ -314,9 +316,21 @@
                   <label class="mdl-textfield__label" for="coursename">Course Name</label>
                 </div>
                 <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                  <input class="mdl-textfield__input" type="text" id="time">
-                  <label class="mdl-textfield__label" for="time">Time</label>
+                  <input class="mdl-textfield__input" type="text" id="course-time">
+                  <label class="mdl-textfield__label" for="course-time">Time</label>
                 </div>
+                <button id="course-gfrom-button"
+                        class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+                  <i class="material-icons" role="presentation">arrow_drop_down</i>
+                  <span class="visuallyhidden">Times</span>
+                </button>
+                <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+                    for="course-gfrom-button">
+                  <li class="mdl-menu__item" data-val="8:00 am" data-forid="course-time">8:00 am</li>
+                  <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="course-time">10:00 am</li>
+                  <li class="mdl-menu__item" data-val="1:00 pm" data-forid="course-time">1:00 pm</li>
+                  <li class="mdl-menu__item" data-val="2:00 pm" data-forid="course-time">2:00 pm</li>
+                </ul>
                 <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
                   <input class="mdl-textfield__input" type="text" id="location">
                   <label class="mdl-textfield__label" for="location">Location</label>
@@ -324,44 +338,44 @@
                 <div class="mdl-textfield mdl-js-textfield">
                   <ul>
                     <li>
-                      <label for="a-day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-sunday" class="mdl-checkbox__input">
+                      <label for="course-day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-sunday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Sunday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="a-day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-monday" class="mdl-checkbox__input">
+                      <label for="course-day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-monday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Monday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="a-day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-tuesday" class="mdl-checkbox__input">
+                      <label for="course-day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-tuesday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Tuesday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="a-day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-wednesday" class="mdl-checkbox__input">
+                      <label for="course-day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-wednesday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Wednesday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="a-day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-thursday" class="mdl-checkbox__input">
+                      <label for="course-day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-thursday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Thursday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="a-day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-friday" class="mdl-checkbox__input">
+                      <label for="course-day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-friday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Friday</span>
                       </label>
                     </li>
                     <li>
-                      <label for="a-day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                        <input type="checkbox" id="a-day-saturday" class="mdl-checkbox__input">
+                      <label for="course-day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                        <input type="checkbox" id="course-day-saturday" class="mdl-checkbox__input">
                         <span class="mdl-checkbox__label">Saturday</span>
                       </label>
                     </li>
@@ -369,8 +383,8 @@
                 </div>
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-course">Add another</a>
-                <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-next="share-code">Share</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-course">Add another</a>
+                <a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="share-code">Share</a>
                 <div class="mdl-layout-spacer"></div>
                 <i class="material-icons mdl-primary">share</i>
               </div>
@@ -385,7 +399,7 @@
                 Share this code with your students to add your class to their schedule.
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" data-next="teacher-schedule">
+                <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" data-next="teacher-schedule">
                   View Schedule</a>
                 <div class="mdl-layout-spacer"></div>
                 <i class="material-icons">event</i>
@@ -463,6 +477,16 @@
                   </thead>
                   <tbody>
                     <tr>
+                      <td class="mdl-data-table__cell--non-numeric">Office Hours</td>
+                      <td>10:00am - 11:00am <small>MWF</small></td>
+                      <td></td>
+                    </tr>
+                    <tr>
+                      <td class="mdl-data-table__cell--non-numeric">Office Hours</td>
+                      <td>12:00am - 1:00pm <small>TR</small></td>
+                      <td></td>
+                    </tr>
+                    <tr>
                       <td class="mdl-data-table__cell--non-numeric">MATH 1310-100</td>
                       <td>9:00am <small>MWF</small></td>
                       <td>X7AC</td>
@@ -481,10 +505,10 @@
                 </table>
               </div>
               <div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" data-next="add-course">
-                  Add a Course</a>
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" data-next="notimplemented">
-                  Remove Selected</a>
+                <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   data-next="add-course">Add a Course</a>
+                <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                   data-next="notimplemented">Remove Selected</a>
               </div>
             </div>
 
