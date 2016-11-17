@@ -29,8 +29,6 @@ var TOAST_MESSAGES = {
 };
 
 $(document).ready(function() {
-    console.log("OK, we're ready ... ");
-
     $(".card-cta, #main-fab").click(function () {
         // The basic idea, is that when a card's button is clicked, we:
         // 1. Hide all the other cards...
@@ -69,6 +67,22 @@ $(document).ready(function() {
         }
     });
 
+    // Auto-advance the Code inputs.
+    $(".code-input").keyup(function() {
+        var next = {
+            'code-1': 'code-2',
+            'code-2': 'code-3',
+            'code-3': 'code-4',
+        };
+        var transition = next[$(this).prop('id')];
+        if(transition) {
+            transition = "#" + transition;
+            $(transition).focus();
+        } else {
+            $('.code-input').blur();
+        }
+    });
+
     // Handle Time helpers.
     $(".mdl-menu__item").click(function() {
         var val = $(this).data('val');
@@ -79,27 +93,25 @@ $(document).ready(function() {
             // Add .is-dirty to the parent container, so the label does the
             // right thing: https://github.com/google/material-design-lite/issues/903
             $(forId).parent().addClass("is-dirty");
-
             $(forId).val(val);
-
-            console.log($(forId).parent().attr('class'));
         }
     });
 
     // handle nav links
     $(".mdl-navigation__link").click(function() {
-        console.log("clicked nav link: " + $(this).attr('href'));
         switch($(this).attr('href')) {
             case '/':
-                console.log("Re-setting...");
                 window.location.pathname = "/";
                 break;
             case '#schedule':
                 $(".mdl-card").hide();
                 $("#teacher-schedule").removeClass('hidden').hide().fadeIn();
                 break;
+            case '#student-schedule':
+                $(".mdl-card").hide();
+                $("#student-schedule").removeClass('hidden').hide().fadeIn();
+                break;
             default:
-                console.log("no matches");
                 break;
         }
     });
