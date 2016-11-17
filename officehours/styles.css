@@ -200,7 +200,8 @@ _:-ms-input-placeholder, :root .demo-graph {
   margin: 0;
 }
 .demo-options .mdl-checkbox__box-outline {
-  border-color: rgba(255, 255, 255, 0.89);
+  /*border-color: rgba(255, 255, 255, 0.89);*/
+  border-color: rgba(120, 120, 120, 0.89);
 }
 .demo-options ul {
   margin: 0;
@@ -222,6 +223,7 @@ _:-ms-input-placeholder, :root .demo-graph {
       -ms-flex-align: center;
           align-items: center;
 }
+.mdl-card .mdl-data-table {width: 100%;}
 
 #main-fab {
   position: fixed;
@@ -239,5 +241,10 @@ _:-ms-input-placeholder, :root .demo-graph {
   min-height: 10px;
   text-align: center;
   font-size: xx-large;
+}
+.share-code-display {
+  font-size: 50px;
+  font-weight: bold;
+  line-height: 1;
 }
 .hidden {display:none;}
