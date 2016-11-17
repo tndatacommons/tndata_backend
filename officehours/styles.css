@@ -223,7 +223,7 @@ _:-ms-input-placeholder, :root .demo-graph {
       -ms-flex-align: center;
           align-items: center;
 }
-.mdl-card .mdl-data-table {width: 100%;}
+/*.mdl-card .mdl-data-table {width: 100%;}*/
 
 #main-fab {
   position: fixed;
