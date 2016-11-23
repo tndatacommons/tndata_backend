@@ -10,6 +10,7 @@ export class OfficeHours {
     fromTime: string;
     toTime: string;
     days: string[];
+    // TODO: need user id or contact id?
 }
 
 
