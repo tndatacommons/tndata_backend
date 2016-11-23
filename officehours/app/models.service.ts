@@ -91,18 +91,19 @@ export class OfficeHoursService {
                    .catch(this.handleError);
     }
 
-    /*
-    create(name: string, email: string, phone: string): Promise<OfficeHours> {
+    create(fromTime: string, toTime: string, days: string[]): Promise<OfficeHours> {
+
         return this.http
             .post(
-                this.officeHours,
-                JSON.stringify({ TODO }),
+                this.officeHoursUrl,
+                JSON.stringify({fromTime: fromTime, toTime: toTime, days: days}),
                 {headers: this.headers})
             .toPromise()
             .then(res => res.json().data)
             .catch(this.handleError);
     }
 
+    /*
     delete(id: number): Promise<void> {
         const url = `${this.hours}/${id}`;
         return this.http.delete(url, {headers: this.headers})

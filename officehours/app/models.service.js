@@ -77,6 +77,13 @@ var OfficeHoursService = (function () {
             .then(function () { return hours; })
             .catch(this.handleError);
     };
+    OfficeHoursService.prototype.create = function (fromTime, toTime, days) {
+        return this.http
+            .post(this.officeHoursUrl, JSON.stringify({ fromTime: fromTime, toTime: toTime, days: days }), { headers: this.headers })
+            .toPromise()
+            .then(function (res) { return res.json().data; })
+            .catch(this.handleError);
+    };
     OfficeHoursService = __decorate([
         core_1.Injectable(), 
         __metadata('design:paramtypes', [http_1.Http])
