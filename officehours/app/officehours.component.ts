@@ -15,16 +15,19 @@ import 'rxjs/add/operator/switchMap';
 })
 
 export class OfficeHoursComponent implements OnInit {
-    hours: OfficeHours
+    //hours: OfficeHours
+    fromTimeText = ""
+    toTimeText = ""
+
     ohCollection: OfficeHours[]
     checkboxes = [
-        {label: 'Sunday'},
-        {label: 'Monday'},
-        {label: 'Tuesday'},
-        {label: 'Wednesday'},
-        {label: 'Thursday'},
-        {label: 'Friday'},
-        {label: 'Saturday'}
+        {label: 'Sunday', state: false},
+        {label: 'Monday', state: false},
+        {label: 'Tuesday', state: false},
+        {label: 'Wednesday', state: false},
+        {label: 'Thursday', state: false},
+        {label: 'Friday', state: false},
+        {label: 'Saturday', state: false}
     ]
 
     constructor(
@@ -39,45 +42,51 @@ export class OfficeHoursComponent implements OnInit {
     }
 
     addAnother() {
-        this.hours = null;
+        //this.hours = null;
         this.router.navigate(['officehours']);
     }
 
     gotoNext() {
-        console.log("hours: ", this.hours);
         console.log("TODO: go to the next thing");
         //this.router.navigate(['TODO']);
     }
 
     save(): void {
-        this.officeHoursService.update(this.hours)
-            .then(() => {
-                //this.gotoNext()
-                console.log("Saved: ", this.hours);
-             });
+        console.log("Clicked save() ");
+        //this.officeHoursService.update(this.hours)
+            //.then(() => {
+                //console.log("Saved: ", this.hours);
+             //});
     }
 
-    //add(fromTime: string, toTime: string, days: string[]): void {
-    add(fromTime: string, toTime: string): void {
-        console.log("CLICKED ADD");
-        console.log("fromTime: ", fromTime);
-        console.log("toTime: ", toTime);
+    add(): void {
+        // XXX: Why can I do `fromTime.value` here, and not in
+        // XXX: the template like in previous examples?
+        console.log("CLICKED ADD: ", this.fromTimeText, this.toTimeText);
 
-        fromTime = fromTime.trim()
-        toTime = toTime.trim()
+        //let hours = new OfficeHours();
+
+        /*
+        // XXX: THIS always causes errors when I stop/restart `npm start`
         let days = [];
+        this.checkboxes.some(cb => {
+            console.log(cb);
+            if(cb.state) {
+                //hours.addDay(cb.label);
+                console.log({label: cb.label, state: cb.state});
+                days.push(cb.label);
+            }
+        });
+        console.log("Days: ", days);
+        */
 
-        //this.checkboxes.some(cb => {
-            //if(cb.state) {
-                //days.push(cb.label);
-            //}
-        //})
+        //console.log("hours: ", hours);
+        //let hours = new OfficeHours(this.fromTimeText, this.toTimeText);
 
-        console.log("ADDING: ", fromTime, toTime);
-        console.log("Selected Days: ", days);
 
-        //if (!name || !email || !phone) { return; }
-        //this.officeHoursService.create(fromTime, toTime, days)
-            //.then(officehours => {this.hours = officehours; this.gotoNext();});
+        //this.officeHoursService.create(ft, tt, days)
+            //.then(officehours => {
+                //this.hours = officehours;
+            //});
     }
 }

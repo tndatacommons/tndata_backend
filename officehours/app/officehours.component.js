@@ -17,14 +17,17 @@ var OfficeHoursComponent = (function () {
         this.officeHoursService = officeHoursService;
         this.router = router;
         this.route = route;
+        //hours: OfficeHours
+        this.fromTimeText = "";
+        this.toTimeText = "";
         this.checkboxes = [
-            { label: 'Sunday' },
-            { label: 'Monday' },
-            { label: 'Tuesday' },
-            { label: 'Wednesday' },
-            { label: 'Thursday' },
-            { label: 'Friday' },
-            { label: 'Saturday' }
+            { label: 'Sunday', state: false },
+            { label: 'Monday', state: false },
+            { label: 'Tuesday', state: false },
+            { label: 'Wednesday', state: false },
+            { label: 'Thursday', state: false },
+            { label: 'Friday', state: false },
+            { label: 'Saturday', state: false }
         ];
     }
     OfficeHoursComponent.prototype.ngOnInit = function () {
@@ -34,40 +37,44 @@ var OfficeHoursComponent = (function () {
             .then(function (officehours) { return _this.ohCollection = officehours; });
     };
     OfficeHoursComponent.prototype.addAnother = function () {
-        this.hours = null;
+        //this.hours = null;
         this.router.navigate(['officehours']);
     };
     OfficeHoursComponent.prototype.gotoNext = function () {
-        console.log("hours: ", this.hours);
         console.log("TODO: go to the next thing");
         //this.router.navigate(['TODO']);
     };
     OfficeHoursComponent.prototype.save = function () {
-        var _this = this;
-        this.officeHoursService.update(this.hours)
-            .then(function () {
-            //this.gotoNext()
-            console.log("Saved: ", _this.hours);
-        });
+        console.log("Clicked save() ");
+        //this.officeHoursService.update(this.hours)
+        //.then(() => {
+        //console.log("Saved: ", this.hours);
+        //});
     };
-    //add(fromTime: string, toTime: string, days: string[]): void {
-    OfficeHoursComponent.prototype.add = function (fromTime, toTime) {
-        console.log("CLICKED ADD");
-        console.log("fromTime: ", fromTime);
-        console.log("toTime: ", toTime);
-        fromTime = fromTime.trim();
-        toTime = toTime.trim();
-        var days = [];
-        //this.checkboxes.some(cb => {
-        //if(cb.state) {
-        //days.push(cb.label);
-        //}
-        //})
-        console.log("ADDING: ", fromTime, toTime);
-        console.log("Selected Days: ", days);
-        //if (!name || !email || !phone) { return; }
-        //this.officeHoursService.create(fromTime, toTime, days)
-        //.then(officehours => {this.hours = officehours; this.gotoNext();});
+    OfficeHoursComponent.prototype.add = function () {
+        // XXX: Why can I do `fromTime.value` here, and not in
+        // XXX: the template like in previous examples?
+        console.log("CLICKED ADD: ", this.fromTimeText, this.toTimeText);
+        //let hours = new OfficeHours();
+        /*
+        // XXX: THIS always causes errors when I stop/restart `npm start`
+        let days = [];
+        this.checkboxes.some(cb => {
+            console.log(cb);
+            if(cb.state) {
+                //hours.addDay(cb.label);
+                console.log({label: cb.label, state: cb.state});
+                days.push(cb.label);
+            }
+        });
+        console.log("Days: ", days);
+        */
+        //console.log("hours: ", hours);
+        //let hours = new OfficeHours(this.fromTimeText, this.toTimeText);
+        //this.officeHoursService.create(ft, tt, days)
+        //.then(officehours => {
+        //this.hours = officehours;
+        //});
     };
     OfficeHoursComponent = __decorate([
         core_1.Component({

@@ -9,8 +9,18 @@ export class OfficeHours {
     id: number;
     fromTime: string;
     toTime: string;
-    days: string[];
-    // TODO: need user id or contact id?
+    //days: String[];
+
+    //constructor(fromTime: String, toTime: String) {
+        //this.fromTime = fromTime.trim();
+        //this.toTime = toTime.trim();
+        //console.log("Creatd OfficeHours object with: " + fromTime + ", " + toTime);
+    //}
+
+    //addDay(day: String) {
+        //this.days.push(day);
+        //console.log("Days: ", this.days);
+    //}
 }
 
 

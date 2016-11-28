@@ -3,14 +3,11 @@
   <div class="mdl-card__supporting-text">
     <div *ngIf="hours">
       <h3>Update your Office Hours</h3>
-
-      <!-- Here's an exmaple of a text input with a drop-down menu at the right. -->
       <div class="demo-avatar-dropdown">
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
           <input class="mdl-textfield__input" type="text" id="office-hours-from">
           <label class="mdl-textfield__label" for="from">From</label>
         </div>
-        <!--<div class="mdl-layout-spacer"></div>-->
         <button id="office-hours-from-button"
                 class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
           <i class="material-icons" role="presentation">arrow_drop_down</i>
@@ -90,7 +87,8 @@
           </li>
         </ul>
       </div>
-    </div> <!-- / end ngIf hours -->
+    </div>
+    <!-- / end ngIf hours -->
 
     <div *ngIf="!hours">
       <h3>Add your Office Hours</h3>
@@ -98,7 +96,7 @@
       <!-- From input -->
       <div class="demo-avatar-dropdown">
         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-          <input class="mdl-textfield__input" type="text" id="fromTime" #fromTime>
+          <input class="mdl-textfield__input" type="text" id="fromTime" [(ngModel)]="fromTimeText">
           <label class="mdl-textfield__label" for="fromTime">From</label>
         </div>
 
@@ -119,7 +117,7 @@
       <!-- To input -->
       <div class="demo-avatar-dropdown">
         <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
-          <input class="mdl-textfield__input" type="text" id="toTime" #toTime>
+          <input class="mdl-textfield__input" type="text" id="toTime" [(ngModel)]="toTimeText">
           <label class="mdl-textfield__label" for="toTime">To</label>
         </div>
 
@@ -147,32 +145,31 @@
           </li>
         </ul>
       </div>
-    </div> <!-- /end ngIf !hours -->
+    </div>
+    <!-- /end ngIf !hours -->
   </div>
 
   <!-- Card Actions -->
   <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-    <div *ngIf="hours"> <!-- if we're viewing existing office hours -->
+    <div *ngIf="hours">
       <a (click)="save(); $event.stopPropagation(); addAnother();"
          class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
          data-next="office-hours">Add Another</a>
-      <a (click)="save(); $event.stopPropagation()"
+      <a (click)="save(); $event.stopPropagation(); gotoNext();"
          class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
          data-next="add-course">Next</a>
     </div> <!-- end ngIf hours -->
 
     <!-- if we have no existing office hours -->
     <div *ngIf="!hours">
-      <a (click)="add(fromTime.value, toTime.value); $event.stopPropagation();"
-         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect">
-        Test Adding</a>
-      <!--<a (click)="add(fromTime.value, toTime.value, days.value); $event.stopPropagation(); addAnother();"-->
-         <!--class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"-->
-         <!--data-next="add-course">Next</a>-->
+      <a (click)="add(); $event.stopPropagation(); addAnother();"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="add-course">Add Another</a>
+      <a (click)="add(); $event.stopPropagation(); gotoNext();"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="add-course">Next</a>
     </div> <!-- end ngIf !hours -->
 
-    <!--<a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="office-hours">Add another</a>-->
-    <!--<a href="#" class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect" data-next="add-course">Next</a>-->
   </div>
 </div>
 
@@ -190,3 +187,4 @@
       </ul>
     </div>
   </div>
+</div>
