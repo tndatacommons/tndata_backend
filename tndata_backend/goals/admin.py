@@ -266,7 +266,7 @@ class GoalListFilter(admin.SimpleListFilter):
     parameter_name = 'goal'
 
     def lookups(self, request, model_admin):
-        return models.Goal.objects.values_list('id', 'title').order_by('title')
+        return models.Goal.objects.published().values_list('id', 'title').order_by('title')
 
     def queryset(self, request, queryset):
         goal_id = self.value()
@@ -275,17 +275,21 @@ class GoalListFilter(admin.SimpleListFilter):
         return queryset
 
 
+class ActionInline(admin.TabularInline):
+    model = models.Action
+    fields = ('title', 'notification_text', 'description')
+    extra = 0
+
+
 class BehaviorAdmin(ContentWorkflowAdmin):
     list_display = (
         'title', 'sequence_order', 'state', 'selected_by_users',
     )
-    search_fields = [
-        'title', 'source_notes', 'notes', 'more_info', 'description', 'id',
-    ]
-    list_filter = ('state', GoalListFilter)
-    prepopulated_fields = {"title_slug": ("title", )}
-    raw_id_fields = ('updated_by', 'created_by')
+    fields = ('title', 'goals')
     filter_horizontal = ('goals', )
+    search_fields = ['title', 'description', 'id']
+    list_filter = ('state', GoalListFilter)
+    inlines = [ActionInline]
 
     def selected_by_users(self, obj):
         return models.UserBehavior.objects.filter(behavior=obj).count()
