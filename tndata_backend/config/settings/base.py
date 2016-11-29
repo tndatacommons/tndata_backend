@@ -190,6 +190,7 @@ INSTALLED_APPS = (
     # custom apps
     'goals',
     'notifications',
+    'officehours',
     'rewards',
     'survey',
     'userprofile',
