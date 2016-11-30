@@ -1,5 +1,6 @@
 {% extends "officehours/base.html" %}
 {% load crispy_forms_tags %}
+{% load staticfiles %}
 
 {% block content %}
 <form action="{% url 'officehours:add-hours' %}" method="post">
@@ -7,105 +8,96 @@
 
 <!-- Office Hours -->
 <div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="office-hours">
-  <div class="mdl-card__supporting-text">
-    <h3>Office Hours</h3>
+	<div class="mdl-card__supporting-text">
+		<h3>Office Hours</h3>
 
-    {% crispy form form.helper %}
-
-    {% comment %}
-    <!-- Here's an exmaple of a text input with a drop-down menu at the right. -->
-    <div class="demo-avatar-dropdown">
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input class="mdl-textfield__input" type="text" id="office-hours-from">
-        <label class="mdl-textfield__label" for="from">From</label>
+   	<div class="demo-avatar-dropdown">
+			<div id="div_id_from_time"
+  				 class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+      	<input class="mdl-textfield__input timeinput"
+               id="id_from_time"
+               name="from_time"
+               {% if from_time %}value="{{from_time|date:"g:i A"|lower}}"{% endif %}
+               type="text" />
+       	<label for="id_from_time" class="mdl-textfield__label">From time</label>
+        {% if from_error %}
+          <span class="mdl-textfield__error" style="visibility: visible">
+            {{ from_error }}</span>
+        {% endif %}
       </div>
-      <!--<div class="mdl-layout-spacer"></div>-->
-      <button id="office-hours-from-button"
-              class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+      <button id="office-hours-id_from_time-button"
+              class="helper mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
         <i class="material-icons" role="presentation">arrow_drop_down</i>
         <span class="visuallyhidden">Times</span>
       </button>
       <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-          for="office-hours-from-button">
-        <li class="mdl-menu__item" data-val="8:00 am" data-forid="office-hours-from">8:00 am</li>
-        <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="office-hours-from">10:00 am</li>
-        <li class="mdl-menu__item" data-val="1:00 pm" data-forid="office-hours-from">1:00 pm</li>
-        <li class="mdl-menu__item" data-val="2:00 pm" data-forid="office-hours-from">2:00 pm</li>
+          for="office-hours-id_from_time-button">
+          <li class="mdl-menu__item" data-val="8:00 am"
+              data-forid="id_from_time">8:00 am</li>
+          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider"
+              data-val="10:00 am" data-forid="id_from_time">10:00 am</li>
+          <li class="mdl-menu__item" data-val="1:00 pm"
+              data-forid="id_from_time">1:00 pm</li>
+          <li class="mdl-menu__item" data-val="2:00 pm"
+              data-forid="id_from_time">2:00 pm</li>
       </ul>
     </div>
-
     <div class="demo-avatar-dropdown">
-      <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
-        <input class="mdl-textfield__input" type="text" id="office-hours-to">
-        <label class="mdl-textfield__label" for="to">To</label>
+      <div id="div_id_to_time"
+           class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input timeinput"
+               id="id_to_time"
+               name="to_time"
+               {% if to_time %}value="{{to_time|date:"g:i A"|lower}}"{% endif %}
+               type="text" />
+        <label for="id_to_time" class="mdl-textfield__label">To time</label>
+        {% if to_error %}
+          <span class="mdl-textfield__error" style="visibility: visible">
+            {{ to_error }}</span>
+        {% endif %}
       </div>
-      <button id="office-hours-to-button"
-              class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+      <button id="office-hours-id_to_time-button"
+              class="helper mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
         <i class="material-icons" role="presentation">arrow_drop_down</i>
         <span class="visuallyhidden">Times</span>
       </button>
       <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-          for="office-hours-to-button">
-        <li class="mdl-menu__item" data-val="8:00 am" data-forid="office-hours-to">8:00 am</li>
-        <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="office-hours-to">10:00 am</li>
-        <li class="mdl-menu__item" data-val="1:00 pm" data-forid="office-hours-to">1:00 pm</li>
-        <li class="mdl-menu__item" data-val="2:00 pm" data-forid="office-hours-to">2:00 pm</li>
+          for="office-hours-id_to_time-button">
+          <li class="mdl-menu__item" data-val="8:00 am"
+              data-forid="id_to_time">8:00 am</li>
+          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider"
+              data-val="10:00 am" data-forid="id_to_time">10:00 am</li>
+          <li class="mdl-menu__item" data-val="1:00 pm"
+              data-forid="id_to_time">1:00 pm</li>
+          <li class="mdl-menu__item" data-val="2:00 pm"
+              data-forid="id_to_time">2:00 pm</li>
       </ul>
     </div>
 
     <div class="mdl-textfield mdl-js-textfield">
       <ul>
+        {% for day in day_choices %}
         <li>
-          <label for="office-hours-day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-sunday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Sunday</span>
+          <label for="office-hours-day-{{ day|lower }}"
+                 class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+            <input type="checkbox"
+                   id="office-hours-day-{{ day|lower }}"
+                   class="mdl-checkbox__input"
+                   name="{{ day }}"
+                   {% if day in selected_days %}checked="checked"{% endif %}
+                   data-day="{{ day }}">
+            <span class="mdl-checkbox__label">{{ day }}</span>
           </label>
         </li>
-        <li>
-          <label for="office-hours-day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-monday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Monday</span>
-          </label>
-        </li>
-        <li>
-          <label for="office-hours-day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-tuesday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Tuesday</span>
-          </label>
-        </li>
-        <li>
-          <label for="office-hours-day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-wednesday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Wednesday</span>
-          </label>
-        </li>
-        <li>
-          <label for="office-hours-day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-thursday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Thursday</span>
-          </label>
-        </li>
-        <li>
-          <label for="office-hours-day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-friday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Friday</span>
-          </label>
-        </li>
-        <li>
-          <label for="office-hours-day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox" id="office-hours-day-saturday" class="mdl-checkbox__input">
-            <span class="mdl-checkbox__label">Saturday</span>
-          </label>
-        </li>
+        {% endfor %}
       </ul>
     </div>
-    {% endcomment %}
   </div>
   <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
     <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit">Add another</button>
+            type="submit" name="another" value="true">Add another</button>
     <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit">Next</button>
+            type="submit" name="next" value="true">Next</button>
   </div>
 </div>
 </form>
@@ -113,8 +105,5 @@
 
 
 {% block bodyjs %}
-<script type="text/javascript">
-$(document).ready(function() {
-});
-</script>
+<script src="{% static 'js/officehours_officehours_form.js' %}"></script>
 {% endblock %}

@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 
-from .forms import ContactForm, OfficeHoursForm
+from .forms import ContactForm
+from .models import OfficeHours
 
 # index
 # - welcome (if no courses)
@@ -21,12 +24,6 @@ from .forms import ContactForm, OfficeHoursForm
 class IndexView(TemplateView):
     template_name = "officehours/index.html"
 
-    # def get_context_data(self, **kwargs):
-        # context = super().get_context_data(**kwargs)
-        # messages.warning(self.request, "WARN. This is a Warning.")
-        # messages.success(self.request, "SUCCESS. This is a success message.")
-        # return context
-
 
 class ExamplesView(TemplateView):
     template_name = "officehours/mdl_examples.html"
@@ -35,9 +32,9 @@ class ExamplesView(TemplateView):
 def add_code(request):
     if request.method == "POST":
         pass
-        #return redirect(program.get_absolute_url())
+        # return redirect(program.get_absolute_url())
     else:
-        #form = MembersForm()
+        # form = MembersForm()
         pass
 
     context = {}
@@ -76,21 +73,62 @@ def contact_info(request):
 
 
 def add_hours(request):
+    """
+    Allow a user to add office hours.
+
+    NOTE: This doesn't use any Forms because I wasted a whole day trying to
+    get this form UI working with MDL; so, I just gave up and hard-coded the
+    html form.
+
+    """
+    from_error = None
+    to_error = None
+    from_time = ''
+    to_time = ''
+    selected_days = []
+
     if request.method == "POST":
-        form = OfficeHoursForm(request.POST)
+        try:
+            from_time = request.POST['from_time']
+            from_time = datetime.strptime(from_time, '%I:%M %p').time()
+        except ValueError:
+            from_time = ''
+            from_error = "Enter a valid time"
 
-        if form.is_valid():
-            hours = form.save(commit=False)
-            hours.user = request.user
-            hours.save()
+        try:
+            to_time = request.POST['to_time']
+            to_time = datetime.strptime(to_time, '%I:%M %p').time()
+        except ValueError:
+            to_time = ''
+            to_error = "Enter a valid time"
 
+        for key, val in request.POST.items():
+            if val == "on":
+                selected_days.append(key)
+
+        if all([from_time, to_time, selected_days]):
+            OfficeHours.objects.create(
+                user=request.user,
+                from_time=from_time,
+                to_time=to_time,
+                days=selected_days
+            )
             messages.success(request, "Office hours saved.")
-            # TODO: next / add another.
-            return redirect("/")
+            if request.POST.get('another') == "true":
+                return redirect("officehours:add-hours")
+            return redirect("/officehours/add-hours/")  # TODO: what's next
         else:
             messages.error(request, "Unable to save your office hours.")
-    else:
-        form = OfficeHoursForm()
 
-    context = {'form': form}
+    context = {
+        'from_time': from_time,
+        'from_error': from_error,
+        'to_error': to_error,
+        'to_time': to_time,
+        'selected_days': selected_days,
+        'day_choices': [
+            'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+            'Thursday', 'Friday', 'Saturday',
+        ]
+    }
     return render(request, 'officehours/add_hours.html', context)
