@@ -8,6 +8,9 @@ $(document).ready(function() {
     //$("#div_id_days").hide(); // Hide the days textfield
 
     /*************************************
+     *
+     * XXX: Don't need this since i just hard-coded the form.
+     *
     // Pre-select any necessary days.
     var selectedDays = $("#id_days").val();
     if(selectedDays.length) {
