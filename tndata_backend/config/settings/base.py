@@ -366,7 +366,7 @@ RQ_QUEUES = {
 
 # Crispy forms
 CRISPY_TEMPLATE_PACK = 'foundation-5'
-CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5')
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5', 'mdl')
 
 # Django Rest Framework
 REST_FRAMEWORK = {
