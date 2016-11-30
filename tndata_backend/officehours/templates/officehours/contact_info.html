@@ -1,0 +1,19 @@
+{% extends "officehours/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<form action="{% url 'officehours:contact-info' %}" method="post">
+{% csrf_token %}
+<!-- Teacher Info -->
+<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="teacher-info">
+  <div class="mdl-card__supporting-text">
+    <h3>Add your information</h3>
+    {% crispy form %}
+  </div>
+  <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
+    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+            type="submit">Next</button>
+  </div>
+</div>
+</form>
+{% endblock %}
