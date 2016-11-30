@@ -49,6 +49,10 @@
     <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="//code.getmdl.io/1.2.1/material.cyan-light_blue.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <script src="//code.getmdl.io/1.2.1/material.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
   </head>
   <body>
     <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
@@ -95,14 +99,12 @@
       <button class="mdl-snackbar__action" type="button"></button>
     </div>
 
-    <script src="//code.getmdl.io/1.2.1/material.min.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     {# Show messages from django.contrib.messages in a Snackbar / Toast #}
     {% if messages %}
     <script type="text/javascript">
       $(document).ready(function() {
       var toast = document.querySelector('.mdl-js-snackbar');
-      if(toast){ {% for message in messages %}
+      if(toast && toast.MaterialSnackbar && toast.MaterialSnackbar.showSnackbar){ {% for message in messages %}
       toast.MaterialSnackbar.showSnackbar({message: "{{message}}"});
       {% endfor %} }
       });
