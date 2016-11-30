@@ -85,7 +85,7 @@
       </main>
       <!-- /MAIN -->
     </div>
-    <a href="#" id="main-fab" class="hidden mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored" data-next="add-code">
+    <a href="#" id="main-fab" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored" data-next="add-code">
       <i class="material-icons">add</i>
     </a>
 
@@ -97,17 +97,16 @@
 
     <script src="//code.getmdl.io/1.2.1/material.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="{% static 'js/app.js' %}"></script>
     {# Show messages from django.contrib.messages in a Snackbar / Toast #}
     {% if messages %}
-      <script type="text/javascript">
+    <script type="text/javascript">
       $(document).ready(function() {
       var toast = document.querySelector('.mdl-js-snackbar');
       if(toast){ {% for message in messages %}
       toast.MaterialSnackbar.showSnackbar({message: "{{message}}"});
       {% endfor %} }
       });
-      </script>
+    </script>
     {% endif %}
     {% block bodyjs %}{% endblock %}
   </body>
