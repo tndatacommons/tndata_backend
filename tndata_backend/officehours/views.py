@@ -40,14 +40,22 @@ def index(request):
 
 def add_code(request):
     if request.method == "POST":
-        pass
-        # return redirect(program.get_absolute_url())
-    else:
-        # form = MembersForm()
-        pass
+        code = "{}{}{}{}".format(  # lulz
+            request.POST['code_1'],
+            request.POST['code_2'],
+            request.POST['code_3'],
+            request.POST['code_4'],
+        )
+        try:
+            course = Course.objects.get(code=code)
+            course.students.add(request.user)
+            messages.success(request, "Course added to your schedule.")
+            return redirect('officehours:schedule')
+        except Course.DoesNotExist:
+            messages.error(request, "Could not find that course.")
+            return redirect('officehours:add-code')
 
-    context = {}
-    return render(request, 'officehours/add_code.html', context)
+    return render(request, 'officehours/add_code.html', {})
 
 
 def contact_info(request):

@@ -2,33 +2,38 @@
 
 {% block content %}
 
+<form action="{% url 'officehours:add-code' %}" method="post">{% csrf_token %}
 <div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
     id="add-code">
   <div class="mdl-card__supporting-text">
     <h3>Add your Code</h3>
     <div class="mdl-grid">
       <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-phone mdl-cell--2-col-tablet">
-        <input type="text" id="code-1" name="code_1" class="code-input" maxlength="1" minlength="1">
+        <input type="text" id="code-1" name="code_1"
+               class="code-input" maxlength="1" minlength="1">
       </div>
       <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-phone mdl-cell--2-col-tablet">
-        <input type="text" id="code-2" name="code_2" class="code-input" maxlength="1" minlength="1">
+        <input type="text" id="code-2" name="code_2"
+               class="code-input" maxlength="1" minlength="1">
       </div>
       <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-phone mdl-cell--2-col-tablet">
-        <input type="text" id="code-3" name="code_3" class="code-input" maxlength="1" minlength="1">
+        <input type="text" id="code-3" name="code_3"
+               class="code-input" maxlength="1" minlength="1">
       </div>
       <div class="mdl-cell mdl-cell--3-col mdl-cell--1-col-phone mdl-cell--2-col-tablet">
-        <input type="text" id="code-4" name="code_4" class="code-input" maxlength="1" minlength="1">
+        <input type="text" id="code-4" name="code_4"
+               class="code-input" maxlength="1" minlength="1">
       </div>
     </div>
   </div>
   <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-    <a class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-       href="#">Add code</a>
+    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect">
+       Add code</button>
     <div class="mdl-layout-spacer"></div>
     <i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">event</i>
   </div>
 </div>
-
+</form>
 {% endblock %}
 
 
@@ -38,6 +43,7 @@
 $(document).ready(function() {
   // Auto-advance the Code inputs.
   $(".code-input").keyup(function() {
+      $(this).val($(this).val().toUpperCase());
       var next = {
           'code-1': 'code-2',
           'code-2': 'code-3',
