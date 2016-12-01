@@ -101,4 +101,8 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         self._set_expires()
         self._set_name_slug()
+        self._set_code()
         super().save(*args, **kwargs)
+
+    def get_share_url(self):
+        return reverse('officehours:share-course', args=[self.id])
