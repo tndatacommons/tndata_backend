@@ -2,8 +2,6 @@
  * Hide the days textfield and use JS to populate it based on selected
  * checkbox options.
  */
-var _checkboxEditing = {};
-
 $(document).ready(function() {
     //$("#div_id_days").hide(); // Hide the days textfield
 
