@@ -50,9 +50,8 @@
     <link rel="stylesheet" href="//code.getmdl.io/1.2.1/material.cyan-light_blue.min.css">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 
-    <script src="//code.getmdl.io/1.2.1/material.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
+    <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
   </head>
   <body>
     <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
@@ -94,22 +93,33 @@
     </a>
 
     <!-- Snackbar / Toast -->
-    <div id="toast-container" aria-live="assertive" aria-atomic="true" aria-relevant="text" class="mdl-snackbar mdl-js-snackbar">
+    <div id="snackbar-container"
+         aria-live="assertive"
+         aria-atomic="true"
+         aria-relevant="text"
+         class="mdl-snackbar mdl-js-snackbar">
       <div class="mdl-snackbar__text"></div>
       <button class="mdl-snackbar__action" type="button"></button>
     </div>
 
-    {# Show messages from django.contrib.messages in a Snackbar / Toast #}
-    {% if messages %}
-    <script type="text/javascript">
-      $(document).ready(function() {
-      var toast = document.querySelector('.mdl-js-snackbar');
-      if(toast && toast.MaterialSnackbar && toast.MaterialSnackbar.showSnackbar){ {% for message in messages %}
-      toast.MaterialSnackbar.showSnackbar({message: "{{message}}"});
-      {% endfor %} }
-      });
-    </script>
-    {% endif %}
+{# Show messages from django.contrib.messages in a Snackbar / Toast #}
+<script type="text/javascript">
+$(document).ready(function() {
+    // Pause for a bit before we show any snackbars. Apparently we have to
+    // wait for some MDL thing to happen.
+    var timeoutId = window.setTimeout(function() {
+      var messages = [
+        {% for message in messages %}'{{message}}'{% if not forloop.last %},{% endif %}{% endfor %}
+      ];
+      var snackbarContainer = document.getElementById('snackbar-container');
+      if(messages.length) {
+        for(var i=0; i<messages.length; i++) {
+          snackbarContainer.MaterialSnackbar.showSnackbar({message: messages[i]});
+        }
+      }
+    }, 500);
+});
+</script>
     {% block bodyjs %}{% endblock %}
   </body>
 </html>
