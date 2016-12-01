@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 
 from .forms import ContactForm
-from .models import OfficeHours
+from .models import Course, OfficeHours
 
 # index
 # - welcome (if no courses)
@@ -116,7 +116,7 @@ def add_hours(request):
             messages.success(request, "Office hours saved.")
             if request.POST.get('another') == "true":
                 return redirect("officehours:add-hours")
-            return redirect("/officehours/add-hours/")  # TODO: what's next
+            return redirect("officehours:add-course")
         else:
             messages.error(request, "Unable to save your office hours.")
 
@@ -132,3 +132,98 @@ def add_hours(request):
         ]
     }
     return render(request, 'officehours/add_hours.html', context)
+
+
+def add_course(request):
+    """
+    Allow a user to add office hours.
+
+    NOTE: This doesn't use any Forms because I wasted a whole day trying to
+    get this form UI working with MDL; so, I just gave up and hard-coded the
+    html form.
+
+    """
+    coursetime = ''
+    coursetime_error = None
+    coursename = ''
+    coursename_error = ''
+    location = ''
+    location_error = ''
+    selected_days = []
+
+    if request.method == "POST":
+        coursename = request.POST['coursename']
+        if not coursename:
+            coursename_error = "Course name is required"
+        location = request.POST['coursename']
+        if not location:
+            location_error = "Location is required"
+
+        try:
+            coursetime = request.POST['coursetime']
+            coursetime = datetime.strptime(coursetime, '%I:%M %p').time()
+        except ValueError:
+            coursetime = ''
+            coursetime = "Enter a valid time"
+
+        for key, val in request.POST.items():
+            if val == "on":
+                selected_days.append(key)
+
+        if all([coursename, coursetime, location, selected_days]):
+            course = Course.objects.create(
+                user=request.user,
+                name=coursename,
+                start_time=coursetime,
+                location=location,
+                days=selected_days
+            )
+            messages.success(request, "Course info saved.")
+            if request.POST.get('another') == "true":
+                return redirect("officehours:add-course")
+            return redirect(course.get_share_url())
+        else:
+            messages.error(request, "Unable to save your course.")
+
+    context = {
+        'coursename': coursename,
+        'coursename_error': coursename_error,
+        'coursetime': coursetime,
+        'coursetime_error': coursetime_error,
+        'location': location,
+        'location_error': location_error,
+        'selected_days': selected_days,
+        'day_choices': [
+            'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+            'Thursday', 'Friday', 'Saturday',
+        ]
+    }
+    return render(request, 'officehours/add_course.html', context)
+
+
+def share_course(request, pk):
+    """Display the course's share code"""
+    context = {
+        'course': get_object_or_404(Course, pk=pk)
+    }
+    return render(request, 'officehours/share_course.html', context)
+
+
+def course_details(request, pk):
+    """Display course details"""
+    context = {
+        'course': get_object_or_404(Course, pk=pk)
+    }
+    return render(request, 'officehours/course_details.html', context)
+
+
+def schedule(request):
+    """
+    """
+    # TODO: courses in which user is teacher.
+    # TODO: courses in which user is student.
+    #course = Course.objects.get(pk=pk)
+
+    context = {
+    }
+    return render(request, 'officehours/schedule.html', context)
