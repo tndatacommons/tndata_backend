@@ -21,12 +21,21 @@ from .models import Course, OfficeHours
 # -- share
 
 
-class IndexView(TemplateView):
-    template_name = "officehours/index.html"
-
-
 class ExamplesView(TemplateView):
     template_name = "officehours/mdl_examples.html"
+
+
+def index(request):
+    if (
+        request.user.is_authenticated() and
+        (request.user.officehours_set.exists() or
+         request.user.teaching.exists() or
+         request.user.course_set.exists())
+    ):
+        return redirect("officehours:schedule")
+
+    return render(request, 'officehours/index.html', {})
+
 
 
 def add_code(request):
@@ -218,12 +227,17 @@ def course_details(request, pk):
 
 
 def schedule(request):
-    """
-    """
-    # TODO: courses in which user is teacher.
-    # TODO: courses in which user is student.
-    #course = Course.objects.get(pk=pk)
+    """List courses in which the user is a student / teacher."""
+
+    student_schedule = request.user.course_set.all()
+    teaching_schedule = request.user.teaching.all()
+    office_hours = request.user.officehours_set.all()
 
     context = {
+        'student_schedule': student_schedule,
+        'teaching_schedule': request.user.teaching.all(),
+        'office_hours': office_hours,
+        'is_student': student_schedule.exists(),
+        'is_teacher': teaching_schedule.exists() or office_hours.exists()
     }
     return render(request, 'officehours/schedule.html', context)

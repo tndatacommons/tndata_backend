@@ -86,6 +86,12 @@ class Course(models.Model):
         verbose_name = "Course"
         verbose_name_plural = "Courses"
 
+    def display_time(self):
+        return "{} {}".format(
+            self.start_time.strftime("%I:%M %p"),
+            "".join(d[0] for d in self.days).upper()
+        )
+
     def _set_code(self):
         if not self.code:
             self.code = generate_course_code()
