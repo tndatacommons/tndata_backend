@@ -27,6 +27,8 @@ be set prior to running the project:
 * HAYSTACK_INDEX_NAME -- index name to use for haystack
 * GCM_API_KEY -- API key for google cloud messaging
 * GCM_IOS_API_KEY -- API key for google cloud messaging (for iOS)
+* GOOGLE_OAUTH_CLIENT_ID -- API key for OAuth with Google
+* GOOGLE_OAUTH_CLIENT_SECRET -- Secret for OAuth with Google
 * APNS_CERT_PATH  -- Path the the Apple Certificate for APNS
 * DB_NAME -- Database name
 * DB_USER -- Database user
@@ -190,6 +192,7 @@ INSTALLED_APPS = (
     # custom apps
     'goals',
     'notifications',
+    'officehours',
     'rewards',
     'survey',
     'userprofile',
@@ -206,6 +209,9 @@ HAYSTACK_CONNECTIONS = {
     },
 }
 
+# Google OAuth
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
+GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
 
 # Settings for Google Cloud Messaging.
 GCM = {
@@ -365,7 +371,7 @@ RQ_QUEUES = {
 
 # Crispy forms
 CRISPY_TEMPLATE_PACK = 'foundation-5'
-CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5')
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('uni_form', 'foundation-5', 'mdl')
 
 # Django Rest Framework
 REST_FRAMEWORK = {

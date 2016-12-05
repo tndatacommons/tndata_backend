@@ -1,0 +1,190 @@
+<!-- Office Hours -->
+<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="office-hours">
+  <div class="mdl-card__supporting-text">
+    <div *ngIf="hours">
+      <h3>Update your Office Hours</h3>
+      <div class="demo-avatar-dropdown">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+          <input class="mdl-textfield__input" type="text" id="office-hours-from">
+          <label class="mdl-textfield__label" for="from">From</label>
+        </div>
+        <button id="office-hours-from-button"
+                class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+          <i class="material-icons" role="presentation">arrow_drop_down</i>
+          <span class="visuallyhidden">Times</span>
+        </button>
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+            for="office-hours-from-button">
+          <li class="mdl-menu__item" data-val="8:00 am" data-forid="office-hours-from">8:00 am</li>
+          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="office-hours-from">10:00 am</li>
+          <li class="mdl-menu__item" data-val="1:00 pm" data-forid="office-hours-from">1:00 pm</li>
+          <li class="mdl-menu__item" data-val="2:00 pm" data-forid="office-hours-from">2:00 pm</li>
+        </ul>
+      </div>
+
+      <div class="demo-avatar-dropdown">
+        <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
+          <input class="mdl-textfield__input" type="text" id="office-hours-to">
+          <label class="mdl-textfield__label" for="to">To</label>
+        </div>
+        <button id="office-hours-to-button"
+                class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+          <i class="material-icons" role="presentation">arrow_drop_down</i>
+          <span class="visuallyhidden">Times</span>
+        </button>
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+            for="office-hours-to-button">
+          <li class="mdl-menu__item" data-val="8:00 am" data-forid="office-hours-to">8:00 am</li>
+          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="office-hours-to">10:00 am</li>
+          <li class="mdl-menu__item" data-val="1:00 pm" data-forid="office-hours-to">1:00 pm</li>
+          <li class="mdl-menu__item" data-val="2:00 pm" data-forid="office-hours-to">2:00 pm</li>
+        </ul>
+      </div>
+
+      <div class="mdl-textfield mdl-js-textfield">
+        <ul>
+          <li>
+            <label for="office-hours-day-sunday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-sunday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Sunday</span>
+            </label>
+          </li>
+          <li>
+            <label for="office-hours-day-monday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-monday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Monday</span>
+            </label>
+          </li>
+          <li>
+            <label for="office-hours-day-tuesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-tuesday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Tuesday</span>
+            </label>
+          </li>
+          <li>
+            <label for="office-hours-day-wednesday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-wednesday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Wednesday</span>
+            </label>
+          </li>
+          <li>
+            <label for="office-hours-day-thursday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-thursday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Thursday</span>
+            </label>
+          </li>
+          <li>
+            <label for="office-hours-day-friday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-friday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Friday</span>
+            </label>
+          </li>
+          <li>
+            <label for="office-hours-day-saturday" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="office-hours-day-saturday" class="mdl-checkbox__input">
+              <span class="mdl-checkbox__label">Saturday</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- / end ngIf hours -->
+
+    <div *ngIf="!hours">
+      <h3>Add your Office Hours</h3>
+
+      <!-- From input -->
+      <div class="demo-avatar-dropdown">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+          <input class="mdl-textfield__input" type="text" id="fromTime" [(ngModel)]="fromTimeText">
+          <label class="mdl-textfield__label" for="fromTime">From</label>
+        </div>
+
+        <button id="office-hours-from-button"
+                class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+          <i class="material-icons" role="presentation">arrow_drop_down</i>
+          <span class="visuallyhidden">Times</span>
+        </button>
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+            for="office-hours-from-button">
+          <li class="mdl-menu__item" data-val="8:00 am" data-forid="fromTime">8:00 am</li>
+          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="fromTime">10:00 am</li>
+          <li class="mdl-menu__item" data-val="1:00 pm" data-forid="fromTime">1:00 pm</li>
+          <li class="mdl-menu__item" data-val="2:00 pm" data-forid="fromTime">2:00 pm</li>
+        </ul>
+      </div>
+
+      <!-- To input -->
+      <div class="demo-avatar-dropdown">
+        <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
+          <input class="mdl-textfield__input" type="text" id="toTime" [(ngModel)]="toTimeText">
+          <label class="mdl-textfield__label" for="toTime">To</label>
+        </div>
+
+        <button id="office-hours-to-button"
+                class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
+          <i class="material-icons" role="presentation">arrow_drop_down</i>
+          <span class="visuallyhidden">Times</span>
+        </button>
+        <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
+            for="office-hours-to-button">
+          <li class="mdl-menu__item" data-val="8:00 am" data-forid="toTime">8:00 am</li>
+          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider" data-val="10:00 am" data-forid="toTime">10:00 am</li>
+          <li class="mdl-menu__item" data-val="1:00 pm" data-forid="toTime">1:00 pm</li>
+          <li class="mdl-menu__item" data-val="2:00 pm" data-forid="toTime">2:00 pm</li>
+        </ul>
+      </div>
+
+      <div class="mdl-textfield mdl-js-textfield">
+        <ul>
+          <li *ngFor="let cb of checkboxes">
+            <label for="{{cb.label}}" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+              <input type="checkbox" id="{{cb.label}}" class="mdl-checkbox__input" [(ngModel)]="cb.state">
+              <span class="mdl-checkbox__label">{{cb.label}}</span>
+            </label>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <!-- /end ngIf !hours -->
+  </div>
+
+  <!-- Card Actions -->
+  <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
+    <div *ngIf="hours">
+      <a (click)="save(); $event.stopPropagation(); addAnother();"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="office-hours">Add Another</a>
+      <a (click)="save(); $event.stopPropagation(); gotoNext();"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="add-course">Next</a>
+    </div> <!-- end ngIf hours -->
+
+    <!-- if we have no existing office hours -->
+    <div *ngIf="!hours">
+      <a (click)="add(); $event.stopPropagation(); addAnother();"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="add-course">Add Another</a>
+      <a (click)="add(); $event.stopPropagation(); gotoNext();"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="add-course">Next</a>
+    </div> <!-- end ngIf !hours -->
+
+  </div>
+</div>
+
+
+<!-- LIST all the office hours in our DB; TODO: remove later -->
+<div *ngIf="ohCollection">
+  <div class="demo-options mdl-card mdl-color--teal-400 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="teacher-info">
+    <div class="mdl-card__title mdl-card--expand">
+      <h2 class="mdl-card__title-text">Existing Office Hours</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+      <ul>
+        <li *ngFor="let hours of ohCollection">
+          {{hours.id}} / {{hours.fromTime}} - {{hours.toTime}} / {{hours.days}}</li>
+      </ul>
+    </div>
+  </div>
+</div>

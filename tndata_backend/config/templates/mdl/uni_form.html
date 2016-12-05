@@ -1,0 +1,21 @@
+{% if include_media %}{{ form.media }}{% endif %}
+{% if form_show_errors %}
+    {% include "mdl/errors.html" %}
+{% endif %}
+
+{% comment %}
+{% if form_style == "" or form_style %}
+    <fieldset class="{{ form_style }}">
+        <legend></legend>
+{% endif %}
+{% endcomment %}
+
+{% for field in form %}
+    {% include "mdl/field.html" %}
+{% endfor %}
+
+{% comment %}
+{% if form_style == "" or form_style %}
+    </fieldset>
+{% endif %}
+{% endcomment %}

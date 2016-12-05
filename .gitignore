@@ -1,8 +1,10 @@
+.DS_Store
 .coverage
 .coveragerc
 dump.sql
 *.sqlite3
 env/
+node_modules/
 tndata_backend/uploads
 tndata_backend/tndata_backend/uploads
 tndata_backend/collected_static_files

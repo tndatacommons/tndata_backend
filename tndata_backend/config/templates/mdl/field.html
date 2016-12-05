@@ -1,0 +1,32 @@
+{% load crispy_forms_field %}
+
+{% if field.is_hidden %}
+    {{ field }}
+{% else %}
+    <div id="div_{{ field.auto_id }}" class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label{% if field.errors and form_show_errors %} error{% endif %}{% if field|is_checkbox %} checkbox{% endif %}{% if field.css_classes %} {{ field.css_classes }}{% endif %}">
+        {% crispy_field field  class="mdl-textfield__input" %}
+        {% if field.label %}
+            <label for="{{ field.id_for_label }}" class="mdl-textfield__label {% if field.field.required %}requiredField{% endif %}">
+                {{ field.label|safe }}{% if field.field.required %}<span class="asteriskField">*</span>{% endif %}
+            </label>
+        {% endif %}
+
+        {% if form_show_errors %}
+            {% for error in field.errors %}
+              {% if error %}
+                <span class="mdl-textfield__error"
+                      style="visibility: visible"
+                      id="error_{{ forloop.counter }}_{{ field.auto_id }}">
+                {{ error }}</span>
+              {% endif %}
+            {% endfor %}
+            </span>
+        {% endif %}
+
+        {% comment %}
+        {% if field.help_text %}
+            <div id="hint_{{ field.auto_id }}" class="formHint">{{ field.help_text|safe }}</div>
+        {% endif %}
+        {% endcomment %}
+    </div>
+{% endif %}

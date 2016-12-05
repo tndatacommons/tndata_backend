@@ -1,0 +1,4 @@
+<div {% if div.css_id %}id="{{ div.css_id }}"{% endif %}
+    class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label{% if div.css_class %} {{ div.css_class }}{% endif %}" {{ div.flat_attrs|safe }}>
+        {{ fields|safe }}
+</div>

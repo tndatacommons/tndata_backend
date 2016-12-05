@@ -1,0 +1,65 @@
+<!-- Contact Info -->
+<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="teacher-info">
+
+  <!-- If we have an existing contact's info, then update -->
+  <div *ngIf="contact">
+    <div class="mdl-card__supporting-text">
+      <h3>Update your contact information (id: {{ contact.id }})</h3>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" [(ngModel)]="contact.name" placeholder="Your Name">
+        <label class="mdl-textfield__label" for="name">Your Name</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" [(ngModel)]="contact.email">
+        <label class="mdl-textfield__label" for="email">Email</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" [(ngModel)]="contact.phone">
+        <label class="mdl-textfield__label" for="email">Phone</label>
+      </div>
+    </div>
+    <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
+      <a (click)="save(); $event.stopPropagation()"
+         class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+         data-next="office-hours">Update</a>
+    </div>
+	</div> <!-- /end ngIf contact -->
+
+  <!-- No contact's info, then add/create -->
+  <div *ngIf="!contact">
+    <div class="mdl-card__supporting-text">
+      <h3>Add your contact information</h3>
+      <div class="mdl-textfield mdl-js-textfield">
+        <input class="mdl-textfield__input" type="text" id="contactName" #contactName>
+        <label class="mdl-textfield__label" for="contactName">Your Name</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" id="contactEmail" #contactEmail>
+        <label class="mdl-textfield__label" for="contactEmail">Email</label>
+      </div>
+      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+        <input class="mdl-textfield__input" #contactPhone>
+        <label class="mdl-textfield__label" for="contactPhone">Phone</label>
+		  </div>
+		</div>
+    <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
+      <a
+        class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
+        (click)="add(contactName.value, contactEmail.value, contactPhone.value); $event.stopPropagation()">Save</a>
+		</div>
+	</div> <!-- /end ngIf !contact -->
+</div>
+
+
+<div *ngIf="contacts">
+  <div class="demo-options mdl-card mdl-color--teal-400 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="teacher-info">
+    <div class="mdl-card__title mdl-card--expand">
+      <h2 class="mdl-card__title-text">Existing Contacts</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+        <ul>
+          <li *ngFor="let c of contacts">{{c.id}} / {{c.name}} / {{c.email}} / {{c.phone}}</li>
+        </ul>
+    </div>
+  </div>
+</div>

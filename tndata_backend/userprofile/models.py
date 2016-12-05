@@ -108,6 +108,7 @@ class UserProfile(models.Model):
     needs_onboarding = models.BooleanField(default=True, blank=True)
 
     # Profile fields.
+    phone = models.CharField(max_length=32, blank=True, null=True)
     zipcode = models.CharField(max_length=32, blank=True, null=True)
     birthday = models.DateField(blank=True, null=True)
     sex = models.CharField(

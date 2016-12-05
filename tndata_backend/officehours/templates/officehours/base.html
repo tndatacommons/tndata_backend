@@ -1,0 +1,125 @@
+{% load staticfiles %}
+<!doctype html>
+<!--
+  Material Design Lite
+  Copyright 2015 Google Inc. All rights reserved.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      https://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Todo...">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <title>OFFICE HOURS</title>
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="icon" sizes="192x192" href="{% static 'img/android-desktop.png' %}">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Material Design Lite">
+    <link rel="apple-touch-icon-precomposed" href="{% static 'img/ios-desktop.png' %}">
+
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileImage" content="{% static 'img/touch/ms-touch-icon-144x144-precomposed.png' %}">
+    <meta name="msapplication-TileColor" content="#3372DF">
+
+    <link rel="shortcut icon" href="{% static 'img/favicon.png' %}">
+
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!--
+    <link rel="canonical" href="http://www.example.com/">
+    -->
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+    <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="//code.getmdl.io/1.2.1/material.cyan-light_blue.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
+  </head>
+  <body>
+    <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+      <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
+        <div class="mdl-layout__header-row">
+          <span class="mdl-layout-title">Home</span>
+          <div class="mdl-layout-spacer"></div>
+          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" id="hdrbtn">
+            <i class="material-icons">more_vert</i>
+          </button>
+          <ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right" for="hdrbtn">
+            <li class="mdl-menu__item">About</li>
+            <li class="mdl-menu__item">Contact</li>
+            <li class="mdl-menu__item">Legal information</li>
+          </ul>
+        </div>
+      </header>
+
+      <!-- NAV Drawer -->
+      <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+        {% include 'officehours/_side_menu.html' %}
+      </div>
+      <!-- /NAV Drawer -->
+
+      <!-- MAIN -->
+      <main class="mdl-layout__content mdl-color--grey-100">
+        <div class="mdl-grid demo-content">
+          <div class="demo-cards mdl-cell mdl-cell--4-col-phone mdl-cell--8-col-tablet mdl-cell--6-col-desktop mdl-grid mdl-grid--no-spacing">
+
+            {% block content %}{% endblock %}
+
+          </div>
+        </div>
+      </main>
+      <!-- /MAIN -->
+    </div>
+    <a href="{% url 'officehours:add-code' %}" id="main-fab" class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored" data-next="add-code">
+      <i class="material-icons">add</i>
+    </a>
+
+    <!-- Snackbar / Toast -->
+    <div id="snackbar-container"
+         aria-live="assertive"
+         aria-atomic="true"
+         aria-relevant="text"
+         class="mdl-snackbar mdl-js-snackbar">
+      <div class="mdl-snackbar__text"></div>
+      <button class="mdl-snackbar__action" type="button"></button>
+    </div>
+
+{# Show messages from django.contrib.messages in a Snackbar / Toast #}
+<script type="text/javascript">
+$(document).ready(function() {
+    // Pause for a bit before we show any snackbars. Apparently we have to
+    // wait for some MDL thing to happen.
+    var timeoutId = window.setTimeout(function() {
+      var messages = [
+        {% for message in messages %}'{{message}}'{% if not forloop.last %},{% endif %}{% endfor %}
+      ];
+      var snackbarContainer = document.getElementById('snackbar-container');
+      if(messages.length) {
+        for(var i=0; i<messages.length; i++) {
+          snackbarContainer.MaterialSnackbar.showSnackbar({message: messages[i]});
+        }
+      }
+    }, 500);
+});
+</script>
+    {% block bodyjs %}{% endblock %}
+  </body>
+</html>
