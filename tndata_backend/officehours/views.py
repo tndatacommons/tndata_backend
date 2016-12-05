@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -43,12 +44,14 @@ def index(request):
         return render(request, 'officehours/index.html', {})
 
     # Otherwise show the google auth login.
-    return render(request, 'officehours/login.html', {})
+    return redirect("officehours:login")
 
 
 def login(request):
-    # TODO:
-    return render(request, 'officehours/login.html', {})
+    context = {
+        'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
+    }
+    return render(request, 'officehours/login.html', context)
 
 
 @login_required
