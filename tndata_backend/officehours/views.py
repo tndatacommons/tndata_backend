@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 
@@ -26,18 +27,31 @@ class ExamplesView(TemplateView):
 
 
 def index(request):
-    if (
-        request.user.is_authenticated() and
-        (request.user.officehours_set.exists() or
-         request.user.teaching.exists() or
-         request.user.course_set.exists())
-    ):
-        return redirect("officehours:schedule")
+    user = request.user
 
-    return render(request, 'officehours/index.html', {})
+    # Are we logged in?
+    if user.is_authenticated():
+        # if so, have we already added a course or any other data?
+        if (
+            user.officehours_set.exists() or
+            user.teaching.exists() or
+            user.course_set.exists()
+        ):
+            return redirect("officehours:schedule")
+
+        # Otherwise, show the index (which is a getting-started page)
+        return render(request, 'officehours/index.html', {})
+
+    # Otherwise show the google auth login.
+    return render(request, 'officehours/login.html', {})
 
 
+def login(request):
+    # TODO:
+    return render(request, 'officehours/login.html', {})
 
+
+@login_required
 def add_code(request):
     if request.method == "POST":
         code = "{}{}{}{}".format(  # lulz
@@ -58,6 +72,7 @@ def add_code(request):
     return render(request, 'officehours/add_code.html', {})
 
 
+@login_required
 def contact_info(request):
     if request.method == "POST":
         form = ContactForm(request.POST)
@@ -89,6 +104,7 @@ def contact_info(request):
     return render(request, 'officehours/contact_info.html', context)
 
 
+@login_required
 def add_hours(request):
     """
     Allow a user to add office hours.
@@ -151,6 +167,7 @@ def add_hours(request):
     return render(request, 'officehours/add_hours.html', context)
 
 
+@login_required
 def add_course(request):
     """
     Allow a user to add office hours.
@@ -218,6 +235,7 @@ def add_course(request):
     return render(request, 'officehours/add_course.html', context)
 
 
+@login_required
 def share_course(request, pk):
     """Display the course's share code"""
     context = {
@@ -226,6 +244,7 @@ def share_course(request, pk):
     return render(request, 'officehours/share_course.html', context)
 
 
+@login_required
 def course_details(request, pk):
     """Display course details"""
     context = {
@@ -234,6 +253,7 @@ def course_details(request, pk):
     return render(request, 'officehours/course_details.html', context)
 
 
+@login_required
 def schedule(request):
     """List courses in which the user is a student / teacher."""
 

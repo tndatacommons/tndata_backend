@@ -9,6 +9,11 @@ urlpatterns = [
         name='index'
     ),
     url(
+        r'^login/$',
+        views.login,
+        name='login'
+    ),
+    url(
         r'^add-code/$',
         views.add_code,
         name='add-code'
