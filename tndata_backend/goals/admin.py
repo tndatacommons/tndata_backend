@@ -275,27 +275,6 @@ class GoalListFilter(admin.SimpleListFilter):
         return queryset
 
 
-class ActionInline(admin.TabularInline):
-    model = models.Action
-    fields = ('title', 'notification_text', 'description')
-    extra = 0
-
-
-class BehaviorAdmin(ContentWorkflowAdmin):
-    list_display = (
-        'title', 'sequence_order', 'state', 'selected_by_users',
-    )
-    fields = ('title', 'goals')
-    filter_horizontal = ('goals', )
-    search_fields = ['title', 'description', 'id']
-    list_filter = ('state', GoalListFilter)
-    inlines = [ActionInline]
-
-    def selected_by_users(self, obj):
-        return models.UserBehavior.objects.filter(behavior=obj).count()
-admin.site.register(models.Behavior, BehaviorAdmin)
-
-
 class ActionCategoryListFilter(CategoryListFilter):
     """Filters actions by their parent goal's category."""
     def queryset(self, request, queryset):
