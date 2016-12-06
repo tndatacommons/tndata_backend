@@ -88,7 +88,7 @@ class Course(models.Model):
 
     def display_time(self):
         return "{} {}".format(
-            self.start_time.strftime("%I:%M %p"),
+            self.start_time.strftime("%I:%M%p"),
             "".join(d[0] for d in self.days).upper()
         )
 
