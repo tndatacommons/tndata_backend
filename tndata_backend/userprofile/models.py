@@ -122,6 +122,10 @@ class UserProfile(models.Model):
     in_relationship = models.BooleanField(default=False, blank=True)
     has_degree = models.BooleanField(default=False, blank=True)
 
+    # Additional Google profile fields
+    google_image = models.URLField(max_length=512, default='', blank=True)
+    google_token = models.TextField(default='', blank=True)
+
     # app interaction fields
     # app_logins is updated when a user requests an auth token via the api;
     # see api.ObtainAuthorization
