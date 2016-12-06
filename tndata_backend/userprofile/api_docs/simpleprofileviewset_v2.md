@@ -17,6 +17,9 @@ this endpoint does not support creation (i.e. POST requests).
 - `in_relationship`: Boolean: Whether or not the user is in a relationship
 - `has_degree`: Boolean: Whether or not the user has a college degree
 - `updated_on`: Date this record was last updated.
+- `google_image`: URL for the user's profile image if they signed up via Google OAuth.
+- `google_token`: The user's google Auth token if they signed up via Google OAuth.
+
 - `created_on`: Date this record was created.
 - `object_type`: The type of object; this is always "profile"
 

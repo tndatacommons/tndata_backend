@@ -42,6 +42,7 @@ class SimpleProfileSerializer(ObjectTypeModelSerializer):
             'id', 'user',  "timezone", 'maximum_daily_notifications',
             'needs_onboarding', 'zipcode', 'birthday', 'sex', 'employed',
             'is_parent', 'in_relationship', 'has_degree', 'updated_on',
+            'google_image', 'google_token',
             'created_on', 'object_type',
         )
         read_only_fields = (
