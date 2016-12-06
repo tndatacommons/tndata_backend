@@ -130,6 +130,10 @@
               {# Google Sign in button #}
               {#<div class="g-signin2" data-onsuccess="onSignIn"></div>#}
               <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+
+
+              <p class="muted"><a href="#" onclick="signOut();">Sign out?</a></p>
+
               {#<div id="goog-login"></div>#}
               {% comment %}
               <!-- Accent-colored raised button -->
@@ -168,6 +172,15 @@ function onSignIn(googleUser) {
   // The ID token you need to pass to your backend:
   var id_token = googleUser.getAuthResponse().id_token;
   console.log("ID Token: " + id_token);
+  /*
+    ID:  ...
+    Full Name: Brad Montgomery
+    Given Name: Brad
+    Family Name: Montgomery
+    Image URL: https://lh5.googleusercontent.com/-E-5iaeOsjb0/AAAAAAAAAAI/AAAAAAAACmU/U7Ha3y2oiyI/s96-c/photo.jpg
+    Email: bkmontgomery@gmail.com
+    ID Token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImM0YzNlNjY2YjQwY2R...  (1000+ chars)
+  */
 
 }
 function onFailure(error) {
@@ -183,6 +196,13 @@ function renderButton() {
     'theme': 'dark',
     'onsuccess': onSuccess,
     'onfailure': onFailure
+  });
+}
+
+function signOut() {
+  var auth2 = gapi.auth2.getAuthInstance();
+  auth2.signOut().then(function () {
+      console.log('User signed out.');
   });
 }
 
