@@ -2,7 +2,13 @@
 
 {% with loggedin=user.is_authenticated %}
 <header class="demo-drawer-header">
-  <img src="{% static 'img/user.jpg' %}" class="demo-avatar">
+  {% with avatar=user.userprofile.google_image %}
+    {% if avatar %}
+      <img src="{{ avatar }}" class="demo-avatar">
+    {% else %}
+      <img src="{% static 'img/user.jpg' %}" class="demo-avatar">
+    {% endif %}
+  {% endwith %}
   <div class="demo-avatar-dropdown">
     <span>
       {% if loggedin %}{{ user.get_full_name }}{% else %}Hi, there{% endif %}
@@ -14,9 +20,9 @@
     </button>
     <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
       {% if loggedin %}
-      <li class="mdl-menu__item">Log out</li>
+      <li class="mdl-menu__item" onclick="signOut();">Log out</li>
       {% else %}
-      <li class="mdl-menu__item">Log in</li>
+      <li class="mdl-menu__item" onclick="signIn();">Log in</li>
       {% endif %}
     </ul>
   </div>
@@ -60,5 +66,7 @@
     <i class="mdl-color-text--blue-grey-400 material-icons"
        role="presentation">help_outline</i>
     <span class="visuallyhidden">Help</span></a>
+
+<div class="g-signin2" data-onsuccess="onSignIn"></div>
 </nav>
 {% endwith %}

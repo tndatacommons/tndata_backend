@@ -18,6 +18,8 @@
 -->
 <html lang="en">
   <head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="{{ google_client_id }}">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Todo...">
@@ -52,6 +54,7 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
   <body>
     <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
@@ -103,7 +106,19 @@
     </div>
 
 {# Show messages from django.contrib.messages in a Snackbar / Toast #}
-<script type="text/javascript">
+<script>
+// Google Auth, signout function.
+function signOut() {
+  var auth2 = gapi.auth2.getAuthInstance();
+  auth2.signOut().then(function () {
+    window.location = "/logout/?next=/officehours/";
+  });
+}
+
+function signIn() {
+  window.location = "/officehours/login/";
+}
+
 $(document).ready(function() {
     // Pause for a bit before we show any snackbars. Apparently we have to
     // wait for some MDL thing to happen.
