@@ -13,3 +13,8 @@ def site_domain(request):
         'site_domain': settings.SITE_DOMAIN,
         'site_url': settings.SITE_URL,
     }
+
+
+def google_client_id(request):
+    """Includes the GOOGLE_OAUTH_CLIENT_ID setting in the context."""
+    return {'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID}

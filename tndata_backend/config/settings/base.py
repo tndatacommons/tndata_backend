@@ -156,6 +156,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "utils.context_processors.staging",
                 "utils.context_processors.site_domain",
+                "utils.context_processors.google_client_id",
             ),
         },
     },

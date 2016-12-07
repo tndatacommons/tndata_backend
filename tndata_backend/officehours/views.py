@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as login_user
@@ -64,10 +63,7 @@ def login(request):
             login_user(request, user)
             return JsonResponse({'user_id': user.id}, status=200)
 
-    context = {
-        'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
-    }
-    return render(request, 'officehours/login.html', context)
+    return render(request, 'officehours/login.html', {})
 
 
 @login_required
