@@ -37,3 +37,17 @@ class EmailAuthenticationBackend(ModelBackend):
             pass
 
         return None
+
+
+class EmailAndTokenBackend(ModelBackend):
+    """Authenticate with email and a api token."""
+
+    def authenticate(self, email=None, token=None):
+        User = get_user_model()
+
+        try:
+            return User.objects.get(email__iexact=email, auth_token__key=token)
+        except (User.MultipleObjectsReturned, User.DoesNotExist):
+            pass
+
+        return None

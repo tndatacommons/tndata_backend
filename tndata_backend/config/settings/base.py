@@ -224,6 +224,7 @@ APNS_CERT_PATH = os.environ.get('APNS_CERT_PATH')
 
 AUTHENTICATION_BACKENDS = (
     'utils.backends.EmailAuthenticationBackend',
+    'utils.backends.EmailAndTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
