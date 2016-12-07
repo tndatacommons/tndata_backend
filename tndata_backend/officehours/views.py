@@ -2,7 +2,10 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as login_user
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 
@@ -48,6 +51,19 @@ def index(request):
 
 
 def login(request):
+    if request.user.is_authenticated():
+        return redirect("officehours:schedule")
+
+    if request.method == "POST" and request.is_ajax():
+        email = request.POST.get('email')
+        token = request.POST.get('token')
+        user = authenticate(email=email, token=token)
+        if user is None:
+            return JsonResponse({'error': "User not found"}, status=400)
+        else:
+            login_user(request, user)
+            return JsonResponse({'user_id': user.id}, status=200)
+
     context = {
         'google_client_id': settings.GOOGLE_OAUTH_CLIENT_ID,
     }

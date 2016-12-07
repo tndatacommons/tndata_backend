@@ -101,6 +101,8 @@
     .muted {
       color: #aaa;
     }
+    .buttonContainer { width: 50%;}
+    div.mdl-spinner {float:right;}
     </style>
     <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -126,25 +128,25 @@
             <p>Welcome to <em>Office Hours</em>. A simple app that helps students
             and faculty stay on the same page. Log in with your Google account
             to get started.</p>
-            <div class="margin-top30">
+            <div class="margin-top30 buttonContainer">
+              <!-- MDL Spinner Component -->
+              <div class="mdl-spinner mdl-js-spinner is-active"></div>
+
               {# Google Sign in button #}
-              {#<div class="g-signin2" data-onsuccess="onSignIn"></div>#}
               <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
-
-
               <p class="muted"><a href="#" onclick="signOut();">Sign out?</a></p>
-
-              {#<div id="goog-login"></div>#}
               {% comment %}
-              <!-- Accent-colored raised button -->
-              <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-                <i class="material-icons">android</i> Log in with Google
-              </button>
+              {# TODO: #}{% if user.is_authenticated %}
+              <p class="muted"><a href="#" onclick="signOut();">Sign out?</a></p>
+              {% endif %}
               {% endcomment %}
-              <p class="muted margin-top30">Already have an account?
-                <a href="{% url 'login' %}?next={% url 'officehours:index' %}">Log in</a>
-                with your email address.</p>
+
             </div>
+            <p class="muted margin-top30">
+              Already have an account?
+              <a href="{% url 'login' %}?next={% url 'officehours:index' %}">Log in</a>
+              with your email address.
+            </p>
           </div>
         </div>
         <footer class="oo-footer mdl-mini-footer">
@@ -159,45 +161,56 @@
       </main>
     </div>
 <script>
+/**
+ * Auth via google is a multi-step process.
+ *
+ * 1. We hit Google's JS api to authenticate the user.
+ * 2. We send the data we get from Google to our API to either create an account
+ *    or retrieve our own auth token.
+ * 3. Once we have that, we send an ajax POST request to this app's login view
+ *    which will manually log the user in (using the token we get from our API),
+ *    since the user doesn't have a password.
+ * 4. Once all that happens, we just refresh the page, and the let index view
+ *    redirect us to the right place.
+ */
 function onSignIn(googleUser) {
+  $(".mdl-spinner").show();
+
   var profile = googleUser.getBasicProfile();
-  // Do not send ID to your backend! Use an ID token instead.
-  console.log('ID: ' + profile.getId());
-  console.log('Full Name: ' + profile.getName());
-  console.log('Given Name: ' + profile.getGivenName());
-  console.log('Family Name: ' + profile.getFamilyName());
-  console.log('Image URL: ' + profile.getImageUrl());
-  console.log('Email: ' + profile.getEmail());
-
-  // The ID token you need to pass to your backend:
+  // NOTE: We get an ID from google, but they say "do not send the ID to your
+  // backend! Use an ID token instead."
   var id_token = googleUser.getAuthResponse().id_token;
-  console.log("ID Token: " + id_token);
-  /*
-    ID:  ...
-    Full Name: Brad Montgomery
-    Given Name: Brad
-    Family Name: Montgomery
-    Image URL: https://lh5.googleusercontent.com/-E-5iaeOsjb0/AAAAAAAAAAI/AAAAAAAACmU/U7Ha3y2oiyI/s96-c/photo.jpg
-    Email: bkmontgomery@gmail.com
-    ID Token: eyJhbGciOiJSUzI1NiIsImtpZCI6ImM0YzNlNjY2YjQwY2R...  (1000+ chars)
-  */
+
+  var payload = {
+    'email': profile.getEmail(),
+    'first_name': profile.getGivenName(),
+    'last_name': profile.getFamilyName(),
+    'image_url': profile.getImageUrl(),
+    'oauth_token': id_token,
+  }
+
+  // Create account via our API (or fetch our api token)
+  var url = '/api/users/oauth/';
+  $.post(url, payload, function(data) {
+
+    // If we get a successful result (which should be an array of 1 item),
+    // send a POST to  login so we login with the current user.
+    if(data.length == 1 && data[0].id && data[0].email && data[0].token) {
+      payload = {
+        email: data[0].email,
+        token: data[0].token,
+        csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+      }
+      $.post('/officehours/login/', payload, function(data) {
+        window.location = "/officehours/";  // just refresh the page.
+      });
+    }
+  }).fail(function() {
+    console.log("Request FAILED");
+  });
 
 }
-function onFailure(error) {
-  console.log(error);
-}
-function renderButton() {
-  console.log("rendering the login button");
-  gapi.signin2.render('goog-login', {
-    'scope': 'profile email',
-    'width': 240,
-    'height': 50,
-    'longtitle': true,
-    'theme': 'dark',
-    'onsuccess': onSuccess,
-    'onfailure': onFailure
-  });
-}
+function onFailure(error) {console.log(error);}
 
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
@@ -205,12 +218,10 @@ function signOut() {
       console.log('User signed out.');
   });
 }
-
 $(document).ready(function() {
-  console.log("OK, we're ready");
-
-
+  $(".mdl-spinner").hide();
 });
 </script>
+  {% csrf_token %}
   </body>
 </html>
