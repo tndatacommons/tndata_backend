@@ -13,7 +13,7 @@ from rest_framework.authentication import (
 )
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, list_route
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from utils.mixins import VersionedViewSetMixin
@@ -101,6 +101,78 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         qs = self.queryset.select_related("userprofile", "auth_token")
         qs = qs.filter(id=self.request.user.id)
         return qs
+
+    @list_route(methods=['get', 'post'], url_path='oauth')
+    def oauth_create(self, request, pk=None):
+        """GET: List the current user's profile / google details.
+
+        POST: Create the user if they don't already exist and return their
+        profile details. The POST payload should include the following:
+
+            {
+                'email': '...',
+                'first_name': '...',
+                'last_name': '...',
+                'image_url': '...',
+                'oauth_token': '...',
+            }
+
+        Of the above values, the `email` and `oauth_token` fields are required.
+
+        """
+        content = []
+        user = request.user
+        authed = user.is_authenticated()
+        result_status = status.HTTP_200_OK
+
+        # Not authenticated, return empty list.
+        if not authed and request.method == 'GET':
+            return Response(content, status=result_status)
+
+        # Not authenticated & this is a POST: get or create the user.
+        elif not authed and request.method == "POST":
+            User = get_user_model()
+            try:
+                data = request.data
+                # Note: email + token serves as username + password.
+                user, created = User.objects.get_or_create(
+                    email=data.get('email'),
+                    userprofile__google_token=data.get('oauth_token')
+                )
+                if created:
+                    # Update the Profile fields.
+                    profile = user.userprofile
+                    profile.google_image = data.get('image_url', '')
+                    profile.google_token = data.get('oauth_token', '')
+                    try:
+                        # Save the IP address on the user's profile
+                        profile.ip_address = get_client_ip(request)
+                    except:  # XXX: Don't let any exception prevent signup.
+                        pass
+                    profile.save()
+
+                    # Update user fields.
+                    user.first_name = data.get('first_name', '')
+                    user.last_name = data.get('last_name', '')
+                    user.save()
+                    result_status = status.HTTP_201_CREATED
+            except Exception as err:
+                return Response(
+                    data={'error': '{}'.format(err)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        if user:
+            content = [{
+                'id': user.id,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'google_image': user.userprofile.google_image,
+                'google_token': user.userprofile.google_token,
+                'token': user.auth_token.key,
+            }]
+        return Response(content, status=result_status)
 
     def create(self, request, *args, **kwargs):
         """Handle the optional username/email scenario and include an Auth
