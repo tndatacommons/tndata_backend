@@ -203,7 +203,9 @@ function onSignIn(googleUser) {
       });
     }
   }).fail(function() {
-    console.log("Request FAILED");
+    console.log("Request FAILED, signing out.");
+    signOut();
+    $('.mdl-spinner').hide();
   });
 
 }
