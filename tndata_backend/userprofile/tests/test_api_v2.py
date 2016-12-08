@@ -12,6 +12,8 @@ from rest_framework.test import APITestCase
 from .. models import Place, UserPlace, UserProfile
 from .. serializers import UserSerializer
 from utils import user_utils
+from utils.user_utils import username_hash
+
 
 TEST_REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
@@ -601,7 +603,11 @@ class TestUsersAPI(V2APITestCase):
             'image_url': 'http://example.com/avatar.jpg',
             'oauth_token': 'A-TOKEN-STRING',
         }
-        response = self.client.post(url, payload)
+
+        with patch('userprofile.api.verify_token') as mock_verify:
+            mock_verify.return_value = 'A-TOKEN-STRING'
+            response = self.client.post(url, payload)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['email'], 'new-user@example.com')
@@ -621,20 +627,25 @@ class TestUsersAPI(V2APITestCase):
         """Authenticated POSTs should return the user's data."""
         # Create a test user.
         User = get_user_model()
-        user = User.objects.create(email='existing-user@example.com')
+        email = 'existing-user@example.com'
+        user = User.objects.create(username=username_hash(email), email=email)
         profile = UserProfile.objects.get(user=user)
         profile.google_token = "A-TOKEN-STRING"
         profile.save()
 
         url = self.get_url("user-oauth")
         payload = {
-            'email': 'existing-user@example.com',
+            'email': email,
             'first_name': 'Existing',
             'last_name': 'User',
             'image_url': 'http://example.com/avatar.jpg',
             'oauth_token': 'A-TOKEN-STRING',
         }
-        response = self.client.post(url, payload)
+
+        with patch('userprofile.api.verify_token') as mock_verify:
+            mock_verify.return_value = 'A-TOKEN-STRING'
+            response = self.client.post(url, payload)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['email'], 'existing-user@example.com')

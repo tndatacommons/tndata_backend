@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
 from django.db.models import F
 
-from oauth2client import client, crypt
 from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import (
     SessionAuthentication,
@@ -18,6 +17,7 @@ from rest_framework.decorators import api_view, list_route
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from utils.mixins import VersionedViewSetMixin
+from utils.oauth import verify_token
 from utils.user_utils import get_client_ip, username_hash
 
 from . import models
@@ -137,17 +137,8 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 data = request.data
 
                 # Verify the given token info: https://goo.gl/MIKN9X
-                token = data.get('oauth_token')
-                client_id = settings.GOOGLE_OAUTH_CLIENT_ID
-                try:
-                    idinfo = client.verify_id_token(token, client_id)
-                    # TODO: If multiple clients access the backend server:
-                    # if idinfo['aud'] not in [ANDROID_ID, IOS_ID, client_id]:
-                    #     raise crypt.AppIdentityError("Unrecognized client.")
-                    if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-                        raise crypt.AppIdentityError("Wrong issuer.")
-                    token = idinfo['sub']
-                except crypt.AppIdentityError:  # Invalid token
+                token = verify_token(data.get('oauth_token'))
+                if token is None:
                     return Response(
                         data={'error': 'Invalid auth token'},
                         status=status.HTTP_400_BAD_REQUEST
