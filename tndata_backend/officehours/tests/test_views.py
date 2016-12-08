@@ -66,7 +66,8 @@ class TestIndexView(TestCase):
     def test_get_login(self):
         self.url = reverse("officehours:login")
         resp = self.client.get(self.url)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp['Location'], reverse('officehours:schedule'))
 
     def test_get_add_code(self):
         self.url = reverse("officehours:add-code")
