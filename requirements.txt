@@ -46,3 +46,4 @@ rq-scheduler==0.7.0
 django-axes==2.2.0
 django-badgify==0.1.6
 psutil==4.3.0
+google-api-python-client==1.5.5
