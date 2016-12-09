@@ -91,6 +91,7 @@ class CIDRS(list):
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
+
 STAGING = bool(int(os.environ.get('STAGING', 0)))
 TESTING = sys.argv[1:2] == ['test']
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -174,6 +175,7 @@ INSTALLED_APPS = (
     # 'axes',
     'badgify',
     'badgify_api',
+    'channels',
     'corsheaders',
     'crispy_forms',
     'crispy_forms_foundation',
@@ -191,6 +193,7 @@ INSTALLED_APPS = (
     'staticflatpages',
     'waffle',
     # custom apps
+    'chat',
     'goals',
     'notifications',
     'officehours',
@@ -316,6 +319,28 @@ REDIS_METRICS = {
 # Use the Redis cache as a session backend: https://goo.gl/U0xajQ
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 SESSION_CACHE_ALIAS = "default"
+
+
+# channels config
+REDIS_CHANNELS_URL = 'redis://:{password}@{host}:{port}/0'.format(
+    password=REDIS_PASSWORD,
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+)
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            #"hosts": [(REDIS_HOST, int(REDIS_PORT))],
+            "hosts": [(REDIS_CHANNELS_URL)],
+        },
+        "ROUTING": "config.routing.channel_routing",
+    },
+    # "default": {
+        # "BACKEND": "asgiref.inmemory.ChannelLayer",
+        # "ROUTING": "config.routing.channel_routing",
+    # },
+}
 
 # django.contrib.auth settings.
 LOGIN_URL = 'login'  # Named url patter for the built-in auth
