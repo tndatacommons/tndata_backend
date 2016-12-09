@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style type="text/css">
+    body { width: 500px; margin:1em auto; padding: 1em;}
+    h1 {border-bottom: 1px solid #ccc; font-family: "Georgia";}
+    .inputWrapper input {padding: 10px;width: 320px;font-size: 1.2em; margin:20px 0px;}
+    .inputWrapper button {font-size: 1.2em;padding: 10px;width:150px; margin: 20px 0px;}
+    p.bubble {
+      width: 40%;
+      float: left;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid #cfc;
+      background-color: #efe;
+      clear: both;
+      margin: 2px;
+    }
+    p.reply {
+      float: right;
+      border-color: #ccf;
+      background-color: #eef;
+    }
+  </style>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<body>
+<h1>Chat.</h1>
+<p>Your name: <input id="username" placeholder="Set your username" autofocus/></p>
+<div id="replies"></div>
+<p class="inputWrapper">
+  <input type="text" id="msg" pattern="/\w{3}/" title="Must have 3 chars or more">
+  <button id="send">Send</button>
+</p>
+
+<script>
+String.prototype.beginsWith = function (string) {
+    return(this.indexOf(string) === 0);
+};
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this;
+    return target.replace(new RegExp(search, 'g'), replacement);
+};
+
+// Note that the path doesn't matter for routing; any WebSocket
+// connection gets bumped over to WebSocket consumers
+var path = "ws://" + window.location.host + "/" +
+                     window.location.pathname.replaceAll("/", "")
+console.log("Using: " + path);
+var socket = new WebSocket(path);
+
+function sendMessage(msg) {
+  socket.onmessage = function(e) {
+      console.log("Received: ", e.data);
+      var username = $("#username").val();
+      if(e.data.beginsWith(username)) {
+        $("#replies").append('<p class="bubble">' + e.data + '</p>');
+      } else {
+        $("#replies").append('<p class="bubble reply">' + e.data + '</p>');
+      }
+  }
+  socket.onopen = function() {
+      //socket.send("sending: hello world");
+      var username = $("#username").val() || "Anonymous";
+      socket.send(username + ": " + msg);
+  }
+  // Call onopen directly if socket is already open
+  if (socket.readyState == WebSocket.OPEN) socket.onopen();
+}
+
+
+var handleSendEvent = function(e) {
+    var message = $("#msg").val();
+    if(message.length) {
+      sendMessage(message);
+      $("#msg").val('');
+    }
+}
+
+$(document).ready(function() {
+  $("#send").click(handleSendEvent);
+  $('#msg').keyup(function(evt){
+    var keycode = (evt.keyCode ? evt.keyCode : evt.which);
+    if(keycode == '13'){  // pressed Enter key
+      handleSendEvent(evt);
+    }
+  });
+
+});
+</script>
+</body>
+</html>
