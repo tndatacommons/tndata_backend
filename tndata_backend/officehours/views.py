@@ -213,7 +213,7 @@ def add_course(request):
             coursetime = datetime.strptime(coursetime, '%I:%M %p').time()
         except ValueError:
             coursetime = ''
-            coursetime = "Enter a valid time"
+            coursetime_error = 'Enter a valid time'
 
         for key, val in request.POST.items():
             if val == "on":
