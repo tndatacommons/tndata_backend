@@ -8,11 +8,9 @@ logger = logging.getLogger(__name__)
 
 class ChatMessage(models.Model):
     """A persisted chat message."""
-
-    from_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="sent_chat_messages")
-    to_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="received_chat_messages")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     room = models.CharField(max_length=256, default="")
-    message = models.TextField(default="")
+    text = models.TextField(default="")
     read = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
 
