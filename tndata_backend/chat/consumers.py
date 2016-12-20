@@ -26,11 +26,6 @@ def chat_message_consumer(message):
         - text: text of the message.
 
     """
-
-    clog({
-        "message.content": message.content,
-    }, title="Message in msg_consumer", color="green")
-
     # Save the model
     try:
         User = get_user_model()
@@ -52,20 +47,12 @@ def ws_message(message):
     # it directly to the group)
     room = message.channel_session['room']
 
-    # Log some stuff so we know what's happening.
-    content_data = {
-        'room': room,
-        'from': message.user,
-        'message.content': message.content,
-    }
-    clog(content_data, title="Message Content")
-
     payload = {
         "text": "{}: {}".format(message.user.first_name, escape(message['text']))
     }
     Group(room).send(payload)  # send to users for display
 
-    # Send it to the channel to create the ChatMessage.
+    # Now, send it to the channel to create the ChatMessage.
     Channel("create-chat-message").send({
         "room": room,
         "text": message['text'],
@@ -79,22 +66,27 @@ def ws_connect(message):
     """Handles when clients connect to a websocket.
     Connected to the `websocket.connect` channel."""
 
-    # XXX: Work out room name from path (ignore slashes)
-    room = "chatroom-{}".format(message.content['path'].strip('/'))
+    # 1-1 chat rooms between a logged-in user and a path-defined user.
+    # path will be something like `/chat/username/`
+    users = sorted([
+        message.content['path'].strip('/').split('/')[1],
+        message.user.username
+    ])
+    room = "chat-{}-{}".format(*users)
 
     # XXX: Interesting attributes on message.content
     # message.content['order']
     # message.content['path']  # e.g. /chat
     # message.content['query_string']
     # message.content['reply_channel']
-    connect_data = {
-        'room': room,
-        'user_id': message.user.id,
-        'path': message.content['path'],
-        'query_string': message.content['query_string'],
-        'reply_channel': message.content['reply_channel'],
-    }
-    clog(connect_data, title="On Connection", color="magenta")
+    # connect_data = {
+        # 'room': room,
+        # 'user_id': message.user.id,
+        # 'path': message.content['path'],
+        # 'query_string': message.content['query_string'],
+        # 'reply_channel': message.content['reply_channel'],
+    # }
+    # clog(connect_data, title="On Connection", color="magenta")
 
     # Save room in session and add us to the group
     message.channel_session['room'] = room
@@ -109,11 +101,4 @@ def ws_disconnect(message):
 
     # Pull the room from the channel's session.
     room = message.channel_session['room']
-
-    disconnect_data = {
-        'room': room,
-        'user_id': message.user.id,
-        'message.content': message.content
-    }
-    clog(disconnect_data, title="DISCONNECTED", color="red")
     Group(room).discard(message.reply_channel)
