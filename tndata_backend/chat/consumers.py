@@ -1,17 +1,11 @@
 from channels import Channel, Group
-from channels.handler import AsgiHandler
-from channels.sessions import channel_session, enforce_ordering
-from channels.auth import http_session_user, channel_session_user, channel_session_user_from_http
-
-from django.contrib.auth import get_user_model
-from django.http import HttpResponse
-from django.utils.html import escape
-
-from .models import ChatMessage
+from channels.sessions import enforce_ordering
+from channels.auth import channel_session_user, channel_session_user_from_http
 
 from clog.clog import clog
+from django.contrib.auth import get_user_model
+from .models import ChatMessage
 
-# TODO: figure out how to auto-display the channel's last 10 messages or so.
 
 def chat_message_consumer(message):
     """Given a message, this creates a DB object and sends the message to a group.
@@ -35,7 +29,6 @@ def chat_message_consumer(message):
         clog(e, color='red')
 
 
-
 @enforce_ordering(slight=True)
 @channel_session_user  # Gives us a channel_session + user
 def ws_message(message):
@@ -44,9 +37,14 @@ def ws_message(message):
     # it directly to the group)
     room = message.channel_session['room']
 
+    try:
+        first_name = message.user.first_name
+    except:
+        first_name = "Some User"
     payload = {
-        "text": "{}: {}".format(message.user.first_name, escape(message['text']))
+        "text": "{}: {}".format(first_name, message['text'])
     }
+    clog(payload, title="Received Message")
     Group(room).send(payload)  # send to users for display
 
     # Now, send it to the channel to create the ChatMessage.
@@ -101,5 +99,6 @@ def ws_disconnect(message):
 
     # Pull the room from the channel's session.
     room = message.channel_session['room']
+    clog("{} disconnected from {}".format(message.user, room), color="red")
     Group(room).send({"text": "NOTICE: {} left.".format(message.user)})
     Group(room).discard(message.reply_channel)
