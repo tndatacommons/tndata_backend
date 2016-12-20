@@ -11,9 +11,6 @@ from .models import ChatMessage
 
 from clog.clog import clog
 
-# TODO: figure out how to create rooms for 1-1 chat between 2 users. (do we need a Group?)
-# TODO: figure out how to create a ChatMessage object for chats.
-# TODO: ^^ how to retrive the user data so we can store that on the ChatMessage
 # TODO: figure out how to auto-display the channel's last 10 messages or so.
 
 def chat_message_consumer(message):
@@ -30,13 +27,13 @@ def chat_message_consumer(message):
     try:
         User = get_user_model()
         user = User.objects.get(pk=message.content['user_id'])
-        ChatMessage.objects.create(
-            user=user,
-            room=message.content['room'],
-            text=message.content['text'],
-        )
+        room = message.content['room']
+        text = message.content['text']
+        ChatMessage.objects.create(user=user, room=room, text=text)
+
     except (User.DoesNotExist, KeyError) as e:
         clog(e, color='red')
+
 
 
 @enforce_ordering(slight=True)
@@ -92,6 +89,9 @@ def ws_connect(message):
     message.channel_session['room'] = room
     Group(room).add(message.reply_channel)
 
+    # XXX: would be nice to be able to push a message like "User X joined"
+    Group(room).send({"text": "NOTICE: {} joined.".format(message.user)})
+
 
 @enforce_ordering(slight=True)
 @channel_session_user  # Gives us a session store + a user
@@ -101,4 +101,5 @@ def ws_disconnect(message):
 
     # Pull the room from the channel's session.
     room = message.channel_session['room']
+    Group(room).send({"text": "NOTICE: {} left.".format(message.user)})
     Group(room).discard(message.reply_channel)
