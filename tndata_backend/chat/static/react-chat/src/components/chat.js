@@ -35,10 +35,12 @@ export default class Chat extends Component {
         this.onFormSubmit.bind(this);
     }
 
-    handleMessage(message) {
+    handleMessage(data) {
+        // NOTE: data should be an object of the form: {from: ..., message: ...}
         const new_message = {
-            id: slugify(message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
-            text: message
+            id: slugify(data.message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
+            text: data.message,
+            from: data.from
         }
         const messages = _.concat(this.state.messages, [new_message]);
         this.setState({messages: messages, current: this.state.current});
@@ -59,22 +61,43 @@ export default class Chat extends Component {
         inputElement.value = ""; // clear the input.
     }
 
+    renderMessageList() {
+        return this.state.messages.map((msg) => {
+
+            // A Reply is a message from the other user but not the system.
+            const isReply = this.props.user.username != msg.from && msg.from != 'system';
+            const spanClasses = "mdl-list__item-primary-content" +
+                (isReply ? ' reply' : '') +
+                (msg.from === 'system' ? ' notice' : '');
+
+            // Only show avatars on the reply.
+            const avatar = (isReply ?
+                        <i className="material-icons mdl-list__item-avatar">person</i> :
+                        '');
+            return (
+                <li key={msg.id}
+                    className="mdl-list__item">
+                    <span className={spanClasses}>
+                        {avatar} {msg.text}
+                    </span>
+                </li>
+            );
+        });
+    }
+
     render() {
 
-        const messages = this.state.messages.map((msg) =>
-            <li key={msg.id}
-                className="mdl-list__item">
-                <span className="mdl-list__item-primary-content">
-                    <i className="material-icons mdl-list__item-avatar">person</i>
-                    {msg.text}
-                </span>
-            </li>
-        );
-
+        /*
+         * NOTE: this.props.user contains inf about our user.
+         *
+         * TODO: tag replies from the other user with className: reply
+         * TODO: tag notice messages with className: notice
+         *
+         */
         console.log('[render], this.state.current = ', this.state.current);
         return (
           <div>
-            <ul className="mdl-list">{messages}</ul>
+            <ul className="mdl-list">{this.renderMessageList()}</ul>
             <Websocket url={this.props.ws_url}
                        debug={true}
                        onMessage={this.handleMessage.bind(this)}
