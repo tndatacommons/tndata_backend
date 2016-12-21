@@ -1,73 +1,10 @@
-{% extends "chat/base.html" %}
+{% extends "officehours/base.html" %} {# NOTE: our MDL-based layout #}
+
+{% load static from staticfiles %}
 
 {% block content %}
-<h1>Chat: {{ with_username }}</h1>
-
-<div id="root"></div>
-{%  comment %}
-<p><a href="/chat/">&larr; back to user list</a></p>
-<div id="replies"></div>
-<p class="inputWrapper">
-  <input type="text" id="msg" pattern="/\w{3}/" title="Must have 3 chars or more">
-  <button id="send">Send</button>
-</p>
-
-<script>
-String.prototype.beginsWith = function (string) {
-    return(this.indexOf(string) === 0);
-};
-
-String.prototype.replaceAll = function(search, replacement) {
-    var target = this;
-    return target.replace(new RegExp(search, 'g'), replacement);
-};
-
-// Note that the path doesn't matter for routing; any WebSocket
-// connection gets bumped over to WebSocket consumers
-var path = "ws://" + window.location.host + window.location.pathname;
-console.log("Using: " + path);
-var socket = new WebSocket(path);
-
-function sendMessage(msg) {
-  socket.onmessage = function(e) {
-      console.log("Received: ", e.data);
-      var firstName = "{{ user.first_name }}"; // TODO: differentiate me from the other user.
-      if(e.data.beginsWith('NOTICE:')) {
-        $("#replies").append('<p class="notice">' + e.data.slice(8) + '</p>');
-      } else if(e.data.beginsWith(firstName)) {
-        $("#replies").append('<p class="bubble">' + e.data + '</p>');
-      } else {
-        $("#replies").append('<p class="bubble reply">' + e.data + '</p>');
-      }
-  }
-  socket.onopen = function() {
-      //socket.send("sending: hello world");
-      socket.send(msg);
-  }
-  // Call onopen directly if socket is already open
-  if (socket.readyState == WebSocket.OPEN) socket.onopen();
-}
-
-
-var handleSendEvent = function(e) {
-    var message = $("#msg").val();
-    if(message.length) {
-      sendMessage(message);
-      $("#msg").val('');
-    }
-}
-
-$(document).ready(function() {
-  $("#send").click(handleSendEvent);
-  $('#msg').keyup(function(evt){
-    var keycode = (evt.keyCode ? evt.keyCode : evt.which);
-    if(keycode == '13'){  // pressed Enter key
-      handleSendEvent(evt);
-    }
-  });
-
-});
-</script>
-{% endcomment %}
+<div class="mdl-grid">
+  <div id="root" class="mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--12-col-phone"></div>
+</div>
 <script type="text/javascript" src="{% static 'js/react_chat.js' %}"></script>
 {% endblock %}
