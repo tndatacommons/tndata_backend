@@ -70,18 +70,18 @@ def ws_connect(message):
     room = "chat-{}-{}".format(*users)
 
     # XXX: Interesting attributes on message.content
-    # message.content['order']
-    # message.content['path']  # e.g. /chat
-    # message.content['query_string']
-    # message.content['reply_channel']
-    # connect_data = {
-        # 'room': room,
-        # 'user_id': message.user.id,
-        # 'path': message.content['path'],
-        # 'query_string': message.content['query_string'],
-        # 'reply_channel': message.content['reply_channel'],
-    # }
-    # clog(connect_data, title="On Connection", color="magenta")
+    message.content['order']
+    message.content['path']  # e.g. /chat
+    message.content['query_string']
+    message.content['reply_channel']
+    connect_data = {
+        'room': room,
+        'user_id': message.user.id,
+        'path': message.content['path'],
+        'query_string': message.content['query_string'],
+        'reply_channel': message.content['reply_channel'],
+    }
+    clog(connect_data, title="On Connection", color="magenta")
 
     # Save room in session and add us to the group
     message.channel_session['room'] = room

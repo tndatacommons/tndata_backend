@@ -16,5 +16,11 @@ class IndexView(TemplateView):
 
 
 def chat_view(request, with_username):
+    from clog.clog import clog
+    clog({
+        'authenticated': request.user.is_authenticated(),
+        'user': request.user,
+    }, title="SESSION INFO")
     context = {'with_username': with_username}
-    return render(request, "chat/chat.html", context)
+    #return render(request, "chat/chat.html", context)
+    return render(request, "chat/react_chat.html", context)
