@@ -67,10 +67,12 @@ export default class Chat extends Component {
             // A Reply is a message from the other user but not the system.
             const isReply = this.props.user.username !== msg.from && msg.from !== 'system';
 
-            // Only show avatars on the reply.
-            const avatar = (isReply ?
-                        <i className="material-icons mdl-list__item-avatar">person</i> :
-                        '');
+            // Dont' show avatars for system messages.
+            // TODO: replace this with the user's avatar.
+            const avatar = (
+                msg.from === "system" ? "" :
+                <i className="material-icons mdl-list__item-avatar">person</i>
+            );
 
             const spanClasses = "mdl-list__item-text-body" +
                 (isReply ? ' reply' : '') +
