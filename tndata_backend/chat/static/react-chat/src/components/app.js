@@ -73,7 +73,7 @@ class App extends Component {
         const ws_url = WS_HOST + window.location.pathname;
         return (
           <div>
-            <Chat ws_url={ws_url}/>
+            <Chat ws_url={ws_url} user={this.state}/>
           </div>
         );
     }
