@@ -260,21 +260,19 @@ _:-ms-input-placeholder, :root .demo-graph {
  * https://material.io/guidelines/style/color.html#color-color-palette
  */
 .chatContainer ul.mdl-list li {
-  padding:0px 0px 1em 0px;;
+  padding:0px;
+  margin: .5em 0 .5em 0;
+  border-bottom: 1px solid #ccc;
 }
-.chatContainer ul.mdl-list li span {
-  background-color: #F9FBE7;
-  border-radius: 20px;
-  padding: 1em;
-  text-align: right;
+.chatContainer ul.mdl-list li:last-child {
+  border-bottom-width: 0px;
 }
+
 .chatContainer ul.mdl-list li span.reply {
-  background-color: #BBDEFB;
-  text-align: left;
+  /*background-color: #BBDEFB;*/
 }
 .chatContainer ul.mdl-list li span.notice {
   background-color: transparent;
   font-style: italic;
   font-size: smaller;
-  text-align: right;
 }
