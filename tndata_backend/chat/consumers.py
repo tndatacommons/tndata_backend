@@ -63,10 +63,11 @@ def ws_connect(message):
 
     # 1-1 chat rooms between a logged-in user and a path-defined user.
     # path will be something like `/chat/username/`
-    users = sorted([
-        message.content['path'].strip('/').split('/')[1],
-        message.user.username
-    ])
+    try:
+        path = message.content['path'].strip('/').split('/')[1]
+    except IndexError:
+        path = 'unknown'
+    users = sorted([path, message.user.username])
     room = "chat-{}-{}".format(*users)
 
     # XXX: Interesting attributes on message.content
