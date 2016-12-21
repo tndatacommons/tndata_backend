@@ -40,9 +40,9 @@ def ws_message(message):
     room = message.channel_session['room']
 
     try:
-        name = message.user.get_full_name()
-    except:
-        name = "Some User"
+        name = message.user.username
+    except AttributeError:
+        name = "anonymous"
     payload = {
         'from': name,
         "message": "{}".format(message['text']),
