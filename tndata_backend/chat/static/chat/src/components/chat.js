@@ -7,6 +7,11 @@ import Websocket from './websocket';
  * Stolen from:
  * https://gist.github.com/mathewbyrne/1280286
  *
+ *
+ * TODO: Read thru this, instead, & see if we should use something like it.
+ * https://github.com/raineroviir/react-redux-socketio-chat/blob/master/src/common/containers/ChatContainer.js
+ *
+ *
  */
 function slugify(text)
 {
