@@ -1,3 +1,5 @@
+import json
+
 from channels import Channel, Group
 from channels.sessions import enforce_ordering
 from channels.auth import channel_session_user, channel_session_user_from_http
@@ -38,14 +40,15 @@ def ws_message(message):
     room = message.channel_session['room']
 
     try:
-        first_name = message.user.first_name
+        name = message.user.get_full_name()
     except:
-        first_name = "Some User"
+        name = "Some User"
     payload = {
-        "text": "{}: {}".format(first_name, message['text'])
+        'from': name,
+        "message": "{}".format(message['text']),
     }
     clog(payload, title="Received Message")
-    Group(room).send(payload)  # send to users for display
+    Group(room).send({'text': json.dumps(payload)})  # send to users for display
 
     # Now, send it to the channel to create the ChatMessage.
     Channel("create-chat-message").send({
@@ -89,7 +92,11 @@ def ws_connect(message):
     Group(room).add(message.reply_channel)
 
     # XXX: would be nice to be able to push a message like "User X joined"
-    Group(room).send({"text": "NOTICE: {} joined.".format(message.user)})
+    payload = {
+        'from': 'system',
+        'message': "{} joined.".format(message.user),
+    }
+    Group(room).send({'text': json.dumps(payload)})
 
 
 @enforce_ordering(slight=True)
@@ -101,5 +108,10 @@ def ws_disconnect(message):
     # Pull the room from the channel's session.
     room = message.channel_session['room']
     clog("{} disconnected from {}".format(message.user, room), color="red")
-    Group(room).send({"text": "NOTICE: {} left.".format(message.user)})
+
+    payload = {
+        'from': 'system',
+        'message': "{} left.".format(message.user),
+    }
+    Group(room).send({'text': json.dumps(payload)})
     Group(room).discard(message.reply_channel)
