@@ -36,7 +36,10 @@ class Websocket extends React.Component {
         };
 
         websocket.onmessage = (evt) => {
-          this.props.onMessage(evt.data);
+          // EXPECTED data format in json:  {from: ..., message: ...}
+          this.logging("RECEIVED: " + evt.data)
+          const data = JSON.parse(evt.data);
+          this.props.onMessage(data);
         };
 
         this.shouldReconnect = this.props.reconnect;
