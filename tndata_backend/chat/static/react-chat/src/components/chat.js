@@ -79,7 +79,7 @@ export default class Chat extends Component {
                        debug={true}
                        onMessage={this.handleMessage.bind(this)}
                        sendMessage={this.state.current} />
-            <form onSubmit={this.onFormSubmit.bind(this)}>
+            <form onSubmit={this.onFormSubmit.bind(this)} className="chatForm">
               <div className="mdl-textfield mdl-js-textfield">
                 <input className="mdl-textfield__input"
                        type="text"
