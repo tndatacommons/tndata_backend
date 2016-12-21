@@ -372,6 +372,7 @@ MESSAGE_TAGS = {
 # Rainbow-tests
 TEST_RUNNER = 'rainbowtests.test.runner.RainbowDiscoverRunner'
 RAINBOWTESTS_HIGHLIGHT_PATH = '/vagrant/tndata_backend/'
+RAINBOWTESTS_SHOW_MESSAGES = False
 
 # django-axes
 # AXES_LOGIN_FAILURE_LIMIT = 1
