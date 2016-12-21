@@ -49,33 +49,45 @@ export default class Chat extends Component {
         event.preventDefault();
         // event.target is the form.
         // event.target[0] is the first child element (our <input>)
-        const message = event.target.children[0].value;
+        const inputElement = event.target.children[0].children[0];
+        const message = inputElement.value;
         console.log("[onFormSubmit] message = ", message);
-        //this.handleMessage.bind(this)(message);
 
         this.setState({messages: this.state.messages, current: message});
 
         console.log('[onFormSubmit], this.state.current = ', this.state.current);
-        event.target.children[0].value = ""; // clear the input.
+        inputElement.value = ""; // clear the input.
     }
 
     render() {
 
         const messages = this.state.messages.map((msg) =>
-            <li key={msg.id}>{msg.text}</li>
+            <li key={msg.id}
+                className="mdl-list__item">
+                <span className="mdl-list__item-primary-content">
+                    <i className="material-icons mdl-list__item-avatar">person</i>
+                    {msg.text}
+                </span>
+            </li>
         );
 
         console.log('[render], this.state.current = ', this.state.current);
         return (
           <div>
-            <ul>{messages}</ul>
+            <ul className="mdl-list">{messages}</ul>
             <Websocket url={this.props.ws_url}
                        debug={true}
                        onMessage={this.handleMessage.bind(this)}
                        sendMessage={this.state.current} />
             <form onSubmit={this.onFormSubmit.bind(this)}>
-                <input type="text" name="message" />
-                <button>Send</button>
+              <div className="mdl-textfield mdl-js-textfield">
+                <input className="mdl-textfield__input"
+                       type="text"
+                       id="message"
+                       name="message" />
+                <label className="mdl-textfield__label" htmlFor="message">Your Message</label>
+              </div>
+              <button className="mdl-button mdl-js-button">Send</button>
             </form>
           </div>
         );
