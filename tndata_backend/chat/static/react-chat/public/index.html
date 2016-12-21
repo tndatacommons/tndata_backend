@@ -1,29 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <title>React Chat</title>
-    <style type="text/css">
-      #root {
-        width: 500px;
-        margin: 1em auto;
-      }
-      .App-header {
-        margin-top:1.5em;
-        border-bottom: 1px solid #ccc;
-      }
-      .App-header h1 {
-        margin:0;
-        padding:0;
-      }
-      .App-Content {
-        background-color: #eee;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CHAT (React+MDL)</title>
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+  <link rel="stylesheet"
+        href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet"
+        href="//code.getmdl.io/1.2.1/material.indigo-pink.min.css">
+  <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
+</head>
+<body>
+  <div class="mdl-layout mdl-js-layout">
+    <header class="mdl-layout__header mdl-color">
+      <div class="mdl-layout-icon"></div>
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout__title">Simple Layout</span>
+        <div class="mdl-layout-spacer"></div>
+        <nav class="mdl-navigation">
+          <a class="mdl-navigation__link" href="#">Nav link 1</a>
+          <a class="mdl-navigation__link" href="#">Nav link 2</a>
+          <a class="mdl-navigation__link" href="#">Nav link 3</a>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <span class="mdl-layout__title">Simple Layout</span>
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="#">Nav link 1</a>
+        <a class="mdl-navigation__link" href="#">Nav link 2</a>
+        <a class="mdl-navigation__link" href="#">Nav link 3</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content" style="margin-top:40px;">
+
+      <!-- responsive Grid Example -->
+      <div class="mdl-grid">
+        <div id="root" class="mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--12-col-phone"></div>
+      </div>
+
+    </main>
+  </div> <!-- /mdl-layout -->
+
+</body>
 </html>
