@@ -65,20 +65,28 @@ export default class Chat extends Component {
         return this.state.messages.map((msg) => {
 
             // A Reply is a message from the other user but not the system.
-            const isReply = this.props.user.username != msg.from && msg.from != 'system';
-            const spanClasses = "mdl-list__item-primary-content" +
-                (isReply ? ' reply' : '') +
-                (msg.from === 'system' ? ' notice' : '');
+            const isReply = this.props.user.username !== msg.from && msg.from !== 'system';
 
             // Only show avatars on the reply.
             const avatar = (isReply ?
                         <i className="material-icons mdl-list__item-avatar">person</i> :
                         '');
+
+            const spanClasses = "mdl-list__item-text-body" +
+                (isReply ? ' reply' : '') +
+                (msg.from === 'system' ? ' notice' : '');
+
             return (
                 <li key={msg.id}
-                    className="mdl-list__item">
-                    <span className={spanClasses}>
-                        {avatar} {msg.text}
+                    className="mdl-list__item mdl-list__item--three-line">
+                    <span className="mdl-list__item-primary-content">
+                        {avatar}
+                        <span>{msg.from}</span>
+                        <span className={spanClasses}>{msg.text}</span>
+                    </span>
+                    <span className="mdl-list__item-secondary-content">
+                        <a className="mdl-list__item-secondary-action"
+                           href="#"><i className="material-icons">star</i></a>
                     </span>
                 </li>
             );
