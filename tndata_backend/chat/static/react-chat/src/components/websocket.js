@@ -15,8 +15,6 @@ class Websocket extends React.Component {
           attempts: 1,
           lastMessage: ''
         };
-
-        this.send.bind(this);
     }
 
     logging(logline) {
@@ -65,7 +63,10 @@ class Websocket extends React.Component {
       websocket.close();
     }
 
-    send() {
+    componentWillMount() {
+        // This gets run prior to render(), and we can safely set the state here.
+        // So, if the props have changed (happens when we have a new current message),
+        // we can sent it over the websocket, and re-render our new state.
         if(this.props.sendMessage && this.props.sendMessage !== this.state.lastMessage) {
             console.log("[Websocket.render], this.props = ", this.props);
             console.log("[Websocket.render], this.props.sendMessage = ", this.props.sendMessage);
@@ -79,10 +80,6 @@ class Websocket extends React.Component {
     }
 
     render() {
-      // HACK: If we're getting re-rendered, it's possible some props/state
-      // changed, so try to send any messages.
-      this.send();
-
       return (
         <div></div>
       );
