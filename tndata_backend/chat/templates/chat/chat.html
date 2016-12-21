@@ -4,7 +4,9 @@
 
 {% block content %}
 <div class="mdl-grid">
-  <div id="root" class="mdl-cell mdl-cell--12-col chatContainer"></div>
+  <div id="root"
+       class="mdl-cell mdl-cell--12-col chatContainer"
+       data-token="{{user.auth_token.key}}"></div>
 </div>
 <script type="text/javascript" src="{% static 'js/react_chat.js' %}"></script>
 {% endblock %}
