@@ -23,7 +23,10 @@
           </span>
         </span>
         <span class="mdl-list__item-secondary-content">
-          <a class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent" href="#" data-next="notimplemented"><i class="material-icons">phone</i></a>
+          <a href="{% url 'chat:chat' course.user.username %}"
+            class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent">
+            <i class="material-icons">chat</i>
+          </a>
         </span>
       </li>
       {% endfor %}
