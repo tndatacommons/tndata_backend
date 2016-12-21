@@ -2,6 +2,9 @@
 
 {% block content %}
 <h1>Chat: {{ with_username }}</h1>
+
+<div id="root"></div>
+{%  comment %}
 <p><a href="/chat/">&larr; back to user list</a></p>
 <div id="replies"></div>
 <p class="inputWrapper">
@@ -65,4 +68,6 @@ $(document).ready(function() {
 
 });
 </script>
+{% endcomment %}
+<script type="text/javascript" src="{% static 'js/react_chat.js' %}"></script>
 {% endblock %}
