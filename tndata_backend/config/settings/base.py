@@ -331,7 +331,6 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "asgi_redis.RedisChannelLayer",
         "CONFIG": {
-            #"hosts": [(REDIS_HOST, int(REDIS_PORT))],
             "hosts": [(REDIS_CHANNELS_URL)],
         },
         "ROUTING": "config.routing.channel_routing",
