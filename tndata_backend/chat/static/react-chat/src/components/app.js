@@ -3,6 +3,11 @@ import React, { Component } from 'react';
 
 import Chat from './chat';
 
+// If we're running over http, use ws://, if over https, use wss://
+const PROTOCOLS = {
+    'https:': 'wss://',
+    'http:': 'ws://',
+}
 
 // Ensure our chat app hits the api running on the same host
 // e.g. ==> ws://127.0.0.1:8000
@@ -13,7 +18,8 @@ if(PORT.length > 0) {
     PORT = ":8000";
 }
 const ROOT_URL = window.location.hostname + PORT;
-const WS_HOST = 'ws://' + ROOT_URL;
+const WS_HOST = PROTOCOLS[window.location.protocol] + ROOT_URL;
+
 const API_HOST = '//' + ROOT_URL;
 
 
