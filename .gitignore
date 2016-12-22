@@ -5,6 +5,7 @@ dump.sql
 *.sqlite3
 env/
 node_modules/
+scripts/app_environment.sh
 tndata_backend/uploads
 tndata_backend/tndata_backend/uploads
 tndata_backend/collected_static_files
