@@ -30,10 +30,10 @@ class App extends Component {
         this.state = {
             userId: '',
             email: '',
-            username: '',
+            username: 'Unknown',
             avatar: '',
-            firstName: '',
-            lastName: ''
+            firstName: 'Unkown',
+            lastName: 'User'
         }
         this.fetchUser = this.fetchUser.bind(this);
         this.fetchProfile = this.fetchProfile.bind(this);

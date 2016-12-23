@@ -63,7 +63,6 @@ export default class Chat extends Component {
 
     renderMessageList() {
         return this.state.messages.map((msg) => {
-
             // A Reply is a message from the other user but not the system.
             const isReply = this.props.user.username !== msg.from && msg.from !== 'system';
 
@@ -83,7 +82,7 @@ export default class Chat extends Component {
                     className="mdl-list__item mdl-list__item--three-line">
                     <span className="mdl-list__item-primary-content">
                         {avatar}
-                        <span>{msg.from}</span>
+                        <span>{msg.from || "Unkown"}</span>
                         <span className={spanClasses}>{msg.text}</span>
                     </span>
                     <span className="mdl-list__item-secondary-content">
