@@ -249,30 +249,50 @@ _:-ms-input-placeholder, :root .demo-graph {
 }
 .hidden {display:none;}
 
-/* Chat Styles */
+/* Chat Styles
+ * -----------
+ *
+ * for colors, see:
+ * https://material.io/guidelines/style/color.html#color-color-palette
+ *
+ */
+.chatContainer {  /* contains a <ul> and a <form> */
+  padding:0px;
+  margin: .5em 0 .5em 0;
+}
+.chatContainer ul {
+  list-style-type: none;
+  margin:0;
+  padding:0;
+}
+.chatContainer ul li {
+  padding: 5px;
+  text-align: right;
+  clear:both;
+}
+.chatContainer ul li .chatBubble {
+  padding: 10px 20px;
+  margin:0 0 5px 0;
+  background-color: #cfa;
+  border-radius: 15px;
+  display:inline-block;
+  max-width: 60%;
+  text-align: left;
+}
+.chatContainer ul li .chatBubble.reply {
+  background-color: #bdf;
+  float:left;
+}
+.chatContainer ul li .notice {
+  background-color: transparent;
+  text-align: right;
+  font-style: italic;
+  font-size: smaller;
+}
+
 .chatForm {
   padding: 1em;
   background-color: white;
   border-top: 1px solid #ccc;
-}
-
-/* for colors, see:
- * https://material.io/guidelines/style/color.html#color-color-palette
- */
-.chatContainer ul.mdl-list li {
-  padding:0px;
-  margin: .5em 0 .5em 0;
-  border-bottom: 1px solid #ccc;
-}
-.chatContainer ul.mdl-list li:last-child {
-  border-bottom-width: 0px;
-}
-
-.chatContainer ul.mdl-list li span.reply {
-  /*background-color: #BBDEFB;*/
-}
-.chatContainer ul.mdl-list li span.notice {
-  background-color: transparent;
-  font-style: italic;
-  font-size: smaller;
+  clear:both;
 }
