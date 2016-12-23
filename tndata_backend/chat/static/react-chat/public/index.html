@@ -12,6 +12,7 @@
   <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
   <style type="text/css">
     .chatForm {
+      clear: both;
       margin:0 1em .5em 1em;
       position: relative;
     }
@@ -20,6 +21,41 @@
       right: 0;
       bottom: 0;
     }
+    /* --- Chat container -------------------------------------------------- */
+
+.chatContainer {  /* contains a <ul> and a <form> */
+}
+.chatContainer ul {
+  list-style-type: none;
+  margin:0;
+  padding:0;
+}
+.chatContainer ul li {
+  padding: 5px;
+  text-align: right;
+  clear:both;
+}
+.chatContainer ul li .chatBubble {
+  padding: 10px 20px;
+  margin:0 0 5px 0;
+  background-color: #cfa;
+  border-radius: 15px;
+  display:inline-block;
+  max-width: 60%;
+  text-align: left;
+}
+.chatContainer ul li .chatBubble.reply {
+  background-color: #bdf;
+  float:left;
+}
+.chatContainer ul li .notice {
+  background-color: transparent;
+  text-align: right;
+  font-style: italic;
+  font-size: smaller;
+}
+
+    /* --- /Chat container ------------------------------------------------- */
   </style>
 </head>
 <body>
@@ -51,7 +87,7 @@
         <div class="mdl-cell mdl-cell--3-col"></div>
         <div id="root"
              class="mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-card mdl-shadow--4dp"
-             data-token="de1ed6f7d9e560553f2c7b66fc27e23d34a74f30"></div>
+             data-token="7c1b04dffd6f6dc6c425aa653fed62b5abd13b63"></div>
         <div class="mdl-cell mdl-cell--3-col"></div>
       </div>
 
