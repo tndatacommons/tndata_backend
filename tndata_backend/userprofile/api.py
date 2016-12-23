@@ -1,6 +1,8 @@
 import logging
-from decimal import Decimal
+import sys
+import traceback
 
+from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
@@ -168,6 +170,11 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                     user.save()
                     result_status = status.HTTP_201_CREATED
             except Exception as err:
+                # Log the traceback.
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                logger.error("{}\n".format("\n".join(tb)))
+
                 return Response(
                     data={'error': '{}'.format(err)},
                     status=status.HTTP_400_BAD_REQUEST

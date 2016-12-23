@@ -5,7 +5,7 @@ Sections in this documentation:
 
 * <a href="#fields">Fields</a>
 * <a href="#creating-a-user">Creating a User</a>
-* <a href="#creating-a-user-oauth">Creating a User via OAuth (Google Login)</a>
+* <a href="#creating-a-user-via-oauth">Creating a User via OAuth (Google Login)</a>
 * <a href="#acquiring-an-auth-token">Acquiring an Auth token</a>
 * <a href="#logging-out">Logging Out</a>
 * <a href="#retrieving-a-users-info">Retrieveing a User's Info</a>
@@ -58,7 +58,7 @@ The response includes the created user's info, such as their database id
 and the id for their created User Profile *as well as* an Auth Token for
 subsequent API requests.
 
-## Creating a User via OAuth (Google Login) <a href="#creating-a-user-oauth">&para;</a>
+## Creating a User via OAuth (Google Login) <a href="#creating-a-user-via-oauth">&para;</a>
 
 Given an OAuth response (e.g. from Google login), send a POST request to
 `/api/users/oauth/` with the following payload:
