@@ -22,39 +22,46 @@
       bottom: 0;
     }
     /* --- Chat container -------------------------------------------------- */
-
-.chatContainer {  /* contains a <ul> and a <form> */
-}
-.chatContainer ul {
-  list-style-type: none;
-  margin:0;
-  padding:0;
-}
-.chatContainer ul li {
-  padding: 5px;
-  text-align: right;
-  clear:both;
-}
-.chatContainer ul li .chatBubble {
-  padding: 10px 20px;
-  margin:0 0 5px 0;
-  background-color: #cfa;
-  border-radius: 15px;
-  display:inline-block;
-  max-width: 60%;
-  text-align: left;
-}
-.chatContainer ul li .chatBubble.reply {
-  background-color: #bdf;
-  float:left;
-}
-.chatContainer ul li .notice {
-  background-color: transparent;
-  text-align: right;
-  font-style: italic;
-  font-size: smaller;
-}
-
+    .chatContainer {  /* contains a <ul> and a <form> */
+    }
+    .chatContainer ul {
+      list-style-type: none;
+      margin:0;
+      padding:0;
+    }
+    .chatContainer ul li {
+      padding: 5px;
+      text-align: right;
+      clear:both;
+    }
+    .chatContainer ul li .chatBubble {
+      padding: 10px 20px;
+      margin:0 0 5px 0;
+      background-color: #cfa;
+      border-radius: 15px;
+      display:inline-block;
+      max-width: 60%;
+      text-align: left;
+    }
+    .chatContainer ul li .chatBubble.reply {
+      background-color: #bdf;
+      float:left;
+    }
+    .chatContainer ul li .notice {
+      background-color: transparent;
+      text-align: right;
+      font-style: italic;
+      font-size: smaller;
+    }
+    .chatContainer ul li .chatBubble img.avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 25px;
+      padding: 0;
+      margin: -20px 8px 0px -30px;
+      float: left;
+      border: 1px solid #bbb;
+    }
     /* --- /Chat container ------------------------------------------------- */
   </style>
 </head>
@@ -87,7 +94,7 @@
         <div class="mdl-cell mdl-cell--3-col"></div>
         <div id="root"
              class="mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-card mdl-shadow--4dp"
-             data-token="7c1b04dffd6f6dc6c425aa653fed62b5abd13b63"></div>
+             data-token="fe284e9f98688d08c25485fdf3980672af8b62ad"></div>
         <div class="mdl-cell mdl-cell--3-col"></div>
       </div>
 
