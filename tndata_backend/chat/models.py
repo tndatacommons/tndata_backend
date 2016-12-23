@@ -15,7 +15,7 @@ class ChatMessage(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.message
+        return self.text
 
     class Meta:
         ordering = ['-created_on']
