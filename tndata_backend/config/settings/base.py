@@ -29,6 +29,10 @@ be set prior to running the project:
 * GCM_IOS_API_KEY -- API key for google cloud messaging (for iOS)
 * GOOGLE_OAUTH_CLIENT_ID -- API key for OAuth with Google
 * GOOGLE_OAUTH_CLIENT_SECRET -- Secret for OAuth with Google
+* ANDROID_OAUTH_CLIENT_ID -- Same as `GOOGLE_OAUTH_CLIENT_ID`, but the ID we're
+                             using on the Android app.
+* IOS_OAUTH_CLIENT_ID -- Same as `GOOGLE_OAUTH_CLIENT_ID`, but the ID we're
+                         using on the iOS app.
 * APNS_CERT_PATH  -- Path the the Apple Certificate for APNS
 * DB_NAME -- Database name
 * DB_USER -- Database user
@@ -216,6 +220,8 @@ HAYSTACK_CONNECTIONS = {
 # Google OAuth
 GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID')
 GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET')
+ANDROID_OAUTH_CLIENT_ID = os.environ.get('ANDROID_OAUTH_CLIENT_ID')
+IOS_OAUTH_CLIENT_ID = os.environ.get('IOS_OAUTH_CLIENT_ID')
 
 # Settings for Google Cloud Messaging.
 GCM = {
