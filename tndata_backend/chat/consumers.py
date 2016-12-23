@@ -4,7 +4,6 @@ from channels import Channel, Group
 from channels.sessions import enforce_ordering
 from channels.auth import channel_session_user, channel_session_user_from_http
 
-from clog.clog import clog
 from django.contrib.auth import get_user_model
 from .models import ChatMessage
 
@@ -19,7 +18,6 @@ def chat_message_consumer(message):
         - text: text of the message.
 
     """
-    # Save the model
     try:
         User = get_user_model()
         user = User.objects.get(pk=message.content['user_id'])
@@ -27,8 +25,8 @@ def chat_message_consumer(message):
         text = message.content['text']
         ChatMessage.objects.create(user=user, room=room, text=text)
 
-    except (User.DoesNotExist, KeyError) as e:
-        clog(e, color='red')
+    except (User.DoesNotExist, KeyError):
+        pass  # TODO: log this
 
 
 @enforce_ordering(slight=True)
@@ -43,11 +41,11 @@ def ws_message(message):
         name = message.user.username
     except AttributeError:
         name = "anonymous"
+
     payload = {
         'from': name,
         "message": "{}".format(message['text']),
     }
-    clog(payload, title="Received Message")
     Group(room).send({'text': json.dumps(payload)})  # send to users for display
 
     # Now, send it to the channel to create the ChatMessage.
@@ -73,25 +71,10 @@ def ws_connect(message):
     users = sorted([path, message.user.username])
     room = "chat-{}-{}".format(*users)
 
-    # XXX: Interesting attributes on message.content
-    message.content['order']
-    message.content['path']  # e.g. /chat
-    message.content['query_string']
-    message.content['reply_channel']
-    connect_data = {
-        'room': room,
-        'user_id': message.user.id,
-        'path': message.content['path'],
-        'query_string': message.content['query_string'],
-        'reply_channel': message.content['reply_channel'],
-    }
-    clog(connect_data, title="On Connection", color="magenta")
-
     # Save room in session and add us to the group
     message.channel_session['room'] = room
     Group(room).add(message.reply_channel)
 
-    # XXX: would be nice to be able to push a message like "User X joined"
     payload = {
         'from': 'system',
         'message': "{} joined.".format(message.user),
@@ -107,7 +90,6 @@ def ws_disconnect(message):
 
     # Pull the room from the channel's session.
     room = message.channel_session['room']
-    clog("{} disconnected from {}".format(message.user, room), color="red")
 
     payload = {
         'from': 'system',
