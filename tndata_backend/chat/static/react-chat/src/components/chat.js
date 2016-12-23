@@ -116,13 +116,14 @@ export default class Chat extends Component {
 
             // Dont' show avatars for system messages.
             // TODO: replace this with the user's avatar.
+            /*
             const avatar = (
                 msg.from === "system" ? "" :
                 <i className="material-icons mdl-list__item-avatar">person</i>
             );
+            */
 
-            const spanClasses = "mdl-list__item-text-body" +
-                (isReply ? ' reply' : '') +
+            const chatClasses = (isReply ? 'chatBubble reply' : 'chatBubble') +
                 (msg.from === 'system' ? ' notice' : '');
 
             // Inline links to youtube videos
@@ -132,7 +133,9 @@ export default class Chat extends Component {
             if(video) {
                 content = (
                     <div>
-                        <AutoLinkText text={msg.text} />
+                        <div className={chatClasses}>
+                            <AutoLinkText text={msg.text} />
+                        </div>
                         <iframe width="640"
                                 height="360"
                                 src={video.embedUrl}
@@ -141,23 +144,16 @@ export default class Chat extends Component {
                 );
             }
             else {
-                content = <AutoLinkText text={msg.text} />;
+                content = (
+                    <div className={chatClasses}>
+                        <AutoLinkText text={msg.text} />
+                    </div>
+                );
             }
 
             return (
-                <li key={msg.id}
-                    className="mdl-list__item mdl-list__item--three-line">
-                    <span className="mdl-list__item-primary-content">
-                        {avatar}
-                        <span>{msg.from || "Unkown"}</span>
-                        <span className={spanClasses}>
-                            {content}
-                        </span>
-                    </span>
-                    <span className="mdl-list__item-secondary-content">
-                        <a className="mdl-list__item-secondary-action"
-                           href="#"><i className="material-icons">star</i></a>
-                    </span>
+                <li key={msg.id}>
+                    {content}
                 </li>
             );
         });
@@ -166,7 +162,7 @@ export default class Chat extends Component {
     render() {
 
         /*
-         * NOTE: this.props.user contains inf about our user.
+         * NOTE: this.props.user contains info about our user.
          *
          * TODO: tag replies from the other user with className: reply
          * TODO: tag notice messages with className: notice
@@ -174,8 +170,8 @@ export default class Chat extends Component {
          */
         console.log('[render], this.state.current = ', this.state.current);
         return (
-          <div>
-            <ul className="mdl-list">{this.renderMessageList()}</ul>
+          <div className="chatContainer">
+            <ul>{this.renderMessageList()}</ul>
             <Websocket url={this.props.ws_url}
                        debug={true}
                        onMessage={this.handleMessage.bind(this)}
