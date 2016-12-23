@@ -23,6 +23,54 @@ function slugify(text)
     .replace(/-+$/, '');            // Trim - from end of text
 }
 
+/*
+ * If the given text contains a link to a youtube video, this function
+ * will parse the text and extract two bits of data:
+ *
+ * 1. The video URL, and
+ * 2. The video ID.
+ *
+ * If matched, this function returns an object of the form:
+ *
+ *  {
+ *      videoId: '...',
+ *      embedUrl: '...',
+ *  }
+ *
+ * Otherwise, it returns a false value.
+ *
+ * This current works for both short, and long share urls:
+ * - https://www.youtube.com/watch?v=fd6clpIvrfg
+ * - https://youtu.be/fd6clpIvrfg
+ */
+function extractVideo(text) {
+    let result = false;
+    let videoId = null;
+    let videoLink = null;
+    const short_re = /https:\/\/youtu.be\/(\w+)/;
+    const long_re = /https:\/\/www.youtube.com\/watch\?v=(\w+)/;
+
+    if(short_re.test(text)) {
+        // Note: returns ["https://youtu.be/fd6clpIvrfg", "fd6clpIvrfg"]
+        [videoLink, videoId] = short_re.exec(text);
+        result = {
+            videoId: videoId,
+            videoLink: videoLink,
+            embedUrl: "https://www.youtube.com/embed/" + videoId
+        }
+    }
+    else if(long_re.test(text)) {
+        [videoLink, videoId] = long_re.exec(text);
+        result = {
+            videoId: videoId,
+            videoLink: videoLink,
+            embedUrl: "https://www.youtube.com/embed/" + videoId
+        }
+    }
+    console.log("Video Extraction result: ", result);
+    return result;
+}
+
 
 export default class Chat extends Component {
 
@@ -77,6 +125,25 @@ export default class Chat extends Component {
                 (isReply ? ' reply' : '') +
                 (msg.from === 'system' ? ' notice' : '');
 
+            // Inline links to youtube videos
+            const video = extractVideo(msg.text);
+            let content = msg.text;
+
+            if(video) {
+                content = (
+                    <div>
+                        <AutoLinkText text={msg.text} />
+                        <iframe width="640"
+                                height="360"
+                                src={video.embedUrl}
+                                frameBorder="0" allowFullScreen />
+                    </div>
+                );
+            }
+            else {
+                content = <AutoLinkText text={msg.text} />;
+            }
+
             return (
                 <li key={msg.id}
                     className="mdl-list__item mdl-list__item--three-line">
@@ -84,7 +151,7 @@ export default class Chat extends Component {
                         {avatar}
                         <span>{msg.from || "Unkown"}</span>
                         <span className={spanClasses}>
-                            <AutoLinkText text={msg.text} />
+                            {content}
                         </span>
                     </span>
                     <span className="mdl-list__item-secondary-content">
