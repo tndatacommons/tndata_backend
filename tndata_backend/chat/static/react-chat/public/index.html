@@ -10,6 +10,17 @@
   <link rel="stylesheet"
         href="//code.getmdl.io/1.2.1/material.indigo-pink.min.css">
   <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
+  <style type="text/css">
+    .chatForm {
+      margin:0 1em .5em 1em;
+      position: relative;
+    }
+    .chatForm button {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
+  </style>
 </head>
 <body>
   <div class="mdl-layout mdl-js-layout">
@@ -37,7 +48,11 @@
 
       <!-- responsive Grid Example -->
       <div class="mdl-grid">
-        <div id="root" class="mdl-cell mdl-cell--12-col" data-token="de1ed6f7d9e560553f2c7b66fc27e23d34a74f30"></div>
+        <div class="mdl-cell mdl-cell--3-col"></div>
+        <div id="root"
+             class="mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-card mdl-shadow--4dp"
+             data-token="de1ed6f7d9e560553f2c7b66fc27e23d34a74f30"></div>
+        <div class="mdl-cell mdl-cell--3-col"></div>
       </div>
 
     </main>
