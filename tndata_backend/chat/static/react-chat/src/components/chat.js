@@ -122,6 +122,13 @@ export default class Chat extends Component {
                 <i className="material-icons mdl-list__item-avatar">person</i>
             );
             */
+            let avatar = '';
+            if (this.props.user.avatar && !isReply && msg.from !== 'system') {
+                avatar = <img src={this.props.user.avatar} className="avatar" role="presentation" />;
+            }
+            else if(msg.avatar && msg.from !== 'system') {
+                avatar = <img src={msg.avatar} className="avatar" role="presentation" />;
+            }
 
             const chatClasses = (isReply ? 'chatBubble reply' : 'chatBubble') +
                 (msg.from === 'system' ? ' notice' : '');
@@ -134,6 +141,7 @@ export default class Chat extends Component {
                 content = (
                     <div>
                         <div className={chatClasses}>
+                            {avatar}
                             <AutoLinkText text={msg.text} />
                         </div>
                         <iframe width="640"
@@ -146,6 +154,7 @@ export default class Chat extends Component {
             else {
                 content = (
                     <div className={chatClasses}>
+                        {avatar}
                         <AutoLinkText text={msg.text} />
                     </div>
                 );
@@ -160,15 +169,6 @@ export default class Chat extends Component {
     }
 
     render() {
-
-        /*
-         * NOTE: this.props.user contains info about our user.
-         *
-         * TODO: tag replies from the other user with className: reply
-         * TODO: tag notice messages with className: notice
-         *
-         */
-        console.log('[render], this.state.current = ', this.state.current);
         return (
           <div className="chatContainer">
             <ul>{this.renderMessageList()}</ul>
