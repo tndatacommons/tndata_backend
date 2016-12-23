@@ -12,8 +12,9 @@ def verify_token(token_string):
     token = None
     valid_accounts = ['accounts.google.com', 'https://accounts.google.com']
     client_id = settings.GOOGLE_OAUTH_CLIENT_ID
+
     try:
-        idinfo = client.verify_id_token(token, client_id)
+        idinfo = client.verify_id_token(token_string, client_id)
         # TODO: If multiple clients access the backend server:
         # if idinfo['aud'] not in [ANDROID_ID, IOS_ID, client_id]:
         #     raise crypt.AppIdentityError("Unrecognized client.")
