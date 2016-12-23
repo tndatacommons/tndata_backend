@@ -4163,6 +4163,12 @@ rc@~1.1.6:
     minimist "^1.2.0"
     strip-json-comments "~1.0.4"
 
+react-autolink-text@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/react-autolink-text/-/react-autolink-text-2.0.0.tgz#0a9163502336c2f18f30eb9d35568b8a6af27e30"
+  dependencies:
+    react-pure-render "^1.0.2"
+
 react-dev-utils@^0.4.2:
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-0.4.2.tgz#ba6fae581fe945a2fc402e9b27c71fda4f62f6a1"
@@ -4182,6 +4188,10 @@ react-dom@^15.4.1:
     fbjs "^0.8.1"
     loose-envify "^1.1.0"
     object-assign "^4.1.0"
+
+react-pure-render@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/react-pure-render/-/react-pure-render-1.0.2.tgz#9d8a928c7f2c37513c2d064e57b3e3c356e9fabb"
 
 react-scripts@0.8.4:
   version "0.8.4"

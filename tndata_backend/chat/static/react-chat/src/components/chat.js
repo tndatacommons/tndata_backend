@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React, { Component } from 'react';
 import Websocket from './websocket';
-//import Websocket from 'react-websocket';
+import AutoLinkText from 'react-autolink-text';
 
 /*
  * Stolen from:
@@ -83,7 +83,9 @@ export default class Chat extends Component {
                     <span className="mdl-list__item-primary-content">
                         {avatar}
                         <span>{msg.from || "Unkown"}</span>
-                        <span className={spanClasses}>{msg.text}</span>
+                        <span className={spanClasses}>
+                            <AutoLinkText text={msg.text} />
+                        </span>
                     </span>
                     <span className="mdl-list__item-secondary-content">
                         <a className="mdl-list__item-secondary-action"

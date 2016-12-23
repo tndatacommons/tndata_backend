@@ -9,6 +9,7 @@
     "axios": "^0.15.3",
     "lodash": "^4.17.2",
     "react": "^15.4.1",
+    "react-autolink-text": "^2.0.0",
     "react-dom": "^15.4.1",
     "react-websocket": "^1.1.6"
   },
