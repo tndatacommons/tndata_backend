@@ -5,6 +5,7 @@ from channels.sessions import enforce_ordering
 from channels.auth import channel_session_user, channel_session_user_from_http
 
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 from .models import ChatMessage
 
 
@@ -39,12 +40,18 @@ def ws_message(message):
 
     try:
         name = message.user.username
+        avatar = (
+            message.user.userprofile.google_image.replace('https:', '').replace('http:', '')
+            or '//www.gravatar.com/avatar/0?d=mm&s=30'
+        )
     except AttributeError:
         name = "anonymous"
+        avatar = '//www.gravatar.com/avatar/0?d=mm&s=30'
 
     payload = {
         'from': name,
         "message": "{}".format(message['text']),
+        'avatar': avatar,
     }
     Group(room).send({'text': json.dumps(payload)})  # send to users for display
 
@@ -69,7 +76,7 @@ def ws_connect(message):
     except IndexError:
         path = 'unknown'
     users = sorted([path, message.user.username])
-    room = "chat-{}-{}".format(*users)
+    room = slugify("chat-{}-{}".format(*users))
 
     # Save room in session and add us to the group
     message.channel_session['room'] = room

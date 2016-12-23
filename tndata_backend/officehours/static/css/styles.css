@@ -289,7 +289,15 @@ _:-ms-input-placeholder, :root .demo-graph {
   font-style: italic;
   font-size: smaller;
 }
-
+.chatContainer ul li .chatBubble img.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 25px;
+  padding: 0;
+  margin: -20px 8px 0px -30px;
+  float: left;
+  border: 1px solid #bbb;
+}
 .chatForm {
   padding: 1em;
   background-color: white;

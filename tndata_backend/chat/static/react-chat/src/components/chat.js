@@ -67,7 +67,6 @@ function extractVideo(text) {
             embedUrl: "https://www.youtube.com/embed/" + videoId
         }
     }
-    console.log("Video Extraction result: ", result);
     return result;
 }
 
@@ -88,11 +87,11 @@ export default class Chat extends Component {
         const new_message = {
             id: slugify(data.message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
             text: data.message,
-            from: data.from
+            from: data.from,
+            avatar: data.from === "system" ? '' : data.avatar
         }
         const messages = _.concat(this.state.messages, [new_message]);
         this.setState({messages: messages, current: this.state.current});
-        console.log('[handleMessage], this.state.current = ', this.state.current);
     }
 
     onFormSubmit(event) {
@@ -101,11 +100,8 @@ export default class Chat extends Component {
         // event.target[0] is the first child element (our <input>)
         const inputElement = event.target.children[0].children[0];
         const message = inputElement.value;
-        console.log("[onFormSubmit] message = ", message);
 
         this.setState({messages: this.state.messages, current: message});
-
-        console.log('[onFormSubmit], this.state.current = ', this.state.current);
         inputElement.value = ""; // clear the input.
     }
 
@@ -114,14 +110,7 @@ export default class Chat extends Component {
             // A Reply is a message from the other user but not the system.
             const isReply = this.props.user.username !== msg.from && msg.from !== 'system';
 
-            // Dont' show avatars for system messages.
-            // TODO: replace this with the user's avatar.
-            /*
-            const avatar = (
-                msg.from === "system" ? "" :
-                <i className="material-icons mdl-list__item-avatar">person</i>
-            );
-            */
+            // Only show avatars for actual users.
             let avatar = '';
             if (this.props.user.avatar && !isReply && msg.from !== 'system') {
                 avatar = <img src={this.props.user.avatar} className="avatar" role="presentation" />;
@@ -129,14 +118,12 @@ export default class Chat extends Component {
             else if(msg.avatar && msg.from !== 'system') {
                 avatar = <img src={msg.avatar} className="avatar" role="presentation" />;
             }
-
             const chatClasses = (isReply ? 'chatBubble reply' : 'chatBubble') +
                 (msg.from === 'system' ? ' notice' : '');
 
-            // Inline links to youtube videos
+            // Inline links to youtube videos, if applicable.
             const video = extractVideo(msg.text);
             let content = msg.text;
-
             if(video) {
                 content = (
                     <div>
