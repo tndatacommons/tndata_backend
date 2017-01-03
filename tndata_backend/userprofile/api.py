@@ -6,7 +6,9 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth import logout
+from django.core.cache import cache
 from django.db.models import F
+from django.utils.text import slugify
 
 from rest_framework import mixins, status, viewsets
 from rest_framework.authentication import (
@@ -147,15 +149,25 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                     )
 
                 # Note: email + (a verified) token serves as username + password.
+                email = data.get('email').strip().lower()
+
+                # XXX This is a hack to keep these users from getting the
+                # XXX `selected_by_default` content from the `goals` app.
+                # XXX We *must* set this before we craete the user, hence the
+                # XXX use of the email in the key.
+                _key = "omit-default-selections-{}".format(slugify(email))
+                cache.set(_key, True, 30)
+
                 user, created = User.objects.get_or_create(
-                    username=username_hash(data.get('email')),
-                    email=data.get('email'),
+                    username=username_hash(email),
+                    email=email
                 )
 
                 # Update the Profile fields.
                 profile = user.userprofile
                 profile.google_token = token  # This will change periodically
                 profile.google_image = data.get('image_url', '')
+                profile.app_logins += 1
                 if created:
                     # Save the IP address on the user's profile
                     try:
