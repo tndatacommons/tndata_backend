@@ -106,7 +106,7 @@
     </style>
     <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="//apis.google.com/js/platform.js" async defer></script>
   </head>
   <body>
     <div class="oo-layout mdl-layout mdl-layout--fixed-header mdl-js-layout mdl-color--grey-100">
@@ -203,7 +203,6 @@ function onSignIn(googleUser) {
       });
     }
   }).fail(function() {
-    console.log("Request FAILED, signing out.");
     signOut();
     $('.mdl-spinner').hide();
   });
@@ -214,7 +213,7 @@ function onFailure(error) {console.log(error);}
 function signOut() {
   var auth2 = gapi.auth2.getAuthInstance();
   auth2.signOut().then(function () {
-      console.log('User signed out.');
+      window.location = "/logout/?next=/officehours/";
   });
 }
 $(document).ready(function() {

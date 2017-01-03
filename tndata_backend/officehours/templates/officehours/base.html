@@ -54,7 +54,6 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
   </head>
   <body>
     <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
@@ -124,6 +123,14 @@ function signIn() {
   window.location = "/officehours/login/";
 }
 
+// If our sign-in code is defined on another page, we have to load gapi
+// manually. See: http://stackoverflow.com/a/29833065/182778
+function gapiOnLoad() {
+  gapi.load('auth2', function() {
+    gapi.auth2.init();
+  });
+}
+
 $(document).ready(function() {
     // Pause for a bit before we show any snackbars. Apparently we have to
     // wait for some MDL thing to happen.
@@ -140,6 +147,7 @@ $(document).ready(function() {
     }, 500);
 });
 </script>
-    {% block bodyjs %}{% endblock %}
-  </body>
+<script src="//apis.google.com/js/platform.js?onload=gapiOnLoad" async defer></script>
+{% block bodyjs %}{% endblock %}
+</body>
 </html>
