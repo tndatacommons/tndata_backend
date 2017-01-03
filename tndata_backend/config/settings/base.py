@@ -303,7 +303,9 @@ if DEBUG:
     # For development, we can use a dummy or a local-memory cache.
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            #'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'snowflake'
         }
     }
 
