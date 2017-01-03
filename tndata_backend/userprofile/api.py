@@ -124,8 +124,8 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
 
         """
         content = []
-        user = request.user
-        authed = user.is_authenticated()
+        user = None
+        authed = request.user.is_authenticated()
         result_status = status.HTTP_200_OK
 
         # Not authenticated, return empty list.
@@ -146,34 +146,35 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-                # Note: email + token serves as username + password.
+                # Note: email + (a verified) token serves as username + password.
                 user, created = User.objects.get_or_create(
                     username=username_hash(data.get('email')),
                     email=data.get('email'),
-                    userprofile__google_token=token,
                 )
+
+                # Update the Profile fields.
+                profile = user.userprofile
+                profile.google_token = token  # This will change periodically
+                profile.google_image = data.get('image_url', '')
                 if created:
-                    # Update the Profile fields.
-                    profile = user.userprofile
-                    profile.google_image = data.get('image_url', '')
-                    profile.google_token = data.get('oauth_token', '')
+                    # Save the IP address on the user's profile
                     try:
-                        # Save the IP address on the user's profile
                         profile.ip_address = get_client_ip(request)
                     except:  # XXX: Don't let any exception prevent signup.
                         pass
-                    profile.save()
+                profile.save()
 
-                    # Update user fields.
-                    user.first_name = data.get('first_name', '')
-                    user.last_name = data.get('last_name', '')
-                    user.save()
-                    result_status = status.HTTP_201_CREATED
+                # Update user fields.
+                user.first_name = data.get('first_name', '')
+                user.last_name = data.get('last_name', '')
+                user.save()
+                result_status = status.HTTP_201_CREATED
             except Exception as err:
                 # Log the traceback.
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 tb = traceback.format_exception(exc_type, exc_value, exc_traceback)
-                logger.error("{}\n".format("\n".join(tb)))
+                tb_string = "{}\n".format("\n".join(tb))
+                logger.error(tb_string)
 
                 return Response(
                     data={'error': '{}'.format(err)},

@@ -5,7 +5,7 @@ Sections in this documentation:
 
 * <a href="#fields">Fields</a>
 * <a href="#creating-a-user">Creating a User</a>
-* <a href="#creating-a-user-via-oauth">Creating a User via OAuth (Google Login)</a>
+* <a href="#creating-a-user-via-oauth-google-login">Creating a User via OAuth (Google Login)</a>
 * <a href="#acquiring-an-auth-token">Acquiring an Auth token</a>
 * <a href="#logging-out">Logging Out</a>
 * <a href="#retrieving-a-users-info">Retrieveing a User's Info</a>
@@ -58,15 +58,15 @@ The response includes the created user's info, such as their database id
 and the id for their created User Profile *as well as* an Auth Token for
 subsequent API requests.
 
-## Creating a User via OAuth (Google Login) <a href="#creating-a-user-via-oauth">&para;</a>
+## Creating a User via OAuth (Google Login) <a href="#creating-a-user-via-oauth-google-login">&para;</a>
 
 Given an OAuth response (e.g. from Google login), send a POST request to
 `/api/users/oauth/` with the following payload:
 
     {
         "email": "YOUR-EMAIL",
-        "first_name": "First",
-        "last_name": "Last",
+        "first_name": "FIRST NAME",
+        "last_name": "LAST NAME",
         "image_url": "http://.../photo.jpg",
         "oauth_token": "GOOGLE-AUTH-TOKEN-HERE",
     }
@@ -75,8 +75,8 @@ The response from this endpoint will include the User's account and a subset
 of profile data (including an auth Token for this API).
 
 **NOTE: When creating an account using this method, the user will not have a
-password (though they can go through the password reset process to get one).
-If you POST their email + auth token again, this should serve to log them in.**
+password (though they can go through the password reset process to get one).**
+
 
 ## Acquiring an Auth token <a href="#acquiring-an-auth-token">&para;</a>
 
