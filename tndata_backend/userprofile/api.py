@@ -123,9 +123,9 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         Of the above values, the `email` and `oauth_token` fields are required.
 
         """
-        content = []
-        user = None
+        content = {}
         authed = request.user.is_authenticated()
+        user = request.user if authed else None
         result_status = status.HTTP_200_OK
 
         # Not authenticated, return empty list.
@@ -168,7 +168,11 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 user.first_name = data.get('first_name', '')
                 user.last_name = data.get('last_name', '')
                 user.save()
-                result_status = status.HTTP_201_CREATED
+
+                if created:
+                    result_status = status.HTTP_201_CREATED
+                else:
+                    result_status = status.HTTP_200_OK
             except Exception as err:
                 # Log the traceback.
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -182,7 +186,7 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 )
 
         if user:
-            content = [{
+            content = {
                 'id': user.id,
                 'email': user.email,
                 'first_name': user.first_name,
@@ -190,7 +194,7 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 'google_image': user.userprofile.google_image,
                 'google_token': user.userprofile.google_token,
                 'token': user.auth_token.key,
-            }]
+            }
         return Response(content, status=result_status)
 
     def create(self, request, *args, **kwargs):

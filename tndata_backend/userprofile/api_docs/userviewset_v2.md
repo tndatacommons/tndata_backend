@@ -77,6 +77,20 @@ of profile data (including an auth Token for this API).
 **NOTE: When creating an account using this method, the user will not have a
 password (though they can go through the password reset process to get one).**
 
+Successful requests to this endpoint will return the following data:
+
+    {
+        "id": 123,
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "email": "jane.doe@gmail.com",
+        "google_image": "https://lh5.googleusercontent.com/.../photo.jpg",
+        "google_token": "123456789012345678901",
+        "token": "1234567890123456789012345678901234567890",
+    }
+
+In the above, `token` is the user's API token for interacting with _this_ API,
+while the `google_token` is the verified token to interact with any Google APIs.
 
 ## Acquiring an Auth token <a href="#acquiring-an-auth-token">&para;</a>
 

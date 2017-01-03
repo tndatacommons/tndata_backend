@@ -192,10 +192,10 @@ function onSignIn(googleUser) {
 
     // If we get a successful result (which should be an array of 1 item),
     // send a POST to  login so we login with the current user.
-    if(data.length == 1 && data[0].id && data[0].email && data[0].token) {
+    if(data && data.id && data.email && data.token) {
       payload = {
-        email: data[0].email,
-        token: data[0].token,
+        email: data.email,
+        token: data.token,
         csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
       }
       $.post('/officehours/login/', payload, function(data) {

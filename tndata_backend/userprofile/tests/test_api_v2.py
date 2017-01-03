@@ -569,7 +569,7 @@ class TestUsersAPI(V2APITestCase):
         url = self.get_url("user-oauth")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(list(response.data), [])
+        self.assertEqual(response.data, {})
 
     def test_get_oauth_create_authed(self):
         """Authenticated GET requests should return data."""
@@ -579,17 +579,16 @@ class TestUsersAPI(V2APITestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['id'], self.user.id)
-        self.assertEqual(response.data[0]['email'], self.user.email)
-        self.assertEqual(response.data[0]['first_name'], self.user.first_name)
-        self.assertEqual(response.data[0]['last_name'], self.user.last_name)
+        self.assertEqual(response.data['id'], self.user.id)
+        self.assertEqual(response.data['email'], self.user.email)
+        self.assertEqual(response.data['first_name'], self.user.first_name)
+        self.assertEqual(response.data['last_name'], self.user.last_name)
         self.assertEqual(
-            response.data[0]['google_image'],
+            response.data['google_image'],
             self.user.userprofile.google_image
         )
         self.assertEqual(
-            response.data[0]['google_token'],
+            response.data['google_token'],
             self.user.userprofile.google_token
         )
 
@@ -609,19 +608,18 @@ class TestUsersAPI(V2APITestCase):
             response = self.client.post(url, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['email'], 'new-user@example.com')
-        self.assertEqual(response.data[0]['first_name'], 'New')
-        self.assertEqual(response.data[0]['last_name'], 'User')
+        self.assertEqual(response.data['email'], 'new-user@example.com')
+        self.assertEqual(response.data['first_name'], 'New')
+        self.assertEqual(response.data['last_name'], 'User')
         self.assertEqual(
-            response.data[0]['google_image'],
+            response.data['google_image'],
             'http://example.com/avatar.jpg'
         )
         self.assertEqual(
-            response.data[0]['google_token'],
+            response.data['google_token'],
             'A-TOKEN-STRING'
         )
-        self.assertIn('token', response.data[0])
+        self.assertIn('token', response.data)
 
     def test_post_oauth_create_when_authenticated(self):
         """Authenticated POSTs should return the user's data."""
@@ -647,14 +645,16 @@ class TestUsersAPI(V2APITestCase):
             response = self.client.post(url, payload)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['email'], 'existing-user@example.com')
+        self.assertEqual(response.data['email'], 'existing-user@example.com')
         # No data was updated, we're only returning existing info.
-        self.assertEqual(response.data[0]['first_name'], '')
-        self.assertEqual(response.data[0]['last_name'], '')
-        self.assertEqual(response.data[0]['google_image'], '')
-        self.assertEqual(response.data[0]['google_token'], 'A-TOKEN-STRING')
-        self.assertEqual(response.data[0]['token'], user.auth_token.key)
+        self.assertEqual(response.data['first_name'], 'Existing')
+        self.assertEqual(response.data['last_name'], 'User')
+        self.assertEqual(
+            response.data['google_image'],
+            'http://example.com/avatar.jpg'
+        )
+        self.assertEqual(response.data['google_token'], 'A-TOKEN-STRING')
+        self.assertEqual(response.data['token'], user.auth_token.key)
 
         # Clean up
         profile.delete()
