@@ -14,6 +14,7 @@ from django.db.models.signals import (
 import django.dispatch
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.text import slugify
 
 from django_rq import job
 from notifications.signals import notification_snoozed
@@ -59,8 +60,31 @@ def _enroll_user_in_default_categories(user):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid='auto-enroll')
 def auto_enroll(sender, **kwargs):
-    """Auto-enroll new users in default categories."""
-    if kwargs.get('created', False) and 'instance' in kwargs:
+    """Auto-enroll new users in default categories.
+
+    This `post_save` handler for new user accounts looks up `Category` objects
+    whose `selected_by_default` flag is True, and enrolls the new user in all
+    content contained within that Category.
+
+    You can skip this process for arbitary users by setting the following
+    cache key, where EMAIL_SLUG is the sluggified email address for the User:
+
+        omit-default-selections-EMAIL_SLUG
+
+
+    E.g. the following will skip this process for the specified user:
+
+        cache.set("omit-default-selections-{}".format(slugify(email)), True, 30)
+
+    """
+
+    created = kwargs.get('created', False)
+    user = kwargs['instance']
+
+    key = "omit-default-selections-{}".format(slugify(user.email))
+    skip = bool(cache.get(key))
+
+    if created and user and not skip:
         _enroll_user_in_default_categories.delay(kwargs['instance'])
 
 
