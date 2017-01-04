@@ -9,6 +9,30 @@ from django.utils.text import slugify
 from .models import ChatMessage
 
 
+def _get_user(message):
+    """This function is used below and inspects wether the message includes
+    an authenticated user, and if not, it tries to look up a user from the
+    message's query_string (e.g. ?token=) ...
+
+    TODO: also look at a header is see if we've got an auth token?
+    TODO: There's probably a way to optimize this.
+
+    Returns a User object.
+
+    """
+    if message.user.is_authenticated():
+        return message.user
+
+    User = get_user_model()
+    try:
+        # NOTE: this is the only query string object supportd.
+        token = message.content.get('query_string').split("token=")[1]
+        return User.objects.get(auth_token__key=token)
+    except (KeyError, IndexError, AttributeError, User.DoesNotExist):
+        pass
+    return message.user
+
+
 def chat_message_consumer(message):
     """Given a message, this creates a DB object and sends the message to a group.
 
@@ -38,10 +62,16 @@ def ws_message(message):
     # it directly to the group)
     room = message.channel_session['room']
 
+    # We may need to look up the user if they're not logged in.
+    user = message.user
+    if not user.is_authenticated() and 'user_id' in message.channel_session:
+        User = get_user_model()
+        user = User.objects.get(pk=message.channel_session['user_id'])
+
     try:
-        name = message.user.username
+        name = user.username
         avatar = (
-            message.user.userprofile.google_image.replace('https:', '').replace('http:', '')
+            user.userprofile.google_image.replace('https:', '').replace('http:', '')
             or '//www.gravatar.com/avatar/0?d=mm&s=30'
         )
     except AttributeError:
@@ -59,7 +89,7 @@ def ws_message(message):
     Channel("create-chat-message").send({
         "room": room,
         "text": message['text'],
-        "user_id": message.user.id,
+        "user_id": user.id,
     })
 
 
@@ -69,22 +99,27 @@ def ws_connect(message):
     """Handles when clients connect to a websocket.
     Connected to the `websocket.connect` channel."""
 
+    # Get the connected user.
+    user = _get_user(message)
+
     # 1-1 chat rooms between a logged-in user and a path-defined user.
     # path will be something like `/chat/username/`
     try:
         path = message.content['path'].strip('/').split('/')[1]
     except IndexError:
         path = 'unknown'
-    users = sorted([path, message.user.username])
+    users = sorted([path, user.username])
     room = slugify("chat-{}-{}".format(*users))
 
     # Save room in session and add us to the group
     message.channel_session['room'] = room
+    message.channel_session['user_id'] = user.id
+
     Group(room).add(message.reply_channel)
 
     payload = {
         'from': 'system',
-        'message': "{} joined.".format(message.user),
+        'message': "{} joined.".format(user),
     }
     Group(room).send({'text': json.dumps(payload)})
 
@@ -95,12 +130,14 @@ def ws_disconnect(message):
     """Handles when clients disconnect from a websocket.
     Connected to the `websocket.disconnect` channel."""
 
+    user = _get_user(message)
+
     # Pull the room from the channel's session.
     room = message.channel_session['room']
 
     payload = {
         'from': 'system',
-        'message': "{} left.".format(message.user),
+        'message': "{} left.".format(user),
     }
     Group(room).send({'text': json.dumps(payload)})
     Group(room).discard(message.reply_channel)
