@@ -14,9 +14,6 @@ def _get_user(message):
     an authenticated user, and if not, it tries to look up a user from the
     message's query_string (e.g. ?token=) ...
 
-    TODO: also look at a header is see if we've got an auth token?
-    TODO: There's probably a way to optimize this.
-
     Returns a User object.
 
     """
