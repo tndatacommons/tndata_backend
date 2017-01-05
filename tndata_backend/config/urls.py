@@ -12,6 +12,7 @@ from badgify_api.api import (
     AwardViewSet,
     BadgeViewSet,
 )
+from chat.api import ChatMessageViewSet
 from goals.api import (
     ActionViewSet,
     CategoryViewSet,
@@ -80,6 +81,7 @@ router = routers.DefaultRouter()
 # ViewSets from the goals app.
 router.register(r'awards', AwardViewSet)
 router.register(r'badges', BadgeViewSet)
+router.register(r'chat', ChatMessageViewSet)
 router.register(r'search', SearchViewSet, base_name="search")
 router.register(r'categories', CategoryViewSet)
 router.register(r'goals', GoalViewSet)
