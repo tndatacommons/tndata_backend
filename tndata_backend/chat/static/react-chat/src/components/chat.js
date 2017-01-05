@@ -106,7 +106,30 @@ export default class Chat extends Component {
     }
 
     renderMessageList() {
-        return this.state.messages.map((msg) => {
+        // NOTE: Each object in our array of history looks like:
+        // {
+        //  created_on: "2017-01-05 21:57:39+0000"
+        //  id:63
+        //  read:false
+        //  room:"chat-342ec11a7990133827bc6e66f381ee-bkmontgomery"
+        //  text:"Hi there"
+        //  user:995
+        //  user_full_name:"Brad Montgomery"
+        //  user_username:"342ec11a7990133827bc6e66f381ee"
+        // }
+        const history = Array.from(this.props.history, function(obj) {
+            return {
+                id: obj.id,
+                text: obj.text,
+                from: obj.user_username,
+                avatar: '',
+            }
+        });
+
+        // Combine the history with the current session's messages.
+        const messages = history.concat(this.state.messages);
+
+        return messages.map((msg) => {
             // A Reply is a message from the other user but not the system.
             const isReply = this.props.user.username !== msg.from && msg.from !== 'system';
 

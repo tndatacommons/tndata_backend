@@ -28,13 +28,17 @@ class App extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            userId: '',
-            email: '',
-            username: 'Unknown',
-            avatar: '',
-            firstName: 'Unkown',
-            lastName: 'User'
+            user: {
+                userId: '',
+                email: '',
+                username: 'Unknown',
+                avatar: '',
+                firstName: 'Unkown',
+                lastName: 'User'
+            },
+            chatHistory: []
         }
+        this.fetchMessageHistory = this.fetchMessageHistory.bind(this);
         this.fetchUser = this.fetchUser.bind(this);
         this.fetchProfile = this.fetchProfile.bind(this);
     }
@@ -44,19 +48,37 @@ class App extends Component {
         this.fetchProfile();
     }
 
+    fetchMessageHistory(currentUsername) {
+        // NOTE: Called *after* we know the user's details, which we need
+        // in order to construct the room name.
+        const toUser = window.location.pathname.replace('/chat/', '').replace('/', '');
+        const room = [currentUsername, toUser].sort().join("-");
+        const url = API_HOST + '/api/chat/history/?room=chat-' + room;
+
+        axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
+        axios.get(url).then((resp) => {
+            const data = resp.data;
+            if(data.count > 0) {
+                this.setState({user: this.state.user, chatHistory: data.results});
+            }
+        });
+
+    }
     fetchUser() {
         const url = API_HOST + '/api/users/';
         axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
         axios.get(url).then((resp) => {
             const data = resp.data;
             if(data.count === 1) {
-                this.setState({
+                const userData = {
                     userId: data.results[0].id,
                     email: data.results[0].email,
                     username: data.results[0].username,
                     firstName: data.results[0].first_name,
                     lastName: data.results[0].last_name,
-                });
+                }
+                this.setState({user: userData, chatHistory: this.state.chatHistory});
+                this.fetchMessageHistory(data.results[0].username);
             }
         });
 
@@ -76,10 +98,14 @@ class App extends Component {
     }
 
     render() {
-        const ws_url = WS_HOST + window.location.pathname;
+        const path = window.location.pathname;
+        const ws_url = WS_HOST + path
         return (
           <div>
-            <Chat ws_url={ws_url} user={this.state}/>
+            <Chat
+                ws_url={ws_url}
+                user={this.state.user}
+                history={this.state.chatHistory} />
           </div>
         );
     }
