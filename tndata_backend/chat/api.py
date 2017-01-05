@@ -28,7 +28,48 @@ class PageSizePagination(PageNumberPagination):
 
 
 class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
-    """TODO: docs."""
+    """
+    ## List a User's Chat Messages.
+
+    This endpoint allows you to retrieve a paginated list of `ChatMessage`
+    objects that were created by the authenticated user. This endpoint is
+    currently read-only.
+
+    ## List a user's unread messages.
+
+    You can also retrive a list of the authenticated user's unread messages
+    by sending a GET request to [/api/chat/unread/](/api/chat/unread/).
+
+    ## ChatMessage objects.
+
+            {
+                "id": 61,
+                "user": 1,
+                "user_username": "brad",
+                "user_full_name": "Brad Montgomery",
+                "room": "chat-brad-russell",
+                "text": "Hi there, this is a message",
+                "read": false,
+                "created_on": "2017-01-04 23:10:00+0000"
+            }
+
+    `ChatMessage` objects will have the following format, where:
+
+    - `id` is the ChatMessage object's unique ID.
+    - `user` is the user id for the user the created the chat message.
+    - `user_username` is the author's username.
+    - `user_full_name` is the author's full name.
+    - `room` is the room in which the message was posted. All rooms are prefixed
+      with `chat-` as a string and contain both participants username. Chat
+      room usernames will always be listed in alphabetical order.
+    - `text` is the text of the message.
+    - `read` is a boolean. True means the user has seen the message, False
+      means it is unread.
+    - `created_on` is the date on which the message was persisted to the database.
+
+    ----
+
+    """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
     queryset = ChatMessage.objects.all()
     serializer_class = ChatMessageSerializer
