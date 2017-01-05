@@ -108,3 +108,12 @@
 {% endif %}
 
 {% endblock %}
+
+
+{% block fab %}
+  <a href="{% url 'officehours:add-code' %}"
+     id="main-fab"
+     class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
+      <i class="material-icons">add</i>
+  </a>
+{% endblock %}
