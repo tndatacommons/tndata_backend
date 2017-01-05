@@ -49,28 +49,6 @@
         <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--2-col mdl-cell--4-col-phone">2 (4 phone)</div>
       </div>
 
-      <!-- // Colors
-           // Order: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, A100, A200, A400, A700
-           // Palettes are here: https://github.com/google/material-design-lite/blob/mdl-1.x/src/_color-definitions.scss
-           // Includes: red, pink, purple, deep-purple, indigo, blue, light-blue,
-           //           cyan, teal, green, light-green, lime, amber, orange,
-           //           deep-orange, brown, grey, blue-grey, black, white,
-           -->
-      <div class="mdl-grid">
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-50">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-100">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-200">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-300">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-400">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-500">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-600">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-700">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-800">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-900">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-A100">CS 1</div>
-        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--green-A400">CS 1</div>
-      </div>
-
       <div class="mdl-grid">
         <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--8-col mdl-cell--6-col-tablet mdl-cell--2-col-phone mdl-color--green-A700 mdl-color-text--white">
           WUT!?<br/>This is mdl-cell--8-col<br/>mdl-cell--6-col-tablet<br/>mdl-cell--2-col-phone
@@ -84,6 +62,21 @@
          </div>
         <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--8-col mdl-color--teal-100 mdl-color-text--blue-grey-50">mdl-cell--8-col</div>
       </div>
+
+      <!-- // Colors
+           // Order: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, A100, A200, A400, A700
+           // Palettes are here: https://github.com/google/material-design-lite/blob/mdl-1.x/src/_color-definitions.scss
+           // Includes: red, pink, purple, deep-purple, indigo, blue, light-blue,
+           //           cyan, teal, green, light-green, lime, amber, orange,
+           //           deep-orange, brown, grey, blue-grey, black, white,
+           -->
+      <div class="mdl-grid">
+        {% for color in colors %}{% for order in orders %}
+        <div class="mdl-card mdl-shadow--4dp mdl-card__supporting-text mdl-cell mdl-cell--1-col mdl-color--{{ color }}-{{ order }}">
+          {{ color }} / {{ order }}</div>
+        {% endfor %}{% endfor %}
+      </div>
+
     </main>
   </div> <!-- /mdl-layout -->
 

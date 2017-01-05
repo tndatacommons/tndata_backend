@@ -2,6 +2,39 @@
 
 {% block content %}
 
+{# Chat messages #}
+{% if chat_data %}
+<div class="demo-options mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
+     id="chats">
+  <div class="mdl-card__title mdl-card--expand mdl-color--red-900">
+    <h2 class="mdl-card__title-text">Unread Messages</h2>
+  </div>
+  <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+
+    <ul class="mdl-list">
+    {% for user_info, count in chat_data.items %}
+      <li class="mdl-list__item mdl-list__item--three-line">
+        <span class="mdl-list__item-primary-content">
+          <i class="material-icons mdl-list__item-avatar">person</i>
+          <span>{{ user_info.1 }} {{ user_info.2 }}</span>
+          <span class="mdl-list__item-text-body">
+            {{ count }} unread messages
+          </span>
+        </span>
+        <span class="mdl-list__item-secondary-content">
+          <a href="{% url 'chat:chat' user_info.0 %}"
+            class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent">
+            <i class="material-icons">chat</i>
+          </a>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<div class="demo-separator mdl-cell--1-col"></div>
+{% endif %}
+
 {# Student Schedule #}
 {% if is_student %}
 <div class="demo-options mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"

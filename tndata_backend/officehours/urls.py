@@ -35,7 +35,7 @@ urlpatterns = [
     ),
     url(
         r'^examples/$',
-        views.ExamplesView.as_view(),
+        views.mdl_examples,
         name='examples'
     ),
     url(

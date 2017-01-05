@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import datetime
 
 from django.contrib import messages
@@ -6,7 +7,8 @@ from django.contrib.auth import login as login_user
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import TemplateView
+
+from chat.models import ChatMessage
 
 from .forms import ContactForm
 from .models import Course, OfficeHours
@@ -25,8 +27,21 @@ from .models import Course, OfficeHours
 # -- share
 
 
-class ExamplesView(TemplateView):
-    template_name = "officehours/mdl_examples.html"
+def mdl_examples(request):
+    # Colors & Order values for MDL colors
+    ctx = {
+        'orders': [
+            50, 100, 200, 300, 400, 500, 600, 700, 800, 900,
+            'A100', 'A200', 'A400', 'A700'
+        ],
+        'colors': [
+            'red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue',
+            'cyan', 'teal', 'green', 'light-green', 'lime', 'amber', 'orange',
+            'deep-orange', 'brown', 'grey', 'blue-grey', 'black', 'white',
+        ],
+    }
+    template = "officehours/mdl_examples.html"
+    return render(request, template, ctx)
 
 
 def index(request):
@@ -272,6 +287,11 @@ def course_details(request, pk):
 def schedule(request):
     """List courses in which the user is a student / teacher."""
 
+    # Get unread messages for the user, then count the number from each sender
+    chat_data = ChatMessage.objects.to_user(request.user).filter(read=False)
+    _fields = ('user__username', 'user__first_name', 'user__last_name')
+    chat_data = dict(Counter(chat_data.values_list(*_fields)))
+
     student_schedule = request.user.course_set.all()
     teaching_schedule = request.user.teaching.all()
     office_hours = request.user.officehours_set.all()
@@ -281,6 +301,7 @@ def schedule(request):
         'teaching_schedule': request.user.teaching.all(),
         'office_hours': office_hours,
         'is_student': student_schedule.exists(),
-        'is_teacher': teaching_schedule.exists() or office_hours.exists()
+        'is_teacher': teaching_schedule.exists() or office_hours.exists(),
+        'chat_data': chat_data,
     }
     return render(request, 'officehours/schedule.html', context)
