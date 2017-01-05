@@ -16,7 +16,7 @@ def generate_room_name(values):
     return slugify("chat-{}-{}".format(*values))
 
 
-class ChatManager(models.Manager):
+class ChatMessageManager(models.Manager):
 
     def unread(self):
         """Return a queryset of unread chat messages."""
@@ -54,4 +54,4 @@ class ChatMessage(models.Model):
         verbose_name = "Chat Message"
         verbose_name_plural = "Chat Messages"
 
-    objects = ChatManager()
+    objects = ChatMessageManager()
