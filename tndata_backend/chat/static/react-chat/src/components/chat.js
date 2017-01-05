@@ -117,7 +117,20 @@ export default class Chat extends Component {
         //  user_full_name:"Brad Montgomery"
         //  user_username:"342ec11a7990133827bc6e66f381ee"
         // }
-        const history = Array.from(this.props.history, function(obj) {
+
+        // Make sure our history is sorted by date (oldest listed first).
+        const historySorted = this.props.history.sort(function(a, b) {
+            if(a.created_on < b.created_on) {
+                return -1;
+            }
+            else if(a.created_on > b.created_on) {
+                return 1;
+            }
+            // must be the same.
+            return 0;
+        })
+        // then map the history attributes to those that we use to render new messages.
+        const history = Array.from(historySorted, function(obj) {
             return {
                 id: obj.id,
                 text: obj.text,
