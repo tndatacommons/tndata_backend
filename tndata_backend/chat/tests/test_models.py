@@ -32,22 +32,24 @@ class TestChatMessageManager(TestCase):
         )
 
     def test__unread(self):
-        self.assertEqual(
-            list(ChatMessage.objects.unread()),
-            [self.message_3]
-        )
+        results = ChatMessage.objects.unread()
+        self.assertEqual(results.count(), 1)
+        self.assertEqual(results[0].text, 'Message 3')
 
     def test_to_user(self):
-        self.assertEqual(
-            list(ChatMessage.objects.to_user(self.user_b)),
-            [self.message_a, self.message_3]
-        )
+        expected = sorted([m.text for m in (self.message_1, self.message_3)])
+        actual = ChatMessage.objects.to_user(self.user_b)
+        actual = sorted(m.text for m in actual)
+        self.assertListEqual(actual, expected)
 
     def test_for_users(self):
-        self.assertEqual(
-            list(ChatMessage.objects.for_users((self.user_b, self.user_a))),
+        expected = sorted([
+            m.text for m in
             [self.message_1, self.message_2, self.message_3]
-        )
+        ])
+        actual = ChatMessage.objects.for_users((self.user_b, self.user_a))
+        actual = sorted([m.text for m in actual])
+        self.assertListEqual(actual, expected)
 
 
 class TestChatMessage(TestCase):
