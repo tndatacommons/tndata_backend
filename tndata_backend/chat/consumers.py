@@ -5,8 +5,7 @@ from channels.sessions import enforce_ordering
 from channels.auth import channel_session_user, channel_session_user_from_http
 
 from django.contrib.auth import get_user_model
-from django.utils.text import slugify
-from .models import ChatMessage
+from .models import ChatMessage, generate_room_name
 
 
 def _get_user(message):
@@ -105,8 +104,7 @@ def ws_connect(message):
         path = message.content['path'].strip('/').split('/')[1]
     except IndexError:
         path = 'unknown'
-    users = sorted([path, user.username])
-    room = slugify("chat-{}-{}".format(*users))
+    room = generate_room_name((path, user.username))
 
     # Save room in session and add us to the group
     message.channel_session['room'] = room
