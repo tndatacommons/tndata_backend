@@ -2,7 +2,7 @@ import _ from 'lodash';
 import React, { Component } from 'react';
 import Websocket from './websocket';
 import AutoLinkText from 'react-autolink-text';
-
+import ChatForm from './chat_form'
 import { slugify, extractVideo } from './utils';
 
 
@@ -14,7 +14,6 @@ export default class Chat extends Component {
             messages: [],
             current: '',
         }
-        this.onFormSubmit.bind(this);
     }
 
     handleMessage(data) {
@@ -134,16 +133,8 @@ export default class Chat extends Component {
                        debug={true}
                        onMessage={this.handleMessage.bind(this)}
                        sendMessage={this.state.current} />
-            <form onSubmit={this.onFormSubmit.bind(this)} className="chatForm">
-              <div className="mdl-textfield mdl-js-textfield">
-                <input className="mdl-textfield__input"
-                       type="text"
-                       id="message"
-                       name="message" />
-                <label className="mdl-textfield__label" htmlFor="message">Your Message</label>
-              </div>
-              <button className="mdl-button mdl-js-button">Send</button>
-            </form>
+            <ChatForm
+                handleSubmit={this.onFormSubmit.bind(this)} />
           </div>
         );
     }
