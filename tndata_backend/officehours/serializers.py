@@ -28,7 +28,7 @@ class CourseSerializer(ObjectTypeModelSerializer):
         read_only_fields = ("id", 'updated_on', "created_on", 'students')
 
     def to_representation(self, obj):
-        """Include a serialized Goal object in the result."""
+        """Include a serialized student & faculty info."""
         User = get_user_model()
         results = super().to_representation(obj)
         student_ids = results.get('students', [])
@@ -42,4 +42,12 @@ class CourseSerializer(ObjectTypeModelSerializer):
             }
             for student in students
         ]
+        user = User.objects.get(pk=results['user'])
+        results['teacher'] = {
+            'id': user.id,
+            'name': user.get_full_name(),
+            'username': user.username,
+            'email': user.email,
+            'avatar': user.userprofile.google_image,
+        }
         return results
