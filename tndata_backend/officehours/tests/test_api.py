@@ -176,9 +176,32 @@ class TestCourseAPI(V2APITestCase):
             'user': self.user.id,
         }
         response = self.client.post(url, data)
-        print(response.content)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check the object.
         course = Course.objects.get(pk=response.data['id'])
         self.assertEqual(sorted(course.days), sorted(['Monday', 'Wednesday']))
+
+    def test_post_course_authed(self):
+        """Test that createing a Course supports `MTWRFS H:mm-H:mm`-formatted
+        days + start time for courses."""
+
+        url = self.get_url('course-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'user': self.user.id,
+            'name': 'Test Morning Course',
+            'location': 'Location',
+            'meetingtime': 'MWF 9:30-13:30',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Check the object's values
+        course = Course.objects.get(pk=response.data['id'])
+        expected = sorted(['Monday', 'Wednesday', 'Friday'])
+        self.assertEqual(sorted(course.days), expected)
+        self.assertEqual(course.start_time.strftime("%H:%M"), "09:30")
+
