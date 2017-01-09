@@ -10,6 +10,7 @@ class ChatMessageSerializer(ObjectTypeModelSerializer):
     def to_representation(self, obj):
         """Include the author's username + full name in the message"""
         results = super().to_representation(obj)
+        results['user_id'] = str(obj.user.id)
         results['user_username'] = obj.user.username
         results['user_full_name'] = obj.user.get_full_name()
         return results

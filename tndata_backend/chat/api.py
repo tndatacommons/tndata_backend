@@ -70,8 +70,8 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
     - `user_username` is the author's username.
     - `user_full_name` is the author's full name.
     - `room` is the room in which the message was posted. All rooms are prefixed
-      with `chat-` as a string and contain both participants username. Chat
-      room usernames will always be listed in alphabetical order.
+      with `chat-` as a string and contain both participants IDs. Chat
+      room participant IDs will always be listed in ascending order.
     - `text` is the text of the message.
     - `read` is a boolean. True means the user has seen the message, False
       means it is unread.
@@ -113,7 +113,7 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
 
         messages = ChatMessage.objects.filter(
             read=False,
-            room__icontains=request.user.username,
+            room__icontains=request.user.id,
         )
         content = {
             'count': messages.count(),
@@ -134,9 +134,9 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
 
         room = request.GET.get('room', None)
         size = int(request.GET.get('size', 20))
-        username = slugify(request.user.username)
+        user_id = slugify(request.user.id)
         content = {}
-        if room and username in room:
+        if room and user_id in room:
             messages = ChatMessage.objects.filter(room=room)[:size]
             content = {
                 'count': messages.count(),

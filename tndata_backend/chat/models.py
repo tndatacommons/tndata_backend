@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 def generate_room_name(values):
     """Given an iterable of values that can either be strings or User objects,
     generate a room name."""
-
-    values = [v.username if hasattr(v, 'username') else v for v in values]
+    values = [v.id if hasattr(v, 'id') else v for v in values]
     values = sorted(values)
     return slugify("chat-{}-{}".format(*values))
 
@@ -26,9 +25,9 @@ class ChatMessageManager(models.Manager):
         """Return a queryset of messages that were sent to the given user.
 
         NOTE: Since we only save the user that created the message, this
-        filters are the room name, which includes both users' usernames.
+        filters are the room name, which includes both users' IDs.
         """
-        results = self.get_queryset().filter(room__icontains=user.username)
+        results = self.get_queryset().filter(room__icontains=user.id)
         results = results.exclude(user=user)  # remove messages the user authored
         return results
 

@@ -65,13 +65,13 @@ def ws_message(message):
         user = User.objects.get(pk=message.channel_session['user_id'])
 
     try:
-        name = user.username
+        name = user.get_full_name()
         avatar = (
             user.userprofile.google_image.replace('https:', '').replace('http:', '')
             or '//www.gravatar.com/avatar/0?d=mm&s=30'
         )
     except AttributeError:
-        name = "anonymous"
+        name = "Anonymous"
         avatar = '//www.gravatar.com/avatar/0?d=mm&s=30'
 
     payload = {
@@ -104,9 +104,9 @@ def ws_connect(message):
         path = message.content['path'].strip('/').split('/')[1]
     except IndexError:
         path = 'unknown'
-    room = generate_room_name((path, user.username))
+    room = generate_room_name((path, user))
 
-    # Save room in session and add us to the group
+    # Save the room name and the user's ID in channel session sessions.
     message.channel_session['room'] = room
     message.channel_session['user_id'] = user.id
 

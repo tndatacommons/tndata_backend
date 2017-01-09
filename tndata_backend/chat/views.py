@@ -15,6 +15,6 @@ class IndexView(TemplateView):
         return context
 
 
-def chat_view(request, with_username):
-    context = {'with_username': with_username}
+def chat_view(request, with_user):
+    context = {'with_user': with_user}
     return render(request, "chat/chat.html", context)

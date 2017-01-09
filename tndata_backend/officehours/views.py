@@ -289,7 +289,7 @@ def schedule(request):
 
     # Get unread messages for the user, then count the number from each sender
     chat_data = ChatMessage.objects.to_user(request.user).filter(read=False)
-    _fields = ('user__username', 'user__first_name', 'user__last_name')
+    _fields = ('user__id', 'user__first_name', 'user__last_name')
     chat_data = dict(Counter(chat_data.values_list(*_fields)))
 
     student_schedule = request.user.course_set.all()
