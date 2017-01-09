@@ -48,11 +48,11 @@ class App extends Component {
         this.fetchProfile();
     }
 
-    fetchMessageHistory(currentUsername) {
+    fetchMessageHistory(currentUserId) {
         // NOTE: Called *after* we know the user's details, which we need
         // in order to construct the room name.
         const toUser = window.location.pathname.replace('/chat/', '').replace('/', '');
-        const room = [currentUsername, toUser].sort().join("-");
+        const room = [currentUserId, toUser].sort().join("-");
         const url = API_HOST + '/api/chat/history/?room=chat-' + room;
 
         axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
@@ -78,7 +78,7 @@ class App extends Component {
                     lastName: data.results[0].last_name,
                 }
                 this.setState({user: userData, chatHistory: this.state.chatHistory});
-                this.fetchMessageHistory(data.results[0].username);
+                this.fetchMessageHistory(data.results[0].id);
             }
         });
 
@@ -99,7 +99,7 @@ class App extends Component {
 
     render() {
         const path = window.location.pathname;
-        const ws_url = WS_HOST + path
+        const ws_url = WS_HOST + path;
         return (
           <div>
             <Chat

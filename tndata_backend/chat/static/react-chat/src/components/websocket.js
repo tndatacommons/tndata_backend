@@ -76,6 +76,7 @@ class Websocket extends React.Component {
             this.state.ws.send(this.props.sendMessage);
             this.lastMessage = this.props.sendMessage;
         }
+        console.log("WebSocket.send: ", this.props.sendMessage);
     }
 
     render() {

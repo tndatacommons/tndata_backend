@@ -17,6 +17,8 @@ export default class Chat extends Component {
     }
 
     handleMessage(data) {
+        console.log("RECEIVED: ", data);
+
         // NOTE: data should be an object of the form: {from: ..., message: ...}
         const new_message = {
             id: slugify(data.message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
@@ -35,6 +37,8 @@ export default class Chat extends Component {
         const inputElement = event.target.children[0].children[0];
         const message = inputElement.value;
 
+        console.log("Sending?  ", message);
+
         this.setState({messages: this.state.messages, current: message});
         inputElement.value = ""; // clear the input.
     }
@@ -45,7 +49,7 @@ export default class Chat extends Component {
         //  created_on: "2017-01-05 21:57:39+0000"
         //  id:63
         //  read:false
-        //  room:"chat-342ec11a7990133827bc6e66f381ee-bkmontgomery"
+        //  room:"chat-1-995"
         //  text:"Hi there"
         //  user:995
         //  user_full_name:"Brad Montgomery"
@@ -68,7 +72,7 @@ export default class Chat extends Component {
             return {
                 id: obj.id,
                 text: obj.text,
-                from: obj.user_username,
+                from: obj.user_full_name,
                 avatar: '',
             }
         });
@@ -76,9 +80,10 @@ export default class Chat extends Component {
         // Combine the history with the current session's messages.
         const messages = history.concat(this.state.messages);
 
+        const fullName = this.props.user.firstName + ' ' + this.props.user.lastName;
         return messages.map((msg) => {
             // A Reply is a message from the other user but not the system.
-            const isReply = this.props.user.username !== msg.from && msg.from !== 'system';
+            const isReply = fullName !== msg.from && msg.from !== 'system';
 
             // Only show avatars for actual users.
             let avatar = '';
