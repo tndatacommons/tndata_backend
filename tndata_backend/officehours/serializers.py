@@ -1,5 +1,7 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from utils.serializers import ObjectTypeModelSerializer
+
 
 from . models import Course, OfficeHours
 
@@ -27,10 +29,17 @@ class CourseSerializer(ObjectTypeModelSerializer):
 
     def to_representation(self, obj):
         """Include a serialized Goal object in the result."""
+        User = get_user_model()
         results = super().to_representation(obj)
-        students = results.get('students', [])
+        student_ids = results.get('students', [])
+        students = User.objects.filter(pk__in=student_ids)
         results['students'] = [
-            {'id': student.id, 'name': student.get_full_name}
+            {
+                'id': student.id,
+                'name': student.get_full_name(),
+                'username': student.username,
+                'avatar': student.userprofile.google_image,
+            }
             for student in students
         ]
         return results
