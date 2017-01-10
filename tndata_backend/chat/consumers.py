@@ -75,10 +75,12 @@ def ws_message(message):
         avatar = '//www.gravatar.com/avatar/0?d=mm&s=30'
 
     payload = {
+        'from_id': user.id if user else '',
         'from': name,
         "message": "{}".format(message['text']),
         'avatar': avatar,
     }
+
     Group(room).send({'text': json.dumps(payload)})  # send to users for display
 
     # Now, send it to the channel to create the ChatMessage.
@@ -104,6 +106,7 @@ def ws_connect(message):
         path = message.content['path'].strip('/').split('/')[1]
     except IndexError:
         path = 'unknown'
+
     room = generate_room_name((path, user))
 
     # Save the room name and the user's ID in channel session sessions.
@@ -113,8 +116,9 @@ def ws_connect(message):
     Group(room).add(message.reply_channel)
 
     payload = {
+        'from_id': '',
         'from': 'system',
-        'message': "{} joined.".format(user),
+        'message': "{} joined.".format(user.get_full_name() or user),
     }
     Group(room).send({'text': json.dumps(payload)})
 
@@ -131,8 +135,9 @@ def ws_disconnect(message):
     room = message.channel_session['room']
 
     payload = {
+        'from_id': '',
         'from': 'system',
-        'message': "{} left.".format(user),
+        'message': "{} left.".format(user.get_full_name() or user),
     }
     Group(room).send({'text': json.dumps(payload)})
     Group(room).discard(message.reply_channel)
