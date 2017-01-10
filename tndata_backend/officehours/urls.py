@@ -29,6 +29,11 @@ urlpatterns = [
         name='add-course'
     ),
     url(
+        r'^delete-courses/$',
+        views.delete_courses,
+        name='delete-courses'
+    ),
+    url(
         r'^contact-info/$',
         views.contact_info,
         name='contact-info'

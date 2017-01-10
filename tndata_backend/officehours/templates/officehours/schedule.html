@@ -65,10 +65,6 @@
       {% endfor %}
     </ul>
   </div>
-  <!--<div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">-->
-    <!--<a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" data-next="add-code">-->
-      <!--Add Code</a>-->
-  <!--</div>-->
 </div>
 {% endif %}
 
@@ -94,7 +90,7 @@
       </thead>
       <tbody>
       {% for hours in office_hours %}
-        <tr>
+        <tr data-type="officehours" data-id="{{hours.id}}">
           <td class="mdl-data-table__cell--non-numeric">
             Office Hours<br/>
             <small>{{ hours }}</small>
@@ -103,7 +99,7 @@
         </tr>
       {% endfor %}
       {% for course in teaching_schedule %}
-        <tr>
+        <tr data-type="course" data-id="{{course.id}}">
           <td class="mdl-data-table__cell--non-numeric">
             {{ course.name }}<br/>
             <small>{{ course.display_time }}</small>
@@ -111,22 +107,6 @@
           <td>{{ course.code }}</td>
         </tr>
       {% endfor %}
-      {% comment %}
-        <tr>
-          <td class="mdl-data-table__cell--non-numeric">
-            STAT 1500-200<br/>
-            <small>11:00am TR</small>
-          </td>
-          <td>43A9</td>
-        </tr>
-        <tr>
-          <td class="mdl-data-table__cell--non-numeric">
-            MATH 1310-150<br/>
-            <small>1:00pm F</small>
-          </td>
-          <td>BB80</td>
-        </tr>
-      {% endcomment %}
       </tbody>
     </table>
   </div>
@@ -135,7 +115,7 @@
        class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
        data-next="add-course">Add a Course</a>
     <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-       data-next="notimplemented">Remove Selected</a>
+       id="remove-course-button">Remove Selected</a>
   </div>
 </div>
 {% endif %}
@@ -149,4 +129,25 @@
      class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
       <i class="material-icons">add</i>
   </a>
+{% endblock %}
+
+
+{% block bodyjs %}
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#remove-course-button").click(function(e) {
+    e.preventDefault();
+    var course_ids = [];
+
+    $("tr.is-selected").each(function(index, elt) {
+      var elt = $(elt);
+      if(elt.data('type') === 'course') {
+        course_ids.push(elt.data('id'));
+      }
+    })
+    console.log("IDS: ", course_ids);
+    window.location = "{% url 'officehours:delete-courses' %}?courses=" + course_ids.join("+");
+  });
+});
+</script>
 {% endblock %}

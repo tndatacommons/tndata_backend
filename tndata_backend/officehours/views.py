@@ -266,6 +266,31 @@ def add_course(request):
 
 
 @login_required
+def delete_courses(request):
+    """
+    Allow an INSTRUCTOR (course owner) to delete a course (with confirmation)
+
+    """
+    courses_count = 0
+    courses = []
+
+    if request.method == "POST" and bool(request.POST.get('confirm', False)):
+        course_ids = request.POST.getlist('courses')
+        if course_ids:
+            Course.objects.filter(user=request.user, pk__in=course_ids).delete()
+        return redirect("officehours:schedule")
+
+    course_ids = list(filter(None, request.GET.get('courses', '').split(' ')))
+    courses = Course.objects.filter(user=request.user, pk__in=course_ids)
+
+    context = {
+        'courses': courses,
+        'courses_count': courses.count(),
+    }
+    return render(request, 'officehours/delete_courses.html', context)
+
+
+@login_required
 def share_course(request, pk):
     """Display the course's share code"""
     context = {
