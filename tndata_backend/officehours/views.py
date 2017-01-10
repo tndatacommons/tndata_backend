@@ -84,12 +84,7 @@ def login(request):
 @login_required
 def add_code(request):
     if request.method == "POST":
-        code = "{}{}{}{}".format(  # lulz
-            request.POST['code_1'],
-            request.POST['code_2'],
-            request.POST['code_3'],
-            request.POST['code_4'],
-        )
+        code = "{}".format(request.POST['code']).strip().upper()
         try:
             course = Course.objects.get(code=code)
             course.students.add(request.user)

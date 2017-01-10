@@ -234,8 +234,10 @@ _:-ms-input-placeholder, :root .demo-graph {
   margin-bottom: 40px;
   z-index: 900;
 }
+.code-input-wrapper {
+  min-width: 300px;
+}
 .code-input {
-  width: 50%;
   margin: 0 auto;
   padding:10px;
   min-height: 10px;
