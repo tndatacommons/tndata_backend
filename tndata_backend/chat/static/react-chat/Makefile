@@ -1,4 +1,4 @@
-jsfile := react_chat-$(shell date -u +%y%m%d%H%M%S).js
+jsfile := react_chat-$(shell date -u +%Y%m%d%H%M).js
 
 
 all:

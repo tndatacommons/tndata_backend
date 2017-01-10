@@ -24,6 +24,7 @@ export default class Chat extends Component {
             id: slugify(data.message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
             text: data.message,
             from: data.from,
+            from_id: data.from_id,
             avatar: data.from === "system" ? '' : data.avatar
         }
         const messages = _.concat(this.state.messages, [new_message]);
