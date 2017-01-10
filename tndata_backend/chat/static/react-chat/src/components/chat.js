@@ -73,6 +73,7 @@ export default class Chat extends Component {
                 id: obj.id,
                 text: obj.text,
                 from: obj.user_full_name,
+                from_id: obj.user,
                 avatar: '',
             }
         });
@@ -80,11 +81,9 @@ export default class Chat extends Component {
         // Combine the history with the current session's messages.
         const messages = history.concat(this.state.messages);
 
-        const fullName = this.props.user.firstName + ' ' + this.props.user.lastName;
         return messages.map((msg) => {
             // A Reply is a message from the other user but not the system.
-            const isReply = fullName !== msg.from && msg.from !== 'system';
-
+            const isReply = this.props.user.userId !== msg.from_id && msg.from !== 'system';
             // Only show avatars for actual users.
             let avatar = '';
             if (this.props.user.avatar && !isReply && msg.from !== 'system') {
