@@ -29,9 +29,55 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
                          mixins.DestroyModelMixin,
                          mixins.UpdateModelMixin,
                          viewsets.GenericViewSet):
-    """ViewSet for OfficeHours.
+    """This endpoint will list the authenticated user's officehours.
 
-    TODO: write docs.
+    ## Retrieve Office Hours
+
+    Send a GET request to retrieve the user's list of officehours. The result
+    will contain an array of objects with the following data:
+
+    - `id`: The OfficeHours's unique ID
+    - `user`: The User ID for the user that created/owns the object.
+    - `from_time`: Starting time.
+    - `to_time`: Ending time.
+    - `days`: An array of strings; The days on which the hours are available.
+    - `updated_on`: Time at which the object was updated.
+    - `created_on`: Time at which the object was created.
+    - `expires_on`: The time at which the entry will expire
+
+    ## Creating Office Hours
+
+    As a teacher/faculty, you can send a POST request with the following
+    information to create office hours:
+
+        {
+            'from_time': 'START TIME',
+            'to_time': 'END TIME',
+            'days': ['Monday', 'Tuesday', 'Friday],
+        }
+
+    ### Alternative POST format
+
+    You may condense the days on which office horus are available into a single
+    string. It's format is: `SMTWRFZ HH:mm-HH:mm`, where `S` = Sunday,
+    `M` = Monday, ..., `R` = Thursday, and `Z` = Saturday.
+
+        {
+            'from_time': 'START TIME',
+            'to_time': 'END TIME',
+            'days': 'MWF'
+        }
+
+    ## Updating a OfficeHours
+
+    Send a PUT request with the fields you wish to update to
+    `/api/officehours/ID/`.
+
+    ## Deleting a OfficeHours
+
+    Send a DELETE request to `/api/officehours/ID/`.
+
+    ----
 
     """
     authentication_classes = (TokenAuthentication, SessionAuthentication)
