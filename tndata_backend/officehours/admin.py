@@ -7,9 +7,11 @@ from . import models
 class OfficeHoursAdmin(admin.ModelAdmin):
     list_display = ('user', '__str__', 'expires_on', 'created_on')
     search_fields = ('user__email', 'user__first_name', 'user__last_name')
+    raw_id_fields = ('user', )
 
 
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('user', 'name', 'start_time', 'location')
     search_fields = ('name', 'user__email', 'user__first_name', 'user__last_name')
+    raw_id_fields = ('user', 'students')
