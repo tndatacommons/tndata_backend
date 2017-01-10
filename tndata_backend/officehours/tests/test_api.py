@@ -114,6 +114,25 @@ class TestOfficeHoursAPI(V2APITestCase):
         hours = OfficeHours.objects.get(pk=response.data['id'])
         self.assertEqual(sorted(hours.days), sorted(['Tuesday', 'Thursday']))
 
+    def test_post_hours_authed_alternative(self):
+        url = self.get_url('officehours-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'from_time': '13:30',
+            'to_time': '14:30',
+            'days': 'TRZ',
+            'user': self.user.id,
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Check the object.
+        hours = OfficeHours.objects.get(pk=response.data['id'])
+
+        expected = sorted(['Tuesday', 'Thursday', 'Saturday'])
+        self.assertEqual(sorted(hours.days), expected)
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
@@ -182,7 +201,7 @@ class TestCourseAPI(V2APITestCase):
         course = Course.objects.get(pk=response.data['id'])
         self.assertEqual(sorted(course.days), sorted(['Monday', 'Wednesday']))
 
-    def test_post_course_authed(self):
+    def test_post_course_authed_alternative(self):
         """Test that createing a Course supports `MTWRFS H:mm-H:mm`-formatted
         days + start time for courses."""
 

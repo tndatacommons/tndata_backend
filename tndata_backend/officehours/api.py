@@ -11,6 +11,17 @@ from . import models
 from . serializers import OfficeHoursSerializer, CourseSerializer
 
 
+VALID_DAYS = {
+    'S': 'Sunday',
+    'M': 'Monday',
+    'T': 'Tuesday',
+    'W': 'Wednesday',
+    'R': 'Thursday',
+    'F': 'Friday',
+    'Z': 'Saturday',
+}
+
+
 class IsOwner(permissions.IsAuthenticated):
     """Only allow owners of an object to view/edit it."""
 
@@ -94,7 +105,15 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data['user'] = request.user.id
+
+        payload = request.data.copy()
+        payload['user'] = request.user.id
+
+        # Handle `MTWRFZ`-formatted days input
+        if type(payload.get('days')) == str:
+            payload['days'] = [VALID_DAYS[x] for x in payload['days']]
+
+        request.data.update(payload)
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
@@ -186,19 +205,10 @@ class CourseViewSet(mixins.CreateModelMixin,
         payload = request.data.copy()
         payload['user'] = request.user.id
 
-        valid_days = {
-            'S': 'Sunday',
-            'M': 'Monday',
-            'T': 'Tuesday',
-            'W': 'Wednesday',
-            'R': 'Thursday',
-            'F': 'Friday',
-            'Z': 'Saturday',
-        }
         # Handle `MTWRFS H:mm-H:mm`-formatted input
         if 'meetingtime' in payload:
             days, times = payload['meetingtime'].split()
-            payload['days'] = [valid_days[x] for x in days]
+            payload['days'] = [VALID_DAYS[x] for x in days]
             start, end = times.split('-')
             start_h, start_m = start.split(":")
             payload['start_time'] = time(int(start_h), int(start_m))
