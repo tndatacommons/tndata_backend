@@ -78,10 +78,11 @@
 <div class="demo-options mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
      id="teacher-schedule">
   <div class="mdl-card__title mdl-card--expand mdl-color--indigo-300">
-    <h2 class="mdl-card__title-text">Your Schedule</h2>
+    <h2 class="mdl-card__title-text">Your Courses</h2>
   </div>
   <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable">
+    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable"
+           style="width: 90%;">
       <thead>
         <tr>
           <th class="mdl-data-table__cell--non-numeric">Course</th>
@@ -89,15 +90,6 @@
         </tr>
       </thead>
       <tbody>
-      {% for hours in office_hours %}
-        <tr data-type="officehours" data-id="{{hours.id}}">
-          <td class="mdl-data-table__cell--non-numeric">
-            Office Hours<br/>
-            <small>{{ hours }}</small>
-          </td>
-          <td></td>
-        </tr>
-      {% endfor %}
       {% for course in teaching_schedule %}
         <tr data-type="course" data-id="{{course.id}}">
           <td class="mdl-data-table__cell--non-numeric">
@@ -116,6 +108,45 @@
        data-next="add-course">Add a Course</a>
     <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
        id="remove-course-button">Remove Selected</a>
+  </div>
+</div>
+
+<div class="demo-separator mdl-cell--1-col"></div>
+
+<div class="demo-options mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
+     id="teacher-schedule">
+  <div class="mdl-card__title mdl-card--expand mdl-color--indigo-300">
+    <h2 class="mdl-card__title-text">Your Office Hours</h2>
+  </div>
+  <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable"
+           style="width: 90%;">
+      <thead>
+        <tr>
+          <th class="mdl-data-table__cell--non-numeric">Hours</th>
+          <th>Expires</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for hours in office_hours %}
+        <tr data-type="officehours" data-id="{{hours.id}}">
+          <td class="mdl-data-table__cell--non-numeric">
+            {{ hours.from_time|date:"fA" }}
+            - {{ hours.to_time|date:"fA" }}<br/>
+            <small>{{ hours.days|join:", " }}</small>
+          </td>
+          <td>{{ hours.expires_on|timeuntil }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">
+    <a href="{% url 'officehours:add-hours' %}"
+       class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+       data-next="add-course">Add Hours</a>
+    <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+       id="remove-hours-button">Remove Selected</a>
   </div>
 </div>
 {% endif %}
@@ -145,9 +176,22 @@ $(document).ready(function() {
         course_ids.push(elt.data('id'));
       }
     })
-    console.log("IDS: ", course_ids);
     window.location = "{% url 'officehours:delete-courses' %}?courses=" + course_ids.join("+");
   });
+
+  $("#remove-hours-button").click(function(e) {
+    e.preventDefault();
+    var hours_ids = [];
+
+    $("tr.is-selected").each(function(index, elt) {
+      var elt = $(elt);
+      if(elt.data('type') === 'officehours') {
+        hours_ids.push(elt.data('id'));
+      }
+    })
+    window.location = "{% url 'officehours:delete-hours' %}?hours=" + hours_ids.join("+");
+  });
+
 });
 </script>
 {% endblock %}

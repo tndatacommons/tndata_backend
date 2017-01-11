@@ -192,6 +192,32 @@ def add_hours(request):
     return render(request, 'officehours/add_hours.html', context)
 
 
+
+@login_required
+def delete_hours(request):
+    """
+    Allow an INSTRUCTOR (OfficeHours.user) to delete data (with confirmation).
+
+    """
+    hours_count = 0
+    hours = []
+
+    if request.method == "POST" and bool(request.POST.get('confirm', False)):
+        ids = request.POST.getlist('hours')
+        if ids:
+            OfficeHours.objects.filter(user=request.user, pk__in=ids).delete()
+        return redirect("officehours:schedule")
+
+    ids = list(filter(None, request.GET.get('hours', '').split(' ')))
+    hours = OfficeHours.objects.filter(user=request.user, pk__in=ids)
+
+    context = {
+        'hours': hours,
+        'hours_count': hours.count(),
+    }
+    return render(request, 'officehours/delete_hours.html', context)
+
+
 @login_required
 def add_course(request):
     """

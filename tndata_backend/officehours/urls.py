@@ -34,6 +34,11 @@ urlpatterns = [
         name='delete-courses'
     ),
     url(
+        r'^delete-hours/$',
+        views.delete_hours,
+        name='delete-hours'
+    ),
+    url(
         r'^contact-info/$',
         views.contact_info,
         name='contact-info'
