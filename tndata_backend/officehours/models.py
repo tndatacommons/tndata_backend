@@ -10,6 +10,17 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 
+DAYS = {
+    'Sunday': 'S',
+    'Monday': 'M',
+    'Tuesday': 'T',
+    'Wednesday': 'W',
+    'Thursday': 'R',
+    'Friday': 'F',
+    'Saturday': 'Z',
+}
+
+
 class OfficeHours(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     from_time = models.TimeField()
@@ -40,6 +51,16 @@ class OfficeHours(models.Model):
     def save(self, *args, **kwargs):
         self._set_expires()
         super().save(*args, **kwargs)
+
+    @property
+    def meetingtime(self):
+        """Return a condensed string format for the days and times."""
+        days = [DAYS[d] for d in self.days]
+        return "{} {}-{}".format(
+            "".join(days),
+            self.from_time.strftime("%H:%M"),
+            self.to_time.strftime("%H:%M")
+        )
 
 
 def generate_course_code(length=4):
@@ -109,6 +130,15 @@ class Course(models.Model):
         self._set_name_slug()
         self._set_code()
         super().save(*args, **kwargs)
+
+    @property
+    def meetingtime(self):
+        """Return a condensed string format for the days and times."""
+        days = [DAYS[d] for d in self.days]
+        return "{} {}".format(
+            "".join(days),
+            self.start_time.strftime("%H:%M"),
+        )
 
     def get_share_url(self):
         return reverse('officehours:share-course', args=[self.id])

@@ -10,8 +10,8 @@ class OfficeHoursSerializer(ObjectTypeModelSerializer):
     class Meta:
         model = OfficeHours
         fields = (
-            'id', 'user', 'from_time', 'to_time', 'days', 'expires_on',
-            'updated_on', 'created_on',
+            'id', 'user', 'from_time', 'to_time', 'days', 'meetingtime',
+            'expires_on', 'updated_on', 'created_on',
         )
         read_only_fields = ("id", 'updated_on', "created_on")
 
@@ -23,9 +23,12 @@ class CourseSerializer(ObjectTypeModelSerializer):
         model = Course
         fields = (
             'id', 'user', 'name', 'start_time', 'location', 'days',
-            'code', 'students', 'expires_on', 'updated_on', 'created_on',
+            'meetingtime', 'code', 'students', 'expires_on',
+            'updated_on', 'created_on',
         )
-        read_only_fields = ("id", 'updated_on', "created_on", 'students')
+        read_only_fields = (
+            "id", 'updated_on', "created_on", 'students', 'meetingtime'
+        )
 
     def to_representation(self, obj):
         """Include a serialized student & faculty info."""

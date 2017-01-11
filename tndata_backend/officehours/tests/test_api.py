@@ -81,6 +81,10 @@ class TestOfficeHoursAPI(V2APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['meetingtime'],
+            'MWF 13:30-15:30'
+        )
 
     def test_get_hours_detail_unauthed(self):
         url = self.get_url('officehours-detail', args=[self.hours.id])
@@ -167,6 +171,10 @@ class TestCourseAPI(V2APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+        self.assertEqual(
+            response.data['results'][0]['meetingtime'],
+            'MF 13:30'
+        )
 
     def test_get_course_detail_unauthed(self):
         url = self.get_url('course-detail', args=[self.course.id])

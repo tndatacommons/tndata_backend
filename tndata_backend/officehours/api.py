@@ -52,6 +52,8 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
     - `from_time`: Starting time.
     - `to_time`: Ending time.
     - `days`: An array of strings; The days on which the hours are available.
+    - `meetingtime`: A string representing a condensed version of the meeting
+      time and days for these office hours. e.g. `MWF 08:30-10:30`.
     - `updated_on`: Time at which the object was updated.
     - `created_on`: Time at which the object was created.
     - `expires_on`: The time at which the entry will expire
@@ -144,6 +146,8 @@ class CourseViewSet(mixins.CreateModelMixin,
     - `start_time`: Time at which the course starts.
     - `location`: The course's location
     - `days`: An array of strigns: The days on which the course meets.
+    - `meetingtime`: A string representing a condensed version of the meeting
+      time and days for these office hours. e.g. `MWF 08:30-10:30`.
     - `code`: The *share code* for the course.
     - `students`: An array of student information.
     - `updated_on`: Time at which the course was updated.

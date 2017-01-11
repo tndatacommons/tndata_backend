@@ -33,6 +33,9 @@ class TestOfficeHours(TestCase):
         delta = self.hours.expires_on - self.hours.created_on
         self.assertEqual(delta.days, 149)
 
+    def test_meetingtime(self):
+        self.assertEqual(self.hours.meetingtime, "MWF 13:30-15:30")
+
 
 class TestCourse(TestCase):
     """Tests for the `Course` model."""
@@ -68,3 +71,6 @@ class TestCourse(TestCase):
         # test the generate function
         code = generate_course_code()
         self.assertEqual(len(code), 4)
+
+    def test_meetingtime(self):
+        self.assertEqual(self.course.meetingtime, "MWF 13:30")
