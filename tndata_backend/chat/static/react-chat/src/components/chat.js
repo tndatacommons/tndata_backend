@@ -38,9 +38,14 @@ export default class Chat extends Component {
         const inputElement = event.target.children[0].children[0];
         const message = inputElement.value;
 
-        console.log("Sending?  ", message);
+        // Format of message to send
+        const toSend = JSON.stringify({
+            text: message,
+            token: this.props.user.token,
+        });
+        console.log("Sending:  ", toSend);
 
-        this.setState({messages: this.state.messages, current: message});
+        this.setState({messages: this.state.messages, current: toSend});
         inputElement.value = ""; // clear the input.
     }
 
