@@ -34,7 +34,8 @@ class App extends Component {
                 username: 'Unknown',
                 avatar: '',
                 firstName: 'Unkown',
-                lastName: 'User'
+                lastName: 'User',
+                token: this.props.apiToken
             },
             chatHistory: []
         }
@@ -76,6 +77,7 @@ class App extends Component {
                     username: data.results[0].username,
                     firstName: data.results[0].first_name,
                     lastName: data.results[0].last_name,
+                    token: this.props.apiToken
                 }
                 this.setState({user: userData, chatHistory: this.state.chatHistory});
                 this.fetchMessageHistory(data.results[0].id);
