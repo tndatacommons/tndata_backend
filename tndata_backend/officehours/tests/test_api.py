@@ -124,10 +124,7 @@ class TestOfficeHoursAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         data = {
-            'from_time': '13:30',
-            'to_time': '14:30',
-            'days': 'TRZ',
-            'user': self.user.id,
+            'meetingtime': 'TRZ 13:30-14:30',
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -137,6 +134,54 @@ class TestOfficeHoursAPI(V2APITestCase):
 
         expected = sorted(['Tuesday', 'Thursday', 'Saturday'])
         self.assertEqual(sorted(hours.days), expected)
+
+    def test_put_hours_authed(self):
+        hours = mommy.make(
+            OfficeHours,
+            user=self.user,
+            from_time=time(8, 45),
+            to_time=time(10, 30),
+            days=['Sunday', 'Wednesday', 'Saturday']
+        )
+
+        url = self.get_url('officehours-detail', args=[hours.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'from_time': '13:30',
+            'to_time': '14:30',
+            'days': ['Monday', 'Thursday']
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check the object.
+        hours = OfficeHours.objects.get(pk=hours.id)
+        expected = sorted(['Monday', 'Thursday'])
+        self.assertEqual(sorted(hours.days), expected)
+
+    def test_put_hours_authed_alternative(self):
+        hours = mommy.make(
+            OfficeHours,
+            user=self.user,
+            from_time=time(8, 45),
+            to_time=time(10, 30),
+            days=['Sunday', 'Wednesday', 'Saturday']
+        )
+        url = self.get_url('officehours-detail', args=[hours.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        response = self.client.put(url, {'meetingtime': 'MWR 13:30-15:30'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check the object.
+        hours = OfficeHours.objects.get(pk=response.data['id'])
+
+        expected = sorted(['Monday', 'Wednesday', 'Thursday'])
+        self.assertEqual(sorted(hours.days), expected)
+
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
 @override_settings(REST_FRAMEWORK=TEST_REST_FRAMEWORK)
@@ -232,3 +277,58 @@ class TestCourseAPI(V2APITestCase):
         self.assertEqual(sorted(course.days), expected)
         self.assertEqual(course.start_time.strftime("%H:%M"), "09:30")
 
+    def test_put_course_authed(self):
+        course = mommy.make(
+            Course,
+            user=self.user,
+            name="TEST-9999",
+            start_time=time(10, 30),
+            location="Room 123",
+            days=['Sunday', 'Saturday']
+        )
+
+        url = self.get_url('course-detail', args=[course.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'name': 'Intro to Testing',  # Changed
+            'days': ['Monday', 'Friday'],  # Changed
+            'location': 'Room 123',
+            'start_time': '10:30',
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check the object.
+        course = Course.objects.get(pk=course.id)
+        self.assertEqual(course.name, 'Intro to Testing')
+        expected_days = sorted(['Monday', 'Friday'])
+        self.assertEqual(sorted(course.days), expected_days)
+
+    def test_put_course_authed_alternative(self):
+        course = mommy.make(
+            Course,
+            user=self.user,
+            name="TEST-9999",
+            start_time=time(10, 30),
+            location="Room 123",
+            days=['Sunday', 'Saturday']
+        )
+
+        url = self.get_url('course-detail', args=[course.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'name': 'TEST-9999',
+            'location': 'Room 123',
+            'meetingtime': 'MWR 13:30-15:30',  # Changed
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check the object.
+        course = Course.objects.get(pk=course.id)
+        expected_days = sorted(['Monday', 'Wednesday', 'Thursday'])
+        self.assertEqual(sorted(course.days), expected_days)

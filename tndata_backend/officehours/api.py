@@ -76,9 +76,7 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
     `M` = Monday, ..., `R` = Thursday, and `Z` = Saturday.
 
         {
-            'from_time': 'START TIME',
-            'to_time': 'END TIME',
-            'days': 'MWF'
+            'meetingtime': 'MWF 11:30-13:30',
         }
 
     ## Updating a OfficeHours
@@ -103,25 +101,34 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
         self.queryset = super().get_queryset().filter(user=self.request.user)
         return self.queryset
 
+    def _handle_payload(self, request):
+        """handle adding any additional info to the payload for Create or
+        Update. This returns the new payload."""
+        payload = request.data.copy()
+        payload['user'] = request.user.id
+
+        # Handle `MTWRFS H:mm-H:mm`-formatted input
+        if 'meetingtime' in payload:
+            days, times = payload['meetingtime'].split()
+            payload['days'] = [VALID_DAYS[x] for x in days]
+            start, end = times.split('-')
+            start_h, start_m = start.split(":")
+            end_h, end_m = end.split(":")
+            payload['from_time'] = time(int(start_h), int(start_m))
+            payload['to_time'] = time(int(end_h), int(end_m))
+        return payload
+
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-
-        payload = request.data.copy()
-        payload['user'] = request.user.id
-
-        # Handle `MTWRFZ`-formatted days input
-        if type(payload.get('days')) == str:
-            payload['days'] = [VALID_DAYS[x] for x in payload['days']]
-
-        request.data.update(payload)
+        request.data.update(self._handle_payload(request))
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data['user'] = request.user.id
+        request.data.update(self._handle_payload(request))
         return super().update(request, *args, **kwargs)
 
 
@@ -201,11 +208,7 @@ class CourseViewSet(mixins.CreateModelMixin,
         self.queryset = super().get_queryset().filter(user=self.request.user)
         return self.queryset
 
-    def create(self, request, *args, **kwargs):
-        """Only create objects for the authenticated user."""
-        if not request.user.is_authenticated():
-            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-
+    def _handle_payload(self, request):
         payload = request.data.copy()
         payload['user'] = request.user.id
 
@@ -216,12 +219,17 @@ class CourseViewSet(mixins.CreateModelMixin,
             start, end = times.split('-')
             start_h, start_m = start.split(":")
             payload['start_time'] = time(int(start_h), int(start_m))
+        return payload
 
-        request.data.update(payload)
+    def create(self, request, *args, **kwargs):
+        """Only create objects for the authenticated user."""
+        if not request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+        request.data.update(self._handle_payload(request))
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data['user'] = request.user.id
+        request.data.update(self._handle_payload(request))
         return super().update(request, *args, **kwargs)
