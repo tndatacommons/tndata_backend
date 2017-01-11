@@ -3,92 +3,51 @@
 {% load staticfiles %}
 
 {% block content %}
-<form action="{% url 'officehours:add-course' %}" method="post">
-{% csrf_token %}
-
-            <!-- Add Course -->
-<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="add-course">
-  <div class="mdl-card__supporting-text">
-    <h3>Add your Course</h3>
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <input class="mdl-textfield__input"
-             type="text"
-             name="coursename"
-             {% if coursename %}value="{{coursename}}"{% endif %}
-             id="id_coursename">
-      <label class="mdl-textfield__label" for="id_coursename">Course Name</label>
-    </div>
-    <div class="demo-avatar-dropdown">
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input class="mdl-textfield__input"
-               type="text"
-               name="coursetime"
-               {% if coursetime %}value="{{coursetime|date:"g:i A"|lower}}"{% endif %}
-               id="id_coursetime">
-        <label class="mdl-textfield__label" for="id_coursetime">Time</label>
-        {% if coursetime_error %}
-          <span class="mdl-textfield__error" style="visibility: visible">
-            {{ coursetime_error }}</span>
-        {% endif %}
-      </div>
-      <button id="course-time-button"
-              class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
-        <i class="material-icons" role="presentation">arrow_drop_down</i>
-        <span class="visuallyhidden">Times</span>
-      </button>
-      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-          for="course-time-button">
-          <li class="mdl-menu__item" data-val="8:00 am"
-              data-forid="id_coursetime">8:00 am</li>
-          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider"
-              data-val="10:00 am" data-forid="id_coursetime">10:00 am</li>
-          <li class="mdl-menu__item" data-val="1:00 pm"
-              data-forid="id_coursetime">1:00 pm</li>
-          <li class="mdl-menu__item" data-val="2:00 pm"
-              data-forid="id_coursetime">2:00 pm</li>
-      </ul>
-    </div>
-    <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
-      <input class="mdl-textfield__input"
-             type="text"
-             id="id_location"
-             {% if location %}value="{{location}}"{% endif %}
-             name="location">
-      <label class="mdl-textfield__label" for="id_location">Location</label>
-    </div>
-    <div class="mdl-textfield mdl-js-textfield">
-      <ul>
-        {% for day in day_choices %}
-        <li>
-          <label for="course-day-{{ day|lower }}"
-                 class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox"
-                   id="course-day-{{ day|lower }}"
-                   class="mdl-checkbox__input"
-                   name="{{ day }}"
-                   {% if day in selected_days %}checked="checked"{% endif %}
-                   data-day="{{ day }}">
-            <span class="mdl-checkbox__label">{{ day }}</span>
-          </label>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
+<div class="demo-options mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
+     id="teacher-schedule">
+  <div class="mdl-card__title mdl-card--expand mdl-color--indigo-300">
+    <h2 class="mdl-card__title-text">{{ course.name }} / {{ course.code }}</h2>
   </div>
-
-  <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit" name="another" value="true">Add another</button>
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit" name="share" value="true">
-    <div class="mdl-layout-spacer"></div>
-    <i class="material-icons mdl-primary">share</i>
+  <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+    <ul class="mdl-list">
+    {% for student in course.students.all %}
+      <li class="mdl-list__item mdl-list__item--three-line">
+        <span class="mdl-list__item-primary-content">
+          <i class="material-icons mdl-list__item-avatar">person</i>
+          <span>{{ student.get_full_name }}</span>
+          <span class="mdl-list__item-text-body">
+            {{ student.email }}
+          </span>
+        </span>
+        <span class="mdl-list__item-secondary-content">
+          <a href="{% url 'chat:chat' student.id %}"
+            class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent">
+            <i class="material-icons">chat</i>
+          </a>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    <ul>
+  </div>
+  <div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">
+    <a href="#"
+       class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+       id="message-all">Message All Students</a>
   </div>
 </div>
-</form>
+
 {% endblock %}
 
 
 {% block bodyjs %}
-<script src="{% static 'js/officehours_officehours_form.js' %}"></script>
+<script>
+$(document).ready(function() {
+  $("#message-all").click(function(e) {
+    e.preventDefault();
+    var snackbarContainer = document.getElementById('snackbar-container');
+    snackbarContainer.MaterialSnackbar.showSnackbar({message: "Not Yet Implemented"});
+  });
+});
+</script>
 {% endblock %}

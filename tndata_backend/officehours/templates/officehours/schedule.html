@@ -87,6 +87,7 @@
         <tr>
           <th class="mdl-data-table__cell--non-numeric">Course</th>
           <th>Code</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -97,6 +98,10 @@
             <small>{{ course.display_time }}</small>
           </td>
           <td>{{ course.code }}</td>
+          <td>
+            <a class="mdl-button mdl-js-button mdl-button--primary"
+               href="{{ course.get_absolute_url }}">VIEW</a>
+          </td>
         </tr>
       {% endfor %}
       </tbody>

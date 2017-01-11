@@ -140,5 +140,8 @@ class Course(models.Model):
             self.start_time.strftime("%H:%M"),
         )
 
+    def get_absolute_url(self):
+        return reverse('officehours:course-details', args=[self.id])
+
     def get_share_url(self):
         return reverse('officehours:share-course', args=[self.id])
