@@ -1,17 +1,20 @@
 import json
 
+from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from . models import CronLog
 
 
+# -----------------------------------------------------------------------------
 # This pseudo-api doesn't use CSRF protection, because we want to insert
-# data from a curl command (e.g. curl --data 'whatever' http://.../cronlog/add/),
-# so that request MUST include the folowing key.
-KEY = "las98a890se4na908sdfanm32"
-
-
+# data from a curl command so that request MUST include the folowing key.
+#
+# e.g.
+#       curl --data 'whatever' http://.../cronlog/add/),
+#
+# -----------------------------------------------------------------------------
 @csrf_exempt
 def add_entry(request):
     results = {}
@@ -28,7 +31,7 @@ def add_entry(request):
             host = data.get('host', request.get_host())
 
             # Check for our key
-            if key == KEY and command and message:
+            if key == settings.CRONLOG_KEY and command and message:
                 item = CronLog.objects.create(command=command, message=message, host=host)
                 return JsonResponse({
                     'command': item.command,
@@ -36,7 +39,7 @@ def add_entry(request):
                     'host': item.host,
                     'created_on': item.created_on,
                 })
-            elif key == KEY:
+            elif key == settings.CRONLOG_KEY:
                 results = {'error': 'command and message are required'}
                 return JsonResponse(results, status=400)
             else:

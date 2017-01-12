@@ -63,6 +63,7 @@ be set prior to running the project:
 * AWS_STORAGE_BUCKET_NAME -- S3 bucket name
 * AWS_ACCESS_KEY_ID -- AWS access key
 * AWS_SECRET_ACCESS_KEY -- AWS secret
+* CRONLOG_KEY -- A secret value for us to use the cronlog logger DB.
 
 """
 
@@ -207,6 +208,8 @@ INSTALLED_APPS = (
     'utils',
 )
 
+# cronlog
+CRONLOG_KEY = os.environ.get('CRONLOG_KEY')
 
 # django-haystack settings
 HAYSTACK_CONNECTIONS = {
