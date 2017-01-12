@@ -1,7 +1,7 @@
 from datetime import time
 
 from rest_framework import mixins, permissions, status, viewsets
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import list_route
 from rest_framework.authentication import (
     SessionAuthentication, TokenAuthentication
 )
@@ -198,9 +198,11 @@ class CourseViewSet(mixins.CreateModelMixin,
 
     ## Adding a student to a Course
 
-    Send a POST request to `/api/courses/ID/enroll/` with the following payload:
+    Send a POST request to `/api/courses/enroll/` with the following payload:
 
         {'code': "XYZ4" }
+
+    This will retrieve the related Course and enroll the student in that course.
 
     ----
 
@@ -241,22 +243,21 @@ class CourseViewSet(mixins.CreateModelMixin,
         request.data.update(self._handle_payload(request))
         return super().update(request, *args, **kwargs)
 
-    # TODO: Ability for students to add a course using a CODE.
-    @detail_route(methods=['post'], url_path='enroll')
-    def student_add_course(self, request, pk=None):
+    @list_route(methods=['post'], url_path='enroll')
+    def enroll(self, request):
         """Ability for a student to enroll themselves in a course with a Code"""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
         if request.method == "POST":
             try:
-                course = self.queryset.get(pk=pk, code=request.data['code'])
+                course = self.queryset.get(code=request.data['code'])
                 course.students.add(request.user)
                 course.save()
 
                 data = self.serializer_class(course).data
                 return Response(data, status=status.HTTP_201_CREATED)
-            except models.Course.DoesNotExist:
+            except (IndexError, models.Course.DoesNotExist):
                 return Response(
                     data={'error': "Specified Course not found"},
                     status=status.HTTP_400_BAD_REQUEST

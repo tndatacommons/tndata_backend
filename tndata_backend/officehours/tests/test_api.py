@@ -333,7 +333,7 @@ class TestCourseAPI(V2APITestCase):
         expected_days = sorted(['Monday', 'Wednesday', 'Thursday'])
         self.assertEqual(sorted(course.days), expected_days)
 
-    def test_post_student_add_course(self):
+    def test_post_course_enroll(self):
         """Test that students can add a Course to their schedule."""
         # Create a test student.
         student = self.User.objects.create_user('student', 's@s.com', 'pass')
@@ -341,7 +341,7 @@ class TestCourseAPI(V2APITestCase):
         # Ensure they're NOT in the course
         self.assertNotIn(student, self.course.students.all())
 
-        url = self.get_url('course-enroll', args=[self.course.id])
+        url = self.get_url('course-enroll')
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + student.auth_token.key
         )
