@@ -245,7 +245,6 @@ class TestCourseAPI(V2APITestCase):
             'start_time': '9:30',
             'location': 'Room 0',
             'days': ['Monday', 'Wednesday'],
-            'user': self.user.id,
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -263,7 +262,6 @@ class TestCourseAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         data = {
-            'user': self.user.id,
             'name': 'Test Morning Course',
             'location': 'Location',
             'meetingtime': 'MWF 9:30-13:30',
@@ -276,6 +274,28 @@ class TestCourseAPI(V2APITestCase):
         expected = sorted(['Monday', 'Wednesday', 'Friday'])
         self.assertEqual(sorted(course.days), expected)
         self.assertEqual(course.start_time.strftime("%H:%M"), "09:30")
+
+    def test_post_course_authed_alternative_no_ending(self):
+        """Test that createing a Course supports `MTWRFS H:mm`-formatted
+        days + start time for courses."""
+
+        url = self.get_url('course-list')
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'name': 'Test Afternoon Course',
+            'location': 'Location',
+            'meetingtime': 'RZ 14:30',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Check the object's values
+        course = Course.objects.get(pk=response.data['id'])
+        expected = sorted(['Thursday', 'Saturday'])
+        self.assertEqual(sorted(course.days), expected)
+        self.assertEqual(course.start_time.strftime("%H:%M"), "14:30")
 
     def test_put_course_authed(self):
         course = mommy.make(
@@ -332,6 +352,34 @@ class TestCourseAPI(V2APITestCase):
         course = Course.objects.get(pk=course.id)
         expected_days = sorted(['Monday', 'Wednesday', 'Thursday'])
         self.assertEqual(sorted(course.days), expected_days)
+
+    def test_put_course_authed_alternative_no_ending(self):
+        course = mommy.make(
+            Course,
+            user=self.user,
+            name="TEST-9999",
+            start_time=time(10, 30),
+            location="Room 123",
+            days=['Sunday', 'Saturday']
+        )
+
+        url = self.get_url('course-detail', args=[course.id])
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
+        )
+        data = {
+            'name': 'TEST-9999',
+            'location': 'Room 123',
+            'meetingtime': 'MWR 16:45',  # Changed
+        }
+        response = self.client.put(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Check the object.
+        course = Course.objects.get(pk=course.id)
+        expected_days = sorted(['Monday', 'Wednesday', 'Thursday'])
+        self.assertEqual(sorted(course.days), expected_days)
+        self.assertEqual(course.start_time.strftime("%H:%M"), "16:45")
 
     def test_post_course_enroll(self):
         """Test that students can add a Course to their schedule."""

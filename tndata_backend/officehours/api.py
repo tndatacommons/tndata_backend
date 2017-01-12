@@ -112,7 +112,10 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
         if 'meetingtime' in payload:
             days, times = payload['meetingtime'].split()
             payload['days'] = [VALID_DAYS[x] for x in days]
-            start, end = times.split('-')
+            try:
+                start, end = times.split('-')
+            except ValueError:  # Assume we only got 1 time (not 2)
+                start = times
             start_h, start_m = start.split(":")
             end_h, end_m = end.split(":")
             payload['from_time'] = time(int(start_h), int(start_m))
@@ -225,7 +228,10 @@ class CourseViewSet(mixins.CreateModelMixin,
         if 'meetingtime' in payload:
             days, times = payload['meetingtime'].split()
             payload['days'] = [VALID_DAYS[x] for x in days]
-            start, end = times.split('-')
+            try:
+                start, end = times.split('-')
+            except ValueError:  # Assume we only got 1 time (not 2)
+                start = times
             start_h, start_m = start.split(":")
             payload['start_time'] = time(int(start_h), int(start_m))
         return payload
