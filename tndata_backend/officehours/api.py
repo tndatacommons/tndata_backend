@@ -1,5 +1,3 @@
-from datetime import time
-
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import list_route
 from rest_framework.authentication import (
@@ -10,17 +8,6 @@ from rest_framework.response import Response
 
 from . import models
 from . serializers import OfficeHoursSerializer, CourseSerializer
-
-
-VALID_DAYS = {
-    'S': 'Sunday',
-    'M': 'Monday',
-    'T': 'Tuesday',
-    'W': 'Wednesday',
-    'R': 'Thursday',
-    'F': 'Friday',
-    'Z': 'Saturday',
-}
 
 
 class IsOwner(permissions.IsAuthenticated):
@@ -102,37 +89,17 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
         self.queryset = super().get_queryset().filter(user=self.request.user)
         return self.queryset
 
-    def _handle_payload(self, request):
-        """handle adding any additional info to the payload for Create or
-        Update. This returns the new payload."""
-        payload = request.data.copy()
-        payload['user'] = request.user.id
-
-        # Handle `MTWRFS H:mm-H:mm`-formatted input
-        if 'meetingtime' in payload:
-            days, times = payload['meetingtime'].split()
-            payload['days'] = [VALID_DAYS[x] for x in days]
-            try:
-                start, end = times.split('-')
-            except ValueError:  # Assume we only got 1 time (not 2)
-                start = times
-            start_h, start_m = start.split(":")
-            end_h, end_m = end.split(":")
-            payload['from_time'] = time(int(start_h), int(start_m))
-            payload['to_time'] = time(int(end_h), int(end_m))
-        return payload
-
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update(self._handle_payload(request))
+        request.data.update({'user': request.user.id})
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update(self._handle_payload(request))
+        request.data.update({'user': request.user.id})
         return super().update(request, *args, **kwargs)
 
 
@@ -220,33 +187,17 @@ class CourseViewSet(mixins.CreateModelMixin,
         self.queryset = super().get_queryset().filter(user=self.request.user)
         return self.queryset
 
-    def _handle_payload(self, request):
-        payload = request.data.copy()
-        payload['user'] = request.user.id
-
-        # Handle `MTWRFS H:mm-H:mm`-formatted input
-        if 'meetingtime' in payload:
-            days, times = payload['meetingtime'].split()
-            payload['days'] = [VALID_DAYS[x] for x in days]
-            try:
-                start, end = times.split('-')
-            except ValueError:  # Assume we only got 1 time (not 2)
-                start = times
-            start_h, start_m = start.split(":")
-            payload['start_time'] = time(int(start_h), int(start_m))
-        return payload
-
     def create(self, request, *args, **kwargs):
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update(self._handle_payload(request))
+        request.data.update({'user': request.user.id})
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update(self._handle_payload(request))
+        request.data.update({'user': request.user.id})
         return super().update(request, *args, **kwargs)
 
     @list_route(methods=['post'], url_path='enroll')
