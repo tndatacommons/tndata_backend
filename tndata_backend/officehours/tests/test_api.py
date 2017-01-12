@@ -325,6 +325,7 @@ class TestCourseAPI(V2APITestCase):
         self.assertEqual(course.name, 'Intro to Testing')
         expected_days = sorted(['Monday', 'Friday'])
         self.assertEqual(sorted(course.days), expected_days)
+        self.assertEqual(course.start_time.strftime("%H:%M"), "10:30")
 
     def test_put_course_authed_alternative(self):
         course = mommy.make(
@@ -352,6 +353,7 @@ class TestCourseAPI(V2APITestCase):
         course = Course.objects.get(pk=course.id)
         expected_days = sorted(['Monday', 'Wednesday', 'Thursday'])
         self.assertEqual(sorted(course.days), expected_days)
+        self.assertEqual(course.start_time.strftime("%H:%M"), "13:30")
 
     def test_put_course_authed_alternative_no_ending(self):
         course = mommy.make(
