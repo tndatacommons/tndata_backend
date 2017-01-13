@@ -2,11 +2,19 @@
 {% load crispy_forms_tags %}
 {% load staticfiles %}
 
+{% block extrahead %}
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'bootstrap-material-datetimepicker-2.7.1/js/bootstrap-material-datetimepicker.js' %}"></script>
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'bootstrap-material-datetimepicker-2.7.1/css/bootstrap-material-datetimepicker.css' %}">
+{% endblock %}
+
+
 {% block content %}
 <form action="{% url 'officehours:add-course' %}" method="post">
 {% csrf_token %}
 
-            <!-- Add Course -->
+<!-- Add Course -->
 <div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="add-course">
   <div class="mdl-card__supporting-text">
     <h3>Add your Course</h3>
@@ -35,22 +43,6 @@
             {{ coursetime_error }}</span>
         {% endif %}
       </div>
-      <button id="course-time-button"
-              class="helper mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
-        <i class="material-icons" role="presentation">arrow_drop_down</i>
-        <span class="visuallyhidden">Times</span>
-      </button>
-      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-          for="course-time-button">
-          <li class="mdl-menu__item" data-val="8:00 am"
-              data-forid="id_coursetime">8:00 am</li>
-          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider"
-              data-val="10:00 am" data-forid="id_coursetime">10:00 am</li>
-          <li class="mdl-menu__item" data-val="1:00 pm"
-              data-forid="id_coursetime">1:00 pm</li>
-          <li class="mdl-menu__item" data-val="2:00 pm"
-              data-forid="id_coursetime">2:00 pm</li>
-      </ul>
     </div>
     <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
       <input class="mdl-textfield__input"
@@ -98,5 +90,15 @@
 
 
 {% block bodyjs %}
-<script src="{% static 'js/officehours_officehours_form.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#id_coursetime").bootstrapMaterialDatePicker({
+    format: "h:mm a",
+    date: false,
+    time: true,
+    nowButton: true,
+    monthPicker: false,
+  });
+});
+</script>
 {% endblock %}

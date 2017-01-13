@@ -2,6 +2,13 @@
 {% load crispy_forms_tags %}
 {% load staticfiles %}
 
+{% block extrahead %}
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'bootstrap-material-datetimepicker-2.7.1/js/bootstrap-material-datetimepicker.js' %}"></script>
+    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'bootstrap-material-datetimepicker-2.7.1/css/bootstrap-material-datetimepicker.css' %}">
+{% endblock %}
+
 {% block content %}
 <form action="{% url 'officehours:add-hours' %}" method="post">
 {% csrf_token %}
@@ -25,22 +32,6 @@
             {{ from_error }}</span>
         {% endif %}
       </div>
-      <button id="office-hours-id_from_time-button"
-              class="helper mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
-        <i class="material-icons" role="presentation">arrow_drop_down</i>
-        <span class="visuallyhidden">Times</span>
-      </button>
-      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-          for="office-hours-id_from_time-button">
-          <li class="mdl-menu__item" data-val="8:00 am"
-              data-forid="id_from_time">8:00 am</li>
-          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider"
-              data-val="10:00 am" data-forid="id_from_time">10:00 am</li>
-          <li class="mdl-menu__item" data-val="1:00 pm"
-              data-forid="id_from_time">1:00 pm</li>
-          <li class="mdl-menu__item" data-val="2:00 pm"
-              data-forid="id_from_time">2:00 pm</li>
-      </ul>
     </div>
     <div class="demo-avatar-dropdown">
       <div id="div_id_to_time"
@@ -56,22 +47,6 @@
             {{ to_error }}</span>
         {% endif %}
       </div>
-      <button id="office-hours-id_to_time-button"
-              class="helper mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon mdl-color--teal-300">
-        <i class="material-icons" role="presentation">arrow_drop_down</i>
-        <span class="visuallyhidden">Times</span>
-      </button>
-      <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-          for="office-hours-id_to_time-button">
-          <li class="mdl-menu__item" data-val="8:00 am"
-              data-forid="id_to_time">8:00 am</li>
-          <li class="mdl-menu__item  mdl-menu__item--full-bleed-divider"
-              data-val="10:00 am" data-forid="id_to_time">10:00 am</li>
-          <li class="mdl-menu__item" data-val="1:00 pm"
-              data-forid="id_to_time">1:00 pm</li>
-          <li class="mdl-menu__item" data-val="2:00 pm"
-              data-forid="id_to_time">2:00 pm</li>
-      </ul>
     </div>
 
     <div class="mdl-textfield mdl-js-textfield">
@@ -105,5 +80,15 @@
 
 
 {% block bodyjs %}
-<script src="{% static 'js/officehours_officehours_form.js' %}"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#id_from_time, #id_to_time").bootstrapMaterialDatePicker({
+    format: "h:mm a",
+    date: false,
+    time: true,
+    nowButton: true,
+    monthPicker: false,
+  });
+});
+</script>
 {% endblock %}
