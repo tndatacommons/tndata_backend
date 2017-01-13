@@ -4,6 +4,7 @@ These consumers handle our chat communications over a websocket.
 
 
 """
+import hashlib
 import json
 
 from channels import Channel, Group
@@ -11,9 +12,8 @@ from channels.sessions import enforce_ordering
 from channels.auth import channel_session_user, channel_session_user_from_http
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from .models import ChatMessage, generate_room_name
-
-#from clog.clog import clog
 
 
 def _get_user(message):
@@ -82,10 +82,23 @@ def _get_user_details(user):
 
 def _decode_text(message):
     """Given a message, attempt to decode the JSON string and return the TEXT
-    of the message (what the user should see)."""
+    of the message (what the user should see).
+
+    Returns a tuple of the type:
+
+        (message_content, message_type)
+
+    where message type is one of the following:
+
+        - "message": This is a ChatMessage the user should see.
+        - "receipt": This is a read-receipt message (not visible to the user)
+
+    """
     try:
         received = json.loads(message.content['text'])
-        return received['text']
+        if 'received' in received:
+            return (received['received'], 'receipt')
+        return (received['text'], 'message')
     except (IndexError, ValueError):  # wasnt' JSON-encoded?
         return message.content.get('text', '')
 
@@ -105,9 +118,24 @@ def chat_message_consumer(message):
         user = User.objects.get(pk=message.content['user_id'])
         room = message.content['room']
         text = message.content['text']
-        ChatMessage.objects.create(user=user, room=room, text=text)
-
+        digest = message.content.get('digest', '')
+        ChatMessage.objects.create(user=user, room=room, text=text, digest=digest)
     except (User.DoesNotExist, KeyError):
+        pass  # TODO: log this
+
+
+def mark_as_read_consumer(message):
+    """Given a message, query the DB for the matching ChatMessage and mark
+    it as read. The given message should have the following content:
+
+        - text: text of the message.
+        - TODO:  NEED some better identifier.
+
+    """
+    try:
+        digest = message.content.get('digest', '')
+        ChatMessage.objects.filter(digest=digest).update(read=True)
+    except KeyError:
         pass  # TODO: log this
 
 
@@ -128,7 +156,6 @@ def ws_message(message):
     #       'reply_channel': 'websocket.send!fMCqdsWviiwR',
     #       'text': JSON-encoded string.
     #   }
-    #clog(message.content, title="Message Content")
 
     # Stick the message on the processing queue (instead of sending
     # it directly to the group)
@@ -139,33 +166,51 @@ def ws_message(message):
     name, avatar = _get_user_details(user)
 
     # -------------------------------------------------------------------------
-    # The following is the current format for our recieved data.
+    # The following is the current format for our recieved message data.
     # This needs to work for both the web app & mobile.
     #
     #  {
-    #   text: text of the message,
-    #   from: (optional) user ID of person sending it.
-    #   token: OPTIONAL token
+    #    text: text of the message,
+    #    from: (optional) user ID of person sending it.
+    #    token: OPTIONAL token
     #  }
+    #
+    # However, read recipts will arrive in a format like this:
+    #
+    #   {
+    #       received: digest
+    #   }
     # -------------------------------------------------------------------------
-    message_text = _decode_text(message)
+    message_text, message_type = _decode_text(message)
 
-    # Construct message sent back to the client.
-    payload = {
-        'from_id': user.id if user else '',
-        'from': name,
-        "message": "{}".format(message_text),
-        'avatar': avatar,
-    }
+    if message_type == 'message':
+        # Construct message sent back to the client.
+        user_id = user.id if user else ''
+        now = timezone.now().strftime("%c")
+        digest = '{}/{}/{}'.format(message_text, user_id, now)
+        digest = hashlib.md5(digest.encode('utf-8')).hexdigest()
+        payload = {
+            'from_id': user.id if user else '',
+            'from': name,
+            'message': "{}".format(message_text),
+            'avatar': avatar,
+            'digest': digest,
+        }
 
-    Group(room).send({'text': json.dumps(payload)})  # send to users for display
+        # send to users for display
+        Group(room).send({'text': json.dumps(payload)})
 
-    # Now, send it to the channel to create the ChatMessage object.
-    Channel("create-chat-message").send({
-        "room": room,
-        "text": message_text,
-        "user_id": user.id,
-    })
+        # Now, send it to the channel to create the ChatMessage object.
+        Channel("create-chat-message").send({
+            "room": room,
+            "text": message_text,
+            "user_id": user.id,
+            "digest": digest,
+        })
+    elif message_type == 'receipt':
+        Channel("mark-chat-message-as-read").send({
+            "digest": message_text,
+        })
 
 
 @enforce_ordering(slight=True)
