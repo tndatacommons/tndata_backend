@@ -68,15 +68,25 @@ class Websocket extends React.Component {
     }
 
     send() {
-        // This gets run during a render() because the message we want to send
-        // changes on the props. We *can't* call `setState`, here, so we'll
-        // just keep the last-sent message as an attribute on the class.
-        //
-        if(this.props.sendMessage && this.props.sendMessage !== this.lastMessage) {
-            this.state.ws.send(this.props.sendMessage);
-            this.lastMessage = this.props.sendMessage;
+        // Only send data if the websocket is open. See:
+        // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket#Constants
+        if(this.state.ws.readyState === 1) {
+            // This gets run during a render() because the message we want to send
+            // changes on the props. We *can't* call `setState`, here, so we'll
+            // just keep the last-sent message as an attribute on the class.
+            //
+            if(this.props.sendMessage && this.props.sendMessage !== this.lastMessage) {
+                this.state.ws.send(this.props.sendMessage);
+                this.lastMessage = this.props.sendMessage;
+            }
+
+            // Send read receipt if we have appropriate data.
+            if(this.props.received) {
+                this.state.ws.send(JSON.stringify({
+                    received: this.props.received
+                }));
+            }
         }
-        console.log("WebSocket.send: ", this.props.sendMessage);
     }
 
     render() {

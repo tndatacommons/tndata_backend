@@ -13,6 +13,7 @@ export default class Chat extends Component {
         this.state = {
             messages: [],
             current: '',
+            received: '',
         }
     }
 
@@ -25,10 +26,18 @@ export default class Chat extends Component {
             text: data.message,
             from: data.from,
             from_id: data.from_id,
-            avatar: data.from === "system" ? '' : data.avatar
+            avatar: data.from === "system" ? '' : data.avatar,
+            digest: data.digest
         }
         const messages = _.concat(this.state.messages, [new_message]);
-        this.setState({messages: messages, current: this.state.current});
+
+        // The `received` state only when I've received the other user's message.
+        const digest = (data.from_id === this.props.user.userId) ? this.state.received : data.digest;
+        this.setState({
+            messages: messages,
+            current: this.state.current,
+            received: digest,  // Save the digest of the last message recieved.
+        });
     }
 
     onFormSubmit(event) {
@@ -43,7 +52,7 @@ export default class Chat extends Component {
             text: message,
             token: this.props.user.token,
         });
-        console.log("Sending:  ", toSend);
+        console.log("SENDING:  ", toSend);
 
         this.setState({messages: this.state.messages, current: toSend});
         inputElement.value = ""; // clear the input.
@@ -142,7 +151,8 @@ export default class Chat extends Component {
             <Websocket url={this.props.ws_url}
                        debug={true}
                        onMessage={this.handleMessage.bind(this)}
-                       sendMessage={this.state.current} />
+                       sendMessage={this.state.current}
+                       received={this.state.received} />
             <ChatForm
                 handleSubmit={this.onFormSubmit.bind(this)} />
           </div>
