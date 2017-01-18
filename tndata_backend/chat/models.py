@@ -1,8 +1,11 @@
 import logging
 
+from datetime import timedelta
+
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +38,18 @@ class ChatMessageManager(models.Manager):
         """Given a pair of users, return the ChatMessages for their chat room."""
         room_name = generate_room_name(users)
         return self.get_queryset().filter(room=room_name)
+
+    def recent(self, since=15):
+        """Return a queryset of unread, `recent` ChatMessage objects.
+
+        The times for which items are considered recent include:
+
+        - since: Age of a message in minues. By default, this will include
+          messages that were created within the past 15 minutes.
+
+        """
+        since = timezone.now() - timedelta(minutes=since)
+        return ChatMessage.objects.filter(read=False, created_on__gte=since)
 
 
 class ChatMessage(models.Model):
