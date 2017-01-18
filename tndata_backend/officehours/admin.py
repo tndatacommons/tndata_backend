@@ -12,6 +12,12 @@ class OfficeHoursAdmin(admin.ModelAdmin):
 
 @admin.register(models.Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name', 'start_time', 'location')
-    search_fields = ('name', 'user__email', 'user__first_name', 'user__last_name')
+    list_display = ('code', 'full_name', 'name', 'start_time', 'location')
+    list_filter = ('name', )
+    search_fields = (
+        'name', 'user__email', 'user__first_name', 'user__last_name', 'code'
+    )
     raw_id_fields = ('user', 'students')
+
+    def full_name(self, obj):
+        return obj.user.get_full_name()
