@@ -13,12 +13,18 @@ Additional Docs:
   http://docs.aws.amazon.com/sns/latest/dg/sms_publish-to-topic.html
 
 """
-from django.conf import settings
 import boto3
+import waffle
+
+from django.conf import settings
+from redis_metrics import metric
 
 
-def send_to(message="Hello World", phone_number="+18705144746"):
+def send_to(message, phone_number):
     """Send a message to a single phone number."""
+
+    if not waffle.switch_is_active('notifications-sms'):
+        return None
 
     # Phone numbers must use E.164 format: https://en.wikipedia.org/wiki/E.164
     # If not, assume we're in the US.
@@ -28,23 +34,24 @@ def send_to(message="Hello World", phone_number="+18705144746"):
     # limit to 140chars
     message = message[:140]
     if message and phone_number:
-        # See the SNS.Client.publish docs, here:
-        # http://boto3.readthedocs.io/en/latest/reference/services/sns.html#SNS.Client.publish
-        config = {
-            'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
-            'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY,
-            'region_name': 'us-east-1',
-        }
-        sns_client = boto3.client('sns', **config)
+        try:
+            config = {
+                'aws_access_key_id': settings.AWS_ACCESS_KEY_ID,
+                'aws_secret_access_key': settings.AWS_SECRET_ACCESS_KEY,
+                'region_name': 'us-east-1',
+            }
+            sns_client = boto3.client('sns', **config)
 
-        response = sns_client.publish(
-            PhoneNumber=phone_number,
-            Message=message
-            #TopicArn='string', (Optional - can't be used with PhoneNumer)
-            #TargetArn='string', (Optional - can't be used with PhoneNumer)
-            #Subject='string', (Optional - not used with PhoneNumer)
-            #MessageStructure='string' (Optional)
-        )
-        #print(response)
-        return response
-
+            response = sns_client.publish(
+                PhoneNumber=phone_number,
+                Message=message
+                # TopicArn='string', (Optional - can't be used with PhoneNumer)
+                # TargetArn='string', (Optional - can't be used with PhoneNumer)
+                # Subject='string', (Optional - not used with PhoneNumer)
+                # MessageStructure='string' (Optional)
+            )
+            metric('SMS Message Sent', category='Notifications')
+            return response
+        except:
+            metric('SMS Message Failed', category='Notifications')
+            return None
