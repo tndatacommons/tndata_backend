@@ -242,7 +242,6 @@ AUTHENTICATION_BACKENDS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'utils.middleware.HostnameRedirectMiddleware',
     'utils.middleware.IgnoreRequestMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',

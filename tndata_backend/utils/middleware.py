@@ -184,13 +184,3 @@ class DebugMedia404Middleware(object):
         if settings.DEBUG and media_request and response.status_code == 404:
                 return self._fallback_response
         return response
-
-
-class HostnameRedirectMiddleware(object):
-    """Redirect to some path based on hostname (these are all hard-coded)"""
-
-    def process_request(self, request):
-        hostname = request.META.get('HTTP_HOST', None)
-        if hostname == "officehours.tndata.org":
-            return HttpResponseRedirect("https://app.tndata.org/officehours/")
-        return None
