@@ -49,3 +49,4 @@ psutil==4.3.0
 google-api-python-client==1.5.5
 channels==0.17.3
 asgi-redis==1.0.0
+boto3==1.4.4
