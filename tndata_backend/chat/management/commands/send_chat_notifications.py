@@ -44,12 +44,8 @@ class Command(BaseCommand):
 
         # Now make sure we have them in a numbers-only format.
         numbers = users.values_list('userprofile__phone', flat=True)
-        numbers = [re.findall(r'\d+', n) for n in numbers]
-        numbers = filter(None, [''.join(n) for n in numbers])
-
         message = (
             "You have new messages!\n"
             "View them at http://officehours.tndata.org"
         )
-        for number in numbers:
-            sms.send_to(message, phone_number=number)
+        sms.mass_send(numbers, message, topic_name="ChatNotifications")
