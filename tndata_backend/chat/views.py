@@ -8,10 +8,10 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        users = get_user_model().objects.all()
-        if self.request.user and self.request.user.is_authenticated():
-            users = users.exclude(pk=self.request.user.id)
-        context['users'] = users
+        # users = get_user_model().objects.all()
+        # if self.request.user and self.request.user.is_authenticated():
+            # users = users.exclude(pk=self.request.user.id)
+        # context['users'] = users
         return context
 
 
