@@ -7,6 +7,7 @@ from django.contrib.auth import login as login_user
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import TemplateView
 
 from chat.models import ChatMessage
 
@@ -25,6 +26,17 @@ from .models import Course, OfficeHours
 # -- office hours -> repeat
 # -- add course -> repeat
 # -- share
+
+class AboutView(TemplateView):
+    template_name = 'officehours/about.html'
+
+
+class HelpView(TemplateView):
+    template_name = 'officehours/help.html'
+
+
+class ContactView(TemplateView):
+    template_name = 'officehours/contact.html'
 
 
 def mdl_examples(request):

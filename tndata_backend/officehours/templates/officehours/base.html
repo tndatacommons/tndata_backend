@@ -66,9 +66,18 @@
             <i class="material-icons">more_vert</i>
           </button>
           <ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right" for="hdrbtn">
-            <li class="mdl-menu__item">About</li>
-            <li class="mdl-menu__item">Contact</li>
-            <li class="mdl-menu__item">Legal information</li>
+            <li class="mdl-menu__item"
+                onclick="(function() { window.location='{% url 'officehours:about' %}'}).call(this)">
+              About</li>
+            <li class="mdl-menu__item"
+                onclick="(function() { window.location='{% url 'officehours:contact' %}'}).call(this)">
+              Contact</li>
+            <li class="mdl-menu__item"
+                onclick="(function() { window.location='{% url 'officehours:help' %}'}).call(this)">
+              Help</li>
+            <li class="mdl-menu__item"
+                onclick="(function() { window.location='https://tndata.org/legal/'}).call(this)">
+              Legal information</li>
           </ul>
         </div>
       </header>
