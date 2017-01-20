@@ -54,7 +54,7 @@ class TestChatMessageManager(TestCase):
 
     def test_recent(self):
         messages = sorted([m.id for m in ChatMessage.objects.recent()])
-        expected = sorted([self.message_3.id])
+        expected = sorted([self.message_1.id, self.message_2.id, self.message_3.id])
         self.assertListEqual(messages, expected)
 
 
