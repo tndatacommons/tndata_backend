@@ -29,7 +29,7 @@
   </div>
   <div class="mdl-card__actions mdl-card--border">
     <a class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-       href="{% url 'officehours:add-code' %}">Add Code</a>
+       href="{% url 'officehours:add-code' %}?next={% url 'officehours:phone-number' %}">Yes! Add Code</a>
     <a class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
        href="{% url 'officehours:contact-info' %}">I'm a teacher</a>
   </div>

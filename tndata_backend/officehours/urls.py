@@ -44,6 +44,11 @@ urlpatterns = [
         name='contact-info'
     ),
     url(
+        r'^phone/$',
+        views.phone_number,
+        name='phone-number'
+    ),
+    url(
         r'^examples/$',
         views.mdl_examples,
         name='examples'

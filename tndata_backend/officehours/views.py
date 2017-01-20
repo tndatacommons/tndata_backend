@@ -96,17 +96,39 @@ def login(request):
 @login_required
 def add_code(request):
     if request.method == "POST":
+        next_url = request.POST.get('next') or 'officehours:schedule'
         code = "{}".format(request.POST['code']).strip().upper()
         try:
             course = Course.objects.get(code=code)
             course.students.add(request.user)
             messages.success(request, "Course added to your schedule.")
-            return redirect('officehours:schedule')
+            return redirect(next_url)
         except Course.DoesNotExist:
             messages.error(request, "Could not find that course.")
             return redirect('officehours:add-code')
 
-    return render(request, 'officehours/add_code.html', {})
+    context = {
+        'next_url': request.GET.get('next', '')
+    }
+    return render(request, 'officehours/add_code.html', context)
+
+
+@login_required
+def phone_number(request):
+    if request.method == "POST" and 'phone' in request.POST:
+        try:
+            request.user.userprofile.phone = request.POST['phone']
+            request.user.userprofile.save()
+            messages.success(request, "Phone number updated.")
+            return redirect('officehours:schedule')
+        except (UserProfile.DoesNotExist, IndexError):
+            messages.error(request, "Could not save your information.")
+            return redirect('officehours:index')
+
+    context = {
+        'phone': request.user.userprofile.phone,
+    }
+    return render(request, 'officehours/phone_number.html', context)
 
 
 @login_required
