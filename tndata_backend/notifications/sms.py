@@ -147,5 +147,6 @@ def send_to_topic(message, topic_name=None, topic_arn=None):
 
 def mass_send(phone_numbers, message, topic_name):
     """Send a mass  text message"""
-    arn = subscribe_to_topic(phone_numbers, topic_name)
-    send_to_topic(message, topic_arn=arn)
+    if phone_numbers and message and topic_name:
+        arn = subscribe_to_topic(phone_numbers, topic_name)
+        send_to_topic(message, topic_arn=arn)
