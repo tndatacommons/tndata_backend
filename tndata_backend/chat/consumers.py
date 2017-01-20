@@ -13,7 +13,8 @@ from channels.auth import channel_session_user, channel_session_user_from_http
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from .models import ChatMessage, generate_room_name
+from .models import ChatMessage
+from .utils import generate_room_name
 
 
 def _get_user(message):

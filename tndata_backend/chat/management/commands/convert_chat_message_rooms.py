@@ -3,7 +3,9 @@ import logging
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from chat.models import generate_room_name, ChatMessage
+from chat.models import ChatMessage
+from chat.utils import generate_room_name
+
 
 logger = logging.getLogger(__name__)
 
