@@ -129,8 +129,7 @@ def mark_as_read_consumer(message):
     """Given a message, query the DB for the matching ChatMessage and mark
     it as read. The given message should have the following content:
 
-        - text: text of the message.
-        - TODO:  NEED some better identifier.
+        - digest: text of the message.
 
     """
     try:
