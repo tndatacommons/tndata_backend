@@ -1,6 +1,4 @@
 import logging
-import re
-
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
@@ -40,11 +38,16 @@ class Command(BaseCommand):
 
         # filter out those who don't have a listed phone number
         users = User.objects.filter(id__in=user_ids, userprofile__phone__gt='')
+        numbers = [
+            number for number in
+            users.values_list('userprofile__phone', flat=True) if number
+        ]
 
-        # Now make sure we have them in a numbers-only format.
-        numbers = users.values_list('userprofile__phone', flat=True)
-        message = (
-            "You have new messages!\n"
-            "View them at http://officehours.tndata.org"
-        )
-        sms.mass_send(numbers, message, topic_name="ChatNotifications")
+        if numbers:
+            # Now make sure we have them in a numbers-only format.
+            message = (
+                "You have new messages!\n"
+                "View them at http://officehours.tndata.org"
+            )
+            sms.mass_send(numbers, message, topic_name="ChatNotifications")
+            self.stdout.write("Sent SMS notifications to {} users".format(len(numbers)))
