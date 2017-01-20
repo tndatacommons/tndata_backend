@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 
 from chat.models import ChatMessage
+from notifications.sms import format_numbers
 
 from .forms import ContactForm
 from .models import Course, OfficeHours
@@ -115,18 +116,24 @@ def add_code(request):
 
 @login_required
 def phone_number(request):
+    error = None
+    phone = request.user.userprofile.phone
     if request.method == "POST" and 'phone' in request.POST:
         try:
-            request.user.userprofile.phone = request.POST['phone']
-            request.user.userprofile.save()
-            messages.success(request, "Phone number updated.")
-            return redirect('officehours:schedule')
+            phone = request.POST['phone']
+            if format_numbers([phone]):
+                request.user.userprofile.phone = phone
+                request.user.userprofile.save()
+                messages.success(request, "Phone number updated.")
+                return redirect('officehours:schedule')
+            error = "Sorry, that doesn't look like a phone number."
         except (UserProfile.DoesNotExist, IndexError):
             messages.error(request, "Could not save your information.")
             return redirect('officehours:index')
 
     context = {
-        'phone': request.user.userprofile.phone,
+        'phone': phone,
+        'error': error,
     }
     return render(request, 'officehours/phone_number.html', context)
 

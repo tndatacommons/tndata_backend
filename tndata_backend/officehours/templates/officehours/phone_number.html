@@ -8,10 +8,11 @@
   <div class="mdl-card__supporting-text">
     <h3>Set your mobile number</h3>
 
-    <div class="mdl-textfield mdl-js-textfield">
+    <div class="mdl-textfield mdl-js-textfield {% if error %} is-invalid{% endif %}">
       <input class="mdl-textfield__input" value="{{ phone|default:'' }}"
              type="text" id="id_phone" name="phone">
       <label class="mdl-textfield__label" for="id_phone">Phone Number</label>
+      {% if error %}<span class="mdl-textfield__error">{{ error }}</span>{% endif %}
     </div>
     <p>Add your cell phone, and we'll periodically text you with important
        information.</p>
