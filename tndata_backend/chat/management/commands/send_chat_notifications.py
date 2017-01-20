@@ -34,10 +34,9 @@ class Command(BaseCommand):
 
         # Get all the users that probably have messages.
         # (we don't save the recipient's ID in the message so this is a hack)
-        user_ids = flatten(
-            room.split('-')[1:] for room in
-            ChatMessage.objects.recent().values_list('room', flat=True)
-        )
+        messages = ChatMessage.objects.recent().filter(read=False)
+        messages = messages.values_list('room', flat=True)
+        user_ids = flatten(room.split('-')[1:] for room in messages)
 
         # filter out those who don't have a listed phone number
         users = User.objects.filter(id__in=user_ids, userprofile__phone__gt='')
