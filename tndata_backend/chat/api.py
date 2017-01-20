@@ -92,6 +92,17 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
 
         /api/chat/history/?room=chat-foo-bar&size=10
 
+    ## Marking messages as read.
+
+    Send a PUT request with the following payload:
+
+        {
+            room: 'chat-1-42',
+        }
+
+    This will update all messages in which the authenticated user was a
+    recipient, setting them as `read`.
+
     ----
 
     """
@@ -143,3 +154,29 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
                 'results': ChatMessageSerializer(messages, many=True).data,
             }
         return Response(content, status=status.HTTP_200_OK)
+
+    @list_route(methods=['put'], url_path='read')
+    def chat_room_mark_read(self, request):
+        """Set the whole chat room's status as 'read'.
+
+        1. The room name is provided in the payload, e.g. (room=whatever)
+        2. The authenticated user must have been a member of the room.
+
+        """
+        if not request.user.is_authenticated():
+            return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+        room = request.data.get('room', None)
+        user_id = slugify(request.user.id)
+        if room and user_id in room:
+            # We want to update messages in which the authenticated user was
+            # a recipeient, so exclude any of the messages they sent
+            messages = ChatMessage.objects.filter(room=room)
+            messages = messages.exclude(user=request.user)
+            messages.update(read=True)
+            return Response(None, status=status.HTTP_204_NO_CONTENT)
+
+        err = {
+            'error': 'Either room not found or user was not a member',
+        }
+        return Response(err, status.HTTP_400_BAD_REQUEST)

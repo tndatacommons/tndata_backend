@@ -64,6 +64,15 @@ class App extends Component {
             }
         });
 
+        // Doing this means we're looking at the chat room, so just mark
+        // all of it's messages as read.
+        const readUrl = API_HOST + '/api/chat/read/';
+        const payload = {'room': 'chat-' + room }
+        axios.put(readUrl, payload).then((resp) => {
+            console.log("Marking as Read: ", resp);
+        });
+
+
     }
     fetchUser() {
         const url = API_HOST + '/api/users/';
