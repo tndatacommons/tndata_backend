@@ -1,34 +1,41 @@
-{% extends 'redis_metrics/base.html' %}
+{% extends 'base.html' %}
 
-{% block content %}
+{% block head %}
+<style type="text/css">
+pre { background-color: #eee; padding: .5em;}
+</style>
+{% endblock %}
 
-<div class="clearfix well">
-  <strong>View:</strong> {% for n in num_options %}
-    {% if n == num %}
-      <span class="label label-default">{{ n }}</span>
-    {% else %}
-      <a href="?num={{n}}">{{ n }}</a>
-    {% endif %}
-    {% if not forloop.last %} | {% endif %}
-  {% endfor %}
+{% block body %}
+<div style="padding:1em;">
+  <h1>Websocket debugging</h1>
+  <div class="panel">
+    <strong>View:</strong> {% for n in num_options %}
+      {% if n == num %}
+        <span class="label secondary">{{ n }}</span>
+      {% else %}
+        <a href="?num={{n}}">{{ n }}</a>
+      {% endif %}
+      {% if not forloop.last %} | {% endif %}
+    {% endfor %}
+    <form action="{% url 'chat:debug' %}" method="post" class="right">
+      {% csrf_token %}
+      <input type="submit" value="Clear" name="submit" class="button alert"/>
+    </form>
+  </div>
 
-  <form action="{% url 'chat:debug' %}" method="post" class="pull-right clearfix">
-    {% csrf_token %}
-    <input type="submit" value="Clear" name="submit" class="btn btn-danger"/>
-  </form>
+  <table class="table">
+    <thead>
+      <tr><th>Timestamp (utc)</th><th>payload</th></tr>
+    </thead>
+    <tbody>
+    {% for dt, payload in chat_messages %}
+      <tr>
+        <td>{{ dt }}</td>
+        <td><pre>{{ payload }}</pre></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
-
-<table class="table">
-  <thead>
-    <tr><th>Timestamp (utc)</th><th>payload</th></tr>
-  </thead>
-  <tbody>
-  {% for dt, payload in messages %}
-    <tr>
-      <td>{{ dt }}</td>
-      <td><pre>{{ payload }}</pre></td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
 {% endblock %}

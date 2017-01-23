@@ -41,7 +41,7 @@ def debug_messages(request):
         ]
 
         context = {
-            'messages': messages,
+            'chat_messages': messages,
             'num_options': [1000, 500, 100, 50, 10],
             'num': num,
         }
