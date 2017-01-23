@@ -26,3 +26,15 @@ class ChatMessage(models.Model):
         verbose_name_plural = "Chat Messages"
 
     objects = ChatMessageManager()
+
+
+# -----------------------------------------------------------------------------
+# TODO: IDEAS for group messaging.
+# -----------------------------------------------------------------------------
+#
+# 1. Create a `Group` model (auto-do this for each Course?) & auto-subscribe
+#    the relevant people? We could create messages here without moving them
+#    through the websocket?
+# 2. We could craete a websocket channel for some auto-generated group name?
+# 3. How to make it single-User -> Group, not a free-for-all chat?
+# 4. Broadcast messages is what we're after.
