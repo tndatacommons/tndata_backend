@@ -11,12 +11,24 @@ from channels import Channel, Group
 from channels.sessions import enforce_ordering
 from channels.auth import channel_session_user, channel_session_user_from_http
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from django_rq import get_connection
 from redis_metrics import metric
+from pprint import pformat
+
 from .models import ChatMessage
 from .utils import generate_room_name
+
+
+def _log_messages(payload, key='websocket-debug'):
+    """Log all websocket traffic for debugging purposes."""
+    if settings.DEBUG or settings.STAGING:
+        conn = get_connection('default')
+        info = "{}|{}".format(timezone.now().strftime("%c"), pformat(payload))
+        conn.lpush(key, info)
 
 
 def _get_user(message):
@@ -145,6 +157,7 @@ def mark_as_read_consumer(message):
 @channel_session_user  # Gives us a channel_session + user
 def ws_message(message):
     """Handles received messages to a websocket."""
+    _log_messages(message.content)
 
     # `message` attributes and info.
     # ------------------------------
@@ -221,6 +234,7 @@ def ws_message(message):
 def ws_connect(message):
     """Handles when clients connect to a websocket.
     Connected to the `websocket.connect` channel."""
+    _log_messages(message.content)
 
     # Get the connected user.
     user = _get_user(message)
@@ -254,6 +268,7 @@ def ws_connect(message):
 def ws_disconnect(message):
     """Handles when clients disconnect from a websocket.
     Connected to the `websocket.disconnect` channel."""
+    _log_messages(message.content)
 
     user = _get_user(message)
 

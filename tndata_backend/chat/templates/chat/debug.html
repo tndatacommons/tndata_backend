@@ -1,0 +1,34 @@
+{% extends 'redis_metrics/base.html' %}
+
+{% block content %}
+
+<div class="clearfix well">
+  <strong>View:</strong> {% for n in num_options %}
+    {% if n == num %}
+      <span class="label label-default">{{ n }}</span>
+    {% else %}
+      <a href="?num={{n}}">{{ n }}</a>
+    {% endif %}
+    {% if not forloop.last %} | {% endif %}
+  {% endfor %}
+
+  <form action="{% url 'chat:debug' %}" method="post" class="pull-right clearfix">
+    {% csrf_token %}
+    <input type="submit" value="Clear" name="submit" class="btn btn-danger"/>
+  </form>
+</div>
+
+<table class="table">
+  <thead>
+    <tr><th>Timestamp (utc)</th><th>payload</th></tr>
+  </thead>
+  <tbody>
+  {% for dt, payload in messages %}
+    <tr>
+      <td>{{ dt }}</td>
+      <td><pre>{{ payload }}</pre></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
