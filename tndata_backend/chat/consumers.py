@@ -13,6 +13,8 @@ from channels.auth import channel_session_user, channel_session_user_from_http
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+
+from redis_metrics import metric
 from .models import ChatMessage
 from .utils import generate_room_name
 
@@ -211,6 +213,7 @@ def ws_message(message):
         Channel("mark-chat-message-as-read").send({
             "digest": message_text,
         })
+    metric('websocket-message', category="Chat")
 
 
 @enforce_ordering(slight=True)
@@ -243,6 +246,7 @@ def ws_connect(message):
         'message': "{} joined.".format(user.get_full_name() or user),
     }
     Group(room).send({'text': json.dumps(payload)})
+    metric('websocket-connect', category="Chat")
 
 
 @enforce_ordering(slight=True)
@@ -263,3 +267,4 @@ def ws_disconnect(message):
     }
     Group(room).send({'text': json.dumps(payload)})
     Group(room).discard(message.reply_channel)
+    metric('websocket-disconnect', category="Chat")
