@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import list_route
 from rest_framework.authentication import (
@@ -184,7 +186,11 @@ class CourseViewSet(mixins.CreateModelMixin,
     pagination_class = PageSizePagination
 
     def get_queryset(self):
-        self.queryset = super().get_queryset().filter(user=self.request.user)
+        # This should include courses in which the authenticated user is a
+        # STUDENT or a TEACHER.
+        qs = super().get_queryset()
+        qs = qs.filter(Q(user=self.request.user) | Q(students=self.request.user))
+        self.queryset = qs.distinct()
         return self.queryset
 
     def create(self, request, *args, **kwargs):
