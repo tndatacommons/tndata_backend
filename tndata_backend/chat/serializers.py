@@ -1,8 +1,11 @@
 from utils.serializers import ObjectTypeModelSerializer
+from rest_framework import serializers
 from . models import ChatMessage
 
 
 class ChatMessageSerializer(ObjectTypeModelSerializer):
+    created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S.%f%z")
+
     class Meta:
         model = ChatMessage
         fields = ('id', 'user', 'room', 'text', 'read', 'digest', 'created_on')
