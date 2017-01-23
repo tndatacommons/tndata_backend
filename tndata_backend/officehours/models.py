@@ -83,7 +83,7 @@ class Course(models.Model):
         help_text="The Teacher"
     )
     name = models.CharField(max_length=256)
-    name_slug = models.SlugField(max_length=256)
+    name_slug = models.SlugField(max_length=256, blank=True)
 
     start_time = models.TimeField()
     location = models.CharField(max_length=256)
@@ -92,8 +92,8 @@ class Course(models.Model):
         default=list,
         blank=True,
     )
-    code = models.CharField(max_length=4, unique=True)
-    students = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    code = models.CharField(max_length=4, unique=True, blank=True)
+    students = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     expires_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(auto_now=True)
