@@ -1,9 +1,10 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import user_passes_test
-from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 from django_rq import get_connection
+
+from .models import ChatGroup
 
 
 class IndexView(TemplateView):
@@ -13,13 +14,23 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         # users = get_user_model().objects.all()
         # if self.request.user and self.request.user.is_authenticated():
-            # users = users.exclude(pk=self.request.user.id)
+        #     users = users.exclude(pk=self.request.user.id)
         # context['users'] = users
+        context['groups'] = ChatGroup.objects.all()
         return context
 
 
 def chat_view(request, with_user):
     context = {'with_user': with_user}
+    return render(request, "chat/chat.html", context)
+
+
+@login_required
+def group_chat_view(request, pk, slug):
+    from clog.clog import clog
+    clog(slug, title="pk={}".format(pk))
+    group = get_object_or_404(ChatGroup, pk=pk, slug=slug, members=request.user)
+    context = {'group': group}
     return render(request, "chat/chat.html", context)
 
 

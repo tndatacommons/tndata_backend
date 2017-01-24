@@ -2,12 +2,13 @@
 
 {% block content %}
 <h1>Chat</h1>
-{% if users %}
 <p>Pick a room </p>
 <ul>
   {% for user in users %}
     <li><a href="/chat/{{ user.username }}/">{{ user }}</a></li>
   {% endfor %}
+  {% for group in groups %}
+    <li><a href="{{ group.get_absolute_url }}">{{ group }}</a></li>
+  {% endfor %}
 </ul>
-{% endif %}
 {% endblock %}

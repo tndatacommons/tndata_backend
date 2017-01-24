@@ -9,6 +9,11 @@ urlpatterns = [
         name='debug'
     ),
     url(
+        r'group/(?P<pk>\d+)-(?P<slug>.*)/$',
+        views.group_chat_view,
+        name='group-chat'
+    ),
+    url(
         r'(?P<with_user>.*)/$',
         views.chat_view,
         name='chat'

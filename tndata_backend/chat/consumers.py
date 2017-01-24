@@ -154,7 +154,7 @@ def chat_message_consumer(message):
         digest = message.content.get('digest', '')
         ChatMessage.objects.create(user=user, room=room, text=text, digest=digest)
     except (User.DoesNotExist, KeyError):
-        pass  # TODO: log this
+        pass
 
 
 def mark_as_read_consumer(message):
@@ -168,7 +168,7 @@ def mark_as_read_consumer(message):
         digest = message.content.get('digest', '')
         ChatMessage.objects.filter(digest=digest).update(read=True)
     except KeyError:
-        pass  # TODO: log this
+        pass
 
 
 @enforce_ordering(slight=True)
@@ -259,9 +259,8 @@ def ws_connect(message):
     user = _get_user(message)
     if user:
         # ---------------------------------------------------------------------
-        # TODO: URL for misc group rooms?
-        # TODO: look up any *chat groups* the user is a member of and add them
-        # to those rooms as well?
+        # TODO: URL for groups looks like: /chat/group/1-test-group/
+        # we need to construct a room name for that? And alter the below.
         # ---------------------------------------------------------------------
 
         # 1-1 chat rooms between a logged-in user and a path-defined user.
