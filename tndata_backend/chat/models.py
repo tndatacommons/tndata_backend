@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models
 
 from .managers import ChatMessageManager
@@ -33,13 +34,29 @@ class ChatMessage(models.Model):
     objects = ChatMessageManager()
 
 
-# -----------------------------------------------------------------------------
-# TODO: IDEAS for group messaging.
-# -----------------------------------------------------------------------------
-#
-# 1. Create a `Group` model (auto-do this for each Course?) & auto-subscribe
-#    the relevant people? We could create messages here without moving them
-#    through the websocket?
-# 2. We could craete a websocket channel for some auto-generated group name?
-# 3. How to make it single-User -> Group, not a free-for-all chat?
-# 4. Broadcast messages is what we're after.
+class ChatGroup(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)  # Group "owner"
+    name = models.CharField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=256, unique=True)
+
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="chatgroup_member"
+    )
+    updated_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['-created_on']
+        verbose_name = "Chat Group"
+        verbose_name_plural = "Chat Group"
+
+    @property
+    def members_count(self):
+        return self.members.all().count()
+
+    def get_absolute_url(self):
+        return reverse("chat:group-chat", args=[self.pk, self.slug])
