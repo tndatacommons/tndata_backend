@@ -47,6 +47,29 @@ def _get_user(message):
     it returns `message.user` which is probably an AnonymousUser object.
 
     """
+
+    # TODO: We *may* not be getting the user authentication when connecting from
+    # TODO: 3rd-party clients (e.g. the android app). They have the option to
+    # TODO: include header info, so look up the header's Auth token (see below)
+    # TODO: to see if we can pull a user from that info.
+    # -------------------------------------------------------------------------
+    # {'client': ['75.65.20.231', 51826],
+    #  'headers': [[b'authorization',
+    #               b'Token 9ca707815e8ccd22f630de6077f5d3689c6da878'],
+    #              [b'sec-websocket-version', b'13'],
+    #              [b'upgrade', b'websocket'],
+    #              [b'connection', b'Upgrade'],
+    #              [b'origin', b'http://staging.tndata.org'],
+    #              [b'sec-websocket-key', b'Rmt6cYSjvLiwB55GtROUMQ=='],
+    #              [b'host', b'staging.tndata.org']],
+    #  'method': 'FAKE',
+    #  'order': 0,
+    #  'path': '/chat/1/',
+    #  'query_string': '',
+    #  'reply_channel': 'websocket.send!SJsrYKjVOOUO',
+    #  'server': ['159.203.68.206', 8000]}
+    # -------------------------------------------------------------------------
+
     # 1. Return the authenticated user.
     if message.user and message.user.is_authenticated():
         return message.user
@@ -78,6 +101,8 @@ def _get_user(message):
     except (IndexError, ValueError, User.DoesNotExist):
         pass
 
+    # TODO: not sure what do do here, but I think we should either log or
+    # throw an excpetion if we can't find a user.
     return message.user
 
 
@@ -238,6 +263,9 @@ def ws_connect(message):
 
     # Get the connected user.
     user = _get_user(message)
+    from clog.clog import clog
+    clog(user, title="user")
+    import ipdb;ipdb.set_trace()
 
     # 1-1 chat rooms between a logged-in user and a path-defined user.
     # path will be something like `/chat/username/`
