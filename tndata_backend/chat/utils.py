@@ -6,4 +6,4 @@ def generate_room_name(values):
     generate a room name."""
     values = [str(v.id) if hasattr(v, 'id') else str(v) for v in values]
     values = sorted(values)
-    return slugify("chat-{}-{}".format(*values))
+    return slugify("chat-{}".format('-'.join(values)))
