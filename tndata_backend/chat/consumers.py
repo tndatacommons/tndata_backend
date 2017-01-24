@@ -38,8 +38,8 @@ def _get_user(message):
 
     1. If `message.user` is an autenticated users, return it.
     2. See if the User's ID is stored in a channel session and look them up.
-    3. Attempt to lookup an autho token stored in the message's query string
-       (applicable when connecting to a channel)
+    3. Attempt to lookup an auth token stored in the message's query string
+       or in the headers (available on websocket.connect)
     4. See if the message's content contains a JSON-encoded string with a
        token value.
 
@@ -47,29 +47,6 @@ def _get_user(message):
     it returns `message.user` which is probably an AnonymousUser object.
 
     """
-
-    # TODO: We *may* not be getting the user authentication when connecting from
-    # TODO: 3rd-party clients (e.g. the android app). They have the option to
-    # TODO: include header info, so look up the header's Auth token (see below)
-    # TODO: to see if we can pull a user from that info.
-    # -------------------------------------------------------------------------
-    # {'client': ['75.65.20.231', 51826],
-    #  'headers': [[b'authorization',
-    #               b'Token 9ca707815e8ccd22f630de6077f5d3689c6da878'],
-    #              [b'sec-websocket-version', b'13'],
-    #              [b'upgrade', b'websocket'],
-    #              [b'connection', b'Upgrade'],
-    #              [b'origin', b'http://staging.tndata.org'],
-    #              [b'sec-websocket-key', b'Rmt6cYSjvLiwB55GtROUMQ=='],
-    #              [b'host', b'staging.tndata.org']],
-    #  'method': 'FAKE',
-    #  'order': 0,
-    #  'path': '/chat/1/',
-    #  'query_string': '',
-    #  'reply_channel': 'websocket.send!SJsrYKjVOOUO',
-    #  'server': ['159.203.68.206', 8000]}
-    # -------------------------------------------------------------------------
-
     # 1. Return the authenticated user.
     if message.user and message.user.is_authenticated():
         return message.user
@@ -83,27 +60,43 @@ def _get_user(message):
         except User.DoesNotExist:
             pass
 
-    # 3. Look for a token in a query string
+    # 3a. Look for a token in a header
+    token = None
+    try:
+        headers = [
+            (k.decode('utf-8'), v.decode('utf-8'))
+            for k, v in message.content['headers']
+        ]
+        headers = [v for k, v in headers if k.lower() == 'authorization']
+        token = headers[0].split()[1]  # 'Token ACTUAL_TOKEN_STRING'
+    except (KeyError, IndexError, AttributeError):
+        pass
+
+    # 3b. Look for a token in a query string
     try:
         # NOTE: this is the only query string object supported.
         token = message.content.get('query_string').split("token=")[1]
-        return User.objects.get(auth_token__key=token)
-    except (KeyError, IndexError, AttributeError, User.DoesNotExist):
+    except (KeyError, IndexError, AttributeError):
+        pass
+
+    try:
+        if token:
+            return User.objects.get(auth_token__key=token)
+    except User.DoesNotExist:
         pass
 
     # 4. See if there's a token or ID in the message content.
     try:
-        payload = json.loads(message.content['text'])
+        payload = json.loads(message.content.get('text', None))  # Poss. TypeError
         if 'token' in payload:
             return User.objects.get(auth_token__key=payload['token'])
         elif 'from' in payload and payload['from'].isnumeric():
             return User.objects.get(pk=payload['from'])
-    except (IndexError, ValueError, User.DoesNotExist):
+    except (TypeError, IndexError, ValueError, User.DoesNotExist):
         pass
 
-    # TODO: not sure what do do here, but I think we should either log or
-    # throw an excpetion if we can't find a user.
-    return message.user
+    # Return None if we didn't find a user. Don't allow Anonymous Users.
+    return None
 
 
 def _get_user_details(user):
@@ -199,59 +192,60 @@ def ws_message(message):
 
     # Stick the message on the processing queue (instead of sending
     # it directly to the group)
-    room = message.channel_session['room']
+    room = message.channel_session.get('room')
+    if room:
 
-    # Look up the user that sent the message
-    user = _get_user(message)
-    name, avatar = _get_user_details(user)
+        # Look up the user that sent the message
+        user = _get_user(message)
+        name, avatar = _get_user_details(user)
 
-    # -------------------------------------------------------------------------
-    # The following is the current format for our recieved message data.
-    # This needs to work for both the web app & mobile.
-    #
-    #  {
-    #    text: text of the message,
-    #    from: (optional) user ID of person sending it.
-    #    token: OPTIONAL token
-    #  }
-    #
-    # However, read recipts will arrive in a format like this:
-    #
-    #   {
-    #       received: digest
-    #   }
-    # -------------------------------------------------------------------------
-    message_text, message_type = _decode_text(message)
+        # ---------------------------------------------------------------------
+        # The following is the current format for our recieved message data.
+        # This needs to work for both the web app & mobile.
+        #
+        #  {
+        #    text: text of the message,
+        #    from: (optional) user ID of person sending it.
+        #    token: OPTIONAL token
+        #  }
+        #
+        # However, read recipts will arrive in a format like this:
+        #
+        #   {
+        #       received: digest
+        #   }
+        # ---------------------------------------------------------------------
+        message_text, message_type = _decode_text(message)
 
-    if message_type == 'message':
-        # Construct message sent back to the client.
-        user_id = user.id if user else ''
-        now = timezone.now().strftime("%c")
-        digest = '{}/{}/{}'.format(message_text, user_id, now)
-        digest = hashlib.md5(digest.encode('utf-8')).hexdigest()
-        payload = {
-            'from_id': user.id if user else '',
-            'from': name,
-            'message': "{}".format(message_text),
-            'avatar': avatar,
-            'digest': digest,
-        }
+        if message_type == 'message':
+            # Construct message sent back to the client.
+            user_id = user.id if user else ''
+            now = timezone.now().strftime("%c")
+            digest = '{}/{}/{}'.format(message_text, user_id, now)
+            digest = hashlib.md5(digest.encode('utf-8')).hexdigest()
+            payload = {
+                'from_id': user.id if user else '',
+                'from': name,
+                'message': "{}".format(message_text),
+                'avatar': avatar,
+                'digest': digest,
+            }
 
-        # send to users for display
-        Group(room).send({'text': json.dumps(payload)})
+            # send to users for display
+            Group(room).send({'text': json.dumps(payload)})
 
-        # Now, send it to the channel to create the ChatMessage object.
-        Channel("create-chat-message").send({
-            "room": room,
-            "text": message_text,
-            "user_id": user.id,
-            "digest": digest,
-        })
-    elif message_type == 'receipt':
-        Channel("mark-chat-message-as-read").send({
-            "digest": message_text,
-        })
-    metric('websocket-message', category="Chat")
+            # Now, send it to the channel to create the ChatMessage object.
+            Channel("create-chat-message").send({
+                "room": room,
+                "text": message_text,
+                "user_id": user.id,
+                "digest": digest,
+            })
+        elif message_type == 'receipt':
+            Channel("mark-chat-message-as-read").send({
+                "digest": message_text,
+            })
+        metric('websocket-message', category="Chat")
 
 
 @enforce_ordering(slight=True)
@@ -263,32 +257,35 @@ def ws_connect(message):
 
     # Get the connected user.
     user = _get_user(message)
-    from clog.clog import clog
-    clog(user, title="user")
-    import ipdb;ipdb.set_trace()
+    if user:
+        # ---------------------------------------------------------------------
+        # TODO: URL for misc group rooms?
+        # TODO: look up any *chat groups* the user is a member of and add them
+        # to those rooms as well?
+        # ---------------------------------------------------------------------
 
-    # 1-1 chat rooms between a logged-in user and a path-defined user.
-    # path will be something like `/chat/username/`
-    try:
-        path = message.content['path'].strip('/').split('/')[1]
-    except IndexError:
-        path = 'unknown'
+        # 1-1 chat rooms between a logged-in user and a path-defined user.
+        # path will be something like `/chat/username/`
+        try:
+            path = message.content['path'].strip('/').split('/')[1]
+        except IndexError:
+            path = 'unknown'
 
-    room = generate_room_name((path, user))
+        room = generate_room_name((path, user))
 
-    # Save the room name and the user's ID in channel session sessions.
-    message.channel_session['room'] = room
-    message.channel_session['user_id'] = user.id
+        # Save the room name and the user's ID in channel session sessions.
+        message.channel_session['room'] = room
+        message.channel_session['user_id'] = user.id
 
-    Group(room).add(message.reply_channel)
+        Group(room).add(message.reply_channel)
 
-    payload = {
-        'from_id': '',
-        'from': 'system',
-        'message': "{} joined.".format(user.get_full_name() or user),
-    }
-    Group(room).send({'text': json.dumps(payload)})
-    metric('websocket-connect', category="Chat")
+        payload = {
+            'from_id': '',
+            'from': 'system',
+            'message': "{} joined.".format(user.get_full_name() or user),
+        }
+        Group(room).send({'text': json.dumps(payload)})
+        metric('websocket-connect', category="Chat")
 
 
 @enforce_ordering(slight=True)
@@ -301,13 +298,13 @@ def ws_disconnect(message):
     user = _get_user(message)
 
     # Pull the room from the channel's session.
-    room = message.channel_session['room']
-
-    payload = {
-        'from_id': '',
-        'from': 'system',
-        'message': "{} left.".format(user.get_full_name() or user),
-    }
-    Group(room).send({'text': json.dumps(payload)})
-    Group(room).discard(message.reply_channel)
-    metric('websocket-disconnect', category="Chat")
+    room = message.channel_session.get('room')
+    if room:
+        payload = {
+            'from_id': '',
+            'from': 'system',
+            'message': "{} left.".format(user.get_full_name() or user),
+        }
+        Group(room).send({'text': json.dumps(payload)})
+        Group(room).discard(message.reply_channel)
+        metric('websocket-disconnect', category="Chat")

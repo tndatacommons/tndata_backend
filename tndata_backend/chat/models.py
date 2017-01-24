@@ -6,7 +6,12 @@ from .managers import ChatMessageManager
 
 class ChatMessage(models.Model):
     """A persisted chat message."""
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)  # Message author.
+    # XXX: Right now, rooms are of the form `chat-<userid>-<userid>`, and we
+    # can look up recipients that way, but that's not gonna be the case for
+    # group rooms....
+    #
+    # We need some way to save the message recipient.
     room = models.CharField(max_length=256, default="", db_index=True)
     text = models.TextField(default="")
     read = models.BooleanField(default=False)
