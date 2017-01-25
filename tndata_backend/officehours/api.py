@@ -32,6 +32,13 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
                          viewsets.GenericViewSet):
     """This endpoint will list the authenticated user's officehours.
 
+    ## Menu
+    - <a href="#retrieve-office-hours">Retrieve Office Hours</a>
+    - <a href="#creating-office-hours">Create</a>
+    - <a href="#alternative-post-format">Alternative POST formats</a>
+    - <a href="#updating-a-officehours">Update</a>
+    - <a href="#deleting-a-officehours">Delete</a>
+
     ## Retrieve Office Hours
 
     Send a GET request to retrieve the user's list of officehours. The result
@@ -113,6 +120,15 @@ class CourseViewSet(mixins.CreateModelMixin,
                     viewsets.GenericViewSet):
     """This endpoint will list the authenticated user's courses, whether they're
     a student or a teacher.
+
+    ## Menu
+
+    - <a href="#retrieve-a-course">Retrieve a course</a>
+    - <a href="#creating-a-course">Create a course</a>
+    - <a href="#alternative-post-format">Alterative POST formats</a>
+    - <a href="#updating-a-course">Update</a>
+    - <a href="#deleting-a-course">Delete</a>
+    - <a href="#adding-a-student-to-a-course">Adding a student</a>
 
     ## Retrieve a Course
 
