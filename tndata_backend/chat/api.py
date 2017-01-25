@@ -10,6 +10,8 @@ from rest_framework.decorators import list_route
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+import maya
+
 from .models import ChatMessage
 from .serializers import ChatMessageSerializer
 
@@ -36,6 +38,7 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
     - <a href="#list-a-users-unread-messages">List a user's unread messages</a>
     - <a href="#chatmessages-objects">ChatMessage objects</a>
     - <a href="#chat-room-history">Chat Room History</a>
+    - <a href="#filters">Fitlers</a>
 
     ----
 
@@ -103,6 +106,14 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
     This will update all messages in which the authenticated user was a
     recipient, setting them as `read`.
 
+    ## Filters
+
+    - `since`: Retrieve all chat messages that have been created since a given
+      date/time.
+    - `before`: Retrieve all chat messages that were created _before_ the given
+      date/time.
+
+
     ----
 
     """
@@ -139,16 +150,37 @@ class ChatMessageViewSet(viewsets.ReadOnlyModelViewSet):
         1. The room name is provided as a GET param, e.g. (?room=whatever)
         2. The authenticated user must have been a member of the room.
 
+        Available filters:
+
+        - room: (required) The room slug to pull history for
+        - since: Get history after the give date or datetime.
+        - before: Get history before the give date or datetime.
+        - size: Number of messages to retrieve (default is 20)
+
         """
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
-        room = request.GET.get('room', None)
-        size = int(request.GET.get('size', 20))
-        user_id = slugify(request.user.id)
+        # Pull all supported filters from the query params.
+        room = request.query_params.get('room', None)
+        size = int(request.query_params.get('size', 20))
+        since = request.query_params.get('since')
+        before = request.query_params.get('before')
+
         content = {}
+        user_id = slugify(request.user.id)
+        messages = ChatMessage.objects.all()
+
         if room and user_id in room:
-            messages = ChatMessage.objects.filter(room=room)[:size]
+            messages = messages.filter(room=room)
+            if since:
+                since = maya.parse(since).datetime()
+                messages = messages.filter(created_on__gte=since)
+            elif before:
+                before = maya.parse(before).datetime()
+                messages = messages.filter(created_on__lte=before)
+            messages = messages[:size]
+
             content = {
                 'count': messages.count(),
                 'results': ChatMessageSerializer(messages, many=True).data,
