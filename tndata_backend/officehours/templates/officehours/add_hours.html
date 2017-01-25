@@ -80,6 +80,7 @@
 
 
 {% block bodyjs %}
+{% comment %}
 <script type="text/javascript">
 $(document).ready(function() {
   $("#id_from_time, #id_to_time").bootstrapMaterialDatePicker({
@@ -91,4 +92,5 @@ $(document).ready(function() {
   });
 });
 </script>
+{% endcomment %}
 {% endblock %}
