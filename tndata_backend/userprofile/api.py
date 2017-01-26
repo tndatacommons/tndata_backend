@@ -208,6 +208,7 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 'google_token': user.userprofile.google_token,
                 'phone': user.userprofile.phone,
                 'token': user.auth_token.key,
+                'needs_onboarding': user.userprofile.needs_onboarding,
             }
         return Response(content, status=result_status)
 
