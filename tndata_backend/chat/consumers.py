@@ -17,7 +17,7 @@ from redis_metrics import metric
 from .models import ChatMessage
 from .utils import (
     decode_message_text,
-    generate_room_name,
+    get_room,
     get_user_details,
     get_user_from_message,
     log_messages_to_redis,
@@ -80,10 +80,9 @@ def ws_message(message):
 
     """
     log_messages_to_redis(message.content)
-    #room = message.channel_session.get('room')
-    room = get_room_from_message(message)
+    room = message.channel_session.get('room')
     if room:
-        # Look up the user that sent the message
+        # Look up the user that sent the message (possibly in channel session)
         user = get_user_from_message(message)
         name, avatar = get_user_details(user)
 
@@ -139,46 +138,25 @@ def ws_message(message):
 @enforce_ordering(slight=True)
 @channel_session_user_from_http  # Give us session + user from http session.
 def ws_connect(message):
-    """Handles when clients connect to a websocket.
-    Connected to the `websocket.connect` channel."""
+    """Handles when clients connect to a websocket, setting them up for chat
+    in a "room". Connected to the `websocket.connect` channel."""
     log_messages_to_redis(message.content)
 
     # Get the connected user.
     user = get_user_from_message(message)
-    if user:
-        # ---------------------------------------------------------------------
-        # TODO: URL for groups looks like: /chat/group/1-test-group/
-        # we need to construct a room name for that? And alter the below.
-        #
-        # TODO: OR EVEN BETTER... specify a room in the header or as part
-        # of a message payload, rather than in a url. This allows the mobile
-        # client to use a single websocket connection, rather than a different
-        # connection for each room.
-        #
-        # 1. specify room when connectiong.
-        # 2. specify room as part of message payload?
-        # 3. ... ?
-        # ---------------------------------------------------------------------
-
-        # 1-1 chat rooms between a logged-in user and a path-defined user.
-        # path will be something like `/chat/username/`
-        # try:
-            # path = message.content['path'].strip('/').split('/')[1]
-        # except IndexError:
-            # path = 'unknown'
-        # XXX: room = generate_room_name((path, user))
-        room = get_room_from_message(message, user, connecting=True)
-
-        # Save the room name and the user's ID in channel session sessions.
-        message.channel_session['room'] = room  # TODO: MAY be in mult rooms?
+    room = get_room(message, user)
+    if user and room:
+        # Save the room / user's ID in channel session sessions.
         message.channel_session['user_id'] = user.id
+        message.channel_session['room'] = room
 
+        # Send the 'User connected' message.
         Group(room).add(message.reply_channel)
-
         payload = {
             'from_id': '',
             'from': 'system',
-            'message': "{} joined.".format(user.get_full_name() or user),
+            'room': room,
+            'message': "{} joined.".format(user.get_full_name() or user.email),
         }
         Group(room).send({'text': json.dumps(payload)})
         metric('websocket-connect', category="Chat")
@@ -192,14 +170,12 @@ def ws_disconnect(message):
     log_messages_to_redis(message.content)
 
     user = get_user_from_message(message)
-
-    # Pull the room from the channel's session.
-    # room = message.channel_session.get('room')
-    room = get_room_from_message(message, user)
-    if room:
+    room = message.channel_session.get('room')
+    if user and room:
         payload = {
             'from_id': '',
             'from': 'system',
+            'room': room,
             'message': "{} left.".format(user.get_full_name() or user),
         }
         Group(room).send({'text': json.dumps(payload)})

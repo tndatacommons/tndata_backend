@@ -53,51 +53,64 @@ def generate_room_name(values):
     return slugify("chat-{}".format('-'.join(values)))
 
 
-def get_room_from_message(message, user=None, connecting=False):
+def get_room(message, user):
     """
     Inspect the message to see what `room` it should be delivered to. This
-    function can be used during connection, and we'll look at the following:
+    function is used when connecting to a websocket, and will look at the
+    following, in this order (first match wins).
 
+    - A header that specifies a room `X-ROOM: whatever`
+    - A query string parameter: `?room=whatever`
     - Any path information, e.g. for 1-1 chat rooms between a logged-in user
       and a path-defined user, like `/chat/USERID/`
-    - Any HEADER that includes the chat room
 
-    For an actual chat message:
+    During connections, the message.content payload looks like this:
 
-    - Look for a `room` attribute in the payload.
-    - Fall back to the channel session
+        {'client': ['127.0.0.1', 54054],
+         'headers': [[b'user-agent',
+                      b'Mozilla/5.0 ...(KHTML, like Gecko)],
+                     [b'x-forwarded-for', b'10.0.2.2'],
+                     [b'connection', b'upgrade'],
+                     [b'accept-encoding', b'gzip, deflate, sdch, br'],
+                     [b'origin', b'http://localhost:3000'],
+                     [b'upgrade', b'websocket'],
+                     [b'x-room', b'chat-1-995']]
+         'method': 'FAKE',
+         'order': 0,
+         'path': '/chat/995/',
+         'query_string': 'room=chat-1-995',
+         'reply_channel': 'websocket.send!JQAGEyzzMFqw',
+         'server': ['127.0.0.1', 8000]}
 
     """
+    # Look for a room in a header
+    try:
+        headers = [
+            (k.decode('utf-8'), v.decode('utf-8'))
+            for k, v in message.content['headers']
+        ]
+        headers = [v for k, v in headers if k.lower() == 'x-room']
+        return headers[0][1].lower()  # Actual room name
+    except (KeyError, IndexError, AttributeError):
+        pass
 
-    if connecting:
-        # Look for a room in a header
-        try:
-            headers = [
-                (k.decode('utf-8'), v.decode('utf-8'))
-                for k, v in message.content['headers']
-            ]
-            headers = [v for k, v in headers if k.lower() == 'room']
-            return headers[0][1].lower()  # Actual room name
-        except (KeyError, IndexError, AttributeError):
-            pass
+    # Look up a 'room' query string parameter
+    try:
+        # ONLY support values like: 'query_string': 'room=chat-1-995'
+        param, value = message.content['query_string'].split('=')
+        if param == "room":
+            return value
+    except (KeyError, ValueError):
+        pass
 
-        # construct a room name using the path
-        try:
-            path = message.content['path'].strip('/').split('/')[1]
-            return generate_room_name((path, user))
-        except IndexError:
-            pass
+    # construct a room name using the path
+    try:
+        path = message.content['path'].strip('/').split('/')[1]
+        return generate_room_name((path, user))
+    except IndexError:
+        pass
 
-        return None
-
-    # Else, not connecting.
-    # TODO: can i just look in message.content?
-    mtext, mtype = decode_message_text(message)
-    if 'room' in mtext:
-        return mtext['room'].lower()
-
-    # Fall back to the session...
-    return message.channel_session.get('room')
+    return None
 
 
 def get_user_from_message(message):
