@@ -81,11 +81,13 @@ Successful requests to this endpoint will return the following data:
 
     {
         "id": 123,
+        "profile_id": USERPROFILE.id,
+        "email": "jane.doe@gmail.com",
         "first_name": "Jane",
         "last_name": "Doe",
-        "email": "jane.doe@gmail.com",
         "google_image": "https://lh5.googleusercontent.com/.../photo.jpg",
         "google_token": "123456789012345678901",
+        "phone": "111-555-1234",
         "token": "1234567890123456789012345678901234567890",
     }
 

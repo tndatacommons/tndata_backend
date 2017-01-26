@@ -200,11 +200,13 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
         if user:
             content = {
                 'id': user.id,
+                'profile_id': user.userprofile.id,
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'google_image': user.userprofile.google_image,
                 'google_token': user.userprofile.google_token,
+                'phone': user.userprofile.phone,
                 'token': user.auth_token.key,
             }
         return Response(content, status=result_status)
