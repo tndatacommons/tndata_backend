@@ -11,8 +11,6 @@ const PROTOCOLS = {
 
 // Ensure our chat app hits the api running on the same host
 // e.g. ==> ws://127.0.0.1:8000
-//
-// TODO: now to know if we're using port 8000, or 80, or 443 or what?
 let PORT = window.location.port;
 if(PORT.length > 0) {
     PORT = ":8000";
@@ -50,12 +48,8 @@ class App extends Component {
     }
 
     fetchMessageHistory(currentUserId) {
-        // NOTE: Called *after* we know the user's details, which we need
-        // in order to construct the room name.
-        const toUser = window.location.pathname.replace('/chat/', '').replace('/', '');
-        const room = [currentUserId, toUser].sort().join("-");
-        const url = API_HOST + '/api/chat/history/?room=chat-' + room;
-
+        // NOTE: Called *after* we know the user's details
+        const url = API_HOST + '/api/chat/history/?room=' + this.props.room;
         axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
         axios.get(url).then((resp) => {
             const data = resp.data;
@@ -67,9 +61,11 @@ class App extends Component {
         // Doing this means we're looking at the chat room, so just mark
         // all of it's messages as read.
         const readUrl = API_HOST + '/api/chat/read/';
-        const payload = {'room': 'chat-' + room }
+        const payload = {'room': this.props.room }
         axios.put(readUrl, payload).then((resp) => {
-            console.log("Marking as Read: ", resp);
+            if(resp.status !== 204) {
+                console.log("Could not mark as read: ", resp);
+            }
         });
 
 
@@ -110,11 +106,12 @@ class App extends Component {
 
     render() {
         const path = window.location.pathname;
-        const ws_url = WS_HOST + path;
+        const ws_url = WS_HOST + path + "?room=" + this.props.room;
         return (
           <div>
             <Chat
                 ws_url={ws_url}
+                room={this.props.room}
                 user={this.state.user}
                 history={this.state.chatHistory} />
           </div>

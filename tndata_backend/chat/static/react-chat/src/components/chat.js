@@ -18,8 +18,6 @@ export default class Chat extends Component {
     }
 
     handleMessage(data) {
-        console.log("RECEIVED: ", data);
-
         // NOTE: data should be an object of the form: {from: ..., message: ...}
         const new_message = {
             id: slugify(data.message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
