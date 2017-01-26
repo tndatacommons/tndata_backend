@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from django_rq import get_connection
 
 from .models import ChatGroup
+from .utils import generate_room_name
 
 
 class IndexView(TemplateView):
@@ -20,8 +21,11 @@ class IndexView(TemplateView):
         return context
 
 
-def chat_view(request, with_user):
-    context = {'with_user': with_user}
+@login_required
+def chat_view(request, recipient_id):
+    context = {
+        'room': generate_room_name([request.user.id, recipient_id]),
+    }
     return render(request, "chat/chat.html", context)
 
 

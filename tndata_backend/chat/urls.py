@@ -14,7 +14,7 @@ urlpatterns = [
         name='group-chat'
     ),
     url(
-        r'(?P<with_user>.*)/$',
+        r'(?P<recipient_id>\d+)/$',
         views.chat_view,
         name='chat'
     ),
