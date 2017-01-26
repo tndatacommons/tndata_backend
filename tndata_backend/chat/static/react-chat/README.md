@@ -6,11 +6,7 @@
 
 ## Building
 
-TODO: figure out if we can use yarn to generate a build and move
-the react filest into the right place for Django's collectstatic.
-
-AND to re-write the path to the main.xxxx.js files in the index.
-
+Run `make`.
 
 ----
 
