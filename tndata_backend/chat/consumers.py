@@ -67,7 +67,7 @@ def ws_message(message):
     For reference, the following are important `message` attributes and info.
 
     - message.channel - the channel object.
-    - message.channel_layer -
+    - message.channel_layer - backend thing that does transport?
     - message.channel_session - Sessions, but for channels.
     - message.content - dict of the stuff we're usually interested in:
 
@@ -80,8 +80,8 @@ def ws_message(message):
 
     """
     log_messages_to_redis(message.content)
-
-    room = message.channel_session.get('room')
+    #room = message.channel_session.get('room')
+    room = get_room_from_message(message)
     if room:
         # Look up the user that sent the message
         user = get_user_from_message(message)
@@ -162,15 +162,15 @@ def ws_connect(message):
 
         # 1-1 chat rooms between a logged-in user and a path-defined user.
         # path will be something like `/chat/username/`
-        try:
-            path = message.content['path'].strip('/').split('/')[1]
-        except IndexError:
-            path = 'unknown'
-
-        room = generate_room_name((path, user))
+        # try:
+            # path = message.content['path'].strip('/').split('/')[1]
+        # except IndexError:
+            # path = 'unknown'
+        # XXX: room = generate_room_name((path, user))
+        room = get_room_from_message(message, user, connecting=True)
 
         # Save the room name and the user's ID in channel session sessions.
-        message.channel_session['room'] = room
+        message.channel_session['room'] = room  # TODO: MAY be in mult rooms?
         message.channel_session['user_id'] = user.id
 
         Group(room).add(message.reply_channel)
@@ -194,7 +194,8 @@ def ws_disconnect(message):
     user = get_user_from_message(message)
 
     # Pull the room from the channel's session.
-    room = message.channel_session.get('room')
+    # room = message.channel_session.get('room')
+    room = get_room_from_message(message, user)
     if room:
         payload = {
             'from_id': '',

@@ -53,6 +53,53 @@ def generate_room_name(values):
     return slugify("chat-{}".format('-'.join(values)))
 
 
+def get_room_from_message(message, user=None, connecting=False):
+    """
+    Inspect the message to see what `room` it should be delivered to. This
+    function can be used during connection, and we'll look at the following:
+
+    - Any path information, e.g. for 1-1 chat rooms between a logged-in user
+      and a path-defined user, like `/chat/USERID/`
+    - Any HEADER that includes the chat room
+
+    For an actual chat message:
+
+    - Look for a `room` attribute in the payload.
+    - Fall back to the channel session
+
+    """
+
+    if connecting:
+        # Look for a room in a header
+        try:
+            headers = [
+                (k.decode('utf-8'), v.decode('utf-8'))
+                for k, v in message.content['headers']
+            ]
+            headers = [v for k, v in headers if k.lower() == 'room']
+            return headers[0][1].lower()  # Actual room name
+        except (KeyError, IndexError, AttributeError):
+            pass
+
+        # construct a room name using the path
+        try:
+            path = message.content['path'].strip('/').split('/')[1]
+            return generate_room_name((path, user))
+        except IndexError:
+            pass
+
+        return None
+
+    # Else, not connecting.
+    # TODO: can i just look in message.content?
+    mtext, mtype = decode_message_text(message)
+    if 'room' in mtext:
+        return mtext['room'].lower()
+
+    # Fall back to the session...
+    return message.channel_session.get('room')
+
+
 def get_user_from_message(message):
     """This function inspects the content of a websocket message and attempts
     to return the User object who authored the message. There are serveral
