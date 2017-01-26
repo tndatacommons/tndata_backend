@@ -1,12 +1,19 @@
 import json
+from pprint import pformat
+from urllib.parse import parse_qs
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.text import slugify
 
-from pprint import pformat
 from django_rq import get_connection
+
+
+def qs_as_dict(query_string):
+    """Given a querysetring, parse it and return a flattened dict (i.e. only
+    one value per key."""
+    return {k: v[0] for k, v in parse_qs(query_string).items()}
 
 
 def log_messages_to_redis(payload, key='websocket-debug'):
@@ -96,10 +103,8 @@ def get_room(message, user):
 
     # Look up a 'room' query string parameter
     try:
-        # ONLY support values like: 'query_string': 'room=chat-1-995'
-        param, value = message.content['query_string'].split('=')
-        if param == "room":
-            return value
+        query_data = qs_as_dict(message.content['query_string'])
+        return query_data['room']
     except (KeyError, ValueError):
         pass
 
@@ -157,7 +162,8 @@ def get_user_from_message(message):
     # 3b. Look for a token in a query string
     try:
         # NOTE: this is the only query string object supported.
-        token = message.content.get('query_string').split("token=")[1]
+        query_data = qs_as_dict(message.content.get('query_string'))
+        token = query_data["token"]
     except (KeyError, IndexError, AttributeError):
         pass
 
