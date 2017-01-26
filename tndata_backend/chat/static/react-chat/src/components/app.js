@@ -106,7 +106,10 @@ class App extends Component {
 
     render() {
         const path = window.location.pathname;
-        const ws_url = WS_HOST + path + "?room=" + this.props.room;
+        const ws_url = WS_HOST + path +
+            "?room=" + this.props.room +
+            "&token=" + this.props.apiToken;
+        console.log("WS_URL = ", ws_url);
         return (
           <div>
             <Chat
