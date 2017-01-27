@@ -145,3 +145,6 @@ class Course(models.Model):
 
     def get_share_url(self):
         return reverse('officehours:share-course', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('officehours:delete-course', args=[self.id])

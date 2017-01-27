@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 
 from chat.models import ChatMessage
+from userprofile.models import UserProfile
 from notifications.sms import format_numbers
 
 from .forms import ContactForm
@@ -27,6 +28,7 @@ from .models import Course, OfficeHours
 # -- office hours -> repeat
 # -- add course -> repeat
 # -- share
+
 
 class AboutView(TemplateView):
     template_name = 'officehours/about.html'
@@ -233,7 +235,6 @@ def add_hours(request):
     return render(request, 'officehours/add_hours.html', context)
 
 
-
 @login_required
 def delete_hours(request):
     """
@@ -328,28 +329,23 @@ def add_course(request):
 
 
 @login_required
-def delete_courses(request):
+def delete_course(request, pk):
     """
     Allow an INSTRUCTOR (course owner) to delete a course (with confirmation)
 
     """
-    courses_count = 0
-    courses = []
+    course = get_object_or_404(Course, pk=pk, user=request.user)
 
     if request.method == "POST" and bool(request.POST.get('confirm', False)):
-        course_ids = request.POST.getlist('courses')
-        if course_ids:
-            Course.objects.filter(user=request.user, pk__in=course_ids).delete()
+        course_name = course.name
+        course.delete()
+        messages.success(request, "{} was deleted.".format(course_name))
         return redirect("officehours:schedule")
 
-    course_ids = list(filter(None, request.GET.get('courses', '').split(' ')))
-    courses = Course.objects.filter(user=request.user, pk__in=course_ids)
-
     context = {
-        'courses': courses,
-        'courses_count': courses.count(),
+        'course': course,
     }
-    return render(request, 'officehours/delete_courses.html', context)
+    return render(request, 'officehours/delete_course.html', context)
 
 
 @login_required

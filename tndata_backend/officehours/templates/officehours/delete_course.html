@@ -1,0 +1,31 @@
+{% extends "officehours/base.html" %}
+
+{% block content %}
+
+<div class="column column-block">
+  <div class="callout">
+    <form action="{{ course.get_delete_url }}" method="post">
+      {% csrf_token %}
+      <h2>{{ course }} <small>{{ course.code }}</small></h2>
+
+      <div class="callout warning">
+        <div class="row">
+          <div class="small-2 column">
+            <i class="fa fa-warning fa-2x"></i>
+          </div>
+          <div class="small-10 column">
+            Are you sure you want to permanently delete this course?
+          </div>
+        </div>
+      </div>
+
+      <p>
+        <input type="submit"
+               name="confirm"
+               class="button alert"
+               value="Yes, Delete this course"/>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

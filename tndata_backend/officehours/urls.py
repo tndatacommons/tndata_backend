@@ -29,11 +29,6 @@ urlpatterns = [
         name='add-course'
     ),
     url(
-        r'^delete-courses/$',
-        views.delete_courses,
-        name='delete-courses'
-    ),
-    url(
         r'^delete-hours/$',
         views.delete_hours,
         name='delete-hours'
@@ -57,6 +52,11 @@ urlpatterns = [
         r'^schedule/(?P<pk>\d+)/share/$',
         views.share_course,
         name='share-course'
+    ),
+    url(
+        r'^schedule/(?P<pk>\d+)/delete/$',
+        views.delete_course,
+        name='delete-course'
     ),
     url(
         r'^schedule/(?P<pk>\d+)/$',
