@@ -236,31 +236,6 @@ def add_hours(request):
 
 
 @login_required
-def delete_hours(request):
-    """
-    Allow an INSTRUCTOR (OfficeHours.user) to delete data (with confirmation).
-
-    """
-    hours_count = 0
-    hours = []
-
-    if request.method == "POST" and bool(request.POST.get('confirm', False)):
-        ids = request.POST.getlist('hours')
-        if ids:
-            OfficeHours.objects.filter(user=request.user, pk__in=ids).delete()
-        return redirect("officehours:schedule")
-
-    ids = list(filter(None, request.GET.get('hours', '').split(' ')))
-    hours = OfficeHours.objects.filter(user=request.user, pk__in=ids)
-
-    context = {
-        'hours': hours,
-        'hours_count': hours.count(),
-    }
-    return render(request, 'officehours/delete_hours.html', context)
-
-
-@login_required
 def add_course(request):
     """
     Allow a user to add office hours.
@@ -364,6 +339,32 @@ def course_details(request, pk):
         'course': get_object_or_404(Course, pk=pk)
     }
     return render(request, 'officehours/course_details.html', context)
+
+
+@login_required
+def officehours_details(request, pk):
+    """Display OfficeHours details"""
+    context = {
+        'hours': get_object_or_404(OfficeHours, pk=pk)
+    }
+    return render(request, 'officehours/officehours_details.html', context)
+
+
+@login_required
+def delete_officehours(request, pk):
+    """
+    Allow an INSTRUCTOR (officehours owner) to delete a officehours (with confirmation)
+
+    """
+    officehours = get_object_or_404(OfficeHours, pk=pk, user=request.user)
+
+    if request.method == "POST" and bool(request.POST.get('confirm', False)):
+        officehours.delete()
+        messages.success(request, "Office Hours were deleted.")
+        return redirect("officehours:schedule")
+
+    context = {'hours': officehours}
+    return render(request, 'officehours/delete_officehours.html', context)
 
 
 @login_required

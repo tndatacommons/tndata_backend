@@ -29,11 +29,6 @@ urlpatterns = [
         name='add-course'
     ),
     url(
-        r'^delete-hours/$',
-        views.delete_hours,
-        name='delete-hours'
-    ),
-    url(
         r'^contact-info/$',
         views.contact_info,
         name='contact-info'
@@ -47,6 +42,16 @@ urlpatterns = [
         r'^examples/$',
         views.mdl_examples,
         name='examples'
+    ),
+    url(
+        r'^hours/(?P<pk>\d+)/delete/$',
+        views.delete_officehours,
+        name='delete-officehours'
+    ),
+    url(
+        r'^hours/(?P<pk>\d+)/$',
+        views.officehours_details,
+        name='officehours-details'
     ),
     url(
         r'^schedule/(?P<pk>\d+)/share/$',

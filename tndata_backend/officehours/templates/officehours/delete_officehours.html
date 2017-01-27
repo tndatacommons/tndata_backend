@@ -1,0 +1,33 @@
+{% extends "officehours/base.html" %}
+
+{% block content %}
+
+<div class="column column-block">
+  <div class="callout">
+    <form action="{{ hours.get_delete_url }}" method="post">
+      {% csrf_token %}
+      <h2>Office Hours</h2>
+      <p>From {{ hours.from_time }} - {{ hours.to_time }} on
+        {{ hours.days|join:", " }}</p>
+
+      <div class="callout warning">
+        <div class="row">
+          <div class="small-2 column">
+            <i class="fa fa-warning fa-2x"></i>
+          </div>
+          <div class="small-10 column">
+            Are you sure you want to permanently delete these hours?
+          </div>
+        </div>
+      </div>
+
+      <p>
+        <input type="submit"
+               name="confirm"
+               class="button alert"
+               value="Yes, Delete Office Hours"/>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}
