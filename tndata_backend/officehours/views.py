@@ -16,19 +16,6 @@ from notifications.sms import format_numbers
 from .forms import ContactForm
 from .models import Course, OfficeHours
 
-# index
-# - welcome (if no courses)
-# - course list
-#
-# choose role (student / teacher)
-# - student
-# -- enter code (to index)
-# - teacher
-# -- update contact info
-# -- office hours -> repeat
-# -- add course -> repeat
-# -- share
-
 
 class AboutView(TemplateView):
     template_name = 'officehours/about.html'
@@ -40,23 +27,6 @@ class HelpView(TemplateView):
 
 class ContactView(TemplateView):
     template_name = 'officehours/contact.html'
-
-
-def mdl_examples(request):
-    # Colors & Order values for MDL colors
-    ctx = {
-        'orders': [
-            50, 100, 200, 300, 400, 500, 600, 700, 800, 900,
-            'A100', 'A200', 'A400', 'A700'
-        ],
-        'colors': [
-            'red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue',
-            'cyan', 'teal', 'green', 'light-green', 'lime', 'amber', 'orange',
-            'deep-orange', 'brown', 'grey', 'blue-grey', 'black', 'white',
-        ],
-    }
-    template = "officehours/mdl_examples.html"
-    return render(request, template, ctx)
 
 
 def index(request):

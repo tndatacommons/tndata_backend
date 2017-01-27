@@ -39,11 +39,6 @@ urlpatterns = [
         name='phone-number'
     ),
     url(
-        r'^examples/$',
-        views.mdl_examples,
-        name='examples'
-    ),
-    url(
         r'^hours/(?P<pk>\d+)/delete/$',
         views.delete_officehours,
         name='delete-officehours'
