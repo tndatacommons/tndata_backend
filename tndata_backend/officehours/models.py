@@ -62,6 +62,12 @@ class OfficeHours(models.Model):
             self.to_time.strftime("%H:%M")
         )
 
+    def get_absolute_url(self):
+        return reverse('officehours:officehours-details', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('officehours:delete-officehours', args=[self.id])
+
 
 def generate_course_code(length=4):
     """Generate a 4-character code consistign of Uppercase letters + digits,
@@ -145,3 +151,6 @@ class Course(models.Model):
 
     def get_share_url(self):
         return reverse('officehours:share-course', args=[self.id])
+
+    def get_delete_url(self):
+        return reverse('officehours:delete-course', args=[self.id])

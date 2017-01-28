@@ -1,0 +1,59 @@
+footer ul li {
+  display: inline;
+  padding-right: 1rem;
+  margin-top: 1rem;
+}
+
+
+/* Chat Bubble Styles
+ * ------------------
+ */
+.chatContainer {  /* contains a <ul> and a <form> */
+  padding:0px;
+  margin: .5em 0 .5em 0;
+}
+.chatContainer ul {
+  list-style-type: none;
+  margin:0;
+  padding:0;
+}
+.chatContainer ul li {
+  padding: 5px;
+  text-align: right;
+  clear:both;
+}
+.chatContainer ul li .chatBubble {
+  padding: 10px 20px;
+  margin:0 0 5px 0;
+  background-color: #cfa;
+  border-radius: 15px;
+  display:inline-block;
+  max-width: 60%;
+  text-align: left;
+}
+.chatContainer ul li .chatBubble.reply {
+  background-color: #bdf;
+  float:left;
+}
+.chatContainer ul li .notice {
+  background-color: transparent;
+  text-align: right;
+  font-style: italic;
+  font-size: smaller;
+}
+.chatContainer ul li .chatBubble img.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 25px;
+  padding: 0;
+  margin: -20px 8px 0px -30px;
+  float: left;
+  border: 1px solid #bbb;
+}
+.chatForm {
+  padding: 1em;
+  background-color: white;
+  border-top: 1px solid #ccc;
+  clear:both;
+  position:relative;
+}

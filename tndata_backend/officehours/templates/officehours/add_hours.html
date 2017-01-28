@@ -1,81 +1,59 @@
 {% extends "officehours/base.html" %}
-{% load crispy_forms_tags %}
 {% load staticfiles %}
 
 {% block extrahead %}
     <script src="{% static 'js/moment.min.js' %}"></script>
-    <script src="{% static 'bootstrap-material-datetimepicker-2.7.1/js/bootstrap-material-datetimepicker.js' %}"></script>
-    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'bootstrap-material-datetimepicker-2.7.1/css/bootstrap-material-datetimepicker.css' %}">
 {% endblock %}
 
 {% block content %}
-<form action="{% url 'officehours:add-hours' %}" method="post">
-{% csrf_token %}
 
-<!-- Office Hours -->
-<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="office-hours">
-	<div class="mdl-card__supporting-text">
+<div class="column column-block">
+	<div class="callout">
 		<h3>Office Hours</h3>
+    <form action="{% url 'officehours:add-hours' %}" method="post">
+      {% csrf_token %}
 
-   	<div class="demo-avatar-dropdown">
-			<div id="div_id_from_time"
-  				 class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      	<input class="mdl-textfield__input timeinput"
-               id="id_from_time"
+      <label for="id_from_time">From time
+        <input id="id_from_time"
                name="from_time"
                {% if from_time %}value="{{from_time|date:"g:i A"|lower}}"{% endif %}
-               type="text" />
-       	<label for="id_from_time" class="mdl-textfield__label">From time</label>
-        {% if from_error %}
-          <span class="mdl-textfield__error" style="visibility: visible">
-            {{ from_error }}</span>
-        {% endif %}
-      </div>
-    </div>
-    <div class="demo-avatar-dropdown">
-      <div id="div_id_to_time"
-           class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input class="mdl-textfield__input timeinput"
-               id="id_to_time"
+               type="text"
+               placeholder="10:30 am"/>
+      </label>
+      {% if from_error %}<p>{{ from_error }}</p>{% endif %}
+
+      <label for="id_to_time">To time
+        <input id="id_to_time"
                name="to_time"
                {% if to_time %}value="{{to_time|date:"g:i A"|lower}}"{% endif %}
-               type="text" />
-        <label for="id_to_time" class="mdl-textfield__label">To time</label>
-        {% if to_error %}
-          <span class="mdl-textfield__error" style="visibility: visible">
-            {{ to_error }}</span>
-        {% endif %}
-      </div>
-    </div>
+               type="text"
+               placeholder="1:30 pm"/>
+      </label>
+      {% if to_error %}<p>{{ to_error }}</p>{% endif %}
 
-    <div class="mdl-textfield mdl-js-textfield">
-      <ul>
+      <fieldset class="fieldset">
+        <legend>Select the days on which this course meets</legend>
         {% for day in day_choices %}
-        <li>
-          <label for="office-hours-day-{{ day|lower }}"
-                 class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox"
-                   id="office-hours-day-{{ day|lower }}"
-                   class="mdl-checkbox__input"
-                   name="{{ day }}"
-                   {% if day in selected_days %}checked="checked"{% endif %}
-                   data-day="{{ day }}">
-            <span class="mdl-checkbox__label">{{ day }}</span>
-          </label>
-        </li>
+          <input type="checkbox"
+                 id="office-hours-day-{{ day|lower }}"
+                 name="{{ day }}"
+                 {% if day in selected_days %}checked="checked"{% endif %}
+                 data-day="{{ day }}">
+          <label for="office-hours-day-{{ day|lower }}">{{ day }}</label>
+          <br/>
         {% endfor %}
-      </ul>
-    </div>
-  </div>
-  <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit" name="another" value="true">Add another</button>
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit" name="next" value="true">Next</button>
-  </div>
-</div>
-</form>
+      </fieldset>
+      <button class="button"
+              type="submit"
+              name="another"
+              value="true">Add another</button>
+      <button class="button"
+              type="submit"
+              name="next"
+              value="true">Next</button>
+    </form>
+  </div> {# /.callout #}
+</div> {# /.column #}
 {% endblock %}
 
 
@@ -83,13 +61,7 @@
 {% comment %}
 <script type="text/javascript">
 $(document).ready(function() {
-  $("#id_from_time, #id_to_time").bootstrapMaterialDatePicker({
-    format: "h:mm a",
-    date: false,
-    time: true,
-    nowButton: true,
-    monthPicker: false,
-  });
+  // TODO: decent timepicker
 });
 </script>
 {% endcomment %}

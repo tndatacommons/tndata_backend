@@ -21,16 +21,17 @@ export default class ChatForm extends Component {
             <form
                 onSubmit={this.props.handleSubmit}
                 className="chatForm">
-              <div className="mdl-textfield mdl-js-textfield">
-                <input className="mdl-textfield__input"
-                       type="text"
-                       id="message"
-                       name="message"
-                       ref={(input) => { this.inputField = input }} />
-                <label className="mdl-textfield__label"
-                       htmlFor="message">Your Message</label>
-              </div>
-              <button className="mdl-button mdl-js-button">Send</button>
+                <div className="input-group">
+                    <input className="input-group-field"
+                           type="text"
+                           id="message"
+                           name="message"
+                           placeholder="Type your message, here."
+                           ref={(input) => { this.inputField = input }} />
+                    <div className="input-group-button">
+                        <input type="submit" className="hollow button secondary" value="Send" />
+                    </div>
+                </div>
             </form>
         );
     }

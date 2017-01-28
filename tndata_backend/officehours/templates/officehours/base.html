@@ -1,31 +1,22 @@
 {% load staticfiles %}
 <!doctype html>
-<!--
-  Material Design Lite
-  Copyright 2015 Google Inc. All rights reserved.
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      https://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License
--->
-<html lang="en">
+<html class="no-js" lang="en" dir="ltr">
   <head>
     <meta name="google-signin-scope" content="profile email">
     <meta name="google-signin-client_id" content="{{ google_client_id }}">
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="Todo...">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# foundation styles #}
+    <link rel="stylesheet" href="{% static 'foundation/css/foundation.css' %}">
+    <link rel="stylesheet" href="{% static 'foundation/css/app.css' %}">
+    <link rel="stylesheet"
+      href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    {# TODO: <meta name="description" content="Todo...">#}
     <title>OFFICE HOURS</title>
 
+    {% comment %} TODO: ...  Figure out an icon for homecreens.
     <!-- Add to homescreen for Chrome on Android -->
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="icon" sizes="192x192" href="{% static 'img/android-desktop.png' %}">
@@ -41,118 +32,108 @@
     <meta name="msapplication-TileColor" content="#3372DF">
 
     <link rel="shortcut icon" href="{% static 'img/favicon.png' %}">
-
-    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
-    <!--
-    <link rel="canonical" href="http://www.example.com/">
-    -->
-
-    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
-    <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="//code.getmdl.io/1.2.1/material.cyan-light_blue.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
+    {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/officehours.css' %}">
     {% block extrahead %}{% endblock %}
   </head>
   <body>
-    <div class="demo-layout mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
-      <header class="demo-header mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
-        <div class="mdl-layout__header-row">
-          <span class="mdl-layout-title">Home</span>
-          <div class="mdl-layout-spacer"></div>
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" id="hdrbtn">
-            <i class="material-icons">more_vert</i>
-          </button>
-          <ul class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right" for="hdrbtn">
-            <li class="mdl-menu__item"
-                onclick="(function() { window.location='{% url 'officehours:about' %}'}).call(this)">
-              About</li>
-            <li class="mdl-menu__item"
-                onclick="(function() { window.location='{% url 'officehours:contact' %}'}).call(this)">
-              Contact</li>
-            <li class="mdl-menu__item"
-                onclick="(function() { window.location='{% url 'officehours:help' %}'}).call(this)">
-              Help</li>
-            <li class="mdl-menu__item"
-                onclick="(function() { window.location='https://tndata.org/legal/'}).call(this)">
-              Legal information</li>
-          </ul>
-        </div>
-      </header>
 
-      <!-- NAV Drawer -->
-      <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
-        {% include 'officehours/_side_menu.html' %}
-      </div>
-      <!-- /NAV Drawer -->
+    <div class="off-canvas-wrapper">
+      <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
 
-      <!-- MAIN -->
-      <main class="mdl-layout__content mdl-color--grey-100">
-        <div class="mdl-grid demo-content">
-          <div class="demo-cards mdl-cell mdl-cell--12-col-phone mdl-cell--12-col-tablet mdl-cell--12-col-desktop mdl-grid mdl-grid--no-spacing">
-
-            {% block content %}{% endblock %}
-
+        <div class="off-canvas position-left reveal-for-large"
+             id="side-menu"
+             data-off-canvas
+             data-position="left">
+          <div class="row column">
+            {% include 'officehours/_off_canvas.html' %}
           </div>
         </div>
-      </main>
-      <!-- /MAIN -->
+
+        <div class="off-canvas-content" data-off-canvas-content>
+          <div class="title-bar hide-for-large">
+            <div class="title-bar-left">
+              <button class="menu-icon" type="button" data-open="side-menu"></button>
+              <span class="title-bar-title">OfficeHours</span>
+            </div>
+          </div>
+
+          {# --- Main Heading --- #}
+          {# Currently just used for django.contrib.messages #}
+          {% for message in messages %}
+          <div class="callout {{message.tags}}">
+            <div class="row column">
+              <p>{{ message }}</p>
+            </div>
+          </div>
+          {% empty %}
+            <div>&nbsp;</div>
+          {% endfor %}
+
+          {# --- Main Content --- #}
+          <div class="row small-up-1 medium-up-1 large-up-2">
+              {% comment %}
+
+              NOTE: the content container expects to have a grid of items.
+              Therefore, wrap content in <div>s that look like:
+
+                <div class="column column-block">
+                  ... content
+                </div>
+
+            {% endcomment %}
+            {% block content %}{% endblock %}
+          </div>
+
+          {# --- Footer --- #}
+          <hr>
+          <footer>
+            <div class="row">
+              <div class="small-12 medium-12 large-12 columns">
+                <ul class="no-bullet">
+                  <li><a href="#">Help</a></li>
+                  <li><a href="#">Privacy and Terms</a></li>
+                  <li><a href="#">User Agreement</a></li>
+                </ul>
+              </div>
+            </div>
+          </footer>
+
+        </div> {# / .off-canvas-content #}
+      </div>
     </div>
 
-    {# A block for a FAB button if we have one. #}
-    {% block fab %}{% endblock %}
+    {# TODO: replace w/ local versions ... #}
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="http://dhbhdrzi4tiry.cloudfront.net/cdn/sites/foundation.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+    {% block bodyjs %}{% endblock %}
 
-    <!-- Snackbar / Toast -->
-    <div id="snackbar-container"
-         aria-live="assertive"
-         aria-atomic="true"
-         aria-relevant="text"
-         class="mdl-snackbar mdl-js-snackbar">
-      <div class="mdl-snackbar__text"></div>
-      <button class="mdl-snackbar__action" type="button"></button>
-    </div>
+    {# --- Google Auth ----------------------------------------------------- #}
+    <script>
+    // Google Auth, sign in / sign out functions
+    function signOut() {
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.signOut().then(function () {
+        window.location = "/logout/?next=/officehours/";
+      });
+    }
 
-{# Show messages from django.contrib.messages in a Snackbar / Toast #}
-<script>
-// Google Auth, signout function.
-function signOut() {
-  var auth2 = gapi.auth2.getAuthInstance();
-  auth2.signOut().then(function () {
-    window.location = "/logout/?next=/officehours/";
-  });
-}
+    function signIn() {
+      window.location = "/officehours/login/";
+    }
 
-function signIn() {
-  window.location = "/officehours/login/";
-}
-
-// If our sign-in code is defined on another page, we have to load gapi
-// manually. See: http://stackoverflow.com/a/29833065/182778
-function gapiOnLoad() {
-  gapi.load('auth2', function() {
-    gapi.auth2.init();
-  });
-}
-
-$(document).ready(function() {
-    // Pause for a bit before we show any snackbars. Apparently we have to
-    // wait for some MDL thing to happen.
-    var timeoutId = window.setTimeout(function() {
-      var messages = [
-        {% for message in messages %}'{{message}}'{% if not forloop.last %},{% endif %}{% endfor %}
-      ];
-      var snackbarContainer = document.getElementById('snackbar-container');
-      if(messages.length) {
-        for(var i=0; i<messages.length; i++) {
-          snackbarContainer.MaterialSnackbar.showSnackbar({message: messages[i]});
-        }
-      }
-    }, 500);
-});
-</script>
-<script src="//apis.google.com/js/platform.js?onload=gapiOnLoad" async defer></script>
-{% block bodyjs %}{% endblock %}
-</body>
+    // If our sign-in code is defined on another page, we have to load gapi
+    // manually. See: http://stackoverflow.com/a/29833065/182778
+    function gapiOnLoad() {
+      gapi.load('auth2', function() {
+        gapi.auth2.init();
+      });
+    }
+    </script>
+    <script src="//apis.google.com/js/platform.js?onload=gapiOnLoad" async defer></script>
+    {# --- / end Google Auth ----------------------------------------------- #}
+  </body>
 </html>

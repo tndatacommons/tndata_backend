@@ -1,23 +1,18 @@
 {% extends "officehours/base.html" %}
-{% load crispy_forms_tags %}
 
 {% block content %}
-<div class="mdl-card mdl-color--white mdl-shadow--1dp mdl-cell mdl-cell--12-col">
-  <div class="mdl-card__title mdl-card--expand mdl-color--teal-300">
-    <h1 class="mdl-card__title-text">About</h1>
-  </div>
-  <div class="mdl-card__supporting-text">
+<div class="column column-block">
+  <div class="callout">
+    <h1>About</h1>
     <p><strong>Office Hours</strong> is a project of
        <a href="https://tndata.org/" target="_blank">Tennessee Data Commons</a>,
        a non-for-profit (501c3) corporation in Memphis, TN.</p>
 
     <p>Have feedback for us? Then get in touch!</p>
-  </div>
-  <div class="mdl-card__actions mdl-card--border">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-       href="mailto:feeback@tndata.org" target="_blank">
-      Get in Touch
-    </a>
+    <p>
+      <a class="button" href="mailto:feeback@tndata.org"
+         target="_blank">Get in Touch</a>
+    </p>
   </div>
 </div>
 {% endblock %}

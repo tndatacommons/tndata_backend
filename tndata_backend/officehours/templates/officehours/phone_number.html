@@ -2,27 +2,26 @@
 
 {% block content %}
 
-<form action="{% url 'officehours:phone-number' %}" method="post">{% csrf_token %}
-<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--12-col"
-    id="add-code">
-  <div class="mdl-card__supporting-text">
-    <h3>Set your mobile number</h3>
+<div class="column column-block">
+  <div class="callout">
+    <form action="{% url 'officehours:phone-number' %}" method="post">{% csrf_token %}
+      <h3>Set your mobile number</h3>
 
-    <div class="mdl-textfield mdl-js-textfield {% if error %} is-invalid{% endif %}">
-      <input class="mdl-textfield__input" value="{{ phone|default:'' }}"
-             type="text" id="id_phone" name="phone">
-      <label class="mdl-textfield__label" for="id_phone">Phone Number</label>
-      {% if error %}<span class="mdl-textfield__error">{{ error }}</span>{% endif %}
-    </div>
-    <p>Add your cell phone, and we'll periodically text you with important
-       information.</p>
-
-  </div>
-  <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect">
-       Save
-    </button>
+      {% if error %}<p>{{ error }}</p>{% endif %}
+      <label for="id_phone">Phone Number
+        <input value="{{ phone|default:'' }}"
+               type="text"
+               id="id_phone"
+               placeholder="901-555-1234"
+               name="phone"
+               aria-describedby="codeHelpText">
+      </label>
+      <p class="help-text" id="codeHelpText">
+        Add your cell phone, and we'll periodically text
+        you with important information.
+      </p>
+      <button class="button" type="submit">Save</button>
+    </form>
   </div>
 </div>
-</form>
 {% endblock %}

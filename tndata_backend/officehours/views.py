@@ -10,23 +10,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
 
 from chat.models import ChatMessage
+from userprofile.models import UserProfile
 from notifications.sms import format_numbers
 
 from .forms import ContactForm
 from .models import Course, OfficeHours
 
-# index
-# - welcome (if no courses)
-# - course list
-#
-# choose role (student / teacher)
-# - student
-# -- enter code (to index)
-# - teacher
-# -- update contact info
-# -- office hours -> repeat
-# -- add course -> repeat
-# -- share
 
 class AboutView(TemplateView):
     template_name = 'officehours/about.html'
@@ -38,23 +27,6 @@ class HelpView(TemplateView):
 
 class ContactView(TemplateView):
     template_name = 'officehours/contact.html'
-
-
-def mdl_examples(request):
-    # Colors & Order values for MDL colors
-    ctx = {
-        'orders': [
-            50, 100, 200, 300, 400, 500, 600, 700, 800, 900,
-            'A100', 'A200', 'A400', 'A700'
-        ],
-        'colors': [
-            'red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue',
-            'cyan', 'teal', 'green', 'light-green', 'lime', 'amber', 'orange',
-            'deep-orange', 'brown', 'grey', 'blue-grey', 'black', 'white',
-        ],
-    }
-    template = "officehours/mdl_examples.html"
-    return render(request, template, ctx)
 
 
 def index(request):
@@ -233,32 +205,6 @@ def add_hours(request):
     return render(request, 'officehours/add_hours.html', context)
 
 
-
-@login_required
-def delete_hours(request):
-    """
-    Allow an INSTRUCTOR (OfficeHours.user) to delete data (with confirmation).
-
-    """
-    hours_count = 0
-    hours = []
-
-    if request.method == "POST" and bool(request.POST.get('confirm', False)):
-        ids = request.POST.getlist('hours')
-        if ids:
-            OfficeHours.objects.filter(user=request.user, pk__in=ids).delete()
-        return redirect("officehours:schedule")
-
-    ids = list(filter(None, request.GET.get('hours', '').split(' ')))
-    hours = OfficeHours.objects.filter(user=request.user, pk__in=ids)
-
-    context = {
-        'hours': hours,
-        'hours_count': hours.count(),
-    }
-    return render(request, 'officehours/delete_hours.html', context)
-
-
 @login_required
 def add_course(request):
     """
@@ -328,28 +274,23 @@ def add_course(request):
 
 
 @login_required
-def delete_courses(request):
+def delete_course(request, pk):
     """
     Allow an INSTRUCTOR (course owner) to delete a course (with confirmation)
 
     """
-    courses_count = 0
-    courses = []
+    course = get_object_or_404(Course, pk=pk, user=request.user)
 
     if request.method == "POST" and bool(request.POST.get('confirm', False)):
-        course_ids = request.POST.getlist('courses')
-        if course_ids:
-            Course.objects.filter(user=request.user, pk__in=course_ids).delete()
+        course_name = course.name
+        course.delete()
+        messages.success(request, "{} was deleted.".format(course_name))
         return redirect("officehours:schedule")
 
-    course_ids = list(filter(None, request.GET.get('courses', '').split(' ')))
-    courses = Course.objects.filter(user=request.user, pk__in=course_ids)
-
     context = {
-        'courses': courses,
-        'courses_count': courses.count(),
+        'course': course,
     }
-    return render(request, 'officehours/delete_courses.html', context)
+    return render(request, 'officehours/delete_course.html', context)
 
 
 @login_required
@@ -368,6 +309,32 @@ def course_details(request, pk):
         'course': get_object_or_404(Course, pk=pk)
     }
     return render(request, 'officehours/course_details.html', context)
+
+
+@login_required
+def officehours_details(request, pk):
+    """Display OfficeHours details"""
+    context = {
+        'hours': get_object_or_404(OfficeHours, pk=pk)
+    }
+    return render(request, 'officehours/officehours_details.html', context)
+
+
+@login_required
+def delete_officehours(request, pk):
+    """
+    Allow an INSTRUCTOR (officehours owner) to delete a officehours (with confirmation)
+
+    """
+    officehours = get_object_or_404(OfficeHours, pk=pk, user=request.user)
+
+    if request.method == "POST" and bool(request.POST.get('confirm', False)):
+        officehours.delete()
+        messages.success(request, "Office Hours were deleted.")
+        return redirect("officehours:schedule")
+
+    context = {'hours': officehours}
+    return render(request, 'officehours/delete_officehours.html', context)
 
 
 @login_required

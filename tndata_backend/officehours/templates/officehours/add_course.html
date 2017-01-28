@@ -1,91 +1,65 @@
 {% extends "officehours/base.html" %}
-{% load crispy_forms_tags %}
 {% load staticfiles %}
 
 {% block extrahead %}
-    <script src="{% static 'js/moment.min.js' %}"></script>
-    <script src="{% static 'bootstrap-material-datetimepicker-2.7.1/js/bootstrap-material-datetimepicker.js' %}"></script>
-    <link href="//fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'bootstrap-material-datetimepicker-2.7.1/css/bootstrap-material-datetimepicker.css' %}">
+  <script src="{% static 'js/moment.min.js' %}"></script>
 {% endblock %}
 
 
 {% block content %}
-<form action="{% url 'officehours:add-course' %}" method="post">
-{% csrf_token %}
+<div class="column column-block">
+  <div class="callout">
+    <form action="{% url 'officehours:add-course' %}" method="post">
+      {% csrf_token %}
+      <h3>Add your Course</h3>
 
-<!-- Add Course -->
-<div class="demo-options mdl-card mdl-color--amber-100 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop" id="add-course">
-  <div class="mdl-card__supporting-text">
-    <h3>Add your Course</h3>
-    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-      <input class="mdl-textfield__input"
-             type="text"
-             name="coursename"
-             {% if coursename %}value="{{coursename}}"{% endif %}
-             id="id_coursename">
-      <label class="mdl-textfield__label" for="id_coursename">Course Name</label>
-      {% if coursename_error %}
-        <span class="mdl-textfield__error" style="visibility: visible">
-          {{ coursename_error }}</span>
-      {% endif %}
-    </div>
-    <div class="demo-avatar-dropdown">
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input class="mdl-textfield__input"
-               type="text"
+      <label for="id_coursename">Course Name
+        <input type="text"
+               name="coursename"
+               placeholder="Intro to History, COMP 1500, etc"
+               {% if coursename %}value="{{coursename}}"{% endif %}
+               id="id_coursename">
+      </label>
+      {% if coursename_error %}<p>{{ coursename_error }}</p>{% endif %}
+
+      <label for="id_coursetime">Course Meeting Time
+        <input type="text"
+               placeholder="8:45 am"
                name="coursetime"
                {% if coursetime %}value="{{coursetime|date:"g:i A"|lower}}"{% endif %}
                id="id_coursetime">
-        <label class="mdl-textfield__label" for="id_coursetime">Time</label>
-        {% if coursetime_error %}
-          <span class="mdl-textfield__error" style="visibility: visible">
-            {{ coursetime_error }}</span>
-        {% endif %}
-      </div>
-    </div>
-    <div class="mdl-textfield mdl-js-textfield  mdl-textfield--floating-label">
-      <input class="mdl-textfield__input"
-             type="text"
-             id="id_location"
-             {% if location %}value="{{location}}"{% endif %}
-             name="location">
-      <label class="mdl-textfield__label" for="id_location">Location</label>
-      {% if location_error %}
-        <span class="mdl-textfield__error" style="visibility: visible">
-          {{ location_error }}</span>
-      {% endif %}
-    </div>
-    <div class="mdl-textfield mdl-js-textfield">
-      <ul>
-        {% for day in day_choices %}
-        <li>
-          <label for="course-day-{{ day|lower }}"
-                 class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-            <input type="checkbox"
-                   id="course-day-{{ day|lower }}"
-                   class="mdl-checkbox__input"
-                   name="{{ day }}"
-                   {% if day in selected_days %}checked="checked"{% endif %}
-                   data-day="{{ day }}">
-            <span class="mdl-checkbox__label">{{ day }}</span>
-          </label>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
+      </label>
+      {% if coursetime_error %}<p>{{ coursetime_error }}</p>{% endif %}
 
-  <div class="mdl-card__actions mdl-card--border mdl-color--amber-300">
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit" name="another" value="true">Add another</button>
-    <button class="card-cta mdl-button mdl-js-button mdl-js-ripple-effect"
-            type="submit" name="share" value="true">Share</button>
-    <div class="mdl-layout-spacer"></div>
-    <i class="material-icons mdl-primary">share</i>
-  </div>
-</div>
-</form>
+      <label for="id_location">Location
+        <input type="text"
+               id="id_location"
+               placeholder="Building, room number, etc"
+               {% if location %}value="{{location}}"{% endif %}
+               name="location">
+      </label>
+      {% if location_error %}<p>{{ location_error }}</p>{% endif %}
+
+      <fieldset class="fieldset">
+        <legend>Select the days on which this course meets</legend>
+        {% for day in day_choices %}
+          <input type="checkbox"
+                 id="course-day-{{ day|lower }}"
+                 name="{{ day }}"
+                 {% if day in selected_days %}checked="checked"{% endif %}
+                 data-day="{{ day }}">
+          <label for="course-day-{{ day|lower }}">{{ day }}</label>
+          <br/>
+        {% endfor %}
+      </fieldset>
+      <button class="button" type="submit"
+              name="another" value="true">Add another</button>
+      <button class="button" type="submit"
+              name="share" value="true">Share</button>
+    </form>
+  </div> {# /.callout #}
+</div> {# /.column #}
+
 {% endblock %}
 
 
@@ -93,13 +67,7 @@
 {% comment %}
 <script type="text/javascript">
 $(document).ready(function() {
-  $("#id_coursetime").bootstrapMaterialDatePicker({
-    format: "h:mm a",
-    date: false,
-    time: true,
-    nowButton: true,
-    monthPicker: false,
-  });
+  // TODO: add a decent time-picker / formatter.
 });
 </script>
 {% endcomment %}

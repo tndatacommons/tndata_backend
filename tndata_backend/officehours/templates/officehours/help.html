@@ -1,12 +1,11 @@
 {% extends "officehours/base.html" %}
-{% load static from staticfiles %}
 
 {% block content %}
-<div class="mdl-card mdl-color--white mdl-shadow--1dp mdl-cell mdl-cell--12-col">
-  <div class="mdl-card__title mdl-card--expand mdl-color--teal-300">
-    <h1 class="mdl-card__title-text">Help</h1>
-  </div>
-  <div class="mdl-card__supporting-text">
+<div class="column column-block">
+  <div class="callout">
+    <h1>Help</h1>
+    <p class="lead">Coming soon...</p>
+    {% comment %}
     <h2>Students</h2>
     <p><strong>Office Hours</strong> has been designed to be as simple as possible
     for students. To get started, your teacher should provide you with a <strong>code</strong>
@@ -21,27 +20,11 @@
     to your teacher through the built-in chat.</p>
     <p><img src="{% static 'img/help/student-schedule.png' %}"/></p>
 
-    {% comment %}
     {# TODO: ... help topics for faculty #}
     <h2>Creating a Course</h2>
 
-    {% endcomment %}
     <p>Didn't find what you need? Then click the button below to let us know.</p>
-  </div>
-  <div class="mdl-card__actions mdl-card--border">
-    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-       href="mailto:feeback@tndata.org" target="_blank">
-      Get in Touch
-    </a>
+    {% endcomment %}
   </div>
 </div>
-{% endblock %}
-
-
-{% block fab %}
-  <a href="{% url 'officehours:add-code' %}"
-     id="main-fab"
-     class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored">
-      <i class="material-icons">add</i>
-  </a>
 {% endblock %}

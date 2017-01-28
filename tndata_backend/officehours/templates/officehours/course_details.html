@@ -1,53 +1,31 @@
 {% extends "officehours/base.html" %}
-{% load crispy_forms_tags %}
 {% load staticfiles %}
 
 {% block content %}
-<div class="demo-options mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop"
-     id="teacher-schedule">
-  <div class="mdl-card__title mdl-card--expand mdl-color--indigo-300">
-    <h2 class="mdl-card__title-text">{{ course.name }} / {{ course.code }}</h2>
-  </div>
-  <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-    <ul class="mdl-list">
+<div class="column column-block" id="teacher-schedule">
+  <div class="callout">
+    <h2>{{ course.name }} <small>Code: {{ course.code }}</small></h2>
+    <ol>
     {% for student in course.students.all %}
-      <li class="mdl-list__item mdl-list__item--three-line">
-        <span class="mdl-list__item-primary-content">
-          <i class="material-icons mdl-list__item-avatar">person</i>
-          <span>{{ student.get_full_name }}</span>
-          <span class="mdl-list__item-text-body">
-            {{ student.email }}
-          </span>
-        </span>
-        <span class="mdl-list__item-secondary-content">
-          <a href="{% url 'chat:chat' student.id %}"
-            class="mdl-list__item-secondary-action  mdl-button mdl-js-button mdl-button--icon mdl-button--colored mdl-color--accent">
-            <i class="material-icons">chat</i>
-          </a>
-        </span>
+      <li class="clearfix">
+        {% with name=student.get_full_name %}
+          {% if name|length %}<strong>{{ name }}</strong><br/>{% endif %}
+        {% endwith %}
+        <em>{{ student.email }}</em>
+        <a href="{% url 'chat:chat' student.id %}"
+           class="button secondary tiny float-right">
+              <i class="fa fa-comment-o"></i> Send Message</a>
+
       </li>
-      {% endfor %}
-    </ul>
-    <ul>
-  </div>
-  <div class="mdl-card__actions mdl-card--border mdl-color--indigo-600">
-    <a href="#"
-       class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-       id="message-all">Message All Students</a>
+    {% endfor %}
+    </ol>
+    <hr/>
+    <p>
+      <a href="{{ course.get_delete_url }}"
+         class="button alert float-right"><i class="fa fa-trash"></i> Delete Course</a>
+      <a href="#" class="button" id="message-all" disabled>Message All Students</a>
+    </p>
   </div>
 </div>
 
-{% endblock %}
-
-
-{% block bodyjs %}
-<script>
-$(document).ready(function() {
-  $("#message-all").click(function(e) {
-    e.preventDefault();
-    var snackbarContainer = document.getElementById('snackbar-container');
-    snackbarContainer.MaterialSnackbar.showSnackbar({message: "Not Yet Implemented"});
-  });
-});
-</script>
 {% endblock %}
