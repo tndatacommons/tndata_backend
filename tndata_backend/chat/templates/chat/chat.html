@@ -1,13 +1,16 @@
-{% extends "officehours/base.html" %} {# NOTE: our MDL-based layout #}
-
+{% extends "officehours/base.html" %}
 {% load static from staticfiles %}
 
 {% block content %}
-<div id="root"
-     class="mdl-cell mdl-cell--12-col chatContainer"
-     data-token="{{user.auth_token.key}}"
-     data-room="{{ room }}"></div>
-<script type="text/javascript" src="{% static 'js/react_chat-201701262132.js' %}"></script>
+<div class="column column-block">
+  <div class="callout">
+    <div id="root"
+         class="chatContainer"
+         data-token="{{user.auth_token.key}}"
+         data-room="{{ room }}"></div>
+  </div>
+</div>
+<script type="text/javascript" src="{% static 'js/react_chat-201701280009.js' %}"></script>
 {% endblock %}
 
 {% block fab %}
