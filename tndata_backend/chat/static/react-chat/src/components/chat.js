@@ -18,10 +18,10 @@ export default class Chat extends Component {
     }
 
     handleMessage(data) {
-        // NOTE: data should be an object of the form: {from: ..., message: ...}
+        // NOTE: data should be an object of the form: {from: ..., text: ...}
         const new_message = {
-            id: slugify(data.message) + new Date().valueOf(),  // ¯\_(ツ)_/¯
-            text: data.message,
+            id: slugify(data.text) + new Date().valueOf(),  // ¯\_(ツ)_/¯
+            text: data.text,
             from: data.from,
             from_id: data.from_id,
             avatar: data.from === "system" ? '' : data.avatar,

@@ -51,7 +51,7 @@ the websocket (including your own) as a JSON-formatted string. For example:
     {
       "from_id": "42",
       "from": "Brad Montgomery",
-      "message": "Hello World! This is the message to display."
+      "text": "Hello World! This is the message to display."
       "avatar": "//lh5.googleusercontent.com/.../photo.jpg",
       "digest": "584d07235fb9e4f2ab2a2c0c24142180",
     }
@@ -63,7 +63,7 @@ when a user connects / disconnects, etc). They'll typically look like this:
         'from_id': '',
         'from': 'system',
         'room': 'chat-1-995',
-        'message': "Soandso joined."
+        'text': "Soandso joined."
     }
 
 You should recieve these kinds of messages when a user connects or disconnects

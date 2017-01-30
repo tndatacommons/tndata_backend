@@ -113,7 +113,7 @@ def ws_message(message):
             payload = {
                 'from_id': user.id if user else '',
                 'from': name,
-                'message': "{}".format(message_text),
+                'text': "{}".format(message_text),
                 'avatar': avatar,
                 'digest': digest,
             }
@@ -153,10 +153,10 @@ def ws_connect(message):
         # Send the 'User connected' message.
         Group(room).add(message.reply_channel)
         payload = {
-            'from_id': '',
+            'from_id': -1,
             'from': 'system',
             'room': room,
-            'message': "{} joined.".format(user.get_full_name() or user.email),
+            'text': "{} joined.".format(user.get_full_name() or user.email),
         }
         Group(room).send({'text': json.dumps(payload)})
         metric('websocket-connect', category="Chat")
@@ -173,10 +173,10 @@ def ws_disconnect(message):
     room = message.channel_session.get('room')
     if user and room:
         payload = {
-            'from_id': '',
+            'from_id': -1,
             'from': 'system',
             'room': room,
-            'message': "{} left.".format(user.get_full_name() or user),
+            'text': "{} left.".format(user.get_full_name() or user),
         }
         Group(room).send({'text': json.dumps(payload)})
         Group(room).discard(message.reply_channel)
