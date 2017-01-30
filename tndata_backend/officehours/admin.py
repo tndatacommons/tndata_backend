@@ -5,9 +5,18 @@ from . import models
 
 @admin.register(models.OfficeHours)
 class OfficeHoursAdmin(admin.ModelAdmin):
-    list_display = ('user', '__str__', 'expires_on', 'created_on')
+    list_display = (
+        'email', 'full_name', '__str__',
+        'expires_on', 'created_on'
+    )
     search_fields = ('user__email', 'user__first_name', 'user__last_name')
     raw_id_fields = ('user', )
+
+    def email(self, obj):
+        return obj.user.email
+
+    def full_name(self, obj):
+        return obj.user.get_full_name()
 
 
 @admin.register(models.Course)
