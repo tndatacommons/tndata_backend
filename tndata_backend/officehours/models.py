@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 
+# Shortcut dict for displaying single-char representations.
 DAYS = {
     'Sunday': 'S',
     'Monday': 'M',
@@ -18,6 +19,17 @@ DAYS = {
     'Thursday': 'R',
     'Friday': 'F',
     'Saturday': 'Z',
+}
+
+# Dict for sorting lists of days.
+DAYS_SORT = {
+    'Sunday': 0,
+    'Monday': 1,
+    'Tuesday': 2,
+    'Wednesday': 3,
+    'Thursday': 4,
+    'Friday': 5,
+    'Saturday': 6,
 }
 
 
@@ -50,12 +62,14 @@ class OfficeHours(models.Model):
 
     def save(self, *args, **kwargs):
         self._set_expires()
+        # Ensure our list of days is always ordered correctly
+        self.days.sort(key=DAYS_SORT.get)
         super().save(*args, **kwargs)
 
     @property
     def meetingtime(self):
         """Return a condensed string format for the days and times."""
-        days = [DAYS[d] for d in self.days]
+        days = [DAYS[d] for d in sorted(self.days, key=DAYS_SORT.get)]
         return "{} {}-{}".format(
             "".join(days),
             self.from_time.strftime("%H:%M"),
@@ -135,12 +149,14 @@ class Course(models.Model):
         self._set_expires()
         self._set_name_slug()
         self._set_code()
+        # Ensure our list of days is always ordered correctly
+        self.days.sort(key=DAYS_SORT.get)
         super().save(*args, **kwargs)
 
     @property
     def meetingtime(self):
         """Return a condensed string format for the days and times."""
-        days = [DAYS[d] for d in self.days]
+        days = [DAYS[d] for d in sorted(self.days, key=DAYS_SORT.get)]
         return "{} {}".format(
             "".join(days),
             self.start_time.strftime("%H:%M"),
