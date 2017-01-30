@@ -4,6 +4,11 @@ footer ul li {
   margin-top: 1rem;
 }
 
+code.stat {
+  border:0px;
+  background-color: inherit;
+  font-family: 'Fira Mono', monospace;
+}
 
 /* Chat Bubble Styles
  * ------------------
