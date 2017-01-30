@@ -3,6 +3,7 @@
 
 {% block extrahead %}
   <script src="{% static 'js/moment.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}">
 {% endblock %}
 
 
@@ -64,11 +65,13 @@
 
 
 {% block bodyjs %}
-{% comment %}
+<script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function() {
-  // TODO: add a decent time-picker / formatter.
+  $("#id_coursetime").timepicker({
+    'scrollDefault': 'now',
+    'timeFormat': 'g:i a',
+  });
 });
 </script>
-{% endcomment %}
 {% endblock %}

@@ -2,7 +2,8 @@
 {% load staticfiles %}
 
 {% block extrahead %}
-    <script src="{% static 'js/moment.min.js' %}"></script>
+  <script src="{% static 'js/moment.min.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'timepicker/jquery.timepicker.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -58,11 +59,13 @@
 
 
 {% block bodyjs %}
-{% comment %}
+<script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function() {
-  // TODO: decent timepicker
+  $("#id_from_time, #id_to_time").timepicker({
+    'scrollDefault': 'now',
+    'timeFormat': 'g:i a',
+  });
 });
 </script>
-{% endcomment %}
 {% endblock %}
