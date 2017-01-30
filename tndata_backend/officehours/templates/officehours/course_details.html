@@ -4,21 +4,43 @@
 {% block content %}
 <div class="column column-block" id="teacher-schedule">
   <div class="callout">
-    <h2>{{ course.name }} <small>Code: {{ course.code }}</small></h2>
-    <ol>
-    {% for student in course.students.all %}
-      <li class="clearfix">
+    <h2>{{ course.name }}
+      <small>&mdash;
+        <code class="stat">{{ course.code }}</code>
+      </small>
+    </h2>
+    {% with students=course.students.all %}
+    <table class="stack">
+      <caption>{{ students.count }} students in this course</caption>
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Contact Info</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for student in students %}
         {% with name=student.get_full_name %}
-          {% if name|length %}<strong>{{ name }}</strong><br/>{% endif %}
+        <tr>
+          <td><strong>{{ name|default:"-" }}</strong></td>
+          <td>
+            <a href="mailto:{{ student.email }}">{{ student.email }}</a>
+            {% if student.userprofile.phone %}
+              <br/>{{ student.userprofile.phone }}
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'chat:chat' student.id %}"
+               class="button secondary tiny">
+                  <i class="fa fa-comment-o"></i> Send Message</a>
+          </td>
+        </li>
         {% endwith %}
-        <em>{{ student.email }}</em>
-        <a href="{% url 'chat:chat' student.id %}"
-           class="button secondary tiny float-right">
-              <i class="fa fa-comment-o"></i> Send Message</a>
-
-      </li>
-    {% endfor %}
-    </ol>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endwith %}
     <hr/>
     <p>
       <a href="{{ course.get_delete_url }}"

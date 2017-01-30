@@ -72,7 +72,6 @@
           <tr>
             <th class="mdl-data-table__cell--non-numeric">Course</th>
             <th>Code</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -82,9 +81,9 @@
               {{ course.name }}<br/>
               <small>{{ course.display_time }}</small>
             </td>
-            <td><code class="stat">{{ course.code }}</code></td>
             <td>
-              <a class="hollow button" href="{{ course.get_absolute_url }}">view</a>
+              <code class="stat">{{ course.code }}</code>
+              <a class="hollow button float-right" href="{{ course.get_absolute_url }}">view</a>
             </td>
           </tr>
         {% endfor %}
@@ -110,7 +109,6 @@
           <tr>
             <th>Hours</th>
             <th>Days</th>
-            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -120,8 +118,10 @@
               {{ hours.from_time|date:"fA" }}
               - {{ hours.to_time|date:"fA" }}<br/>
             </td>
-            <td>{{ hours.days|join:", " }}</td>
-            <td><a class="hollow button" href="{{ hours.get_absolute_url }}">view</a></td>
+            <td class="clearfix">
+              {{ hours.days|join:", " }}
+              <a class="hollow button float-right" href="{{ hours.get_absolute_url }}">view</a>
+            </td>
           </tr>
         {% endfor %}
         </tbody>
