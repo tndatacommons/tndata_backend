@@ -70,6 +70,21 @@ class OfficeHours(models.Model):
         days.sort(key=DAYS_SORT.get)
         return days
 
+    def get_schedule(self):
+        """Returns a sorted list of meeting days / times that should be
+        iterable in templates (for displaying). e.g.
+
+            for day, times in obj.get_schedule  ...
+
+        The format is:
+
+            [(day, [[from-time, to-time], ...]),  ... ]
+
+        """
+        schedule = list(self.schedule.items())
+        schedule.sort(key=lambda tup: DAYS_SORT.get(tup[0]))
+        return schedule
+
     def get_absolute_url(self):
         return reverse('officehours:officehours-details', args=[self.id])
 

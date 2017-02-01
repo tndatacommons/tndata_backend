@@ -107,7 +107,7 @@
       <ul class="no-bullet">
       {% for oh in office_hours %}
         {% if oh.schedule %}
-        {% for day, hours_list in  oh.schedule.items %}
+        {% for day, hours_list in  oh.get_schedule %}
           <li>
             <strong>{{ day }}</strong>
             <ul>

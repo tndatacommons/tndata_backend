@@ -9,7 +9,7 @@
       <h2>Office Hours</h2>
 
       <ul class="no-bullet">
-      {% for day, hours_list in hours.schedule.items %}
+      {% for day, hours_list in hours.get_schedule %}
         <li>
           <strong>{{ day }}</strong>
           <ul>
