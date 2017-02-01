@@ -9,6 +9,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 
+from .managers import ExpiresOnManager
+
 
 # Shortcut dict for displaying single-char representations.
 DAYS = {
@@ -90,6 +92,8 @@ class OfficeHours(models.Model):
 
     def get_delete_url(self):
         return reverse('officehours:delete-officehours', args=[self.id])
+
+    objects = ExpiresOnManager()
 
 
 def generate_course_code(length=4):
@@ -179,3 +183,9 @@ class Course(models.Model):
 
     def get_delete_url(self):
         return reverse('officehours:delete-course', args=[self.id])
+
+    def get_officehours(self):
+        """Return the instructor's current office hours."""
+        return OfficeHours.objects.current().filter(user=self.user)
+
+    objects = ExpiresOnManager()
