@@ -180,7 +180,6 @@ urlpatterns = [
         include('rest_framework.urls', namespace='rest_framework')
     ),
     url(r'^chat/', include('chat.urls', namespace="chat")),
-    url(r'^cronlog/', include('cronlog.urls', namespace='cronlog')),
     url(r'^dashboard/', include('dashboard.urls', namespace='dashboard')),
     url(r'^goals/', include('goals.urls', namespace='goals')),
     url(r'^survey/', include('survey.urls', namespace='survey')),
