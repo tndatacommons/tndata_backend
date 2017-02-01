@@ -41,7 +41,7 @@ class OfficeHoursSerializer(ObjectTypeModelSerializer):
         fields = (
             'id', 'user', 'schedule', 'expires_on', 'updated_on', 'created_on',
         )
-        read_only_fields = ("id", 'updated_on', "created_on")
+        read_only_fields = ("id", 'user', 'updated_on', "created_on")
         validators = []   # remove any default validators?
 
     def validate(self, data):
@@ -79,7 +79,7 @@ class CourseSerializer(ObjectTypeModelSerializer):
             'updated_on', 'created_on',
         )
         read_only_fields = (
-            "id", 'updated_on', "created_on", 'students', 'meetingtime'
+            "id", "user", 'updated_on', "created_on", 'students', 'meetingtime'
         )
         validators = []   # remove any default validators?
 

@@ -114,17 +114,18 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # TODO: See: http://stackoverflow.com/a/18571508/182778
-        # if 'user' not in request.data:
-            # request.data['user'] = request.user.id
         return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        #request.data.update({'user': request.user.id})
         return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class CourseViewSet(mixins.CreateModelMixin,
@@ -228,14 +229,18 @@ class CourseViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update({'user': request.user.id})
         return super().create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update({'user': request.user.id})
         return super().update(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        serializer.save(user=self.request.user)
 
     @list_route(methods=['post'], url_path='enroll')
     def enroll(self, request):
