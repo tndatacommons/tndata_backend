@@ -104,28 +104,29 @@
   <div class="card">
     <div class="card-divider">Your Office Hours</div>
     <div class="card-section">
-      <table class="stack">
-        <thead>
-          <tr>
-            <th>Hours</th>
-            <th>Days</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for hours in office_hours %}
-          <tr>
-            <td>
-              {{ hours.from_time|date:"fA" }}
-              - {{ hours.to_time|date:"fA" }}<br/>
-            </td>
-            <td class="clearfix">
-              {{ hours.days|join:", " }}
-              <a class="hollow button float-right" href="{{ hours.get_absolute_url }}">view</a>
-            </td>
-          </tr>
+      <ul class="no-bullet">
+      {% for oh in office_hours %}
+        {% if oh.schedule %}
+        {% for day, hours_list in  oh.schedule.items %}
+          <li>
+            <strong>{{ day }}</strong>
+            <ul>
+            {% for from_time, to_time in hours_list %}
+              <li>{{ from_time }} - {{ to_time }}</li>
+            {% endfor %}
+            </ul>
+          </li>
         {% endfor %}
-        </tbody>
-      </table>
+        {% else %}
+          <li>{{ oh }}</li>
+        {% endif %}
+        <li class="text-right">
+          <a class="hollow button" href="{{ oh.get_absolute_url }}">view</a>
+        </li>
+      {% empty %}
+        <li><em>You don't have any office hours scheduled. Add some!</em></li>
+      {% endfor %}
+      </ul>
       <hr/>
       <p>
         <a href="{% url 'officehours:add-hours' %}"
@@ -135,9 +136,5 @@
     </div>
   </div>
 </div>
-{% comment %} TODO: move into Offfice/hours details / edit page.
-    <a class="card-cta mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
-       id="remove-hours-button">Remove Selected</a>
-{% endcomment %}
 {% endif %}
 {% endblock %}

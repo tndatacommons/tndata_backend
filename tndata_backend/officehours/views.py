@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
+from django.utils import timezone
 
 from chat.models import ChatMessage
 from userprofile.models import UserProfile
@@ -152,38 +153,30 @@ def add_hours(request):
     html form.
 
     """
-    from_error = None
-    to_error = None
-    from_time = ''
-    to_time = ''
     selected_days = []
+    results = None
 
     if request.method == "POST":
-        try:
-            from_time = request.POST['from_time']
-            from_time = datetime.strptime(from_time, '%I:%M %p').time()
-        except ValueError:
-            from_time = ''
-            from_error = "Enter a valid time"
+        # NEED:
+        #
+        # { DAY: [[from-time, to-time], ... ] }
+        # ------------------------------------------------
+        selected_days = [
+            k for k, v in request.POST.dict().items() if v == 'on'
+        ]
+        results = {day: [] for day in selected_days}
+        for day in selected_days:
+            from_key = "from_time-{}".format(day.lower())
+            to_key = "to_time-{}".format(day.lower())
 
-        try:
-            to_time = request.POST['to_time']
-            to_time = datetime.strptime(to_time, '%I:%M %p').time()
-        except ValueError:
-            to_time = ''
-            to_error = "Enter a valid time"
-
-        for key, val in request.POST.items():
-            if val == "on":
-                selected_days.append(key)
-
-        if all([from_time, to_time, selected_days]):
-            OfficeHours.objects.create(
-                user=request.user,
-                from_time=from_time,
-                to_time=to_time,
-                days=selected_days
-            )
+            from_times = request.POST.getlist(from_key)
+            to_times = request.POST.getlist(to_key)
+            # zip returns tuples, we need lists to convert to JSON
+            results[day] = [
+                list(pair) for pair in list(zip(from_times, to_times))
+            ]
+        if results:
+            OfficeHours.objects.create(user=request.user, schedule=results)
             messages.success(request, "Office hours saved.")
             if request.POST.get('another') == "true":
                 return redirect("officehours:add-hours")
@@ -192,11 +185,7 @@ def add_hours(request):
             messages.error(request, "Unable to save your office hours.")
 
     context = {
-        'from_time': from_time,
-        'from_error': from_error,
-        'to_error': to_error,
-        'to_time': to_time,
-        'selected_days': selected_days,
+        'results': results,
         'day_choices': [
             'Sunday', 'Monday', 'Tuesday', 'Wednesday',
             'Thursday', 'Friday', 'Saturday',
@@ -348,7 +337,10 @@ def schedule(request):
 
     student_schedule = request.user.course_set.all()
     teaching_schedule = request.user.teaching.all()
-    office_hours = request.user.officehours_set.all()
+    office_hours = OfficeHours.objects.filter(
+        user=request.user,
+        expires_on__gt=timezone.now(),
+    )
 
     context = {
         'student_schedule': student_schedule,

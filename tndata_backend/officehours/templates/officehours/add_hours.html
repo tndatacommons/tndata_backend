@@ -8,50 +8,68 @@
 
 {% block content %}
 
+{# Would this even work on mobile browsers? #}
+{# ---- TODO: <p><input type="time" name="testing"></p> ---- #}
+
 <div class="column column-block">
 	<div class="callout">
 		<h3>Office Hours</h3>
     <form action="{% url 'officehours:add-hours' %}" method="post">
       {% csrf_token %}
-
-      <label for="id_from_time">From time
-        <input id="id_from_time"
-               name="from_time"
-               {% if from_time %}value="{{from_time|date:"g:i A"|lower}}"{% endif %}
-               type="text"
-               placeholder="10:30 am"/>
-      </label>
-      {% if from_error %}<p>{{ from_error }}</p>{% endif %}
-
-      <label for="id_to_time">To time
-        <input id="id_to_time"
-               name="to_time"
-               {% if to_time %}value="{{to_time|date:"g:i A"|lower}}"{% endif %}
-               type="text"
-               placeholder="1:30 pm"/>
-      </label>
-      {% if to_error %}<p>{{ to_error }}</p>{% endif %}
-
-      <fieldset class="fieldset">
-        <legend>Select the days on which this course meets</legend>
-        {% for day in day_choices %}
+      <ul class="no-bullet">
+      {% for day in day_choices %}
+        <li>
           <input type="checkbox"
-                 id="office-hours-day-{{ day|lower }}"
+                 class="day-selector"
+                 id="officehours-day-{{ day|lower }}"
                  name="{{ day }}"
                  {% if day in selected_days %}checked="checked"{% endif %}
                  data-day="{{ day }}">
-          <label for="office-hours-day-{{ day|lower }}">{{ day }}</label>
-          <br/>
-        {% endfor %}
-      </fieldset>
-      <button class="button"
-              type="submit"
-              name="another"
-              value="true">Add another</button>
-      <button class="button"
+          <label for="officehours-day-{{ day|lower }}">{{ day }}</label>
+
+          {# --- time-row -------------------------------------------------- #}
+          <div class="time-wrapper time-row row">
+            <div class="small-2 columns">
+              <label for="id_from_time-{{ day|lower }}"
+                     class="text-left middle">From</label>
+            </div>
+            <div class="small-4 columns">
+              <input id="id_from_time-{{ day|lower }}"
+                     class="timeinput"
+                     name="from_time-{{ day|lower }}"
+                     type="text"
+                     placeholder="10:30 am"/>
+            </div>
+            <div class="small-2 columns">
+              <label for="id_to_time-{{day|lower}}"
+                     class="text-left middle">To</label>
+            </div>
+            <div class="small-4 columns">
+              <input id="id_to_time-{{day|lower}}"
+                     name="to_time-{{day|lower }}"
+                     class="timeinput"
+                     type="text"
+                     placeholder="1:30 pm"/>
+            </div>
+          </div>
+          {# --- /time-row ------------------------------------------------- #}
+
+          <div class="row time-wrapper">
+            <div class="small-12 columns text-right">
+              <a href="#" class="button secondary tiny add-time-row">
+                <i class="fa fa-plus"></i>
+                Add Times
+              </a>
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+      </ul>
+
+     <button class="button"
               type="submit"
               name="next"
-              value="true">Next</button>
+              value="true">Save</button>
     </form>
   </div> {# /.callout #}
 </div> {# /.column #}
@@ -62,10 +80,30 @@
 <script src="{% static 'timepicker/jquery.timepicker.min.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function() {
-  $("#id_from_time, #id_to_time").timepicker({
-    'scrollDefault': 'now',
-    'timeFormat': 'g:i a',
+  // dynamically add timepicker to all .timeinput elements.
+  $('body').on('focus', ".timeinput", function() {
+    $(this).timepicker({
+      'scrollDefault': 'now',
+      'timeFormat': 'g:i a',
+    });
   });
+
+  // Hide all time-wrappers by default.
+  $(".time-wrapper").hide();
+
+  // When we click a day, display the time-wrappers.
+  $(".day-selector").change(function(evt) {
+    $(this).parent().children(".time-wrapper").show();
+  });
+
+  // when we click the button to add a new input row, do so.
+  $(".add-time-row").click(function(evt) {
+    evt.preventDefault();
+    var inputRow = $(this).parents("li").children(".time-row")[0];
+    var inputClone = $(inputRow).clone();
+    inputClone.insertBefore($(this));
+  });
+
 });
 </script>
 {% endblock %}

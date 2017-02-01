@@ -7,8 +7,23 @@
     <form action="{{ hours.get_delete_url }}" method="post">
       {% csrf_token %}
       <h2>Office Hours</h2>
-      <p>From {{ hours.from_time }} - {{ hours.to_time }} on
-        {{ hours.days|join:", " }}</p>
+
+      <ul class="no-bullet">
+      {% for day, hours_list in hours.schedule.items %}
+        <li>
+          <strong>{{ day }}</strong>
+          <ul>
+          {% for from_time, to_time in hours_list %}
+            <li>{{ from_time }} - {{ to_time }}</li>
+          {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+      </ul>
+      <p>These office hours automatically expire in
+         {{ hours.expires_on|timeuntil }} on {{ hours.expires_on }}.</p>
+      <hr/>
+
 
       <div class="callout warning">
         <div class="row">

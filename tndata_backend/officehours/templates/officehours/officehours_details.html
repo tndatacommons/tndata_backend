@@ -5,17 +5,21 @@
 <div class="column column-block" id="teacher-schedule">
   <div class="callout">
     <h2>Office Hours</h2>
-    <table class="unstriped">
-      <tr>
-        <th>Times</th>
-        <td>{{ hours.from_time }} - {{ hours.to_time }}</td>
-      </tr>
-      <tr>
-        <th>Days</th>
-        <td>{{ hours.days|join:", " }}</td>
-      </tr>
-    </table>
 
+    <ul class="no-bullet">
+    {% for day, hours_list in hours.schedule.items %}
+      <li>
+        <strong>{{ day }}</strong>
+        <ul>
+        {% for from_time, to_time in hours_list %}
+          <li>{{ from_time }} - {{ to_time }}</li>
+        {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+    </ul>
+    <p>These office hours automatically expire in
+       {{ hours.expires_on|timeuntil }} on {{ hours.expires_on }}.</p>
     <hr/>
     <p class="clearfix">
       <a href="{{ hours.get_delete_url }}"
