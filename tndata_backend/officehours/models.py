@@ -61,13 +61,14 @@ class OfficeHours(models.Model):
 
     def save(self, *args, **kwargs):
         self._set_expires()
-        # Ensure our list of days is always ordered correctly
-        self.days.sort(key=DAYS_SORT.get)
         super().save(*args, **kwargs)
 
     @property
     def days(self):
-        return list(self.schedule.keys())
+        """Return a list of days on which there are office hours"""
+        days = list(self.schedule.keys())
+        days.sort(key=DAYS_SORT.get)
+        return days
 
     def get_absolute_url(self):
         return reverse('officehours:officehours-details', args=[self.id])
