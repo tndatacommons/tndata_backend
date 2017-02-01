@@ -36,7 +36,8 @@
 
     <link rel="shortcut icon" href="{% static 'img/favicon.png' %}">
     {% endcomment %}
-    <link rel="stylesheet" href="{% static 'css/officehours.css' %}">
+    {# try to cache-bust our app-specific css when not in dev #}
+    <link rel="stylesheet" href="{% static 'css/officehours.css' %}{% if not debug %}?v={% now 'Y-m-d' %}{% endif %}">
     {% block extrahead %}{% endblock %}
   </head>
   <body>
