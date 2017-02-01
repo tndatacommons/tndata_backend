@@ -18,23 +18,24 @@ class TestOfficeHours(TestCase):
         cls.hours = mommy.make(
             OfficeHours,
             user=cls.user,
-            from_time=time(13, 30),
-            to_time=time(15, 30),
-            days=['Monday', 'Wednesday', 'Friday']
+            schedule={
+                'Monday': [
+                    ['8:00 am', '10:00 am'],
+                    ['12:30 pm', '1:30 pm']
+                ],
+                'Wednesday': [
+                    ['8:00 am', '10:00 am'],
+                ]
+            }
         )
 
     def test__str__(self):
-        expected = "13:30:00 - 15:30:00 MWF"
-        actual = "{}".format(self.hours)
-        self.assertEqual(expected, actual)
+        self.assertTrue(str(self.hours))  # just so it gives us *something*
 
     def test_expires(self):
         """Expiration date should be 150 days later."""
         delta = self.hours.expires_on - self.hours.created_on
         self.assertEqual(delta.days, 149)
-
-    def test_meetingtime(self):
-        self.assertEqual(self.hours.meetingtime, "MWF 13:30-15:30")
 
 
 class TestCourse(TestCase):

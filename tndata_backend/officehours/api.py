@@ -114,13 +114,16 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
         """Only create objects for the authenticated user."""
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update({'user': request.user.id})
+
+        # TODO: See: http://stackoverflow.com/a/18571508/182778
+        # if 'user' not in request.data:
+            # request.data['user'] = request.user.id
         return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return Response({}, status=status.HTTP_401_UNAUTHORIZED)
-        request.data.update({'user': request.user.id})
+        #request.data.update({'user': request.user.id})
         return super().update(request, *args, **kwargs)
 
 

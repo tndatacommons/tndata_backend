@@ -33,9 +33,6 @@ class TestIndexView(TestCase):
         cls.hours = mommy.make(
             OfficeHours,
             user=cls.user,
-            from_time=time(13, 30),
-            to_time=time(15, 30),
-            days=['Monday', 'Wednesday', 'Friday']
         )
         cls.course = mommy.make(
             Course,
@@ -75,3 +72,5 @@ class TestIndexView(TestCase):
         # Un-authed
         resp = self.ua_client.get(self.url)
         self.assertEqual(resp.status_code, 302)
+
+    # TODO: needs more view tests

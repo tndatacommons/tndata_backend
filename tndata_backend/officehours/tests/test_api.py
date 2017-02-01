@@ -60,9 +60,15 @@ class TestOfficeHoursAPI(V2APITestCase):
         self.hours = mommy.make(
             OfficeHours,
             user=self.user,
-            from_time=time(13, 30),
-            to_time=time(15, 30),
-            days=['Monday', 'Wednesday', 'Friday']
+            schedule={
+                'Monday': [
+                    ['8:00 am', '10:00 am'],
+                    ['12:30 pm', '1:30 pm']
+                ],
+                'Wednesday': [
+                    ['8:00 am', '10:00 am'],
+                ]
+            }
         )
 
     def tearDown(self):
@@ -81,10 +87,6 @@ class TestOfficeHoursAPI(V2APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
-        self.assertEqual(
-            response.data['results'][0]['meetingtime'],
-            'MWF 13:30-15:30'
-        )
 
     def test_get_hours_detail_unauthed(self):
         url = self.get_url('officehours-detail', args=[self.hours.id])
@@ -106,17 +108,17 @@ class TestOfficeHoursAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         data = {
-            'from_time': '13:30',
-            'to_time': '14:30',
-            'days': ['Tuesday', 'Thursday'],
             'user': self.user.id,
+            'schedule': {
+                'Friday': [['5:30 pm', '6:30 pm']],
+            }
         }
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Check the object.
         hours = OfficeHours.objects.get(pk=response.data['id'])
-        self.assertEqual(sorted(hours.days), sorted(['Tuesday', 'Thursday']))
+        self.assertEqual(sorted(hours.days), sorted(['Friday']))
 
     def test_post_hours_authed_alternative(self):
         url = self.get_url('officehours-list')
@@ -132,16 +134,28 @@ class TestOfficeHoursAPI(V2APITestCase):
         # Check the object.
         hours = OfficeHours.objects.get(pk=response.data['id'])
 
-        expected = sorted(['Tuesday', 'Thursday', 'Saturday'])
-        self.assertEqual(sorted(hours.days), expected)
+        self.assertDictEqual(
+            hours.schedule,
+            {
+                'Tuesday': [['13:30', '14:30']],
+                'Thursday': [['13:30', '14:30']],
+                'Saturday': [['13:30', '14:30']],
+            }
+        )
 
     def test_put_hours_authed(self):
         hours = mommy.make(
             OfficeHours,
             user=self.user,
-            from_time=time(8, 45),
-            to_time=time(10, 30),
-            days=['Sunday', 'Wednesday', 'Saturday']
+            schedule={
+                'Monday': [
+                    ['8:00 am', '10:00 am'],
+                    ['12:30 pm', '1:30 pm']
+                ],
+                'Wednesday': [
+                    ['8:00 am', '10:00 am'],
+                ]
+            }
         )
 
         url = self.get_url('officehours-detail', args=[hours.id])
@@ -149,26 +163,17 @@ class TestOfficeHoursAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         data = {
-            'from_time': '13:30',
-            'to_time': '14:30',
-            'days': ['Monday', 'Thursday']
+            'schedule': {}
         }
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Check the object.
         hours = OfficeHours.objects.get(pk=hours.id)
-        expected = sorted(['Monday', 'Thursday'])
-        self.assertEqual(sorted(hours.days), expected)
+        self.assertEqual(hours.schedule, {})
 
     def test_put_hours_authed_alternative(self):
-        hours = mommy.make(
-            OfficeHours,
-            user=self.user,
-            from_time=time(8, 45),
-            to_time=time(10, 30),
-            days=['Sunday', 'Wednesday', 'Saturday']
-        )
+        hours = mommy.make(OfficeHours, user=self.user)
         url = self.get_url('officehours-detail', args=[hours.id])
         self.client.credentials(
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
