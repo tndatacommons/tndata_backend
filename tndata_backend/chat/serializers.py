@@ -4,6 +4,8 @@ from . models import ChatMessage
 
 
 class ChatMessageSerializer(ObjectTypeModelSerializer):
+    # NOTE: This time format really only includes milliseconds. See the
+    # `to_representation` comment below.
     created_on = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S.%f%z")
 
     class Meta:
@@ -16,4 +18,12 @@ class ChatMessageSerializer(ObjectTypeModelSerializer):
         results['user_id'] = str(obj.user.id)
         results['user_username'] = obj.user.username
         results['user_full_name'] = obj.user.get_full_name()
+
+        # Use Milliseconds instead of Microseconds. We have to split the
+        # time zone from the time, then shave off the last 3 digits of the time,
+        # then stick them back together.
+        ts, tz = results['created_on'].split("+")
+        ts = ts[:-3]
+        results['created_on'] = "{}+{}".format(ts, tz)
+
         return results
