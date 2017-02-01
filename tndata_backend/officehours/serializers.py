@@ -1,4 +1,6 @@
+from collections import defaultdict
 from datetime import time
+
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.fields import ListField
@@ -34,13 +36,10 @@ class WorkingListField(ListField):
 
 
 class OfficeHoursSerializer(ObjectTypeModelSerializer):
-    days = WorkingListField()
-
     class Meta:
         model = OfficeHours
         fields = (
-            'id', 'user', 'from_time', 'to_time', 'days', 'meetingtime',
-            'expires_on', 'updated_on', 'created_on',
+            'id', 'user', 'schedule', 'expires_on', 'updated_on', 'created_on',
         )
         read_only_fields = ("id", 'updated_on', "created_on")
         validators = []   # remove any default validators?
@@ -52,17 +51,16 @@ class OfficeHoursSerializer(ObjectTypeModelSerializer):
 
         """
         # Handle `MTWRFS H:mm-H:mm`-formatted input
+        schedule = defaultdict(list)
+
         if 'meetingtime' in data:
             days, times = data['meetingtime'].split()
-            data['days'] = [VALID_DAYS[x] for x in days]
+            days = [VALID_DAYS[x] for x in days]
 
-            start, end = times.split('-')
-            start_h, start_m = start.split(":")
-            end_h, end_m = end.split(":")
-
-            data['from_time'] = time(int(start_h), int(start_m))
-            data['to_time'] = time(int(end_h), int(end_m))
-        return data
+            for day in days:
+                start, end = times.split('-')
+                schedule[day].append([start, end])
+        return dict(schedule)
 
     def is_valid(self, raise_exception=False):
         self.initial_data = self.validate(self.initial_data)

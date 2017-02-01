@@ -46,14 +46,28 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
 
     - `id`: The OfficeHours's unique ID
     - `user`: The User ID for the user that created/owns the object.
-    - `from_time`: Starting time.
-    - `to_time`: Ending time.
-    - `days`: An array of strings; The days on which the hours are available.
-    - `meetingtime`: A string representing a condensed version of the meeting
-      time and days for these office hours. e.g. `MWF 08:30-10:30`.
+    - `schedule`: a JSON blob representing the schedule hours during the week.
     - `updated_on`: Time at which the object was updated.
     - `created_on`: Time at which the object was created.
     - `expires_on`: The time at which the entry will expire
+
+
+    ### Schedule format:
+
+    A JSON object whose keys are days of the week, and whose values are
+    2-tuples (arrays) of the start/ending times for set office hours;
+    For example, `'DAY': [[from_time, to_time], ... ],`. The following is
+    and example:
+
+        {
+            'Monday': [
+                ["8:30", "10:30]
+            ],
+            'Friday': [
+                ["15:30", "16:30],
+                ["14:30", "15:00"]
+            ]
+        }
 
     ## Creating Office Hours
 
@@ -61,9 +75,7 @@ class OfficeHoursViewSet(mixins.CreateModelMixin,
     information to create office hours:
 
         {
-            'from_time': 'START TIME',
-            'to_time': 'END TIME',
-            'days': ['Monday', 'Tuesday', 'Friday],
+            'schedule':  ...
         }
 
     ### Alternative POST format
