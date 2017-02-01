@@ -3,7 +3,7 @@ from random import sample
 from string import ascii_uppercase, digits
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
@@ -35,23 +35,22 @@ DAYS_SORT = {
 
 class OfficeHours(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    from_time = models.TimeField()
-    to_time = models.TimeField()
-    days = ArrayField(
-        models.CharField(max_length=32, blank=True),
-        default=list,
-        blank=True,
-    )
+    # The OfficeHours schedule; We want data that looks like this
+    # {
+    #   'DAY': [[from_time, to_time], ... ],
+    #   ...
+    #   'Friday': [["15:30", "16:30], ["14:30", "15:00"], ]
+    # }
+    schedule = JSONField(default={}, blank=True)
     expires_on = models.DateTimeField(blank=True, null=True)
     updated_on = models.DateTimeField(auto_now=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        days = "".join([d[0] for d in self.days]).upper()
-        return "{} - {} {}".format(self.from_time, self.to_time, days)
+        return "Officehours #{}".format(self.id)
 
     class Meta:
-        ordering = ['from_time', 'to_time']
+        ordering = ['created_on', ]
         verbose_name = "Office Hours"
         verbose_name_plural = "Office Hours"
 
@@ -67,14 +66,8 @@ class OfficeHours(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def meetingtime(self):
-        """Return a condensed string format for the days and times."""
-        days = [DAYS[d] for d in sorted(self.days, key=DAYS_SORT.get)]
-        return "{} {}-{}".format(
-            "".join(days),
-            self.from_time.strftime("%H:%M"),
-            self.to_time.strftime("%H:%M")
-        )
+    def days(self):
+        return list(self.schedule.keys())
 
     def get_absolute_url(self):
         return reverse('officehours:officehours-details', args=[self.id])
