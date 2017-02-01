@@ -47,6 +47,24 @@
                 <i class="fa fa-comment-o"></i> Contact
               </a>
             </li>
+            <li>Office Hours:
+              {% for oh in course.get_officehours %}
+                {% if oh.schedule %}
+                {% for day, hours_list in  oh.get_schedule %}
+                  <dl>
+                    <dt>{{ day }}</dt>
+                    <dd>
+                    {% for from_time, to_time in hours_list %}
+                      <span>{{ from_time }} - {{ to_time }}</span><br/>
+                    {% endfor %}
+                    </dd>
+                  </dl>
+                {% empty %}
+                  <span>n/a.</span>
+                {% endfor %}
+                {% endif %}
+              {% endfor %}
+            </li>
           </ul>
         </li>
       {% endfor %}

@@ -337,10 +337,7 @@ def schedule(request):
 
     student_schedule = request.user.course_set.all()
     teaching_schedule = request.user.teaching.all()
-    office_hours = OfficeHours.objects.filter(
-        user=request.user,
-        expires_on__gt=timezone.now(),
-    )
+    office_hours = OfficeHours.objects.current().filter(user=request.user)
 
     context = {
         'student_schedule': student_schedule,
