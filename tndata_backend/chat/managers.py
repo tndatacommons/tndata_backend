@@ -28,7 +28,7 @@ class ChatMessageManager(models.Manager):
         return self.get_queryset().filter(room=room_name)
 
     def recent(self, since=15):
-        """Return a queryset of unread, `recent` ChatMessage objects.
+        """Return a queryset of *recent* ChatMessage objects.
 
         The times for which items are considered recent include:
 
@@ -38,4 +38,4 @@ class ChatMessageManager(models.Manager):
         """
         since = timezone.now() - timedelta(minutes=since)
         queryset = self.get_queryset()
-        return queryset.filter(created_on__gte=since)
+        return queryset.filter(created_on__gt=since)
