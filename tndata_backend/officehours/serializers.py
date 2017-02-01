@@ -124,11 +124,15 @@ class CourseSerializer(ObjectTypeModelSerializer):
             for student in students
         ]
         user = User.objects.get(pk=results['user'])
+        officehours = OfficeHours.objects.current().filter(user=user)
+        officehours = list(officehours.values_list("schedule", flat=True))
+
         results['teacher'] = {
             'id': user.id,
             'name': user.get_full_name(),
             'username': user.username,
             'email': user.email,
             'avatar': user.userprofile.google_image,
+            'officehours': officehours,
         }
         return results
