@@ -26,50 +26,50 @@
 {% endif %}
 
 {# Student Schedule #}
-{% if is_student %}
 <div class="column column-block" id="student-schedule">
   <div class="card">
-    <div class="card-divider">Your Schedule</div>
+    <div class="card-divider">Student Schedule</div>
     <div class="card-section">
-
-      <ul class="vertical menu" data-accordion-menu>
-      {% for course in student_schedule %}
-        <li class="clearfix">
-          <a href="#">
-            <i class="fa fa-calendar"></i>
-            <strong>{{ course.display_time }}</strong>: {{ course.name }}
-          </a>
-          <ul class="menu vertical nested">
-            <li>Location: {{ course.location }}</li>
-            <li>Instructor: {{ course.user.get_full_name }}
-              <a href="{% url 'chat:chat' course.user.id %}"
-                class="button secondary float-right">
-                <i class="fa fa-comment-o"></i> Contact
-              </a>
-            </li>
-            <li>Office Hours:
-              {% for oh in course.get_officehours %}
-                {% if oh.schedule %}
-                {% for day, hours_list in  oh.get_schedule %}
-                  <dl>
-                    <dt>{{ day }}</dt>
-                    <dd>
-                    {% for from_time, to_time in hours_list %}
-                      <span>{{ from_time }} - {{ to_time }}</span><br/>
-                    {% endfor %}
-                    </dd>
-                  </dl>
-                {% empty %}
-                  <span>n/a.</span>
+      {% if is_student %}
+        <ul class="vertical menu" data-accordion-menu>
+        {% for course in student_schedule %}
+          <li class="clearfix">
+            <a href="#">
+              <i class="fa fa-calendar"></i>
+              <strong>{{ course.display_time }}</strong>: {{ course.name }}
+            </a>
+            <ul class="menu vertical nested">
+              <li>Location: {{ course.location }}</li>
+              <li>Instructor: {{ course.user.get_full_name }}
+                <a href="{% url 'chat:chat' course.user.id %}"
+                  class="button secondary float-right">
+                  <i class="fa fa-comment-o"></i> Contact
+                </a>
+              </li>
+              <li>Office Hours:
+                {% for oh in course.get_officehours %}
+                  {% if oh.schedule %}
+                  {% for day, hours_list in  oh.get_schedule %}
+                    <dl>
+                      <dt>{{ day }}</dt>
+                      <dd>
+                      {% for from_time, to_time in hours_list %}
+                        <span>{{ from_time }} - {{ to_time }}</span><br/>
+                      {% endfor %}
+                      </dd>
+                    </dl>
+                  {% empty %}
+                    <span>n/a.</span>
+                  {% endfor %}
+                  {% endif %}
                 {% endfor %}
-                {% endif %}
-              {% endfor %}
-            </li>
-          </ul>
-        </li>
-      {% endfor %}
-      </ul>
+              </li>
+            </ul>
+          </li>
+        {% endfor %}
+        </ul>
       <hr/>
+      {% endif %}
       {# Button to add a code #}
       <a href="{% url 'officehours:add-code' %}" class="button large expanded">
           <i class="fa fa-plus-circle"></i> Add a Code
@@ -77,7 +77,6 @@
     </div>
   </div>
 </div>
-{% endif %}
 
 {# Teacher Schedule #}
 {% if is_teacher %}
