@@ -50,17 +50,17 @@ class OfficeHoursSerializer(ObjectTypeModelSerializer):
         the `MTWRFS H:mm-H:mm`-formatted input.
 
         """
-        # Handle `MTWRFS H:mm-H:mm`-formatted input
-        schedule = defaultdict(list)
-
         if 'meetingtime' in data:
+            # Handle `MTWRFS H:mm-H:mm`-formatted input
+            schedule = defaultdict(list)
             days, times = data['meetingtime'].split()
             days = [VALID_DAYS[x] for x in days]
 
             for day in days:
                 start, end = times.split('-')
                 schedule[day].append([start, end])
-        return dict(schedule)
+            data['schedule'] = dict(schedule)
+        return data
 
     def is_valid(self, raise_exception=False):
         self.initial_data = self.validate(self.initial_data)

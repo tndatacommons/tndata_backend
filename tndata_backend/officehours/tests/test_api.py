@@ -108,7 +108,6 @@ class TestOfficeHoursAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         data = {
-            'user': self.user.id,
             'schedule': {
                 'Friday': [['5:30 pm', '6:30 pm']],
             }
@@ -118,7 +117,8 @@ class TestOfficeHoursAPI(V2APITestCase):
 
         # Check the object.
         hours = OfficeHours.objects.get(pk=response.data['id'])
-        self.assertEqual(sorted(hours.days), sorted(['Friday']))
+        self.assertEqual(hours.days, ['Friday'])
+        self.assertDictEqual(hours.schedule, data['schedule'])
 
     def test_post_hours_authed_alternative(self):
         url = self.get_url('officehours-list')
@@ -133,7 +133,6 @@ class TestOfficeHoursAPI(V2APITestCase):
 
         # Check the object.
         hours = OfficeHours.objects.get(pk=response.data['id'])
-
         self.assertDictEqual(
             hours.schedule,
             {
@@ -163,14 +162,14 @@ class TestOfficeHoursAPI(V2APITestCase):
             HTTP_AUTHORIZATION='Token ' + self.user.auth_token.key
         )
         data = {
-            'schedule': {}
+            'schedule': {'Saturday': [['1:00 pm', '2:00 pm']]}
         }
         response = self.client.put(url, data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # Check the object.
         hours = OfficeHours.objects.get(pk=hours.id)
-        self.assertEqual(hours.schedule, {})
+        self.assertDictEqual(hours.schedule, data['schedule'])
 
     def test_put_hours_authed_alternative(self):
         hours = mommy.make(OfficeHours, user=self.user)
@@ -184,8 +183,16 @@ class TestOfficeHoursAPI(V2APITestCase):
         # Check the object.
         hours = OfficeHours.objects.get(pk=response.data['id'])
 
-        expected = sorted(['Monday', 'Wednesday', 'Thursday'])
-        self.assertEqual(sorted(hours.days), expected)
+        expected = ['Monday', 'Wednesday', 'Thursday']
+        self.assertEqual(hours.days, expected)
+        self.assertDictEqual(
+            hours.schedule,
+            {
+                'Monday': [['13:30', '15:30']],
+                'Wednesday': [['13:30', '15:30']],
+                'Thursday': [['13:30', '15:30']],
+            }
+        )
 
 
 @override_settings(SESSION_ENGINE=TEST_SESSION_ENGINE)
