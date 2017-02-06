@@ -159,7 +159,7 @@ def add_hours(request):
     if request.method == "POST":
         # NEED:
         #
-        # { DAY: [[from-time, to-time], ... ] }
+        # { DAY: [{from: time, to: time}, ... ] }
         # ------------------------------------------------
         selected_days = [
             k for k, v in request.POST.dict().items() if v == 'on'
@@ -173,7 +173,8 @@ def add_hours(request):
             to_times = request.POST.getlist(to_key)
             # zip returns tuples, we need lists to convert to JSON
             results[day] = [
-                list(pair) for pair in list(zip(from_times, to_times))
+                {"from": from_time, "to": to_time}
+                for from_time, to_time in list(zip(from_times, to_times))
             ]
         if results:
             OfficeHours.objects.create(user=request.user, schedule=results)

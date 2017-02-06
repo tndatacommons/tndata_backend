@@ -13,8 +13,8 @@
         <li>
           <strong>{{ day }}</strong>
           <ul>
-          {% for from_time, to_time in hours_list %}
-            <li>{{ from_time }} - {{ to_time }}</li>
+          {% for obj in hours_list %}
+            <li>{{ obj.from }} - {{ obj.to }}</li>
           {% endfor %}
           </ul>
         </li>

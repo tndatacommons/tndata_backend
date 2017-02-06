@@ -37,11 +37,14 @@ DAYS_SORT = {
 
 class OfficeHours(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    # The OfficeHours schedule; We want data that looks like this
+    # The OfficeHours schedule; We want data that looks like this:
     # {
-    #   'DAY': [[from_time, to_time], ... ],
+    #   'DAY': [{"from": "...", "to": "..."}, ... ],
     #   ...
-    #   'Friday': [["15:30", "16:30], ["14:30", "15:00"], ]
+    #   'Friday': [
+    #       {"from": "15:30", "to": "16:30"},
+    #       {"from": "14:30", "to": "15:00"},
+    #   ]
     # }
     schedule = JSONField(default={}, blank=True)
     expires_on = models.DateTimeField(blank=True, null=True)
@@ -80,7 +83,14 @@ class OfficeHours(models.Model):
 
         The format is:
 
-            [(day, [[from-time, to-time], ...]),  ... ]
+            [
+                (day, [
+                        {from: <time>, to: <time>},
+                        ...
+                      ]
+                ),
+                ...
+            ]
 
         """
         schedule = list(self.schedule.items())
