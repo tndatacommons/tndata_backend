@@ -58,6 +58,7 @@ export default class Chat extends Component {
 
     renderMessageList() {
         // NOTE: Each object in our array of history looks like:
+        //
         // {
         //  created_on: "2017-01-05 21:57:39+0000"
         //  id:63
@@ -67,6 +68,7 @@ export default class Chat extends Component {
         //  user:995
         //  user_full_name:"Brad Montgomery"
         //  user_username:"342ec11a7990133827bc6e66f381ee"
+        //  avatar: "//lh5.googleusercontent.com/.../photo.jpg"
         // }
 
         // Make sure our history is sorted by date (oldest listed first).
@@ -80,14 +82,17 @@ export default class Chat extends Component {
             // must be the same.
             return 0;
         })
-        // then map the history attributes to those that we use to render new messages.
+
+        // then map the history attributes to those that we use to
+        // render new messages.
         const history = Array.from(historySorted, function(obj) {
             return {
                 id: obj.id,
                 text: obj.text,
                 from: obj.user_full_name,
                 from_id: obj.user,
-                avatar: '',
+                avatar: obj.avatar,
+                created: obj.created_on
             }
         });
 
