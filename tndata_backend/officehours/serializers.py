@@ -124,8 +124,11 @@ class CourseSerializer(ObjectTypeModelSerializer):
             for student in students
         ]
         user = User.objects.get(pk=results['user'])
-        officehours = OfficeHours.objects.current().filter(user=user)
-        officehours = list(officehours.values_list("schedule", flat=True))
+
+        # XXX this is a kind of a hack. We'll only list the latest officehours
+        # XXX object so the app doesn't have to deal w/ a list of things.
+        hours = OfficeHours.objects.current().filter(user=user)
+        hours = hours.latest("created_on")
 
         results['teacher'] = {
             'id': user.id,
@@ -133,6 +136,6 @@ class CourseSerializer(ObjectTypeModelSerializer):
             'username': user.username,
             'email': user.email,
             'avatar': user.userprofile.google_image,
-            'officehours': officehours,
+            'officehours': hours.schedule,
         }
         return results
