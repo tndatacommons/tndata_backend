@@ -1,106 +1,143 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CHAT (React+MDL)</title>
-  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-  <link rel="stylesheet"
-        href="//fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet"
-        href="//code.getmdl.io/1.2.1/material.indigo-pink.min.css">
-  <script defer src="//code.getmdl.io/1.2.1/material.min.js"></script>
-  <style type="text/css">
-    .chatForm {
-      clear: both;
-      margin:0 1em .5em 1em;
-      position: relative;
-    }
-    .chatForm button {
-      position: absolute;
-      right: 0;
-      bottom: 0;
-    }
-    /* --- Chat container -------------------------------------------------- */
-    .chatContainer {  /* contains a <ul> and a <form> */
-    }
-    .chatContainer ul {
-      list-style-type: none;
-      margin:0;
-      padding:0;
-    }
-    .chatContainer ul li {
-      padding: 5px;
-      text-align: right;
-      clear:both;
-    }
-    .chatContainer ul li .chatBubble {
-      padding: 10px 20px;
-      margin:0 0 5px 0;
-      background-color: #cfa;
-      border-radius: 15px;
-      display:inline-block;
-      max-width: 60%;
-      text-align: left;
-    }
-    .chatContainer ul li .chatBubble.reply {
-      background-color: #bdf;
-      float:left;
-    }
-    .chatContainer ul li .notice {
-      background-color: transparent;
-      text-align: right;
-      font-style: italic;
-      font-size: smaller;
-    }
-    .chatContainer ul li .chatBubble img.avatar {
-      width: 30px;
-      height: 30px;
-      border-radius: 25px;
-      padding: 0;
-      margin: -20px 8px 0px -30px;
-      float: left;
-      border: 1px solid #bbb;
-    }
-    /* --- /Chat container ------------------------------------------------- */
-  </style>
-</head>
-<body>
-  <div class="mdl-layout mdl-js-layout">
-    <header class="mdl-layout__header mdl-color">
-      <div class="mdl-layout-icon"></div>
-      <div class="mdl-layout__header-row">
-        <span class="mdl-layout__title">Simple Layout</span>
-        <div class="mdl-layout-spacer"></div>
-        <nav class="mdl-navigation">
-          <a class="mdl-navigation__link" href="#">Nav link 1</a>
-          <a class="mdl-navigation__link" href="#">Nav link 2</a>
-          <a class="mdl-navigation__link" href="#">Nav link 3</a>
-        </nav>
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="">
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.3.0/css/foundation.min.css">
+    <link rel="stylesheet"
+      href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Fira+Mono:700" rel="stylesheet">
+    <title>OFFICE HOURS</title>
+    <style type="text/css">
+      /* --- Chat container -------------------------------------------------- */
+      .chatContainer {  /* contains a <ul> and a <form> */
+      }
+      .chatContainer ul {
+        list-style-type: none;
+        margin:0;
+        padding:0;
+      }
+      .chatContainer ul li {
+        padding: 5px;
+        text-align: right;
+        clear:both;
+      }
+      .chatContainer ul li .chatBubble {
+        padding: 10px 20px;
+        margin:0 0 5px 0;
+        background-color: #cfa;
+        border-radius: 15px;
+        display:inline-block;
+        max-width: 60%;
+        text-align: left;
+      }
+      .chatContainer ul li .chatBubble.reply {
+        background-color: #bdf;
+        float:left;
+      }
+      .chatContainer ul li .notice {
+        background-color: transparent;
+        text-align: right;
+        font-style: italic;
+        font-size: smaller;
+      }
+      .chatContainer ul li .chatBubble img.avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 25px;
+        padding: 0;
+        margin: -20px 8px 0px -30px;
+        float: left;
+        border: 1px solid #bbb;
+      }
+      /* --- /Chat container ------------------------------------------------- */
+    </style>
+  </head>
+  <body>
+
+    <div class="off-canvas-wrapper">
+      <div class="off-canvas-wrapper-inner" data-off-canvas-wrapper>
+
+        <div class="off-canvas position-left reveal-for-large"
+             id="side-menu"
+             data-off-canvas
+             data-position="left">
+          <div class="row column">
+            <nav>
+              <ul class="fa-ul">
+                <li>
+                  <i class="fa-li fa fa-home"></i>
+                  <a href="/">Home</a>
+                </li>
+                <li>
+                  <i class="fa-li fa fa-calendar"></i>
+                  <a href="#">Schedule</a>
+                </li>
+                <li>
+                  <i class="fa-li fa fa-mobile"></i>
+                  <a href="#">Phone</a>
+                </li>
+                <li>
+                  <i class="fa-li fa fa-info-circle"></i>
+                  <a href="#">Help</a>
+                </li>
+                <li>
+                  <i class="fa-li fa fa-sign-in"></i>
+                  <a href="#">Log in</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <div class="off-canvas-content" data-off-canvas-content>
+          <div class="title-bar hide-for-large">
+            <div class="title-bar-left">
+              <button class="menu-icon" type="button" data-open="side-menu"></button>
+              <span class="title-bar-title">
+                Chat Dev Site.
+              </span>
+            </div>
+          </div>
+
+          <div class="row small-up-1 medium-up-1 large-up-2">
+            <!-- CHAT ROOT WRAPPER -->
+            <div class="column column-block">
+              <div class="callout">
+                <div id="root"
+                     class="chatContainer"
+                     data-token="113501795d5df37f6086ac681c5e458a8f857f2c"
+                     data-room='chat-1-995'></div>
+              </div>
+            </div>
+            <!-- /CHAT ROOT WRAPPER -->
+          </div>
+
+          <hr>
+          <footer>
+            <div class="row">
+              <div class="small-12 medium-12 large-12 columns">
+                <ul class="no-bullet">
+                  <li><a href="#">Help</a></li>
+                  <li><a href="#">Privacy and Terms</a></li>
+                  <li><a href="#">User Agreement</a></li>
+                </ul>
+              </div>
+            </div>
+          </footer>
+
+        </div>
       </div>
-    </header>
-    <div class="mdl-layout__drawer">
-      <span class="mdl-layout__title">Simple Layout</span>
-      <nav class="mdl-navigation">
-        <a class="mdl-navigation__link" href="#">Nav link 1</a>
-        <a class="mdl-navigation__link" href="#">Nav link 2</a>
-        <a class="mdl-navigation__link" href="#">Nav link 3</a>
-      </nav>
     </div>
-    <main class="mdl-layout__content" style="margin-top:40px;">
 
-      <!-- responsive Grid Example -->
-      <div class="mdl-grid">
-        <div class="mdl-cell mdl-cell--3-col"></div>
-        <div id="root"
-             class="mdl-cell mdl-cell--6-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-card mdl-shadow--4dp"
-             data-token="113501795d5df37f6086ac681c5e458a8f857f2c"
-             data-room='chat-1-995'></div>
-        <div class="mdl-cell mdl-cell--3-col"></div>
-      </div>
-
-    </main>
-  </div> <!-- /mdl-layout -->
-
-</body>
+    <!-- Compressed JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.3.0/js/foundation.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
 </html>
