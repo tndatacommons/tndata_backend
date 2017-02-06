@@ -1,6 +1,7 @@
 from utils.serializers import ObjectTypeModelSerializer
 from rest_framework import serializers
 from . models import ChatMessage
+from . utils import get_user_details
 
 
 class ChatMessageSerializer(ObjectTypeModelSerializer):
@@ -17,7 +18,10 @@ class ChatMessageSerializer(ObjectTypeModelSerializer):
         results = super().to_representation(obj)
         results['user_id'] = str(obj.user.id)
         results['user_username'] = obj.user.username
-        results['user_full_name'] = obj.user.get_full_name()
+
+        name, avatar = get_user_details(obj.user)
+        results['user_full_name'] = name
+        results['avatar'] = avatar
 
         # Use Milliseconds instead of Microseconds. We have to split the
         # time zone from the time, then shave off the last 3 digits of the time,
