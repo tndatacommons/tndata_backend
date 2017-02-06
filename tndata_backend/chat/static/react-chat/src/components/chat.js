@@ -1,4 +1,6 @@
 import _ from 'lodash';
+import moment from 'moment';
+
 import React, { Component } from 'react';
 import Websocket from './websocket';
 import AutoLinkText from 'react-autolink-text';
@@ -99,9 +101,14 @@ export default class Chat extends Component {
         // Combine the history with the current session's messages.
         const messages = history.concat(this.state.messages);
 
+        let lastDay = null;
+        let currentDay = null;
         return messages.map((msg) => {
+            currentDay = moment(msg.created).format("dddd, MMMM Do YYYY");
+
             // A Reply is a message from the other user but not the system.
             const isReply = this.props.user.userId !== msg.from_id && msg.from !== 'system';
+
             // Only show avatars for actual users.
             let avatar = '';
             if (this.props.user.avatar && !isReply && msg.from !== 'system') {
@@ -139,11 +146,15 @@ export default class Chat extends Component {
                 );
             }
 
-            return (
+            content = (
                 <li key={msg.id}>
+                    {currentDay != lastDay &&
+                        <div className="notice clearfix">{currentDay}</div>}
                     {content}
                 </li>
             );
+            lastDay = currentDay;
+            return content
         });
     }
 
