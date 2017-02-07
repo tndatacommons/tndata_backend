@@ -18,8 +18,7 @@ if(PORT.length > 0) {
 }
 const ROOT_URL = window.location.hostname + PORT;
 const WS_HOST = PROTOCOLS[window.location.protocol] + ROOT_URL;
-
-const API_HOST = '//' + ROOT_URL;
+const API_HOST = window.location.protocol + '//' + ROOT_URL;
 
 
 class App extends Component {
