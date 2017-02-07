@@ -179,6 +179,7 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 # Update user fields.
                 user.first_name = data.get('first_name', '')
                 user.last_name = data.get('last_name', '')
+                user.is_active = True  # Auto-activate accounts from Google
                 user.save()
 
                 if created:
