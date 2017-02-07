@@ -1,0 +1,33 @@
+{% extends "officehours/base.html" %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block title %}Sign Up{% endblock %}
+
+
+{% block content %}
+<div class="column column-block">
+  <div class="callout">
+
+  {% if form %}
+    <p>Complete the following form to create your account:</p>
+    <form action="{% url 'officehours:create-account' %}" method="post">
+      {% crispy form %}
+      {% crispy password_form %}
+      <hr/>
+      <p style="text-center;">
+        <button class="button" type="submit">Sign Up</button>
+      </p>
+      <p>
+        <em>
+          Creating an account indicates that you agree to our
+          <a href="/terms/" target="_blank">terms of service</a>,
+          <a href="/privacy/" target="_blank">privacy policy</a>, and
+          <a href="/license/" target="_blank">content license agreement</a>.
+        </em>
+      </p>
+    </form>
+  {% endif %}
+  </div>
+</div>
+{% endblock %}

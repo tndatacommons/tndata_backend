@@ -22,12 +22,14 @@
       <span class="sr-only">Loading...</span>
     </div>
 
+    <p class="pull-right">Or <a href="{% url 'officehours:create-account' %}">
+      create an account</a></p>
+
     {# Google Sign in button #}
     <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
     {% if user.is_authenticated %}
       <p class="muted"><a href="#" onclick="signOut();">Sign out?</a></p>
     {% endif %}
-
     <hr/>
     <p>
       <em>

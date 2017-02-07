@@ -2,17 +2,21 @@ from collections import Counter
 from datetime import datetime
 
 from django.contrib import messages
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth import login as login_user
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 from django.views.generic import TemplateView
-from django.utils import timezone
 
 from chat.models import ChatMessage
 from userprofile.models import UserProfile
 from notifications.sms import format_numbers
+from userprofile.forms import UserForm
+from utils.forms import SetNewPasswordForm
+from utils.user_utils import username_hash, get_client_ip
 
 from .forms import ContactForm
 from .models import Course, OfficeHours
@@ -349,3 +353,57 @@ def schedule(request):
         'chat_data': chat_data,
     }
     return render(request, 'officehours/schedule.html', context)
+
+
+def create_account(request):
+    """Yet another way to create an account."""
+    if request.method == "POST":
+        form = UserForm(request.POST)
+        password_form = SetNewPasswordForm(request.POST, prefix="pw")
+        if form.is_valid() and password_form.is_valid():
+            User = get_user_model()
+            email = form.cleaned_data['email'].strip().lower()
+
+            try:
+                # Ensure the email isn't already tied to an account
+                user = User.objects.get(email__iexact=email)
+                messages.info(request, "It looks like you already have an "
+                                       "account! Log in to continue.")
+                return redirect("officehours:login")
+            except User.DoesNotExist:
+                # Create & activate the account
+                # XXX This is a hack to keep these users from getting the
+                # XXX `selected_by_default` content from the `goals` app.
+                # XXX We *must* set this before we craete the user, hence the
+                # XXX use of the email in the key.
+                _key = "omit-default-selections-{}".format(slugify(email))
+                cache.set(_key, True, 30)
+
+                user = form.save(commit=False)
+                user.is_active = True
+                user.username = username_hash(email)
+                user.set_password(password_form.cleaned_data['password'])
+                user.save()
+
+                # Set their IP address.
+                user.userprofile.ip_address = get_client_ip(request)
+                user.userprofile.save()
+
+                user = authenticate(
+                    email=email,
+                    password=password_form.cleaned_data['password']
+                )
+                login_user(request, user)
+                return redirect("officehours:index")
+        else:
+            messages.error(request, "We could not process your request. "
+                                    "Please see the details, below.")
+    else:
+        password_form = SetNewPasswordForm(prefix='pw')
+        form = UserForm()
+
+    context = {
+        'form': form,
+        'password_form': password_form,
+    }
+    return render(request, "officehours/create_account.html", context)

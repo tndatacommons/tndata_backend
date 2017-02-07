@@ -71,4 +71,5 @@ urlpatterns = [
     url(r'^about/$', views.AboutView.as_view(), name='about'),
     url(r'^contact/$', views.ContactView.as_view(), name='contact'),
     url(r'^help/$', views.HelpView.as_view(), name='help'),
+    url(r'^create-account/$', views.create_account, name='create-account'),
 ]
