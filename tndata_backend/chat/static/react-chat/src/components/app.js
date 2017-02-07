@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { Component } from 'react';
+import { debug } from './utils';
 
 import Chat from './chat';
 
@@ -50,12 +51,14 @@ class App extends Component {
     fetchMessageHistory(currentUserId) {
         // NOTE: Called *after* we know the user's details
         const url = API_HOST + '/api/chat/history/?room=' + this.props.room;
+        debug("Fetching history from " + url);
         axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
         axios.get(url).then((resp) => {
             const data = resp.data;
             if(data.count > 0) {
                 this.setState({user: this.state.user, chatHistory: data.results});
             }
+            debug("Got " + data.count + " objects");
         });
 
         // Doing this means we're looking at the chat room, so just mark

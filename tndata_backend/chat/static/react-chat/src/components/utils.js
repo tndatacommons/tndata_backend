@@ -1,5 +1,12 @@
 import _ from 'lodash';
 
+function debug(msg) {
+    const debugEl = document.getElementById("extra-debug");
+    if(debugEl) {
+        debugEl.innerHTML = debugEl.innerHTML + "<p>" + msg + "</p>";
+    }
+}
+
 /*
  * Stolen from:
  * https://gist.github.com/mathewbyrne/1280286
@@ -62,4 +69,4 @@ function extractVideo(text) {
     return result;
 }
 
-export { slugify, extractVideo };
+export { debug, slugify, extractVideo };

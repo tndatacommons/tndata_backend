@@ -10,9 +10,8 @@
          data-room="{{ room }}"></div>
   </div>
 </div>
-<script type="text/javascript" src="{% static 'js/react_chat-201702062330.js' %}"></script>
-{% endblock %}
-
-{% block fab %}
-  {# no fab on this screen #}
+{% if debug or show_debug_stuff %}
+  <div id="extra-debug"></div>
+{% endif %}
+<script type="text/javascript" src="{% static 'js/react_chat-201702071516.js' %}"></script>
 {% endblock %}
