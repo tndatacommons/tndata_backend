@@ -25,7 +25,7 @@ class IndexView(TemplateView):
 def chat_view(request, recipient_id):
     context = {
         'room': generate_room_name([request.user.id, recipient_id]),
-        'show_debug_stuff': request.user.is_staff or (request.user.id in [264, 1009, 995])
+        'show_debug_stuff': request.user.is_superuser,
     }
     return render(request, "chat/chat.html", context)
 
