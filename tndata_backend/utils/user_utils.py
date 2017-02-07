@@ -152,7 +152,7 @@ def hash_value(input_string):
 
 def username_hash(email, max_length=30):
     """Generates a Username hash from an email address."""
-    return hash_value(email)[:max_length]
+    return hash_value(email.strip().lower())[:max_length]
 
 
 def create_inactive_user(email):
