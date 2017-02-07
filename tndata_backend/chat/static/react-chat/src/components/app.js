@@ -44,6 +44,7 @@ class App extends Component {
     }
 
     componentWillMount() {
+        debug("== in componentWillMount()");
         this.fetchUser();
         this.fetchProfile();
     }
@@ -79,6 +80,7 @@ class App extends Component {
     fetchUser() {
         const url = API_HOST + '/api/users/';
         axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
+        debug("Fetching User data from " + url + ", with token=" + this.props.apiToken);
         axios.get(url).then((resp) => {
             const data = resp.data;
             if(data.count === 1) {
@@ -103,6 +105,7 @@ class App extends Component {
     fetchProfile() {
         const url = API_HOST + '/api/users/profile/';
         axios.defaults.headers.common['Authorization'] = 'Token ' + this.props.apiToken;
+        debug("Fetching Profile from " + url + ", with token=" + this.props.apiToken);
         axios.get(url).then((resp) => {
             const data = resp.data;
             if(data.count === 1) {
