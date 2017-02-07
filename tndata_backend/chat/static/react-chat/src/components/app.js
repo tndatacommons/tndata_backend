@@ -68,6 +68,9 @@ class App extends Component {
         axios.put(readUrl, payload).then((resp) => {
             if(resp.status !== 204) {
                 console.log("Could not mark as read: ", resp);
+                debug("FAIL | could not mark messages as read");
+            } else {
+                debug("Marked room messages as read.")
             }
         });
 
@@ -87,8 +90,11 @@ class App extends Component {
                     lastName: data.results[0].last_name,
                     token: this.props.apiToken
                 }
+                debug("Got User Data: " + JSON.stringify(userData));
                 this.setState({user: userData, chatHistory: this.state.chatHistory});
                 this.fetchMessageHistory(data.results[0].id);
+            } else {
+                debug("FAIL | fetching user data: " + JSON.stringify(data));
             }
         });
 
@@ -103,6 +109,9 @@ class App extends Component {
                 this.setState({
                     avatar: data.results[0].google_image
                 });
+                debug("Got Profile: " + JSON.stringify(data));
+            } else {
+                debug("FAIL | fetching profile: " + JSON.stringify(data));
             }
         });
     }

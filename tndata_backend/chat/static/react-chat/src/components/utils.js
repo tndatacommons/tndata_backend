@@ -3,7 +3,8 @@ import _ from 'lodash';
 function debug(msg) {
     const debugEl = document.getElementById("extra-debug");
     if(debugEl) {
-        debugEl.innerHTML = debugEl.innerHTML + "<p>" + msg + "</p>";
+        debugEl.innerHTML = debugEl.innerHTML +
+            "<p style='border-top:1px solid #aaa;margin:0;padding:5px;font-family:monospace;'>" + msg + "</p>";
     }
 }
 
