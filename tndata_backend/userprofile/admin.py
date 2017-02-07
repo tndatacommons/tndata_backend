@@ -79,13 +79,21 @@ class UserProfileInline(admin.StackedInline):
 
 class CustomUserAdmin(UserAdmin):
     """Override the default UserAdmin class so we can attach a custom action."""
-    actions = [remove_app_data]
     list_display = ('email', 'full_name', 'is_staff', 'date_joined', 'username')
     inlines = [UserProfileInline]
+    actions = [remove_app_data, 'set_active', 'set_inactive']
 
     def full_name(self, obj):
         return obj.get_full_name()
     full_name.admin_order_field = 'first_name'
+
+    def set_active(self, request, queryset):
+        queryset.update(is_active=True)
+    set_active.short_description = "Activate Accounts"
+
+    def set_inactive(self, request, queryset):
+        queryset.update(is_active=False)
+    set_inactive.short_description = "Deactivate Accounts"
 
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)

@@ -158,10 +158,8 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 _key = "omit-default-selections-{}".format(slugify(email))
                 cache.set(_key, True, 30)
 
-                user, created = User.objects.get_or_create(
-                    username=username_hash(email),
-                    email=email
-                )
+                # XXX The only unique thing about user accounts is email.
+                user, created = User.objects.get_or_create(email__iexact=email)
 
                 # Update the Profile fields.
                 profile = user.userprofile
@@ -177,6 +175,8 @@ class UserViewSet(VersionedViewSetMixin, viewsets.ModelViewSet):
                 profile.save()
 
                 # Update user fields.
+                if not user.username:
+                    user.username = username=username_hash(email)
                 user.first_name = data.get('first_name', '')
                 user.last_name = data.get('last_name', '')
                 user.is_active = True  # Auto-activate accounts from Google
