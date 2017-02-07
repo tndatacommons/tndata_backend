@@ -1,12 +1,15 @@
 import _ from 'lodash';
 
 
-function debug(msg) {
+function debug(msg, toConsole=false) {
     const debugEl = document.getElementById("extra-debug");
-    console.log("debugEl => ", debugEl);
-    if(debugEl) {
+    if(toConsole || !debugEl) {
+        console.log(msg)
+    } else if(debugEl) {
+        const style = "border-top:1px solid #aaa;margin:0;padding:5px;" +
+                      "font-family:monospace;";
         debugEl.innerHTML = debugEl.innerHTML +
-            "<p style='border-top:1px solid #aaa;margin:0;padding:5px;font-family:monospace;'>" + msg + "</p>";
+            "<p style='" + style + "'>" + msg + "</p>";
     }
 }
 

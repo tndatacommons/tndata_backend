@@ -52,8 +52,6 @@ export default class Chat extends Component {
             text: message,
             token: this.props.user.token,
         });
-        console.log("SENDING:  ", toSend);
-
         this.setState({messages: this.state.messages, current: toSend});
         inputElement.value = ""; // clear the input.
     }

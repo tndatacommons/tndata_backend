@@ -67,7 +67,6 @@ class App extends Component {
         const payload = {'room': this.props.room }
         axios.put(readUrl, payload).then((resp) => {
             if(resp.status !== 204) {
-                console.log("Could not mark as read: ", resp);
                 debug("FAIL | could not mark messages as read");
             } else {
                 debug("Marked room messages as read.")
@@ -123,7 +122,7 @@ class App extends Component {
         const ws_url = WS_HOST + path +
             "?room=" + this.props.room +
             "&token=" + this.props.apiToken;
-        console.log("WS_URL = ", ws_url);
+        debug("WS_URL = " + ws_url, true);
         return (
           <div>
             <Chat
