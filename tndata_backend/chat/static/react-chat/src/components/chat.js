@@ -106,6 +106,8 @@ export default class Chat extends Component {
 
             // A Reply is a message from the other user but not the system.
             const isReply = this.props.user.userId !== msg.from_id && msg.from !== 'system';
+            // Only show message times on replies.
+            const timestamp = isReply ? moment(msg.created).format("LT") : '';
 
             // Only show avatars for actual users.
             let avatar = '';
@@ -149,6 +151,7 @@ export default class Chat extends Component {
                     {currentDay != lastDay &&
                         <div className="notice clearfix">{currentDay}</div>}
                     {content}
+                    <span className="timestamp">{timestamp}</span>
                 </li>
             );
             lastDay = currentDay;
