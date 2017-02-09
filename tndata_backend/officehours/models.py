@@ -128,8 +128,8 @@ class Course(models.Model):
     name = models.CharField(max_length=256)
     name_slug = models.SlugField(max_length=256, blank=True)
 
-    start_time = models.TimeField()
-    location = models.CharField(max_length=256)
+    start_time = models.TimeField(blank=True)
+    location = models.CharField(max_length=256, blank=True)
     days = ArrayField(
         models.CharField(max_length=32, blank=True),
         default=list,
