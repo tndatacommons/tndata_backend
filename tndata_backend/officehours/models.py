@@ -107,7 +107,7 @@ class OfficeHours(models.Model):
 
 
 def generate_course_code(length=4):
-    """Generate a 4-character code consistign of Uppercase letters + digits,
+    """Generate a 4-character code consisting of Uppercase letters + digits,
     and ensure that it's not already associated with a Course.
 
     Returns a string.
@@ -128,7 +128,7 @@ class Course(models.Model):
     name = models.CharField(max_length=256)
     name_slug = models.SlugField(max_length=256, blank=True)
 
-    start_time = models.TimeField(blank=True)
+    start_time = models.TimeField(blank=True, null=True)
     location = models.CharField(max_length=256, blank=True)
     days = ArrayField(
         models.CharField(max_length=32, blank=True),
