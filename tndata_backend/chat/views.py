@@ -35,9 +35,15 @@ def contacts(request):
 
 @login_required
 def chat_view(request, recipient_id):
+    User = get_user_model()
+    try:
+        recipient = User.objects.get(pk=recipient_id)
+    except User.DoesNotExist:
+        recipient = None
     context = {
         'room': generate_room_name([request.user.id, recipient_id]),
-        'show_debug_stuff': request.user.is_superuser,
+        'show_debug_stuff': None,
+        'recipient': recipient,
     }
     return render(request, "chat/chat.html", context)
 

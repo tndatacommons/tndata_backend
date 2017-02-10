@@ -4,10 +4,18 @@
 {% block content %}
 <div class="column column-block">
   <div class="callout">
+    {% if recipient %}
+    <h3>
+      <i class="fa fa-comment-o"></i>
+      {{ recipient.get_full_name }}
+    </h3>
     <div id="root"
          class="chatContainer"
          data-token="{{user.auth_token.key}}"
          data-room="{{ room }}"></div>
+    {% else %}
+      <p class="lead">Could not find recipient.</p>
+    {% endif %}
   </div>
 </div>
 {% comment %}
@@ -15,5 +23,7 @@
   <div id="extra-debug"></div>
 {% endif %}
 {% endcomment %}
+{% if recipient %}
 <script type="text/javascript" src="{% static 'js/react_chat-201702092322.js' %}"></script>
+{% endif %}
 {% endblock %}
