@@ -151,10 +151,12 @@ class Course(models.Model):
         verbose_name_plural = "Courses"
 
     def display_time(self):
-        return "{} {}".format(
-            self.start_time.strftime("%I:%M%p"),
-            "".join(d[0] for d in self.days).upper()
-        )
+        if self.start_time:
+            return "{} {}".format(
+                self.start_time.strftime("%I:%M%p"),
+                "".join(d[0] for d in self.days).upper()
+            )
+        return ''
 
     def _set_code(self):
         if not self.code:
@@ -179,11 +181,13 @@ class Course(models.Model):
     @property
     def meetingtime(self):
         """Return a condensed string format for the days and times."""
-        days = [DAYS[d] for d in sorted(self.days, key=DAYS_SORT.get)]
-        return "{} {}".format(
-            "".join(days),
-            self.start_time.strftime("%H:%M"),
-        )
+        if self.days and self.start_time:
+            days = [DAYS[d] for d in sorted(self.days, key=DAYS_SORT.get)]
+            return "{} {}".format(
+                "".join(days),
+                self.start_time.strftime("%H:%M"),
+            )
+        return ''
 
     def get_absolute_url(self):
         return reverse('officehours:course-details', args=[self.id])
