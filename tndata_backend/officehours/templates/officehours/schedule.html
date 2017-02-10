@@ -68,12 +68,14 @@
           </li>
         {% endfor %}
         </ul>
-      <hr/>
       {% endif %}
-      {# Button to add a code #}
-      <a href="{% url 'officehours:add-code' %}" class="button large expanded">
-          <i class="fa fa-plus-circle"></i> Add a Code
-      </a>
+
+      {% if student_schedule|length == 0 %}
+        {# Button to add a code #}
+        <a href="{% url 'officehours:add-code' %}" class="button large expanded">
+            <i class="fa fa-plus-circle"></i> Add a Code
+        </a>
+      {% endif %}
     </div>
   </div>
 </div>
