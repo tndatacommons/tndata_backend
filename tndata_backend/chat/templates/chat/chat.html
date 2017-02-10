@@ -10,8 +10,10 @@
          data-room="{{ room }}"></div>
   </div>
 </div>
+{% comment %}
 {% if debug or show_debug_stuff %}
   <div id="extra-debug"></div>
 {% endif %}
+{% endcomment %}
 <script type="text/javascript" src="{% static 'js/react_chat-201702092322.js' %}"></script>
 {% endblock %}
