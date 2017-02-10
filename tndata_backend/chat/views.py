@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import TemplateView
@@ -19,6 +20,17 @@ class IndexView(TemplateView):
         # context['users'] = users
         context['groups'] = ChatGroup.objects.all()
         return context
+
+
+@login_required
+def contacts(request):
+    """Populates a list of all people that you've had a conversation with."""
+    User = get_user_model()
+    ids = set(request.user.chatmessage_set.all().values_list("recipients", flat=True))
+    context = {
+        'contacts': User.objects.filter(pk__in=ids)
+    }
+    return render(request, "chat/contacts.html", context)
 
 
 @login_required

@@ -33,9 +33,15 @@
         <a href="{% url 'officehours:phone-number' %}">Phone</a>
       </li>
       <li>
+        <i class="fa-li fa fa-address-book-o"></i>
+        <a href="{% url 'chat:contacts' %}">Contacts</a>
+      </li>
+      {% comment %}
+      <li>
         <i class="fa-li fa fa-info-circle"></i>
         <a href="{% url 'officehours:help' %}">Help</a>
       </li>
+      {% endcomment %}
       <li>
         <i class="fa-li fa fa-sign-out"></i>
         <a onclick="signOut();">Log out</a>

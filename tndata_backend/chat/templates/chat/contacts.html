@@ -1,0 +1,31 @@
+{% extends "officehours/base.html" %}
+{% load static from staticfiles %}
+
+{% block content %}
+<div class="column column-block">
+  <div class="callout">
+    <h2>Contacts</h2>
+    <ul class="no-bullet">
+    {% for contact in contacts %}
+      {% with avatar=contact.userprofile.google_image %}
+      <li class="clearfix">
+        <div class="float-left" style="padding-right:10px">
+          {% if avatar %}
+            <img src="{{ avatar }}" class="thumbnail" style="width:30px">
+          {% else %}
+            <i class="fa fa-user-circle-o fa-2x"></i>
+          {% endif %}
+        </div>
+        <a href="{% url 'chat:chat' contact.id %}">
+          {{ contact.get_full_name|default:contact.email }}
+        <a href="{% url 'chat:chat' contact.id %}"
+           class="float-right button small secondary">
+          <i class="fa fa-comment-o"></i> Chat
+        </a>
+      </li>
+      {% endwith %}
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

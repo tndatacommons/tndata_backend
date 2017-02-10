@@ -15,17 +15,9 @@ class ChatMessage(models.Model):
         help_text="Message sender"
     )
     # -------------------------------------------------------------------------
-    # XXX: Right now, rooms are of the form `chat-<userid>-<userid>`, and we
-    # can look up recipients that way, but that's not gonna be the case for
-    # group rooms....
-    #
-    # We need some way to save the message recipient.
-    # IDEA: recipients: a list of user-id's to which the message should have
-    #       gone. We need to be able to look up messages for recipients more accurately
-    # OR: a M2M field for recipeints.
-    #
-    #       user.chat_messages.unread()   # ideal.
-    #
+    # NOTE: Right now, 1-1 chat rooms are of the form `chat-<userid>-<userid>`.
+    # See the `set_chatmessage_recipients` post_save handler to see how
+    # recipients get saved.
     # -------------------------------------------------------------------------
     recipients = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
