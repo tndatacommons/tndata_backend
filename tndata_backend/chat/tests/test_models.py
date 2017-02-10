@@ -86,6 +86,21 @@ class TestChatMessage(TestCase):
             text="Message 3",
         )
 
+    def test_recipients_set(self):
+        """After creating our ChatMessages, they should all have recipients"""
+        self.assertEqual(
+            list(self.message_1.recipients.all()),
+            [self.user_b]
+        )
+        self.assertEqual(
+            list(self.message_2.recipients.all()),
+            [self.user_a]
+        )
+        self.assertEqual(
+            list(self.message_3.recipients.all()),
+            [self.user_b]
+        )
+
     def test__str__(self):
         expected = "Message 1"
         actual = "{}".format(self.message_1)

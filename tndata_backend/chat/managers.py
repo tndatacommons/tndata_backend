@@ -13,14 +13,8 @@ class ChatMessageManager(models.Manager):
         return self.get_queryset().filter(read=False)
 
     def to_user(self, user):
-        """Return a queryset of messages that were sent to the given user.
-
-        NOTE: Since we only save the user that created the message, this
-        filters are the room name, which includes both users' IDs.
-        """
-        results = self.get_queryset().filter(room__icontains=user.id)
-        results = results.exclude(user=user)  # remove messages the user authored
-        return results
+        """Return a queryset of messages that were sent to the given user."""
+        return user.chatmessages_received.all()
 
     def for_users(self, users):
         """Given a pair of users, return the ChatMessages for their chat room."""

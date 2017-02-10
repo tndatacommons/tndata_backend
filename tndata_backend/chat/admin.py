@@ -12,13 +12,18 @@ class ChatGroupAdmin(admin.ModelAdmin):
 
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'room', 'text', 'read', 'created_on')
+    list_display = (
+        'from_user', 'room', 'text', 'read', 'created_on'
+    )
     search_fields = (
         'room', 'text', 'digest',
         'user__first_name', 'user__last_name', 'user__email',
+        'recipients__first_name',
+        'recipients__last_name',
+        'recipients__email',
     )
     list_filter = ('read', )
     raw_id_fields = ('user', )
 
-    def full_name(self, obj):
+    def from_user(self, obj):
         return obj.user.get_full_name() or obj.email

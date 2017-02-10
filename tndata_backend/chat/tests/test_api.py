@@ -176,11 +176,11 @@ class TestChatMessagesAPI(V2APITestCase):
         """Test PUT requests to mark messages as read."""
 
         # Create an unread message in a new room.
-        room = "chat-{}-test".format(self.student.id)
+        room = "chat-{}-{}".format(self.student.id, self.teacher.id)
         mommy.make(
             ChatMessage,
             user=self.student,
-            text="Test Message",
+            text="Testing updated unread message",
             room=room
         )
 
