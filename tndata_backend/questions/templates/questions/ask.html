@@ -1,0 +1,28 @@
+{% extends "officehours/base.html" %}
+
+{% block content %}
+
+
+{# Ask a question... #}
+<div class="column column-block" id="get-started">
+  <nav aria-label="You are here:" role="navigation">
+    <ul class="breadcrumbs">
+      <li><a href="{% url 'questions:index' %}">Questions</a></li>
+      <li>
+        <span class="show-for-sr">Current: </span> Ask a question
+      </li>
+    </ul>
+  </nav>
+
+  <div class="callout">
+    <h2>Ask a question</h2>
+    <form action="{% url 'questions:ask' %}" method="post">
+      {% csrf_token %}
+      {{ form }}
+      <hr/>
+      <input type="submit" value="Ask Question" class="button"/>
+    </form>
+
+  </div> {# / .callout #}
+</div> {# .column #}
+{% endblock %}

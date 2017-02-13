@@ -8,7 +8,7 @@ Getting Started
 ---------------
 
 The easist way to get started is to use the Vagrant-powered virtual machine
-in the [deployment_tools](https://bitbucket.org/tndata/deployment_tools)
+in the (private) [deployment_tools](https://bitbucket.org/tndata/deployment_tools)
 repo. Once provisioned, it will contain all you need to run the development
 server.
 
@@ -17,7 +17,9 @@ Alternatively, you can follow these steps:
 1. Create a python 3 virtual environment, eg: `pyvenv-3.4 env`
 2. Activate the environment: `source env/bin/activate`
 3. Install the requirements: `pip install -r requirements.txt`
-4. Run the development server `cd tndata_backend; python manage.py runserver`
+4. Run the development server `cd tndata_backend; python manage.py runserver`.
+   (See the list of required environment variables in the top of
+   `config/settings/base.py`)
 
 *Note*: This project also uses postgres, redis, and elasticearch, so you'll
 also need those services available to work on everything.

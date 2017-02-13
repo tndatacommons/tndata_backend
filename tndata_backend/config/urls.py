@@ -185,6 +185,7 @@ urlpatterns = [
     url(r'^survey/', include('survey.urls', namespace='survey')),
     url(r'^profile/', include('userprofile.urls', namespace='userprofile')),
     url(r'^officehours/', include('officehours.urls', namespace='officehours')),
+    url(r'^questions/', include('questions.urls', namespace='questions')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^login/$', login, name="login"),
     url(r'^logout/$', logout, {'next_page': '/'}, name="logout"),

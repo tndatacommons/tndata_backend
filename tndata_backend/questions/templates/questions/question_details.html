@@ -1,0 +1,77 @@
+{% extends "officehours/base.html" %}
+
+{% block content %}
+
+
+{# Ask a question... #}
+<div class="column column-block" id="get-started">
+  <nav aria-label="You are here:" role="navigation">
+    <ul class="breadcrumbs">
+      <li><a href="{% url 'questions:index' %}">Questions</a></li>
+      <li>
+        <span class="show-for-sr">Current: </span> {{ question.title|truncatechars:20 }}
+      </li>
+    </ul>
+  </nav>
+
+  <div class="callout">
+
+    <h2>{{ question.title }}</h2>
+    <div class="callout secondary">
+     <form action="{{ question.get_upvote_url }}"
+           method="post"
+           class="pull-left"
+           style="margin-right: 1em">
+        {% csrf_token %}
+        <button type="submit" class="button small">
+          <i class="fa fa-thumbs-up"></i> {{ question.votes }}
+        </button>
+      </form>
+      <p>Is this question helpful? Then up-vote it.</p>
+    </div>
+    <div>
+      {{ question.content|urlize|linebreaks }}
+    </div>
+
+    <p class="text-right">
+      <em>Posted by
+      {% if question.user %}{{ question.user.get_full_name }}{% else %}Anonymous{% endif %}
+      on {{ question.created_on }}</em>
+      <br/>
+      <a href="#answer-form">
+        <i class="fa fa-pencil-square-o"></i> Answer this question</a>
+    </p>
+    <hr>
+
+    {# All of the answers associated with this question #}
+    {% for answer in answers %}
+      <h4 id="answer-{{answer.id}}" class="clearfix">
+        <form action="{{ answer.get_upvote_url }}"
+             method="post"
+             class="pull-left"
+             style="margin-right: 1em">
+          {% csrf_token %}
+          <button type="submit" class="button tiny">
+            <i class="fa fa-thumbs-up"></i> {{ answer.votes }}
+          </button>
+        </form>
+        {{ answer.user.get_full_name }}
+        <small>{{ answer.created_on|timesince }} ago</small>
+      </h4>
+
+      <div class="clearfix">
+        {{ answer.content|urlize|linebreaks }}
+      </div>
+      {% if not forloop.last %}<hr/>{% endif %}
+    {% endfor %}
+
+    <form action="{{ question.get_answer_question_url }}" method="post" id="answer-form">
+      {% csrf_token %}
+      {{ form }}
+      <hr/>
+      <input type="submit" value="Post Answer" class="button"/>
+    </form>
+
+  </div> {# / .callout #}
+</div> {# .column #}
+{% endblock %}

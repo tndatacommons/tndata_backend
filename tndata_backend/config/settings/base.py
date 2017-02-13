@@ -201,6 +201,7 @@ INSTALLED_APPS = (
     'goals',
     'notifications',
     'officehours',
+    'questions',
     'rewards',
     'survey',
     'userprofile',

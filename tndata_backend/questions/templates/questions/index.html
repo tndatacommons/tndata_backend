@@ -1,0 +1,52 @@
+{% extends "officehours/base.html" %}
+
+{% block content %}
+
+{# Ask a question... #}
+<div class="column column-block" id="get-started">
+  <div class="card">
+    <div class="card-divider">
+      <h2>Ask a question</h2>
+    </div>
+    <div class="card-section">
+      <form action="{% url 'questions:ask' %}" method="post">{% csrf_token %}
+        {{ form }}
+        <hr/>
+        <input type="submit" value="Ask Question" class="button"/>
+      </form>
+    </div>
+  </div> {# / .card #}
+</div> {# .column #}
+
+{# Latest questions ... #}
+<div class="column column-block" id="choose-role">
+  <div class="card">
+    <div class="card-divider">
+      <h2>Latest Questions</h2>
+    </div>
+    <div class="card-section">
+      {% for question in latest_questions %}
+        <div>
+          <strong>
+            <span class="badge">{{ question.votes }}</span>
+            <a href="{{ question.get_absolute_url }}">{{ question }}</a>
+          </strong>
+          <br/>
+          {{ question.content|truncatewords:10 }}
+          <br/>
+          <small>posted {{ question.created_on|timesince }} ago</small>
+        </div>
+      {% endfor %}
+    </div>
+  </div> {# / .card #}
+</div> {# .column #}
+{% endblock %}
+
+
+{% block bodyjs %}
+<script type="text/javascript">
+$(document).ready(function() {
+  // TODO... handle asking questins...
+});
+</script>
+{% endblock %}
