@@ -30,14 +30,14 @@ directory.
 
 - `badgify_api`: An API ship on top of the `django-badgify` app. This app
   expopses badgify details using django-rest-framework.
-- `config`: The *Project configuration*. Contains the project settings, static
-  files, and project tempates as well as the Root URLConf and wsgi config.
-- `cronlog`: A simple log records the status of our management commands
-  scheduled with cron.
+- `chat`: A simple chat app powered by websockets (using django-channels)
 - `goals`: This app contains the bulk of this project's features including
   a library of goal content and the api to serve it to the mobile app.
 - `notifications`: The laster that interacts with GCM and APNS. It contains
   tools to create and queue push notifications that should be delivered.
+- `officehours`: MVP app whose intention is to connect students with teachers
+  via their officehours and courses.
+- `questions`: a simple Quora/Stackoverflow clone targetted at students.
 - `rewards`: Models and api for misc reward content, such as quotes, jokes, etc.
 - `survey`: (*unused*) Models, views, and api for surveys.
 - `userprofile`: This app contains user profile-related models and apis. This
