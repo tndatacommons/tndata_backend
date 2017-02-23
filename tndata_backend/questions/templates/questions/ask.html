@@ -33,9 +33,11 @@
         {{ form.keywords.help_text }}
       </div>
       <hr/>
-      <input type="buton" value="Continue" class="button" onClick="continue()"/>
+      <button id="question_continue" type="button" class="button" onclick="questionContinue()">
+        Continue
+      </button>
       <br>
-      <input type="submit" value="Ask Question" class="button"/>
+      <input id="question_submit" type="submit" value="Ask Question" class="button"/>
     </form>
 
   </div> {# / .callout #}

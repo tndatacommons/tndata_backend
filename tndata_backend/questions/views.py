@@ -12,11 +12,11 @@ from .models import Answer, Question
 
 
 def index(request):
-    """List the latest questions + a form to ask a new one."""
+    """List the latest questions + a link to ask a new one."""
     questions = Question.objects.filter(published=True).order_by("created_on")
     context = {
+        'is_user_authenticated': request.user.is_authenticated(),
         'latest_questions': questions[:10],
-        'form': QuestionForm(),
     }
     return render(request, 'questions/index.html', context)
 
@@ -56,6 +56,7 @@ def post_answer(request, pk, title_slug):
     return render(request, 'questions/question_details.html', context)
 
 
+@login_required
 def ask_question(request):
     """Handle the POST requests to create a question."""
     if request.method == "POST":
