@@ -57,7 +57,7 @@ def post_answer(request, pk, title_slug):
 
 
 @login_required
-def ask_question(request):
+def ask_question(request, title=""):
     """Handle the POST requests to create a question."""
     if request.method == "POST":
         form = QuestionForm(request.POST)
@@ -76,9 +76,12 @@ def ask_question(request):
             question.save()
             return redirect(question.get_absolute_url())
     else:
-        form = QuestionForm()
+        form = QuestionForm(initial={'title': title})
 
+    print("Received title: " + title)
     context = {
+        'has_title': bool(title),
+        'title': title,
         'form': form,
     }
     return render(request, 'questions/ask.html', context)

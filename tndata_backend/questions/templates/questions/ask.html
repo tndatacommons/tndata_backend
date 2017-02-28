@@ -19,6 +19,7 @@
     <h2>Ask a question</h2>
     <form action="{% url 'questions:ask' %}" method="post">
       {% csrf_token %}
+      <h3 id="title_p">{% if has_title %}{{ title }}{% endif %}</h3>
       <div id="question_title">
         <label for="id_title">{{ form.title.label }}:</label>
         {{ form.title }}

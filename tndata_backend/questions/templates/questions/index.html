@@ -5,18 +5,6 @@
 {# Latest questions ... #}
 <div class="column column-block" id="choose-role">
   <div class="card">
-    <div class="card-section">
-      {% if is_user_authenticated %}
-        <form method="get" action="{% url 'questions:ask' %}">
-          <button type="submit" class="button">Ask a new question</button>
-        </form>
-      {% else %}
-        <span>To ask a question, please, </span>
-        <a href="{% url 'login' %}?next={% url 'questions:ask' %}">login</a>
-        <span> or </span>
-        <a href="{% url 'officehours:login' %}">sign in</a>
-      {% endif %}
-    </div>
     <div class="card-divider">
       <h2>Latest Questions</h2>
     </div>
@@ -36,13 +24,37 @@
     </div>
   </div> {# / .card #}
 </div> {# .column #}
-{% endblock %}
 
+{# Ask a question... #}
+<div class="column column-block" id="get-started">
+  <div class="card">
+    <div class="card-divider">
+      <h2>Ask a question</h2>
+    </div>
+    <div class="card-section">
+      {% if is_user_authenticated %}
+        <input id="id_title" maxlength="256" name="title" type="text">
+        <button type="button" class="button" onclick="handleQuestion()">Ask</button>
+      {% else %}
+        <span>To ask a question, please, </span>
+        <a href="{% url 'login' %}?next={% url 'questions:ask' %}">login</a>
+        <span> or </span>
+        <a href="{% url 'officehours:login' %}">sign in</a>
+      {% endif %}
+    </div>
+  </div> {# / .card #}
+</div> {# .column #}
+
+{% endblock %}
 
 {% block bodyjs %}
 <script type="text/javascript">
-$(document).ready(function() {
-  // TODO... handle asking questins...
-});
+function handleQuestion(){
+  var title = document.getElementById("id_title").value;
+  if (title.length != 0){
+    var url = "/questions/ask/" + title + "/";
+    window.location.href = url;
+  }
+}
 </script>
 {% endblock %}
