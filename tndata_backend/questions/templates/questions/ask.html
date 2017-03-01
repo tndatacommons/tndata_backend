@@ -4,6 +4,7 @@
 
 
 {# Ask a question... #}
+{{ form.media }}
 <div class="column column-block" id="get-started">
   <nav aria-label="You are here:" role="navigation">
     <ul class="breadcrumbs">
@@ -18,9 +19,26 @@
     <h2>Ask a question</h2>
     <form action="{% url 'questions:ask' %}" method="post">
       {% csrf_token %}
-      {{ form }}
+      <h3 id="title_p">{% if has_title %}{{ title }}{% endif %}</h3>
+      <div id="question_title">
+        <label for="id_title">{{ form.title.label }}:</label>
+        {{ form.title }}
+      </div>
+      <div id="question_content">
+        <label for="id_content">{{ form.content.label }}:</label>
+        {{ form.content }}
+      </div>
+      <div id="question_keywords">
+        <label for="id_keywords">{{ form.keywords.label }}:</label>
+        {{ form.keywords }}
+        {{ form.keywords.help_text }}
+      </div>
       <hr/>
-      <input type="submit" value="Ask Question" class="button"/>
+      <button id="question_continue" type="button" class="button" onclick="questionContinue()">
+        Continue
+      </button>
+      <br>
+      <input id="question_submit" type="submit" value="Ask Question" class="button"/>
     </form>
 
   </div> {# / .callout #}

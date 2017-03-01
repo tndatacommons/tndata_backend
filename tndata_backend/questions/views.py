@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+from django.db.models import Q
 
 from .forms import AnswerForm, QuestionForm
 from .models import Answer, Question
@@ -12,13 +14,42 @@ from .models import Answer, Question
 
 
 def index(request):
-    """List the latest questions + a form to ask a new one."""
+    """List the latest questions + a link to ask a new one."""
     questions = Question.objects.filter(published=True).order_by("created_on")
     context = {
+        'is_user_authenticated': request.user.is_authenticated(),
         'latest_questions': questions[:10],
-        'form': QuestionForm(),
     }
     return render(request, 'questions/index.html', context)
+
+
+def search(request):
+    """Returns json with search results."""
+    query = request.GET.get('q', '')
+    print("Search query: " + query)
+    if query:
+        qset = Q()
+        for term in query.split():
+            qset |= Q(title__contains=term)
+            
+        questions = Question.objects.filter(qset)
+        
+        questionList = []
+        count = 0
+        for question in questions:
+            data = {
+                'id': question.id,
+                'title': question.title,
+                'title_slug': question.title_slug
+            }
+            questionList.append(data)
+            count += 1
+            if count == 4:
+                break
+        
+        return JsonResponse({'results': questionList})
+    else:
+        return JsonResponse({'results': []})
 
 
 def question_details(request, pk, title_slug):
@@ -56,7 +87,8 @@ def post_answer(request, pk, title_slug):
     return render(request, 'questions/question_details.html', context)
 
 
-def ask_question(request):
+@login_required
+def ask_question(request, title=""):
     """Handle the POST requests to create a question."""
     if request.method == "POST":
         form = QuestionForm(request.POST)
@@ -75,9 +107,12 @@ def ask_question(request):
             question.save()
             return redirect(question.get_absolute_url())
     else:
-        form = QuestionForm()
+        form = QuestionForm(initial={'title': title})
 
+    print("Received title: " + title)
     context = {
+        'has_title': bool(title),
+        'title': title,
         'form': form,
     }
     return render(request, 'questions/ask.html', context)

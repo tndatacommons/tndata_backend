@@ -23,6 +23,8 @@ urlpatterns = [
         views.question_details,
         name='question-details'
     ),
+    url(r'^search/$', views.search, name='search'),
     url(r'^ask/$', views.ask_question, name='ask'),
+    url(r'^ask/(?P<title>.*)/$', views.ask_question, name='ask_with_title'),
     url(r'^$', views.index, name='index'),  # list of questions + form to ask
 ]

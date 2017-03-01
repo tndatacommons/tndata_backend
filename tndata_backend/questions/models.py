@@ -39,7 +39,7 @@ class Question(models.Model):
         models.CharField(max_length=32, blank=True),
         default=list,
         blank=True,
-        help_text="Keywords for this question."
+        help_text="Keywords for this question, comma-separated."
     )
 
     updated_on = models.DateTimeField(auto_now=True)
