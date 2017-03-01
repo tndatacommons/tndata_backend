@@ -33,7 +33,8 @@
     </div>
     <div class="card-section">
       {% if is_user_authenticated %}
-        <input id="id_title" maxlength="256" name="title" type="text">
+        <input id="id_title" maxlength="256" name="title" type="text" onkeyup="questionKeyUp()">
+        <div id="question_container"></div>
         <button type="button" class="button" onclick="handleQuestion()">Ask</button>
       {% else %}
         <span>To ask a question, please, </span>
@@ -54,6 +55,28 @@ function handleQuestion(){
   if (title.length != 0){
     var url = "/questions/ask/" + title + "/";
     window.location.href = url;
+  }
+}
+</script>
+
+<script type="text/javascript">
+function questionKeyUp(){
+  var title = document.getElementById("id_title").value;
+  if (title.length != 0){
+    $.get("search/?q=" + title, function(data, status){
+      var container = document.getElementById("question_container");
+      var results = "";
+      var i;
+      for (i = 0; i < data.results.length; i++){
+        question = data.results[i];
+        results += "<a href=\"" + question.id + "/" + question.title_slug + "/\">" + question.title + "</a>";
+        results += "<hr>";
+      }
+      container.innerHTML = results;
+    });
+  }
+  else{
+    document.getElementById("question_container").innerHTML = "";
   }
 }
 </script>

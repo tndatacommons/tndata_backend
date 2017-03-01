@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+from django.db.models import Q
 
 from .forms import AnswerForm, QuestionForm
 from .models import Answer, Question
@@ -19,6 +21,35 @@ def index(request):
         'latest_questions': questions[:10],
     }
     return render(request, 'questions/index.html', context)
+
+
+def search(request):
+    """Returns json with search results."""
+    query = request.GET.get('q', '')
+    print("Search query: " + query)
+    if query:
+        qset = Q()
+        for term in query.split():
+            qset |= Q(title__contains=term)
+            
+        questions = Question.objects.filter(qset)
+        
+        questionList = []
+        count = 0
+        for question in questions:
+            data = {
+                'id': question.id,
+                'title': question.title,
+                'title_slug': question.title_slug
+            }
+            questionList.append(data)
+            count += 1
+            if count == 4:
+                break
+        
+        return JsonResponse({'results': questionList})
+    else:
+        return JsonResponse({'results': []})
 
 
 def question_details(request, pk, title_slug):
