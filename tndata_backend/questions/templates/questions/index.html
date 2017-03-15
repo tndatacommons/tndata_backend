@@ -53,8 +53,11 @@
 function handleQuestion(){
   var title = document.getElementById("id_title").value;
   if (title.length != 0){
-    var url = "/questions/ask/" + title + "/";
-    window.location.href = url;
+    title = title.replace(/[\?]+/g, '');
+    if (title.length != 0){
+      var url = "/questions/ask/" + title + "/";
+      window.location.href = url;
+    }
   }
 }
 </script>

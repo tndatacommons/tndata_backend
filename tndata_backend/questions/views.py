@@ -112,7 +112,7 @@ def ask_question(request, title=""):
     print("Received title: " + title)
     context = {
         'has_title': bool(title),
-        'title': title,
+        'title': title + "?",
         'form': form,
     }
     return render(request, 'questions/ask.html', context)
@@ -151,3 +151,4 @@ def upvote_answer(request, pk, title_slug, answer_pk):
         answer.votes += 1
         answer.save()
     return redirect(answer.get_absolute_url())
+
