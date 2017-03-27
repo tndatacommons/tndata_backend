@@ -32,7 +32,7 @@ from goals.api import (
 from goals import views as goal_views
 from notifications.api import GCMDeviceViewSet, GCMMessageViewSet
 from officehours.api import CourseViewSet, OfficeHoursViewSet
-from questions.api import QuestionViewSet
+from questions.api import QuestionViewSet, AnswerViewSet
 from survey.api import (
     BinaryQuestionViewSet,
     BinaryResponseViewSet,
@@ -108,6 +108,7 @@ router.register(r'courses', CourseViewSet)
 
 # Questions app
 router.register(r'questions', QuestionViewSet)
+router.register(r'answers', AnswerViewSet)
 
 # ViewSets from the survey app.
 router.register(r'survey/binary/responses', BinaryResponseViewSet)
